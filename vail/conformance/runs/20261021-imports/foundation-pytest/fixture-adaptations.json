@@ -1,0 +1,11 @@
+{
+  "randomness_reset": {
+    "replacement": "vail.reset_global_randomness",
+    "scope": "function",
+    "autouse": true,
+    "timing": "pytest autouse fixture before each test",
+    "upstream_fixture": "conftest.py::reset_global_randomness",
+    "upstream_line": 103,
+    "upstream_conftest_sha256": "5302579021387f74f43ec9b353fddcbfa4dbcba3f1a12754a1c840772a97b017"
+  }
+}

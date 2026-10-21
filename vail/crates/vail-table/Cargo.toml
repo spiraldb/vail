@@ -6,9 +6,13 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
+apache-avro = { version = "0.21", features = ["snappy", "zstandard", "bzip", "xz"] }
+flate2 = "1"
+zstd = "0.13"
 datafusion = "=55.0.0"
 datafusion-session = "=55.0.0"
 async-trait = "0.1"
+async-compression = { version = "0.4", features = ["tokio", "gzip"] }
 tokio.workspace = true
 arrow-ipc.workspace = true
 tempfile = "3"

@@ -4,7 +4,7 @@ from .expressions import IR_NODE_TYPES
 import builtins
 import uuid
 
-from .expressions import (Expression, _merge_sources, as_expr, if_else, is_missing,
+from .expressions import (Expression, _merge_sources, as_expr, if_else, is_missing, coalesce,
                           literal, missing, struct)
 from .types import (tarray, tset, tdict, ttuple, tstruct, tint32, tbool, tstr,
                     tfloat32, tfloat64, tint64, type_to_wire)
@@ -247,6 +247,10 @@ def _lookup(value, key):
 
 
 def contains(value, key):
+    if isinstance(value.dtype, tarray):
+        key = _coerce(key, value.dtype.element_type)
+        # Missing elements compare as values for membership, matching Hail.
+        return predicate(value, lambda item: if_else(is_missing(key), is_missing(item), coalesce(item == key, False)))
     if isinstance(value.dtype, tdict):
         key = _coerce(key, value.dtype.key_type)
         return _lookup(value, key).found
@@ -257,7 +261,7 @@ def contains(value, key):
             key=_native_equality_value(item), value=True))
         dictionary = _cast(pairs, tdict(canonical_key.dtype, tbool))
         return _lookup(dictionary, canonical_key).found
-    raise TypeError("contains requires a set or dictionary")
+    raise TypeError("contains requires an array, set or dictionary")
 
 
 def get(value, key, default=None):

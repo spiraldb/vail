@@ -1,0 +1,27 @@
+{
+  "sources": [
+    {
+      "format": "VCF 4.2",
+      "url": "https://samtools.github.io/hts-specs/VCFv4.2.pdf",
+      "read_before_edits": true,
+      "relevant_sections": [
+        "meta-information declarations",
+        "fixed ALT dot with no alternate alleles",
+        "genotype FORMAT ordering and omitted trailing missing values"
+      ]
+    },
+    {
+      "url": "https://hail.is/docs/0.2/methods/impex.html#hail.methods.import_vcf",
+      "read_before_edits": true
+    }
+  ],
+  "changes": [
+    "preserve FORMAT declaration order independently of GT-first record serialization",
+    "omit trailing missing FORMAT values",
+    "emit reference contig declarations",
+    "export sites-only Tables",
+    "bounded gzip/BGZF compression",
+    "separate-header shard manifest export",
+    "report all invalid INFO/FORMAT types in public FatalError"
+  ]
+}

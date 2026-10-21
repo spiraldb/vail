@@ -106,8 +106,7 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
         pl = split[prepared].pl[split.a_index - 1]
         updates['PL'] = pl
         if 'GQ' in fields:
-            sorted_pl = hl.sorted(pl.filter(lambda value: hl.is_defined(value)))
-            quality = hl.or_missing(hl.len(sorted_pl) >= 2, sorted_pl[1] - sorted_pl[0])
+            quality = hl.gq_from_pl(pl)
             updates['GQ'] = hl.coalesce(quality, split.GQ)
     return (split.annotate_entries(**updates)
             .drop('old_locus', 'old_alleles', prepared)

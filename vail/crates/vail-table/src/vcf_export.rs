@@ -168,6 +168,38 @@ impl Field {
     }
 }
 
+// Finish compression before atomically publishing the temporary destination.
+enum Output<W: Write> {
+    Plain(W),
+    Gzip(flate2::write::GzEncoder<W>),
+    Bgzf(crate::compressed_text::BgzfWriter<W>),
+}
+impl<W: Write> Output<W> {
+    fn finish(self) -> std::io::Result<()> {
+        match self {
+            Self::Plain(mut w) => w.flush(),
+            Self::Gzip(w) => w.finish()?.flush(),
+            Self::Bgzf(w) => w.finish(),
+        }
+    }
+}
+impl<W: Write> Write for Output<W> {
+    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+        match self {
+            Self::Plain(w) => w.write(data),
+            Self::Gzip(w) => w.write(data),
+            Self::Bgzf(w) => w.write(data),
+        }
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        match self {
+            Self::Plain(w) => w.flush(),
+            Self::Gzip(w) => w.flush(),
+            Self::Bgzf(w) => w.flush(),
+        }
+    }
+}
+
 pub async fn export(
     table: TableRef,
     path: &str,
@@ -260,7 +292,14 @@ pub async fn export(
         .filter(|p| !p.as_os_str().is_empty())
         .unwrap_or_else(|| std::path::Path::new("."));
     let mut output = tempfile::NamedTempFile::new_in(parent).map_err(|e| bad(e.to_string()))?;
-    let mut writer = BufWriter::new(output.as_file_mut());
+    let buffered = BufWriter::new(output.as_file_mut());
+    let mut writer = if path.ends_with(".bgz") {
+        Output::Bgzf(crate::compressed_text::BgzfWriter::new(buffered))
+    } else if path.ends_with(".gz") {
+        Output::Gzip(flate2::write::GzEncoder::new(buffered, flate2::Compression::default()))
+    } else {
+        Output::Plain(buffered)
+    };
     for header in headers {
         writeln!(writer, "{}", header).map_err(|e| bad(e.to_string()))?;
     }
@@ -404,7 +443,12 @@ pub async fn export(
                         line.push('.');
                         continue;
                     }
-                    for (i, view) in entry_views.iter().enumerate() {
+                    // VCF permits omitted trailing missing FORMAT values. Keep
+                    // the first field (especially GT) even if all are missing.
+                    let retained = entry_views.iter().rposition(|view| {
+                        !entry_values.is_null(cell) && !view.array().is_null(cell)
+                    }).map_or(1, |i| i + 1);
+                    for (i, view) in entry_views.iter().take(retained).enumerate() {
                         if i > 0 {
                             line.push(':');
                         }
@@ -426,8 +470,7 @@ pub async fn export(
                 .map_err(|e| bad(e.to_string()))?;
         }
     }
-    writer.flush().map_err(|e| bad(e.to_string()))?;
-    drop(writer);
+    writer.finish().map_err(|e| bad(e.to_string()))?;
     output
         .persist(destination)
         .map_err(|e| bad(e.error.to_string()))?;

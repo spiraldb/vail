@@ -13,7 +13,7 @@ from .types import (dtype, tarray, tstr, tint64, tstruct, tint32, tfloat32, tflo
 _COMPRESSED_SUFFIXES = ('.gz', '.bgz', '.bz2', '.xz', '.zst')
 
 
-def _local_path(path):
+def _local_path(path, *, allow_compressed=False):
     path = os.fspath(path)
     if path.startswith('file:'):
         parsed = urlparse(path)
@@ -22,7 +22,7 @@ def _local_path(path):
         path = unquote(parsed.path)
     if '://' in path:
         raise NotImplementedError('text IO currently supports local paths')
-    if path.endswith(_COMPRESSED_SUFFIXES):
+    if path.endswith(_COMPRESSED_SUFFIXES) and not allow_compressed:
         raise NotImplementedError('compressed text IO is not implemented')
     return os.path.abspath(path)
 
@@ -31,15 +31,13 @@ def _paths(paths):
     paths = [paths] if isinstance(paths, (str, os.PathLike)) else list(paths)
     result = []
     for path in paths:
-        path = _local_path(path)
+        path = _local_path(path, allow_compressed=True)
         matches = sorted(glob.glob(path)) if glob.has_magic(path) else [path]
         if not matches:
             raise FileNotFoundError(path)
         result.extend(os.path.abspath(match) for match in matches)
     if not result:
         raise ValueError('at least one input path is required')
-    if any(path.endswith(_COMPRESSED_SUFFIXES) for path in result):
-        raise NotImplementedError('compressed text sources are not implemented')
     return result
 
 
@@ -66,16 +64,21 @@ def _read(paths, schema, format, options):
 def import_lines(paths, min_partitions=None, force_bgz=False, force=False, file_per_partition=False):
     """Lazily scan UTF-8 physical lines, retaining blank lines and file names."""
     from . import _validate_n
-    if force_bgz or force:
-        raise NotImplementedError('BGZF and gzip text scans are not implemented')
+    for name, value in [('force_bgz', force_bgz), ('force', force)]:
+        if type(value) is not bool:
+            raise TypeError(f'{name} must be bool')
     if type(file_per_partition) is not bool:
         raise TypeError('file_per_partition must be bool')
     paths = _paths(paths)
+    if not (force or force_bgz) and any(path.endswith('.gz') for path in paths):
+        raise ValueError('gzip input requires force=True or force_bgz=True')
+    if any(path.endswith(('.bz2', '.xz', '.zst')) for path in paths):
+        raise NotImplementedError('this compression codec is not supported for text input')
     if min_partitions is not None:
         _validate_n(min_partitions, 'min_partitions', positive=True)
         if file_per_partition and min_partitions > len(paths):
             raise ValueError('min_partitions exceeds the number of files with file_per_partition=True')
-    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {})
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
     if min_partitions is not None and min_partitions > len(paths):
         table = table.repartition(min_partitions)
     return table
@@ -93,9 +96,12 @@ def split_line(value, delimiter, missing=None, quote=None, regex=False):
     value = as_expr(value)
     if value.dtype != tstr:
         raise TypeError('split_line requires a string')
-    _byte(delimiter, 'delimiter')
+    if not isinstance(delimiter, str) or not delimiter:
+        raise ValueError('delimiter must be a nonempty string')
     if regex:
-        raise NotImplementedError('regex-delimited line parsing is not implemented')
+        delimiter = '(?:' + delimiter + ')'
+    else:
+        _byte(delimiter, 'delimiter')
     if quote is not None:
         _byte(quote, 'quote')
         if quote == delimiter:
@@ -131,6 +137,62 @@ def _parse_integer_array(value, target):
             .or_error(f'invalid JSON integer array for {target}'))
 
 
+def _integer_fits(value, positive, negative):
+    from . import if_else, len as length
+    digits = value.replace(r'^[+-]?0*', '')
+    bound = if_else(value.startswith('-'), negative, positive)
+    return value.matches(r'[+-]?[0-9]+', full_match=True) & (
+        (length(digits) < len(positive)) |
+        ((length(digits) == len(positive)) & (digits <= bound)))
+
+
+def _parse_primitive(value, target):
+    from . import case, is_missing
+    if target in (tint32, tint64):
+        bounds = ('2147483647', '2147483648') if target == tint32 else ('9223372036854775807', '9223372036854775808')
+        return (case().when(is_missing(value) | _integer_fits(value, *bounds), cast(value, target))
+                .or_error(f'cannot parse {target} from input string'))
+    if target in (tfloat32, tfloat64):
+        # Java's floating parser accepts an optional precision suffix.
+        value = value.strip().replace(r'[fFdD]$', '')
+    return cast(value, target)
+
+
+def _impute_fields(table, split, names, types):
+    """Reduce type support in the native engine; only summary booleans leave it."""
+    from . import agg, struct, is_defined
+
+    summaries = {}
+    for index, name in enumerate(names):
+        if types.get(name) is not None:
+            continue
+        value = _function('array_element', [split, literal(index + 1, tint64)], tstr)
+        float_pattern = (r'[\x00-\x20]*[+-]?(?:NaN|Infinity|'
+                         r'(?:(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)[fFdD]?|'
+                         r'0[xX](?:[0-9a-fA-F]+(?:\.[0-9a-fA-F]*)?|\.[0-9a-fA-F]+)[pP][+-]?[0-9]+[fFdD]?)'
+                         r'[\x00-\x20]*')
+        summaries[name] = struct(
+            present=agg.any(is_defined(value)),
+            boolean=agg.all(value.lower().matches(r'true|false', full_match=True)),
+            int32=agg.all(_integer_fits(value, '2147483647', '2147483648')),
+            int64=agg.all(_integer_fits(value, '9223372036854775807', '9223372036854775808')),
+            float64=agg.all(value.matches(float_pattern, full_match=True)),
+        )
+    if not summaries:
+        return {}
+    observed = table.aggregate(struct(**summaries))
+    inferred = {}
+    for name, support in observed.items():
+        inferred[name] = tstr
+        if support.present:
+            for category, target in [('boolean', tbool), ('int32', tint32),
+                                     ('int64', tint64), ('float64', tfloat64)]:
+                if support[category]:
+                    inferred[name] = target
+                    break
+    return inferred
+
+
 def import_table(paths, key=None, min_partitions=None, impute=False, no_header=False,
                  comment=(), delimiter='\t', missing='NA', types=None, quote=None,
                  skip_blank_lines=False, force_bgz=False, filter=None, find_replace=None,
@@ -139,15 +201,13 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
 
     Header discovery evaluates one row, as Hail does. The remaining table is lazy.
     Raw headers are removed before find_replace transforms data records.
-    Regex delimiters and type imputation are not implemented.
     """
-    delimiter = _byte(delimiter, 'delimiter')
+    if not isinstance(delimiter, str) or not delimiter:
+        raise ValueError('import_table: empty delimiter is not supported')
     if quote is not None:
         quote = _byte(quote, 'quote')
         if quote == delimiter:
             raise ValueError('quote and delimiter must differ')
-    if impute:
-        raise NotImplementedError('Hail type imputation is not implemented; supply types explicitly')
     if type(no_header) is not bool or type(skip_blank_lines) is not bool:
         raise TypeError('no_header and skip_blank_lines must be bool')
     types = {} if types is None else types
@@ -176,7 +236,7 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
     import pyarrow as pa
     first = pa.table(table._native.sample_arrow(1)).to_pylist()
     if not first:
-        raise ValueError('no lines remaining after filters')
+        raise ValueError(f"Invalid file: no lines remaining after filters\n Files provided: {', '.join(paths)}")
     header_text = first[0]['text']
     raw_names = eval_expression(_split_line(literal(header_text), delimiter, quote, []))
     if no_header:
@@ -206,8 +266,14 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
     split_name = '__vail_text_fields'
     while split_name in table._schema or split_name in table._global_schema:
         split_name += '_'
-    table = table.annotate(**{split_name: _split_line(table.text, delimiter, quote, missing, len(names))})
+    # Imputation must validate record widths while scanning all values. For
+    # explicit types defer width validation to the projected field expression,
+    # allowing an earlier row's value conversion to report its own error.
+    table = table.annotate(**{split_name: _split_line(table.text, delimiter, quote, missing, len(names) if impute else 0)})
     split = table[split_name]
+    if impute:
+        types = dict(types)
+        types.update(_impute_fields(table, split, names, types))
     fields = {}
     for index, name in enumerate(names):
         target = types.get(name, tstr)
@@ -217,7 +283,11 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
         if target not in (tstr, tint32, tint64, tfloat32, tfloat64, tbool) and not integer_array:
             raise NotImplementedError('typed text imports support primitive fields and integer arrays')
         value = _function('array_element', [split, literal(index + 1, tint64)], tstr)
-        fields[name] = _parse_integer_array(value, target) if integer_array else cast(value, target)
+        fields[name] = _parse_integer_array(value, target) if integer_array else _parse_primitive(value, target)
+        if not impute:
+            from . import case, len as length, str as stringify
+            fields[name] = (case().when(length(split) == len(names), fields[name])
+                .or_error(f'Expected {len(names)} fields, found ' + stringify(length(split)) + ' field(s)'))
     if source_file_field is not None:
         fields[source_file_field] = table.file
     table = table.select(**fields)
@@ -261,11 +331,28 @@ def export(table, output, types_file=None, header=True, parallel=None, delimiter
     if type(header) is not bool:
         raise TypeError('header must be bool')
     _byte(delimiter, 'delimiter')
-    if any(ty not in (tstr, tint32, tint64, tfloat32, tfloat64, tbool) for ty in table._schema.values()):
-        raise NotImplementedError('nested text export needs Hail-compatible JSON serialization')
-    if any(ty in (tfloat32, tfloat64) for ty in table._schema.values()):
-        raise NotImplementedError('Hail text export uses four-digit scientific float formatting; use export_csv for DataFusion formatting')
-    table._native.export_text(_local_path(output), 'text', {
+    from .types import tinterval, tlocus
+    from .expressions import if_else, str_, or_missing, is_defined
+    interval_fields = {name: ty for name, ty in table._schema.items()
+                       if isinstance(ty, tinterval) and isinstance(ty.point_type, tlocus)}
+    if interval_fields:
+        table = table.key_by()
+        fields = {}
+        for name, ty in table._schema.items():
+            value = table[name]
+            if name in interval_fields:
+                value = or_missing(is_defined(value),
+                    if_else(value.includes_start, '[', '(')
+                    + value.start.contig + ':' + str_(value.start.position) + '-'
+                    + value.end.contig + ':' + str_(value.end.position)
+                    + if_else(value.includes_end, ']', ')'))
+            fields[name] = value
+        table = table.select(**fields)
+    if any(ty not in (tstr, tint32, tint64, tbool) for ty in table._schema.values()):
+        table = table.key_by()
+        table = table.select(**{name: table[name] if ty in (tstr, tint32, tint64, tbool)
+                                else str_(table[name]) for name, ty in table._schema.items()})
+    table._native.export_text(_local_path(output, allow_compressed=True), 'text', {
         'delimiter': ord(delimiter), 'has_header': header, 'null_value': 'NA',
     })
 

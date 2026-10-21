@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use arrow_array::{ArrayRef, RecordBatch, builder::StringBuilder};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
+use async_compression::tokio::bufread::GzipDecoder;
 use bytes::BytesMut;
 use datafusion_common::{DataFusionError, Result};
 use datafusion_datasource::file::FileSource;
@@ -16,6 +17,7 @@ use datafusion_physical_plan::metrics::ExecutionPlanMetricsSet;
 use futures::{StreamExt, TryStreamExt, stream::BoxStream};
 use memchr::memchr2;
 use object_store::{ObjectStore, ObjectStoreExt};
+use tokio::io::{AsyncRead, BufReader};
 use tokio_util::codec::{Decoder, FramedRead};
 use tokio_util::io::StreamReader;
 
@@ -26,6 +28,7 @@ pub struct LineSource {
     table_schema: TableSchema,
     batch_size: Option<usize>,
     metrics: ExecutionPlanMetricsSet,
+    gzip: bool,
 }
 
 impl Default for LineSource {
@@ -41,7 +44,13 @@ impl LineSource {
             table_schema: TableSchema::from(schema),
             batch_size: None,
             metrics: ExecutionPlanMetricsSet::new(),
+            gzip: false,
         }
+    }
+
+    pub fn with_gzip(mut self, gzip: bool) -> Self {
+        self.gzip = gzip;
+        self
     }
 
     pub fn schema(&self) -> SchemaRef {
@@ -60,6 +69,7 @@ impl FileSource for LineSource {
             object_store,
             schema: self.schema(),
             batch_size: self.batch_size.unwrap_or(8192).max(1),
+            gzip: self.gzip,
         }))
     }
 
@@ -110,6 +120,7 @@ struct LineOpener {
     object_store: Arc<dyn ObjectStore>,
     schema: SchemaRef,
     batch_size: usize,
+    gzip: bool,
 }
 
 /// Recognizes the universal line endings accepted by Hail: LF, CRLF, and CR.
@@ -188,21 +199,40 @@ impl FileOpener for LineOpener {
         let schema = Arc::clone(&self.schema);
         let batch_size = self.batch_size;
         let location = file.object_meta.location;
+        let gzip = self.gzip;
 
         Ok(Box::pin(async move {
             let result = store.get(&location).await?;
             let input = result.into_stream().map_err(DataFusionError::from).boxed();
-            Ok(line_batches(input, schema, batch_size))
+            Ok(line_batches_compressed(input, schema, batch_size, gzip))
         }))
     }
 }
 
+#[cfg(test)]
 fn line_batches(
     input: BoxStream<'static, Result<bytes::Bytes>>,
     schema: SchemaRef,
     batch_size: usize,
 ) -> BoxStream<'static, Result<RecordBatch>> {
+    line_batches_compressed(input, schema, batch_size, false)
+}
+
+fn line_batches_compressed(
+    input: BoxStream<'static, Result<bytes::Bytes>>,
+    schema: SchemaRef,
+    batch_size: usize,
+    gzip: bool,
+) -> BoxStream<'static, Result<RecordBatch>> {
     let byte_reader = StreamReader::new(input.map_err(|error| io::Error::other(error.to_string())));
+    let byte_reader: Box<dyn AsyncRead + Unpin + Send> = if gzip {
+        let mut decoder = GzipDecoder::new(BufReader::new(byte_reader));
+        // RFC 1952 and BGZF allow concatenated members and embedded EOF blocks.
+        decoder.multiple_members(true);
+        Box::new(decoder)
+    } else {
+        Box::new(byte_reader)
+    };
     let mut lines = FramedRead::new(byte_reader, UniversalLinesCodec::default());
     Box::pin(async_stream::try_stream! {
         let mut builder = StringBuilder::new();
@@ -299,6 +329,7 @@ mod tests {
             object_store: store.clone(),
             schema: LineSource::new().schema(),
             batch_size: 8192,
+            gzip: false,
         };
         let stream = opener
             .open(PartitionedFile::new(

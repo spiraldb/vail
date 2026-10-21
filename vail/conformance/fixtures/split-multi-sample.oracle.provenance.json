@@ -1,0 +1,19 @@
+{
+  "hail_source_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "hail_version": "0.2.139-e10cc355bc8c",
+  "source_fixture": "/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt",
+  "oracle_payload_sha256": "e759b4010e0cbb71b8b07a010965b620f424359d11de960525ee6f645d9ccc5b",
+  "extract_command": "PYTHONPATH=/Users/danielking/projects/vail/hail/hail/python SPARK_LOCAL_IP=127.0.0.1 JAVA_HOME=<Zulu21 JDK> /private/tmp/vail-plink-oracle/bin/python conformance/extract_plink_fixture.py --resources /Users/danielking/projects/vail/hail/hail/hail/test/resources --output conformance/fixtures/split-multi-sample.oracle.json.gz",
+  "oracle_equality": "Original Hail fixture _same(split_multi_hts(import_vcf(sample.vcf,array_elements_required=False)).select_globals(),tolerance=0) returned True",
+  "rows": 346,
+  "schemas": [
+    "row",
+    "col",
+    "entry",
+    "global"
+  ],
+  "test_only": true,
+  "typed_fixture_verification": "Materialize via conformance/plink_fixture.py, read with Vail, and compare all schemas and plain typed values exactly against the independently extracted golden payload; passed (346 rows).",
+  "oracle_log": "conformance/runs/20261021-imports/plink/fixture-oracle.log",
+  "vail_verification": "conformance/runs/20261021-imports/plink/fixture-verification.json"
+}

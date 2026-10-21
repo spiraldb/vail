@@ -5,11 +5,14 @@ pub mod aggregation;
 pub mod arrow_batches;
 mod diagnostics;
 use arrow_batches::ArrowBatches;
+pub mod avro_source;
+mod bgen_source;
 pub mod comparison;
+mod compressed_text;
 mod conditional_globals;
 pub mod globals;
-mod interval_read;
 mod group_ranges;
+mod interval_read;
 mod join_interval;
 mod join_key;
 mod joins;
@@ -29,8 +32,9 @@ mod partition_grouping;
 mod partition_map;
 pub mod partitioned;
 mod partitioning;
-mod projection_broadcast;
 pub mod plan;
+mod plink_source;
+mod projection_broadcast;
 mod provider;
 mod range_lookup;
 mod scan_ordinal;
@@ -663,7 +667,10 @@ impl TableIR {
         format: &str,
         options_json: &Value,
     ) -> Result<TableRef> {
-        if !matches!(format, "csv" | "json" | "ndjson" | "lines" | "vcf") {
+        if !matches!(
+            format,
+            "csv" | "json" | "ndjson" | "lines" | "vcf" | "bgen" | "plink" | "avro"
+        ) {
             return Err(TableError::Invalid(format!(
                 "unsupported text format {format:?}"
             )));
@@ -698,9 +705,12 @@ impl TableIR {
                     "lines schema must contain file and text Utf8 fields in that order".into(),
                 ));
             }
-            if !options.is_empty() {
+            if options
+                .iter()
+                .any(|(key, value)| key != "force_bgz" || !value.is_boolean())
+            {
                 return Err(TableError::Invalid(
-                    "lines input does not accept options".into(),
+                    "lines input accepts only the boolean force_bgz option".into(),
                 ));
             }
         } else if format == "csv" {
@@ -717,6 +727,7 @@ impl TableIR {
                     )));
                 }
                 if format != "vcf"
+                    && format != "lines"
                     && [".gz", ".bgz", ".bz2", ".xz", ".zst"]
                         .iter()
                         .any(|suffix| path.ends_with(suffix))
@@ -1472,7 +1483,12 @@ impl TableIR {
             &mut context,
         )?;
         let plan = crate::logical_aggregation::lower_grouped_fields(
-            self, input, &keys, &fields, &bindings, &mut context,
+            self,
+            input,
+            &keys,
+            &fields,
+            &bindings,
+            &mut context,
         )?;
         let schema = Arc::new(plan.schema().as_arrow().clone());
         if !keys.is_empty() {

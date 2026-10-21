@@ -121,8 +121,10 @@ checksum = "36fa98bc79671c7981272d91a8753a928ff6a1cd8e4f20a44c45bd5d313840bf"
 dependencies = [
  "bigdecimal",
  "bon",
+ "bzip2",
  "crc32fast",
  "digest 0.10.7",
+ "liblzma",
  "log",
  "miniz_oxide 0.8.9",
  "num-bigint 0.4.8",
@@ -5362,6 +5364,7 @@ dependencies = [
 name = "vail-table"
 version = "0.1.0"
 dependencies = [
+ "apache-avro",
  "arrow-array",
  "arrow-buffer",
  "arrow-cast",
@@ -5372,6 +5375,7 @@ dependencies = [
  "arrow-ord",
  "arrow-schema",
  "arrow-select",
+ "async-compression",
  "async-stream",
  "async-trait",
  "bytes",
@@ -5390,6 +5394,7 @@ dependencies = [
  "datafusion-physical-expr",
  "datafusion-physical-plan",
  "datafusion-session",
+ "flate2",
  "futures",
  "intervaltree",
  "memchr",
@@ -5404,6 +5409,7 @@ dependencies = [
  "vail-ordering",
  "vail-storage",
  "vail-vcf",
+ "zstd 0.13.3",
 ]
 
 [[package]]

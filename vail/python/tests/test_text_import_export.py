@@ -180,14 +180,14 @@ def test_text_export_and_import_roundtrip_multiple_partitions(tmp_path):
     assert restored.collect() == table.collect()
 
 
-def test_export_without_header_and_nested_rejection(tmp_path):
+def test_export_without_header_and_hail_nested_format(tmp_path):
     table = hl.utils.range_table(3, n_partitions=2)
     table.export(tmp_path / 'no-header.tsv', header=False)
     assert (tmp_path / 'no-header.tsv').read_text() == '0\n1\n2\n'
-    with pytest.raises(NotImplementedError, match='nested'):
-        table.annotate(values=hl.array([1])).export(tmp_path / 'nested.tsv')
-    with pytest.raises(NotImplementedError, match='scientific'):
-        table.annotate(value=hl.float64(table.idx)).export(tmp_path / 'float.tsv')
+    table.annotate(values=hl.array([1])).export(tmp_path / 'nested.tsv')
+    assert (tmp_path / 'nested.tsv').read_text() == 'idx\tvalues\n0\t[1]\n1\t[1]\n2\t[1]\n'
+    table.annotate(value=hl.float64(table.idx)).export(tmp_path / 'float.tsv')
+    assert (tmp_path / 'float.tsv').read_text() == 'idx\tvalue\n0\t0.0000e+00\n1\t1.0000e+00\n2\t2.0000e+00\n'
 
 
 def test_empty_and_multiple_batch_exports(tmp_path):
@@ -229,15 +229,13 @@ def test_json_read_write_nested_and_lazy(tmp_path):
 def test_text_option_rejections(tmp_path):
     path = tmp_path / 'input.tsv'
     path.write_text('a\n1\n')
-    with pytest.raises(NotImplementedError):
-        hl.import_table(path, impute=True)
-    with pytest.raises(ValueError):
-        hl.import_table(path, delimiter='\\s+')
-    with pytest.raises(NotImplementedError):
-        hl.import_lines(path, force_bgz=True)
+    assert hl.import_table(path, impute=True).row.dtype == hl.tstruct(a=hl.tint32)
+    assert hl.import_table(path, delimiter=r'\s+').collect() == [hl.Struct(a='1')]
+    with pytest.raises(Exception):
+        hl.import_lines(path, force_bgz=True).collect()
     with pytest.raises(NotImplementedError):
         hl.utils.range_table(1).export(tmp_path / 'out', parallel='header_per_shard')
-    for action in ('export', 'export_csv', 'export_json'):
+    for action in ('export_csv', 'export_json'):
         with pytest.raises(NotImplementedError, match='compressed'):
             getattr(hl.utils.range_table(1), action)(tmp_path / 'out.gz')
         with pytest.raises(NotImplementedError, match='local'):
@@ -278,3 +276,24 @@ def test_public_split_line_missingness_validation_and_lazy_errors():
         with pytest.raises(ValueError): hl.split_line('a',delimiter)
     with pytest.raises(TypeError,match='string'): hl.split_line(1,',')
     with pytest.raises(ValueError): hl.split_line('a',',',quote=',')
+
+
+def test_import_table_imputation_boundaries_and_missing(tmp_path):
+    path = tmp_path / 'types.tsv'
+    path.write_text('b\ti32\ti64\tf\tstr\tempty\n'
+                    'TRUE\t-2147483648\t9223372036854775807\t2.5\tcat\tNA\n'
+                    'false\t+00002147483647\t-9223372036854775808\t1e3\t3\tNA\n')
+    table = hl.import_table(path, impute=True)
+    assert table.row.dtype == hl.tstruct(b=hl.tbool, i32=hl.tint32, i64=hl.tint64,
+                                        f=hl.tfloat64, str=hl.tstr, empty=hl.tstr)
+    assert table.collect()[1].i32 == 2147483647
+    assert hl.import_table(path, impute=True, types={'i64': hl.tstr}).i64.dtype == hl.tstr
+
+
+def test_import_table_regex_quotes_and_empty_fields(tmp_path):
+    path = tmp_path / 'regex.txt'
+    path.write_text('a  b  c\n1  "two  words"  NA\n2  end  \n')
+    rows = hl.import_table(path, delimiter=r' +', quote='"').collect()
+    assert rows == [hl.Struct(a='1', b='two  words', c=None),
+                    hl.Struct(a='2', b='end', c='')]
+    assert hl.eval(hl.split_line('1  "two  words"  NA', r' +', quote='"', regex=True)) == ['1', 'two  words', None]

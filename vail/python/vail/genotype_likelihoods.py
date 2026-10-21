@@ -4,6 +4,28 @@ from .expressions import as_expr, bind, coalesce, if_else, is_missing, literal, 
 from .types import tarray, tint32, tfloat64
 
 
+def gq_from_pl(pl):
+    """Difference between the two least defined PLs, seeded with 99 twice."""
+    from . import sorted as sort_values
+    pl = as_expr(pl)
+    if pl.dtype != tarray(tint32):
+        raise TypeError('gq_from_pl requires an array of int32 likelihoods')
+    ordered = sort_values(pl.filter(lambda value: ~is_missing(value)).extend([99, 99]))
+    return if_else(is_missing(pl), missing(tint32), ordered[1] - ordered[0])
+
+
+def gp_dosage(gp):
+    """Expected alternate-allele count for three genotype probabilities."""
+    from . import case, float64
+    gp = as_expr(gp)
+    if not isinstance(gp.dtype, tarray) or gp.dtype.element_type not in (tint32, tfloat64):
+        raise TypeError('gp_dosage requires an array of numeric probabilities')
+    gp = gp.map(float64) if gp.dtype.element_type == tint32 else gp
+    return bind(lambda values: if_else(is_missing(values), missing(tfloat64),
+        case().when(values.length() == 3, values[1] + 2.0 * values[2])
+        .or_error('gp_dosage requires exactly three probabilities')), gp)
+
+
 def pl_to_gp(pl, _cache_size=2048):
     """Normalize Phred-scaled int32 likelihoods using a uniform prior."""
     from . import case, float64

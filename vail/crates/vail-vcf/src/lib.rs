@@ -643,7 +643,7 @@ fn append_call(builder: &mut StructBuilder, token: &str) -> Result<()> {
                 return Err("negative genotype allele".into());
             }
             let allele = u16::try_from(allele)
-                .map_err(|_| "Call allele index must be between 0 and 65535")?;
+                .map_err(|_| "invalid character or out-of-range allele: Call allele index must be between 0 and 65535")?;
             alleles[ploidy] = i32::from(allele);
         }
         ploidy += 1;

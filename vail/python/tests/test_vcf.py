@@ -80,7 +80,7 @@ def test_header_mismatch_and_float_option(tmp_path):
     first=tmp_path/'a.vcf';second=tmp_path/'b.vcf'
     first.write_text(HEADER)
     second.write_text(HEADER.replace('\ta\tb\n','\tx\tb\n'))
-    with pytest.raises(ValueError,match='invalid sample IDs'):
+    with pytest.raises(hl.utils.FatalError,match='invalid sample IDs'):
         hl.import_vcf([first,second])
     with pytest.raises(TypeError,match='entry_float_type'):
         hl.import_vcf(first,entry_float_type=hl.tint32)
@@ -318,7 +318,7 @@ def test_export_rejects_invalid_schema_and_sample_ids(tmp_path):
     with pytest.raises(ValueError, match='locus and alleles'):
         hl.export_vcf(bad, path)
     valid = mt.annotate_rows(locus=hl.locus('1', 1), alleles=['A', 'C'])
-    with pytest.raises(TypeError, match='format field'):
+    with pytest.raises(hl.utils.FatalError, match='FORMAT field'):
         hl.export_vcf(valid.annotate_entries(flag=True), path)
     assert not path.exists()
 

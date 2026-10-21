@@ -32,6 +32,8 @@ enum Quoting {
 /// mutable record scratch is local to each evaluated batch.
 struct PreparedCsv {
     reader: csv::ReaderBuilder,
+    separator: Option<regex::Regex>,
+    quote: Option<u8>,
     quoting: Quoting,
     missing: HashSet<String>,
     fields: FieldCount,
@@ -43,9 +45,20 @@ impl PreparedCsv {
         missing: Vec<String>,
         expected_fields: usize,
     ) -> Result<Self> {
-        let delimiter = csv_byte(delimiter, "delimiter")?;
+        let separator = if delimiter.len() > 1 {
+            Some(regex::Regex::new(delimiter).map_err(|error| {
+                DataFusionError::Execution(format!("invalid delimiter regex: {error}"))
+            })?)
+        } else {
+            None
+        };
+        let delimiter = if separator.is_some() {
+            b'\t'
+        } else {
+            csv_byte(delimiter, "delimiter")?
+        };
         let quote = quote.map(|q| csv_byte(q, "quote")).transpose()?;
-        if quote == Some(delimiter) {
+        if separator.is_none() && quote == Some(delimiter) {
             return Err(DataFusionError::Execution(
                 "CSV quote and delimiter must differ".into(),
             ));
@@ -76,6 +89,8 @@ impl PreparedCsv {
             NonZeroUsize::new(expected_fields).map_or(FieldCount::Unrestricted, FieldCount::Exact);
         Ok(Self {
             reader,
+            separator,
+            quote,
             quoting,
             missing: missing.into_iter().collect(),
             fields,
@@ -100,6 +115,60 @@ impl PreparedCsv {
                 }
             }
         }
+        if let Some(separator) = &self.separator {
+            let mut fields = Vec::new();
+            let mut start = 0;
+            loop {
+                let (field, end) = if self
+                    .quote
+                    .is_some_and(|quote| line.as_bytes().get(start) == Some(&quote))
+                {
+                    let quote = self.quote.unwrap() as char;
+                    let close = line[start + 1..]
+                        .find(quote)
+                        .map(|i| start + 1 + i)
+                        .ok_or_else(|| DataFusionError::Execution("invalid CSV quoting".into()))?;
+                    (&line[start + 1..close], close + 1)
+                } else {
+                    let end = separator
+                        .find_at(line, start)
+                        .map_or(line.len(), |m| m.start());
+                    let field = &line[start..end];
+                    if self
+                        .quote
+                        .is_some_and(|quote| field.contains(quote as char))
+                    {
+                        return Err(DataFusionError::Execution("invalid CSV quoting".into()));
+                    }
+                    (field, end)
+                };
+                fields.push(field);
+                if end == line.len() {
+                    break;
+                }
+                let matched = separator
+                    .find_at(line, end)
+                    .filter(|m| m.start() == end && m.end() > end)
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("invalid CSV separator after field".into())
+                    })?;
+                start = matched.end();
+            }
+            if let FieldCount::Exact(expected) = self.fields {
+                if fields.len() != expected.get() {
+                    return Err(DataFusionError::Execution(format!(
+                        "Expected {expected} fields, found {} fields",
+                        fields.len()
+                    )));
+                }
+            }
+            for field in fields {
+                out.values()
+                    .append_option((!self.missing.contains(field)).then_some(field));
+            }
+            out.append(true);
+            return Ok(());
+        }
         if let Quoting::Enabled(grammar) = &self.quoting {
             if !grammar.is_match(line) {
                 return Err(DataFusionError::Execution("invalid CSV quoting".into()));
@@ -113,7 +182,7 @@ impl PreparedCsv {
         if let FieldCount::Exact(expected) = self.fields {
             if record.len() != expected.get() {
                 return Err(DataFusionError::Execution(format!(
-                    "CSV field count mismatch: expected {expected}, got {}",
+                    "Expected {expected} fields, found {} field(s)",
                     record.len()
                 )));
             }
@@ -203,4 +272,41 @@ pub(crate) fn parse_csv_line_udf(
             prepared.evaluate(input)
         }),
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn regex_separator_preserves_quoted_and_trailing_fields() {
+        let prepared = PreparedCsv::new(r"\s+", Some("\""), vec!["NA".into()], 4).unwrap();
+        let input = ColumnarValue::Scalar(ScalarValue::Utf8(Some("1  \"two words\" NA ".into())));
+        let result = prepared.evaluate(&input).unwrap();
+        let ColumnarValue::Scalar(ScalarValue::List(array)) = result else {
+            panic!("expected list scalar")
+        };
+        let fields = array
+            .values()
+            .as_any()
+            .downcast_ref::<StringArray>()
+            .unwrap();
+        assert_eq!(fields.len(), 4);
+        assert_eq!(fields.value(0), "1");
+        assert_eq!(fields.value(1), "two words");
+        assert!(fields.is_null(2));
+        assert_eq!(fields.value(3), "");
+    }
+
+    #[test]
+    fn regex_separator_rejects_invalid_quotes_and_field_counts() {
+        let prepared = PreparedCsv::new(r" +", Some("\""), vec![], 2).unwrap();
+        for line in ["1 \"unterminated", "1 \"a\"tail", "1 2 3"] {
+            assert!(
+                prepared
+                    .evaluate(&ColumnarValue::Scalar(ScalarValue::Utf8(Some(line.into()))))
+                    .is_err()
+            );
+        }
+    }
 }

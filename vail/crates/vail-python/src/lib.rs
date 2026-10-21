@@ -26,6 +26,19 @@ fn value_error(error: impl std::fmt::Display) -> PyErr {
     PyValueError::new_err(error.to_string())
 }
 
+/// Query execution failures share the public FatalError category. It remains a
+/// RuntimeError subclass so callers using the native exception contract work too.
+fn execution_error(error: impl std::fmt::Display) -> PyErr {
+    let message = error.to_string();
+    Python::attach(|py| {
+        py.import("vail.utils")
+            .and_then(|module| module.getattr("FatalError"))
+            .and_then(|class| class.call1((&message,)))
+            .map(PyErr::from_value)
+            .unwrap_or_else(|_| PyRuntimeError::new_err(message))
+    })
+}
+
 fn table_error(error: TableError) -> PyErr {
     use pyo3::exceptions::PyNotImplementedError;
     use vail_storage::StorageError;
@@ -44,7 +57,7 @@ fn table_error(error: TableError) -> PyErr {
                             PyNotImplementedError::new_err(expr.to_string())
                         }
                         vail_execution::expressions::ExprError::DataFusion(_) => {
-                            PyRuntimeError::new_err(expr.to_string())
+                            execution_error(expr)
                         }
                         _ => value_error(expr),
                     };
@@ -69,7 +82,7 @@ fn table_error(error: TableError) -> PyErr {
         }
         match current.source() {
             Some(source) => current = source,
-            None => return PyRuntimeError::new_err(error.to_string()),
+            None => return execution_error(error),
         }
     }
 }
@@ -147,6 +160,11 @@ impl NativeSession {
             samples,
             metadata,
         ))
+    }
+    /// Read only the object-container header, never Python data rows.
+    fn avro_schema(&self, py: Python<'_>, path: String) -> PyResult<String> {
+        py.detach(|| vail_table::avro_source::read_schema(&path))
+            .map_err(value_error)
     }
     #[new]
     fn new() -> PyResult<Self> {

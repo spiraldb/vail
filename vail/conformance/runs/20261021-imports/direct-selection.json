@@ -1,0 +1,2530 @@
+{
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail",
+  "scope": "Direct import_* calls in upstream test bodies; helper and fixture dependencies require additional coverage",
+  "included": [
+    {
+      "module": "experimental/test_experimental.py",
+      "name": "Tests.test_import_keyby_count_ldsc_lowered_shuffle",
+      "line": 117,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "module": "experimental/test_experimental.py",
+      "name": "Tests.test_sparse",
+      "line": 288,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "module": "experimental/test_experimental.py",
+      "name": "Tests.test_mt_full_outer_join_self",
+      "line": 404,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "name": "Tests.test_aggregator_info_score",
+      "line": 1421,
+      "methods": [
+        "import_gen",
+        "import_table"
+      ],
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "name": "Tests.test_aggregator_info_score_works_with_bgen_import",
+      "line": 1449,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "name": "Tests.test_export_genetic_data",
+      "line": 2985,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "name": "Tests.test_array_and_if_requiredness",
+      "line": 3917,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "name": "test_export_entry",
+      "line": 4301,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "module": "expr/test_functions.py",
+      "name": "test_pgenchisq",
+      "line": 38,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "c7ed38dd4aacb20472e5364a3ebe9ca4428eee9278faea3ca6eacfe6654ace21"
+    },
+    {
+      "module": "expr/test_types.py",
+      "name": "Tests.test_tlocus_schema_from_rg_matches_scala",
+      "line": 171,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "07c1f5d12ee8e7f1ad23cf55f796d4050df8bb1d2dcf75eaf87eb506959a5133"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_no_settings",
+      "line": 18,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_with_project",
+      "line": 60,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_no_project",
+      "line": 69,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_with_project_more_than_one_partition",
+      "line": 86,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_with_project_more_than_one_partition_no_project",
+      "line": 119,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "module": "genetics/test_reference_genome.py",
+      "name": "test_reference_genome_sequence",
+      "line": 46,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "34d620e1a7c784ae63e540216e37b3a6e384514021a33dc285696b3b26594ec4"
+    },
+    {
+      "module": "genetics/test_reference_genome.py",
+      "name": "test_reference_genome_liftover",
+      "line": 77,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "34d620e1a7c784ae63e540216e37b3a6e384514021a33dc285696b3b26594ec4"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_aggregate_cols_by_init_op",
+      "line": 400,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_unions_1",
+      "line": 632,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_unions_2",
+      "line": 647,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_union_cols_example",
+      "line": 654,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_vcf_regression",
+      "line": 914,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_from_rows_table",
+      "line": 948,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_fix3307_read_mt_wrong",
+      "line": 1084,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_hardy_weinberg_test",
+      "line": 1348,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_hw_func_and_agg_agree",
+      "line": 1392,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_partitioned_write_coerce",
+      "line": 1804,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "module": "methods/relatedness/test_pc_relate.py",
+      "name": "test_pc_relate_against_R_truth",
+      "line": 7,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "cfb84ab1d70fc00203afdf473eca5110a0cb8c929a1743af73b76945c547c671"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_trio_matrix_1",
+      "line": 11,
+      "methods": [
+        "import_fam",
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_trio_matrix_2",
+      "line": 63,
+      "methods": [
+        "import_fam",
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_trio_matrix_null_keys",
+      "line": 116,
+      "methods": [
+        "import_fam",
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_trio_matrix_incomplete_trios",
+      "line": 129,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_1",
+      "line": 135,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_2",
+      "line": 154,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_3",
+      "line": 162,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_4",
+      "line": 170,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_5",
+      "line": 178,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_6",
+      "line": 186,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_7",
+      "line": 199,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_8",
+      "line": 217,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_mendel_errors_9",
+      "line": 245,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_tdt",
+      "line": 255,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_family_methods.py",
+      "name": "Tests.test_de_novo",
+      "line": 290,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_info_char",
+      "line": 53,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_info_float64",
+      "line": 56,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_glob",
+      "line": 65,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_undeclared_info",
+      "line": 70,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_can_import_bad_number_flag",
+      "line": 81,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_malformed",
+      "line": 84,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_not_identical_headers",
+      "line": 89,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_filter",
+      "line": 97,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_find_replace",
+      "line": 104,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_haploid",
+      "line": 109,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_call_fields",
+      "line": 126,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf",
+      "line": 167,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_empty",
+      "line": 178,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_no_reference_specified",
+      "line": 182,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_bad_reference_allele",
+      "line": 187,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_flags_are_defined",
+      "line": 191,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_can_import_float_array_format",
+      "line": 203,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_can_import_float32_array_format",
+      "line": 208,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_can_import_negative_numbers",
+      "line": 213,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements",
+      "line": 224,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements",
+      "line": 232,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_missing_format_field_elements",
+      "line": 266,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_skip_invalid_loci",
+      "line": 319,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_set_field_missing",
+      "line": 326,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_dosages_as_doubles_or_floats",
+      "line": 330,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_invalid_float_type",
+      "line": 341,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf",
+      "line": 351,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_quotes_and_backslash_in_description",
+      "line": 368,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_empty_format",
+      "line": 387,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_no_gt",
+      "line": 394,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_no_alt_alleles",
+      "line": 401,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_sites_only_from_table",
+      "line": 410,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_invalid_info_types",
+      "line": 417,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_invalid_format_types",
+      "line": 432,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_haploid",
+      "line": 443,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_tabix_export",
+      "line": 508,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_tabix_export_file_exists",
+      "line": 514,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_gvcfs_long_line",
+      "line": 526,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_combiner_works",
+      "line": 553,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_flag_at_eol",
+      "line": 639,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_missing_float_entries",
+      "line": 644,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_same_bgzip",
+      "line": 652,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_parallel_separate_header_export",
+      "line": 658,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_custom_rg_import",
+      "line": 685,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_empty_read_write",
+      "line": 708,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_empty_import_vcf_group_by_collect",
+      "line": 723,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_format_header",
+      "line": 729,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_format_genotypes",
+      "line": 749,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_contigs_header",
+      "line": 768,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_metadata_argument",
+      "line": 780,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_invalid_info_fields",
+      "line": 806,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_different_info_errors",
+      "line": 819,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_fam",
+      "line": 826,
+      "methods": [
+        "import_fam"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_import_plink_same",
+      "line": 836,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_empty_fam",
+      "line": 860,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_empty_bim",
+      "line": 867,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_a1_major",
+      "line": 874,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_same_locus",
+      "line": 902,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_partitions",
+      "line": 915,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_contig_recoding_w_reference",
+      "line": 926,
+      "methods": [
+        "import_plink",
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_no_reference_specified",
+      "line": 948,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_and_ignore_rows",
+      "line": 953,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_import_plink_skip_invalid_loci",
+      "line": 958,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink",
+      "line": 979,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink_default_arguments",
+      "line": 1048,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink_non_default_arguments",
+      "line": 1074,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink_quantitative_phenotype",
+      "line": 1092,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink_non_default_bim_arguments",
+      "line": 1110,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink_call_expression",
+      "line": 1119,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_contig_recoding_defaults",
+      "line": 1138,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "PLINKTests.test_export_plink_struct_locus",
+      "line": 1162,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_dosage_entry",
+      "line": 1223,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_GT_GP_entries",
+      "line": 1229,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_no_entries",
+      "line": 1235,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_no_reference",
+      "line": 1239,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci",
+      "line": 1248,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_errors_with_invalid_loci",
+      "line": 1256,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_gavin_example",
+      "line": 1264,
+      "methods": [
+        "import_bgen",
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_random",
+      "line": 1274,
+      "methods": [
+        "import_bgen",
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_parallel_import",
+      "line": 1281,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_dosage_and_gp_dosage_function_agree",
+      "line": 1285,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_row_fields",
+      "line": 1296,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_variant_filtering_from_literals",
+      "line": 1317,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_Struct_object",
+      "line": 1362,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_struct_expression",
+      "line": 1376,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_variant_filtering_from_exprs",
+      "line": 1390,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_exprs",
+      "line": 1404,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_variant_filtering_from_table",
+      "line": 1418,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_table",
+      "line": 1432,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_empty_variant_filter",
+      "line": 1448,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_n_partitions",
+      "line": 1463,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_drop",
+      "line": 1467,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_index_multiple_bgen_files_does_not_fail_and_is_importable",
+      "line": 1478,
+      "methods": [
+        "import_bgen",
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_multiple_files_variant_filtering",
+      "line": 1497,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_multiple_files_disjoint",
+      "line": 1520,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_multiple_references_throws_error",
+      "line": 1532,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_old_index_file_throws_error",
+      "line": 1548,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_specify_different_index_file",
+      "line": 1569,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_export_bgen",
+      "line": 1587,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_export_bgen_zstd",
+      "line": 1599,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_export_bgen_parallel",
+      "line": 1610,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_export_bgen_from_vcf",
+      "line": 1628,
+      "methods": [
+        "import_bgen",
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_randomness",
+      "line": 1651,
+      "methods": [
+        "import_bgen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen",
+      "line": 1681,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen_no_chromosome_in_file",
+      "line": 1692,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen_no_reference_specified",
+      "line": 1703,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen_skip_invalid_loci",
+      "line": 1709,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_export_gen",
+      "line": 1723,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_export_gen_exprs",
+      "line": 1745,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals",
+      "line": 1784,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals_no_reference_specified",
+      "line": 1810,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals_recoding",
+      "line": 1816,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals_badly_defined_intervals",
+      "line": 1826,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed",
+      "line": 1834,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_recoding",
+      "line": 1870,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_no_reference_specified",
+      "line": 1880,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_kwargs_to_import_table",
+      "line": 1886,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_badly_defined_intervals",
+      "line": 1891,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_pass_through_args",
+      "line": 1899,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_1",
+      "line": 1908,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_2",
+      "line": 1920,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_3",
+      "line": 1925,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_4",
+      "line": 1932,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_no_cols",
+      "line": 1940,
+      "methods": [
+        "import_matrix_table",
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_comment",
+      "line": 1957,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_headers_not_identical",
+      "line": 1965,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_headers_same_len_diff_elem",
+      "line": 1973,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_too_few_entries",
+      "line": 1981,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_wrong_row_field_type",
+      "line": 1990,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_wrong_entry_type",
+      "line": 1996,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_key_by_after_empty_key_import",
+      "line": 2002,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file",
+      "line": 2011,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_empty_import_matrix_table",
+      "line": 2031,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_row_id_multiple_partitions",
+      "line": 2041,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_long_parsing",
+      "line": 2054,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "test_import_matrix_table_round_trip",
+      "line": 2068,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines",
+      "line": 2110,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines_multiple_files",
+      "line": 2118,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines_glob",
+      "line": 2127,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines_bgz",
+      "line": 2131,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_force_bgz",
+      "line": 2137,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_empty",
+      "line": 2148,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_empty_with_header",
+      "line": 2159,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_glob",
+      "line": 2162,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_type_imputation",
+      "line": 2166,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_export_identity",
+      "line": 2191,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_source_file",
+      "line": 2213,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_same",
+      "line": 2238,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_error_with_context",
+      "line": 2243,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "AvroTests.test_simple_avro",
+      "line": 2315,
+      "methods": [
+        "import_avro"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "test_import_export_same",
+      "line": 2343,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_king.py",
+      "name": "test_king_small",
+      "line": 28,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "a46c477b7216ad05226b7e2bf5c02f00bb1e50c04d1e7dc8d069452a767bc9c8"
+    },
+    {
+      "module": "methods/test_king.py",
+      "name": "test_king_large",
+      "line": 38,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "a46c477b7216ad05226b7e2bf5c02f00bb1e50c04d1e7dc8d069452a767bc9c8"
+    },
+    {
+      "module": "methods/test_king.py",
+      "name": "test_king_filtered_entries_no_error",
+      "line": 49,
+      "methods": [
+        "import_plink"
+      ],
+      "source_sha256": "a46c477b7216ad05226b7e2bf5c02f00bb1e50c04d1e7dc8d069452a767bc9c8"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_annotate_intervals_bed1",
+      "line": 29,
+      "methods": [
+        "import_bed",
+        "import_locus_intervals"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_annotate_intervals_bed2",
+      "line": 43,
+      "methods": [
+        "import_bed",
+        "import_locus_intervals"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_annotate_intervals_bed3",
+      "line": 67,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_matrix_filter_intervals",
+      "line": 149,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_table_filter_intervals",
+      "line": 175,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_filter_intervals_compound_key",
+      "line": 201,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_misc.py",
+      "name": "Tests.test_verify_biallelic",
+      "line": 227,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "module": "methods/test_pca.py",
+      "name": "test_pca_against_numpy",
+      "line": 29,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "c3e7776efd2461e8e08235338161e1f297db0b63530b56d5eed45cbcfad95264"
+    },
+    {
+      "module": "methods/test_pca.py",
+      "name": "test_blanczos_against_numpy",
+      "line": 68,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "c3e7776efd2461e8e08235338161e1f297db0b63530b56d5eed45cbcfad95264"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_filter_alleles",
+      "line": 257,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_filter_alleles_hts_1",
+      "line": 265,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_filter_alleles_hts_2",
+      "line": 275,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_filter_alleles_hts_3",
+      "line": 285,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_filter_alleles_hts_4",
+      "line": 295,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_sample_and_variant_qc_call_rate",
+      "line": 305,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_summarize_variants_ti_tv",
+      "line": 315,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_charr",
+      "line": 326,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch37_consequence_true",
+      "line": 338,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_consequence_true",
+      "line": 361,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch37_consequence_false",
+      "line": 386,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_consequence_false",
+      "line": 400,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch37_against_dataproc",
+      "line": 414,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_against_dataproc",
+      "line": 468,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_with_large_positions",
+      "line": 522,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "module": "methods/test_skat.py",
+      "name": "test_logistic_skat_on_big_matrix",
+      "line": 180,
+      "methods": [
+        "import_matrix_table",
+        "import_table"
+      ],
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "module": "methods/test_skat.py",
+      "name": "test_linear_skat_on_big_matrix",
+      "line": 327,
+      "methods": [
+        "import_matrix_table",
+        "import_table"
+      ],
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "module": "methods/test_skat.py",
+      "name": "test_linear_skat_produces_same_results_as_old_scala_method",
+      "line": 443,
+      "methods": [
+        "import_locus_intervals",
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_impute_sex_same_as_plink",
+      "line": 22,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linreg_basic",
+      "line": 64,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linreg_pass_through",
+      "line": 95,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linreg_chained",
+      "line": 135,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_without_intercept",
+      "line": 223,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_with_cov",
+      "line": 245,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_pl",
+      "line": 286,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_with_dosage",
+      "line": 318,
+      "methods": [
+        "import_gen",
+        "import_table"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_equivalence_between_ds_and_gt",
+      "line": 350,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_with_import_fam_boolean",
+      "line": 366,
+      "methods": [
+        "import_fam",
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_with_import_fam_quant",
+      "line": 396,
+      "methods": [
+        "import_fam",
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_linear_regression_multi_pheno_same",
+      "line": 426,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_weighted_linear_regression",
+      "line": 553,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_weighted_linear_regression__missing_weights_are_excluded",
+      "line": 610,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_wald_test",
+      "line": 719,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_wald_test_apply_multi_pheno",
+      "line": 758,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_wald_test_multi_pheno_bgen_dosage",
+      "line": 804,
+      "methods": [
+        "import_bgen",
+        "import_table"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_wald_test_pl",
+      "line": 851,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_wald_dosage",
+      "line": 890,
+      "methods": [
+        "import_gen",
+        "import_table"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_lrt",
+      "line": 940,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logistic_regression_score",
+      "line": 987,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_logreg_pass_through",
+      "line": 1024,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_poission_regression_wald_test",
+      "line": 1055,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_poisson_regression_lrt",
+      "line": 1115,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_poisson_regression_score_test",
+      "line": 1159,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_poisson_pass_through",
+      "line": 1194,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_split_multi_hts",
+      "line": 1355,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_split_multi_table",
+      "line": 1365,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_ld_prune",
+      "line": 1410,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_ld_prune_identical_variants",
+      "line": 1460,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_ld_prune_call_expression",
+      "line": 1480,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_ld_prune_missing_entries",
+      "line": 1486,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_ld_prune_with_duplicate_row_keys",
+      "line": 1493,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_de_novo",
+      "line": 1637,
+      "methods": [
+        "import_table",
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_de_novo_error",
+      "line": 1665,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "name": "Tests.test_de_novo_ignore_computed_af_runs",
+      "line": 1672,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_table_matrix_join_combinations",
+      "line": 487,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_multi_way_zip_join_key_downcast",
+      "line": 665,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_multi_way_zip_join_key_downcast2",
+      "line": 672,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245",
+      "line": 685,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_export_parallel_manifest",
+      "line": 1057,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_min_partitions",
+      "line": 1092,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_read_back_same_as_exported",
+      "line": 1095,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_import_filter_replace",
+      "line": 1704,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_import_multiple_missing",
+      "line": 1717,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_physical_key_truncation",
+      "line": 1728,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_import_many_fields",
+      "line": 1768,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_can_process_wide_tables",
+      "line": 1862,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_group_within_partitions_after_import_vcf",
+      "line": 1987,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_grouped_flatmap_streams",
+      "line": 2108,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "vds/test_vds.py",
+      "name": "test_basic_impex",
+      "line": 939,
+      "methods": [
+        "import_vcf"
+      ],
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    }
+  ],
+  "excluded": []
+}

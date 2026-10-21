@@ -1,0 +1,92 @@
+[
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_import_gen",
+    "line": 1681,
+    "body": "def test_import_gen(self):\n    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37').rows()\n    self.assertTrue(gen.all(gen.locus.contig == '1'))\n    self.assertEqual(gen.count(), 199)\n    self.assertEqual(gen.locus.dtype, hl.tlocus('GRCh37'))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_import_gen_no_chromosome_in_file",
+    "line": 1692,
+    "body": "def test_import_gen_no_chromosome_in_file(self):\n    gen = hl.import_gen(resource('no_chromosome.gen'), resource('skip_invalid_loci.sample'), chromosome='1', reference_genome=None, skip_invalid_loci=True)\n    self.assertEqual(gen.aggregate_rows(hl.agg.all(gen.locus.contig == '1')), True)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_import_gen_no_reference_specified",
+    "line": 1703,
+    "body": "def test_import_gen_no_reference_specified(self):\n    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), reference_genome=None)\n    self.assertEqual(gen.locus.dtype, hl.tstruct(contig=hl.tstr, position=hl.tint32))\n    self.assertEqual(gen.count_rows(), 199)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_import_gen_skip_invalid_loci",
+    "line": 1709,
+    "body": "def test_import_gen_skip_invalid_loci(self):\n    mt = hl.import_gen(resource('skip_invalid_loci.gen'), resource('skip_invalid_loci.sample'), reference_genome='GRCh37', skip_invalid_loci=True)\n    self.assertEqual(mt._force_count_rows(), 3)\n    with self.assertRaisesRegex(FatalError, 'Invalid locus'):\n        mt = hl.import_gen(resource('skip_invalid_loci.gen'), resource('skip_invalid_loci.sample'))\n        mt._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_export_gen",
+    "line": 1723,
+    "body": "@test_timeout(local=4 * 60, batch=8 * 60)\ndef test_export_gen(self):\n    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37', min_partitions=3)\n    import random\n    indices = list(range(gen.count_cols()))\n    random.shuffle(indices)\n    gen = gen.choose_cols(indices)\n    file = new_temp_file()\n    hl.export_gen(gen, file)\n    gen2 = hl.import_gen(file + '.gen', sample_file=file + '.sample', reference_genome='GRCh37', min_partitions=3)\n    self.assertTrue(gen._same(gen2, tolerance=0.0003, absolute=True))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_export_gen_exprs",
+    "line": 1745,
+    "body": "def test_export_gen_exprs(self):\n    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37', min_partitions=3).add_col_index().add_row_index()\n    out1 = new_temp_file()\n    hl.export_gen(gen, out1, id1=hl.str(gen.col_idx), id2=hl.str(gen.col_idx), missing=0.5, varid=hl.str(gen.row_idx), rsid=hl.str(gen.row_idx), gp=[0.0, 1.0, 0.0])\n    in1 = hl.import_gen(out1 + '.gen', sample_file=out1 + '.sample', min_partitions=3).add_col_index().add_row_index()\n    self.assertTrue(in1.aggregate_entries(hl.agg.fraction(hl.is_missing(in1.GP) | (in1.GP == [0.0, 1.0, 0.0]) == 1.0)))\n    self.assertTrue(in1.aggregate_rows(hl.agg.fraction((in1.varid == hl.str(in1.row_idx)) & (in1.rsid == hl.str(in1.row_idx)))) == 1.0)\n    self.assertTrue(in1.aggregate_cols(hl.agg.fraction(in1.s == hl.str(in1.col_idx))))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_table_force_bgz",
+    "line": 2137,
+    "body": "def test_import_table_force_bgz(self):\n    fs = hl.current_backend().fs\n    f = new_temp_file(extension='bgz')\n    t = hl.utils.range_table(10, 5)\n    t.export(f)\n    f2 = new_temp_file(extension='gz')\n    fs.copy(f, f2)\n    t2 = hl.import_table(f2, force_bgz=True, impute=True).key_by('idx')\n    self.assertTrue(t._same(t2))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_table_empty",
+    "line": 2148,
+    "body": "def test_import_table_empty(self):\n    try:\n        rows = hl.import_table(resource('empty.tsv')).collect()\n    except ValueError as err:\n        assert f\"Invalid file: no lines remaining after filters\\n Files provided: {resource('empty.tsv')}\" in err.args[0]\n    else:\n        assert False, rows"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_table_empty_with_header",
+    "line": 2159,
+    "body": "def test_import_table_empty_with_header(self):\n    assert [] == hl.import_table(resource('empty-with-header.tsv')).collect()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_glob",
+    "line": 2162,
+    "body": "def test_glob(self):\n    tables = hl.import_table(resource('variantAnnotations.split.*.tsv'))\n    assert tables.count() == 346"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_type_imputation",
+    "line": 2166,
+    "body": "def test_type_imputation(self):\n    ht = hl.import_table(resource('type_imputation.tsv'), delimiter=' ', missing='.', impute=True)\n    assert ht.row.dtype == hl.dtype('struct{1:int32,2:float64,3:str,4:str,5:str,6:bool,7:str}')\n    ht = hl.import_table(resource('variantAnnotations.tsv'), impute=True)\n    assert ht.row.dtype == hl.dtype('struct{Chromosome: int32, Position: int32, Ref: str, Alt: str, Rand1: float64, Rand2: float64, Gene: str}')\n    ht = hl.import_table(resource('variantAnnotations.tsv'), impute=True, types={'Chromosome': 'str'})\n    assert ht.row.dtype == hl.dtype('struct{Chromosome: str, Position: int32, Ref: str, Alt: str, Rand1: float64, Rand2: float64, Gene: str}')\n    ht = hl.import_table(resource('variantAnnotations.alternateformat.tsv'), impute=True)\n    assert ht.row.dtype == hl.dtype('struct{`Chromosome:Position:Ref:Alt`: str, Rand1: float64, Rand2: float64, Gene: str}')\n    ht = hl.import_table(resource('sampleAnnotations.tsv'), impute=True)\n    assert ht.row.dtype == hl.dtype('struct{Sample: str, Status: str, qPhen: int32}')\n    ht = hl.import_table(resource('integer_imputation.txt'), impute=True, delimiter='\\\\s+')\n    assert ht.row.dtype == hl.dtype('struct{A:int64, B:int32}')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_export_identity",
+    "line": 2191,
+    "body": "def test_import_export_identity(self):\n    fs = hl.current_backend().fs\n    ht = hl.import_table(resource('sampleAnnotations.tsv'))\n    f = new_temp_file()\n    ht.export(f)\n    with fs.open(resource('sampleAnnotations.tsv'), 'r') as i1:\n        expected = list((line.strip() for line in i1))\n    with fs.open(f, 'r') as i2:\n        observed = list((line.strip() for line in i2))\n    assert expected == observed"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_source_file",
+    "line": 2213,
+    "body": "def test_source_file(self):\n    ht = hl.import_table(resource('variantAnnotations.split.*.tsv'), source_file_field='source')\n    ht = ht.add_index()\n    assert ht.aggregate(hl.agg.all(hl.if_else(ht.idx < 239, ht.source.endswith('variantAnnotations.split.1.tsv'), ht.source.endswith('variantAnnotations.split.2.tsv'))))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_same",
+    "line": 2238,
+    "body": "def test_import_same(self):\n    ht = hl.import_table(resource('sampleAnnotations.tsv'))\n    ht2 = hl.import_table(resource('sampleAnnotations.tsv'))\n    assert ht._same(ht2)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_error_with_context",
+    "line": 2243,
+    "body": "def test_error_with_context(self):\n    with pytest.raises(HailUserError, match='cannot parse int32 from input string'):\n        ht = hl.import_table(resource('tsv_errors.tsv'), types={'col1': 'int32'})\n        ht._force_count()\n    with pytest.raises(HailUserError, match='Expected 2 fields, found 1 field'):\n        ht = hl.import_table(resource('tsv_errors.tsv'), impute=True)"
+  }
+]

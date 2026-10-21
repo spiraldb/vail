@@ -1,0 +1,248 @@
+{
+  "included": [
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_info_char"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_info_float64"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_glob"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_undeclared_info"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_can_import_bad_number_flag"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_malformed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_not_identical_headers"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_filter"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_find_replace"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_haploid"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_call_fields"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_empty"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_no_reference_specified"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_bad_reference_allele"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_flags_are_defined"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_can_import_float_array_format"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_can_import_float32_array_format"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_can_import_negative_numbers"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_missing_format_field_elements"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_unsorted_alleles"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_unsorted_alleles_no_codegen"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_skip_invalid_loci"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_set_field_missing"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_dosages_as_doubles_or_floats"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_vcf_invalid_float_type"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_quotes_and_backslash_in_description"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_empty_format"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_no_gt"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_no_alt_alleles"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_sites_only_from_table"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_invalid_info_types"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_invalid_format_types"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_export_vcf_haploid"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_tabix_export"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_tabix_export_file_exists"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_gvcfs"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_import_gvcfs_long_line"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_parser_golden_master__ex_GRCh37"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_parser_golden_master__sample_GRCh37"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_combiner_works"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_haploid_combiner_ok"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_combiner_parse_allele_specific_annotations"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_flag_at_eol"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_missing_float_entries"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_same_bgzip"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_parallel_separate_header_export"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_custom_rg_import"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_sorted"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_empty_read_write"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_empty_import_vcf_group_by_collect"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_format_header"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_format_genotypes"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_contigs_header"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_metadata_argument"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_invalid_info_fields"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "VCFTests.test_vcf_different_info_errors"
+    }
+  ]
+}

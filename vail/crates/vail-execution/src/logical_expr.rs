@@ -466,7 +466,9 @@ fn lower(
                 .otherwise(null_result)?
         }
         Expr::Struct { fields } => {
-            if fields.is_empty() {
+            // SQL named_struct rejects empty identifiers, which Hail permits.
+            // The native struct kernel preserves those Arrow field names.
+            if fields.is_empty() || fields.iter().any(|(name, _)| name.is_empty()) {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }
             let mut args = Vec::with_capacity(fields.len() * 2);

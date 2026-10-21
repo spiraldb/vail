@@ -16,11 +16,11 @@ from .. import range_table
 from ..types import Interval, Struct
 
 
-class HailUserError(Exception):
+class HailUserError(RuntimeError):
     """A user-facing query error (compatibility type for Hail-shaped callers)."""
 
 
-class FatalError(Exception):
+class FatalError(HailUserError):
     """A fatal query error (compatibility type for Hail-shaped callers)."""
 
     def __init__(self, msg, error_id=-1):

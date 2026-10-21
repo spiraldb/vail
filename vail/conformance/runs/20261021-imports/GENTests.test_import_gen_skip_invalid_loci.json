@@ -1,0 +1,38 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "GENTests.test_import_gen_skip_invalid_loci",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "RuntimeError",
+      "error": "Execution error: DataFusion expression failed: Execution error: Invalid locus in GEN input",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1720, in test_import_gen_skip_invalid_loci\n    mt._force_count_rows()\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py\", line 1576, in _force_count_rows\n    return self._mir.core._force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py\", line 1298, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: DataFusion expression failed: Execution error: Invalid locus in GEN input\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "execution_mode": "isolated_original_body",
+  "structural_ir_assertions": [],
+  "randomness_fixture": {
+    "replacement": "vail.reset_global_randomness",
+    "scope": "each parameter variant",
+    "timing": "before requested fixtures and test body"
+  },
+  "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "fixture_adapters": [
+    "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

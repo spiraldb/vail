@@ -1,0 +1,104 @@
+[
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_1",
+    "line": 1908,
+    "body": "def test_import_matrix_table_1(self):\n    mt = hl.import_matrix_table(doctest_resource('matrix1.tsv'), row_fields={'Barcode': hl.tstr, 'Tissue': hl.tstr, 'Days': hl.tfloat32})\n    self.assertEqual(mt['Barcode']._indices, mt._row_indices)\n    self.assertEqual(mt['Tissue']._indices, mt._row_indices)\n    self.assertEqual(mt['Days']._indices, mt._row_indices)\n    self.assertEqual(mt['col_id']._indices, mt._col_indices)\n    self.assertEqual(mt['row_id']._indices, mt._row_indices)\n    mt.count()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_2",
+    "line": 1920,
+    "body": "def test_import_matrix_table_2(self):\n    hl.import_matrix_table(doctest_resource('matrix2.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, row_key=[])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_3",
+    "line": 1925,
+    "body": "def test_import_matrix_table_3(self):\n    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True)._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_4",
+    "line": 1932,
+    "body": "def test_import_matrix_table_4(self):\n    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True, row_key=[])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_no_cols",
+    "line": 1940,
+    "body": "def test_import_matrix_table_no_cols(self):\n    fields = {'Chromosome': hl.tstr, 'Position': hl.tint32, 'Ref': hl.tstr, 'Alt': hl.tstr, 'Rand1': hl.tfloat64, 'Rand2': hl.tfloat64}\n    file = resource('sample2_va_nomulti.tsv')\n    mt = hl.import_matrix_table(file, row_fields=fields, row_key=['Chromosome', 'Position'])\n    t = hl.import_table(file, types=fields, key=['Chromosome', 'Position'])\n    self.assertEqual(mt.count_cols(), 0)\n    self.assertEqual(mt.count_rows(), 231)\n    self.assertTrue(t._same(mt.rows()))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_comment",
+    "line": 1957,
+    "body": "def test_import_matrix_comment(self):\n    no_comment = doctest_resource('matrix1.tsv')\n    comment = doctest_resource('matrix1_comment.tsv')\n    row_fields = {'Barcode': hl.tstr, 'Tissue': hl.tstr, 'Days': hl.tfloat32}\n    mt1 = hl.import_matrix_table(no_comment, row_fields=row_fields, row_key=[])\n    mt2 = hl.import_matrix_table(comment, row_fields=row_fields, row_key=[], comment=['#', '%'])\n    assert mt1._same(mt2)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_headers_not_identical",
+    "line": 1965,
+    "body": "def test_headers_not_identical(self):\n    with pytest.raises(ValueError, match='invalid header: lengths of headers differ'):\n        hl.import_matrix_table([resource('sampleheader1.txt'), resource('sampleheader2.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_headers_same_len_diff_elem",
+    "line": 1973,
+    "body": "def test_headers_same_len_diff_elem(self):\n    with pytest.raises(ValueError, match='invalid header: expected elements to be identical for all input paths'):\n        hl.import_matrix_table([resource('sampleheader2.txt'), resource('sampleheaderdiffelem.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_too_few_entries",
+    "line": 1981,
+    "body": "def test_too_few_entries(self):\n\n    def boom():\n        hl.import_matrix_table(resource('samplesmissing.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()\n    with pytest.raises(HailUserError, match='unexpected end of line while reading entries'):\n        boom()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_wrong_row_field_type",
+    "line": 1990,
+    "body": "def test_wrong_row_field_type(self):\n    with pytest.raises(HailUserError, match=\"error parsing value into int32 at row field 'f0'\"):\n        hl.import_matrix_table(resource('sampleheader1.txt'), row_fields={'f0': hl.tint32}, row_key=['f0'])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_wrong_entry_type",
+    "line": 1996,
+    "body": "def test_wrong_entry_type(self):\n    with pytest.raises(HailUserError, match=\"error parsing value into int32 at column id 'col000003'\"):\n        hl.import_matrix_table(resource('samplenonintentries.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_key_by_after_empty_key_import",
+    "line": 2002,
+    "body": "def test_key_by_after_empty_key_import(self):\n    fields = {'Chromosome': hl.tstr, 'Position': hl.tint32, 'Ref': hl.tstr, 'Alt': hl.tstr}\n    mt = hl.import_matrix_table(resource('sample2_va_nomulti.tsv'), row_fields=fields, row_key=[], entry_type=hl.tfloat)\n    mt = mt.key_rows_by('Chromosome', 'Position')\n    mt._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file",
+    "line": 2011,
+    "body": "@test_timeout(local=4 * 60)\ndef test_devilish_nine_separated_eight_missing_file(self):\n    fields = {'chr': hl.tstr, '': hl.tint32, 'ref': hl.tstr, 'alt': hl.tstr}\n    mt = hl.import_matrix_table(resource('import_matrix_table_devlish.ninesv'), row_fields=fields, row_key=['chr', ''], sep='9', missing='8')\n    actual = mt.x.collect()\n    expected = [1, 2, 3, 4, 11, 12, 13, 14, 21, 22, 23, 24, 31, None, None, 34]\n    assert actual == expected\n    assert mt.count_rows() == len(mt.rows().collect())\n    actual = mt.chr.collect()\n    assert actual == ['chr1', 'chr1', 'chr1', None]\n    actual = mt[''].collect()\n    assert actual == [1, 10, 101, None]\n    actual = mt.ref.collect()\n    assert actual == ['A', 'AGT', None, 'CTA']\n    actual = mt.alt.collect()\n    assert actual == ['T', 'TGG', 'A', None]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_empty_import_matrix_table",
+    "line": 2031,
+    "body": "def test_empty_import_matrix_table(self):\n    path = new_temp_file(extension='tsv.bgz')\n    mt = hl.utils.range_matrix_table(0, 0)\n    mt = mt.annotate_entries(x=1)\n    mt.x.export(path)\n    assert hl.import_matrix_table(path)._force_count_rows() == 0\n    mt.x.export(path, header=False)\n    assert hl.import_matrix_table(path, no_header=True)._force_count_rows() == 0"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_row_id_multiple_partitions",
+    "line": 2041,
+    "body": "def test_import_row_id_multiple_partitions(self):\n    path = new_temp_file(extension='txt')\n    hl.utils.range_matrix_table(50, 50).annotate_entries(x=1).key_rows_by().key_cols_by().x.export(path, header=False, delimiter=' ')\n    mt = hl.import_matrix_table(path, no_header=True, entry_type=hl.tint32, delimiter=' ', min_partitions=10)\n    assert mt.row_id.collect() == list(range(50))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_long_parsing",
+    "line": 2054,
+    "body": "def test_long_parsing(self):\n    path = resource('text_matrix_longs.tsv')\n    mt = hl.import_matrix_table(path, row_fields={'foo': hl.tint64})\n    collected = mt.entries().collect()\n    assert collected == [hl.utils.Struct(foo=7, row_id=0, col_id='s1', x=1234), hl.utils.Struct(foo=7, row_id=0, col_id='s2', x=2345)]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "test_import_matrix_table_round_trip",
+    "line": 2068,
+    "body": "@pytest.mark.parametrize('entry_fun', [hl.str, hl.int32, hl.float64])\n@pytest.mark.parametrize('header', [True, False])\n@pytest.mark.parametrize('delimiter', [',', ' '])\n@pytest.mark.parametrize('missing', ['.', '9'])\ndef test_import_matrix_table_round_trip(missing, delimiter, header, entry_fun):\n    mt = hl.utils.range_matrix_table(10, 10, n_partitions=2)\n    mt = mt.annotate_entries(x=entry_fun(mt.row_idx * mt.col_idx))\n    mt = mt.annotate_rows(row_str=hl.str(mt.row_idx))\n    mt = mt.annotate_rows(row_float=hl.float(mt.row_idx))\n    entry_type = mt.x.dtype\n    path = new_temp_file(extension='tsv')\n    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)\n    row_fields = {f: mt.row[f].dtype for f in mt.row}\n    row_key = 'row_idx'\n    if not header:\n        pseudonym = {'row_idx': 'f0', 'row_str': 'f1', 'row_float': 'f2'}\n        row_fields = {pseudonym[k]: v for k, v in row_fields.items()}\n        row_key = pseudonym[row_key]\n        mt = mt.rename(pseudonym)\n    else:\n        mt = mt.key_cols_by(col_idx=hl.str(mt.col_idx))\n    actual = hl.import_matrix_table(path, row_fields=row_fields, row_key=row_key, entry_type=entry_type, missing=missing, no_header=not header, sep=delimiter)\n    actual = actual.rename({'col_id': 'col_idx'})\n    row_key = mt.row_key\n    mt = mt.key_rows_by()\n    mt = mt.annotate_entries(x=hl.if_else(hl.str(mt.x) == missing, hl.missing(entry_type), mt.x))\n    mt = mt.annotate_rows(**{f: hl.if_else(hl.str(mt[f]) == missing, hl.missing(mt[f].dtype), mt[f]) for f in mt.row})\n    mt = mt.key_rows_by(*row_key)\n    assert mt._same(actual)"
+  }
+]

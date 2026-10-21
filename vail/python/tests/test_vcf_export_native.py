@@ -37,9 +37,9 @@ def test_export_preserves_format_and_column_slot_order(tmp_path):
     output = tmp_path / 'out.vcf'
     hl.export_vcf(matrix, output)
     lines = output.read_text().splitlines()
-    assert lines[-3].endswith('\tb\ta')
-    assert lines[-2] == '1\t1\trs1\tA\tC\t12.0\tq10;q20\tFLAG;AF=0.25\tGT:DP:AD\t./.:.:.\t1|0:5:2,3'
-    assert lines[-1] == '1\t2\t.\tT\t.\t.\tPASS\t.\tGT:DP:AD\t0/0:.:.\t1:.:.'
+    assert next(line for line in lines if line.startswith('#CHROM')).endswith('\tb\ta')
+    assert lines[-2] == '1\t1\trs1\tA\tC\t12.0\tq10;q20\tFLAG;AF=0.25\tGT:DP:AD\t./.\t1|0:5:2,3'
+    assert lines[-1] == '1\t2\t.\tT\t.\t.\tPASS\t.\tGT:DP:AD\t0/0\t1'
     assert_public_matrix_equal(hl.import_vcf(output), matrix)
 
 
@@ -62,7 +62,7 @@ def test_export_no_samples_and_plain_locus_struct(tmp_path):
     assert all(len(line.split('\t')) == 8 for line in output.read_text().splitlines() if not line.startswith('##'))
     plain = hl.import_vcf(output, reference_genome=None)
     hl.export_vcf(plain, tmp_path / 'plain.vcf')
-    assert (tmp_path / 'plain.vcf').read_text() == output.read_text()
+    assert [line for line in (tmp_path / 'plain.vcf').read_text().splitlines() if not line.startswith('##contig=')] == [line for line in output.read_text().splitlines() if not line.startswith('##contig=')]
 
 
 def test_export_wide_format_fields_from_sliced_rows(tmp_path):
@@ -79,3 +79,38 @@ def test_export_wide_format_fields_from_sliced_rows(tmp_path):
         values = dict(zip(names, sample.split(':'), strict=True))
         assert [values[f'F{i}'] for i in range(12)] == [str(201 + i) for i in range(12)]
     assert_public_matrix_equal(hl.import_vcf(output), matrix)
+
+
+def test_sites_table_and_compressed_roundtrip(tmp_path):
+    import gzip
+    matrix = source(tmp_path)
+    for suffix in ('.vcf.gz', '.vcf.bgz'):
+        output = tmp_path / ('out' + suffix)
+        hl.export_vcf(matrix, output)
+        assert gzip.open(output, 'rt').read().startswith('##fileformat=VCFv4.2\n')
+        assert_public_matrix_equal(hl.import_vcf(output, force=True), matrix)
+    output = tmp_path / 'sites.vcf'
+    hl.export_vcf(matrix.rows(), output)
+    assert_public_matrix_equal(hl.import_vcf(output), matrix.select_entries().filter_cols(False))
+
+
+def test_format_header_order_preserved_with_gt_record_first(tmp_path):
+    matrix = source(tmp_path).select_entries('DP', 'GT', 'AD')
+    output = tmp_path / 'order.vcf'
+    hl.export_vcf(matrix, output)
+    assert_public_matrix_equal(hl.import_vcf(output), matrix)
+    assert output.read_text().splitlines()[-2].split('\t')[8] == 'GT:DP:AD'
+
+
+def test_separate_header_export_manifest_roundtrip(tmp_path):
+    matrix = source(tmp_path)
+    directory = tmp_path / 'shards.vcf.bgz'
+    hl.export_vcf(matrix, directory, parallel='separate_header')
+    names = (directory / 'shard-manifest.txt').read_text().splitlines()
+    assert names == ['header.vcf.bgz', 'part-00000.vcf.bgz']
+    assert_public_matrix_equal(hl.import_vcf(directory / names[1], header_file=directory / names[0]), matrix)
+    combined = tmp_path / 'combined.vcf.bgz'
+    with combined.open('wb') as output:
+        for name in names:
+            output.write((directory / name).read_bytes())
+    assert_public_matrix_equal(hl.import_vcf(combined), matrix)

@@ -1,0 +1,45 @@
+FF....F.....FF.                                                          [100%]
+=================================== FAILURES ===================================
+___________________________ GENTests.test_export_gen ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py:1050: in test_export_gen
+    hl.export_gen(gen, file)
+    ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_gen'. Did you mean: 'import_gen'?
+________________________ GENTests.test_export_gen_exprs ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py:1057: in test_export_gen_exprs
+    hl.export_gen(gen, out1, id1=hl.str(gen.col_idx), id2=hl.str(gen.col_idx), missing=0.5, varid=hl.str(gen.row_idx), rsid=hl.str(gen.row_idx), gp=[0.0, 1.0, 0.0])
+    ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_gen'. Did you mean: 'import_gen'?
+___________________ ImportTableTests.test_error_with_context ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py:1396: in test_error_with_context
+    ht._force_count()
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py:1298: in _force_count
+    return self._native.force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   vail.utils.FatalError: Execution error: Expected 2 fields, found 1 field(s)
+_________________ ImportTableTests.test_import_table_force_bgz _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py:1321: in test_import_table_force_bgz
+    t.export(f)
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py:525: in export
+    return export(self, output, types_file, header, parallel, delimiter)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:331: in export
+    table._native.export_text(_local_path(output), 'text', {
+                              ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:26: in _local_path
+    raise NotImplementedError('compressed text IO is not implemented')
+E   NotImplementedError: compressed text IO is not implemented
+______________________ ImportTableTests.test_source_file _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py:1373: in test_source_file
+    ht = ht.add_index()
+         ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py:426: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: add_index
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py::GENTests::test_export_gen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py::GENTests::test_export_gen_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py::ImportTableTests::test_error_with_context
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_table_force_bgz
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-e2xxdiof/upstream_hail/methods/test_impex.py::ImportTableTests::test_source_file
+5 failed, 10 passed, 186 deselected in 4.29s

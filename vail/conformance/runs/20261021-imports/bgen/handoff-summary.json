@@ -1,0 +1,971 @@
+{
+  "counts": {
+    "passed": 24,
+    "failed_or_blocked": 4,
+    "timeout": 1
+  },
+  "results": [
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_dosage_entry",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_GT_GP_entries",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_no_entries",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_no_reference",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_errors_with_invalid_loci",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_gavin_example",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_random",
+      "variants": [
+        {
+          "status": "failed",
+          "parameters": {},
+          "category": "behavior_failure",
+          "phase": "body",
+          "error_type": "AssertionError",
+          "error": "False is not true",
+          "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1279, in test_import_bgen_random\n    self.assertTrue(bgenmt._same(genmt, tolerance=1.0 / 255, absolute=True))\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 727, in assertTrue\n    raise self.failureException(msg)\nAssertionError: False is not true\n"
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "failed_or_blocked"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_parallel_import",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_dosage_and_gp_dosage_function_agree",
+      "variants": [
+        {
+          "status": "failed",
+          "parameters": {},
+          "category": "unsupported",
+          "phase": "body",
+          "error_type": "AttributeError",
+          "error": "module 'vail' has no attribute 'gp_dosage'",
+          "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1291, in test_import_bgen_dosage_and_gp_dosage_function_agree\n    et = et.transmute(gp_dosage=hl.gp_dosage(et.GP))\n                                ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'gp_dosage'. Did you mean: 'pl_dosage'?\n"
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "failed_or_blocked"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_row_fields",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "name": "BGENTests.test_import_bgen_variant_filtering_from_literals",
+      "status": "timeout",
+      "limit_seconds": 60
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_Struct_object",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_struct_expression",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_variant_filtering_from_exprs",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_exprs",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_variant_filtering_from_table",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_locus_filtering_from_table",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_import_bgen_empty_variant_filter",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_n_partitions",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_drop",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_index_multiple_bgen_files_does_not_fail_and_is_importable",
+      "variants": [
+        {
+          "status": "failed",
+          "parameters": {},
+          "category": "behavior_failure",
+          "phase": "body",
+          "error_type": "AssertionError",
+          "error": "",
+          "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1495, in test_index_multiple_bgen_files_does_not_fail_and_is_importable\n    assert actual._same(expected, tolerance=1.0 / 255, absolute=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "failed_or_blocked"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_multiple_files_variant_filtering",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_multiple_files_disjoint",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_multiple_references_throws_error",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_old_index_file_throws_error",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_specify_different_index_file",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_index_bgen_errors_when_index_file_has_wrong_extension",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "passed"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "BGENTests.test_randomness",
+      "variants": [
+        {
+          "status": "failed",
+          "parameters": {},
+          "category": "behavior_failure",
+          "phase": "body",
+          "error_type": "AttributeError",
+          "error": "ArrayStructExpression instance has no field, method, or property 'contains'",
+          "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1665, in test_randomness\n    bgen1 = bgen1.filter_rows(hl.literal(desired_variants).contains(bgen1.row_key))\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py\", line 853, in __getattr__\n    raise AttributeError(f\"ArrayStructExpression instance has no field, method, or property {name!r}\")\nAttributeError: ArrayStructExpression instance has no field, method, or property 'contains'\n"
+        }
+      ],
+      "setup_errors": [
+        "module 'vail' has no attribute 'ir'"
+      ],
+      "execution_mode": "isolated_original_body",
+      "structural_ir_assertions": [],
+      "randomness_fixture": {
+        "replacement": "vail.reset_global_randomness",
+        "scope": "each parameter variant",
+        "timing": "before requested fixtures and test body"
+      },
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+      "backend": "vail",
+      "backend_capabilities": [
+        "local_filesystem",
+        "matrix_table",
+        "randomness",
+        "table"
+      ],
+      "fixture_adapters": [
+        "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+      ],
+      "class_configuration_adapter": "defer missing API references until called",
+      "status": "failed_or_blocked"
+    }
+  ],
+  "pending_native_fixes": [
+    "missing probability bit must null whole entry",
+    "unconditional biallelic validation"
+  ],
+  "remaining_dependencies": [
+    "gp_dosage",
+    "array.contains",
+    "export_bgen for export-roundtrip bodies"
+  ],
+  "specifications": [
+    "https://biobank.ctsu.ox.ac.uk/ukb/ukb/docs/bgen12formats.pdf",
+    "https://hail.is/docs/0.2/methods/impex.html#hail.methods.import_bgen"
+  ]
+}

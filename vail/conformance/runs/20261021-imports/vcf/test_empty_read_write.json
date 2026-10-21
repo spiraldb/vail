@@ -1,0 +1,38 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_empty_read_write",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'LocalFilesystem' object has no attribute 'stat'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 717, in test_empty_read_write\n    assert hl.current_backend().fs.stat(out1).size > 0\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'LocalFilesystem' object has no attribute 'stat'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "execution_mode": "isolated_original_body",
+  "structural_ir_assertions": [],
+  "randomness_fixture": {
+    "replacement": "vail.reset_global_randomness",
+    "scope": "each parameter variant",
+    "timing": "before requested fixtures and test body"
+  },
+  "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "fixture_adapters": [
+    "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,372 @@
+{
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail",
+  "scope": "Direct import_* calls in upstream test bodies; helper and fixture dependencies require additional coverage",
+  "included": [
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals",
+      "line": 1784,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals_no_reference_specified",
+      "line": 1810,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals_recoding",
+      "line": 1816,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_locus_intervals_badly_defined_intervals",
+      "line": 1826,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed",
+      "line": 1834,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_recoding",
+      "line": 1870,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_no_reference_specified",
+      "line": 1880,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_kwargs_to_import_table",
+      "line": 1886,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_import_bed_badly_defined_intervals",
+      "line": 1891,
+      "methods": [
+        "import_bed"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "LocusIntervalTests.test_pass_through_args",
+      "line": 1899,
+      "methods": [
+        "import_locus_intervals"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_1",
+      "line": 1908,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_2",
+      "line": 1920,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_3",
+      "line": 1925,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_4",
+      "line": 1932,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_table_no_cols",
+      "line": 1940,
+      "methods": [
+        "import_matrix_table",
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_matrix_comment",
+      "line": 1957,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_headers_not_identical",
+      "line": 1965,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_headers_same_len_diff_elem",
+      "line": 1973,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_too_few_entries",
+      "line": 1981,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_wrong_row_field_type",
+      "line": 1990,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_wrong_entry_type",
+      "line": 1996,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_key_by_after_empty_key_import",
+      "line": 2002,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file",
+      "line": 2011,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_empty_import_matrix_table",
+      "line": 2031,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_import_row_id_multiple_partitions",
+      "line": 2041,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportMatrixTableTests.test_long_parsing",
+      "line": 2054,
+      "methods": [
+        "import_matrix_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines",
+      "line": 2110,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines_multiple_files",
+      "line": 2118,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines_glob",
+      "line": 2127,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportLinesTest.test_import_lines_bgz",
+      "line": 2131,
+      "methods": [
+        "import_lines"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_force_bgz",
+      "line": 2137,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_empty",
+      "line": 2148,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_empty_with_header",
+      "line": 2159,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_glob",
+      "line": 2162,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_type_imputation",
+      "line": 2166,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_export_identity",
+      "line": 2191,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_source_file",
+      "line": 2213,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_same",
+      "line": 2238,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_error_with_context",
+      "line": 2243,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "AvroTests.test_simple_avro",
+      "line": 2315,
+      "methods": [
+        "import_avro"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "test_import_matrix_table_round_trip"
+    }
+  ],
+  "excluded": []
+}

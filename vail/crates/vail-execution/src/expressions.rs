@@ -2205,9 +2205,10 @@ impl Expr {
                         "parse_csv_line requires string input".into(),
                     ));
                 }
-                if delimiter.len() != 1
-                    || !delimiter.as_bytes()[0].is_ascii()
-                    || matches!(delimiter.as_bytes()[0], b'\r' | b'\n' | 0)
+                if delimiter.is_empty()
+                    || (delimiter.len() == 1
+                        && (!delimiter.as_bytes()[0].is_ascii()
+                            || matches!(delimiter.as_bytes()[0], b'\r' | b'\n' | 0)))
                 {
                     return Err(ExprError::Invalid(
                         "CSV delimiter must be one ASCII byte".into(),

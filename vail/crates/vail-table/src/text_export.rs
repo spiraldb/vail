@@ -45,7 +45,7 @@ pub async fn export(table: TableRef, path: &str, format: &str, options_json: &Va
             "text export supports local paths only".into(),
         ));
     }
-    if [".gz", ".bgz", ".bz2", ".xz", ".zst"]
+    if [".bz2", ".xz", ".zst"]
         .iter()
         .any(|suffix| path.ends_with(suffix))
     {
@@ -149,10 +149,17 @@ pub async fn export(table: TableRef, path: &str, format: &str, options_json: &Va
         } else {
             "csv"
         };
-        let sink = CsvSink::new(
-            sink_config(path, extension, schema)?,
-            CsvWriterOptions::try_from(&opts)?,
-        );
+        let writer_options = CsvWriterOptions::try_from(&opts)?;
+        if path.ends_with(".gz") || path.ends_with(".bgz") {
+            return crate::compressed_text::export_csv(
+                plan,
+                path,
+                writer_options.writer_options,
+                context,
+            )
+            .await;
+        }
+        let sink = CsvSink::new(sink_config(path, extension, schema)?, writer_options);
         Arc::new(sink)
     };
     let exec = DataSinkExec::new(plan, sink, None);

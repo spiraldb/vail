@@ -1,0 +1,108 @@
+................FF..F.FFF.FFFF...                                        [100%]
+=================================== FAILURES ===================================
+______________________ VCFTests.test_invalid_info_fields _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:504: in test_invalid_info_fields
+    with mock.patch('hail.methods.impex.warning', autospec=True) as warning:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/mock.py:1451: in __enter__
+    self.target = self.getter()
+                  ^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pkgutil.py:513: in resolve_name
+    mod = importlib.import_module(modname)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1324: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'hail'
+___________________________ VCFTests.test_malformed ____________________________
+vail.utils.FatalError: Execution error: /Users/danielking/projects/vail/hail/hail/hail/test/resources/malformed.vcf:54: Call allele index must be between 0 and 65535
+
+During handling of the above exception, another exception occurred:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:55: in test_malformed
+    with self.assertRaisesRegex(FatalError, 'invalid character'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: "invalid character" does not match "Execution error: /Users/danielking/projects/vail/hail/hail/hail/test/resources/malformed.vcf:54: Call allele index must be between 0 and 65535"
+_____________________ VCFTests.test_not_identical_headers ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:64: in test_not_identical_headers
+    hl.import_vcf([resource('sample.vcf'), t])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:78: in import_vcf
+    native, samples, _ = _native_session().read_vcf(
+E   ValueError: invalid sample IDs: VCF headers differ
+_____________________________ VCFTests.test_sorted _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:412: in test_sorted
+    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(0))
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'unphased_diploid_gt_index_call'
+__________________________ VCFTests.test_tabix_export __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:283: in test_tabix_export
+    hl.export_vcf(mt, tmp, tabix=True)
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf_export.py:26: in export_vcf
+    raise NotImplementedError('tabix VCF indexing is not implemented')
+E   NotImplementedError: tabix VCF indexing is not implemented
+____________________ VCFTests.test_tabix_export_file_exists ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:289: in test_tabix_export_file_exists
+    hl.export_vcf(mt, tmp, tabix=True, parallel='header_per_shard')
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf_export.py:26: in export_vcf
+    raise NotImplementedError('tabix VCF indexing is not implemented')
+E   NotImplementedError: tabix VCF indexing is not implemented
+___________________ VCFTests.test_vcf_different_info_errors ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:514: in test_vcf_different_info_errors
+    mt = hl.import_vcf([resource('different_info_test1.vcf'), resource('different_info_test2.vcf')])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:78: in import_vcf
+    native, samples, _ = _native_session().read_vcf(
+E   ValueError: Check that all files have same INFO fields
+______________ VCFTests.test_vcf_parallel_separate_header_export _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:398: in test_vcf_parallel_separate_header_export
+    concat_files(nf, shard_paths)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:384: in concat_files
+    with fs.open(outpath, 'wb') as outfile:
+         ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/backend.py:29: in open
+    raise NotImplementedError('use a native export action to write BGZF')
+E   NotImplementedError: use a native export action to write BGZF
+______________ VCFTests.test_vcf_parser_golden_master__ex_GRCh37 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:309: in test_vcf_parser_golden_master__ex_GRCh37
+    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2615: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'
+_____________ VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37 ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:316: in test_vcf_parser_golden_master__gvcf_GRCh37
+    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2615: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_invalid_info_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_malformed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_not_identical_headers
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_sorted
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export_file_exists
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_different_info_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parallel_separate_header_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ska3rdkf/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37
+10 failed, 23 passed, 168 deselected in 18.19s

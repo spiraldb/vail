@@ -91,11 +91,6 @@ impl OrderRequirement {
         }
         let mut names = HashSet::new();
         for key in &keys {
-            if key.column.is_empty() {
-                return Err(OrderError::InvalidRequirement(
-                    "sort column name cannot be empty".into(),
-                ));
-            }
             if !names.insert(key.column.as_str()) {
                 return Err(OrderError::InvalidRequirement(format!(
                     "duplicate sort column {:?}",

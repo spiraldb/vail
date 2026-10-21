@@ -1,0 +1,1723 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 39%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 78%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                  [100%]
+=================================== FAILURES ===================================
+__________________________ VCFTests.test_call_fields ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:87: in test_call_fields
+    mt = hl.import_vcf(resource('generic.vcf'), call_fields=['GT', 'GTA', 'GTZ'])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________ VCFTests.test_can_import_bad_number_flag ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:52: in test_can_import_bad_number_flag
+    hl.import_vcf(resource('bad_flag_number.vcf')).rows()._force_count()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_________________________ VCFTests.test_combiner_works _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:325: in test_combiner_works
+    from vail.vds.combiner.combine import combine_variant_datasets, transform_gvcf
+E   ModuleNotFoundError: No module named 'vail.vds'
+_________________________ VCFTests.test_contigs_header _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:469: in test_contigs_header
+    mt = hl.import_vcf(resource('sample.vcf')).filter_cols(False)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________________ VCFTests.test_custom_rg_import ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:406: in test_custom_rg_import
+    mt = hl.import_vcf(resource('custom_rg.vcf'), reference_genome=rg)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_______________ VCFTests.test_empty_import_vcf_group_by_collect ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:438: in test_empty_import_vcf_group_by_collect
+    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4).filter_rows(False)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________________ VCFTests.test_empty_read_write ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:427: in test_empty_read_write
+    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4).filter_rows(False)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________ VCFTests.test_export_sites_only_from_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:232: in test_export_sites_only_from_table
+    mt = hl.import_vcf(resource('sample.vcf.bgz')).select_entries().filter_cols(False)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________________ VCFTests.test_export_vcf ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:183: in test_export_vcf
+    dataset = hl.import_vcf(resource('sample.vcf.bgz'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________________ VCFTests.test_export_vcf_empty_format _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:212: in test_export_vcf_empty_format
+    mt = hl.import_vcf(resource('sample.vcf.bgz')).select_entries()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_______________________ VCFTests.test_export_vcf_haploid _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:254: in test_export_vcf_haploid
+    ds = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________ VCFTests.test_export_vcf_invalid_format_types _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:246: in test_export_vcf_invalid_format_types
+    ds = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_________________ VCFTests.test_export_vcf_invalid_info_types __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:238: in test_export_vcf_invalid_info_types
+    ds = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________ VCFTests.test_export_vcf_no_alt_alleles ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:224: in test_export_vcf_no_alt_alleles
+    mt = hl.import_vcf(resource('gvcfs/HG0096_excerpt.g.vcf'), reference_genome='GRCh38')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________________ VCFTests.test_export_vcf_no_gt ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:218: in test_export_vcf_no_gt
+    mt = hl.import_vcf(resource('sample.vcf.bgz')).drop('GT')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_________ VCFTests.test_export_vcf_quotes_and_backslash_in_description _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:197: in test_export_vcf_quotes_and_backslash_in_description
+    ds = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_____________________________ VCFTests.test_filter _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:67: in test_filter
+    mt = hl.import_vcf(resource('malformed.vcf'), filter='rs685723')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ VCFTests.test_find_replace __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:73: in test_find_replace
+    mt = hl.import_vcf(resource('sample.vcf'), find_replace=('\\trs\\d+\\t', '\t.\t'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ VCFTests.test_flag_at_eol ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:366: in test_flag_at_eol
+    mt = hl.import_vcf(vcf_path)
+         ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________________ VCFTests.test_format_genotypes ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:456: in test_format_genotypes
+    mt = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_________________________ VCFTests.test_format_header __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:444: in test_format_header
+    mt = hl.import_vcf(resource('sample2.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+______________________________ VCFTests.test_glob ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:38: in test_glob
+    full = hl.import_vcf(resource('sample.vcf'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________________________ VCFTests.test_haploid _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:79: in test_haploid
+    mt = hl.import_vcf(resource('haploid.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_____________________ VCFTests.test_import_gvcfs_long_line _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:302: in test_import_gvcfs_long_line
+    vcf = hl.import_vcf(path, force_bgz=True)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________________ VCFTests.test_import_vcf ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:94: in test_import_vcf
+    vcf = hl.split_multi_hts(hl.import_vcf(resource('sample2.vcf'), reference_genome=hl.get_reference('GRCh38'), contig_recoding={'22': 'chr22'}))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_ VCFTests.test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:136: in test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements
+    mt = hl.import_vcf(resource('missingInfoArray.vcf'), reference_genome='GRCh37', array_elements_required=False)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________ VCFTests.test_import_vcf_bad_reference_allele _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:109: in test_import_vcf_bad_reference_allele
+    vcf = hl.import_vcf(resource('invalid_base.vcf'))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________ VCFTests.test_import_vcf_can_import_float32_array_format ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:122: in test_import_vcf_can_import_float32_array_format
+    mt = hl.import_vcf(resource('floating_point_array.vcf'), entry_float_type=hl.tfloat32)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________ VCFTests.test_import_vcf_can_import_float_array_format ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:117: in test_import_vcf_can_import_float_array_format
+    mt = hl.import_vcf(resource('floating_point_array.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_____________ VCFTests.test_import_vcf_can_import_negative_numbers _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:127: in test_import_vcf_can_import_negative_numbers
+    mt = hl.import_vcf(resource('negative_format_fields.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________ VCFTests.test_import_vcf_dosages_as_doubles_or_floats _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:164: in test_import_vcf_dosages_as_doubles_or_floats
+    mt = hl.import_vcf(resource('small-ds.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________________ VCFTests.test_import_vcf_empty ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:100: in test_import_vcf_empty
+    mt = hl.import_vcf([resource('0var.vcf.bgz'), resource('3var.vcf.bgz')])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________ VCFTests.test_import_vcf_flags_are_defined __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:113: in test_import_vcf_flags_are_defined
+    t = hl.import_vcf(resource('sample.vcf')).rows()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_ VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:131: in test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements
+    mt = hl.import_vcf(resource('missingInfoArray.vcf'), reference_genome='GRCh37')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________ VCFTests.test_import_vcf_missing_format_field_elements ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:142: in test_import_vcf_missing_format_field_elements
+    mt = hl.import_vcf(resource('missingFormatArray.vcf'), reference_genome='GRCh37', array_elements_required=False)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_______________ VCFTests.test_import_vcf_no_reference_specified ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:104: in test_import_vcf_no_reference_specified
+    vcf = hl.import_vcf(resource('sample2.vcf'), reference_genome=None)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________ VCFTests.test_import_vcf_set_field_missing __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:160: in test_import_vcf_set_field_missing
+    mt = hl.import_vcf(resource('test_set_field_missing.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________ VCFTests.test_import_vcf_skip_invalid_loci __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:154: in test_import_vcf_skip_invalid_loci
+    mt = hl.import_vcf(resource('skip_invalid_loci.vcf'), reference_genome='GRCh37', skip_invalid_loci=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________________ VCFTests.test_info_char ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:26: in test_info_char
+    self.assertEqual(hl.import_vcf(resource('infochar.vcf')).count_rows(), 1)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ VCFTests.test_info_float64 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:30: in test_info_float64
+    mt = hl.import_vcf(resource('infochar.vcf'), entry_float_type=hl.tfloat32)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+______________________ VCFTests.test_invalid_info_fields _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:503: in test_invalid_info_fields
+    mt = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________________ VCFTests.test_malformed ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:56: in test_malformed
+    mt = hl.import_vcf(resource('malformed.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_______________________ VCFTests.test_metadata_argument ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:481: in test_metadata_argument
+    mt = hl.import_vcf(resource('multipleChromosomes.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_____________________ VCFTests.test_missing_float_entries ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:370: in test_missing_float_entries
+    vcf = hl.import_vcf(resource('noglgp.vcf'), array_elements_required=False, reference_genome='GRCh38')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_____________________ VCFTests.test_not_identical_headers ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:61: in test_not_identical_headers
+    mt = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________________ VCFTests.test_same_bgzip ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:375: in test_same_bgzip
+    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ VCFTests.test_tabix_export __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:281: in test_tabix_export
+    mt = hl.import_vcf(resource('sample.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________________ VCFTests.test_tabix_export_file_exists ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:287: in test_tabix_export_file_exists
+    mt = hl.import_vcf(resource('sample.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+________________________ VCFTests.test_undeclared_info _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:43: in test_undeclared_info
+    mt = hl.import_vcf(resource('undeclaredinfo.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________ VCFTests.test_vcf_different_info_errors ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:514: in test_vcf_different_info_errors
+    mt = hl.import_vcf([resource('different_info_test1.vcf'), resource('different_info_test2.vcf')])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:78: in import_vcf
+    native, samples, _ = _native_session().read_vcf(
+E   ValueError: Check that all files have same INFO fields
+______________ VCFTests.test_vcf_parallel_separate_header_export _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:388: in test_vcf_parallel_separate_header_export
+    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+___________________ PLINKTests.test_contig_recoding_defaults ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:709: in test_contig_recoding_defaults
+    hl.import_plink(resource('sex_mt_contigs.bed'), resource('sex_mt_contigs.bim'), resource('sex_mt_contigs.fam'), reference_genome='GRCh37')
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+___________________ PLINKTests.test_export_import_plink_same ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:530: in test_export_import_plink_same
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_________________________ PLINKTests.test_export_plink _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:618: in test_export_plink
+    mt = hl.split_multi_hts(hl.import_vcf(vcf_file, min_partitions=10))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_________________ PLINKTests.test_export_plink_call_expression _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:690: in test_export_plink_call_expression
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+________________ PLINKTests.test_export_plink_default_arguments ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:655: in test_export_plink_default_arguments
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+______________ PLINKTests.test_export_plink_non_default_arguments ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:666: in test_export_plink_non_default_arguments
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+____________ PLINKTests.test_export_plink_non_default_bim_arguments ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:682: in test_export_plink_non_default_bim_arguments
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________ PLINKTests.test_export_plink_quantitative_phenotype ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:674: in test_export_plink_quantitative_phenotype
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+__________________ PLINKTests.test_export_plink_struct_locus ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:720: in test_export_plink_struct_locus
+    hl.export_plink(mt, out)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+__________________________ PLINKTests.test_import_fam __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:521: in test_import_fam
+    nfam = hl.import_fam(fam_file).count()
+           ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?
+____________________ PLINKTests.test_import_plink_a1_major _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:555: in test_import_plink_a1_major
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_________________ PLINKTests.test_import_plink_and_ignore_rows _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:606: in test_import_plink_and_ignore_rows
+    plink = hl.import_plink(bfile + '.bed', bfile + '.bim', bfile + '.fam', block_size=16)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+___________ PLINKTests.test_import_plink_contig_recoding_w_reference ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:591: in test_import_plink_contig_recoding_w_reference
+    vcf = hl.split_multi_hts(hl.import_vcf(resource('sample2.vcf'), reference_genome=hl.get_reference('GRCh38'), contig_recoding={'22': 'chr22'}))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+____________________ PLINKTests.test_import_plink_empty_bim ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:548: in test_import_plink_empty_bim
+    mt = get_dataset().filter_rows(False)
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+____________________ PLINKTests.test_import_plink_empty_fam ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:541: in test_import_plink_empty_fam
+    mt = get_dataset().filter_cols(False)
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2605: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________ PLINKTests.test_import_plink_no_reference_specified ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:601: in test_import_plink_no_reference_specified
+    plink = hl.import_plink(bfile + '.bed', bfile + '.bim', bfile + '.fam', reference_genome=None)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+___________________ PLINKTests.test_import_plink_partitions ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:585: in test_import_plink_partitions
+    hl.export_plink(mt, out)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+___________________ PLINKTests.test_import_plink_same_locus ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:573: in test_import_plink_same_locus
+    hl.export_plink(mt, out)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+________________ PLINKTests.test_import_plink_skip_invalid_loci ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:610: in test_import_plink_skip_invalid_loci
+    mt = hl.import_plink(resource('skip_invalid_loci.bed'), resource('skip_invalid_loci.bim'), resource('skip_invalid_loci.fam'), reference_genome='GRCh37', skip_invalid_loci=True, contig_recoding={'chr1': '1'})
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+_____________________________ BGENTests.test_drop ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:889: in test_drop
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+__________________________ BGENTests.test_export_bgen __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:966: in test_export_bgen
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GP'], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+_____________________ BGENTests.test_export_bgen_from_vcf ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:998: in test_export_bgen_from_vcf
+    mt = hl.import_vcf(resource('sample.vcf'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+_____________________ BGENTests.test_export_bgen_parallel ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:984: in test_export_bgen_parallel
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GP'], sample_file=resource('example.sample'), n_partitions=3)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+_______________________ BGENTests.test_export_bgen_zstd ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:975: in test_export_bgen_zstd
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GP'], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+___________________ BGENTests.test_import_bgen_GT_GP_entries ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:752: in test_import_bgen_GT_GP_entries
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GT', 'GP'], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+________ BGENTests.test_import_bgen_dosage_and_gp_dosage_function_agree ________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:797: in test_import_bgen_dosage_and_gp_dosage_function_agree
+    bgenmt = hl.import_bgen(bgen_file, ['GP', 'dosage'], sample_file)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+___________________ BGENTests.test_import_bgen_dosage_entry ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:746: in test_import_bgen_dosage_entry
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+_______________ BGENTests.test_import_bgen_empty_variant_filter ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:876: in test_import_bgen_empty_variant_filter
+    actual = hl.import_bgen(bgen_file, ['GT'], n_partitions=10, variants=[])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+_____________ BGENTests.test_import_bgen_errors_with_invalid_loci ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:769: in test_import_bgen_errors_with_invalid_loci
+    with hl.TemporaryFilename(suffix='.bgen') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+___________________ BGENTests.test_import_bgen_gavin_example ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:779: in test_import_bgen_gavin_example
+    genmt = hl.import_gen(resource('example.gen'), sample_file, contig_recoding=recoding, reference_genome='GRCh37')
+            ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+________ BGENTests.test_import_bgen_locus_filtering_from_Struct_object _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:833: in test_import_bgen_locus_filtering_from_Struct_object
+    data = hl.import_bgen(bgen_file, ['GT'], variants=desired_loci)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+____________ BGENTests.test_import_bgen_locus_filtering_from_exprs _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:852: in test_import_bgen_locus_filtering_from_exprs
+    everything = hl.import_bgen(bgen_file, ['GT'])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+______ BGENTests.test_import_bgen_locus_filtering_from_struct_expression _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:840: in test_import_bgen_locus_filtering_from_struct_expression
+    data = hl.import_bgen(bgen_file, ['GT'], variants=desired_loci)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+____________ BGENTests.test_import_bgen_locus_filtering_from_table _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:871: in test_import_bgen_locus_filtering_from_table
+    result = hl.import_bgen(bgen_file, ['GT'], variants=desired_loci)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+____________________ BGENTests.test_import_bgen_no_entries _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:756: in test_import_bgen_no_entries
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=[], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+___________________ BGENTests.test_import_bgen_no_reference ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:760: in test_import_bgen_no_reference
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GT', 'GP', 'dosage'], index_file_map={resource('example.8bits.bgen'): resource('example.8bits.bgen-NO-REFERENCE-GENOME.idx2')})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+______________________ BGENTests.test_import_bgen_random _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:786: in test_import_bgen_random
+    genmt = hl.import_gen(resource('random.gen'), sample_file)
+            ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+____________________ BGENTests.test_import_bgen_row_fields _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:803: in test_import_bgen_row_fields
+    default_row_fields = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+_ BGENTests.test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:765: in test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci
+    mt = hl.import_bgen(resource('skip_invalid_loci.bgen'), entry_fields=[], sample_file=resource('skip_invalid_loci.sample'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+___________ BGENTests.test_import_bgen_variant_filtering_from_exprs ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:845: in test_import_bgen_variant_filtering_from_exprs
+    everything = hl.import_bgen(bgen_file, ['GT'])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+__________ BGENTests.test_import_bgen_variant_filtering_from_literals __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:820: in test_import_bgen_variant_filtering_from_literals
+    part_1 = hl.import_bgen(bgen_file, ['GT'], n_partitions=1, variants=desired_variants)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+___________ BGENTests.test_import_bgen_variant_filtering_from_table ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:861: in test_import_bgen_variant_filtering_from_table
+    everything = hl.import_bgen(bgen_file, ['GT'])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+___ BGENTests.test_index_multiple_bgen_files_does_not_fail_and_is_importable ___
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:899: in test_index_multiple_bgen_files_does_not_fail_and_is_importable
+    with hl.TemporaryFilename(suffix='.bgen') as f, hl.TemporaryFilename(suffix='.bgen') as g, hl.TemporaryFilename(suffix='.bgen') as h:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+____________________ BGENTests.test_multiple_files_disjoint ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:924: in test_multiple_files_disjoint
+    hl.import_bgen(bgen_file, ['GT', 'GP'], sample_file, n_partitions=3)
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+_______________ BGENTests.test_multiple_files_variant_filtering ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:913: in test_multiple_files_variant_filtering
+    actual = hl.import_bgen(bgen_file, ['GT'], n_partitions=10, variants=desired_variants)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+_______________ BGENTests.test_multiple_references_throws_error ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:931: in test_multiple_references_throws_error
+    hl.import_bgen([bgen_file1, bgen_file2], ['GT'], sample_file=sample_file, index_file_map={resource('random-b.bgen'): resource('random-b.bgen-NO-REFERENCE-GENOME.idx2'), resource('random-c.bgen'): resource('random-c.bgen.idx2')})
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:148: in import_bgen
+    raise ValueError('Found multiple reference genomes were specified in the BGEN index files')
+E   ValueError: Found multiple reference genomes were specified in the BGEN index files
+_________________________ BGENTests.test_n_partitions __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:885: in test_n_partitions
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'], n_partitions=210)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:165: in import_bgen
+    cores.append(_read([filename], schema, 'bgen', options))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: unsupported text format "bgen"
+__________________ BGENTests.test_old_index_file_throws_error __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:936: in test_old_index_file_throws_error
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ BGENTests.test_parallel_import ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:791: in test_parallel_import
+    mt = hl.import_bgen(resource('parallelBgenExport.bgen'), ['GT', 'GP'], resource('parallelBgenExport.sample'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:143: in import_bgen
+    raise ValueError(f'BGEN files have no .idx2 index file: {filename}')
+E   ValueError: BGEN files have no .idx2 index file: /Users/danielking/projects/vail/hail/hail/hail/test/resources/parallelBgenExport.bgen
+__________________________ BGENTests.test_randomness ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1011: in test_randomness
+    bgen1 = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GT'], sample_file=resource('example.sample'), n_partitions=3)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:154: in import_bgen
+    samples = _samples(sample_file, n) if sample_file is not None else headers[0][3]
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/bgen.py:71: in _samples
+    raise ValueError('invalid Oxford SAMPLE header')
+E   ValueError: invalid Oxford SAMPLE header
+_________________ BGENTests.test_specify_different_index_file __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:952: in test_specify_different_index_file
+    with hl.TemporaryFilename(suffix='.idx2') as index_file:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+___________________________ GENTests.test_export_gen ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1044: in test_export_gen
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37', min_partitions=3)
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+________________________ GENTests.test_export_gen_exprs ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1055: in test_export_gen_exprs
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37', min_partitions=3).add_col_index().add_row_index()
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+___________________________ GENTests.test_import_gen ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1021: in test_import_gen
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37').rows()
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+________________ GENTests.test_import_gen_no_chromosome_in_file ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1027: in test_import_gen_no_chromosome_in_file
+    gen = hl.import_gen(resource('no_chromosome.gen'), resource('skip_invalid_loci.sample'), chromosome='1', reference_genome=None, skip_invalid_loci=True)
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+_______________ GENTests.test_import_gen_no_reference_specified ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1031: in test_import_gen_no_reference_specified
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), reference_genome=None)
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+__________________ GENTests.test_import_gen_skip_invalid_loci __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1036: in test_import_gen_skip_invalid_loci
+    mt = hl.import_gen(resource('skip_invalid_loci.gen'), resource('skip_invalid_loci.sample'), reference_genome='GRCh37', skip_invalid_loci=True)
+         ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_bgen'?
+______________________ LocusIntervalTests.test_import_bed ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1104: in test_import_bed
+    bed = hl.import_bed(bed_file, reference_genome='GRCh37')
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_bgen'?
+__________ LocusIntervalTests.test_import_bed_badly_defined_intervals __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1144: in test_import_bed_badly_defined_intervals
+    t = hl.import_bed(bed_file, reference_genome='GRCh37', skip_invalid_intervals=True)
+        ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_bgen'?
+__________ LocusIntervalTests.test_import_bed_kwargs_to_import_table ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1139: in test_import_bed_kwargs_to_import_table
+    t = hl.import_bed(bed_file, reference_genome='GRCh37', find_replace=('gene', ''))
+        ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_bgen'?
+__________ LocusIntervalTests.test_import_bed_no_reference_specified ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1133: in test_import_bed_no_reference_specified
+    t = hl.import_bed(bed_file, reference_genome=None)
+        ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_bgen'?
+_________________ LocusIntervalTests.test_import_bed_recoding __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1127: in test_import_bed_recoding
+    bed = hl.import_bed(bed_file, reference_genome='GRCh38', contig_recoding={str(i): f'chr{i}' for i in [*range(1, 23), 'X', 'Y', 'M']})
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_bgen'?
+________________ LocusIntervalTests.test_import_locus_intervals ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1067: in test_import_locus_intervals
+    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+____ LocusIntervalTests.test_import_locus_intervals_badly_defined_intervals ____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1097: in test_import_locus_intervals_badly_defined_intervals
+    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37', skip_invalid_intervals=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+____ LocusIntervalTests.test_import_locus_intervals_no_reference_specified _____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1085: in test_import_locus_intervals_no_reference_specified
+    t = hl.import_locus_intervals(interval_file, reference_genome=None)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+___________ LocusIntervalTests.test_import_locus_intervals_recoding ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1091: in test_import_locus_intervals_recoding
+    t = hl.import_locus_intervals(interval_file, contig_recoding={str(i): f'chr{i}' for i in [*range(1, 23), 'X', 'Y', 'M']}, reference_genome='GRCh38')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+__________________ LocusIntervalTests.test_pass_through_args ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1151: in test_pass_through_args
+    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37', skip_invalid_intervals=True, filter='target_\\d\\d')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+____ ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file ____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1223: in test_devilish_nine_separated_eight_missing_file
+    mt = hl.import_matrix_table(resource('import_matrix_table_devlish.ninesv'), row_fields=fields, row_key=['chr', ''], sep='9', missing='8')
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+____________ ImportMatrixTableTests.test_empty_import_matrix_table _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1241: in test_empty_import_matrix_table
+    mt.x.export(path)
+    ^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ ImportMatrixTableTests.test_headers_not_identical _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1193: in test_headers_not_identical
+    hl.import_matrix_table([resource('sampleheader1.txt'), resource('sampleheader2.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+____________ ImportMatrixTableTests.test_headers_same_len_diff_elem ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1197: in test_headers_same_len_diff_elem
+    hl.import_matrix_table([resource('sampleheader2.txt'), resource('sampleheaderdiffelem.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_comment _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1187: in test_import_matrix_comment
+    mt1 = hl.import_matrix_table(no_comment, row_fields=row_fields, row_key=[])
+          ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_1 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1157: in test_import_matrix_table_1
+    mt = hl.import_matrix_table(doctest_resource('matrix1.tsv'), row_fields={'Barcode': hl.tstr, 'Tissue': hl.tstr, 'Days': hl.tfloat32})
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_2 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1166: in test_import_matrix_table_2
+    hl.import_matrix_table(doctest_resource('matrix2.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, row_key=[])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_3 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1169: in test_import_matrix_table_3
+    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True)._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_4 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1172: in test_import_matrix_table_4
+    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True, row_key=[])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+___________ ImportMatrixTableTests.test_import_matrix_table_no_cols ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1177: in test_import_matrix_table_no_cols
+    mt = hl.import_matrix_table(file, row_fields=fields, row_key=['Chromosome', 'Position'])
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+________ ImportMatrixTableTests.test_import_row_id_multiple_partitions _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1248: in test_import_row_id_multiple_partitions
+    hl.utils.range_matrix_table(50, 50).annotate_entries(x=1).key_rows_by().key_cols_by().x.export(path, header=False, delimiter=' ')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+__________ ImportMatrixTableTests.test_key_by_after_empty_key_import ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1216: in test_key_by_after_empty_key_import
+    mt = hl.import_matrix_table(resource('sample2_va_nomulti.tsv'), row_fields=fields, row_key=[], entry_type=hl.tfloat)
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+___________________ ImportMatrixTableTests.test_long_parsing ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1254: in test_long_parsing
+    mt = hl.import_matrix_table(path, row_fields={'foo': hl.tint64})
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+_________________ ImportMatrixTableTests.test_too_few_entries __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1204: in test_too_few_entries
+    boom()
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1202: in boom
+    hl.import_matrix_table(resource('samplesmissing.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+_________________ ImportMatrixTableTests.test_wrong_entry_type _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1212: in test_wrong_entry_type
+    hl.import_matrix_table(resource('samplenonintentries.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+_______________ ImportMatrixTableTests.test_wrong_row_field_type _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1208: in test_wrong_row_field_type
+    hl.import_matrix_table(resource('sampleheader1.txt'), row_fields={'f0': hl.tint32}, row_key=['f0'])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ test_import_matrix_table_round_trip[.-,-True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.-,-True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.-,-True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.-,-False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.-,-False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.-,-False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ test_import_matrix_table_round_trip[.- -True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.- -True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.- -True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.- -False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.- -False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.- -False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ test_import_matrix_table_round_trip[9-,-True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9-,-True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9-,-True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9-,-False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9-,-False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9-,-False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ test_import_matrix_table_round_trip[9- -True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9- -True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9- -True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9- -False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9- -False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9- -False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________________ ImportLinesTest.test_import_lines _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1291: in test_import_lines
+    lines_table = hl.import_lines(resource('example.gen'))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+____________________ ImportLinesTest.test_import_lines_bgz _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1312: in test_import_lines_bgz
+    lines_table = hl.import_lines(resource('sample.vcf.gz'), min_partitions=5, force_bgz=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+____________________ ImportLinesTest.test_import_lines_glob ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1308: in test_import_lines_glob
+    lines_table = hl.import_lines(resource('*_half_example.gen'))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+_______________ ImportLinesTest.test_import_lines_multiple_files _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1299: in test_import_lines_multiple_files
+    lines_table = hl.import_lines((resource('first_half_example.gen'), resource('second_half_example.gen')))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+___________________ ImportTableTests.test_error_with_context ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1395: in test_error_with_context
+    ht = hl.import_table(resource('tsv_errors.tsv'), types={'col1': 'int32'})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+__________________________ ImportTableTests.test_glob __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1339: in test_glob
+    tables = hl.import_table(resource('variantAnnotations.split.*.tsv'))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+_________________ ImportTableTests.test_import_export_identity _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1358: in test_import_export_identity
+    ht = hl.import_table(resource('sampleAnnotations.tsv'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+______________________ ImportTableTests.test_import_same _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1389: in test_import_same
+    ht = hl.import_table(resource('sampleAnnotations.tsv'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+___________________ ImportTableTests.test_import_table_empty ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1329: in test_import_table_empty
+    rows = hl.import_table(resource('empty.tsv')).collect()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+
+During handling of the above exception, another exception occurred:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1331: in test_import_table_empty
+    assert f"Invalid file: no lines remaining after filters\n Files provided: {resource('empty.tsv')}" in err.args[0]
+E   AssertionError: assert 'Invalid file: no lines remaining after filters\n Files provided: /Users/danielking/projects/vail/hail/hail/hail/test/resources/empty.tsv' in 'invalid TableIR: lines input does not accept options'
+_____________ ImportTableTests.test_import_table_empty_with_header _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1336: in test_import_table_empty_with_header
+    assert [] == hl.import_table(resource('empty-with-header.tsv')).collect()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+_________________ ImportTableTests.test_import_table_force_bgz _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1321: in test_import_table_force_bgz
+    t.export(f)
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py:525: in export
+    return export(self, output, types_file, header, parallel, delimiter)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:328: in export
+    table._native.export_text(_local_path(output), 'text', {
+                              ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:26: in _local_path
+    raise NotImplementedError('compressed text IO is not implemented')
+E   NotImplementedError: compressed text IO is not implemented
+______________________ ImportTableTests.test_source_file _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1372: in test_source_file
+    ht = hl.import_table(resource('variantAnnotations.split.*.tsv'), source_file_field='source')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+____________________ ImportTableTests.test_type_imputation _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1343: in test_type_imputation
+    ht = hl.import_table(resource('type_imputation.tsv'), delimiter=' ', missing='.', impute=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:223: in import_table
+    table = import_lines(paths, force_bgz=force_bgz, force=force)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:81: in import_lines
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/text.py:60: in _read
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid TableIR: lines input does not accept options
+__________________________ AvroTests.test_simple_avro __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1420: in test_simple_avro
+    data = hl.import_avro([avro_file]).collect()
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_avro'. Did you mean: 'import_vcf'?
+__________________________ test_import_export_same[0] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[1] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[2] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[3] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[4] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[5] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[6] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[7] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[8] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+__________________________ test_import_export_same[9] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py:1439: in test_import_export_same
+    mt = hl.import_vcf(resource(f'random_vcfs/{i}.vcf.bgz'))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/vcf.py:92: in import_vcf
+    matrix = MatrixTable(MatrixIR(
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:312: in __init__
+    raise TypeError("matrix layout requires typed column records and entry slots")
+E   TypeError: matrix layout requires typed column records and entry slots
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_call_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_can_import_bad_number_flag
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_combiner_works
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_contigs_header
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_custom_rg_import
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_empty_import_vcf_group_by_collect
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_empty_read_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_sites_only_from_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_empty_format
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_haploid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_invalid_format_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_invalid_info_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_no_alt_alleles
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_no_gt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_filter
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_find_replace
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_flag_at_eol
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_format_genotypes
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_format_header
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_glob
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_haploid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_gvcfs_long_line
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_bad_reference_allele
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_can_import_float32_array_format
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_can_import_float_array_format
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_can_import_negative_numbers
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_dosages_as_doubles_or_floats
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_empty
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_flags_are_defined
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_missing_format_field_elements
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_set_field_missing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_info_char
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_info_float64
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_invalid_info_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_malformed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_metadata_argument
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_missing_float_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_not_identical_headers
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_same_bgzip
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export_file_exists
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_undeclared_info
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_different_info_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parallel_separate_header_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_contig_recoding_defaults
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_import_plink_same
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_call_expression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_default_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_non_default_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_struct_locus
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_fam
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_a1_major
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_and_ignore_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_empty_bim
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_empty_fam
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_same_locus
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_drop
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen_from_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen_parallel
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen_zstd
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_GT_GP_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_dosage_entry
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_empty_variant_filter
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_gavin_example
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_no_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_no_reference
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_random
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_row_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_multiple_files_disjoint
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_multiple_files_variant_filtering
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_multiple_references_throws_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_n_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_old_index_file_throws_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_parallel_import
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::BGENTests::test_specify_different_index_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::GENTests::test_export_gen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::GENTests::test_export_gen_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::GENTests::test_import_gen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::GENTests::test_import_gen_no_chromosome_in_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::GENTests::test_import_gen_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::GENTests::test_import_gen_skip_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_recoding
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_pass_through_args
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_headers_not_identical
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_comment
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_long_parsing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_too_few_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_wrong_entry_type
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportLinesTest::test_import_lines
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportLinesTest::test_import_lines_bgz
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportLinesTest::test_import_lines_glob
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportLinesTest::test_import_lines_multiple_files
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_error_with_context
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_glob
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_export_identity
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_same
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_table_empty
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_table_empty_with_header
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_table_force_bgz
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_source_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::ImportTableTests::test_type_imputation
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::AvroTests::test_simple_avro
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[0]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[1]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[2]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[3]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[4]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[5]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[6]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[7]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[8]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-z38mf2g6/upstream_hail/methods/test_impex.py::test_import_export_same[9]
+182 failed, 1 passed, 18 deselected in 6.98s

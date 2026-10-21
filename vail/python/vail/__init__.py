@@ -597,8 +597,8 @@ class Table:
             positional.append((name, value))
         named = []
         for name, value in named_exprs.items():
-            if not isinstance(name, builtins.str) or not name:
-                raise ValueError("selected field names must be non-empty strings")
+            if not isinstance(name, builtins.str):
+                raise ValueError("selected field names must be strings")
             if name in self._keys:
                 raise ValueError(f"cannot overwrite key field {name!r} with select")
             expr = as_expr(value)
@@ -1294,6 +1294,10 @@ class Table:
     def count(self):
         return self._native.count()
 
+    def add_index(self, name='idx'):
+        """Annotate each row with its zero-based position in traversal order."""
+        return self.annotate(**{name: scan.count()})
+
     def _force_count(self):
         return self._native.force_count()
 
@@ -1972,6 +1976,25 @@ from .expressions import bind
 from .matrixtable import MatrixTable, GroupedMatrixTable, range_matrix_table, read_matrix_table
 utils.range_matrix_table = range_matrix_table
 from .vcf import import_vcf, get_vcf_metadata
+from .bgen import import_bgen, index_bgen
+from .gen import import_gen
+from .fam import import_fam
+from .context import TemporaryFilename, TemporaryDirectory
+from .interval_import import import_locus_intervals, locus_interval, parse_locus_interval
+from .bed import import_bed
+from .matrix_import import import_matrix_table
+from .plink import import_plink, export_plink
+from .avro import import_avro
+from .csv_import import import_csv
+from .gvcf_interval import import_gvcf_interval, get_vcf_header_info
+
+def hadoop_open(path, mode='r', buffer_size=8192):
+    """Open a local filesystem path or file URI using the backend interface."""
+    return current_backend().fs.open(path, mode, buffering=buffer_size)
+
+def hadoop_copy(source, destination):
+    """Copy bytes between local filesystem paths or file URIs."""
+    return current_backend().fs.copy(source, destination)
 from . import expr
 from .expressions import coalesce, approx_equal
 from .backend import current_backend
@@ -2018,4 +2041,4 @@ from . import linalg
 from .simulation import balding_nichols_model
 
 from .qc import variant_qc, hardy_weinberg_test
-from .genotype_likelihoods import pl_to_gp, pl_dosage
+from .genotype_likelihoods import pl_to_gp, pl_dosage, gp_dosage, gq_from_pl

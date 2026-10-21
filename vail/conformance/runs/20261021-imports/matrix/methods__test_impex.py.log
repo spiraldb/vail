@@ -1,0 +1,34 @@
+FF...F..................................                                 [100%]
+=================================== FAILURES ===================================
+____ ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file ____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-45evhx20/upstream_hail/methods/test_impex.py:1223: in test_devilish_nine_separated_eight_missing_file
+    mt = hl.import_matrix_table(resource('import_matrix_table_devlish.ninesv'), row_fields=fields, row_key=['chr', ''], sep='9', missing='8')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrix_import.py:107: in import_matrix_table
+    table = table.key_by(*(['row_id'] if add_row_id else row_key))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py:791: in key_by
+    return Table(table._native.key_by(names), table._schema, names)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   vail.utils.FatalError: invalid order requirement: sort column name cannot be empty
+____________ ImportMatrixTableTests.test_empty_import_matrix_table _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-45evhx20/upstream_hail/methods/test_impex.py:1241: in test_empty_import_matrix_table
+    mt.x.export(path)
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:913: in export
+    return export_expression(self, output, delimiter, missing, header)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrix_import.py:141: in export_expression
+    table._native.export_text(_local_path(output, allow_compressed=True), 'text', {
+E   ValueError: invalid TableIR: compressed text export is not implemented
+______________ ImportMatrixTableTests.test_import_matrix_table_1 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-45evhx20/upstream_hail/methods/test_impex.py:1158: in test_import_matrix_table_1
+    self.assertEqual(mt['Barcode']._indices, mt._row_indices)
+                     ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:854: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _indices
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-45evhx20/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-45evhx20/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-45evhx20/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1
+3 failed, 37 passed, 161 deselected in 42.32s

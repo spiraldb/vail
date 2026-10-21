@@ -1618,6 +1618,16 @@ class MatrixTable:
 
         return self.annotate_rows(**{name: scan.count()})
 
+    @property
+    def _row_indices(self):
+        from .expressions import Indices
+        return Indices(self, {'row'})
+
+    @property
+    def _col_indices(self):
+        from .expressions import Indices
+        return Indices(self, {'col'})
+
     def add_col_index(self, name="col_idx"):
         from . import scan
 

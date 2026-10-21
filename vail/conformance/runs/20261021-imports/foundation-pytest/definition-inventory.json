@@ -1,0 +1,248 @@
+[
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_locus_intervals",
+    "line": 1784,
+    "body": "def test_import_locus_intervals(self):\n    interval_file = resource('annotinterall.interval_list')\n    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37')\n    nint = t.count()\n    i = 0\n    with hl.current_backend().fs.open(interval_file) as f:\n        for line in f:\n            if len(line.strip()) != 0:\n                i += 1\n    self.assertEqual(nint, i)\n    self.assertEqual(t.interval.dtype.point_type, hl.tlocus('GRCh37'))\n    tmp_file = new_temp_file(prefix='test', extension='interval_list')\n    start = t.interval.start\n    end = t.interval.end\n    t.key_by(interval=hl.locus_interval(start.contig, start.position, end.position, True, True)).select().export(tmp_file, header=False)\n    t2 = hl.import_locus_intervals(tmp_file)\n    self.assertTrue(t.select()._same(t2))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_locus_intervals_no_reference_specified",
+    "line": 1810,
+    "body": "def test_import_locus_intervals_no_reference_specified(self):\n    interval_file = resource('annotinterall.interval_list')\n    t = hl.import_locus_intervals(interval_file, reference_genome=None)\n    self.assertEqual(t.count(), 2)\n    self.assertEqual(t.interval.dtype.point_type, hl.tstruct(contig=hl.tstr, position=hl.tint32))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_locus_intervals_recoding",
+    "line": 1816,
+    "body": "def test_import_locus_intervals_recoding(self):\n    interval_file = resource('annotinterall.grch38.no.chr.interval_list')\n    t = hl.import_locus_intervals(interval_file, contig_recoding={str(i): f'chr{i}' for i in [*range(1, 23), 'X', 'Y', 'M']}, reference_genome='GRCh38')\n    self.assertEqual(t._force_count(), 3)\n    self.assertEqual(t.interval.dtype.point_type, hl.tlocus('GRCh38'))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_locus_intervals_badly_defined_intervals",
+    "line": 1826,
+    "body": "def test_import_locus_intervals_badly_defined_intervals(self):\n    interval_file = resource('example3.interval_list')\n    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37', skip_invalid_intervals=True)\n    self.assertEqual(t.count(), 21)\n    t = hl.import_locus_intervals(interval_file, reference_genome=None, skip_invalid_intervals=True)\n    self.assertEqual(t.count(), 22)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_bed",
+    "line": 1834,
+    "body": "def test_import_bed(self):\n    bed_file = resource('example1.bed')\n    bed = hl.import_bed(bed_file, reference_genome='GRCh37')\n    nbed = bed.count()\n    i = 0\n    with hl.hadoop_open(bed_file) as f:\n        for line in f:\n            if len(line.strip()) != 0:\n                try:\n                    int(line.split()[0])\n                    i += 1\n                except:\n                    pass\n    self.assertEqual(nbed, i)\n    self.assertEqual(bed.interval.dtype.point_type, hl.tlocus('GRCh37'))\n    bed_file = resource('example2.bed')\n    t = hl.import_bed(bed_file, reference_genome='GRCh37')\n    self.assertEqual(t.interval.dtype.point_type, hl.tlocus('GRCh37'))\n    self.assertEqual(list(t.key.dtype), ['interval'])\n    self.assertEqual(list(t.row.dtype), ['interval', 'target'])\n    expected = [hl.interval(hl.locus('20', 1), hl.locus('20', 11), True, False), hl.interval(hl.locus('20', 2), hl.locus('20', 14000001), True, False), hl.interval(hl.locus('20', 5), hl.locus('20', 6), False, False), hl.interval(hl.locus('20', 17000001), hl.locus('20', 18000001), True, False), hl.interval(hl.locus('20', 63025511), hl.locus('20', 63025520), True, True)]\n    self.assertEqual(t.interval.collect(), hl.eval(expected))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_bed_recoding",
+    "line": 1870,
+    "body": "def test_import_bed_recoding(self):\n    bed_file = resource('some-missing-chr-grch38.bed')\n    bed = hl.import_bed(bed_file, reference_genome='GRCh38', contig_recoding={str(i): f'chr{i}' for i in [*range(1, 23), 'X', 'Y', 'M']})\n    self.assertEqual(bed._force_count(), 5)\n    self.assertEqual(bed.interval.dtype.point_type, hl.tlocus('GRCh38'))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_bed_no_reference_specified",
+    "line": 1880,
+    "body": "def test_import_bed_no_reference_specified(self):\n    bed_file = resource('example1.bed')\n    t = hl.import_bed(bed_file, reference_genome=None)\n    self.assertEqual(t.count(), 3)\n    self.assertEqual(t.interval.dtype.point_type, hl.tstruct(contig=hl.tstr, position=hl.tint32))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_bed_kwargs_to_import_table",
+    "line": 1886,
+    "body": "def test_import_bed_kwargs_to_import_table(self):\n    bed_file = resource('example2.bed')\n    t = hl.import_bed(bed_file, reference_genome='GRCh37', find_replace=('gene', ''))\n    self.assertFalse('gene1' in t.aggregate(hl.agg.collect_as_set(t.target)))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_import_bed_badly_defined_intervals",
+    "line": 1891,
+    "body": "def test_import_bed_badly_defined_intervals(self):\n    bed_file = resource('example4.bed')\n    t = hl.import_bed(bed_file, reference_genome='GRCh37', skip_invalid_intervals=True)\n    self.assertEqual(t.count(), 3)\n    t = hl.import_bed(bed_file, reference_genome=None, skip_invalid_intervals=True)\n    self.assertEqual(t.count(), 4)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "LocusIntervalTests.test_pass_through_args",
+    "line": 1899,
+    "body": "def test_pass_through_args(self):\n    interval_file = resource('example3.interval_list')\n    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37', skip_invalid_intervals=True, filter='target_\\\\d\\\\d')\n    assert t.count() == 9"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_1",
+    "line": 1908,
+    "body": "def test_import_matrix_table_1(self):\n    mt = hl.import_matrix_table(doctest_resource('matrix1.tsv'), row_fields={'Barcode': hl.tstr, 'Tissue': hl.tstr, 'Days': hl.tfloat32})\n    self.assertEqual(mt['Barcode']._indices, mt._row_indices)\n    self.assertEqual(mt['Tissue']._indices, mt._row_indices)\n    self.assertEqual(mt['Days']._indices, mt._row_indices)\n    self.assertEqual(mt['col_id']._indices, mt._col_indices)\n    self.assertEqual(mt['row_id']._indices, mt._row_indices)\n    mt.count()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_2",
+    "line": 1920,
+    "body": "def test_import_matrix_table_2(self):\n    hl.import_matrix_table(doctest_resource('matrix2.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, row_key=[])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_3",
+    "line": 1925,
+    "body": "def test_import_matrix_table_3(self):\n    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True)._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_4",
+    "line": 1932,
+    "body": "def test_import_matrix_table_4(self):\n    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True, row_key=[])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_table_no_cols",
+    "line": 1940,
+    "body": "def test_import_matrix_table_no_cols(self):\n    fields = {'Chromosome': hl.tstr, 'Position': hl.tint32, 'Ref': hl.tstr, 'Alt': hl.tstr, 'Rand1': hl.tfloat64, 'Rand2': hl.tfloat64}\n    file = resource('sample2_va_nomulti.tsv')\n    mt = hl.import_matrix_table(file, row_fields=fields, row_key=['Chromosome', 'Position'])\n    t = hl.import_table(file, types=fields, key=['Chromosome', 'Position'])\n    self.assertEqual(mt.count_cols(), 0)\n    self.assertEqual(mt.count_rows(), 231)\n    self.assertTrue(t._same(mt.rows()))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_matrix_comment",
+    "line": 1957,
+    "body": "def test_import_matrix_comment(self):\n    no_comment = doctest_resource('matrix1.tsv')\n    comment = doctest_resource('matrix1_comment.tsv')\n    row_fields = {'Barcode': hl.tstr, 'Tissue': hl.tstr, 'Days': hl.tfloat32}\n    mt1 = hl.import_matrix_table(no_comment, row_fields=row_fields, row_key=[])\n    mt2 = hl.import_matrix_table(comment, row_fields=row_fields, row_key=[], comment=['#', '%'])\n    assert mt1._same(mt2)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_headers_not_identical",
+    "line": 1965,
+    "body": "def test_headers_not_identical(self):\n    with pytest.raises(ValueError, match='invalid header: lengths of headers differ'):\n        hl.import_matrix_table([resource('sampleheader1.txt'), resource('sampleheader2.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_headers_same_len_diff_elem",
+    "line": 1973,
+    "body": "def test_headers_same_len_diff_elem(self):\n    with pytest.raises(ValueError, match='invalid header: expected elements to be identical for all input paths'):\n        hl.import_matrix_table([resource('sampleheader2.txt'), resource('sampleheaderdiffelem.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_too_few_entries",
+    "line": 1981,
+    "body": "def test_too_few_entries(self):\n\n    def boom():\n        hl.import_matrix_table(resource('samplesmissing.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()\n    with pytest.raises(HailUserError, match='unexpected end of line while reading entries'):\n        boom()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_wrong_row_field_type",
+    "line": 1990,
+    "body": "def test_wrong_row_field_type(self):\n    with pytest.raises(HailUserError, match=\"error parsing value into int32 at row field 'f0'\"):\n        hl.import_matrix_table(resource('sampleheader1.txt'), row_fields={'f0': hl.tint32}, row_key=['f0'])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_wrong_entry_type",
+    "line": 1996,
+    "body": "def test_wrong_entry_type(self):\n    with pytest.raises(HailUserError, match=\"error parsing value into int32 at column id 'col000003'\"):\n        hl.import_matrix_table(resource('samplenonintentries.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_key_by_after_empty_key_import",
+    "line": 2002,
+    "body": "def test_key_by_after_empty_key_import(self):\n    fields = {'Chromosome': hl.tstr, 'Position': hl.tint32, 'Ref': hl.tstr, 'Alt': hl.tstr}\n    mt = hl.import_matrix_table(resource('sample2_va_nomulti.tsv'), row_fields=fields, row_key=[], entry_type=hl.tfloat)\n    mt = mt.key_rows_by('Chromosome', 'Position')\n    mt._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file",
+    "line": 2011,
+    "body": "@test_timeout(local=4 * 60)\ndef test_devilish_nine_separated_eight_missing_file(self):\n    fields = {'chr': hl.tstr, '': hl.tint32, 'ref': hl.tstr, 'alt': hl.tstr}\n    mt = hl.import_matrix_table(resource('import_matrix_table_devlish.ninesv'), row_fields=fields, row_key=['chr', ''], sep='9', missing='8')\n    actual = mt.x.collect()\n    expected = [1, 2, 3, 4, 11, 12, 13, 14, 21, 22, 23, 24, 31, None, None, 34]\n    assert actual == expected\n    assert mt.count_rows() == len(mt.rows().collect())\n    actual = mt.chr.collect()\n    assert actual == ['chr1', 'chr1', 'chr1', None]\n    actual = mt[''].collect()\n    assert actual == [1, 10, 101, None]\n    actual = mt.ref.collect()\n    assert actual == ['A', 'AGT', None, 'CTA']\n    actual = mt.alt.collect()\n    assert actual == ['T', 'TGG', 'A', None]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_empty_import_matrix_table",
+    "line": 2031,
+    "body": "def test_empty_import_matrix_table(self):\n    path = new_temp_file(extension='tsv.bgz')\n    mt = hl.utils.range_matrix_table(0, 0)\n    mt = mt.annotate_entries(x=1)\n    mt.x.export(path)\n    assert hl.import_matrix_table(path)._force_count_rows() == 0\n    mt.x.export(path, header=False)\n    assert hl.import_matrix_table(path, no_header=True)._force_count_rows() == 0"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_import_row_id_multiple_partitions",
+    "line": 2041,
+    "body": "def test_import_row_id_multiple_partitions(self):\n    path = new_temp_file(extension='txt')\n    hl.utils.range_matrix_table(50, 50).annotate_entries(x=1).key_rows_by().key_cols_by().x.export(path, header=False, delimiter=' ')\n    mt = hl.import_matrix_table(path, no_header=True, entry_type=hl.tint32, delimiter=' ', min_partitions=10)\n    assert mt.row_id.collect() == list(range(50))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportMatrixTableTests.test_long_parsing",
+    "line": 2054,
+    "body": "def test_long_parsing(self):\n    path = resource('text_matrix_longs.tsv')\n    mt = hl.import_matrix_table(path, row_fields={'foo': hl.tint64})\n    collected = mt.entries().collect()\n    assert collected == [hl.utils.Struct(foo=7, row_id=0, col_id='s1', x=1234), hl.utils.Struct(foo=7, row_id=0, col_id='s2', x=2345)]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "test_import_matrix_table_round_trip",
+    "line": 2068,
+    "body": "@pytest.mark.parametrize('entry_fun', [hl.str, hl.int32, hl.float64])\n@pytest.mark.parametrize('header', [True, False])\n@pytest.mark.parametrize('delimiter', [',', ' '])\n@pytest.mark.parametrize('missing', ['.', '9'])\ndef test_import_matrix_table_round_trip(missing, delimiter, header, entry_fun):\n    mt = hl.utils.range_matrix_table(10, 10, n_partitions=2)\n    mt = mt.annotate_entries(x=entry_fun(mt.row_idx * mt.col_idx))\n    mt = mt.annotate_rows(row_str=hl.str(mt.row_idx))\n    mt = mt.annotate_rows(row_float=hl.float(mt.row_idx))\n    entry_type = mt.x.dtype\n    path = new_temp_file(extension='tsv')\n    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)\n    row_fields = {f: mt.row[f].dtype for f in mt.row}\n    row_key = 'row_idx'\n    if not header:\n        pseudonym = {'row_idx': 'f0', 'row_str': 'f1', 'row_float': 'f2'}\n        row_fields = {pseudonym[k]: v for k, v in row_fields.items()}\n        row_key = pseudonym[row_key]\n        mt = mt.rename(pseudonym)\n    else:\n        mt = mt.key_cols_by(col_idx=hl.str(mt.col_idx))\n    actual = hl.import_matrix_table(path, row_fields=row_fields, row_key=row_key, entry_type=entry_type, missing=missing, no_header=not header, sep=delimiter)\n    actual = actual.rename({'col_id': 'col_idx'})\n    row_key = mt.row_key\n    mt = mt.key_rows_by()\n    mt = mt.annotate_entries(x=hl.if_else(hl.str(mt.x) == missing, hl.missing(entry_type), mt.x))\n    mt = mt.annotate_rows(**{f: hl.if_else(hl.str(mt[f]) == missing, hl.missing(mt[f].dtype), mt[f]) for f in mt.row})\n    mt = mt.key_rows_by(*row_key)\n    assert mt._same(actual)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportLinesTest.test_import_lines",
+    "line": 2110,
+    "body": "def test_import_lines(self):\n    lines_table = hl.import_lines(resource('example.gen'))\n    first_row = lines_table.head(1).collect()[0]\n    assert lines_table.row.dtype == hl.tstruct(file=hl.tstr, text=hl.tstr)\n    assert '01 SNPID_2 RSID_2 2000 A G 0 0 0 0.0278015 0.00863647 0.963531 0.0173645' in first_row.text\n    assert 'example.gen' in first_row.file\n    assert lines_table._force_count() == 199"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportLinesTest.test_import_lines_multiple_files",
+    "line": 2118,
+    "body": "def test_import_lines_multiple_files(self):\n    lines_table = hl.import_lines((resource('first_half_example.gen'), resource('second_half_example.gen')))\n    first_row = lines_table.head(1).collect()[0]\n    last_row = lines_table.tail(1).collect()[0]\n    assert '01 SNPID_2 RSID_2 2000 A G 0 0 0 0.0278015 0.00863647 0.963531 0.0173645' in first_row.text\n    assert 'first_half_example.gen' in first_row.file\n    assert 'second_half_example.gen' in last_row.file\n    assert lines_table._force_count() == 199"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportLinesTest.test_import_lines_glob",
+    "line": 2127,
+    "body": "def test_import_lines_glob(self):\n    lines_table = hl.import_lines(resource('*_half_example.gen'))\n    assert lines_table._force_count() == 199"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportLinesTest.test_import_lines_bgz",
+    "line": 2131,
+    "body": "def test_import_lines_bgz(self):\n    lines_table = hl.import_lines(resource('sample.vcf.gz'), min_partitions=5, force_bgz=True)\n    assert lines_table.n_partitions() == 5"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_table_force_bgz",
+    "line": 2137,
+    "body": "def test_import_table_force_bgz(self):\n    fs = hl.current_backend().fs\n    f = new_temp_file(extension='bgz')\n    t = hl.utils.range_table(10, 5)\n    t.export(f)\n    f2 = new_temp_file(extension='gz')\n    fs.copy(f, f2)\n    t2 = hl.import_table(f2, force_bgz=True, impute=True).key_by('idx')\n    self.assertTrue(t._same(t2))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_table_empty",
+    "line": 2148,
+    "body": "def test_import_table_empty(self):\n    try:\n        rows = hl.import_table(resource('empty.tsv')).collect()\n    except ValueError as err:\n        assert f\"Invalid file: no lines remaining after filters\\n Files provided: {resource('empty.tsv')}\" in err.args[0]\n    else:\n        assert False, rows"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_table_empty_with_header",
+    "line": 2159,
+    "body": "def test_import_table_empty_with_header(self):\n    assert [] == hl.import_table(resource('empty-with-header.tsv')).collect()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_glob",
+    "line": 2162,
+    "body": "def test_glob(self):\n    tables = hl.import_table(resource('variantAnnotations.split.*.tsv'))\n    assert tables.count() == 346"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_type_imputation",
+    "line": 2166,
+    "body": "def test_type_imputation(self):\n    ht = hl.import_table(resource('type_imputation.tsv'), delimiter=' ', missing='.', impute=True)\n    assert ht.row.dtype == hl.dtype('struct{1:int32,2:float64,3:str,4:str,5:str,6:bool,7:str}')\n    ht = hl.import_table(resource('variantAnnotations.tsv'), impute=True)\n    assert ht.row.dtype == hl.dtype('struct{Chromosome: int32, Position: int32, Ref: str, Alt: str, Rand1: float64, Rand2: float64, Gene: str}')\n    ht = hl.import_table(resource('variantAnnotations.tsv'), impute=True, types={'Chromosome': 'str'})\n    assert ht.row.dtype == hl.dtype('struct{Chromosome: str, Position: int32, Ref: str, Alt: str, Rand1: float64, Rand2: float64, Gene: str}')\n    ht = hl.import_table(resource('variantAnnotations.alternateformat.tsv'), impute=True)\n    assert ht.row.dtype == hl.dtype('struct{`Chromosome:Position:Ref:Alt`: str, Rand1: float64, Rand2: float64, Gene: str}')\n    ht = hl.import_table(resource('sampleAnnotations.tsv'), impute=True)\n    assert ht.row.dtype == hl.dtype('struct{Sample: str, Status: str, qPhen: int32}')\n    ht = hl.import_table(resource('integer_imputation.txt'), impute=True, delimiter='\\\\s+')\n    assert ht.row.dtype == hl.dtype('struct{A:int64, B:int32}')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_export_identity",
+    "line": 2191,
+    "body": "def test_import_export_identity(self):\n    fs = hl.current_backend().fs\n    ht = hl.import_table(resource('sampleAnnotations.tsv'))\n    f = new_temp_file()\n    ht.export(f)\n    with fs.open(resource('sampleAnnotations.tsv'), 'r') as i1:\n        expected = list((line.strip() for line in i1))\n    with fs.open(f, 'r') as i2:\n        observed = list((line.strip() for line in i2))\n    assert expected == observed"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_source_file",
+    "line": 2213,
+    "body": "def test_source_file(self):\n    ht = hl.import_table(resource('variantAnnotations.split.*.tsv'), source_file_field='source')\n    ht = ht.add_index()\n    assert ht.aggregate(hl.agg.all(hl.if_else(ht.idx < 239, ht.source.endswith('variantAnnotations.split.1.tsv'), ht.source.endswith('variantAnnotations.split.2.tsv'))))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_import_same",
+    "line": 2238,
+    "body": "def test_import_same(self):\n    ht = hl.import_table(resource('sampleAnnotations.tsv'))\n    ht2 = hl.import_table(resource('sampleAnnotations.tsv'))\n    assert ht._same(ht2)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "ImportTableTests.test_error_with_context",
+    "line": 2243,
+    "body": "def test_error_with_context(self):\n    with pytest.raises(HailUserError, match='cannot parse int32 from input string'):\n        ht = hl.import_table(resource('tsv_errors.tsv'), types={'col1': 'int32'})\n        ht._force_count()\n    with pytest.raises(HailUserError, match='Expected 2 fields, found 1 field'):\n        ht = hl.import_table(resource('tsv_errors.tsv'), impute=True)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "AvroTests.test_simple_avro",
+    "line": 2315,
+    "body": "@fails_service_backend(reason='\\nE                   java.io.NotSerializableException: org.apache.avro.Schema$RecordSchema\\nE                   \\tat java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1184)\\nE                   \\tat java.io.ObjectOutputStream.writeArray(ObjectOutputStream.java:1378)\\nE                   \\tat java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1174)\\nE                   \\tat java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1548)\\nE                   \\tat java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1509)\\nE                   \\tat java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1432)\\nE                   \\tat java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1178)\\nE                   \\tat java.io.ObjectOutputStream.writeArray(ObjectOutputStream.java:1378)\\nE                   \\tat java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1174)\\nE                   \\tat java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1548)\\nE                   \\tat java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1509)\\nE                   \\tat java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1432)\\nE                   \\tat java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1178)\\nE                   \\tat java.io.ObjectOutputStream.writeObject(ObjectOutputStream.java:348)\\nE                   \\tat is.hail.backend.service.ServiceBackend.$anonfun$parallelizeAndComputeWithIndex$3(ServiceBackend.scala:119)\\nE                   \\tat is.hail.backend.service.ServiceBackend.$anonfun$parallelizeAndComputeWithIndex$3$adapted(ServiceBackend.scala:118)\\nE                   \\tat is.hail.utils.package$.using(package.scala:638)\\nE                   \\tat is.hail.backend.service.ServiceBackend.$anonfun$parallelizeAndComputeWithIndex$2(ServiceBackend.scala:118)\\nE                   \\tat scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)\\nE                   \\tat is.hail.services.package$.retryTransientErrors(package.scala:71)\\nE                   \\tat is.hail.backend.service.ServiceBackend.$anonfun$parallelizeAndComputeWithIndex$1(ServiceBackend.scala:117)\\nE                   \\tat scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)\\nE                   \\tat scala.concurrent.Future$.$anonfun$apply$1(Future.scala:659)\\nE                   \\tat scala.util.Success.$anonfun$map$1(Try.scala:255)\\nE                   \\tat scala.util.Success.map(Try.scala:213)\\nE                   \\tat scala.concurrent.Future.$anonfun$map$1(Future.scala:292)\\nE                   \\tat scala.concurrent.impl.Promise.liftedTree1$1(Promise.scala:33)\\nE                   \\tat scala.concurrent.impl.Promise.$anonfun$transform$1(Promise.scala:33)\\nE                   \\tat scala.concurrent.impl.CallbackRunnable.run(Promise.scala:64)\\nE                   \\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\\nE                   \\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\\nE                   \\tat java.lang.Thread.run(Thread.java:748)\\n')\ndef test_simple_avro(self):\n    avro_file = resource('avro/weather.avro')\n    fs = hl.current_backend().fs\n    with DataFileReader(fs.open(avro_file, 'rb'), DatumReader()) as avro:\n        expected = list(avro)\n    data = hl.import_avro([avro_file]).collect()\n    data = [dict(**s) for s in data]\n    self.assertEqual(expected, data)"
+  }
+]

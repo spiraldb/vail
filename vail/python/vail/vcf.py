@@ -75,9 +75,13 @@ def import_vcf(
         array_elements_required=array_elements_required, skip_invalid_loci=skip_invalid_loci,
         drop_samples=drop_samples, filter=filter, find_replace=None if find_replace is None else tuple(find_replace),
     )
-    native, samples, _ = _native_session().read_vcf(
-        _paths(path), None if header_file is None else _local_path(header_file), options,
-    )
+    paths = _paths(path)
+    header_path = None if header_file is None else _local_path(header_file)
+    try:
+        native, samples, _ = _native_session().read_vcf(paths, header_path, options)
+    except ValueError as error:
+        from .utils import FatalError
+        raise FatalError(str(error)) from error
     core = Table(native, _schema_from_native(native), ())
     cols = Table.parallelize(
         [{_CID: i, _COL: {"s": sample}} for i, sample in enumerate(samples)],

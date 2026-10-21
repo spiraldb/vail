@@ -1,22 +1,36 @@
 """Local VCF export with a bounded native Arrow batch sink.
 
-Parallel export, tabix indexing, and BGZF output are deliberately unsupported.
+Tabix indexing uses the htslib ``tabix`` executable when requested.
 """
 import json
+import os
 from uuid import uuid4
 
 
 def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, append_to_header=None):
-    from . import MatrixTable
+    from . import MatrixTable, Table, empty_array
     from .types import tarray, tstr, tcall, tint32, tfloat32, tfloat64, tbool, tstruct, tset, tlocus
     from .vcf import _local_path
+    from .utils import FatalError
+    if isinstance(dataset, Table):
+        entries = '__vcf_sites_entries_' + uuid4().hex
+        columns = '__vcf_sites_columns_' + uuid4().hex
+        dataset = dataset.annotate(**{entries: empty_array(tstruct())})
+        dataset = dataset.annotate_globals(**{columns: empty_array(tstruct(s=tstr))})
+        dataset = dataset.unlocalize_entries(entries, columns, ['s'])
     if not isinstance(dataset, MatrixTable):
         raise TypeError('export_vcf requires a MatrixTable')
-    if parallel is not None or tabix or append_to_header is not None:
-        raise NotImplementedError('parallel VCF export, tabix, and appended headers are not implemented')
+    if parallel not in (None, 'separate_header', 'header_per_shard'):
+        raise ValueError('invalid parallel VCF export mode')
     output = _local_path(output)
-    if output.endswith(('.gz','.bgz')):
-        raise NotImplementedError('compressed VCF export is not implemented')
+    indexer = None
+    if tabix:
+        import shutil
+        indexer = shutil.which('tabix')
+        if indexer is None:
+            raise NotImplementedError('VCF tabix indexing requires the htslib tabix executable')
+        if not output.endswith('.bgz'):
+            raise ValueError('tabix indexing requires BGZF output ending in .bgz')
     if ('locus' not in dataset.row.dtype or 'alleles' not in dataset.row.dtype
             or dataset.alleles.dtype != tarray(tstr)
             or not (isinstance(dataset.locus.dtype, tlocus)
@@ -48,6 +62,15 @@ def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, ap
         raise TypeError('VCF info must be a struct')
     info_fields=list(info_schema.items()) if info_schema is not None else []
     metadata=metadata or {}
+    for group, fields in [('INFO', info_fields), ('FORMAT', list(dataset.entry.dtype.items()))]:
+        invalid = []
+        for name, dtype in fields:
+            element = dtype.element_type if isinstance(dtype, tarray) else dtype
+            if (element not in (tstr, tcall, tint32, tfloat32, tfloat64, tbool)
+                    or (element == tbool and (group == 'FORMAT' or isinstance(dtype, tarray)))):
+                invalid.append(f"\t'{name}': '{dtype}'.\n")
+        if invalid:
+            raise FatalError(f'VCF does not support the type(s) for the following {group} field(s):\n' + ''.join(invalid))
     def identifier(value):
         if not value or any(c.isspace() or c in ',:;=<>"' for c in value):
             raise ValueError('invalid VCF field identifier')
@@ -63,10 +86,6 @@ def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, ap
         number='0' if kind=='Flag' else '.' if isinstance(dtype,tarray) else '1'
         if attrs.get('Type', kind) != kind:
             raise ValueError(f'VCF metadata Type disagrees with {name!r}')
-        declared = str(attrs.get('Number', number))
-        if ((not isinstance(dtype, tarray) and declared != number)
-                or (isinstance(dtype, tarray) and declared == '1')):
-            raise ValueError(f'VCF metadata Number disagrees with {name!r}')
         attrs={'Number':attrs.pop('Number',number),'Type':attrs.pop('Type',kind),'Description':attrs.pop('Description',''),**attrs}
         values=[f'ID={name}']
         for key,value in attrs.items():
@@ -78,14 +97,44 @@ def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, ap
             values.append(f'{key}={value}')
         return f'##{group.upper()}=<{",".join(values)}>'
     header=['##fileformat=VCFv4.2']
+    if isinstance(dataset.locus.dtype, tlocus):
+        reference = dataset.locus.dtype.reference_genome
+        lengths = reference.lengths
+        header.extend(
+            f'##contig=<ID={contig},length={lengths[contig]},assembly={reference.name}>'
+            for contig in reference.contigs
+        )
     header.extend(declaration('info',name,dtype) for name,dtype in info_fields)
-    header.extend(declaration('format',name,dataset.entry.dtype[name]) for name in entry_names)
+    header.extend(declaration('format',name,dtype) for name,dtype in dataset.entry.dtype.items())
     for name,attrs in metadata.get('filter',{}).items():
         identifier(name)
         if any(c in str(attrs.get('Description', '')) for c in '\t\r\n'):
             raise ValueError('invalid VCF filter description')
         header.append(f'##FILTER=<ID={name},Description={json.dumps(attrs.get("Description",""))}>')
+    if append_to_header is not None:
+        with open(_local_path(append_to_header)) as extra:
+            header.extend(extra.read().splitlines())
     fields=['#CHROM','POS','ID','REF','ALT','QUAL','FILTER','INFO']
     if samples:fields+=['FORMAT',*samples]
     header.append('\t'.join(fields))
-    localized._native.export_vcf(output, header, entries_name, entry_names, len(samples))
+    if parallel is None:
+        localized._native.export_vcf(output, header, entries_name, entry_names, len(samples))
+        index_paths = [output]
+    else:
+        os.makedirs(output, exist_ok=True)
+        suffix = '.vcf.bgz' if output.endswith('.bgz') else '.vcf.gz' if output.endswith('.gz') else '.vcf'
+        shards = []
+        if parallel == 'separate_header':
+            header_name = 'header' + suffix
+            localized.head(0)._native.export_vcf(os.path.join(output, header_name), header, entries_name, entry_names, len(samples))
+            shards.append(header_name)
+        data_name = 'part-00000' + suffix
+        localized._native.export_vcf(os.path.join(output, data_name), [] if parallel == 'separate_header' else header, entries_name, entry_names, len(samples))
+        shards.append(data_name)
+        with open(os.path.join(output, 'shard-manifest.txt'), 'w') as manifest:
+            manifest.write(''.join(name + '\n' for name in shards))
+        index_paths = [os.path.join(output, data_name)]
+    if indexer is not None:
+        import subprocess
+        for path in index_paths:
+            subprocess.run([indexer, '-f', '-p', 'vcf', path], check=True, capture_output=True, text=True)

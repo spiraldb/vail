@@ -133,8 +133,12 @@ pub(crate) fn matches_source_partition(
 ) -> bool {
     // DataFusion inserts cooperative yielding around source streams without
     // changing their batches, row order, or partition assignment.
-    if input.as_ref().is::<datafusion_physical_plan::coop::CooperativeExec>() {
-        return input.children().len() == 1 && matches_source_partition(input.children()[0], table, partition);
+    if input
+        .as_ref()
+        .is::<datafusion_physical_plan::coop::CooperativeExec>()
+    {
+        return input.children().len() == 1
+            && matches_source_partition(input.children()[0], table, partition);
     }
     let identity = match table.node() {
         TableNode::Read { source } => {
@@ -323,6 +327,27 @@ pub(crate) fn source_partition_projected_with_nested_paths(
                 .map_err(|e| TableError::Invalid(e.to_string()))?;
         let (file_schema, source): (SchemaRef, Arc<dyn datafusion_datasource::file::FileSource>) =
             match format.as_str() {
+                "plink" => (
+                    row_schema.clone(),
+                    Arc::new(crate::plink_source::PlinkSource::new(
+                        row_schema.clone(),
+                        options_json,
+                    )?),
+                ),
+                "avro" => (
+                    row_schema.clone(),
+                    Arc::new(crate::avro_source::AvroSource::new(
+                        row_schema.clone(),
+                        options_json,
+                    )?),
+                ),
+                "bgen" => (
+                    row_schema.clone(),
+                    Arc::new(crate::bgen_source::BgenSource::new(
+                        row_schema.clone(),
+                        options_json,
+                    )?),
+                ),
                 "vcf" => (
                     row_schema.clone(),
                     Arc::new(crate::vcf_source::VcfSource::new(
@@ -356,7 +381,16 @@ pub(crate) fn source_partition_projected_with_nested_paths(
                     let lines_schema = Arc::new(Schema::new(fields));
                     (
                         lines_schema.clone(),
-                        Arc::new(crate::line_source::LineSource::new()),
+                        Arc::new(
+                            crate::line_source::LineSource::new().with_gzip(
+                                options
+                                    .get("force_bgz")
+                                    .and_then(|value| value.as_bool())
+                                    .unwrap_or(false)
+                                    || path.ends_with(".gz")
+                                    || path.ends_with(".bgz"),
+                            ),
+                        ),
                     )
                 }
                 _ => {

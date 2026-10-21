@@ -1,0 +1,21 @@
+..........F.....................................................         [100%]
+=================================== FAILURES ===================================
+____ ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file ____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-swf0dxci/upstream_hail/methods/test_impex.py:1224: in test_devilish_nine_separated_eight_missing_file
+    actual = mt.x.collect()
+             ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:941: in collect
+    result = self._collect_expression()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:914: in _collect_expression
+    return self.source._collect_expression(self, n)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:1544: in _collect_expression
+    return output.aggregate(agg._ordered_collect(output.value), _localize=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/__init__.py:1213: in aggregate
+    native = native.aggregate_globals(
+E   vail.utils.FatalError: Execution error: named_struct requires 2-th (0-indexed) field name as non-empty constant string
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-swf0dxci/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file
+1 failed, 63 passed, 137 deselected in 34.90s

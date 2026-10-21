@@ -25,7 +25,7 @@ class FixtureModule:
 
 
 def resource_path(resources, name, cache_dir):
-    """Adapt the two sample VCF snapshots only within the test harness.
+    """Adapt the sample snapshots only within the test harness.
 
     Their original fixture bodies remain intact. Both snapshots have the same
     sample.vcf row/entry/column schema and 346 rows; the latter retains 20
@@ -33,6 +33,12 @@ def resource_path(resources, name, cache_dir):
     by conformance/vcf_golden.py. No legacy storage reader is added to Vail.
     """
     resources = Path(resources)
+    if name == 'split-multi-sample.vcf.mt':
+        target = Path(cache_dir) / name
+        if not (target / '_vail_matrix.json').exists():
+            from plink_fixture import materialize
+            materialize(target)
+        return str(target)
     if name not in ('sample.vcf.mt', 'sample.vcf-20-partitions.mt'):
         return str(resources / name)
     target = Path(cache_dir) / name

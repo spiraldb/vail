@@ -1,0 +1,142 @@
+{
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail",
+  "scope": "Direct import_* calls in upstream test bodies; helper and fixture dependencies require additional coverage",
+  "included": [
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen",
+      "line": 1681,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen_no_chromosome_in_file",
+      "line": 1692,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen_no_reference_specified",
+      "line": 1703,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_import_gen_skip_invalid_loci",
+      "line": 1709,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_export_gen",
+      "line": 1723,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "GENTests.test_export_gen_exprs",
+      "line": 1745,
+      "methods": [
+        "import_gen"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_force_bgz",
+      "line": 2137,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_empty",
+      "line": 2148,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_table_empty_with_header",
+      "line": 2159,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_glob",
+      "line": 2162,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_type_imputation",
+      "line": 2166,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_export_identity",
+      "line": 2191,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_source_file",
+      "line": 2213,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_import_same",
+      "line": 2238,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "name": "ImportTableTests.test_error_with_context",
+      "line": 2243,
+      "methods": [
+        "import_table"
+      ],
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    }
+  ],
+  "excluded": []
+}

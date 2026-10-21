@@ -35,6 +35,19 @@ class ExpressionException(ValueError):
     """An expression references an incompatible source or index scope."""
 
 
+class Indices:
+    """Expression source identity and the axes varying within that source."""
+    def __init__(self, source, axes=()):
+        self.source = source
+        self.axes = frozenset(axes)
+
+    def __eq__(self, other):
+        return isinstance(other, Indices) and self.source is other.source and self.axes == other.axes
+
+    def __hash__(self):
+        return hash((id(self.source), self.axes))
+
+
 def _validate_ndarray_scope(base, operands):
     """Report base-scoped matrix errors before unsupported ndarray kernels.
 
@@ -257,6 +270,12 @@ class Expression:
 
     def to_ir(self):
         return self._ir
+
+    @property
+    def _indices(self):
+        from .matrixtable import MatrixTable, _axes
+        axes = _axes(self.to_ir()) if isinstance(self.source, MatrixTable) else ({'row'} if self._row_indexed else set())
+        return Indices(self.source, axes)
 
     def __bool__(self):
         if isinstance(self.dtype, ttuple):
@@ -796,6 +815,8 @@ class Expression:
             return object.__getattribute__(self, "_array_flatmap")
         if isinstance(dtype, tarray):
             from . import collections as ops
+            if name == 'contains':
+                return lambda key: ops.contains(self, key)
             if name == "aggregate":
                 from .array_aggregate import aggregate
                 return lambda f: aggregate(self, f)
@@ -907,6 +928,10 @@ class Expression:
         if n is not None:
             table = table.head(n)
         return table.aggregate(agg.collect(table[name]), _localize=False)
+
+    def export(self, output, delimiter='\t', missing='NA', header=True):
+        from .matrix_import import export_expression
+        return export_expression(self, output, delimiter, missing, header)
 
     def collect(self, _localize=True):
         """Collect values, or return an unindexed lazy array expression."""
