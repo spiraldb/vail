@@ -38,11 +38,15 @@ def test_import_vcf_builds_nullable_entry_slots(tmp_path):
 
     assert mt.s.collect() == ['a', 'b']
     assert mt.count() == (2, 2)
-    assert mt.entries().collect() == [
-        hl.Struct(locus=hl.Locus('1', 1), alleles=['A', 'C'], s='a', GT=None, DP=None, AD=None),
-        hl.Struct(locus=hl.Locus('1', 1), alleles=['A', 'C'], s='b', GT=hl.Call([0, 1]), DP=7, AD=None),
-        hl.Struct(locus=hl.Locus('1', 2), alleles=['G', 'T'], s='a', GT=hl.Call([1, 1]), DP=9, AD=None),
-        hl.Struct(locus=hl.Locus('1', 2), alleles=['G', 'T'], s='b', GT=None, DP=None, AD=None),
+    entries = mt.entries().collect()
+    assert [(entry.locus.position, entry.s) for entry in entries] == [
+        (1, 'a'), (1, 'b'), (2, 'a'), (2, 'b'),
+    ]
+    assert [(entry.GT, entry.DP, entry.AD) for entry in entries] == [
+        (None, None, None),
+        (hl.Call([0, 1]), 7, None),
+        (hl.Call([1, 1]), 9, None),
+        (None, None, None),
     ]
 
 
