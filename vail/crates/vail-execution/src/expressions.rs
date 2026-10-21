@@ -1685,7 +1685,9 @@ impl Expr {
                     .collect::<Result<Vec<_>, ExprError>>()?;
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
-                if function.starts_with("__vail_list_reduce_") {
+                if function.starts_with("__vail_list_reduce_")
+                    || function == "__vail_list_call_stats"
+                {
                     let result = udf.return_type(&args)?;
                     if !same_collection_storage(&result, &dtype.to_arrow()?) {
                         return Err(ExprError::Invalid(format!(

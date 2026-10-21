@@ -110,6 +110,36 @@ fn reduce_legacy_call_stats(
     Ok(result)
 }
 
+fn reduce_direct_call_stats(
+    lists: &ListArray,
+    initializers: ArrayRef,
+    output_type: DataType,
+) -> Result<ArrayRef> {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("n_alleles", DataType::Int32, true),
+        Field::new("calls", lists.data_type().clone(), true),
+    ]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![initializers, Arc::new(lists.clone())])?;
+    let expression = Expr::NestedFunction {
+        function: "__vail_list_call_stats".into(),
+        args: vec![
+            Expr::Column {
+                name: "n_alleles".into(),
+            },
+            Expr::Column {
+                name: "calls".into(),
+            },
+        ],
+        dtype: Type::from_arrow(&output_type).unwrap(),
+    };
+    let result = lower(&expression, &schema)
+        .unwrap()
+        .evaluate(&batch)?
+        .into_array(lists.len())?;
+    assert_eq!(result.data_type(), &output_type);
+    Ok(result)
+}
+
 fn tagged_call_type() -> DataType {
     let logical = Type::Primitive(PrimitiveType::Call);
     vail_ordering::tag_type(
@@ -368,9 +398,12 @@ fn legacy_genomic_call_stats_alias_uses_batched_call_list_reducer() {
         .downcast_ref::<Int32Array>()
         .unwrap();
     assert_eq!(contiguous_an.value(0), 2);
-    let result =
-        reduce_legacy_call_stats(&lists, Arc::new(Int32Array::from(vec![2, 3, 2])), output)
-            .unwrap();
+    let result = reduce_legacy_call_stats(
+        &lists,
+        Arc::new(Int32Array::from(vec![2, 3, 2])),
+        output.clone(),
+    )
+    .unwrap();
     let result = result.as_any().downcast_ref::<StructArray>().unwrap();
     let an = result
         .column_by_name("AN")
@@ -379,6 +412,165 @@ fn legacy_genomic_call_stats_alias_uses_batched_call_list_reducer() {
         .downcast_ref::<Int32Array>()
         .unwrap();
     assert_eq!([an.value(0), an.value(1), an.value(2)], [2, 2, 0]);
+    assert!(!result.is_null(2)); // legacy null lists remain defined empty results
+    assert!(!an.is_null(2));
+
+    let direct =
+        reduce_direct_call_stats(&lists, Arc::new(Int32Array::from(vec![2, 3, 2])), output)
+            .unwrap();
+    let direct = direct.as_any().downcast_ref::<StructArray>().unwrap();
+    let direct_an = direct
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!([direct_an.value(0), direct_an.value(1)], [2, 2]);
+    assert!(direct.is_null(2));
+}
+
+#[test]
+fn direct_call_stats_uses_row_initializer_without_packing_calls() {
+    let call_type = tagged_call_type();
+    let fields = match &call_type {
+        DataType::Struct(fields) => fields.clone(),
+        _ => unreachable!(),
+    };
+    let calls = [
+        vail_execution::calls::Call::new(&[], false).unwrap(),
+        vail_execution::calls::Call::new(&[1], false).unwrap(),
+        vail_execution::calls::Call::new(&[0, 1], true).unwrap(),
+        vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
+    ];
+    let values = Arc::new(StructArray::new(
+        fields,
+        vec![
+            Arc::new(UInt16Array::from(
+                calls.iter().map(|call| call.first()).collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt16Array::from(
+                calls.iter().map(|call| call.second()).collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt8Array::from(
+                calls.iter().map(|call| call.ploidy()).collect::<Vec<_>>(),
+            )),
+            Arc::new(BooleanArray::from(
+                calls.iter().map(|call| call.phased()).collect::<Vec<_>>(),
+            )),
+        ],
+        Some(NullBuffer::from(vec![true, false, true, true])),
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", call_type, true)),
+        OffsetBuffer::from_lengths([0, 4, 0, 0]),
+        values,
+        Some(NullBuffer::from(vec![true, true, false, true])),
+    );
+    let output_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new(
+                "AC",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+            Arc::new(Field::new(
+                "AF",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+                true,
+            )),
+            Arc::new(Field::new("AN", DataType::Int32, true)),
+            Arc::new(Field::new(
+                "homozygote_count",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let initializers = Arc::new(Int32Array::from(vec![0, 2, 2, 2]));
+    let result = reduce_direct_call_stats(&lists, initializers, output_type.clone()).unwrap();
+    let stats = result.as_any().downcast_ref::<StructArray>().unwrap();
+    let an = stats
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(an.value(0), 0);
+    assert_eq!(an.value(1), 4); // null haploid is skipped; phased and hom diploids count
+    assert!(an.is_null(2));
+    assert_eq!(an.value(3), 0);
+    assert!(stats.is_null(2));
+    let ac = stats
+        .column_by_name("AC")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(
+        ac.value(1).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![1, 3])
+    );
+    assert_eq!(
+        ac.value(3).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![0, 0])
+    );
+    let af = stats
+        .column_by_name("AF")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(
+        af.value(1).as_any().downcast_ref::<Float64Array>().unwrap(),
+        &Float64Array::from(vec![0.25, 0.75])
+    );
+    assert!(af.is_null(3));
+    let hom = stats
+        .column_by_name("homozygote_count")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(
+        hom.value(1).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![0, 1])
+    );
+
+    let sliced = lists.slice(1, 3);
+    let sliced_result = reduce_direct_call_stats(
+        &sliced,
+        Arc::new(Int32Array::from(vec![2, 2, 2])),
+        output_type.clone(),
+    )
+    .unwrap();
+    let sliced_stats = sliced_result
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    let sliced_an = sliced_stats
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(sliced_an.value(0), 4);
+    assert!(sliced_an.is_null(1));
+    assert_eq!(sliced_an.value(2), 0);
+    assert!(sliced_stats.is_null(1));
+
+    assert!(reduce_direct_call_stats(
+        &lists,
+        Arc::new(Int32Array::from(vec![0, -1, 2, 2])),
+        output_type.clone(),
+    )
+    .is_err());
+    assert!(reduce_direct_call_stats(
+        &lists,
+        Arc::new(Int32Array::from(vec![0, 1, 2, 2])),
+        output_type,
+    )
+    .is_err());
 }
 
 #[test]
