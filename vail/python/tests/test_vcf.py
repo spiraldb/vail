@@ -28,6 +28,24 @@ def test_changing_format_trailing_missing_and_missing_calls(tmp_path):
     assert m.AD.collect()==[[4],None,[2,3],None]
 
 
+def test_import_vcf_builds_nullable_entry_slots(tmp_path):
+    path = tmp_path / 'entries.vcf'
+    path.write_text(HEADER +
+        '1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t.:.\t0/1:7\n' +
+        '1\t2\t.\tG\tT\t.\tPASS\t.\tGT:DP\t1/1:9\t.:.\n')
+
+    mt = hl.import_vcf(path)
+
+    assert mt.s.collect() == ['a', 'b']
+    assert mt.count() == (2, 2)
+    assert mt.entries().collect() == [
+        hl.Struct(locus=hl.Locus('1', 1), alleles=['A', 'C'], s='a', GT=None, DP=None),
+        hl.Struct(locus=hl.Locus('1', 1), alleles=['A', 'C'], s='b', GT=hl.Call([0, 1]), DP=7),
+        hl.Struct(locus=hl.Locus('1', 2), alleles=['G', 'T'], s='a', GT=hl.Call([1, 1]), DP=9),
+        hl.Struct(locus=hl.Locus('1', 2), alleles=['G', 'T'], s='b', GT=None, DP=None),
+    ]
+
+
 def test_bgzf_members_header_override_and_drop_samples(tmp_path):
     rows='1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t0/1:7\t0/0:9\n'
     path=tmp_path/'test.vcf.bgz'

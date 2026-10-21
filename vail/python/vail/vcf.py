@@ -46,9 +46,10 @@ def import_vcf(
     block_size=None, _create_row_uids=False, _create_col_uids=False,
 ):
     from . import Table, _native_session, _schema_from_native, _validate_n
+    from . import if_else, missing, struct
     from .types import tfloat32, tfloat64, tint64, tstr, tstruct
     from .reference_genome import resolve_reference
-    from .matrixtable import MatrixIR, MatrixTable, _CID, _COL
+    from .matrixtable import MatrixIR, MatrixTable, _CELLS, _CID, _COL, _VALUE
 
     entry_float_type = tfloat64 if entry_float_type is None else entry_float_type
     if entry_float_type not in (tfloat32, tfloat64):
@@ -83,6 +84,19 @@ def import_vcf(
         [{_CID: i, _COL: {"s": sample}} for i, sample in enumerate(samples)],
         schema=tstruct(**{_CID: tint64, _COL: tstruct(s=tstr)}),
     ).key_by()
+    # read_vcf still exposes the legacy physical cell shape (cid, present,
+    # value). Normalize it at this API boundary so MatrixIR has a single
+    # presence representation: the validity bit on the entry struct itself.
+    # Keep every cell slot and its column id; a valid value struct with all
+    # missing children remains a present entry.
+    old_cells = core[_CELLS]
+    entry_type = old_cells.dtype.element_type["value"]
+    core = core.annotate(**{
+        _CELLS: old_cells.map(lambda cell: struct(**{
+            _CID: cell[_CID],
+            _VALUE: if_else(cell["present"], cell["value"], missing(entry_type)),
+        }))
+    })
     # The native parser emits exactly one ordered cell per header sample and
     # checks sample cardinality when entries are decoded. Avoid adding a generic
     # whole-entry alignment predicate that defeats source field projection.
