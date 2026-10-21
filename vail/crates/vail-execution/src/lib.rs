@@ -572,6 +572,6 @@ mod hwe_counts;
 
 /// Whether the native list adapter exposes this shared reducer.
 pub fn supports_list_reducer(function: &str) -> bool {
-    list_aggregate::arity(function).is_some()
+    function != "call_stats" && list_aggregate::arity(function).is_some()
 }
 mod variant_kernels;
