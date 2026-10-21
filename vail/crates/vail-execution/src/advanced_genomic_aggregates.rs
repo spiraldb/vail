@@ -411,6 +411,11 @@ impl GroupsAccumulator for CallStatsGroups {
         filter: Option<&arrow_array::BooleanArray>,
         total: usize,
     ) -> DfResult<()> {
+        #[derive(Clone, Copy)]
+        enum AlleleCounts<'a> {
+            Count(&'a Int32Array),
+            Alleles(&'a ListArray),
+        }
         let [input] = values else {
             return Err(bad("call_stats requires one input"));
         };
@@ -421,41 +426,60 @@ impl GroupsAccumulator for CallStatsGroups {
             return Err(bad("call_stats group index exceeds state"));
         }
         self.ensure(total)?;
-        let packed = input
+        let input = input
             .as_any()
             .downcast_ref::<StructArray>()
-            .ok_or_else(|| bad("call_stats requires packed struct"))?;
-        let calls = packed_col(packed, "__vail_genomic_call")?
-            .as_any()
-            .downcast_ref::<StructArray>()
-            .ok_or_else(|| bad("call_stats requires Call"))?;
-        let decoded = crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
-        let allele_counts = packed_col(packed, "__vail_genomic_alleles")?;
-        for row in 0..packed.len() {
-            if !Self::enabled(filter, row) || packed.is_null(row) {
-                continue;
-            }
-            let n = match allele_counts.data_type() {
-                DataType::Int32 => {
-                    let a = allele_counts.as_any().downcast_ref::<Int32Array>().unwrap();
-                    if a.is_null(row) {
-                        continue;
-                    }
-                    a.value(row) as usize
-                }
-                DataType::List(_) => {
-                    let a = allele_counts.as_any().downcast_ref::<ListArray>().unwrap();
-                    if a.is_null(row) {
-                        continue;
-                    }
-                    a.value_length(row) as usize
-                }
+            .ok_or_else(|| bad("call_stats requires Call struct input"))?;
+        // The direct matrix-list path supplies Call values directly. Existing
+        // table and scan paths continue to supply the packed call/allele pair.
+        let direct_calls =
+            vail_ordering::same_layout(input.data_type(), &crate::calls::storage_type());
+        let (calls, allele_counts) = if direct_calls {
+            (input, None)
+        } else {
+            let calls = packed_col(input, "__vail_genomic_call")?
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .ok_or_else(|| bad("call_stats requires Call"))?;
+            let allele_counts = packed_col(input, "__vail_genomic_alleles")?;
+            let allele_counts = match allele_counts.data_type() {
+                DataType::Int32 => AlleleCounts::Count(
+                    allele_counts.as_any().downcast_ref::<Int32Array>().unwrap(),
+                ),
+                DataType::List(_) => AlleleCounts::Alleles(
+                    allele_counts.as_any().downcast_ref::<ListArray>().unwrap(),
+                ),
                 _ => return Err(bad("invalid call_stats allele count type")),
             };
-            if n > i32::MAX as usize {
+            (calls, Some(allele_counts))
+        };
+        let decoded = crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
+        for row in 0..input.len() {
+            if !Self::enabled(filter, row) || input.is_null(row) {
+                continue;
+            }
+            let n = if direct_calls {
+                self.n_alleles
+            } else {
+                match allele_counts.unwrap() {
+                    AlleleCounts::Count(a) => {
+                        if a.is_null(row) {
+                            continue;
+                        }
+                        a.value(row) as usize
+                    }
+                    AlleleCounts::Alleles(a) => {
+                        if a.is_null(row) {
+                            continue;
+                        }
+                        a.value_length(row) as usize
+                    }
+                }
+            };
+            if !direct_calls && n > i32::MAX as usize {
                 return Err(bad("call_stats allele count exceeds int32"));
             }
-            if n != self.n_alleles {
+            if !direct_calls && n != self.n_alleles {
                 return Err(bad("call_stats allele count differs from initializer"));
             }
             let Some(call) = decoded.get(row).map_err(|e| bad(e.to_string()))? else {

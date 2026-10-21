@@ -6,12 +6,12 @@
 use std::sync::Arc;
 
 use arrow_array::{
-    new_empty_array, new_null_array, Array, ArrayRef, BooleanArray, Int32Array, Int64Array,
-    ListArray, StructArray, UInt32Array,
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, StructArray, new_empty_array,
+    new_null_array,
 };
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
-use datafusion_common::{exec_datafusion_err, plan_datafusion_err, Result, ScalarValue};
+use datafusion_common::{Result, ScalarValue, exec_datafusion_err, plan_datafusion_err};
 use datafusion_expr::{
     ColumnarValue, GroupsAccumulator, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
     Volatility,
@@ -24,12 +24,13 @@ use datafusion_physical_expr::{
 mod direct;
 
 const PREFIX: &str = "__vail_list_reduce_";
-const GROUP_INDEX_CHUNK: usize = 256;
+const GROUP_INDEX_CHUNK: usize = 64 * 1024;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct ListAggregate {
     name: String,
     function: String,
+    direct_call_stats: bool,
     signature: Signature,
 }
 
@@ -68,11 +69,17 @@ pub(crate) fn arity(function: &str) -> Option<usize> {
 }
 
 pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
-    let function = name.strip_prefix(PREFIX)?;
+    let direct_call_stats = name == "__vail_list_call_stats";
+    let function = if direct_call_stats {
+        "call_stats"
+    } else {
+        name.strip_prefix(PREFIX)?
+    };
     let arity = arity(function)?;
     Some(Arc::new(ScalarUDF::from(ListAggregate {
         name: name.to_owned(),
         function: function.to_owned(),
+        direct_call_stats,
         signature: Signature::any(arity, Volatility::Immutable),
     })))
 }
@@ -189,85 +196,6 @@ pub(crate) fn legacy_call_stats() -> std::result::Result<
     ))
 }
 
-fn pack_legacy_call_lists(lists: &ListArray, initializers: &dyn Array) -> Result<ListArray> {
-    let calls = lists.values();
-    let call_type = calls.data_type();
-    if !vail_ordering::same_layout(call_type, &crate::calls::storage_type()) {
-        return Err(plan_datafusion_err!(
-            "call_stats list input requires Call values"
-        ));
-    }
-    if initializers.len() != lists.len() || initializers.data_type() != &DataType::Int32 {
-        return Err(plan_datafusion_err!(
-            "call_stats list initializer length or type mismatch"
-        ));
-    }
-
-    let mut lengths = Vec::with_capacity(lists.len());
-    let mut call_indices = Vec::new();
-    let mut allele_counts = Vec::new();
-    let offsets = lists.value_offsets();
-    let gather = (0..lists.len()).any(|row| lists.is_null(row) && offsets[row] != offsets[row + 1]);
-    let child_start = offsets.first().copied().unwrap_or(0) as usize;
-    let child_end = offsets.last().copied().unwrap_or(0) as usize;
-    if child_start > child_end || child_end > calls.len() {
-        return Err(exec_datafusion_err!(
-            "call_stats list offsets exceed child values"
-        ));
-    }
-    for row in 0..lists.len() {
-        let n = i32::try_from(initializer_n(initializers, row)?)
-            .map_err(|_| exec_datafusion_err!("call_stats allele count exceeds int32"))?;
-        if lists.is_null(row) {
-            // The legacy adapter treated a missing call array as an empty array.
-            lengths.push(0);
-            continue;
-        }
-        let start = offsets[row] as usize;
-        let end = offsets[row + 1] as usize;
-        if end > calls.len() || start > end {
-            return Err(exec_datafusion_err!(
-                "call_stats list offsets exceed child values"
-            ));
-        }
-        lengths.push(end - start);
-        for index in start..end {
-            if gather {
-                call_indices.push(
-                    u32::try_from(index).map_err(|_| {
-                        exec_datafusion_err!("call_stats child offset exceeds uint32")
-                    })?,
-                );
-            }
-            allele_counts.push(n);
-        }
-    }
-    let selected_calls = if gather {
-        arrow_select::take::take(calls.as_ref(), &UInt32Array::from(call_indices), None)?
-    } else {
-        calls.slice(child_start, child_end - child_start)
-    };
-    let packed_type = packed_call_stats_input(call_type);
-    let packed_fields = match &packed_type {
-        DataType::Struct(fields) => fields.clone(),
-        _ => unreachable!(),
-    };
-    let packed = Arc::new(StructArray::new(
-        packed_fields,
-        vec![
-            selected_calls.clone(),
-            Arc::new(Int32Array::from(allele_counts)),
-        ],
-        selected_calls.nulls().cloned(),
-    ));
-    Ok(ListArray::new(
-        Arc::new(Field::new("item", packed_type, true)),
-        arrow_buffer::OffsetBuffer::from_lengths(lengths),
-        packed,
-        None,
-    ))
-}
-
 fn kernel(
     function: &str,
     input: &DataType,
@@ -363,6 +291,7 @@ fn grouped_call_stats_lists(
     initializers: &dyn Array,
     input_type: &DataType,
     output_type: &DataType,
+    null_lists_are_empty: bool,
 ) -> Result<ArrayRef> {
     let mut buckets = std::collections::BTreeMap::<usize, Vec<usize>>::new();
     let mut selected = (0..lists.len()).map(|row| (0, row)).collect::<Vec<_>>();
@@ -370,7 +299,7 @@ fn grouped_call_stats_lists(
     for row in 0..lists.len() {
         // Validate initializer values even for null lists, matching the scalar fallback.
         let n = initializer_n(initializers, row)?;
-        if !lists.is_null(row) {
+        if !lists.is_null(row) || null_lists_are_empty {
             buckets.entry(n).or_default().push(row);
         }
     }
@@ -415,7 +344,27 @@ impl ScalarUDFImpl for ListAggregate {
         &self.signature
     }
     fn return_type(&self, args: &[DataType]) -> Result<DataType> {
-        let input = element_type(args, &self.function)?;
+        let logical_args = if self.direct_call_stats {
+            if args.len() != 2 || args[0] != DataType::Int32 {
+                return Err(plan_datafusion_err!(
+                    "direct call_stats requires int32 n_alleles followed by list<Call>"
+                ));
+            }
+            let DataType::List(field) = &args[1] else {
+                return Err(plan_datafusion_err!(
+                    "direct call_stats requires int32 n_alleles followed by list<Call>"
+                ));
+            };
+            if !vail_ordering::same_layout(field.data_type(), &crate::calls::storage_type()) {
+                return Err(plan_datafusion_err!(
+                    "direct call_stats requires int32 n_alleles followed by list<Call>"
+                ));
+            }
+            vec![args[1].clone(), args[0].clone()]
+        } else {
+            args.to_vec()
+        };
+        let input = element_type(&logical_args, &self.function)?;
         let input = if self.function == "call_stats"
             && vail_ordering::same_layout(&input, &crate::calls::storage_type())
         {
@@ -435,12 +384,20 @@ impl ScalarUDFImpl for ListAggregate {
             .iter()
             .all(|v| matches!(v, ColumnarValue::Scalar(_)));
         let rows = if scalar { 1 } else { args.number_rows };
-        let arrays = args
+        let mut arrays = args
             .args
             .iter()
             .cloned()
             .map(|a| a.into_array(rows))
             .collect::<Result<Vec<_>>>()?;
+        if self.direct_call_stats {
+            if arrays.len() != 2 || arrays[0].data_type() != &DataType::Int32 {
+                return Err(exec_datafusion_err!(
+                    "direct call_stats requires int32 n_alleles followed by list<Call>"
+                ));
+            }
+            arrays.swap(0, 1);
+        }
         let input_type = element_type(
             &arrays
                 .iter()
@@ -547,17 +504,24 @@ impl ScalarUDFImpl for ListAggregate {
             let initializer = initializers.ok_or_else(|| {
                 exec_datafusion_err!("call_stats requires an allele-count initializer")
             })?;
+            let raw_call_lists =
+                vail_ordering::same_layout(&input_type, &crate::calls::storage_type());
             let (lists, input_type) =
-                if vail_ordering::same_layout(&input_type, &crate::calls::storage_type()) {
-                    (
-                        pack_legacy_call_lists(lists, initializer.as_ref())?,
-                        output_input_type,
-                    )
+                if raw_call_lists {
+                    // Keep each row's allele count in its grouped accumulator. The
+                    // calls child buffer is already aligned with list offsets.
+                    (lists.clone(), output_input_type)
                 } else {
                     (lists.clone(), input_type)
                 };
             let result =
-                grouped_call_stats_lists(&lists, initializer.as_ref(), &input_type, &output_type)?;
+                grouped_call_stats_lists(
+                    &lists,
+                    initializer.as_ref(),
+                    &input_type,
+                    &output_type,
+                    raw_call_lists && !self.direct_call_stats,
+                )?;
             return if scalar {
                 Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
                     &result, 0,
