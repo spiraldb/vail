@@ -130,3 +130,27 @@ def test_matrix_call_stats_empty_filtered_and_invalid_calls():
     for n in [-1, hl.missing(hl.tint32)]:
         with pytest.raises(RuntimeError, match='allele count'):
             mt.annotate_rows(stats=hl.agg.call_stats(mt.GT, n)).rows().collect()
+
+
+def test_matrix_call_stats_row_initializer_and_aligned_call_captures():
+    mt = hl.range_matrix_table(2, 3, n_partitions=2)
+    calls = hl.literal([
+        hl.Call([0, 0]), hl.Call([0, 1]), None,
+        hl.Call([0, 2]), hl.Call([1, 2]), hl.Call([1]),
+    ], hl.tarray(hl.tcall))
+    mt = mt.annotate_rows(n_alleles=hl.if_else(mt.row_idx == 0, 2, 3))
+    mt = mt.annotate_entries(GT=calls[mt.row_idx * 3 + mt.col_idx])
+    mt = mt.filter_entries(~((mt.row_idx == 0) & (mt.col_idx == 1)))
+
+    call_with_axis_captures = hl.if_else(
+        mt.col_idx == 2, hl.call(mt.row_idx), mt.GT
+    )
+    rows = mt.annotate_rows(
+        stats=hl.agg.call_stats(call_with_axis_captures, mt.n_alleles)
+    ).rows().collect()
+    assert [row.stats for row in rows] == [
+        hl.Struct(AC=[3, 0], AF=[1.0, 0.0], AN=3,
+                  homozygote_count=[1, 0]),
+        hl.Struct(AC=[1, 2, 2], AF=[0.2, 0.4, 0.4], AN=5,
+                  homozygote_count=[0, 0, 0]),
+    ]

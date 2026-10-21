@@ -301,7 +301,8 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                 // the body for null parent slots. Its filtered-batch path may
                 // allocate subset metadata when only some slots are valid;
                 // the all-valid path keeps the borrowed aligned arrays intact.
-                let entry_presence = entry_slice
+                let values = entry_values(entry_slice.as_ref())?;
+                let entry_presence = values
                     .nulls()
                     .map(|validity| validity.inner().clone())
                     .unwrap_or_else(|| BooleanBuffer::new_set(entry_count));
