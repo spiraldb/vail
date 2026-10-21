@@ -32,6 +32,7 @@ use vail_storage::fragment_index::make_typed_key_comparators;
 const RUN_MEMORY_BUDGET: usize = 64 * 1024 * 1024;
 const OUTPUT_BATCH_MEMORY_BUDGET: usize = 32 * 1024 * 1024;
 const OUTPUT_BATCH_ROW_BUDGET: usize = 8192;
+const PENDING_SINGLETON_ROW_BUDGET: usize = 8192;
 
 /// A single equal-row-key run. Keep ordinary duplicate runs in memory, but
 /// spill oversized runs batch-by-batch so transposition never retains an
@@ -445,16 +446,21 @@ impl ExecutionPlan for MatrixEntriesExec {
                                     if added_source {
                                         singleton_bytes = singleton_bytes.saturating_add(bytes);
                                     }
+                                    let hit_byte_limit = singleton_bytes >= RUN_MEMORY_BUDGET;
+                                    let hit_row_limit = singleton_rows.len() >= PENDING_SINGLETON_ROW_BUDGET;
                                     singleton_rows.extend(finished.batches);
-                                    if added_source
-                                        && singleton_bytes >= RUN_MEMORY_BUDGET
-                                        && last_budget_flush_source_batch != Some(id)
+                                    if hit_row_limit
+                                        || (added_source
+                                            && hit_byte_limit
+                                            && last_budget_flush_source_batch != Some(id))
                                     {
                                         let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
                                         while let Some(output) = pending.try_next().await? { yield output; }
                                         singleton_bytes = 0;
                                         singleton_source_batches.clear();
-                                        last_budget_flush_source_batch = Some(id);
+                                        if hit_byte_limit {
+                                            last_budget_flush_source_batch = Some(id);
+                                        }
                                     }
                                 }
                             } else if finished.rows > 1 {
