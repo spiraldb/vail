@@ -1092,6 +1092,71 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                 Ok(PreparedTable {parts,counts,schema})
             }
             TableNode::IntervalRead {child,intervals,point_type,filter}=>crate::interval_read::prepare(child,intervals,point_type,*filter).await,
+            TableNode::MatrixEntriesByKeyRuns {
+                child, row_field, cells_field, columns_global, row_key_aliases,
+                col_struct_field, value_field,
+            } => {
+                let input = prepared_input(child)?;
+                let key_indices = row_key_aliases.iter()
+                    .map(|name| child.schema().index_of(name).map_err(|error| TableError::Invalid(error.to_string())))
+                    .collect::<Result<Vec<_>>>()?;
+                let rows = input.ordered();
+                let globals = table.globals().lower()?;
+                let row_type = match child.schema().field_with_name(row_field)?.data_type() {
+                    arrow_schema::DataType::Struct(fields) => fields,
+                    other => return Err(TableError::Invalid(format!("matrix row must be a struct, found {other:?}"))),
+                };
+                let cell_item = match child.schema().field_with_name(cells_field)?.data_type() {
+                    arrow_schema::DataType::List(item) | arrow_schema::DataType::LargeList(item) => item,
+                    other => return Err(TableError::Invalid(format!("matrix cells must be a list, found {other:?}"))),
+                };
+                let cell_fields = match cell_item.data_type() {
+                    arrow_schema::DataType::Struct(fields) => fields,
+                    other => return Err(TableError::Invalid(format!("matrix cell item must be a struct, found {other:?}"))),
+                };
+                let value_field_type = cell_fields.iter().find(|field| field.name() == value_field)
+                    .ok_or_else(|| TableError::Invalid(format!("matrix entry value field {value_field:?} is absent")))?;
+                let value_fields = match value_field_type.data_type() {
+                    arrow_schema::DataType::Struct(fields) => fields,
+                    other => return Err(TableError::Invalid(format!("matrix entry value must be a struct, found {other:?}"))),
+                };
+                let columns_item = match table.globals().schema().field_with_name(columns_global)?.data_type() {
+                    arrow_schema::DataType::List(item) | arrow_schema::DataType::LargeList(item) => item,
+                    other => return Err(TableError::Invalid(format!("matrix columns must be a list, found {other:?}"))),
+                };
+                let columns_record_fields = match columns_item.data_type() {
+                    arrow_schema::DataType::Struct(fields) => fields,
+                    other => return Err(TableError::Invalid(format!("matrix column item must be a struct, found {other:?}"))),
+                };
+                let column_field_type = columns_record_fields.iter().find(|field| field.name() == col_struct_field)
+                    .ok_or_else(|| TableError::Invalid(format!("matrix column field {col_struct_field:?} is absent")))?;
+                let column_type = match column_field_type.data_type() {
+                    arrow_schema::DataType::Struct(fields) => fields,
+                    other => return Err(TableError::Invalid(format!("matrix column value must be a struct, found {other:?}"))),
+                };
+                let config = crate::matrix_entries::Config {
+                    row_struct: child.schema().index_of(row_field)?,
+                    cells: child.schema().index_of(cells_field)?,
+                    key_indices,
+                    columns_global: columns_global.clone(),
+                    column_struct: col_struct_field.clone(),
+                    row_field_names: row_type.iter().map(|field| field.name().clone()).collect(),
+                    col_field_names: column_type.iter().map(|field| field.name().clone()).collect(),
+                    value_field: value_field.clone(),
+                    output_schema: table.schema().clone(),
+                    output_partition_tag: schema
+                        .fields()
+                        .last()
+                        .ok_or_else(|| TableError::Invalid("matrix entries schema lacks partition tag".into()))?
+                        .name()
+                        .clone(),
+                    output_key_fields: table.keys().to_vec(),
+                    global_schema: table.globals().schema().clone(),
+                };
+                let _ = value_fields;
+                let physical = crate::matrix_entries::lower(rows, globals, config)?;
+                Ok(PreparedTable { parts: vec![physical.clone()], counts: vec![None], schema: physical.schema() })
+            }
             TableNode::MapGlobals {child}=> {let mut input=prepared_input(child)?;input.schema=schema;Ok(input)},
             TableNode::MapRows {child,..}|TableNode::Filter {child,..}|TableNode::Explode {child,..}|TableNode::GroupWithinPartitions {child,..}|TableNode::MapPartitions {child,..}=> {
                 let input=prepared_input(child)?;

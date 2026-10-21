@@ -125,6 +125,10 @@ pub fn table<'py>(py: Python<'py>, t: &TableIR) -> PyResult<Bound<'py, PyDict>> 
             d.set_item("body", expr(body))?;
             "TableMapPartitions"
         }
+        TableNode::MatrixEntriesByKeyRuns { child, .. } => {
+            d.set_item("child", table(py, child)?)?;
+            "MatrixEntriesByKeyRuns"
+        }
         TableNode::Lookup {
             left,
             right,

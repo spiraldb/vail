@@ -23,6 +23,7 @@ mod logical_parameters;
 mod logical_same;
 mod logical_scan;
 mod lookup;
+mod matrix_entries;
 mod nested_projection;
 mod nested_scan;
 mod partition_grouping;
@@ -199,6 +200,15 @@ pub enum TableNode {
         child: TableRef,
         name: String,
         n: usize,
+    },
+    MatrixEntriesByKeyRuns {
+        child: TableRef,
+        row_field: String,
+        cells_field: String,
+        columns_global: String,
+        row_key_aliases: Vec<String>,
+        col_struct_field: String,
+        value_field: String,
     },
     MapPartitions {
         child: TableRef,
@@ -1154,6 +1164,85 @@ impl TableIR {
             },
         ))
     }
+
+    /// Emit matrix entries by ordered row-key runs and then column-key order.
+    /// The child must already be sorted by `row_key_aliases`; its cells and
+    /// `_COLUMNS` metadata must use the same column-key ordering.
+    pub fn matrix_entries_by_key_runs(
+        self: &Arc<Self>,
+        row_field: String,
+        cells_field: String,
+        columns_global: String,
+        row_key_aliases: Vec<String>,
+        row_key_fields: Vec<String>,
+        col_struct_field: String,
+        col_key_fields: Vec<String>,
+        value_field: String,
+    ) -> Result<TableRef> {
+        if row_key_aliases.len() != row_key_fields.len() {
+            return Err(TableError::Invalid(
+                "matrix entries row-key aliases and fields differ in length".into(),
+            ));
+        }
+        let row_type = struct_type(self.schema.field_with_name(&row_field)?.data_type())?;
+        for key in &row_key_aliases {
+            self.schema.field_with_name(key)?;
+        }
+        for key in &row_key_fields {
+            find_struct_field(row_type, key)?;
+        }
+        let cells_type = list_item_type(self.schema.field_with_name(&cells_field)?.data_type())?;
+        let cell_type = struct_type(cells_type.data_type())?;
+        let value_type = struct_type(find_struct_field(cell_type, &value_field)?.data_type())?;
+        let columns_type = list_item_type(
+            self.globals
+                .schema()
+                .field_with_name(&columns_global)?
+                .data_type(),
+        )?;
+        let column_type = struct_type(columns_type.data_type())?;
+        let col_type = struct_type(find_struct_field(column_type, &col_struct_field)?.data_type())?;
+        for key in &col_key_fields {
+            find_struct_field(col_type, key)?;
+        }
+        let mut output_fields = Vec::new();
+        let mut output_names = std::collections::HashSet::new();
+        for field in row_type
+            .iter()
+            .chain(col_type.iter())
+            .chain(value_type.iter())
+        {
+            if !output_names.insert(field.name().clone()) {
+                return Err(TableError::Invalid(format!(
+                    "matrix entries fields collide at {:?}",
+                    field.name()
+                )));
+            }
+            output_fields.push(field.as_ref().clone());
+        }
+        let mut keys = row_key_fields.clone();
+        keys.extend(col_key_fields.iter().cloned());
+        if keys.iter().collect::<std::collections::HashSet<_>>().len() != keys.len() {
+            return Err(TableError::Invalid(
+                "matrix entries row and column keys collide".into(),
+            ));
+        }
+        let schema = Arc::new(Schema::new(output_fields));
+        Ok(Self::new(
+            schema,
+            keys,
+            self.globals.clone(),
+            TableNode::MatrixEntriesByKeyRuns {
+                child: self.clone(),
+                row_field,
+                cells_field,
+                columns_global,
+                row_key_aliases,
+                col_struct_field,
+                value_field,
+            },
+        ))
+    }
     pub fn map_partitions(
         self: &Arc<Self>,
         rows_name: String,
@@ -1558,6 +1647,9 @@ impl TableIR {
             TableNode::GroupWithinPartitions { child, name, n } => {
                 json!({"node":"TableGroupWithinPartitions","child":child.explain(),"name":name,"n":n})
             }
+            TableNode::MatrixEntriesByKeyRuns { child, .. } => {
+                json!({"node":"MatrixEntriesByKeyRuns", "child":child.explain()})
+            }
             TableNode::MapPartitions {
                 child,
                 rows_name,
@@ -1683,6 +1775,7 @@ impl TableIR {
             TableNode::MapGlobals { child } | TableNode::MapRows { child, .. } => {
                 child.partition_rows()
             }
+            TableNode::MatrixEntriesByKeyRuns { .. } => None,
             TableNode::Filter { .. }
             | TableNode::Explode { .. }
             | TableNode::MapPartitions { .. } => None,
@@ -1771,6 +1864,7 @@ impl TableIR {
             | TableNode::OrderBy { child, .. }
             | TableNode::KeyBy { child, .. }
             | TableNode::Repartition { child, .. } => child.known_count(),
+            TableNode::MatrixEntriesByKeyRuns { .. } => None,
             TableNode::Filter { .. }
             | TableNode::Explode { .. }
             | TableNode::MapPartitions { .. } => None,
@@ -1826,6 +1920,7 @@ impl TableIR {
             | TableNode::MapRows { child, .. }
             | TableNode::GroupWithinPartitions { child, .. }
             | TableNode::MapPartitions { child, .. } => child.known_n_partitions(),
+            TableNode::MatrixEntriesByKeyRuns { .. } => Some(1),
             TableNode::FilterPartitions { child, parts, keep } => {
                 let n = child.known_n_partitions()?;
                 if parts.iter().any(|&p| p >= n) {
@@ -2002,6 +2097,32 @@ impl TableIR {
         .await?;
         Ok(())
     }
+}
+
+fn struct_type(data_type: &DataType) -> Result<&arrow_schema::Fields> {
+    match data_type {
+        DataType::Struct(fields) => Ok(fields),
+        other => Err(TableError::Invalid(format!(
+            "expected struct type, found {other:?}"
+        ))),
+    }
+}
+
+fn list_item_type(data_type: &DataType) -> Result<&Field> {
+    match data_type {
+        DataType::List(item) | DataType::LargeList(item) => Ok(item),
+        other => Err(TableError::Invalid(format!(
+            "expected list type, found {other:?}"
+        ))),
+    }
+}
+
+fn find_struct_field<'a>(fields: &'a arrow_schema::Fields, name: &str) -> Result<&'a Field> {
+    fields
+        .iter()
+        .find(|field| field.name() == name)
+        .map(AsRef::as_ref)
+        .ok_or_else(|| TableError::Invalid(format!("struct field {name:?} is absent")))
 }
 
 async fn collect_partitions(mut input: BatchStream) -> Result<Vec<Vec<RecordBatch>>> {

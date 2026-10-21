@@ -272,6 +272,31 @@ def test_entries_does_not_assume_exploded_row_keys_are_unique():
     )
 
 
+def test_entries_orders_duplicate_multikey_runs_across_partitions():
+    mt = hl.range_matrix_table(2, 3, 1)
+    mt = mt.key_rows_by(row_group=mt.row_idx // 2, row_idx=mt.row_idx)
+    mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
+    mt = mt.key_cols_by(col_group=mt.col_idx % 2, col_idx=mt.col_idx)
+    mt = mt.annotate_entries(value=hl.int32(mt.replica * 100 + mt.col_idx))
+    mt = mt.filter_entries(mt.col_idx != 1).repartition(3)
+
+    entries = mt.entries().collect()
+    keys = [
+        (entry.row_group, entry.row_idx, entry.col_group, entry.col_idx)
+        for entry in entries
+    ]
+    assert keys == sorted(keys)
+    assert Counter(
+        (entry.row_group, entry.row_idx, entry.col_group, entry.col_idx, entry.replica, entry.value)
+        for entry in entries
+    ) == Counter(
+        (row_idx // 2, row_idx, col_group, col_idx, item, item * 100 + col_idx)
+        for row_idx in range(2)
+        for item in (0, 1)
+        for col_group, col_idx in ((0, 0), (0, 2))
+    )
+
+
 def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
     mt = hl.range_matrix_table(3, 5, 2).choose_cols([4, 1, 3])
     mt = mt.filter_cols(mt.col_idx != 3)

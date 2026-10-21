@@ -1351,6 +1351,24 @@ class Table:
         })
         return Table(native, schema, self._keys)
 
+    def _matrix_entries_by_key_runs(
+        self, *, row_field, cells_field, columns_global, row_key_aliases,
+        row_key_fields, col_struct_field, col_key_fields, value_field,
+    ):
+        native = self._native.matrix_entries_by_key_runs(
+            row_field, cells_field, columns_global, list(row_key_aliases),
+            list(row_key_fields), col_struct_field, list(col_key_fields), value_field,
+        )
+        schema = tstruct(**{
+            field_name: type_from_wire(field_type)
+            for field_name, field_type in native.schema()
+        })
+        return Table(
+            native,
+            schema,
+            builtins.tuple(row_key_fields) + builtins.tuple(col_key_fields),
+        )
+
     def map_partitions(self, f):
         """Lazily transform each partition, retaining its partition membership.
 

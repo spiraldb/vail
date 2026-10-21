@@ -1412,31 +1412,38 @@ class MatrixTable:
         return self._with_globals(range_table(1).key_by().select())
 
     def entries(self):
-        if (
-            self._mir.row_key_unique
-            and self._mir.row_key
-            and self._mir.col_key
-        ):
+        if self._mir.row_key and self._mir.col_key:
             base = self._mir.core
+            aliases = tuple(
+                "__vail_entries_row_key_" + uuid4().hex
+                for _ in self._mir.row_key
+            )
+            base = base.annotate(**{
+                alias: base[_ROW][name]
+                for alias, name in zip(aliases, self._mir.row_key)
+            })
             if self._mir.column_ordering == self._mir.col_key:
                 column_records = self._mir.column_records
-                positions = None
+                cells = base[_CELLS]
             else:
-                sorted_columns, positions = self._columns_in_key_order()
-                columns_name = "__vail_sorted_matrix_columns_" + uuid4().hex
-                positions_name = "__vail_sorted_matrix_positions_" + uuid4().hex
-                base = base.annotate_globals(
-                    **{columns_name: sorted_columns, positions_name: positions}
-                )
-                globals = base.index_globals()
-                column_records = globals[columns_name]
-                positions = globals[positions_name]
-            context = self._context(
-                "entry", column_records=column_records, cell_positions=positions,
-                base_table=base,
+                column_records, positions = self._columns_in_key_order()
+                cells = _take_array(base[_CELLS], positions)
+            base = base.annotate(**{_CELLS: cells}).annotate_globals(
+                **{_COLUMNS: column_records}
             )
-        else:
-            context = self._context("entry")
+            result = base._matrix_entries_by_key_runs(
+                row_field=_ROW,
+                cells_field=_CELLS,
+                columns_global=_COLUMNS,
+                row_key_aliases=aliases,
+                row_key_fields=self._mir.row_key,
+                col_struct_field=_COL,
+                col_key_fields=self._mir.col_key,
+                value_field=_VALUE,
+            )
+            return self._with_globals(result)
+
+        context = self._context("entry")
         fields = {
             n: context[p][n]
             for p, schema in (
@@ -1448,10 +1455,6 @@ class MatrixTable:
         }
         result = self._with_globals(_project(context, list(fields.items())))
         keys = self._mir.row_key + self._mir.col_key
-        if self._mir.row_key_unique and self._mir.row_key and self._mir.col_key:
-            # Each unique row emits its entries in column-key order, so the
-            # exploded table already satisfies the full composite key order.
-            return result._with_keys(*keys)
         return result.key_by(*keys)
 
     def _aggregate(self, axis, expr, localize):
