@@ -446,6 +446,45 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn missing_check_on_stored_field_requests_only_shape() {
+        let expr = Expr::IsMissing {
+            value: Arc::new(field(column("cells"), "GT")),
+        };
+        let mut analyzer = VcfDependencies::default();
+        let deps = analyzer.collect(&expr, &[], 0);
+        assert_eq!(
+            all_paths(deps)
+                .into_iter()
+                .map(|path| (path.fields, path.shape))
+                .collect::<Vec<_>>(),
+            vec![(vec!["cells".into(), "GT".into()], true)]
+        );
+    }
+
+    #[test]
+    fn missing_check_on_computed_value_keeps_value_dependencies() {
+        let expr = Expr::IsMissing {
+            value: Arc::new(Expr::Binary {
+                operator: vail_execution::expressions::BinaryOperator::Add,
+                left: Arc::new(column("left")),
+                right: Arc::new(column("right")),
+            }),
+        };
+        let mut analyzer = VcfDependencies::default();
+        let deps = analyzer.collect(&expr, &[], 0);
+        assert_eq!(
+            all_paths(deps)
+                .into_iter()
+                .map(|path| (path.fields, path.shape))
+                .collect::<Vec<_>>(),
+            vec![
+                (vec!["left".into()], false),
+                (vec!["right".into()], false),
+            ]
+        );
+    }
 }
 
 // VCF-specific backward dependencies preserve lexical callback scopes and array
@@ -504,6 +543,27 @@ impl<'a> VcfDependencies<'a> {
         }
         let mut result = VcfNeeds::default();
         match expr {
+            Expr::IsMissing { value } => {
+                // A null check on a stored field only needs the field's
+                // validity bitmap. In particular, MatrixTable uses
+                // `is_defined(cell.value)` to preserve nullable entry
+                // structs; decoding every FORMAT child here defeats field
+                // projection and can fail on malformed, unused fields.
+                // For computed expressions, nullness may depend on values,
+                // so retain the ordinary value dependencies.
+                fn is_stored_path(expr: &Expr) -> bool {
+                    match expr {
+                        Expr::Column { .. } | Expr::LambdaVariable { .. } => true,
+                        Expr::GetField { value, .. } => is_stored_path(value),
+                        _ => false,
+                    }
+                }
+                if is_stored_path(value) {
+                    merge_deps(&mut result, self.request(value, &[], scope, true));
+                } else {
+                    merge_deps(&mut result, self.collect(value, &[], scope));
+                }
+            }
             Expr::Column { name } => {
                 if shape {
                     let mut path = vec![name.clone()];
