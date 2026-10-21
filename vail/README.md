@@ -97,6 +97,14 @@ are scalar. It streams selected records into the native VCF decoder. Unindexed
 input and row-dependent bounds use a sequential scan; paths and supplied headers
 must be scalar. `get_vcf_header_info` reads header metadata without decoding rows.
 
+The other Hail-shaped readers include `import_csv`, `import_matrix_table`,
+`import_fam`, `import_bed`, `import_locus_intervals`, `import_gen`, `import_plink`,
+`import_bgen`, `import_avro`, and `import_vcf`. Avro supports representable
+primitive and nested values; binary/fixed values, recursive records, and unions
+other than a single nullable value type are rejected explicitly. Format
+specifications and the import conformance/review results are recorded under
+`conformance/runs/20261021-imports/`.
+
 Random expressions implement all 13 public `hl.rand_...` functions, seeded
 reproducibility, dynamic row/collection contexts, and random ndarray draws.
 See [Random expressions](docs/RANDOMNESS.md) for the design and verification.

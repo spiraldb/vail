@@ -1,0 +1,67 @@
+{
+  "branch": "dk/import-methods",
+  "approved_source_revision": "46cba13edc663eeb9bfc2718a3f64256b5bb0025",
+  "main_updated": false,
+  "implemented_import_methods": [
+    "import_avro",
+    "import_bed",
+    "import_bgen",
+    "import_csv",
+    "import_fam",
+    "import_gen",
+    "import_gvcf_interval",
+    "import_lines",
+    "import_locus_intervals",
+    "import_matrix_table",
+    "import_plink",
+    "import_table",
+    "import_vcf"
+  ],
+  "upstream_impex": {
+    "behavioral_passes": 191,
+    "helper_artifact_passes": 1,
+    "failed_or_blocked": 9,
+    "details": "impex-final/summary.json"
+  },
+  "bgen": {
+    "upstream_passes": 34,
+    "upstream_failures": 0,
+    "public_regression_passes": 17
+  },
+  "local_targeted_evidence": [
+    {
+      "report": "final-import-and-expression.xml",
+      "passed": 211
+    },
+    {
+      "report": "review-fixes.xml",
+      "passed": 61
+    },
+    {
+      "report": "cache-and-prerequisites.xml",
+      "passed": 30
+    },
+    {
+      "report": "final-typed-json.xml",
+      "passed": 49
+    }
+  ],
+  "additional_regression_evidence": {
+    "report": "final-json-collections.xml",
+    "passed": 110,
+    "failed": 1,
+    "disposition": "Unchanged high-offset correlation code; no import/JSON path, no baseline execution claim"
+  },
+  "independent_validation": [
+    "fresh pinned-Hail VCF goldens: 3/3 including 300070 gVCF rows",
+    "external PLINK: 33720/33720 genotype concordance",
+    "pinned-Hail BGEN zlib/zstd writer roundtrips",
+    "pinned-Hail interval, Avro partition-bound, and BGEN missing-entry oracles"
+  ],
+  "limitations": [
+    "Broader Hail tests still require missing downstream APIs; see all-direct-pytest/failure-inventory.json",
+    "Exploratory complete local suite interrupted for memory growth; not a full-suite pass",
+    "gVCF paths and supplied headers must be scalar; indexed seeking needs htslib tabix",
+    "Avro binary/fixed/recursive and nonnullable multi-type union schemas unsupported"
+  ]
+}
