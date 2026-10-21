@@ -569,20 +569,35 @@ impl Sink {
             .as_any_mut()
             .downcast_mut::<ListBuilder<Box<dyn ArrayBuilder>>>()
             .unwrap();
-        for token in tokens {
-            if token == "." {
-                builder.append(false);
-                continue;
-            }
-            let values = builder.values();
-            for value in token.split(',') {
-                if value == "." {
-                    append_null_placeholder(values.as_mut(), array)?;
-                } else {
-                    append_placeholder(values.as_mut(), array)?;
+        macro_rules! shape_loop {
+            ($builder:ty, $placeholder:expr) => {{
+                for token in tokens {
+                    if token == "." {
+                        builder.append(false);
+                        continue;
+                    }
+                    let values = builder
+                        .values()
+                        .as_any_mut()
+                        .downcast_mut::<$builder>()
+                        .unwrap();
+                    for value in token.split(',') {
+                        if value == "." {
+                            values.append_null();
+                        } else {
+                            values.append_value($placeholder);
+                        }
+                    }
+                    builder.append(true);
                 }
-            }
-            builder.append(true);
+            }};
+        }
+        match array.as_ref() {
+            Type::Primitive(P::Int32) => shape_loop!(Int32Builder, 0),
+            Type::Primitive(P::Float32) => shape_loop!(Float32Builder, 0.0),
+            Type::Primitive(P::Float64) => shape_loop!(Float64Builder, 0.0),
+            Type::Primitive(P::Str) => shape_loop!(StringBuilder, ""),
+            _ => return Err("unsupported VCF array element type".into()),
         }
         Ok(())
     }
@@ -597,82 +612,6 @@ impl Sink {
             self.builder.finish()
         }
     }
-}
-fn append_null_placeholder(builder: &mut dyn ArrayBuilder, dtype: &Type) -> Result<()> {
-    match dtype {
-        Type::Primitive(P::Int32) => builder
-            .as_any_mut()
-            .downcast_mut::<Int32Builder>()
-            .unwrap()
-            .append_null(),
-        Type::Primitive(P::Float32) => builder
-            .as_any_mut()
-            .downcast_mut::<Float32Builder>()
-            .unwrap()
-            .append_null(),
-        Type::Primitive(P::Float64) => builder
-            .as_any_mut()
-            .downcast_mut::<Float64Builder>()
-            .unwrap()
-            .append_null(),
-        Type::Primitive(P::Str) => builder
-            .as_any_mut()
-            .downcast_mut::<StringBuilder>()
-            .unwrap()
-            .append_null(),
-        Type::Primitive(P::Bool) => builder
-            .as_any_mut()
-            .downcast_mut::<BooleanBuilder>()
-            .unwrap()
-            .append_null(),
-        Type::Primitive(P::Call) => {
-            let builder = builder
-                .as_any_mut()
-                .downcast_mut::<StructBuilder>()
-                .unwrap();
-            append_call(builder, ".")?;
-        }
-        _ => return Err("unsupported VCF array element type".into()),
-    }
-    Ok(())
-}
-fn append_placeholder(builder: &mut dyn ArrayBuilder, dtype: &Type) -> Result<()> {
-    match dtype {
-        Type::Primitive(P::Int32) => builder
-            .as_any_mut()
-            .downcast_mut::<Int32Builder>()
-            .unwrap()
-            .append_value(0),
-        Type::Primitive(P::Float32) => builder
-            .as_any_mut()
-            .downcast_mut::<Float32Builder>()
-            .unwrap()
-            .append_value(0.0),
-        Type::Primitive(P::Float64) => builder
-            .as_any_mut()
-            .downcast_mut::<Float64Builder>()
-            .unwrap()
-            .append_value(0.0),
-        Type::Primitive(P::Str) => builder
-            .as_any_mut()
-            .downcast_mut::<StringBuilder>()
-            .unwrap()
-            .append_value(""),
-        Type::Primitive(P::Bool) => builder
-            .as_any_mut()
-            .downcast_mut::<BooleanBuilder>()
-            .unwrap()
-            .append_value(false),
-        Type::Primitive(P::Call) => {
-            let builder = builder
-                .as_any_mut()
-                .downcast_mut::<StructBuilder>()
-                .unwrap();
-            append_call(builder, "0")?;
-        }
-        _ => return Err("unsupported VCF array element type".into()),
-    }
-    Ok(())
 }
 fn missing_element(required: bool, context: &str) -> Result<()> {
     if required {
