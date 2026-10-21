@@ -40,7 +40,6 @@ _CID = "__vail_matrix_col_id"
 _ROW, _COL, _ENTRY = "__vail_matrix_row", "__vail_matrix_col", "__vail_matrix_entry"
 _CELLS = "__vail_matrix_cells"
 _VALUE = "value"
-_LEGACY_PRESENT = "present"
 _AGG_OPS = {
     "aggregate",
     "aggregate_fold",
@@ -191,23 +190,6 @@ def _validate_layout(core):
     # projection. The check is lazy and runs only on the rows actually read.
     return core.filter(_function("__vail_matrix_aligned", [core[_CELLS], columns], tbool))
 
-
-def _upgrade_legacy_entry_validity(core):
-    """Convert v3 cell records with a presence flag at the storage boundary."""
-    cell_array = core._schema.get(_CELLS)
-    if not isinstance(cell_array, tarray) or not isinstance(cell_array.element_type, tstruct):
-        return core
-    cell_type = cell_array.element_type
-    if set(cell_type) != {_CID, _LEGACY_PRESENT, _VALUE}:
-        return core
-    entry_type = cell_type[_VALUE]
-    cells = core[_CELLS].map(lambda cell: struct(**{
-        _CID: cell[_CID],
-        _VALUE: if_else(
-            cell[_LEGACY_PRESENT], cell[_VALUE], missing(entry_type)
-        ),
-    }))
-    return core.annotate(**{_CELLS: cells})
 
 def _field_indices(node):
     """Return the matrix fields and axes referenced by an expression IR."""
@@ -2638,7 +2620,6 @@ def read_matrix_table(
         _filter_intervals=_filter_intervals if row_index_keys else False,
         _load_refs=_load_refs,
     )
-    core = _upgrade_legacy_entry_validity(core)
     result = MatrixTable(
         MatrixIR(
             core,

@@ -698,7 +698,14 @@ def reduce_list(
             function = node["function"]
             if function == "count":
                 return cast(length(items), tint64).to_ir()
-            values = mapped(items, node["value"])
+            if function == "call_stats":
+                fields = dict(node["value"].get("fields") or [])
+                call_node = fields.get("__vail_genomic_call")
+                if call_node is None:
+                    raise ValueError("call_stats aggregate is missing its Call input")
+                values = mapped(items, call_node)
+            else:
+                values = mapped(items, node["value"])
             # Entry-list contexts retain the cell-presence bit so a plain
             # matrix entry sum can reduce each row without first filtering and
             # materializing the full cell struct. Missing cells contribute a
@@ -719,7 +726,11 @@ def reduce_list(
             arguments = [values]
             if function == "call_stats":
                 initial = dict(node.get("init", []))["n_alleles"]
-                arguments.append(raw(bind(initial, fixed), tint32))
+                n_alleles = raw(bind(initial, fixed), tint32)
+                arguments = [n_alleles, values]
+                function_name = "__vail_list_call_stats"
+            else:
+                function_name = "__vail_list_reduce_" + function
             if function == "take":
                 arguments.append(literal(options["n"], tint64))
                 if options.get("ordered"):
@@ -727,7 +738,7 @@ def reduce_list(
             if function == "linreg":
                 arguments.append(literal(options.get("nested_dim", 1), tint64))
             result = _function(
-                "__vail_list_reduce_" + function, arguments, dtype
+                function_name, arguments, dtype
             )
             return (
                 cast(result, dtype).to_ir() if result.dtype != dtype else result.to_ir()
