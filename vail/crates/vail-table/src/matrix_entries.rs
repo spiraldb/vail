@@ -306,27 +306,24 @@ impl ExecutionPlan for MatrixEntriesExec {
                             let finished = std::mem::take(&mut run);
                             if finished.rows == 1 {
                                 if finished.spill_dir.is_some() {
-                                    if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                                        singleton_bytes = 0;
-                                        yield output;
-                                    }
+                                    let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
+                                    while let Some(output) = pending.try_next().await? { yield output; }
+                                    singleton_bytes = 0;
                                     let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                                     while let Some(output) = expanded.try_next().await? { yield output; }
                                 } else {
                                     singleton_bytes = singleton_bytes.saturating_add(finished.memory_bytes);
                                     singleton_rows.extend(finished.batches);
                                     if singleton_rows.len() >= singleton_limit || singleton_bytes >= RUN_MEMORY_BUDGET {
-                                        if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                                            singleton_bytes = 0;
-                                            yield output;
-                                        }
+                                        let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
+                                        while let Some(output) = pending.try_next().await? { yield output; }
+                                        singleton_bytes = 0;
                                     }
                                 }
                             } else if finished.rows > 1 {
-                                if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                                    singleton_bytes = 0;
-                                    yield output;
-                                }
+                                let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
+                                while let Some(output) = pending.try_next().await? { yield output; }
+                                singleton_bytes = 0;
                                 let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                                 while let Some(output) = expanded.try_next().await? {
                                     yield output;
@@ -343,26 +340,23 @@ impl ExecutionPlan for MatrixEntriesExec {
                 let finished = std::mem::take(&mut run);
                 if finished.rows == 1 {
                     if finished.spill_dir.is_some() {
-                        if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                            yield output;
-                        }
+                        let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
+                        while let Some(output) = pending.try_next().await? { yield output; }
                         let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                         while let Some(output) = expanded.try_next().await? { yield output; }
                     } else {
                         singleton_rows.extend(finished.batches);
                     }
                 } else if finished.rows > 1 {
-                    if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                        yield output;
-                    }
+                    let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
+                    while let Some(output) = pending.try_next().await? { yield output; }
                     let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                     while let Some(output) = expanded.try_next().await? {
                         yield output;
                     }
                 }
-                if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                    yield output;
-                }
+                let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
+                while let Some(output) = pending.try_next().await? { yield output; }
             },
         )))
     }
@@ -580,13 +574,16 @@ fn emit_prepared_run_chunk(
 
 fn emit_singletons(
     singletons: &mut Vec<RecordBatch>,
-    columns: &StructArray,
-    config: &Config,
-    schema: &SchemaRef,
-) -> datafusion_common::Result<Option<RecordBatch>> {
+    columns: Arc<StructArray>,
+    config: Config,
+    schema: SchemaRef,
+) -> datafusion_common::Result<SendableRecordBatchStream> {
     if singletons.is_empty() || columns.is_empty() {
         singletons.clear();
-        return Ok(None);
+        return Ok(Box::pin(RecordBatchStreamAdapter::new(
+            schema,
+            futures::stream::empty(),
+        )));
     }
     let input_schema = singletons[0].schema();
     let batch = if singletons.len() == 1 {
@@ -596,72 +593,60 @@ fn emit_singletons(
         singletons.clear();
         combined
     };
-    let row = downcast_struct(batch.column(config.row_struct).clone(), "matrix row")?;
-    let cells = batch.column(config.cells).clone();
-    let row_offsets = offsets(&cells)?;
-    let cell_values = downcast_struct(list_child_values(&cells)?, "matrix cells")?;
-    let value_index = cell_values
-        .fields()
-        .iter()
-        .position(|field| field.name() == &config.value_field)
-        .ok_or_else(|| DataFusionError::Execution("matrix entry value field is absent".into()))?;
-    let entry_values = downcast_struct(
-        cell_values.column(value_index).clone(),
-        "matrix entry values",
-    )?;
-    let capacity = batch.num_rows().saturating_mul(columns.len());
-    let mut row_indices = Vec::<u64>::with_capacity(capacity);
-    let mut column_indices = Vec::<u64>::with_capacity(capacity);
-    let mut entry_indices = Vec::<u64>::with_capacity(capacity);
-    for row_index in 0..batch.num_rows() {
-        if cells.is_null(row_index) {
-            continue;
-        }
-        let start = row_offsets[row_index];
-        let end = row_offsets[row_index + 1];
-        if end - start != columns.len() as i64 {
-            return Err(DataFusionError::Execution(format!(
-                "matrix row has {} cells for {} columns",
-                end - start,
-                columns.len()
-            )));
-        }
-        for col in 0..columns.len() {
-            let slot = usize::try_from(start + col as i64)
-                .map_err(|_| DataFusionError::Execution("negative matrix cell offset".into()))?;
-            if cell_values.is_null(slot) || entry_values.is_null(slot) {
-                continue;
-            }
-            row_indices.push(row_index as u64);
-            column_indices.push(col as u64);
-            entry_indices.push(slot as u64);
-        }
-    }
-    if row_indices.is_empty() {
-        return Ok(None);
-    }
-    let output_len = row_indices.len();
-    let row_take = UInt64Array::from(row_indices);
-    let column_take = UInt64Array::from(column_indices);
-    let entry_take = UInt64Array::from(entry_indices);
     let column_index = columns
         .fields()
         .iter()
         .position(|field| field.name() == &config.column_struct)
         .ok_or_else(|| DataFusionError::Execution("matrix column struct field is absent".into()))?;
     let col_struct = downcast_struct(columns.column(column_index).clone(), "matrix columns")?;
-    build_output_batch(
-        &row,
-        &col_struct,
-        &entry_values,
-        config,
-        schema,
-        output_len,
-        &row_take,
-        &column_take,
-        &entry_take,
-    )
-    .map(Some)
+    let prepared = prepare_run_chunk(batch, &config, &config.value_field)?;
+    let config = Arc::new(config);
+    Ok(Box::pin(RecordBatchStreamAdapter::new(
+        schema.clone(),
+        async_stream::try_stream! {
+            let record_limit = prepared.output_chunk_rows(&col_struct);
+            let mut row_indices = Vec::<u64>::with_capacity(record_limit);
+            let mut column_indices = Vec::<u64>::with_capacity(record_limit);
+            let mut entry_indices = Vec::<u64>::with_capacity(record_limit);
+            for row_index in 0..prepared.num_rows {
+                if prepared.cells.is_null(row_index) { continue; }
+                let start = prepared.row_offsets[row_index];
+                let end = prepared.row_offsets[row_index + 1];
+                if end - start != columns.len() as i64 {
+                    Err(DataFusionError::Execution(format!("matrix row has {} cells for {} columns", end - start, columns.len())))?;
+                }
+                for col in 0..columns.len() {
+                    let slot = usize::try_from(start + col as i64)
+                        .map_err(|_| DataFusionError::Execution("negative matrix cell offset".into()))?;
+                    if prepared.cell_values.is_null(slot) || prepared.entry_values.is_null(slot) { continue; }
+                    row_indices.push(row_index as u64);
+                    column_indices.push(col as u64);
+                    entry_indices.push(slot as u64);
+                    if row_indices.len() == record_limit {
+                        let row_take = UInt64Array::from(std::mem::take(&mut row_indices));
+                        let column_take = UInt64Array::from(std::mem::take(&mut column_indices));
+                        let entry_take = UInt64Array::from(std::mem::take(&mut entry_indices));
+                        yield build_output_batch(
+                            &prepared.row, &col_struct, &prepared.entry_values,
+                            &config, &schema, row_take.len(), &row_take, &column_take, &entry_take,
+                        )?;
+                        row_indices = Vec::with_capacity(record_limit);
+                        column_indices = Vec::with_capacity(record_limit);
+                        entry_indices = Vec::with_capacity(record_limit);
+                    }
+                }
+            }
+            if !row_indices.is_empty() {
+                let row_take = UInt64Array::from(row_indices);
+                let column_take = UInt64Array::from(column_indices);
+                let entry_take = UInt64Array::from(entry_indices);
+                yield build_output_batch(
+                    &prepared.row, &col_struct, &prepared.entry_values,
+                    &config, &schema, row_take.len(), &row_take, &column_take, &entry_take,
+                )?;
+            }
+        },
+    )))
 }
 
 fn build_output_batch(

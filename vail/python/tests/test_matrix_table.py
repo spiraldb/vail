@@ -326,16 +326,47 @@ def test_entries_spills_large_singleton_run_without_dropping_it():
 
 
 def test_entries_spills_duplicate_run_as_column_stripes():
-    payload = "y" * (33 * 1024 * 1024)
-    mt = hl.utils.range_matrix_table(1, 1, 1)
+    filler = "y" * (17 * 1024 * 1024)
+    mt = hl.utils.range_matrix_table(1, 2, 1)
     mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
-    mt = mt.annotate_entries(payload=hl.literal(payload))
+    mt = mt.annotate_entries(
+        payload=hl.literal(filler) + hl.str(mt.replica) + ":" + hl.str(mt.col_idx)
+    )
 
     entries = mt.entries().collect()
-    assert {(entry.row_idx, entry.col_idx, entry.replica) for entry in entries} == {
-        (0, 0, 0), (0, 0, 1)
+    keys = [(entry.row_idx, entry.col_idx) for entry in entries]
+    assert keys == sorted(keys)
+    assert Counter(
+        (entry.replica, entry.col_idx, entry.payload[-3:]) for entry in entries
+    ) == Counter(
+        (replica, col_idx, f"{replica}:{col_idx}")
+        for replica in range(2)
+        for col_idx in range(2)
+    )
+    assert all(entry.payload[:-3] == filler for entry in entries)
+
+
+def test_entries_bounds_singleton_batches_with_repeated_row_and_column_payloads():
+    row_payload = "r" * (5 * 1024 * 1024)
+    column_payload = "c" * (1024 * 1024)
+    mt = hl.utils.range_matrix_table(2, 4, 1)
+    mt = mt.annotate_rows(
+        replica=hl.array([0]), row_payload=hl.literal(row_payload)
+    ).explode_rows("replica")
+    mt = mt.annotate_cols(
+        column_payload=hl.literal(column_payload) + hl.str(mt.col_idx)
+    )
+
+    entries = mt.entries().collect()
+    assert len(entries) == 8
+    assert {(entry.row_idx, entry.col_idx) for entry in entries} == {
+        (row_idx, col_idx) for row_idx in range(2) for col_idx in range(4)
     }
-    assert all(entry.payload == payload for entry in entries)
+    assert all(entry.row_payload == row_payload for entry in entries)
+    assert all(entry.column_payload[:-1] == column_payload for entry in entries)
+    assert Counter(entry.column_payload[-1] for entry in entries) == Counter(
+        str(col_idx) for _row_idx in range(2) for col_idx in range(4)
+    )
 
 
 def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
