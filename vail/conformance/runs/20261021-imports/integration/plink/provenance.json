@@ -1,0 +1,10 @@
+{
+  "revision": "8b5170b2deb2217b91818ecaf4ec2eb45cad2f82",
+  "branch": "dk/import-methods-integration",
+  "native_binary": "/Users/danielking/projects/vail/vail/target/debug/lib_native.dylib",
+  "native_sha256": "532ab6fc1cdcc588bef15c1f9f74d09913c7d0ce920e7a0b993f09c53346f696",
+  "plink_binary": "/tmp/vail-plink-bin/plink",
+  "plink_version": "PLINK v1.9.0 64-bit (27 Sep 2026)",
+  "command": "PATH=/tmp/vail-plink-bin:$PATH PYTHONPATH=$PWD/vail/python /Users/danielking/projects/vail/vail/.venv/bin/python /tmp/run_plink_integration.py",
+  "runner_source": "import ast,subprocess,os,json\nfrom pathlib import Path\nfrom concurrent.futures import ThreadPoolExecutor\nsource=Path('/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py')\nsuite=source.parents[1]\ncls=next(x for x in ast.parse(source.read_text()).body if isinstance(x,ast.ClassDef) and x.name=='PLINKTests')\nout=Path('vail/conformance/runs/20261021-imports/integration/plink');out.mkdir(parents=True,exist_ok=True)\ndef run(n):\n name=n.name;cmd=['/Users/danielking/projects/vail/vail/.venv/bin/python','vail/conformance/full_hail_bodies.py','--suite',str(suite),'--output',str(out/(name+'.json')),'--worker-source',str(source),'--worker-name','PLINKTests.'+name]\n try:\n  with (out/(name+'.log')).open('w') as log:subprocess.run(cmd,stdout=log,stderr=log,timeout=120)\n  r=json.loads((out/(name+'.json')).read_text());print(name,r['status'],[v.get('error','')[:150] for v in r['variants']],flush=True)\n except Exception as e:print(name,str(e),flush=True)\nwith ThreadPoolExecutor(max_workers=2) as pool:list(pool.map(run,[x for x in cls.body if isinstance(x,ast.FunctionDef) and x.name.startswith('test_')]))\n"
+}

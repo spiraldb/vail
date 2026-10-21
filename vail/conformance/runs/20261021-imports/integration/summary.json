@@ -1,0 +1,71 @@
+{
+  "integration_source_revision": "8b5170b2deb2217b91818ecaf4ec2eb45cad2f82",
+  "branch": "dk/import-methods-integration",
+  "main_base": "35233fb084bccf0e2777dd361832c996e7e25d36",
+  "approved_import_source": "46cba13edc663eeb9bfc2718a3f64256b5bb0025",
+  "import_documentation_head": "2a2a5ade",
+  "source_changes_for_integration": "none; clean automatic merge of approved parents, no conflict resolutions",
+  "native_sha256": "532ab6fc1cdcc588bef15c1f9f74d09913c7d0ce920e7a0b993f09c53346f696",
+  "native_build": "23441",
+  "public_test_passes": 306,
+  "public_test_reports": [
+    {
+      "report": "matrix-entries.xml",
+      "passed": 16
+    },
+    {
+      "report": "import-and-expression.xml",
+      "passed": 199
+    },
+    {
+      "report": "bgen/public.xml",
+      "passed": 17
+    },
+    {
+      "report": "vcf/public-tests.log",
+      "passed": 44
+    },
+    {
+      "report": "prerequisites/summary.json",
+      "passed": 30
+    }
+  ],
+  "upstream": {
+    "BGEN": {
+      "passed": 34,
+      "failed": 0
+    },
+    "PLINK": {
+      "passed": 21,
+      "failed": 0
+    },
+    "VCF": {
+      "passed": 53,
+      "failed": 8,
+      "disposition": "same previously recorded VDS/private IR/mock/legacy fixture blockers"
+    },
+    "Table_export_import_roundtrip": {
+      "passed": 1,
+      "failed": 0
+    }
+  },
+  "independent_comparisons": {
+    "vcf_goldens": {
+      "passed": 3,
+      "report": "vcf/golden-comparison.json",
+      "large_gvcf_rows": 300070
+    },
+    "external_plink": {
+      "nonmissing_calls": 33720,
+      "concordant_calls": 33720
+    }
+  },
+  "main_updated": false,
+  "integration_owner": "development integration validated here; main updates remain central parent owned through required reviewer workflow",
+  "review_status": "submitted for exact-revision integration review",
+  "limits": [
+    "Not a full 2040-test-suite pass",
+    "Not all broader Hail downstream capabilities are implemented",
+    "No new throughput claim"
+  ]
+}

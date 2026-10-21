@@ -1,0 +1,33 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "PLINKTests.test_export_plink_white_space_in_fam_id_raises_error",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "execution_mode": "isolated_original_body",
+  "structural_ir_assertions": [],
+  "randomness_fixture": {
+    "replacement": "vail.reset_global_randomness",
+    "scope": "each parameter variant",
+    "timing": "before requested fixtures and test body"
+  },
+  "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "fixture_adapters": [
+    "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "passed"
+}

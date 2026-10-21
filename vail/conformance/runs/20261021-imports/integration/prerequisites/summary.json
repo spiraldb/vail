@@ -1,0 +1,15 @@
+{
+  "revision": "8b5170b2deb2217b91818ecaf4ec2eb45cad2f82",
+  "native_build": "23441 (parent fresh debug build)",
+  "public_tests": {
+    "command": "PYTHONPATH=$PWD/vail/python /Users/danielking/projects/vail/vail/.venv/bin/python -m pytest -q vail/python/tests/test_cache.py vail/python/tests/test_import_prerequisites.py vail/python/tests/test_ndarray_scope.py",
+    "result": "30 passed in 1.54s"
+  },
+  "original_table_readback": "passed",
+  "integration_checks": [
+    "cached duplicate row keys, reordered multikey columns, filtered entries, and native lazy collect agree",
+    "cached zero-field defined entries remain distinct from filtered slots through entries and native collect",
+    "cached entries with missing children remain present through expression collect"
+  ],
+  "status": "passed"
+}

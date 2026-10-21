@@ -1,0 +1,246 @@
+{
+  "status": "passed",
+  "tests": 21,
+  "passed": 21,
+  "revision": "8b5170b2deb2217b91818ecaf4ec2eb45cad2f82",
+  "native_sha256": "532ab6fc1cdcc588bef15c1f9f74d09913c7d0ce920e7a0b993f09c53346f696",
+  "external_concordance": {
+    "overlapping": 34600,
+    "nonmissing": 33720,
+    "concordant": 33720,
+    "rate": 1
+  },
+  "results": [
+    {
+      "name": "test_import_fam",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_fam.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_import_plink_same",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_import_plink_same.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_empty_fam",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_empty_fam.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_empty_bim",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_empty_bim.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_a1_major",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_a1_major.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_same_locus",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_same_locus.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_partitions",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_partitions.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_contig_recoding_w_reference",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_contig_recoding_w_reference.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_no_reference_specified",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_no_reference_specified.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_and_ignore_rows",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_and_ignore_rows.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_import_plink_skip_invalid_loci",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_import_plink_skip_invalid_loci.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_default_arguments",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_default_arguments.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_non_default_arguments",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_non_default_arguments.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_quantitative_phenotype",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_quantitative_phenotype.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_non_default_bim_arguments",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_non_default_bim_arguments.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_call_expression",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_call_expression.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_white_space_in_fam_id_raises_error",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_white_space_in_fam_id_raises_error.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_white_space_in_varid_raises_error",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_white_space_in_varid_raises_error.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_contig_recoding_defaults",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_contig_recoding_defaults.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "name": "test_export_plink_struct_locus",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/integration/plink/test_export_plink_struct_locus.json",
+      "variants": [
+        {
+          "status": "passed",
+          "parameters": {}
+        }
+      ]
+    }
+  ]
+}
