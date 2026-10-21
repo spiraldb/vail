@@ -557,6 +557,35 @@ impl Sink {
         }
         Ok(())
     }
+    /// Preserve list shape and child validity while leaving non-null payloads
+    /// as placeholders. This lets array callbacks inspect cardinality or child
+    /// missingness without parsing unused numeric values.
+    fn append_shape_stripe<'a>(&mut self, tokens: impl Iterator<Item = &'a str>) -> Result<()> {
+        let Type::Array { array } = &self.dtype else {
+            return self.append_validity_stripe(tokens);
+        };
+        let builder = self
+            .builder
+            .as_any_mut()
+            .downcast_mut::<ListBuilder<Box<dyn ArrayBuilder>>>()
+            .unwrap();
+        for token in tokens {
+            if token == "." {
+                builder.append(false);
+                continue;
+            }
+            let values = builder.values();
+            for value in token.split(',') {
+                if value == "." {
+                    append_null_placeholder(values.as_mut(), array)?;
+                } else {
+                    append_placeholder(values.as_mut(), array)?;
+                }
+            }
+            builder.append(true);
+        }
+        Ok(())
+    }
     fn skip(&mut self, n: usize) {
         self.skipped += n;
     }
@@ -568,6 +597,82 @@ impl Sink {
             self.builder.finish()
         }
     }
+}
+fn append_null_placeholder(builder: &mut dyn ArrayBuilder, dtype: &Type) -> Result<()> {
+    match dtype {
+        Type::Primitive(P::Int32) => builder
+            .as_any_mut()
+            .downcast_mut::<Int32Builder>()
+            .unwrap()
+            .append_null(),
+        Type::Primitive(P::Float32) => builder
+            .as_any_mut()
+            .downcast_mut::<Float32Builder>()
+            .unwrap()
+            .append_null(),
+        Type::Primitive(P::Float64) => builder
+            .as_any_mut()
+            .downcast_mut::<Float64Builder>()
+            .unwrap()
+            .append_null(),
+        Type::Primitive(P::Str) => builder
+            .as_any_mut()
+            .downcast_mut::<StringBuilder>()
+            .unwrap()
+            .append_null(),
+        Type::Primitive(P::Bool) => builder
+            .as_any_mut()
+            .downcast_mut::<BooleanBuilder>()
+            .unwrap()
+            .append_null(),
+        Type::Primitive(P::Call) => {
+            let builder = builder
+                .as_any_mut()
+                .downcast_mut::<StructBuilder>()
+                .unwrap();
+            append_call(builder, ".")?;
+        }
+        _ => return Err("unsupported VCF array element type".into()),
+    }
+    Ok(())
+}
+fn append_placeholder(builder: &mut dyn ArrayBuilder, dtype: &Type) -> Result<()> {
+    match dtype {
+        Type::Primitive(P::Int32) => builder
+            .as_any_mut()
+            .downcast_mut::<Int32Builder>()
+            .unwrap()
+            .append_value(0),
+        Type::Primitive(P::Float32) => builder
+            .as_any_mut()
+            .downcast_mut::<Float32Builder>()
+            .unwrap()
+            .append_value(0.0),
+        Type::Primitive(P::Float64) => builder
+            .as_any_mut()
+            .downcast_mut::<Float64Builder>()
+            .unwrap()
+            .append_value(0.0),
+        Type::Primitive(P::Str) => builder
+            .as_any_mut()
+            .downcast_mut::<StringBuilder>()
+            .unwrap()
+            .append_value(""),
+        Type::Primitive(P::Bool) => builder
+            .as_any_mut()
+            .downcast_mut::<BooleanBuilder>()
+            .unwrap()
+            .append_value(false),
+        Type::Primitive(P::Call) => {
+            let builder = builder
+                .as_any_mut()
+                .downcast_mut::<StructBuilder>()
+                .unwrap();
+            append_call(builder, "0")?;
+        }
+        _ => return Err("unsupported VCF array element type".into()),
+    }
+    Ok(())
 }
 fn missing_element(required: bool, context: &str) -> Result<()> {
     if required {
@@ -677,6 +782,7 @@ struct DecodeProjection {
     info: Vec<bool>,
     format: Vec<bool>,
     format_validity: Vec<bool>,
+    format_shape: Vec<bool>,
     samples: bool,
 }
 impl DecodeProjection {
@@ -688,12 +794,14 @@ impl DecodeProjection {
             info: vec![true; header.info.len()],
             format: vec![true; header.format.len()],
             format_validity: vec![false; header.format.len()],
+            format_shape: vec![false; header.format.len()],
             samples: true,
         }
     }
     fn from_paths(header: &Header, paths: &[DecodePath]) -> Self {
         let (mut row_all, mut info_all, mut format_all, mut samples) = (false, false, false, false);
-        let (mut fixed, mut info, mut format, mut format_validity) = (
+        let (mut fixed, mut info, mut format, mut format_validity, mut format_shape) = (
+            HashSet::new(),
             HashSet::new(),
             HashSet::new(),
             HashSet::new(),
@@ -726,9 +834,11 @@ impl DecodeProjection {
                         format_all = true;
                     } else if path.get(1).is_some_and(|v| v == "value") {
                         if let Some(name) = path.get(2) {
-                            if requested.validity {
+                            if requested.shape {
+                                format_shape.insert(name.as_str());
+                            } else if requested.validity {
                                 format_validity.insert(name.as_str());
-                            } else if !requested.shape {
+                            } else {
                                 format.insert(name.as_str());
                             }
                         }
@@ -758,6 +868,15 @@ impl DecodeProjection {
                     !format_all
                         && !format.contains(f.name.as_str())
                         && format_validity.contains(f.name.as_str())
+                })
+                .collect(),
+            format_shape: header
+                .format
+                .iter()
+                .map(|f| {
+                    !format_all
+                        && !format.contains(f.name.as_str())
+                        && format_shape.contains(f.name.as_str())
                 })
                 .collect(),
             samples,
@@ -1080,14 +1199,15 @@ impl Parser {
                 if count != samples {
                     return Err(format!("expected {samples} samples, found {count}"));
                 }
-                for (((sink, position), &wanted), &validity_only) in batch
+                for ((((sink, position), &wanted), &validity_only), &shape_only) in batch
                     .entries
                     .iter_mut()
                     .zip(&plan.fields)
                     .zip(&self.projection.format)
                     .zip(&self.projection.format_validity)
+                    .zip(&self.projection.format_shape)
                 {
-                    if !wanted && !validity_only {
+                    if !wanted && !validity_only && !shape_only {
                         sink.skip(samples);
                         continue;
                     }
@@ -1100,6 +1220,8 @@ impl Parser {
                     });
                     if wanted {
                         sink.append_stripe(tokens, self.options.array_elements_required, "FORMAT")?;
+                    } else if shape_only {
+                        sink.append_shape_stripe(tokens)?;
                     } else {
                         sink.append_validity_stripe(tokens)?;
                     }

@@ -659,6 +659,9 @@ impl<'a> VcfDependencies<'a> {
             Expr::IsMissing { value } => {
                 merge_deps(&mut result, self.request_validity(value, &[], scope));
             }
+            Expr::ArrayLength { value } => {
+                merge_deps(&mut result, self.request(value, &[], scope, true));
+            }
             Expr::Column { name } => {
                 if shape {
                     let mut path = vec![name.clone()];

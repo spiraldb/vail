@@ -215,6 +215,24 @@ def test_nested_map_missingness_preserves_gt_validity_only(tmp_path):
     assert row.defined == [True, True, False, False, False]
 
 
+def test_nested_map_preserves_format_array_shape_without_values(tmp_path):
+    path = tmp_path / 'ad-shape.vcf'
+    path.write_text(HEADER +
+                    '1\t1\t.\tA\tC\t.\tPASS\t.\tGT:AD\t0/1:2,.\t./.:.\n')
+    mt = hl.import_vcf(path)
+    localized = mt.localize_entries('entries', 'columns').key_by()
+    row = localized.select(
+        lengths=localized.entries.map(lambda cell: cell.AD.length()),
+        constants=localized.entries.map(lambda cell: cell.AD.map(lambda _: 1)),
+        child_defined=localized.entries.map(
+            lambda cell: cell.AD.map(lambda value: hl.is_defined(value))
+        ),
+    ).collect()[0]
+    assert row.lengths == [2, None]
+    assert row.constants == [[1, 1], None]
+    assert row.child_defined == [[True, False], None]
+
+
 def test_many_format_layouts_decode_consistently(tmp_path):
     import itertools
     extra = ''.join(f'##FORMAT=<ID={name},Number=1,Type=Integer,Description="extra">\n' for name in ['X', 'Y', 'Z'])
