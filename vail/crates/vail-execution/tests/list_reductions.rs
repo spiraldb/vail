@@ -441,6 +441,7 @@ fn direct_call_stats_uses_row_initializer_without_packing_calls() {
         vail_execution::calls::Call::new(&[1], false).unwrap(),
         vail_execution::calls::Call::new(&[0, 1], true).unwrap(),
         vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[0, 1], false).unwrap(),
     ];
     let values = Arc::new(StructArray::new(
         fields,
@@ -458,11 +459,11 @@ fn direct_call_stats_uses_row_initializer_without_packing_calls() {
                 calls.iter().map(|call| call.phased()).collect::<Vec<_>>(),
             )),
         ],
-        Some(NullBuffer::from(vec![true, false, true, true])),
+        Some(NullBuffer::from(vec![true, true, true, true, false])),
     ));
     let lists = ListArray::new(
         Arc::new(Field::new("item", call_type, true)),
-        OffsetBuffer::from_lengths([0, 4, 0, 0]),
+        OffsetBuffer::from_lengths([0, 5, 0, 0]),
         values,
         Some(NullBuffer::from(vec![true, true, false, true])),
     );
@@ -497,8 +498,7 @@ fn direct_call_stats_uses_row_initializer_without_packing_calls() {
         .downcast_ref::<Int32Array>()
         .unwrap();
     assert_eq!(an.value(0), 0);
-    assert_eq!(an.value(1), 4); // null haploid is skipped; phased and hom diploids count
-    assert!(an.is_null(2));
+    assert_eq!(an.value(1), 5); // haploid, phased and hom diploids count; null Call is skipped
     assert_eq!(an.value(3), 0);
     assert!(stats.is_null(2));
     let ac = stats
@@ -509,7 +509,7 @@ fn direct_call_stats_uses_row_initializer_without_packing_calls() {
         .unwrap();
     assert_eq!(
         ac.value(1).as_any().downcast_ref::<Int32Array>().unwrap(),
-        &Int32Array::from(vec![1, 3])
+        &Int32Array::from(vec![1, 4])
     );
     assert_eq!(
         ac.value(3).as_any().downcast_ref::<Int32Array>().unwrap(),
@@ -523,7 +523,7 @@ fn direct_call_stats_uses_row_initializer_without_packing_calls() {
         .unwrap();
     assert_eq!(
         af.value(1).as_any().downcast_ref::<Float64Array>().unwrap(),
-        &Float64Array::from(vec![0.25, 0.75])
+        &Float64Array::from(vec![0.2, 0.8])
     );
     assert!(af.is_null(3));
     let hom = stats
@@ -554,8 +554,7 @@ fn direct_call_stats_uses_row_initializer_without_packing_calls() {
         .as_any()
         .downcast_ref::<Int32Array>()
         .unwrap();
-    assert_eq!(sliced_an.value(0), 4);
-    assert!(sliced_an.is_null(1));
+    assert_eq!(sliced_an.value(0), 5);
     assert_eq!(sliced_an.value(2), 0);
     assert!(sliced_stats.is_null(1));
 
