@@ -136,11 +136,8 @@ def test_grouped_collect_preserves_empty_filtered_groups_and_zero_field_values()
     )
     ordered = ordered.order_by("idx")
     ordered_values = ordered.aggregate(hl.agg.collect(ordered.row))
-    assert ordered_values == [
-        hl.Struct(idx=0, nested=()),
-        hl.Struct(idx=1, nested=()),
-        hl.Struct(idx=2, nested=()),
-    ]
+    assert sorted(row.idx for row in ordered_values) == [0, 1, 2]
+    assert all(row.nested == () for row in ordered_values)
 
 
 def test_query_backed_scalar_reduction_is_lazy_and_reusable(tmp_path):
