@@ -7,7 +7,7 @@ execution. Unsupported shared list kernels are explicit capability boundaries.
 from .expressions import IR_NODE_TYPES, NativeExpr
 
 from .expressions import Expression, _IR, cast
-from .types import tarray, tbool, tint32, tint64, type_from_wire
+from .types import tarray, tbool, tcall, tint32, tint64, type_from_wire
 
 
 def reduce_row_predicate(matrix, expr, base):
@@ -96,11 +96,68 @@ def reduce_aligned_plain(matrix, expr, base):
         _uses_column_position,
     )
     if (node.get("op") != "aggregate" or _is_scan(node)
-            or node.get("value") is None or node.get("init")
+            or node.get("value") is None
             or set(node.get("options") or {}) - {"__vail_result_type"}
             or expr._lookup_refs):
         return None
     function = node.get("function")
+    if function == "call_stats":
+        # call_stats carries a row initializer (the allele count) beside the
+        # packed call/alleles input. Keep that count at row granularity and map
+        # only the Call field over aligned entry slots.
+        initial = dict(node.get("init") or [])
+        fields = dict(node["value"].get("fields") or [])
+        call_node = fields.get("__vail_genomic_call")
+        n_alleles_node = initial.get("n_alleles")
+        if call_node is None or n_alleles_node is None:
+            return None
+        call_ir = Expression(
+            type_from_wire(call_node.infer_type(
+                [(name, dtype._native_type) for name, dtype in base._schema.items()],
+                [(name, dtype._native_type) for name, dtype in base._global_schema.items()],
+                [(name, dtype._native_type) for name, dtype in expr._lexical_types.items()],
+            )),
+            matrix,
+            _IR(call_node, expr._global_refs, expr._lookup_refs),
+        )
+        if call_ir.dtype != tcall:
+            return None
+        if (call_node.contains_random() or _uses_column_position(call_node)):
+            return None
+        n_alleles_type = type_from_wire(n_alleles_node.infer_type(
+            [(name, dtype._native_type) for name, dtype in base._schema.items()],
+            [(name, dtype._native_type) for name, dtype in base._global_schema.items()],
+            [(name, dtype._native_type) for name, dtype in expr._lexical_types.items()],
+        ))
+        if n_alleles_type != tint32:
+            return None
+        n_alleles = Expression(
+            n_alleles_type,
+            matrix,
+            _IR(n_alleles_node, expr._global_refs, expr._lookup_refs),
+        )
+        from . import if_else, is_defined, missing, struct
+        from .matrixtable import _CELLS, _VALUE
+
+        n_alleles = matrix._lower(n_alleles, base)
+        has_outer_capture = any((
+            _uses_axis_field(call_node, "row"),
+            _uses_axis_field(call_node, "col"),
+            _uses_axis_field(call_node, "global"),
+            _contains_matrix_num_cols(call_node),
+        ))
+        if has_outer_capture:
+            calls = matrix._aligned_matrix_map(
+                base, call_node, call_ir.dtype, preserve_cell=False
+            )
+        else:
+            calls = base[_CELLS].map(lambda cell: if_else(
+                is_defined(cell[_VALUE]),
+                matrix._lower_cell(call_ir, base, cell, struct()),
+                missing(tcall),
+            ))
+        from .collections import _function
+        return _function("__vail_list_call_stats", [n_alleles, calls], expr.dtype)
     if function not in {
         "sum", "product", "min", "max", "mean", "stddev_pop",
         "count_where", "any", "all",

@@ -363,6 +363,7 @@ fn call_execution_trusts_stored_fields_and_parent_validity() {
 
 fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
     let columns_count = 128;
+    let row_count = 8;
     let int64 = Type::Primitive(PrimitiveType::Int64);
     let string = Type::Primitive(PrimitiveType::Str);
     let payload_type = Type::Struct {
@@ -382,7 +383,10 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         ],
     };
 
-    let entry_values: ArrayRef = Arc::new(StructArray::new_empty_fields(columns_count, None));
+    let entry_values: ArrayRef = Arc::new(StructArray::new_empty_fields(
+        row_count * columns_count,
+        None,
+    ));
     let entries_child: ArrayRef = Arc::new(StructArray::new(
         vec![
             Field::new("__vail_matrix_col_id", DataType::Int64, true),
@@ -390,14 +394,20 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         ]
         .into(),
         vec![
-            Arc::new(Int64Array::from_iter_values(0..columns_count as i64)),
+            Arc::new(Int64Array::from_iter_values(
+                (0..row_count * columns_count).map(|i| (i % columns_count) as i64),
+            )),
             entry_values,
         ],
         None,
     ));
     let entries: ArrayRef = Arc::new(ListArray::new(
         Arc::new(Field::new("item", entries_child.data_type().clone(), true)),
-        OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, columns_count as i32])),
+        OffsetBuffer::new(ScalarBuffer::from(
+            (0..=row_count)
+                .map(|row| (row * columns_count) as i32)
+                .collect::<Vec<_>>(),
+        )),
         entries_child,
         None,
     ));
@@ -430,13 +440,17 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
     ));
     let columns: ArrayRef = Arc::new(ListArray::new(
         Arc::new(Field::new("item", columns_child.data_type().clone(), true)),
-        OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, columns_count as i32])),
+        OffsetBuffer::new(ScalarBuffer::from(
+            (0..=row_count)
+                .map(|row| if row == 0 { 0 } else { columns_count as i32 })
+                .collect::<Vec<_>>(),
+        )),
         columns_child,
         None,
     ));
     let rows: ArrayRef = Arc::new(StructArray::new(
         vec![Field::new("row_idx", DataType::Int64, true)].into(),
-        vec![Arc::new(Int64Array::from(vec![0_i64]))],
+        vec![Arc::new(Int64Array::from_iter_values(0..row_count as i64))],
         None,
     ));
     let schema = Arc::new(Schema::new(vec![
@@ -451,12 +465,16 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         name: None,
         dtype: column_record_type,
     };
-    let marker = Expr::GetField {
+    let payload_value = Expr::GetField {
         value: Arc::new(Expr::GetField {
             value: Arc::new(column_input),
             name: "col".into(),
         }),
-        name: "marker".into(),
+        name: "payload".into(),
+    };
+    let payload_length = Expr::StringFunction {
+        function: "character_length".into(),
+        args: vec![payload_value],
     };
     let entry_present = Expr::AlignedMapInput {
         axis: "entry_present".into(),
@@ -465,9 +483,9 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
     };
     let body = Expr::IfElse {
         condition: Arc::new(entry_present),
-        consequent: Arc::new(marker),
+        consequent: Arc::new(payload_length),
         alternate: Arc::new(Expr::Literal {
-            dtype: int64.clone(),
+            dtype: Type::Primitive(PrimitiveType::Int32),
             value: serde_json::Value::Null,
         }),
     };
@@ -484,7 +502,7 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         globals: Arc::new(Expr::Struct { fields: vec![] }),
         body: Arc::new(body),
         dtype: Type::Array {
-            array: Box::new(int64),
+            array: Box::new(Type::Primitive(PrimitiveType::Int32)),
         },
         preserve_cell: false,
     };
@@ -507,13 +525,19 @@ fn evaluate_aligned_allocated_bytes(batch: &RecordBatch, expression: &Expr) -> (
 #[test]
 fn aligned_map_column_metadata_allocations_do_not_scale_with_payload_bytes() {
     let (small_batch, small_expr) = aligned_column_input(8);
-    let (wide_batch, wide_expr) = aligned_column_input(1024);
+    let (wide_batch, wide_expr) = aligned_column_input(64 * 1024);
     let (small_output, small_bytes) = evaluate_aligned_allocated_bytes(&small_batch, &small_expr);
     let (wide_output, wide_bytes) = evaluate_aligned_allocated_bytes(&wide_batch, &wide_expr);
-    for output in [small_output, wide_output] {
+    for (output, expected) in [(small_output, 8), (wide_output, 64 * 1024)] {
         let rows = output.as_any().downcast_ref::<ListArray>().unwrap();
-        let markers = rows.values().as_any().downcast_ref::<Int64Array>().unwrap();
-        assert_eq!(markers.values(), &(0..128_i64).collect::<Vec<_>>());
+        assert_eq!(rows.len(), 8);
+        let lengths = rows.values().as_any().downcast_ref::<Int32Array>().unwrap();
+        assert_eq!(lengths.values().len(), 8 * 128);
+        assert!(
+            lengths.values().iter().all(|length| *length == expected),
+            "expected each mapped payload length to be {expected}, found {:?}",
+            &lengths.values()[..8]
+        );
     }
     assert!(
         wide_bytes <= small_bytes + 1_000_000,
