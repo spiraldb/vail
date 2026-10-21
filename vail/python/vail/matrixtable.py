@@ -758,37 +758,61 @@ class MatrixTable:
         def get_field(value, name):
             return {"op": "get_field", "value": value, "name": name}
 
+        rewrite_cache = {}
+        retained_nodes = {}
+
+        def node_identity(value):
+            identity = getattr(value, "node_identity", None)
+            return identity() if identity is not None else id(value)
+
         def rewrite(node):
             if isinstance(node, list):
                 return [rewrite(value) for value in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                 return node
+            identity = node_identity(node)
+            if identity in rewrite_cache:
+                return rewrite_cache[identity]
+            # Keep the first NativeExpr view alive so its child wrappers retain
+            # stable identities during this graph rewrite.
+            retained_nodes[identity] = node
             op = node.get("op")
             if op == "matrix_scope":
-                return rewrite(node["value"])
-            if op == "matrix_field":
+                result = rewrite(node["value"])
+            elif op == "matrix_field":
                 axis, name = node["axis"], node["name"]
                 if axis == "global":
                     value = globals[name]
                     refs.update(value._global_refs)
                     global_values[name] = value
-                    return aligned_input("global", value.dtype, name)
-                if axis == "row":
-                    return aligned_input("row", row_type[name], name)
-                if axis == "entry":
+                    result = aligned_input("global", value.dtype, name)
+                elif axis == "row":
+                    result = aligned_input("row", row_type[name], name)
+                elif axis == "entry":
                     value = aligned_input("entry", cell_type)
-                    return get_field(get_field(value, _VALUE), name)
-                if axis == "col":
+                    result = get_field(get_field(value, _VALUE), name)
+                elif axis == "col":
                     value = aligned_input("col", column_type)
-                    return get_field(get_field(value, _COL), name)
-                raise ValueError(f"unsupported aligned matrix map axis {axis!r}")
-            if op == "matrix_num_cols":
-                return aligned_input("num_cols", tint32)
-            if op == "matrix_column_position":
+                    result = get_field(get_field(value, _COL), name)
+                else:
+                    raise ValueError(f"unsupported aligned matrix map axis {axis!r}")
+            elif op == "matrix_num_cols":
+                result = aligned_input("num_cols", tint32)
+            elif op == "matrix_column_position":
                 raise ValueError("column position requires the indexed-context map path")
-            return {key: rewrite(value) for key, value in node.items()}
+            else:
+                result = {key: rewrite(value) for key, value in node.items()}
+            rewrite_cache[identity] = result
+            return result
 
         rewritten = rewrite(body)
+        from .expressions import if_else, missing
+        presence = Expression(
+            tbool, base,
+            _IR(aligned_input("entry_present", tbool), refs, lookups),
+        )
+        mapped_body = Expression(body_type, base, _IR(rewritten, refs, lookups))
+        rewritten = if_else(presence, mapped_body, missing(body_type)).to_ir()
         row_bundle = struct(
             __vail_aligned_row=row_values,
         )

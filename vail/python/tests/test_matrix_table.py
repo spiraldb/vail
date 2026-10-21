@@ -55,6 +55,30 @@ def test_aligned_entry_map_binds_row_column_and_global_captures():
             for row in localized.collect()] == [[14, None, 14], [25, None, 25]]
 
 
+def test_aligned_entry_map_does_not_evaluate_filtered_slot_body():
+    m = hl.range_matrix_table(1, 2)
+    m = m.annotate_entries(value=hl.if_else(m.col_idx == 0, 1, 0))
+    m = m.filter_entries(m.col_idx == 0)
+    # Division by zero in the excluded slot must remain unevaluated.
+    m = m.annotate_entries(result=(m.row_idx + 1) // m.value)
+    assert [entry.result for entry in m.entries().collect()] == [1]
+
+
+def test_aligned_entry_map_reuses_global_capture_for_multiple_rows():
+    m = hl.range_matrix_table(3, 2).annotate_globals(offset=10)
+    m = m.annotate_entries(value=m.row_idx + m.col_idx + m.offset)
+    assert [entry.value for entry in m.entries().collect()] == [10, 11, 11, 12, 12, 13]
+
+
+def test_aligned_entry_map_rewrites_shared_dag_once():
+    m = hl.range_matrix_table(1, 2)
+    value = m.row_idx + m.col_idx
+    for _ in range(12):
+        value = value + value
+    m = m.annotate_entries(value=value)
+    assert [entry.value for entry in m.entries().collect()] == [0, 4096]
+
+
 def test_aligned_row_aggregate_maps_captured_values_without_compacting_slots():
     m = matrix(2, 3)
     m = m.filter_entries(m.col_idx != 1)

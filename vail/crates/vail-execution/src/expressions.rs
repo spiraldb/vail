@@ -1803,7 +1803,9 @@ impl Expr {
                     .collect::<Result<Vec<_>, ExprError>>()?;
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
-                if function.starts_with("__vail_list_reduce_") {
+                if function.starts_with("__vail_list_reduce_")
+                    || function == "__vail_list_call_stats"
+                {
                     let result = udf.return_type(&args)?;
                     if !same_collection_storage(&result, &dtype.to_arrow()?) {
                         return Err(ExprError::Invalid(format!(
@@ -5646,11 +5648,26 @@ fn lower_uncached(
     let output_type = dtype.clone();
     let result: Arc<dyn PhysicalExpr> = match expr {
         Expr::AlignedMapInput { axis, name, dtype } => {
-            Arc::new(crate::aligned_matrix_map::BoundInputExpr::unbound(
-                axis.clone(),
-                name.clone(),
-                dtype.to_arrow()?,
-            ))
+            let column_name = match axis.as_str() {
+                "entry" => Some(crate::aligned_matrix_map::ENTRY_COLUMN),
+                "col" => Some(crate::aligned_matrix_map::COLUMN_COLUMN),
+                "entry_present" => Some(crate::aligned_matrix_map::ENTRY_PRESENT_COLUMN),
+                _ => None,
+            };
+            if let Some(column_name) = column_name {
+                let index = match axis.as_str() {
+                    "entry" => 0,
+                    "col" => 1,
+                    _ => 2,
+                };
+                Arc::new(Column::new(column_name, index))
+            } else {
+                Arc::new(crate::aligned_matrix_map::BoundInputExpr::unbound(
+                    axis.clone(),
+                    name.clone(),
+                    dtype.to_arrow()?,
+                ))
+            }
         }
         Expr::AlignedMatrixMap {
             entries,
