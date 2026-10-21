@@ -1360,16 +1360,3 @@ pub(crate) fn hwe_both(hom_ref: i64, het: i64, hom_var: i64) -> DfResult<(f64, f
     };
     Ok((freq, two, one))
 }
-
-/// Per-owning-row adapter for the same checked CallStats reducer used by tables.
-/// It scans calls once and never constructs one predicate array per allele.
-pub(crate) fn list_call_stats() -> Result<
-    (
-        Arc<datafusion_expr::ScalarUDF>,
-        Vec<crate::expressions::Type>,
-        crate::expressions::Type,
-    ),
-    ExprError,
-> {
-    crate::list_aggregate::legacy_call_stats()
-}

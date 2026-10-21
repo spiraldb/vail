@@ -73,9 +73,13 @@ pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
     let function = if direct_call_stats {
         "call_stats"
     } else {
-        name.strip_prefix(PREFIX)?
+        let function = name.strip_prefix(PREFIX)?;
+        if function == "call_stats" {
+            return None;
+        }
+        function
     };
-    let arity = arity(function)?;
+    let arity = if direct_call_stats { 2 } else { arity(function)? };
     Some(Arc::new(ScalarUDF::from(ListAggregate {
         name: name.to_owned(),
         function: function.to_owned(),
@@ -170,30 +174,6 @@ fn packed_call_stats_input(call_type: &DataType) -> DataType {
         ]
         .into(),
     )
-}
-
-pub(crate) fn legacy_call_stats() -> std::result::Result<
-    (
-        Arc<datafusion_expr::ScalarUDF>,
-        Vec<crate::expressions::Type>,
-        crate::expressions::Type,
-    ),
-    crate::expressions::ExprError,
-> {
-    use crate::expressions::{ExprError, PrimitiveType, Type};
-
-    let calls = Type::Array {
-        array: Box::new(Type::Primitive(PrimitiveType::Call)),
-    };
-    let function = udf("__vail_list_reduce_call_stats").expect("registered call_stats reducer");
-    let result_type = function
-        .return_type(&[calls.to_arrow()?, DataType::Int32])
-        .map_err(|error| ExprError::Invalid(error.to_string()))?;
-    Ok((
-        function,
-        vec![calls, Type::Primitive(PrimitiveType::Int32)],
-        Type::from_arrow(&result_type)?,
-    ))
 }
 
 fn kernel(
@@ -291,7 +271,6 @@ fn grouped_call_stats_lists(
     initializers: &dyn Array,
     input_type: &DataType,
     output_type: &DataType,
-    null_lists_are_empty: bool,
 ) -> Result<ArrayRef> {
     let mut buckets = std::collections::BTreeMap::<usize, Vec<usize>>::new();
     let mut selected = (0..lists.len()).map(|row| (0, row)).collect::<Vec<_>>();
@@ -299,7 +278,7 @@ fn grouped_call_stats_lists(
     for row in 0..lists.len() {
         // Validate initializer values even for null lists, matching the scalar fallback.
         let n = initializer_n(initializers, row)?;
-        if !lists.is_null(row) || null_lists_are_empty {
+        if !lists.is_null(row) {
             buckets.entry(n).or_default().push(row);
         }
     }
@@ -504,24 +483,15 @@ impl ScalarUDFImpl for ListAggregate {
             let initializer = initializers.ok_or_else(|| {
                 exec_datafusion_err!("call_stats requires an allele-count initializer")
             })?;
-            let raw_call_lists =
-                vail_ordering::same_layout(&input_type, &crate::calls::storage_type());
-            let (lists, input_type) =
-                if raw_call_lists {
-                    // Keep each row's allele count in its grouped accumulator. The
-                    // calls child buffer is already aligned with list offsets.
-                    (lists.clone(), output_input_type)
-                } else {
-                    (lists.clone(), input_type)
-                };
-            let result =
-                grouped_call_stats_lists(
-                    &lists,
-                    initializer.as_ref(),
-                    &input_type,
-                    &output_type,
-                    raw_call_lists && !self.direct_call_stats,
-                )?;
+            // Keep each row's allele count in its grouped accumulator. The
+            // calls child buffer is already aligned with list offsets.
+            let calls_input_type = packed_call_stats_input(&input_type);
+            let result = grouped_call_stats_lists(
+                lists,
+                initializer.as_ref(),
+                &calls_input_type,
+                &output_type,
+            )?;
             return if scalar {
                 Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
                     &result, 0,
