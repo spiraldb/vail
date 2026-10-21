@@ -392,6 +392,74 @@ def test_entry_struct_validity_for_missing_children_and_zero_field_entries(tmp_p
     ]
 
 
+def test_read_matrix_table_migrates_v3_presence_flag_at_storage_boundary(tmp_path):
+    row_type = hl.tstruct(row_idx=hl.tint32)
+    entry_type = hl.tstruct(x=hl.tint32)
+    legacy_cell_type = hl.tstruct(
+        __vail_matrix_col_id=hl.tint64,
+        present=hl.tbool,
+        value=entry_type,
+    )
+    columns_type = hl.tarray(hl.tstruct(
+        __vail_matrix_col_id=hl.tint64,
+        __vail_matrix_col=hl.tstruct(col_idx=hl.tint32),
+    ))
+    core = hl.Table.parallelize(
+        [
+            {
+                "row_idx": 0,
+                "__vail_matrix_row": {"row_idx": 0},
+                "__vail_matrix_cells": [
+                    {"__vail_matrix_col_id": 0, "present": True, "value": {"x": None}},
+                    {"__vail_matrix_col_id": 1, "present": False, "value": {"x": 99}},
+                ],
+            },
+            {
+                "row_idx": 1,
+                "__vail_matrix_row": {"row_idx": 1},
+                "__vail_matrix_cells": [
+                    {"__vail_matrix_col_id": 0, "present": True, "value": {"x": 5}},
+                    {"__vail_matrix_col_id": 1, "present": True, "value": {"x": None}},
+                ],
+            },
+        ],
+        schema=hl.tstruct(
+            row_idx=hl.tint32,
+            __vail_matrix_row=row_type,
+            __vail_matrix_cells=hl.tarray(legacy_cell_type),
+        ),
+        key="row_idx",
+    ).annotate_globals(
+        __vail_matrix_columns=hl.literal([
+                {"__vail_matrix_col_id": 0, "__vail_matrix_col": {"col_idx": 0}},
+                {"__vail_matrix_col_id": 1, "__vail_matrix_col": {"col_idx": 1}},
+            ], columns_type)
+    )
+    path = tmp_path / "legacy-v3.mt"
+    generation = "generation-legacy"
+    (path / generation).mkdir(parents=True)
+    core.write(path / generation / "core")
+    (path / "_vail_matrix.json").write_text(json.dumps({
+        "format": "vail-matrix",
+        "version": 3,
+        "generation": generation,
+        "row_key": ["row_idx"],
+        "col_key": ["col_idx"],
+        "row_index_keys": ["row_idx"],
+    }))
+
+    restored = hl.read_matrix_table(path)
+    assert restored.count() == (2, 2)
+    assert restored.entries().count() == 3
+    assert restored.aggregate_entries(hl.agg.count()) == 3
+    assert restored.aggregate_entries(hl.agg.sum(hl.int64(1))) == 3
+    assert restored.x.collect() == [None, 5, None]
+    localized = restored.localize_entries("entries", "columns")
+    assert [row.entries for row in localized.collect()] == [
+        [hl.Struct(x=None), None], [hl.Struct(x=5), hl.Struct(x=None)]
+    ]
+
+
 def test_row_column_aggregation_and_empty_initialization():
     m = matrix(3, 2)
     rows = m.annotate_rows(total=hl.agg.sum(m.x), mixed=m.row_idx + hl.agg.count())
