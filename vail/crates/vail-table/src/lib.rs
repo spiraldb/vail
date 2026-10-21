@@ -1957,7 +1957,9 @@ impl TableIR {
             | TableNode::MapRows { child, .. }
             | TableNode::GroupWithinPartitions { child, .. }
             | TableNode::MapPartitions { child, .. } => child.known_n_partitions(),
-            TableNode::MatrixEntriesByKeyRuns { .. } => Some(1),
+            // Entry expansion can retain one output partition per disjoint
+            // row-key range; equal boundary runs are coalesced at preparation.
+            TableNode::MatrixEntriesByKeyRuns { .. } => None,
             TableNode::FilterPartitions { child, parts, keep } => {
                 let n = child.known_n_partitions()?;
                 if parts.iter().any(|&p| p >= n) {

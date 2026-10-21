@@ -1446,10 +1446,38 @@ class MatrixTable:
             result = self._with_globals(_project(context, list(fields.items())))
             return result._with_keys(*(self._mir.row_key + self._mir.col_key))
 
-        # Unknown or duplicate row keys cannot safely use row-wise expansion:
-        # column-key order may reset at a repeated row key. Until the native
-        # run operator can preserve the source's disjoint ordered partitions,
-        # use the ordinary parallel keyed-table sort for this case.
+        if self._mir.row_key and self._mir.col_key:
+            base = self._mir.core
+            aliases = tuple(
+                "__vail_entries_row_key_" + uuid4().hex
+                for _ in self._mir.row_key
+            )
+            base = base.annotate(**{
+                alias: base[_ROW][name]
+                for alias, name in zip(aliases, self._mir.row_key)
+            })
+            if self._mir.column_ordering == self._mir.col_key:
+                column_records = self._mir.column_records
+                cells = base[_CELLS]
+            else:
+                column_records, positions = self._columns_in_key_order()
+                cells = _take_array(base[_CELLS], positions)
+            base = base.annotate(**{_CELLS: cells}).annotate_globals(
+                **{_COLUMNS: column_records}
+            )
+            result = base._matrix_entries_by_key_runs(
+                row_field=_ROW,
+                cells_field=_CELLS,
+                columns_global=_COLUMNS,
+                row_key_aliases=aliases,
+                row_key_fields=self._mir.row_key,
+                col_struct_field=_COL,
+                col_key_fields=self._mir.col_key,
+                value_field=_VALUE,
+            )
+            return self._with_globals(result)
+
+        # Unkeyed axes have no row-major composite key contract to preserve.
         context = self._context("entry")
         fields = {
             n: context[p][n]

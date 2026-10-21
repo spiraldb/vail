@@ -197,6 +197,73 @@ impl PreparedTable {
     }
 }
 
+/// Return independently executable runs whose inclusive key bounds are
+/// separated by a strict gap. Adjacent partitions whose boundary keys are
+/// equal must stay together so a duplicate-key run cannot be split between
+/// output partitions.
+fn matrix_entry_partition_groups(
+    table: &TableRef,
+    input: &PreparedTable,
+    key_arity: usize,
+) -> Result<Vec<Vec<usize>>> {
+    let Some(bounds) = crate::join_interval::inherited_bounds(table, key_arity)? else {
+        return Ok(if input.parts.is_empty() {
+            vec![]
+        } else {
+            vec![(0..input.parts.len()).collect()]
+        });
+    };
+    if bounds.len() != input.parts.len() {
+        return Ok(vec![(0..input.parts.len()).collect()]);
+    }
+
+    let options = vec![
+        SortOptions {
+            descending: false,
+            nulls_first: false,
+        };
+        key_arity
+    ];
+    let mut groups = Vec::new();
+    let mut group = Vec::new();
+    let mut previous: Option<crate::join_interval::Bound> = None;
+    for (index, bound) in bounds.into_iter().enumerate() {
+        let Some(bound) = bound else {
+            // Empty source partitions carry no rows and may be omitted. A
+            // nonempty partition without bounds invalidates the proof.
+            if input.counts.get(index).copied().flatten() == Some(0) {
+                continue;
+            }
+            return Ok(vec![(0..input.parts.len()).collect()]);
+        };
+        if let Some(last) = previous.as_ref() {
+            let comparators = crate::join_key::comparators(&last.last, &bound.first, &options)?;
+            let order = comparators
+                .iter()
+                .map(|compare| compare(0, 0))
+                .find(|order| !order.is_eq())
+                .unwrap_or(std::cmp::Ordering::Equal);
+            match order {
+                std::cmp::Ordering::Less => {
+                    groups.push(std::mem::take(&mut group));
+                }
+                std::cmp::Ordering::Equal => {}
+                std::cmp::Ordering::Greater => {
+                    // Bounds that move backward cannot certify concatenated
+                    // key order. Preserve the previous general path instead.
+                    return Ok(vec![(0..input.parts.len()).collect()]);
+                }
+            }
+        }
+        group.push(index);
+        previous = Some(bound);
+    }
+    if !group.is_empty() {
+        groups.push(group);
+    }
+    Ok(groups)
+}
+
 /// One array-valued expression supplies all source partitions. Evaluation is
 /// deferred until a partition is pulled, and shared by partitions of an action.
 #[derive(Debug)]
@@ -1100,7 +1167,7 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                 let key_indices = row_key_aliases.iter()
                     .map(|name| child.schema().index_of(name).map_err(|error| TableError::Invalid(error.to_string())))
                     .collect::<Result<Vec<_>>>()?;
-                let rows = input.ordered();
+                let key_arity = key_indices.len();
                 let globals = table.globals().lower()?;
                 let row_type = match child.schema().field_with_name(row_field)?.data_type() {
                     arrow_schema::DataType::Struct(fields) => fields,
@@ -1154,8 +1221,38 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                     global_schema: table.globals().schema().clone(),
                 };
                 let _ = value_fields;
-                let physical = crate::matrix_entries::lower(rows, globals, config)?;
-                Ok(PreparedTable { parts: vec![physical.clone()], counts: vec![None], schema: physical.schema() })
+                let columns = Arc::new(crate::matrix_entries::SharedColumnsExec::new(
+                    globals,
+                    config.clone(),
+                )) as PhysicalPlan;
+                let groups = matrix_entry_partition_groups(child, &input, key_arity)?;
+                let tag_index = input.schema.fields().len() - 1;
+                let mut parts = Vec::with_capacity(groups.len());
+                for group in groups {
+                    let rows = if group.len() == 1 {
+                        input.parts[group[0]].clone()
+                    } else {
+                        let rows = group
+                            .iter()
+                            .map(|&index| input.parts[index].clone())
+                            .collect();
+                        Arc::new(OrderedConcatExec::tagged(
+                            rows,
+                            input.schema.clone(),
+                            tag_index,
+                        )) as PhysicalPlan
+                    };
+                    parts.push(crate::matrix_entries::lower(
+                        rows,
+                        columns.clone(),
+                        config.clone(),
+                    )?);
+                }
+                Ok(PreparedTable {
+                    counts: vec![None; parts.len()],
+                    parts,
+                    schema,
+                })
             }
             TableNode::MapGlobals {child}=> {let mut input=prepared_input(child)?;input.schema=schema;Ok(input)},
             TableNode::MapRows {child,..}|TableNode::Filter {child,..}|TableNode::Explode {child,..}|TableNode::GroupWithinPartitions {child,..}|TableNode::MapPartitions {child,..}=> {

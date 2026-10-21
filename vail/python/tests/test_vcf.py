@@ -1,5 +1,7 @@
 """Native VCF parser regressions beyond the upstream fixture inventory."""
 import gzip
+from collections import Counter
+
 import pytest
 import vail as hl
 
@@ -48,6 +50,77 @@ def test_import_vcf_builds_nullable_entry_slots(tmp_path):
         (hl.Call([1, 1]), 9, None),
         (None, None, None),
     ]
+
+
+def test_entries_orders_unsorted_vcf_samples_without_moving_entry_slots(tmp_path):
+    path = tmp_path / 'unsorted-samples.vcf'
+    path.write_text(HEADER.replace('\ta\tb\n', '\tz\ta\n') +
+        '1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t0/0:20\t1/1:10\n' +
+        '1\t2\t.\tG\tT\t.\tPASS\t.\tGT:DP\t0/1:21\t1/0:11\n')
+
+    mt = hl.import_vcf(path)
+
+    assert mt.s.collect() == ['z', 'a']
+    entries = mt.entries().collect()
+    assert [(entry.locus.position, entry.s, entry.GT, entry.DP) for entry in entries] == [
+        (1, 'a', hl.Call([1, 1]), 10),
+        (1, 'z', hl.Call([0, 0]), 20),
+        (2, 'a', hl.Call([1, 0]), 11),
+        (2, 'z', hl.Call([0, 1]), 21),
+    ]
+
+
+def test_entries_duplicate_row_key_at_partition_boundary_and_repeat_action(tmp_path):
+    path = tmp_path / 'duplicate-boundary.vcf'
+    path.write_text(HEADER.replace('\ta\tb\n', '\tz\ta\n') +
+        '1\t1\tp1\tA\tC\t.\tPASS\t.\tGT:DP\t0/0:20\t0/1:10\n' +
+        '1\t2\tp2\tA\tC\t.\tPASS\t.\tGT:DP\t0/1:21\t1/1:11\n' +
+        '1\t3\td0\tA\tC\t.\tPASS\t.\tGT:DP\t0/0:30\t0/0:40\n' +
+        '1\t3\td1\tA\tC\t.\tPASS\t.\tGT:DP\t0/0:31\t0/1:41\n' +
+        '1\t3\td2\tA\tC\t.\tPASS\t.\tGT:DP\t0/1:32\t1/0:42\n' +
+        '1\t3\td3\tA\tC\t.\tPASS\t.\tGT:DP\t1/1:33\t1/1:43\n' +
+        '1\t4\tp4\tA\tC\t.\tPASS\t.\tGT:DP\t0/0:24\t0/1:14\n' +
+        '1\t5\tp5\tA\tC\t.\tPASS\t.\tGT:DP\t0/1:25\t1/1:15\n')
+
+    matrix_path = tmp_path / 'duplicate-boundary.mt'
+    hl.import_vcf(path, min_partitions=2).write(matrix_path)
+    mt = hl.read_matrix_table(matrix_path)
+    entries = mt.entries()
+
+    expected = Counter(
+        (
+            position,
+            rsid,
+            sample,
+            str(hl.Call([int(allele) for allele in call.split('/')])),
+            depth,
+        )
+        for position, rsid, z_call, z_dp, a_call, a_dp in [
+            (1, 'p1', '0/0', 20, '0/1', 10),
+            (2, 'p2', '0/1', 21, '1/1', 11),
+            (3, 'd0', '0/0', 30, '0/0', 40),
+            (3, 'd1', '0/0', 31, '0/1', 41),
+            (3, 'd2', '0/1', 32, '1/0', 42),
+            (3, 'd3', '1/1', 33, '1/1', 43),
+            (4, 'p4', '0/0', 24, '0/1', 14),
+            (5, 'p5', '0/1', 25, '1/1', 15),
+        ]
+        for sample, call, depth in (
+            ('z', z_call, z_dp),
+            ('a', a_call, a_dp),
+        )
+    )
+    observed = []
+    for _ in range(2):
+        result = entries.collect()
+        keys = [(entry.locus.position, entry.alleles, entry.s) for entry in result]
+        assert keys == sorted(keys)
+        observed.append(Counter(
+            (entry.locus.position, entry.rsid, entry.s, str(entry.GT), entry.DP)
+            for entry in result
+        ))
+
+    assert observed == [expected, expected]
 
 
 def test_bgzf_members_header_override_and_drop_samples(tmp_path):

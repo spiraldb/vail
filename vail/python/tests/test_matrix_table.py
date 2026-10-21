@@ -313,6 +313,19 @@ def test_entries_streams_duplicate_row_key_run_larger_than_arrow_batch():
     )
 
 
+def test_entries_bounds_many_singleton_rows_within_one_source_batch():
+    mt = hl.range_matrix_table(9000, 2, 1)
+    mt = mt.annotate_entries(value=hl.int32(mt.row_idx * 10 + mt.col_idx))
+
+    entries = mt.entries().collect()
+
+    assert [(entry.row_idx, entry.col_idx, entry.value) for entry in entries] == [
+        (row_idx, col_idx, row_idx * 10 + col_idx)
+        for row_idx in range(9000)
+        for col_idx in range(2)
+    ]
+
+
 def test_entries_spills_large_singleton_run_without_dropping_it():
     payload = "x" * (65 * 1024 * 1024)
     mt = hl.utils.range_matrix_table(1, 1, 1)
