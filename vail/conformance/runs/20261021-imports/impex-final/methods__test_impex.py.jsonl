@@ -1,0 +1,805 @@
+{"kind": "inventory", "items": ["test_impex.py::test_timeout", "test_impex.py::VCFTests::test_call_fields", "test_impex.py::VCFTests::test_can_import_bad_number_flag", "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations", "test_impex.py::VCFTests::test_combiner_works", "test_impex.py::VCFTests::test_contigs_header", "test_impex.py::VCFTests::test_custom_rg_import", "test_impex.py::VCFTests::test_empty_import_vcf_group_by_collect", "test_impex.py::VCFTests::test_empty_read_write", "test_impex.py::VCFTests::test_export_sites_only_from_table", "test_impex.py::VCFTests::test_export_vcf", "test_impex.py::VCFTests::test_export_vcf_empty_format", "test_impex.py::VCFTests::test_export_vcf_haploid", "test_impex.py::VCFTests::test_export_vcf_invalid_format_types", "test_impex.py::VCFTests::test_export_vcf_invalid_info_types", "test_impex.py::VCFTests::test_export_vcf_no_alt_alleles", "test_impex.py::VCFTests::test_export_vcf_no_gt", "test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description", "test_impex.py::VCFTests::test_filter", "test_impex.py::VCFTests::test_find_replace", "test_impex.py::VCFTests::test_flag_at_eol", "test_impex.py::VCFTests::test_format_genotypes", "test_impex.py::VCFTests::test_format_header", "test_impex.py::VCFTests::test_glob", "test_impex.py::VCFTests::test_haploid", "test_impex.py::VCFTests::test_haploid_combiner_ok", "test_impex.py::VCFTests::test_import_gvcfs", "test_impex.py::VCFTests::test_import_gvcfs_long_line", "test_impex.py::VCFTests::test_import_vcf", "test_impex.py::VCFTests::test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements", "test_impex.py::VCFTests::test_import_vcf_bad_reference_allele", "test_impex.py::VCFTests::test_import_vcf_can_import_float32_array_format", "test_impex.py::VCFTests::test_import_vcf_can_import_float_array_format", "test_impex.py::VCFTests::test_import_vcf_can_import_negative_numbers", "test_impex.py::VCFTests::test_import_vcf_dosages_as_doubles_or_floats", "test_impex.py::VCFTests::test_import_vcf_empty", "test_impex.py::VCFTests::test_import_vcf_flags_are_defined", "test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements", "test_impex.py::VCFTests::test_import_vcf_invalid_float_type", "test_impex.py::VCFTests::test_import_vcf_missing_format_field_elements", "test_impex.py::VCFTests::test_import_vcf_no_reference_specified", "test_impex.py::VCFTests::test_import_vcf_set_field_missing", "test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci", "test_impex.py::VCFTests::test_info_char", "test_impex.py::VCFTests::test_info_float64", "test_impex.py::VCFTests::test_invalid_info_fields", "test_impex.py::VCFTests::test_malformed", "test_impex.py::VCFTests::test_metadata_argument", "test_impex.py::VCFTests::test_missing_float_entries", "test_impex.py::VCFTests::test_not_identical_headers", "test_impex.py::VCFTests::test_same_bgzip", "test_impex.py::VCFTests::test_sorted", "test_impex.py::VCFTests::test_tabix_export", "test_impex.py::VCFTests::test_tabix_export_file_exists", "test_impex.py::VCFTests::test_undeclared_info", "test_impex.py::VCFTests::test_vcf_different_info_errors", "test_impex.py::VCFTests::test_vcf_parallel_separate_header_export", "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37", "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37", "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37", "test_impex.py::VCFTests::test_vcf_unsorted_alleles", "test_impex.py::VCFTests::test_vcf_unsorted_alleles_no_codegen", "test_impex.py::PLINKTests::test_contig_recoding_defaults", "test_impex.py::PLINKTests::test_export_import_plink_same", "test_impex.py::PLINKTests::test_export_plink", "test_impex.py::PLINKTests::test_export_plink_call_expression", "test_impex.py::PLINKTests::test_export_plink_default_arguments", "test_impex.py::PLINKTests::test_export_plink_non_default_arguments", "test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments", "test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype", "test_impex.py::PLINKTests::test_export_plink_struct_locus", "test_impex.py::PLINKTests::test_export_plink_white_space_in_fam_id_raises_error", "test_impex.py::PLINKTests::test_export_plink_white_space_in_varid_raises_error", "test_impex.py::PLINKTests::test_import_fam", "test_impex.py::PLINKTests::test_import_plink_a1_major", "test_impex.py::PLINKTests::test_import_plink_and_ignore_rows", "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference", "test_impex.py::PLINKTests::test_import_plink_empty_bim", "test_impex.py::PLINKTests::test_import_plink_empty_fam", "test_impex.py::PLINKTests::test_import_plink_no_reference_specified", "test_impex.py::PLINKTests::test_import_plink_partitions", "test_impex.py::PLINKTests::test_import_plink_same_locus", "test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci", "test_impex.py::BGENTests::test_drop", "test_impex.py::BGENTests::test_error_if_no_gp", "test_impex.py::BGENTests::test_export_bgen", "test_impex.py::BGENTests::test_export_bgen_from_vcf", "test_impex.py::BGENTests::test_export_bgen_parallel", "test_impex.py::BGENTests::test_export_bgen_zstd", "test_impex.py::BGENTests::test_import_bgen_GT_GP_entries", "test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree", "test_impex.py::BGENTests::test_import_bgen_dosage_entry", "test_impex.py::BGENTests::test_import_bgen_empty_variant_filter", "test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci", "test_impex.py::BGENTests::test_import_bgen_gavin_example", "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object", "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs", "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression", "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table", "test_impex.py::BGENTests::test_import_bgen_no_entries", "test_impex.py::BGENTests::test_import_bgen_no_reference", "test_impex.py::BGENTests::test_import_bgen_random", "test_impex.py::BGENTests::test_import_bgen_row_fields", "test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci", "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs", "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals", "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table", "test_impex.py::BGENTests::test_index_bgen_errors_when_index_file_has_wrong_extension", "test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable", "test_impex.py::BGENTests::test_multiple_files_disjoint", "test_impex.py::BGENTests::test_multiple_files_variant_filtering", "test_impex.py::BGENTests::test_multiple_references_throws_error", "test_impex.py::BGENTests::test_n_partitions", "test_impex.py::BGENTests::test_old_index_file_throws_error", "test_impex.py::BGENTests::test_parallel_import", "test_impex.py::BGENTests::test_randomness", "test_impex.py::BGENTests::test_specify_different_index_file", "test_impex.py::GENTests::test_export_gen", "test_impex.py::GENTests::test_export_gen_exprs", "test_impex.py::GENTests::test_import_gen", "test_impex.py::GENTests::test_import_gen_no_chromosome_in_file", "test_impex.py::GENTests::test_import_gen_no_reference_specified", "test_impex.py::GENTests::test_import_gen_skip_invalid_loci", "test_impex.py::LocusIntervalTests::test_import_bed", "test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals", "test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table", "test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified", "test_impex.py::LocusIntervalTests::test_import_bed_recoding", "test_impex.py::LocusIntervalTests::test_import_locus_intervals", "test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals", "test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified", "test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding", "test_impex.py::LocusIntervalTests::test_pass_through_args", "test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file", "test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table", "test_impex.py::ImportMatrixTableTests::test_headers_not_identical", "test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem", "test_impex.py::ImportMatrixTableTests::test_import_matrix_comment", "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1", "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2", "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3", "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4", "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols", "test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions", "test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import", "test_impex.py::ImportMatrixTableTests::test_long_parsing", "test_impex.py::ImportMatrixTableTests::test_too_few_entries", "test_impex.py::ImportMatrixTableTests::test_wrong_entry_type", "test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type", "test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]", "test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]", "test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]", "test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]", "test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]", "test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]", "test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]", "test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]", "test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]", "test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]", "test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]", "test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]", "test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]", "test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]", "test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]", "test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]", "test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]", "test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]", "test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]", "test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]", "test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]", "test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]", "test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]", "test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]", "test_impex.py::ImportLinesTest::test_import_lines", "test_impex.py::ImportLinesTest::test_import_lines_bgz", "test_impex.py::ImportLinesTest::test_import_lines_glob", "test_impex.py::ImportLinesTest::test_import_lines_multiple_files", "test_impex.py::ImportTableTests::test_error_with_context", "test_impex.py::ImportTableTests::test_glob", "test_impex.py::ImportTableTests::test_import_export_identity", "test_impex.py::ImportTableTests::test_import_same", "test_impex.py::ImportTableTests::test_import_table_empty", "test_impex.py::ImportTableTests::test_import_table_empty_with_header", "test_impex.py::ImportTableTests::test_import_table_force_bgz", "test_impex.py::ImportTableTests::test_read_write_identity", "test_impex.py::ImportTableTests::test_read_write_identity_keyed", "test_impex.py::ImportTableTests::test_source_file", "test_impex.py::ImportTableTests::test_type_imputation", "test_impex.py::GrepTests::test_grep_show_false", "test_impex.py::AvroTests::test_simple_avro", "test_impex.py::test_matrix_and_table_read_intervals_with_hidden_key", "test_impex.py::test_import_export_same[0]", "test_impex.py::test_import_export_same[1]", "test_impex.py::test_import_export_same[2]", "test_impex.py::test_import_export_same[3]", "test_impex.py::test_import_export_same[4]", "test_impex.py::test_import_export_same[5]", "test_impex.py::test_import_export_same[6]", "test_impex.py::test_import_export_same[7]", "test_impex.py::test_import_export_same[8]", "test_impex.py::test_import_export_same[9]"]}
+{"kind": "started", "nodeid": "test_impex.py::test_timeout"}
+{"kind": "test", "nodeid": "test_impex.py::test_timeout", "when": "setup", "outcome": "passed", "duration": 0.004440582997631282, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_timeout", "when": "call", "outcome": "passed", "duration": 7.166597060859203e-05, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_timeout", "when": "teardown", "outcome": "passed", "duration": 5.9333047829568386e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_call_fields"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_call_fields", "when": "setup", "outcome": "passed", "duration": 0.0003132499987259507, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_call_fields", "when": "call", "outcome": "passed", "duration": 0.40611083299154416, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_call_fields", "when": "teardown", "outcome": "passed", "duration": 8.591602090746164e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_can_import_bad_number_flag"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_can_import_bad_number_flag", "when": "setup", "outcome": "passed", "duration": 0.00022954103769734502, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_can_import_bad_number_flag", "when": "call", "outcome": "passed", "duration": 0.05931816605152562, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_can_import_bad_number_flag", "when": "teardown", "outcome": "passed", "duration": 8.166598854586482e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations", "when": "setup", "outcome": "passed", "duration": 0.00021199998445808887, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations", "when": "call", "outcome": "failed", "duration": 0.0001871669664978981, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:358: in test_combiner_parse_allele_specific_annotations\n    from vail.vds.combiner.combine import parse_allele_specific_fields\nE   ModuleNotFoundError: No module named 'vail.vds'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations", "when": "teardown", "outcome": "passed", "duration": 9.554199641570449e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_combiner_works"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_combiner_works", "when": "setup", "outcome": "passed", "duration": 0.00019245798466727138, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_combiner_works", "when": "call", "outcome": "failed", "duration": 0.0001656670356169343, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:325: in test_combiner_works\n    from vail.vds.combiner.combine import combine_variant_datasets, transform_gvcf\nE   ModuleNotFoundError: No module named 'vail.vds'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_combiner_works", "when": "teardown", "outcome": "passed", "duration": 0.00010991701856255531, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_contigs_header"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_contigs_header", "when": "setup", "outcome": "passed", "duration": 0.00020941696129739285, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_contigs_header", "when": "call", "outcome": "passed", "duration": 0.25824654201278463, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_contigs_header", "when": "teardown", "outcome": "passed", "duration": 6.691698217764497e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_custom_rg_import"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_custom_rg_import", "when": "setup", "outcome": "passed", "duration": 0.0001940840156748891, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_custom_rg_import", "when": "call", "outcome": "passed", "duration": 0.04044304200215265, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_custom_rg_import", "when": "teardown", "outcome": "passed", "duration": 7.537496276199818e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_empty_import_vcf_group_by_collect"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_empty_import_vcf_group_by_collect", "when": "setup", "outcome": "passed", "duration": 0.00020775001030415297, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_empty_import_vcf_group_by_collect", "when": "call", "outcome": "passed", "duration": 0.11754379200283438, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_empty_import_vcf_group_by_collect", "when": "teardown", "outcome": "passed", "duration": 6.737501826137304e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_empty_read_write"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_empty_read_write", "when": "setup", "outcome": "passed", "duration": 0.00020295899594202638, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_empty_read_write", "when": "call", "outcome": "passed", "duration": 0.4394398749573156, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_empty_read_write", "when": "teardown", "outcome": "passed", "duration": 8.462497498840094e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_sites_only_from_table"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_sites_only_from_table", "when": "setup", "outcome": "passed", "duration": 0.00023008399875834584, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_sites_only_from_table", "when": "call", "outcome": "passed", "duration": 0.44696195801952854, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_sites_only_from_table", "when": "teardown", "outcome": "passed", "duration": 7.0915964897722e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf", "when": "setup", "outcome": "passed", "duration": 0.00022429099772125483, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf", "when": "call", "outcome": "passed", "duration": 1.1537342499941587, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf", "when": "teardown", "outcome": "passed", "duration": 6.241700612008572e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_empty_format"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_empty_format", "when": "setup", "outcome": "passed", "duration": 0.00018149998504668474, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_empty_format", "when": "call", "outcome": "passed", "duration": 0.3652317500091158, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_empty_format", "when": "teardown", "outcome": "passed", "duration": 6.620900239795446e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_haploid"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_haploid", "when": "setup", "outcome": "passed", "duration": 0.00018433301011100411, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_haploid", "when": "call", "outcome": "passed", "duration": 0.14924958301708102, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_haploid", "when": "teardown", "outcome": "passed", "duration": 6.862496957182884e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_format_types"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_format_types", "when": "setup", "outcome": "passed", "duration": 0.0001836250303313136, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_format_types", "when": "call", "outcome": "passed", "duration": 0.050569499959237874, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_format_types", "when": "teardown", "outcome": "passed", "duration": 6.158399628475308e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_info_types"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_info_types", "when": "setup", "outcome": "passed", "duration": 0.0001728750066831708, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_info_types", "when": "call", "outcome": "passed", "duration": 0.07322295900667086, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_invalid_info_types", "when": "teardown", "outcome": "passed", "duration": 5.9333047829568386e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_alt_alleles"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_alt_alleles", "when": "setup", "outcome": "passed", "duration": 0.00017504201969131827, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_alt_alleles", "when": "call", "outcome": "passed", "duration": 5.985973874980118, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_alt_alleles", "when": "teardown", "outcome": "passed", "duration": 6.391701754182577e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_gt"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_gt", "when": "setup", "outcome": "passed", "duration": 0.00018633395666256547, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_gt", "when": "call", "outcome": "passed", "duration": 0.5612482919823378, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_no_gt", "when": "teardown", "outcome": "passed", "duration": 6.533396663144231e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description", "when": "setup", "outcome": "passed", "duration": 0.00017966702580451965, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description", "when": "call", "outcome": "passed", "duration": 0.22680279199266806, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description", "when": "teardown", "outcome": "passed", "duration": 6.658403435721993e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_filter"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_filter", "when": "setup", "outcome": "passed", "duration": 0.00018350000027567148, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_filter", "when": "call", "outcome": "passed", "duration": 0.09325795801123604, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_filter", "when": "teardown", "outcome": "passed", "duration": 7.049995474517345e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_find_replace"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_find_replace", "when": "setup", "outcome": "passed", "duration": 0.00019470800179988146, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_find_replace", "when": "call", "outcome": "passed", "duration": 0.13164466596208513, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_find_replace", "when": "teardown", "outcome": "passed", "duration": 6.487499922513962e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_flag_at_eol"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_flag_at_eol", "when": "setup", "outcome": "passed", "duration": 0.0001781670143827796, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_flag_at_eol", "when": "call", "outcome": "passed", "duration": 0.027272291015833616, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_flag_at_eol", "when": "teardown", "outcome": "passed", "duration": 5.912495544180274e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_format_genotypes"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_format_genotypes", "when": "setup", "outcome": "passed", "duration": 0.00016658398089930415, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_format_genotypes", "when": "call", "outcome": "passed", "duration": 0.22346845897845924, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_format_genotypes", "when": "teardown", "outcome": "passed", "duration": 6.533297710120678e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_format_header"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_format_header", "when": "setup", "outcome": "passed", "duration": 0.00018604198703542352, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_format_header", "when": "call", "outcome": "passed", "duration": 0.379118415992707, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_format_header", "when": "teardown", "outcome": "passed", "duration": 6.783398566767573e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_glob"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_glob", "when": "setup", "outcome": "passed", "duration": 0.00017370801651850343, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_glob", "when": "call", "outcome": "passed", "duration": 0.370593249972444, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_glob", "when": "teardown", "outcome": "passed", "duration": 6.425002356991172e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_haploid"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_haploid", "when": "setup", "outcome": "passed", "duration": 0.0001823339844122529, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_haploid", "when": "call", "outcome": "passed", "duration": 0.10919362504500896, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_haploid", "when": "teardown", "outcome": "passed", "duration": 6.466696504503489e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_haploid_combiner_ok"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_haploid_combiner_ok", "when": "setup", "outcome": "passed", "duration": 0.00018824997823685408, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_haploid_combiner_ok", "when": "call", "outcome": "failed", "duration": 0.00015550001990050077, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:338: in test_haploid_combiner_ok\n    from vail.vds.combiner.combine import transform_gvcf\nE   ModuleNotFoundError: No module named 'vail.vds'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_haploid_combiner_ok", "when": "teardown", "outcome": "passed", "duration": 7.383397314697504e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs", "when": "setup", "outcome": "passed", "duration": 0.0001580420066602528, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs", "when": "call", "outcome": "failed", "duration": 0.005898999981582165, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:296: in test_import_gvcfs\n    self.import_gvcfs_sample_vcf(path)\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf\n    parts_str = json.dumps(parts_type._convert_to_json(parts))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'tarray' object has no attribute '_convert_to_json'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs", "when": "teardown", "outcome": "passed", "duration": 8.295802399516106e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs_long_line"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs_long_line", "when": "setup", "outcome": "passed", "duration": 0.00018224999075755477, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs_long_line", "when": "call", "outcome": "passed", "duration": 0.09753141703549773, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_gvcfs_long_line", "when": "teardown", "outcome": "passed", "duration": 6.616697646677494e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf", "when": "setup", "outcome": "passed", "duration": 0.00018308399012312293, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf", "when": "call", "outcome": "passed", "duration": 54.069170582981315, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf", "when": "teardown", "outcome": "passed", "duration": 0.00012729200534522533, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements", "when": "setup", "outcome": "passed", "duration": 0.00035795901203528047, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements", "when": "call", "outcome": "passed", "duration": 0.18988237500889227, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements", "when": "teardown", "outcome": "passed", "duration": 0.00017858296632766724, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_bad_reference_allele"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_bad_reference_allele", "when": "setup", "outcome": "passed", "duration": 0.0007335409754887223, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_bad_reference_allele", "when": "call", "outcome": "passed", "duration": 0.04155816702404991, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_bad_reference_allele", "when": "teardown", "outcome": "passed", "duration": 0.0001289999927394092, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float32_array_format"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float32_array_format", "when": "setup", "outcome": "passed", "duration": 0.00033520901342853904, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float32_array_format", "when": "call", "outcome": "passed", "duration": 0.10571612499188632, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float32_array_format", "when": "teardown", "outcome": "passed", "duration": 0.0001485830289311707, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float_array_format"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float_array_format", "when": "setup", "outcome": "passed", "duration": 0.00037166703259572387, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float_array_format", "when": "call", "outcome": "passed", "duration": 0.09177250001812354, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_float_array_format", "when": "teardown", "outcome": "passed", "duration": 0.00014204095350578427, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_negative_numbers"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_negative_numbers", "when": "setup", "outcome": "passed", "duration": 0.00024816597579047084, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_negative_numbers", "when": "call", "outcome": "passed", "duration": 0.08039775001816452, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_can_import_negative_numbers", "when": "teardown", "outcome": "passed", "duration": 8.716696174815297e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_dosages_as_doubles_or_floats"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_dosages_as_doubles_or_floats", "when": "setup", "outcome": "passed", "duration": 0.0006525419885292649, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_dosages_as_doubles_or_floats", "when": "call", "outcome": "passed", "duration": 0.45951449999120086, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_dosages_as_doubles_or_floats", "when": "teardown", "outcome": "passed", "duration": 8.45409813337028e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_empty"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_empty", "when": "setup", "outcome": "passed", "duration": 0.00022791698575019836, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_empty", "when": "call", "outcome": "passed", "duration": 0.15467133303172886, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_empty", "when": "teardown", "outcome": "passed", "duration": 6.945797940716147e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_flags_are_defined"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_flags_are_defined", "when": "setup", "outcome": "passed", "duration": 0.0001924170064739883, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_flags_are_defined", "when": "call", "outcome": "passed", "duration": 0.10147274995688349, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_flags_are_defined", "when": "teardown", "outcome": "passed", "duration": 7.783400360494852e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements", "when": "setup", "outcome": "passed", "duration": 0.0002494590007700026, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements", "when": "call", "outcome": "passed", "duration": 0.027243124961387366, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements", "when": "teardown", "outcome": "passed", "duration": 7.824995554983616e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_invalid_float_type"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_invalid_float_type", "when": "setup", "outcome": "passed", "duration": 0.00021224998636171222, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_invalid_float_type", "when": "call", "outcome": "passed", "duration": 0.00012312497710809112, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_invalid_float_type", "when": "teardown", "outcome": "passed", "duration": 4.700000863522291e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_missing_format_field_elements"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_missing_format_field_elements", "when": "setup", "outcome": "passed", "duration": 0.00015199999324977398, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_missing_format_field_elements", "when": "call", "outcome": "passed", "duration": 0.09189895796589553, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_missing_format_field_elements", "when": "teardown", "outcome": "passed", "duration": 6.349995965138078e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_no_reference_specified"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_no_reference_specified", "when": "setup", "outcome": "passed", "duration": 0.00024008401669561863, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_no_reference_specified", "when": "call", "outcome": "passed", "duration": 0.010269416961818933, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_no_reference_specified", "when": "teardown", "outcome": "passed", "duration": 7.287500193342566e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_set_field_missing"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_set_field_missing", "when": "setup", "outcome": "passed", "duration": 0.0001866249949671328, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_set_field_missing", "when": "call", "outcome": "passed", "duration": 0.05547595798270777, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_set_field_missing", "when": "teardown", "outcome": "passed", "duration": 6.241700612008572e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci", "when": "setup", "outcome": "passed", "duration": 0.00018683401867747307, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci", "when": "call", "outcome": "passed", "duration": 0.03837179101537913, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci", "when": "teardown", "outcome": "passed", "duration": 6.862496957182884e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_info_char"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_info_char", "when": "setup", "outcome": "passed", "duration": 0.00019212497863918543, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_info_char", "when": "call", "outcome": "passed", "duration": 0.015224290953483433, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_info_char", "when": "teardown", "outcome": "passed", "duration": 6.204098463058472e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_info_float64"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_info_float64", "when": "setup", "outcome": "passed", "duration": 0.0001842500059865415, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_info_float64", "when": "call", "outcome": "passed", "duration": 0.011939916003029794, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_info_float64", "when": "teardown", "outcome": "passed", "duration": 6.17500045336783e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_invalid_info_fields"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_invalid_info_fields", "when": "setup", "outcome": "passed", "duration": 0.0001794170239008963, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_invalid_info_fields", "when": "call", "outcome": "failed", "duration": 0.01301991700893268, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:504: in test_invalid_info_fields\n    with mock.patch('hail.methods.impex.warning', autospec=True) as warning:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/mock.py:1451: in __enter__\n    self.target = self.getter()\n                  ^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pkgutil.py:513: in resolve_name\n    mod = importlib.import_module(modname)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1324: in _find_and_load_unlocked\n    ???\nE   ModuleNotFoundError: No module named 'hail'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_invalid_info_fields", "when": "teardown", "outcome": "passed", "duration": 8.450000314041972e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_malformed"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_malformed", "when": "setup", "outcome": "passed", "duration": 0.00017612497322261333, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_malformed", "when": "call", "outcome": "passed", "duration": 0.02941774995997548, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_malformed", "when": "teardown", "outcome": "passed", "duration": 6.65000407025218e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_metadata_argument"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_metadata_argument", "when": "setup", "outcome": "passed", "duration": 0.000198375026229769, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_metadata_argument", "when": "call", "outcome": "passed", "duration": 0.22775045898742974, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_metadata_argument", "when": "teardown", "outcome": "passed", "duration": 6.358401151373982e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_missing_float_entries"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_missing_float_entries", "when": "setup", "outcome": "passed", "duration": 0.00017491698963567615, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_missing_float_entries", "when": "call", "outcome": "passed", "duration": 1.273492583015468, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_missing_float_entries", "when": "teardown", "outcome": "passed", "duration": 0.00017745804507285357, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_not_identical_headers"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_not_identical_headers", "when": "setup", "outcome": "passed", "duration": 0.0006122080376371741, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_not_identical_headers", "when": "call", "outcome": "passed", "duration": 0.42413075000513345, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_not_identical_headers", "when": "teardown", "outcome": "passed", "duration": 6.95830094628036e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_same_bgzip"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_same_bgzip", "when": "setup", "outcome": "passed", "duration": 0.00018762500258162618, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_same_bgzip", "when": "call", "outcome": "passed", "duration": 1.1093247500248253, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_same_bgzip", "when": "teardown", "outcome": "passed", "duration": 7.41670373827219e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_sorted"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_sorted", "when": "setup", "outcome": "passed", "duration": 0.00021254201419651508, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_sorted", "when": "call", "outcome": "passed", "duration": 0.21013237501028925, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_sorted", "when": "teardown", "outcome": "passed", "duration": 7.220800034701824e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_tabix_export"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_tabix_export", "when": "setup", "outcome": "passed", "duration": 0.00020775001030415297, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_tabix_export", "when": "call", "outcome": "failed", "duration": 0.37454287498258054, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:284: in test_tabix_export\n    self.import_gvcfs_sample_vcf(tmp)\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf\n    parts_str = json.dumps(parts_type._convert_to_json(parts))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'tarray' object has no attribute '_convert_to_json'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_tabix_export", "when": "teardown", "outcome": "passed", "duration": 0.0001326660276390612, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_tabix_export_file_exists"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_tabix_export_file_exists", "when": "setup", "outcome": "passed", "duration": 0.00024995801504701376, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_tabix_export_file_exists", "when": "call", "outcome": "passed", "duration": 0.3552804999635555, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_tabix_export_file_exists", "when": "teardown", "outcome": "passed", "duration": 9.770900942385197e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_undeclared_info"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_undeclared_info", "when": "setup", "outcome": "passed", "duration": 0.0002357090124860406, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_undeclared_info", "when": "call", "outcome": "passed", "duration": 0.08870899997418746, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_undeclared_info", "when": "teardown", "outcome": "passed", "duration": 6.791600026190281e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_different_info_errors"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_different_info_errors", "when": "setup", "outcome": "passed", "duration": 0.00020741700427606702, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_different_info_errors", "when": "call", "outcome": "passed", "duration": 0.0014833330060355365, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_different_info_errors", "when": "teardown", "outcome": "passed", "duration": 4.775001434609294e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_parallel_separate_header_export"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parallel_separate_header_export", "when": "setup", "outcome": "passed", "duration": 0.00014049996389076114, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parallel_separate_header_export", "when": "call", "outcome": "passed", "duration": 1.6948079590220004, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parallel_separate_header_export", "when": "teardown", "outcome": "passed", "duration": 7.054099114611745e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37", "when": "setup", "outcome": "passed", "duration": 0.0002009579911828041, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37", "when": "call", "outcome": "failed", "duration": 0.011100375035312027, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:309: in test_vcf_parser_golden_master__ex_GRCh37\n    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_paths.py:24: in read_matrix_table\n    return self._read_matrix_table(str(path), *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2616: in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37", "when": "teardown", "outcome": "passed", "duration": 8.616701234132051e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37", "when": "setup", "outcome": "passed", "duration": 0.00019245798466727138, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37", "when": "call", "outcome": "failed", "duration": 0.3811068749637343, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:316: in test_vcf_parser_golden_master__gvcf_GRCh37\n    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_paths.py:24: in read_matrix_table\n    return self._read_matrix_table(str(path), *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2616: in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37", "when": "teardown", "outcome": "passed", "duration": 8.700002217665315e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37", "when": "setup", "outcome": "passed", "duration": 0.00019404198974370956, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37", "when": "call", "outcome": "passed", "duration": 3.242675707966555, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37", "when": "teardown", "outcome": "passed", "duration": 7.450004341080785e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles", "when": "setup", "outcome": "passed", "duration": 0.0002327919937670231, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles", "when": "call", "outcome": "passed", "duration": 0.15362479101167992, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles", "when": "teardown", "outcome": "passed", "duration": 6.524997297674417e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles_no_codegen"}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles_no_codegen", "when": "setup", "outcome": "passed", "duration": 0.00018199998885393143, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles_no_codegen", "when": "call", "outcome": "passed", "duration": 0.15463279199320823, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::VCFTests::test_vcf_unsorted_alleles_no_codegen", "when": "teardown", "outcome": "passed", "duration": 9.91669949144125e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_contig_recoding_defaults"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_contig_recoding_defaults", "when": "setup", "outcome": "passed", "duration": 0.00023179204436019063, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_contig_recoding_defaults", "when": "call", "outcome": "passed", "duration": 0.4495654170168564, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_contig_recoding_defaults", "when": "teardown", "outcome": "passed", "duration": 6.541697075590491e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_import_plink_same"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_import_plink_same", "when": "setup", "outcome": "passed", "duration": 0.0001966250129044056, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_import_plink_same", "when": "call", "outcome": "passed", "duration": 5.48173079197295, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_import_plink_same", "when": "teardown", "outcome": "passed", "duration": 6.962497718632221e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink", "when": "setup", "outcome": "passed", "duration": 0.00022291595814749599, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink", "when": "call", "outcome": "passed", "duration": 5.91134350001812, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink", "when": "teardown", "outcome": "passed", "duration": 0.00010516599286347628, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_call_expression"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_call_expression", "when": "setup", "outcome": "passed", "duration": 0.0002840000088326633, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_call_expression", "when": "call", "outcome": "passed", "duration": 0.765861332998611, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_call_expression", "when": "teardown", "outcome": "passed", "duration": 7.083395030349493e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_default_arguments"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_default_arguments", "when": "setup", "outcome": "passed", "duration": 0.00019945803796872497, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_default_arguments", "when": "call", "outcome": "passed", "duration": 0.2829478749772534, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_default_arguments", "when": "teardown", "outcome": "passed", "duration": 6.87920255586505e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_arguments"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_arguments", "when": "setup", "outcome": "passed", "duration": 0.00021216599270701408, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_arguments", "when": "call", "outcome": "passed", "duration": 0.21959062496898696, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_arguments", "when": "teardown", "outcome": "passed", "duration": 6.758299423381686e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments", "when": "setup", "outcome": "passed", "duration": 0.0002085419837385416, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments", "when": "call", "outcome": "passed", "duration": 0.2199470839696005, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments", "when": "teardown", "outcome": "passed", "duration": 6.941700121387839e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype", "when": "setup", "outcome": "passed", "duration": 0.0001962079550139606, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype", "when": "call", "outcome": "passed", "duration": 0.21518458297941834, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype", "when": "teardown", "outcome": "passed", "duration": 6.762502016499639e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_struct_locus"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_struct_locus", "when": "setup", "outcome": "passed", "duration": 0.00019158300710842013, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_struct_locus", "when": "call", "outcome": "passed", "duration": 0.3611651250394061, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_struct_locus", "when": "teardown", "outcome": "passed", "duration": 7.495901081711054e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_fam_id_raises_error"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_fam_id_raises_error", "when": "setup", "outcome": "passed", "duration": 0.00023141701240092516, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_fam_id_raises_error", "when": "call", "outcome": "passed", "duration": 0.07140254200203344, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_fam_id_raises_error", "when": "teardown", "outcome": "passed", "duration": 7.07499566487968e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_varid_raises_error"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_varid_raises_error", "when": "setup", "outcome": "passed", "duration": 0.0001996249775402248, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_varid_raises_error", "when": "call", "outcome": "passed", "duration": 0.16050183400511742, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_export_plink_white_space_in_varid_raises_error", "when": "teardown", "outcome": "passed", "duration": 7.133401231840253e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_fam"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_fam", "when": "setup", "outcome": "passed", "duration": 0.00019091699505224824, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_fam", "when": "call", "outcome": "passed", "duration": 0.007965374970808625, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_fam", "when": "teardown", "outcome": "passed", "duration": 5.5958982557058334e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_a1_major"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_a1_major", "when": "setup", "outcome": "passed", "duration": 0.00016725005116313696, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_a1_major", "when": "call", "outcome": "passed", "duration": 1.456072332977783, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_a1_major", "when": "teardown", "outcome": "passed", "duration": 8.341699140146375e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_and_ignore_rows"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_and_ignore_rows", "when": "setup", "outcome": "passed", "duration": 0.0002513749641366303, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_and_ignore_rows", "when": "call", "outcome": "passed", "duration": 0.07543324999278411, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_and_ignore_rows", "when": "teardown", "outcome": "passed", "duration": 8.61250446178019e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference", "when": "setup", "outcome": "passed", "duration": 0.0002021660329774022, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference", "when": "call", "outcome": "passed", "duration": 44.48148887499701, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference", "when": "teardown", "outcome": "passed", "duration": 6.795796798542142e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_bim"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_bim", "when": "setup", "outcome": "passed", "duration": 0.0001884579542092979, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_bim", "when": "call", "outcome": "passed", "duration": 0.1407026659580879, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_bim", "when": "teardown", "outcome": "passed", "duration": 6.966700311750174e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_fam"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_fam", "when": "setup", "outcome": "passed", "duration": 0.00018566602375358343, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_fam", "when": "call", "outcome": "passed", "duration": 0.2418693330255337, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_empty_fam", "when": "teardown", "outcome": "passed", "duration": 6.620900239795446e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_no_reference_specified"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_no_reference_specified", "when": "setup", "outcome": "passed", "duration": 0.00019404100021347404, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_no_reference_specified", "when": "call", "outcome": "passed", "duration": 0.035056041029747576, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_no_reference_specified", "when": "teardown", "outcome": "passed", "duration": 6.59999786876142e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_partitions"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_partitions", "when": "setup", "outcome": "passed", "duration": 0.00018745800480246544, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_partitions", "when": "call", "outcome": "passed", "duration": 1.7080608750111423, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_partitions", "when": "teardown", "outcome": "passed", "duration": 6.587494863197207e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_same_locus"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_same_locus", "when": "setup", "outcome": "passed", "duration": 0.00019754201639443636, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_same_locus", "when": "call", "outcome": "passed", "duration": 2.4016273340093903, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_same_locus", "when": "teardown", "outcome": "passed", "duration": 7.42500415071845e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci"}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci", "when": "setup", "outcome": "passed", "duration": 0.0002114590024575591, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci", "when": "call", "outcome": "passed", "duration": 0.08079612499568611, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci", "when": "teardown", "outcome": "passed", "duration": 0.00011374999303370714, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_drop"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_drop", "when": "setup", "outcome": "passed", "duration": 0.00022204197011888027, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_drop", "when": "call", "outcome": "passed", "duration": 0.10135716601507738, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_drop", "when": "teardown", "outcome": "passed", "duration": 7.48750171624124e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_error_if_no_gp"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_error_if_no_gp", "when": "setup", "outcome": "passed", "duration": 0.0001943749957717955, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_error_if_no_gp", "when": "call", "outcome": "passed", "duration": 0.03018583299126476, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_error_if_no_gp", "when": "teardown", "outcome": "passed", "duration": 5.5374985095113516e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_export_bgen"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen", "when": "setup", "outcome": "passed", "duration": 0.00017166603356599808, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen", "when": "call", "outcome": "passed", "duration": 0.5397927080048248, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen", "when": "teardown", "outcome": "passed", "duration": 6.866699550300837e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_export_bgen_from_vcf"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_from_vcf", "when": "setup", "outcome": "passed", "duration": 0.00018083298346027732, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_from_vcf", "when": "call", "outcome": "passed", "duration": 0.9011102499789558, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_from_vcf", "when": "teardown", "outcome": "passed", "duration": 6.36249897070229e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_export_bgen_parallel"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_parallel", "when": "setup", "outcome": "passed", "duration": 0.00021320796804502606, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_parallel", "when": "call", "outcome": "passed", "duration": 0.7663188329897821, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_parallel", "when": "teardown", "outcome": "passed", "duration": 7.225002627819777e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_export_bgen_zstd"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_zstd", "when": "setup", "outcome": "passed", "duration": 0.0002033329801633954, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_zstd", "when": "call", "outcome": "passed", "duration": 0.4974179579876363, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_export_bgen_zstd", "when": "teardown", "outcome": "passed", "duration": 6.758299423381686e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_GT_GP_entries"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_GT_GP_entries", "when": "setup", "outcome": "passed", "duration": 0.00020083400886505842, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_GT_GP_entries", "when": "call", "outcome": "passed", "duration": 0.01617820799583569, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_GT_GP_entries", "when": "teardown", "outcome": "passed", "duration": 6.925000343471766e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree", "when": "setup", "outcome": "passed", "duration": 0.0001675420207902789, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree", "when": "call", "outcome": "passed", "duration": 1.165783874981571, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree", "when": "teardown", "outcome": "passed", "duration": 7.170898607000709e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_entry"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_entry", "when": "setup", "outcome": "passed", "duration": 0.00023016700288280845, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_entry", "when": "call", "outcome": "passed", "duration": 0.043203832989092916, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_dosage_entry", "when": "teardown", "outcome": "passed", "duration": 5.483301356434822e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_empty_variant_filter"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_empty_variant_filter", "when": "setup", "outcome": "passed", "duration": 0.00017183303134515882, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_empty_variant_filter", "when": "call", "outcome": "passed", "duration": 0.10425966698676348, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_empty_variant_filter", "when": "teardown", "outcome": "passed", "duration": 6.462499732151628e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci", "when": "setup", "outcome": "passed", "duration": 0.0001912090228870511, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci", "when": "call", "outcome": "passed", "duration": 0.0008167090127244592, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci", "when": "teardown", "outcome": "passed", "duration": 6.225000834092498e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_gavin_example"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_gavin_example", "when": "setup", "outcome": "passed", "duration": 0.00015883403830230236, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_gavin_example", "when": "call", "outcome": "passed", "duration": 1.2914207910071127, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_gavin_example", "when": "teardown", "outcome": "passed", "duration": 6.649998249486089e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object", "when": "setup", "outcome": "passed", "duration": 0.00019404198974370956, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object", "when": "call", "outcome": "passed", "duration": 0.03975587501190603, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object", "when": "teardown", "outcome": "passed", "duration": 6.0790975112468004e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs", "when": "setup", "outcome": "passed", "duration": 0.00016808300279080868, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs", "when": "call", "outcome": "passed", "duration": 0.5420886249630712, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs", "when": "teardown", "outcome": "passed", "duration": 6.787502206861973e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression", "when": "setup", "outcome": "passed", "duration": 0.0001787500223144889, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression", "when": "call", "outcome": "passed", "duration": 0.03885495796566829, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression", "when": "teardown", "outcome": "passed", "duration": 7.06670107319951e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table", "when": "setup", "outcome": "passed", "duration": 0.00016145803965628147, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table", "when": "call", "outcome": "passed", "duration": 0.04824470798484981, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table", "when": "teardown", "outcome": "passed", "duration": 7.400003960356116e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_entries"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_entries", "when": "setup", "outcome": "passed", "duration": 0.00016254198271781206, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_entries", "when": "call", "outcome": "passed", "duration": 0.01487337495200336, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_entries", "when": "teardown", "outcome": "passed", "duration": 5.304196383804083e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_reference"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_reference", "when": "setup", "outcome": "passed", "duration": 0.0001627500168979168, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_reference", "when": "call", "outcome": "passed", "duration": 0.018490999995265156, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_no_reference", "when": "teardown", "outcome": "passed", "duration": 5.845801206305623e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_random"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_random", "when": "setup", "outcome": "passed", "duration": 0.0001567919971421361, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_random", "when": "call", "outcome": "passed", "duration": 0.16015066701220348, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_random", "when": "teardown", "outcome": "passed", "duration": 6.42499653622508e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_row_fields"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_row_fields", "when": "setup", "outcome": "passed", "duration": 0.00017741596093401313, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_row_fields", "when": "call", "outcome": "passed", "duration": 0.567868875048589, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_row_fields", "when": "teardown", "outcome": "passed", "duration": 6.908399518579245e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci", "when": "setup", "outcome": "passed", "duration": 0.0001985410344786942, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci", "when": "call", "outcome": "passed", "duration": 0.011250083043705672, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci", "when": "teardown", "outcome": "passed", "duration": 6.158300675451756e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs", "when": "setup", "outcome": "passed", "duration": 0.00016900000628083944, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs", "when": "call", "outcome": "passed", "duration": 0.3288994579925202, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs", "when": "teardown", "outcome": "passed", "duration": 6.762496195733547e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals", "when": "setup", "outcome": "passed", "duration": 0.00019837496802210808, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals", "when": "call", "outcome": "passed", "duration": 0.3290848329779692, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals", "when": "teardown", "outcome": "passed", "duration": 6.375001976266503e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table", "when": "setup", "outcome": "passed", "duration": 0.00018466601613909006, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table", "when": "call", "outcome": "passed", "duration": 0.3496965420199558, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table", "when": "teardown", "outcome": "passed", "duration": 6.587500683963299e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_index_bgen_errors_when_index_file_has_wrong_extension"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_index_bgen_errors_when_index_file_has_wrong_extension", "when": "setup", "outcome": "passed", "duration": 0.00018487503984943032, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_index_bgen_errors_when_index_file_has_wrong_extension", "when": "call", "outcome": "passed", "duration": 0.00018929201178252697, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_index_bgen_errors_when_index_file_has_wrong_extension", "when": "teardown", "outcome": "passed", "duration": 4.4665997847914696e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable", "when": "setup", "outcome": "passed", "duration": 0.00013291696086525917, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable", "when": "call", "outcome": "passed", "duration": 0.16955854196567088, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable", "when": "teardown", "outcome": "passed", "duration": 6.404198938980699e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_multiple_files_disjoint"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_files_disjoint", "when": "setup", "outcome": "passed", "duration": 0.00018866598838940263, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_files_disjoint", "when": "call", "outcome": "passed", "duration": 0.0010423329658806324, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_files_disjoint", "when": "teardown", "outcome": "passed", "duration": 4.5208027586340904e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_multiple_files_variant_filtering"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_files_variant_filtering", "when": "setup", "outcome": "passed", "duration": 0.00013237498933449388, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_files_variant_filtering", "when": "call", "outcome": "passed", "duration": 0.23654225002974272, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_files_variant_filtering", "when": "teardown", "outcome": "passed", "duration": 7.041601929813623e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_multiple_references_throws_error"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_references_throws_error", "when": "setup", "outcome": "passed", "duration": 0.0001989170559681952, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_references_throws_error", "when": "call", "outcome": "passed", "duration": 0.0005277079762890935, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_multiple_references_throws_error", "when": "teardown", "outcome": "passed", "duration": 5.791697185486555e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_n_partitions"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_n_partitions", "when": "setup", "outcome": "passed", "duration": 0.00016850000247359276, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_n_partitions", "when": "call", "outcome": "passed", "duration": 0.057210166996810585, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_n_partitions", "when": "teardown", "outcome": "passed", "duration": 5.466700531542301e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_old_index_file_throws_error"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_old_index_file_throws_error", "when": "setup", "outcome": "passed", "duration": 0.0001604579738341272, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_old_index_file_throws_error", "when": "call", "outcome": "passed", "duration": 0.0006189580308273435, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_old_index_file_throws_error", "when": "teardown", "outcome": "passed", "duration": 4.358298610895872e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_parallel_import"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_parallel_import", "when": "setup", "outcome": "passed", "duration": 0.00014441600069403648, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_parallel_import", "when": "call", "outcome": "passed", "duration": 0.01698583399411291, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_parallel_import", "when": "teardown", "outcome": "passed", "duration": 6.316695362329483e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_randomness"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_randomness", "when": "setup", "outcome": "passed", "duration": 0.00017795898020267487, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_randomness", "when": "call", "outcome": "passed", "duration": 0.32232483295956627, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_randomness", "when": "teardown", "outcome": "passed", "duration": 6.562500493600965e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::BGENTests::test_specify_different_index_file"}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_specify_different_index_file", "when": "setup", "outcome": "passed", "duration": 0.00019741698633879423, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_specify_different_index_file", "when": "call", "outcome": "passed", "duration": 0.018275083042681217, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::BGENTests::test_specify_different_index_file", "when": "teardown", "outcome": "passed", "duration": 7.850001566112041e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GENTests::test_export_gen"}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_export_gen", "when": "setup", "outcome": "passed", "duration": 0.00019033299759030342, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_export_gen", "when": "call", "outcome": "passed", "duration": 9.004233541025314, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_export_gen", "when": "teardown", "outcome": "passed", "duration": 6.699998630210757e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GENTests::test_export_gen_exprs"}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_export_gen_exprs", "when": "setup", "outcome": "passed", "duration": 0.0001931249862536788, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_export_gen_exprs", "when": "call", "outcome": "passed", "duration": 11.36634441599017, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_export_gen_exprs", "when": "teardown", "outcome": "passed", "duration": 7.091695442795753e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GENTests::test_import_gen"}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen", "when": "setup", "outcome": "passed", "duration": 0.00019870797405019403, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen", "when": "call", "outcome": "passed", "duration": 0.5445486669777893, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen", "when": "teardown", "outcome": "passed", "duration": 7.466704118996859e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GENTests::test_import_gen_no_chromosome_in_file"}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_no_chromosome_in_file", "when": "setup", "outcome": "passed", "duration": 0.0002067500026896596, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_no_chromosome_in_file", "when": "call", "outcome": "passed", "duration": 0.07489700004225597, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_no_chromosome_in_file", "when": "teardown", "outcome": "passed", "duration": 7.129099685698748e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GENTests::test_import_gen_no_reference_specified"}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_no_reference_specified", "when": "setup", "outcome": "passed", "duration": 0.00017891702009364963, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_no_reference_specified", "when": "call", "outcome": "passed", "duration": 0.02393545804079622, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_no_reference_specified", "when": "teardown", "outcome": "passed", "duration": 6.470800144597888e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GENTests::test_import_gen_skip_invalid_loci"}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_skip_invalid_loci", "when": "setup", "outcome": "passed", "duration": 0.0001754579716362059, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_skip_invalid_loci", "when": "call", "outcome": "passed", "duration": 0.12146858294727281, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GENTests::test_import_gen_skip_invalid_loci", "when": "teardown", "outcome": "passed", "duration": 8.558400440961123e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed", "when": "setup", "outcome": "passed", "duration": 0.00020004203543066978, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed", "when": "call", "outcome": "passed", "duration": 0.20742612500907853, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed", "when": "teardown", "outcome": "passed", "duration": 6.624998059123755e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals", "when": "setup", "outcome": "passed", "duration": 0.0001824999926611781, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals", "when": "call", "outcome": "passed", "duration": 0.09258704195963219, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals", "when": "teardown", "outcome": "passed", "duration": 6.458302959799767e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table", "when": "setup", "outcome": "passed", "duration": 0.00018987496150657535, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table", "when": "call", "outcome": "passed", "duration": 0.1018987920251675, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table", "when": "teardown", "outcome": "passed", "duration": 6.791704799979925e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified", "when": "setup", "outcome": "passed", "duration": 0.0001836250303313136, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified", "when": "call", "outcome": "passed", "duration": 0.024923874996602535, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified", "when": "teardown", "outcome": "passed", "duration": 6.624998059123755e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_recoding"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_recoding", "when": "setup", "outcome": "passed", "duration": 0.0001790410024113953, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_recoding", "when": "call", "outcome": "passed", "duration": 1.113297000003513, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_bed_recoding", "when": "teardown", "outcome": "passed", "duration": 6.516702705994248e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals", "when": "setup", "outcome": "passed", "duration": 0.00017799995839595795, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals", "when": "call", "outcome": "passed", "duration": 0.605066624993924, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals", "when": "teardown", "outcome": "passed", "duration": 7.445900700986385e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals", "when": "setup", "outcome": "passed", "duration": 0.00019629101734608412, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals", "when": "call", "outcome": "passed", "duration": 0.06307991698849946, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals", "when": "teardown", "outcome": "passed", "duration": 6.591598503291607e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified", "when": "setup", "outcome": "passed", "duration": 0.00017958396347239614, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified", "when": "call", "outcome": "passed", "duration": 0.010915833001490682, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified", "when": "teardown", "outcome": "passed", "duration": 6.074999691918492e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding", "when": "setup", "outcome": "passed", "duration": 0.00015950005035847425, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding", "when": "call", "outcome": "passed", "duration": 1.0734523329883814, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding", "when": "teardown", "outcome": "passed", "duration": 6.787496386095881e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::LocusIntervalTests::test_pass_through_args"}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_pass_through_args", "when": "setup", "outcome": "passed", "duration": 0.00019400002202019095, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_pass_through_args", "when": "call", "outcome": "passed", "duration": 0.05139254196546972, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::LocusIntervalTests::test_pass_through_args", "when": "teardown", "outcome": "passed", "duration": 7.30830361135304e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file", "when": "setup", "outcome": "passed", "duration": 0.00019799999427050352, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file", "when": "call", "outcome": "passed", "duration": 0.49148324999259785, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file", "when": "teardown", "outcome": "passed", "duration": 6.474996916949749e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table", "when": "setup", "outcome": "passed", "duration": 0.00019950000569224358, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table", "when": "call", "outcome": "passed", "duration": 0.16938341700006276, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table", "when": "teardown", "outcome": "passed", "duration": 6.779201794415712e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_not_identical"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_not_identical", "when": "setup", "outcome": "passed", "duration": 0.00018570799147710204, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_not_identical", "when": "call", "outcome": "passed", "duration": 0.008021291985642165, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_not_identical", "when": "teardown", "outcome": "passed", "duration": 6.337504601106048e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem", "when": "setup", "outcome": "passed", "duration": 0.00015770900063216686, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem", "when": "call", "outcome": "passed", "duration": 0.00698908296180889, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem", "when": "teardown", "outcome": "passed", "duration": 5.8333040215075016e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_comment"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_comment", "when": "setup", "outcome": "passed", "duration": 0.00017312495037913322, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_comment", "when": "call", "outcome": "passed", "duration": 0.15835433301981539, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_comment", "when": "teardown", "outcome": "passed", "duration": 6.570795085281134e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1", "when": "setup", "outcome": "passed", "duration": 0.00018912501400336623, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1", "when": "call", "outcome": "passed", "duration": 0.028295582975260913, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1", "when": "teardown", "outcome": "passed", "duration": 5.9375015553086996e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2", "when": "setup", "outcome": "passed", "duration": 0.00018258299678564072, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2", "when": "call", "outcome": "passed", "duration": 0.04899637500056997, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2", "when": "teardown", "outcome": "passed", "duration": 5.466601578518748e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3", "when": "setup", "outcome": "passed", "duration": 0.00018729199655354023, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3", "when": "call", "outcome": "passed", "duration": 0.047981834039092064, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3", "when": "teardown", "outcome": "passed", "duration": 5.620799493044615e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4", "when": "setup", "outcome": "passed", "duration": 0.00018279202049598098, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4", "when": "call", "outcome": "passed", "duration": 0.04878058296162635, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4", "when": "teardown", "outcome": "passed", "duration": 6.658397614955902e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols", "when": "setup", "outcome": "passed", "duration": 0.00018870801432058215, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols", "when": "call", "outcome": "passed", "duration": 0.1508308329503052, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols", "when": "teardown", "outcome": "passed", "duration": 6.479100557044148e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions", "when": "setup", "outcome": "passed", "duration": 0.00018500001169741154, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions", "when": "call", "outcome": "passed", "duration": 0.6639478750294074, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions", "when": "teardown", "outcome": "passed", "duration": 7.225002627819777e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import", "when": "setup", "outcome": "passed", "duration": 0.0001931669539771974, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import", "when": "call", "outcome": "passed", "duration": 0.09521158301504329, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import", "when": "teardown", "outcome": "passed", "duration": 6.708304863423109e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_long_parsing"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_long_parsing", "when": "setup", "outcome": "passed", "duration": 0.00020670803496614099, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_long_parsing", "when": "call", "outcome": "passed", "duration": 0.08796400000574067, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_long_parsing", "when": "teardown", "outcome": "passed", "duration": 7.270800415426493e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_too_few_entries"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_too_few_entries", "when": "setup", "outcome": "passed", "duration": 0.00020004197722300887, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_too_few_entries", "when": "call", "outcome": "passed", "duration": 0.039291624969337136, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_too_few_entries", "when": "teardown", "outcome": "passed", "duration": 6.212503649294376e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_entry_type"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_entry_type", "when": "setup", "outcome": "passed", "duration": 0.00016833300469443202, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_entry_type", "when": "call", "outcome": "passed", "duration": 0.038163250021170825, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_entry_type", "when": "teardown", "outcome": "passed", "duration": 7.683300646021962e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type"}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type", "when": "setup", "outcome": "passed", "duration": 0.0001861659693531692, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type", "when": "call", "outcome": "passed", "duration": 0.048086041992064565, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type", "when": "teardown", "outcome": "passed", "duration": 8.066697046160698e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]", "when": "setup", "outcome": "passed", "duration": 0.000264250033069402, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]", "when": "call", "outcome": "passed", "duration": 0.28323591698426753, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]", "when": "teardown", "outcome": "passed", "duration": 7.737497799098492e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]", "when": "setup", "outcome": "passed", "duration": 0.00025695801014080644, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]", "when": "call", "outcome": "passed", "duration": 0.28920508304145187, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]", "when": "teardown", "outcome": "passed", "duration": 8.412497118115425e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]", "when": "setup", "outcome": "passed", "duration": 0.0002589590149000287, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]", "when": "call", "outcome": "passed", "duration": 0.2828677500365302, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]", "when": "teardown", "outcome": "passed", "duration": 7.44159915484488e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]", "when": "setup", "outcome": "passed", "duration": 0.0002497080131433904, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]", "when": "call", "outcome": "passed", "duration": 0.26226545800454915, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]", "when": "teardown", "outcome": "passed", "duration": 7.691601058468223e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]", "when": "setup", "outcome": "passed", "duration": 0.0002567499759607017, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]", "when": "call", "outcome": "passed", "duration": 0.26840520795667544, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]", "when": "teardown", "outcome": "passed", "duration": 8.44579772092402e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]", "when": "setup", "outcome": "passed", "duration": 0.0002792080049403012, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]", "when": "call", "outcome": "passed", "duration": 0.269125165999867, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]", "when": "teardown", "outcome": "passed", "duration": 7.79579859226942e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]", "when": "setup", "outcome": "passed", "duration": 0.00025233300402760506, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]", "when": "call", "outcome": "passed", "duration": 0.2786535000195727, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]", "when": "teardown", "outcome": "passed", "duration": 8.062500273808837e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]", "when": "setup", "outcome": "passed", "duration": 0.0002555419923737645, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]", "when": "call", "outcome": "passed", "duration": 0.28644174995133653, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]", "when": "teardown", "outcome": "passed", "duration": 8.012499893084168e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]", "when": "setup", "outcome": "passed", "duration": 0.0002537500113248825, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]", "when": "call", "outcome": "passed", "duration": 0.2798005410004407, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]", "when": "teardown", "outcome": "passed", "duration": 7.537502096965909e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]", "when": "setup", "outcome": "passed", "duration": 0.0002396659692749381, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]", "when": "call", "outcome": "passed", "duration": 0.26473208400420845, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]", "when": "teardown", "outcome": "passed", "duration": 7.787504000589252e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]", "when": "setup", "outcome": "passed", "duration": 0.00025687500601634383, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]", "when": "call", "outcome": "passed", "duration": 0.2689166250056587, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]", "when": "teardown", "outcome": "passed", "duration": 7.83750438131392e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]", "when": "setup", "outcome": "passed", "duration": 0.0002459589741192758, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]", "when": "call", "outcome": "passed", "duration": 0.26873941702069715, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]", "when": "teardown", "outcome": "passed", "duration": 8.299999171867967e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]", "when": "setup", "outcome": "passed", "duration": 0.00025337503757327795, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]", "when": "call", "outcome": "passed", "duration": 0.2812673340085894, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]", "when": "teardown", "outcome": "passed", "duration": 7.929198909550905e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]", "when": "setup", "outcome": "passed", "duration": 0.0002549170167185366, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]", "when": "call", "outcome": "passed", "duration": 0.29527970898197964, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]", "when": "teardown", "outcome": "passed", "duration": 7.758400170132518e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]", "when": "setup", "outcome": "passed", "duration": 0.00027058401610702276, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]", "when": "call", "outcome": "passed", "duration": 0.2872173339710571, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]", "when": "teardown", "outcome": "passed", "duration": 7.720798021182418e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]", "when": "setup", "outcome": "passed", "duration": 0.00025224999990314245, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]", "when": "call", "outcome": "passed", "duration": 0.26435324997873977, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]", "when": "teardown", "outcome": "passed", "duration": 8.420896483585238e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]", "when": "setup", "outcome": "passed", "duration": 0.00024804199347272515, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]", "when": "call", "outcome": "passed", "duration": 0.2777674169628881, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]", "when": "teardown", "outcome": "passed", "duration": 7.879198528826237e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]", "when": "setup", "outcome": "passed", "duration": 0.0002569160424172878, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]", "when": "call", "outcome": "passed", "duration": 0.2732987910276279, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]", "when": "teardown", "outcome": "passed", "duration": 7.899996126070619e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]", "when": "setup", "outcome": "passed", "duration": 0.00028916698647662997, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]", "when": "call", "outcome": "passed", "duration": 0.2812559579615481, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]", "when": "teardown", "outcome": "passed", "duration": 8.070800686255097e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]", "when": "setup", "outcome": "passed", "duration": 0.0002442090190015733, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]", "when": "call", "outcome": "passed", "duration": 0.2943628329667263, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]", "when": "teardown", "outcome": "passed", "duration": 7.89589830674231e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]", "when": "setup", "outcome": "passed", "duration": 0.000250832992605865, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]", "when": "call", "outcome": "passed", "duration": 0.28255183302098885, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]", "when": "teardown", "outcome": "passed", "duration": 8.058297680690885e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]", "when": "setup", "outcome": "passed", "duration": 0.0002446669968776405, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]", "when": "call", "outcome": "passed", "duration": 0.2651857910095714, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]", "when": "teardown", "outcome": "passed", "duration": 8.166598854586482e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]", "when": "setup", "outcome": "passed", "duration": 0.00024808297166600823, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]", "when": "call", "outcome": "passed", "duration": 0.27740325004560873, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]", "when": "teardown", "outcome": "passed", "duration": 7.616699440404773e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]", "when": "setup", "outcome": "passed", "duration": 0.0002472909982316196, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]", "when": "call", "outcome": "passed", "duration": 0.2713723339838907, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]", "when": "teardown", "outcome": "passed", "duration": 8.229201193898916e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines"}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines", "when": "setup", "outcome": "passed", "duration": 0.00023808301193639636, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines", "when": "call", "outcome": "passed", "duration": 0.026783416979014874, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines", "when": "teardown", "outcome": "passed", "duration": 6.883300375193357e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_bgz"}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_bgz", "when": "setup", "outcome": "passed", "duration": 0.00018879096023738384, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_bgz", "when": "call", "outcome": "passed", "duration": 0.0002137920237146318, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_bgz", "when": "teardown", "outcome": "passed", "duration": 4.5708962716162205e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_glob"}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_glob", "when": "setup", "outcome": "passed", "duration": 0.00014370802091434598, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_glob", "when": "call", "outcome": "passed", "duration": 0.00928708299761638, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_glob", "when": "teardown", "outcome": "passed", "duration": 5.908403545618057e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_multiple_files"}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_multiple_files", "when": "setup", "outcome": "passed", "duration": 0.000175209017470479, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_multiple_files", "when": "call", "outcome": "passed", "duration": 0.025369708018843085, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportLinesTest::test_import_lines_multiple_files", "when": "teardown", "outcome": "passed", "duration": 7.095898035913706e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_error_with_context"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_error_with_context", "when": "setup", "outcome": "passed", "duration": 0.00020062498515471816, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_error_with_context", "when": "call", "outcome": "passed", "duration": 0.06044041702989489, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_error_with_context", "when": "teardown", "outcome": "passed", "duration": 7.208401802927256e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_glob"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_glob", "when": "setup", "outcome": "passed", "duration": 0.0001984999980777502, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_glob", "when": "call", "outcome": "passed", "duration": 0.01294345798669383, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_glob", "when": "teardown", "outcome": "passed", "duration": 5.41660119779408e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_import_export_identity"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_export_identity", "when": "setup", "outcome": "passed", "duration": 0.00017074996139854193, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_export_identity", "when": "call", "outcome": "passed", "duration": 0.02192029100842774, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_export_identity", "when": "teardown", "outcome": "passed", "duration": 5.666696233674884e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_import_same"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_same", "when": "setup", "outcome": "passed", "duration": 0.0001640410046093166, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_same", "when": "call", "outcome": "passed", "duration": 0.04054091696161777, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_same", "when": "teardown", "outcome": "passed", "duration": 5.1499984692782164e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty", "when": "setup", "outcome": "passed", "duration": 0.00015591696137562394, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty", "when": "call", "outcome": "passed", "duration": 0.0030127500067465007, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty", "when": "teardown", "outcome": "passed", "duration": 4.8833026085048914e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty_with_header"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty_with_header", "when": "setup", "outcome": "passed", "duration": 0.00014625000767409801, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty_with_header", "when": "call", "outcome": "passed", "duration": 0.013517374987713993, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_empty_with_header", "when": "teardown", "outcome": "passed", "duration": 6.200000643730164e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_import_table_force_bgz"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_force_bgz", "when": "setup", "outcome": "passed", "duration": 0.0001616250374354422, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_force_bgz", "when": "call", "outcome": "passed", "duration": 0.052576207963284105, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_import_table_force_bgz", "when": "teardown", "outcome": "passed", "duration": 6.437499541789293e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity", "when": "setup", "outcome": "passed", "duration": 0.00016916700406000018, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity", "when": "call", "outcome": "passed", "duration": 0.08046279195696115, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity", "when": "teardown", "outcome": "passed", "duration": 6.824999582022429e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity_keyed"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity_keyed", "when": "setup", "outcome": "passed", "duration": 0.00019220897229388356, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity_keyed", "when": "call", "outcome": "passed", "duration": 0.059595624974463135, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_read_write_identity_keyed", "when": "teardown", "outcome": "passed", "duration": 6.762502016499639e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_source_file"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_source_file", "when": "setup", "outcome": "passed", "duration": 0.00019133399473503232, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_source_file", "when": "call", "outcome": "passed", "duration": 0.0815304999705404, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_source_file", "when": "teardown", "outcome": "passed", "duration": 6.508402293547988e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::ImportTableTests::test_type_imputation"}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_type_imputation", "when": "setup", "outcome": "passed", "duration": 0.00019066600361838937, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_type_imputation", "when": "call", "outcome": "passed", "duration": 0.681444207963068, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::ImportTableTests::test_type_imputation", "when": "teardown", "outcome": "passed", "duration": 7.799995364621282e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::GrepTests::test_grep_show_false"}
+{"kind": "test", "nodeid": "test_impex.py::GrepTests::test_grep_show_false", "when": "setup", "outcome": "passed", "duration": 0.00023683399194851518, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::GrepTests::test_grep_show_false", "when": "call", "outcome": "failed", "duration": 0.00014829100109636784, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:1404: in test_grep_show_false\n    from vail.backend.service_backend import ServiceBackend\nE   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package"}
+{"kind": "test", "nodeid": "test_impex.py::GrepTests::test_grep_show_false", "when": "teardown", "outcome": "passed", "duration": 7.716601248830557e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::AvroTests::test_simple_avro"}
+{"kind": "test", "nodeid": "test_impex.py::AvroTests::test_simple_avro", "when": "setup", "outcome": "passed", "duration": 0.00018120795721188188, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::AvroTests::test_simple_avro", "when": "call", "outcome": "passed", "duration": 0.00360195804387331, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::AvroTests::test_simple_avro", "when": "teardown", "outcome": "passed", "duration": 6.724998820573092e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_matrix_and_table_read_intervals_with_hidden_key"}
+{"kind": "test", "nodeid": "test_impex.py::test_matrix_and_table_read_intervals_with_hidden_key", "when": "setup", "outcome": "passed", "duration": 0.00015362503472715616, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_matrix_and_table_read_intervals_with_hidden_key", "when": "call", "outcome": "passed", "duration": 0.26243579102447256, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_matrix_and_table_read_intervals_with_hidden_key", "when": "teardown", "outcome": "passed", "duration": 7.741700392216444e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[0]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[0]", "when": "setup", "outcome": "passed", "duration": 0.00019862496992573142, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[0]", "when": "call", "outcome": "passed", "duration": 0.48027829197235405, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[0]", "when": "teardown", "outcome": "passed", "duration": 8.224998600780964e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[1]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[1]", "when": "setup", "outcome": "passed", "duration": 0.0002306660171598196, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[1]", "when": "call", "outcome": "passed", "duration": 0.5007260409765877, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[1]", "when": "teardown", "outcome": "passed", "duration": 7.658294634893537e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[2]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[2]", "when": "setup", "outcome": "passed", "duration": 0.00020341703202575445, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[2]", "when": "call", "outcome": "passed", "duration": 0.489440250035841, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[2]", "when": "teardown", "outcome": "passed", "duration": 9.316700743511319e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[3]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[3]", "when": "setup", "outcome": "passed", "duration": 0.0002447500010021031, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[3]", "when": "call", "outcome": "passed", "duration": 0.5016035419539548, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[3]", "when": "teardown", "outcome": "passed", "duration": 8.112500654533505e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[4]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[4]", "when": "setup", "outcome": "passed", "duration": 0.00023195799440145493, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[4]", "when": "call", "outcome": "passed", "duration": 0.4791026249877177, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[4]", "when": "teardown", "outcome": "passed", "duration": 7.67079764045775e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[5]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[5]", "when": "setup", "outcome": "passed", "duration": 0.0002000840031541884, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[5]", "when": "call", "outcome": "passed", "duration": 0.4663291670149192, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[5]", "when": "teardown", "outcome": "passed", "duration": 7.466704118996859e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[6]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[6]", "when": "setup", "outcome": "passed", "duration": 0.0002032080083154142, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[6]", "when": "call", "outcome": "passed", "duration": 0.5007254160009325, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[6]", "when": "teardown", "outcome": "passed", "duration": 0.00010050000855699182, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[7]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[7]", "when": "setup", "outcome": "passed", "duration": 0.0010413330164738, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[7]", "when": "call", "outcome": "passed", "duration": 0.503582582983654, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[7]", "when": "teardown", "outcome": "passed", "duration": 7.391598774120212e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[8]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[8]", "when": "setup", "outcome": "passed", "duration": 0.00020045897690579295, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[8]", "when": "call", "outcome": "passed", "duration": 0.5062064999947324, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[8]", "when": "teardown", "outcome": "passed", "duration": 7.583299884572625e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_impex.py::test_import_export_same[9]"}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[9]", "when": "setup", "outcome": "passed", "duration": 0.00019416597206145525, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[9]", "when": "call", "outcome": "passed", "duration": 0.4852325830142945, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_impex.py::test_import_export_same[9]", "when": "teardown", "outcome": "passed", "duration": 0.0001127920113503933, "category": null, "error": ""}

@@ -65,6 +65,72 @@ fn error(message: impl ToString) -> DataFusionError {
     DataFusionError::Execution(message.to_string())
 }
 
+/// Equality-only representation of an already normalized typed value. Arrays
+/// retain order, while sets and dictionaries recursively ignore encounter order.
+/// The original normalized value remains the public output, including the last
+/// dictionary value at its first key position.
+fn equality_key(value: &Value, dtype: &Type) -> Value {
+    if value.is_null() {
+        return Value::Null;
+    }
+    fn ordered(items: impl Iterator<Item = Value>) -> Value {
+        let mut items: Vec<_> = items.map(|v| (v.to_string(), v)).collect();
+        items.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+        Value::Array(items.into_iter().map(|(_, value)| value).collect())
+    }
+    match dtype {
+        Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64)
+            if value.as_f64() == Some(0.0) =>
+        {
+            json!(0.0)
+        }
+        Type::Array { array } => Value::Array(
+            value
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| equality_key(v, array))
+                .collect(),
+        ),
+        Type::Set { set } => ordered(
+            value
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| equality_key(v, set)),
+        ),
+        Type::Dict { dict } => ordered(value.as_array().unwrap().iter().map(|entry| {
+            json!({"key":equality_key(&entry["key"], &dict.0),
+                   "value":equality_key(&entry["value"], &dict.1)})
+        })),
+        Type::Struct { r#struct: fields } => Value::Object(
+            fields
+                .iter()
+                .map(|(name, ty)| (name.clone(), equality_key(&value[name], ty)))
+                .collect(),
+        ),
+        Type::Tuple { tuple } => Value::Object(
+            tuple
+                .iter()
+                .enumerate()
+                .map(|(i, ty)| {
+                    let name = format!("__vail_tuple_{i}");
+                    let key = equality_key(&value[&name], ty);
+                    (name, key)
+                })
+                .collect(),
+        ),
+        Type::Interval { interval } => {
+            let mut result = value.as_object().unwrap().clone();
+            for name in ["__vail_interval_start", "__vail_interval_end"] {
+                result.insert(name.into(), equality_key(&value[name], interval));
+            }
+            Value::Object(result)
+        }
+        _ => value.clone(),
+    }
+}
+
 fn normalize(v: &Value, t: &Type) -> Result<Value> {
     if v.is_null() {
         return Ok(Value::Null);
@@ -135,7 +201,16 @@ fn normalize(v: &Value, t: &Type) -> Result<Value> {
                     if n.is_finite() {
                         json!(n)
                     } else {
-                        Value::String(s.into())
+                        Value::String(
+                            if n.is_nan() {
+                                "NaN"
+                            } else if n.is_sign_negative() {
+                                "-inf"
+                            } else {
+                                "inf"
+                            }
+                            .into(),
+                        )
                     }
                 }
             } else {
@@ -190,7 +265,7 @@ fn normalize(v: &Value, t: &Type) -> Result<Value> {
             let mut seen = HashSet::with_capacity(items.len());
             for item in items {
                 let item = normalize(item, element)?;
-                if seen.insert(JsonKey(item.clone())) {
+                if seen.insert(JsonKey(equality_key(&item, element))) {
                     out.push(item);
                 }
             }
@@ -236,7 +311,7 @@ fn normalize(v: &Value, t: &Type) -> Result<Value> {
                 }
                 let key = normalize(&item["key"], &dict.0)?;
                 let value = normalize(&item["value"], &dict.1)?;
-                let equality_key = JsonKey(key.clone());
+                let equality_key = JsonKey(equality_key(&key, &dict.0));
                 let item = json!({"key":key,"value":value});
                 if let Some(&i) = positions.get(&equality_key) {
                     out[i] = item;

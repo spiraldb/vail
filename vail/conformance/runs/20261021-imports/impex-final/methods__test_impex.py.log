@@ -1,0 +1,99 @@
+...FF....................FF..................F......F....FF............. [ 35%]
+........................................................................ [ 71%]
+............................................F............                [100%]
+=================================== FAILURES ===================================
+___________ VCFTests.test_combiner_parse_allele_specific_annotations ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:358: in test_combiner_parse_allele_specific_annotations
+    from vail.vds.combiner.combine import parse_allele_specific_fields
+E   ModuleNotFoundError: No module named 'vail.vds'
+_________________________ VCFTests.test_combiner_works _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:325: in test_combiner_works
+    from vail.vds.combiner.combine import combine_variant_datasets, transform_gvcf
+E   ModuleNotFoundError: No module named 'vail.vds'
+______________________ VCFTests.test_haploid_combiner_ok _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:338: in test_haploid_combiner_ok
+    from vail.vds.combiner.combine import transform_gvcf
+E   ModuleNotFoundError: No module named 'vail.vds'
+__________________________ VCFTests.test_import_gvcfs __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:296: in test_import_gvcfs
+    self.import_gvcfs_sample_vcf(path)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf
+    parts_str = json.dumps(parts_type._convert_to_json(parts))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'tarray' object has no attribute '_convert_to_json'
+______________________ VCFTests.test_invalid_info_fields _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:504: in test_invalid_info_fields
+    with mock.patch('hail.methods.impex.warning', autospec=True) as warning:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/mock.py:1451: in __enter__
+    self.target = self.getter()
+                  ^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pkgutil.py:513: in resolve_name
+    mod = importlib.import_module(modname)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1324: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'hail'
+__________________________ VCFTests.test_tabix_export __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:284: in test_tabix_export
+    self.import_gvcfs_sample_vcf(tmp)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf
+    parts_str = json.dumps(parts_type._convert_to_json(parts))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'tarray' object has no attribute '_convert_to_json'
+______________ VCFTests.test_vcf_parser_golden_master__ex_GRCh37 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:309: in test_vcf_parser_golden_master__ex_GRCh37
+    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2616: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'
+_____________ VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37 ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:316: in test_vcf_parser_golden_master__gvcf_GRCh37
+    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2616: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'
+________________________ GrepTests.test_grep_show_false ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py:1404: in test_grep_show_false
+    from vail.backend.service_backend import ServiceBackend
+E   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package
+=============================== warnings summary ===============================
+test_impex.py::test_timeout
+  /Users/danielking/projects/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_impex.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_combiner_works
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_haploid_combiner_ok
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_import_gvcfs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_invalid_info_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-cgy_puq7/upstream_hail/methods/test_impex.py::GrepTests::test_grep_show_false
+9 failed, 192 passed, 1 warning in 190.75s (0:03:10)

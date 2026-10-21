@@ -56,6 +56,21 @@ def _contains_unordered_or_ndarray(dtype, *, include_ndarray=True):
     return False
 
 
+def _unordered_key_type(dtype):
+    from .types import tinterval
+    if isinstance(dtype, (tset, tdict)):
+        return True
+    if isinstance(dtype, tarray):
+        return _unordered_key_type(dtype.element_type)
+    if isinstance(dtype, tstruct):
+        return builtins.any(_unordered_key_type(ty) for ty in dtype.values())
+    if isinstance(dtype, ttuple):
+        return builtins.any(_unordered_key_type(ty) for ty in dtype.types)
+    if isinstance(dtype, tinterval):
+        return _unordered_key_type(dtype.point_type)
+    return False
+
+
 def _native_equality_value(value):
     """Replace unordered collection levels with values DataFusion can compare."""
     dtype = value.dtype
@@ -67,9 +82,9 @@ def _native_equality_value(value):
         mapped = array._array_map(_native_equality_value)
         result = _native_sort(mapped)
     elif isinstance(dtype, tdict):
-        _ensure_key_supported(dtype.key_type)
         entries = value._array_map(
-            lambda entry: struct(key=entry.key, value=_native_equality_value(entry.value))
+            lambda entry: struct(key=_native_equality_value(entry.key),
+                                 value=_native_equality_value(entry.value))
         )
         result = _native_sort(entries)
     elif isinstance(dtype, tarray):
@@ -80,7 +95,13 @@ def _native_equality_value(value):
         from .expressions import tuple_
         result = tuple_(_native_equality_value(value[i]) for i in builtins.range(len(dtype.types)))
     elif isinstance(dtype, tinterval):
-        result = value
+        if _unordered_key_type(dtype.point_type):
+            result = struct(start=_native_equality_value(value.start),
+                            end=_native_equality_value(value.end),
+                            includes_start=value.includes_start,
+                            includes_end=value.includes_end)
+        else:
+            result = value
     else:
         return value
     return if_else(is_missing(value), missing(result.dtype), result)
@@ -242,6 +263,13 @@ def _equal(left, right):
 
 
 def _lookup(value, key):
+    if _unordered_key_type(value.dtype.key_type):
+        # Native hash grouping compares ordered Arrow values. Canonicalize both
+        # sides of unordered logical keys without changing the stored mapping.
+        key = _native_equality_value(key)
+        entries = value._array_map(lambda entry: struct(
+            key=_native_equality_value(entry.key), value=entry.value))
+        value = _cast(entries, tdict(key.dtype, value.dtype.value_type))
     return _function('__vail_dict_lookup', [value, key],
                      tstruct(found=tbool, value=value.dtype.value_type))
 

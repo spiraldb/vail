@@ -363,7 +363,7 @@ def test_typed_import_roundtrip_genomic_and_ndarray_fields(tmp_path):
     assert restored.row.dtype == table.row.dtype
     assert restored.key.dtype == table.key.dtype
     import numpy as np
-    for expected, actual in zip(table.collect(), restored.collect()):
+    for expected, actual in zip(table.collect(), restored.collect(), strict=True):
         np.testing.assert_array_equal(actual.matrix, expected.matrix)
         assert {k: v for k, v in actual.items() if k != 'matrix'} == {
             k: v for k, v in expected.items() if k != 'matrix'}
@@ -397,3 +397,26 @@ def test_json_large_collections_preserve_all_values():
     pairs += [{'key': str(i), 'value': -i} for i in range(10000)]
     parsed = hl.parse_json(json.dumps(pairs), 'dict<str,int32>')
     assert hl.eval(parsed) == {str(i): -i for i in range(10000)}
+
+
+def test_json_nested_unordered_collections_use_logical_key_equality():
+    import json
+    sets = hl.parse_json('[[2,1],[1,2],[2,1,1]]', 'set<set<int32>>')
+    assert hl.eval(hl.len(sets)) == 1
+    assert hl.eval(sets.contains(hl.set([1, 2])))
+    mapping = hl.parse_json(
+        '[{"key":[2,1],"value":"first"},{"key":[1,2],"value":"last"}]',
+        'dict<set<int32>,str>')
+    assert hl.eval(hl.len(mapping)) == 1
+    assert hl.eval(mapping.get(hl.parse_json('[1,2]', 'set<int32>'))) == 'last'
+    assert hl.eval(mapping.get(hl.parse_json('[2,1]', 'set<int32>'))) == 'last'
+    first = [{'key': 'a', 'value': 1}, {'key': 'b', 'value': 2}]
+    second = list(reversed(first))
+    mapping = hl.parse_json(json.dumps([
+        {'key': first, 'value': 4}, {'key': second, 'value': 9}]),
+        'dict<dict<str,int32>,int32>')
+    assert hl.eval(hl.len(mapping)) == 1
+    for key in (first, second):
+        assert hl.eval(mapping.get(hl.parse_json(json.dumps(key), 'dict<str,int32>'))) == 9
+    sets = hl.parse_json(json.dumps([first, second]), 'set<dict<str,int32>>')
+    assert hl.eval(hl.len(sets)) == 1

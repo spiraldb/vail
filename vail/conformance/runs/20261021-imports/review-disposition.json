@@ -84,5 +84,19 @@
         "fix": "public schema/key/globals/column/localized values and independent BGEN specification byte parser; public JSON evaluations/ndarray comparisons"
       }
     ]
+  },
+  "third_review": {
+    "revision": "01d428d0",
+    "disposition": "request_changes",
+    "findings": [
+      {
+        "finding": "nested set/dict JSON key equality used encounter order",
+        "fix": "typed recursive equality-only key canonicalization plus logical unordered-key normalization before native dictionary lookup; output encounter order and last-value behavior retained; native len/lookup regression covers permuted sets and dictionaries"
+      },
+      {
+        "finding": "genomic roundtrip nonstrict zip could hide missing rows",
+        "fix": "zip strict=True"
+      }
+    ]
   }
 }

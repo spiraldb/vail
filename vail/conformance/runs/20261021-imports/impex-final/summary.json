@@ -1,0 +1,57 @@
+{
+  "review_candidate": "01d428d0",
+  "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+  "passed": 192,
+  "failed": 9,
+  "total": 201,
+  "native_build": "70197",
+  "failures": [
+    {
+      "test": "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations",
+      "category": "VDS API",
+      "error": "E   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_combiner_works",
+      "category": "VDS API",
+      "error": "E   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_haploid_combiner_ok",
+      "category": "VDS API",
+      "error": "E   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_import_gvcfs",
+      "category": "private Hail IR",
+      "error": "E   AttributeError: 'tarray' object has no attribute '_convert_to_json'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_invalid_info_fields",
+      "category": "mocked hail namespace",
+      "error": "E   ModuleNotFoundError: No module named 'hail'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_tabix_export",
+      "category": "private Hail IR",
+      "error": "E   AttributeError: 'tarray' object has no attribute '_convert_to_json'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37",
+      "category": "legacy Hail fixture loading",
+      "error": "E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'"
+    },
+    {
+      "test": "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37",
+      "category": "legacy Hail fixture loading",
+      "error": "E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'"
+    },
+    {
+      "test": "test_impex.py::GrepTests::test_grep_show_false",
+      "category": "private service backend import",
+      "error": "E   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package"
+    }
+  ],
+  "note": "No failures have been counted as passes; the two legacy fixture cases independently match fresh pinned-Hail golden data. Grep does not reach its body due its service backend import.",
+  "pytest_helper_artifact": "One pytest pass is the upstream imported test_timeout helper, which returns a decorator and emits a pytest warning; it is not import behavior coverage."
+}

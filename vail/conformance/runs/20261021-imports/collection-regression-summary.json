@@ -1,0 +1,12 @@
+{
+  "passed": 110,
+  "failed": 1,
+  "failures": [
+    {
+      "test": "test_corr_long_arrays_use_shared_constant_size_reducer_state",
+      "error": "assert nan == -1.0 \u00b1 1.0e-06\n  \n  comparison failed\n  Obtained: nan\n  Expected: -1.0 \u00b1 1.0e-06"
+    }
+  ],
+  "source_disposition": "The failing high-offset correlation case uses list_aggregate.rs and collection_functions.py, both unchanged from c0ca9a04. It does not exercise import or typed JSON. No runtime-baseline pass/fail claim is made.",
+  "native_build": "34444"
+}
