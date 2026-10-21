@@ -5,6 +5,27 @@ import pytest
 import vail as hl
 
 
+def _first_variant_offset(path):
+    # BGEN specification: uint32 offset counts bytes after this first field.
+    with path.open('rb') as source:
+        return int.from_bytes(source.read(4), 'little') + 4
+
+
+def _assert_matrix_values_equal(left, right):
+    assert left.row.dtype == right.row.dtype
+    assert left.col.dtype == right.col.dtype
+    assert left.entry.dtype == right.entry.dtype
+    assert left.row_key.dtype == right.row_key.dtype
+    assert left.col_key.dtype == right.col_key.dtype
+    assert left.globals.dtype == right.globals.dtype
+    assert hl.eval(left.index_globals()) == hl.eval(right.index_globals())
+    assert left.cols().collect() == right.cols().collect()
+    left_rows = left.localize_entries('entries', 'cols')
+    right_rows = right.localize_entries('entries', 'cols')
+    assert hl.eval(left_rows.index_globals()) == hl.eval(right_rows.index_globals())
+    assert left_rows.collect() == right_rows.collect()
+
+
 def _text(value, size=2):
     data = value.encode()
     return len(data).to_bytes(size, 'little') + data
@@ -71,14 +92,13 @@ def test_bgen_native_writer_roundtrip(tmp_path, codec, parallel):
     hl.export_bgen(original, output, parallel=parallel, compression_codec=codec)
     hl.index_bgen(output + '.bgen')
     imported = hl.import_bgen(output + '.bgen', ['GT','GP'], sample_file=output + '.sample')
-    assert original._same(imported)
+    _assert_matrix_values_equal(original, imported)
 
 
 def test_indexed_literal_filter_never_decodes_unselected_bad_block(tmp_path):
-    from vail.bgen import _header
     path = _bgen(tmp_path)
     valid = path.read_bytes()
-    offset = _header(str(path))[0]
+    offset = _first_variant_offset(path)
     path = _bgen(tmp_path, probabilities=[(255,255,False), (0,255,False), (0,0,True)])
     bad = path.read_bytes()[offset:]
     second = bytearray(valid[offset:])
@@ -96,10 +116,9 @@ def test_indexed_literal_filter_never_decodes_unselected_bad_block(tmp_path):
 
 
 def test_anonymous_samples_use_lazy_column_metadata(tmp_path):
-    from vail.bgen import _header
     path = _bgen(tmp_path)
     data = path.read_bytes()
-    first_variant = _header(str(path))[0]
+    first_variant = _first_variant_offset(path)
     header = bytearray(data[:24])
     header[:4] = struct.pack('<I',20)
     flags = int.from_bytes(header[20:24],'little') & ~(1<<31)
@@ -122,14 +141,13 @@ def test_separate_header_shards_concatenate_to_valid_bgen(tmp_path):
     merged.write_bytes(b''.join((folder/name).read_bytes() for name in manifest))
     hl.index_bgen(str(merged))
     imported = hl.import_bgen(str(merged), ['GP'], sample_file=root+'.sample')
-    assert original._same(imported)
+    _assert_matrix_values_equal(original, imported)
 
 
 def test_dynamic_variant_filter_never_decodes_unselected_bad_block(tmp_path):
-    from vail.bgen import _header
     path = _bgen(tmp_path)
     valid = path.read_bytes()
-    offset = _header(str(path))[0]
+    offset = _first_variant_offset(path)
     path = _bgen(tmp_path, probabilities=[(255,255,False), (0,255,False), (0,0,True)])
     bad = path.read_bytes()[offset:]
     second = bytearray(valid[offset:]); second[17:21] = struct.pack('<I',124)
@@ -142,10 +160,9 @@ def test_dynamic_variant_filter_never_decodes_unselected_bad_block(tmp_path):
 
 
 def test_dynamic_selector_dependency_survives_globals_and_rechecks_source(tmp_path):
-    from vail.bgen import _header
     path = _bgen(tmp_path)
     data = path.read_bytes()
-    offset = _header(str(path))[0]
+    offset = _first_variant_offset(path)
     second = bytearray(data[offset:]); second[17:21] = struct.pack('<I',124)
     header = bytearray(data[:offset]); header[8:12] = struct.pack('<I',2)
     path.write_bytes(header + data[offset:] + second)
@@ -170,10 +187,9 @@ def test_wide_allele_length_is_limited_by_file_bytes_not_arbitrary_cap(tmp_path)
 
 
 def test_truncated_wide_allele_length_fails_before_allocation(tmp_path):
-    from vail.bgen import _header
     path = _bgen(tmp_path)
     data = bytearray(path.read_bytes())
-    offset = _header(str(path))[0]
+    offset = _first_variant_offset(path)
     # 17 identifying-string bytes, then uint32 position and uint16 allele count.
     data[offset+23:offset+27] = struct.pack('<I',2**32-1)
     path.write_bytes(data)
@@ -182,4 +198,17 @@ def test_truncated_wide_allele_length_fails_before_allocation(tmp_path):
     # Existing index still supplies a valid variant offset. The native decoder
     # independently enforces the same physical-byte bound before allocating.
     with pytest.raises(Exception, match='truncated BGEN identifier'):
+        hl.import_bgen(str(path), []).locus.collect()
+
+
+def test_unsigned_position_outside_locus_range_is_rejected(tmp_path):
+    path = _bgen(tmp_path)
+    data = bytearray(path.read_bytes())
+    offset = _first_variant_offset(path)
+    data[offset+17:offset+21] = struct.pack('<I', 2**31)
+    path.write_bytes(data)
+    with pytest.raises(Exception, match='signed 32-bit locus range'):
+        hl.index_bgen(str(path), reference_genome=None)
+    # The existing index must not permit a native narrowing cast either.
+    with pytest.raises(Exception, match='signed 32-bit locus range'):
         hl.import_bgen(str(path), []).locus.collect()

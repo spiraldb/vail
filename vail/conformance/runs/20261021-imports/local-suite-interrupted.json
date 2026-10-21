@@ -1,0 +1,11 @@
+{
+  "command": "python -m pytest -q python/tests --tb=short --junitxml=conformance/runs/20261021-imports/local-suite.xml",
+  "status": "interrupted",
+  "signal": "SIGTERM",
+  "elapsed_seconds": 316,
+  "progress_observed": "over60percent; progress output showed failures before termination",
+  "reason": "Process resident memory grew to approximately29GiB while lowering a large matrix/scalar plan. Stopped exploratory full-suite run to bound resource use. No full-suite pass is claimed.",
+  "native_build": "81325 (prior cache partition and Call accessor fixes)",
+  "sample_retained": "/tmp/vail-import-alltests.sample.txt",
+  "followup": "Final targeted import and shared expression regressions will be run against updated native build."
+}

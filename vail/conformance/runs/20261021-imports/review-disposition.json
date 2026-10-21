@@ -54,5 +54,35 @@
     "Call index conversion and ndarray expression prerequisites",
     "Avro partition bounds metadata parity confirmed against pinned Hail",
     "split_multi_hts preserves original entry field order"
-  ]
+  ],
+  "followup_review": {
+    "revision": "4d7855bf",
+    "disposition": "request_changes",
+    "fixes": [
+      {
+        "finding": "indexed gVCF inverse recoding dropped aliases",
+        "fix": "query all applicable raw contigs in source index sequence order; real BGZF/tabix tied-key ordering regression passes"
+      },
+      {
+        "finding": "cache repartitioned native rows",
+        "fix": "standalone native MemorySourceConfig owns actual perpartition Arrow batches and exact counts; public uneven/empty membership and source mutation tests pass"
+      },
+      {
+        "finding": "JSON set/dictionary duplicate detection quadratic",
+        "fix": "collision-safe full JSON equality hash sets/maps preserve first set occurrence and last dictionary value at original position; canonical target float values deduplicate signedzero/integerfloat/float32rounding; public large collection tests pass"
+      },
+      {
+        "finding": "BGEN builder downcasts per sample",
+        "fix": "typed GP listbuilder and GT childbuilder dispatch hoisted outside per-sample loops"
+      },
+      {
+        "finding": "unchecked BGEN unsigned coordinates",
+        "fix": "index, native source, and selector key paths enforce signedint32 coordinate domain before narrowing; public boundary regression"
+      },
+      {
+        "finding": "new private _same/_compare/_header test uses",
+        "fix": "public schema/key/globals/column/localized values and independent BGEN specification byte parser; public JSON evaluations/ndarray comparisons"
+      }
+    ]
+  }
 }

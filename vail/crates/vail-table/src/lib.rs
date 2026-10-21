@@ -179,7 +179,7 @@ fn same_row_schema(left: &Schema, right: &Schema) -> bool {
 /// branching a Python Table creates a DAG without copying source data or plans.
 #[derive(Debug, Clone)]
 pub enum TableNode {
-    /// Action-local DataFusion input; never constructed by the Python API.
+    /// Native physical input: action-local plans or owned Arrow cache snapshots.
     Prepared {
         rows: plan::PhysicalPlan,
         count: Option<usize>,
@@ -1949,16 +1949,37 @@ impl TableIR {
 
     /// Eager in-memory Arrow snapshot with no dependency on the input plan.
     pub async fn cache(self: &Arc<Self>) -> Result<TableRef> {
-        let partitions = self.collect_partitions().await?;
-        // Physical optimization can coalesce empty inputs; retain the public
-        // logical partition count when the source declares one.
-        let n_partitions = self.known_n_partitions().unwrap_or(partitions.len());
-        let batches = partitions.into_iter().flatten()
-            .map(|batch| vail_storage::local_table::normalize(&batch, self.schema.clone()))
-            .collect::<std::result::Result<Vec<_>, _>>()?;
+        use datafusion_datasource::memory::MemorySourceConfig;
+        let mut partitions = self.collect_partitions().await?;
+        // Optimizers may replace an entirely empty source with one empty
+        // partition. No rows need assigning when restoring declared empties.
+        if partitions.iter().all(Vec::is_empty) {
+            if let Some(count) = self.known_n_partitions() {
+                partitions.resize_with(count, Vec::new);
+            }
+        }
         let globals = GlobalsIR::arrow_literal(self.globals.evaluate().await?)?;
-        let snapshot = Self::parallelize_batches(self.schema.clone(), batches, n_partitions)?;
-        Ok(Self::new(self.schema.clone(), self.keys.clone(), globals, snapshot.node.clone()))
+        let physical_schema = plan::physical_schema(self);
+        let mut counts = Vec::with_capacity(partitions.len());
+        for (partition, batches) in partitions.iter_mut().enumerate() {
+            let mut count = 0usize;
+            for batch in batches.iter_mut() {
+                count = count.checked_add(batch.num_rows())
+                    .ok_or_else(|| TableError::Invalid("cached partition row count exceeds usize".into()))?;
+                let normalized = vail_storage::local_table::normalize(batch, self.schema.clone())?;
+                let mut columns = normalized.columns().to_vec();
+                columns.push(Arc::new(arrow_array::UInt64Array::from_value(
+                    partition as u64, normalized.num_rows())));
+                *batch = RecordBatch::try_new(physical_schema.clone(), columns)?;
+            }
+            counts.push(count);
+        }
+        let count = counts.iter().try_fold(0usize, |total, count| total.checked_add(*count))
+            .ok_or_else(|| TableError::Invalid("cached table row count exceeds usize".into()))?;
+        let rows = MemorySourceConfig::try_new_exec(&partitions, physical_schema, None)?;
+        Ok(Self::new(self.schema.clone(), self.keys.clone(), globals,
+            TableNode::Prepared { rows, count: Some(count), n_partitions: partitions.len(),
+                partition_counts: Some(counts) }))
     }
 
     /// Collect an ordered prefix without counting unknown source partitions.

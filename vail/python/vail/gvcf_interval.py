@@ -92,9 +92,13 @@ def import_gvcf_interval(
                 raise NotImplementedError('indexed gVCF intervals require the htslib tabix executable')
             chromosome, begin, finish = map(evaluate, (contig, start, end))
             if chromosome is not None and begin is not None and finish is not None:
-                raw_chromosome = next((raw for raw, recoded in (contig_recoding or {}).items()
-                                       if recoded == chromosome), chromosome)
-                indexed_region = (executable, raw_chromosome, begin, finish)
+                recoding = contig_recoding or {}
+                raw_chromosomes = [raw for raw, recoded in recoding.items() if recoded == chromosome]
+                if recoding.get(chromosome, chromosome) == chromosome and chromosome not in raw_chromosomes:
+                    raw_chromosomes.append(chromosome)
+                # The native reader orders aliases by their indexed source
+                # contig order, rather than this dictionary's insertion order.
+                indexed_region = (executable, raw_chromosomes, begin, finish)
     # read_vcf captures the parsed header in its native source configuration,
     # so the temporary header can be removed as soon as construction finishes.
     with tempfile.NamedTemporaryFile(mode='w', suffix='.vcf') as header_file:

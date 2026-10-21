@@ -44,7 +44,7 @@ def test_matrix_cache_preserves_column_order_filtered_slots_and_metadata(tmp_pat
 
 
 def test_memory_only_persistence_and_empty_table_partitions():
-    source = hl.range_table(0, n_partitions=3).annotate_globals(label='empty')
+    source = hl.Table.parallelize([], schema=hl.tstruct(idx=hl.tint32), n_partitions=3).annotate_globals(label='empty')
     cached = source.persist('MEMORY_ONLY')
     assert cached.collect() == []
     assert cached.n_partitions() == 3
@@ -58,3 +58,19 @@ def test_memory_only_persistence_and_empty_table_partitions():
     for dataset in (source, matrix):
         with pytest.raises(NotImplementedError, match='MEMORY_ONLY'):
             dataset.persist('MEMORY_AND_DISK')
+
+
+def test_cache_preserves_uneven_and_empty_partition_membership():
+    source = hl.range_table(12, n_partitions=4)
+    source = source.filter((source.idx >= 3) & (source.idx != 7) & (source.idx != 8))
+    # Preserve the four original ranges: [], [3,4,5], [6], [9,10,11].
+    def memberships(table):
+        return table.map_partitions(lambda rows: hl.StreamExpression(
+            hl.array([hl.struct(members=rows.map(lambda row: row.idx).to_array())]))).collect()
+    expected = [hl.Struct(members=[]), hl.Struct(members=[3, 4, 5]),
+                hl.Struct(members=[6]), hl.Struct(members=[9, 10, 11])]
+    assert memberships(source) == expected
+    cached = source.cache()
+    assert memberships(cached) == expected
+    assert memberships(cached) == expected
+    assert cached.n_partitions() == 4

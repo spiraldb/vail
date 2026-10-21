@@ -123,6 +123,8 @@ def index_bgen(path, index_file_map=None, reference_genome='default', contig_rec
                 contig = _string(f)
                 contig = recoding.get(contig, contig)
                 position = _uint(f)
+                if position > 2**31 - 1:
+                    raise FatalError('BGEN position exceeds signed 32-bit locus range')
                 k = _uint(f, 2)
                 if k != 2:
                     raise FatalError('BGEN requires biallelic variants')
@@ -177,6 +179,8 @@ def _indexed_variants(filename, header, metadata, reference):
             contig = _string(f)
             contig = recoding.get(contig, contig)
             position = _uint(f)
+            if position > 2**31 - 1:
+                raise FatalError('BGEN position exceeds signed 32-bit locus range')
             k = _uint(f, 2)
             if k != 2:
                 raise FatalError('BGEN requires biallelic variants')

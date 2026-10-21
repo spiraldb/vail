@@ -6,7 +6,60 @@ use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{ColumnarValue, ScalarUDF, Signature, Volatility};
 use serde_json::{Value, json};
-use std::sync::Arc;
+use std::{
+    collections::{HashMap, HashSet},
+    hash::{Hash, Hasher},
+    sync::Arc,
+};
+
+/// Equality follows normalized JSON values. Hashing also identifies signed
+/// floating zeroes, and ignores object insertion order, as Value equality does.
+/// Hash-table collisions are resolved with full Value equality.
+#[derive(PartialEq, Eq)]
+struct JsonKey(Value);
+impl Hash for JsonKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        fn value<H: Hasher>(item: &Value, state: &mut H) {
+            match item {
+                Value::Null => 0u8.hash(state),
+                Value::Bool(v) => {
+                    1u8.hash(state);
+                    v.hash(state);
+                }
+                Value::Number(v) => {
+                    2u8.hash(state);
+                    if v.is_f64() && v.as_f64() == Some(0.0) {
+                        "0.0".hash(state);
+                    } else {
+                        v.to_string().hash(state);
+                    }
+                }
+                Value::String(v) => {
+                    3u8.hash(state);
+                    v.hash(state);
+                }
+                Value::Array(items) => {
+                    4u8.hash(state);
+                    items.len().hash(state);
+                    for item in items {
+                        value(item, state);
+                    }
+                }
+                Value::Object(items) => {
+                    5u8.hash(state);
+                    items.len().hash(state);
+                    let mut fields: Vec<_> = items.iter().collect();
+                    fields.sort_unstable_by(|a, b| a.0.cmp(b.0));
+                    for (name, item) in fields {
+                        name.hash(state);
+                        value(item, state);
+                    }
+                }
+            }
+        }
+        value(&self.0, state);
+    }
+}
 
 fn error(message: impl ToString) -> DataFusionError {
     DataFusionError::Execution(message.to_string())
@@ -51,7 +104,21 @@ fn normalize(v: &Value, t: &Type) -> Result<Value> {
         }
         Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64) => {
             if v.is_number() {
-                v.clone()
+                let n = v
+                    .as_f64()
+                    .ok_or_else(|| error("invalid JSON floating value"))?;
+                // Deduplication must see the target numeric value, including
+                // equal integer/float tokens and float32 rounding collisions.
+                let n = if matches!(t, Type::Primitive(PrimitiveType::Float32)) {
+                    f64::from(n as f32)
+                } else {
+                    n
+                };
+                if n.is_finite() {
+                    json!(n)
+                } else {
+                    Value::String(if n.is_sign_negative() { "-inf" } else { "inf" }.into())
+                }
             } else if let Some(s) = v.as_str() {
                 let s = match s {
                     "nan" | "NaN" => "NaN",
@@ -104,14 +171,26 @@ fn normalize(v: &Value, t: &Type) -> Result<Value> {
             }
             Value::Object(out)
         }
-        Type::Array { array: element } | Type::Set { set: element } => {
+        Type::Array { array: element } => {
+            let Some(items) = v.as_array() else {
+                return Ok(Value::Null);
+            };
+            Value::Array(
+                items
+                    .iter()
+                    .map(|item| normalize(item, element))
+                    .collect::<Result<_>>()?,
+            )
+        }
+        Type::Set { set: element } => {
             let Some(items) = v.as_array() else {
                 return Ok(Value::Null);
             };
             let mut out = Vec::with_capacity(items.len());
+            let mut seen = HashSet::with_capacity(items.len());
             for item in items {
                 let item = normalize(item, element)?;
-                if !matches!(t, Type::Set { .. }) || !out.contains(&item) {
+                if seen.insert(JsonKey(item.clone())) {
                     out.push(item);
                 }
             }
@@ -150,16 +229,19 @@ fn normalize(v: &Value, t: &Type) -> Result<Value> {
                 return Ok(Value::Null);
             };
             let mut out: Vec<Value> = Vec::new();
+            let mut positions = HashMap::with_capacity(items.len());
             for item in items {
                 if item.get("key").is_none() || item.get("value").is_none() {
                     continue;
                 }
                 let key = normalize(&item["key"], &dict.0)?;
                 let value = normalize(&item["value"], &dict.1)?;
+                let equality_key = JsonKey(key.clone());
                 let item = json!({"key":key,"value":value});
-                if let Some(i) = out.iter().position(|x| x["key"] == item["key"]) {
+                if let Some(&i) = positions.get(&equality_key) {
                     out[i] = item;
                 } else {
+                    positions.insert(equality_key, out.len());
                     out.push(item);
                 }
             }

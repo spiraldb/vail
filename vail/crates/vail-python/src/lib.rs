@@ -109,7 +109,7 @@ impl NativeSession {
         options: &Bound<'_, PyAny>,
     ) -> PyResult<(NativeTable, Vec<String>, Bound<'py, PyAny>)> {
         let reference = options.get_item("reference")?;
-        let indexed_region: Option<(String, String, i32, i32)> = options
+        let indexed_region: Option<(String, Vec<String>, i32, i32)> = options
             .get_item("indexed_region")
             .ok()
             .filter(|value| !value.is_none())
@@ -156,8 +156,8 @@ impl NativeSession {
             header.samples.clone()
         };
         let metadata = header.metadata.clone().into_pyobject(py)?.into_any();
-        let indexed_region = indexed_region.map(|(executable, contig, start, end)| {
-            serde_json::json!({"executable": executable, "contig": contig, "start": start, "end": end})
+        let indexed_region = indexed_region.map(|(executable, contigs, start, end)| {
+            serde_json::json!({"executable": executable, "contigs": contigs, "start": start, "end": end})
         });
         let config = serde_json::json!({"header": header, "options": options, "indexed_region": indexed_region});
         let ir = TableIR::read_text(schema, paths, "vcf", &config).map_err(table_error)?;

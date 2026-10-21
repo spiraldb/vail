@@ -136,3 +136,27 @@ def test_indexed_gvcf_reports_index_failure_at_execution(tmp_path):
     (tmp_path / (path.name + '.tbi')).write_bytes(b'corrupted')
     with pytest.raises(Exception, match='tabix query failed'):
         hl.eval(records)
+
+
+def test_indexed_gvcf_recoding_collects_all_raw_aliases_in_source_order(tmp_path):
+    body = (
+        'chr1\t10\talias\tA\tC\t.\tPASS\t.\tGT:AD\t0/1:5,3\t0/0:8,0\n' +
+        '1\t10\tidentity\tA\tC\t.\tPASS\t.\tGT:AD\t0/1:6,4\t0/0:9,0\n')
+    indexed_path = _indexed_fixture(tmp_path, body)
+    plain_path = tmp_path / 'plain.vcf'
+    plain_path.write_text(HEADER + body)
+    header = hl.get_vcf_header_info(indexed_path)
+    # Reverse map insertion order relative to the file's contig blocks, and
+    # include an explicit identity mapping. Both raw names resolve to locus1.
+    recoding = {'1': '1', 'chr1': '1'}
+    indexed_rows = hl.eval(hl.import_gvcf_interval(
+        indexed_path, 0, '1', 10, 10, header, contig_recoding=recoding))
+    plain_rows = hl.eval(hl.import_gvcf_interval(
+        plain_path, 0, '1', 10, 10, header, contig_recoding=recoding))
+    assert indexed_rows == plain_rows
+    assert [row.rsid for row in indexed_rows] == ['alias', 'identity']
+    assert [row.__entries[0].AD for row in indexed_rows] == [[5, 3], [6, 4]]
+    # Identity raw1 must cease to be eligible when it maps somewhere else.
+    rows = hl.eval(hl.import_gvcf_interval(
+        indexed_path, 0, '1', 10, 10, header, contig_recoding={'chr1': '1', '1': '2'}))
+    assert [row.rsid for row in rows] == ['alias']

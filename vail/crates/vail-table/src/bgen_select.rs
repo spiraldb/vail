@@ -70,6 +70,8 @@ impl Selection {
         position: u32,
         alleles: &[String],
     ) -> std::result::Result<bool, String> {
+        let position = i32::try_from(position)
+            .map_err(|_| "BGEN position exceeds signed 32-bit locus range")?;
         let keys = self
             .keys
             .get()
@@ -77,7 +79,7 @@ impl Selection {
         Ok(keys
             .loci
             .get(contig)
-            .and_then(|positions| positions.get(&(position as i32)))
+            .and_then(|positions| positions.get(&position))
             .is_some_and(|keys| !self.alleles || keys.contains(alleles)))
     }
     async fn initialize(

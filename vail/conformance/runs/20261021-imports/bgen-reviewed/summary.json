@@ -1060,13 +1060,8 @@
     "module": "methods/test_impex.py",
     "variants": [
       {
-        "status": "failed",
-        "parameters": {},
-        "category": "behavior_failure",
-        "phase": "body",
-        "error_type": "AttributeError",
-        "error": "unphased_diploid_gt_index",
-        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/conformance/full_hail_bodies.py\", line 265, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1638, in test_export_bgen_from_vcf\n    hl.map(\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/collection_functions.py\", line 63, in map\n    return ops.set_map(value, f) if isinstance(value.dtype, tset) else value._array_map(f)\n                                                                       ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py\", line 634, in _array_map\n    body = as_expr(f(variable))\n                   ^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 1639, in <lambda>\n    lambda i: hl.if_else(mt.GT.unphased_diploid_gt_index() == i, 1.0, 0.0),\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py\", line 897, in __getattr__\n    raise AttributeError(name)\nAttributeError: unphased_diploid_gt_index\n"
+        "status": "passed",
+        "parameters": {}
       }
     ],
     "setup_errors": [
@@ -1091,7 +1086,7 @@
       "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
     ],
     "class_configuration_adapter": "defer missing API references until called",
-    "status": "failed_or_blocked"
+    "status": "passed"
   },
   {
     "name": "BGENTests.test_randomness",

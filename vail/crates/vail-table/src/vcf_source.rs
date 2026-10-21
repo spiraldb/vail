@@ -25,7 +25,7 @@ use std::{
 #[derive(Clone, Debug, serde::Deserialize)]
 struct IndexedRegion {
     executable: String,
-    contig: String,
+    contigs: Vec<String>,
     start: i32,
     end: i32,
 }
@@ -40,21 +40,51 @@ impl VcfInput {
         let Some(region) = region else {
             return Ok(Self { reader: vail_vcf::open(path)?, child: None, stderr: None });
         };
-        if region.end < region.start || region.end < 1 {
-            return Ok(Self {
-                reader: Box::new(std::io::Cursor::new(Vec::<u8>::new())),
-                child: None,
-                stderr: None,
-            });
+        if region.end < region.start || region.end < 1 || region.contigs.is_empty() {
+            return Ok(Self::empty());
         }
-        let query = format!("{}:{}-{}", region.contig, region.start.max(1), region.end);
-        let mut child = Command::new(&region.executable)
-            .args(["--", path, &query])
+        let mut contigs = region.contigs.clone();
+        if contigs.len() > 1 {
+            // Several raw contigs can map to one canonical contig. Query all
+            // of them in the TBI/CSI sequence order, which follows the source
+            // contig blocks, rather than recoding-map insertion order.
+            let mut names = Self::command(&region.executable, &["-l".into(), "--".into(), path.into()])?;
+            let mut line = String::new();
+            let mut ordered = Vec::new();
+            while names.reader.read_line(&mut line).map_err(|e| e.to_string())? != 0 {
+                let name = line.trim_end_matches(['\r', '\n']);
+                if contigs.iter().any(|candidate| candidate == name) {
+                    ordered.push(name.to_owned());
+                }
+                line.clear();
+            }
+            names.finish()?;
+            contigs = ordered;
+        }
+        if contigs.is_empty() {
+            return Ok(Self::empty());
+        }
+        let mut arguments = vec!["--".into(), path.into()];
+        arguments.extend(contigs.iter().map(|contig| {
+            format!("{contig}:{}-{}", region.start.max(1), region.end)
+        }));
+        Self::command(&region.executable, &arguments)
+    }
+    fn empty() -> Self {
+        Self {
+            reader: Box::new(std::io::Cursor::new(Vec::<u8>::new())),
+            child: None,
+            stderr: None,
+        }
+    }
+    fn command(executable: &str, arguments: &[String]) -> vail_vcf::Result<Self> {
+        let mut child = Command::new(executable)
+            .args(arguments)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|e| format!("could not execute tabix for {path}: {e}"))?;
+            .map_err(|e| format!("could not execute tabix: {e}"))?;
         let stdout = child.stdout.take().expect("piped tabix stdout");
         let mut stderr = child.stderr.take().expect("piped tabix stderr");
         // Drain stderr concurrently to avoid pipe deadlocks, retaining bounded

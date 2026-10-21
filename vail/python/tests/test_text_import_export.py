@@ -320,7 +320,10 @@ def test_typed_json_import_and_roundtrip(tmp_path):
     table = hl.Table.parallelize(rows, schema=schema)
     path = tmp_path / 'nested.tsv'
     table.export(path)
-    assert hl.import_table(path, types=dict(schema))._same(table)
+    restored = hl.import_table(path, types=dict(schema))
+    assert restored.row.dtype == table.row.dtype
+    assert restored.key.dtype == table.key.dtype
+    assert restored.collect() == table.collect()
     assert hl.eval(hl.parse_json('{"a":5,"unknown":1}', 'struct{a:int32,b:str}')) == hl.Struct(a=5, b=None)
     assert hl.eval(hl.parse_json('[1,true,null]', 'array<int32>')) == [1, None, None]
 
@@ -339,7 +342,9 @@ def test_public_json_scalar_roundtrip_preserves_logical_types():
               hl.call(0, 2, phased=True), hl.locus_interval('1', 10000, 10005),
               hl.struct(foo='bar'), hl.tuple([1, 2, 'str']), hl.tuple([]), hl.struct()]
     for value in values:
-        assert hl.eval(hl._compare(value, hl.parse_json(hl.json(value), value.dtype))) == 0
+        restored = hl.parse_json(hl.json(value), value.dtype)
+        assert restored.dtype == value.dtype
+        assert hl.eval(restored) == hl.eval(value)
     assert hl.eval(hl.json('abc')) == '"abc"'
     assert hl.eval(hl.json(hl.missing(hl.tint32))) == 'null'
 
@@ -355,4 +360,40 @@ def test_typed_import_roundtrip_genomic_and_ndarray_fields(tmp_path):
     path = tmp_path / 'genomic.tsv'
     table.export(path)
     restored = hl.import_table(path, types=dict(table.row.dtype)).key_by('idx')
-    assert table._same(restored)
+    assert restored.row.dtype == table.row.dtype
+    assert restored.key.dtype == table.key.dtype
+    import numpy as np
+    for expected, actual in zip(table.collect(), restored.collect()):
+        np.testing.assert_array_equal(actual.matrix, expected.matrix)
+        assert {k: v for k, v in actual.items() if k != 'matrix'} == {
+            k: v for k, v in expected.items() if k != 'matrix'}
+
+
+def test_json_collections_deduplicate_with_last_dictionary_value():
+    import json
+    values = hl.parse_json('[0.0,-0.0,2.0,2.0,null,null]', 'set<float64>')
+    assert hl.eval(hl.len(values)) == 3
+    assert hl.eval(values) == {0.0, 2.0, None}
+    assert hl.eval(hl.len(hl.parse_json('[1,1.0]', 'set<float64>'))) == 1
+    assert hl.eval(hl.len(hl.parse_json('[16777216,16777217]', 'set<float32>'))) == 1
+    mapping = hl.parse_json(
+        '[{"key":0.0,"value":"first"},{"key":-0.0,"value":"last"}]',
+        'dict<float64,str>')
+    assert hl.eval(hl.len(mapping)) == 1
+    assert hl.eval(mapping) == {0.0: 'last'}
+    nested = hl.parse_json(
+        '[{"key":{"x":1},"value":4},{"key":{"x":2},"value":5},'
+        '{"key":{"x":1},"value":9}]', 'dict<struct{x:int32},int32>')
+    assert json.loads(hl.eval(hl.json(nested))) == [
+        {'key': {'x': 1}, 'value': 9}, {'key': {'x': 2}, 'value': 5}]
+
+
+def test_json_large_collections_preserve_all_values():
+    import json
+    values = list(range(20000))
+    parsed = hl.parse_json(json.dumps(values + values), 'set<int32>')
+    assert hl.eval(parsed) == set(values)
+    pairs = [{'key': str(i), 'value': i} for i in range(10000)]
+    pairs += [{'key': str(i), 'value': -i} for i in range(10000)]
+    parsed = hl.parse_json(json.dumps(pairs), 'dict<str,int32>')
+    assert hl.eval(parsed) == {str(i): -i for i in range(10000)}

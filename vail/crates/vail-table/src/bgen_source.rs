@@ -7,7 +7,7 @@ use arrow_array::{
         StringBuilder, StructBuilder, UInt8Builder, UInt16Builder, make_builder,
     },
 };
-use arrow_schema::SchemaRef;
+use arrow_schema::{DataType, SchemaRef};
 use datafusion_common::{DataFusionError, Result};
 use datafusion_datasource::{
     PartitionedFile, TableSchema,
@@ -270,6 +270,25 @@ fn builder<T: ArrayBuilder + 'static>(
         .ok_or_else(|| "BGEN Arrow builder disagrees with planned schema".into())
 }
 
+fn bgen_builder(dtype: &DataType, capacity: usize) -> Box<dyn ArrayBuilder> {
+    match dtype {
+        DataType::Struct(fields) => Box::new(StructBuilder::new(
+            fields.clone(),
+            fields
+                .iter()
+                .map(|f| bgen_builder(f.data_type(), capacity))
+                .collect(),
+        )),
+        DataType::List(field) if field.data_type() == &DataType::Float64 => {
+            Box::new(ListBuilder::new(Float64Builder::new()).with_field(field.clone()))
+        }
+        DataType::List(field) => Box::new(
+            ListBuilder::new(bgen_builder(field.data_type(), capacity)).with_field(field.clone()),
+        ),
+        _ => make_builder(dtype, capacity),
+    }
+}
+
 /// A batch owns only the demanded top-level builders. Child capacities grow
 /// from decoded records; header sample counts never allocate cell buffers.
 struct Batch {
@@ -294,7 +313,7 @@ impl Batch {
         let builders = schema
             .fields()
             .iter()
-            .map(|f| make_builder(f.data_type(), capacity))
+            .map(|f| bgen_builder(f.data_type(), capacity))
             .collect();
         Ok(Self {
             schema,
@@ -417,17 +436,17 @@ impl Batch {
             let out = entries.field_builders_mut()[index].as_mut();
             match name.as_str() {
                 "GP" => {
-                    let out = builder::<ListBuilder<Box<dyn ArrayBuilder>>>(out)?;
+                    let out = builder::<ListBuilder<Float64Builder>>(out)?;
                     if !gp {
                         out.append_nulls(n);
                         continue;
                     }
                     for sample in 0..n {
-                        let present = gp && data[8 + sample] & 128 == 0;
+                        let present = data[8 + sample] & 128 == 0;
                         if present {
                             let a = data[10 + n + 2 * sample] as u16;
                             let b = data[11 + n + 2 * sample] as u16;
-                            let values = builder::<Float64Builder>(out.values().as_mut())?;
+                            let values = out.values();
                             values.append_value(a as f64 / 255.0);
                             values.append_value(b as f64 / 255.0);
                             values.append_value((255 - a - b) as f64 / 255.0);
@@ -469,34 +488,40 @@ impl Batch {
                         out.append_nulls(n);
                         continue;
                     }
-                    for sample in 0..n {
-                        let a = data[10 + n + 2 * sample] as u16;
-                        let b = data[11 + n + 2 * sample] as u16;
-                        let c = 255 - a - b;
-                        let genotype = if a > b && a > c {
-                            Some((0, 0))
-                        } else if b > a && b > c {
-                            Some((0, 1))
-                        } else if c > a && c > b {
-                            Some((1, 1))
-                        } else {
-                            None
-                        };
-                        let genotype = genotype.filter(|_| gt && data[8 + sample] & 128 == 0);
-                        let (first, second) = genotype.unwrap_or((0, 0));
-                        out.field_builder::<UInt16Builder>(0)
-                            .ok_or("BGEN call first allele storage")?
-                            .append_value(first);
-                        out.field_builder::<UInt16Builder>(1)
-                            .ok_or("BGEN call second allele storage")?
-                            .append_value(second);
-                        out.field_builder::<UInt8Builder>(2)
-                            .ok_or("BGEN call ploidy storage")?
-                            .append_value(2);
-                        out.field_builder::<BooleanBuilder>(3)
-                            .ok_or("BGEN call phase storage")?
-                            .append_value(false);
-                        out.append(genotype.is_some());
+                    let mut validity = Vec::with_capacity(n);
+                    {
+                        let fields = out.field_builders_mut();
+                        let (first_fields, rest) = fields.split_at_mut(1);
+                        let (second_fields, rest) = rest.split_at_mut(1);
+                        let (ploidy_fields, phase_fields) = rest.split_at_mut(1);
+                        let first_out = builder::<UInt16Builder>(first_fields[0].as_mut())?;
+                        let second_out = builder::<UInt16Builder>(second_fields[0].as_mut())?;
+                        let ploidy_out = builder::<UInt8Builder>(ploidy_fields[0].as_mut())?;
+                        let phase_out = builder::<BooleanBuilder>(phase_fields[0].as_mut())?;
+                        for sample in 0..n {
+                            let a = data[10 + n + 2 * sample] as u16;
+                            let b = data[11 + n + 2 * sample] as u16;
+                            let c = 255 - a - b;
+                            let genotype = if a > b && a > c {
+                                Some((0, 0))
+                            } else if b > a && b > c {
+                                Some((0, 1))
+                            } else if c > a && c > b {
+                                Some((1, 1))
+                            } else {
+                                None
+                            };
+                            let genotype = genotype.filter(|_| gt && data[8 + sample] & 128 == 0);
+                            let (first, second) = genotype.unwrap_or((0, 0));
+                            first_out.append_value(first);
+                            second_out.append_value(second);
+                            ploidy_out.append_value(2);
+                            phase_out.append_value(false);
+                            validity.push(genotype.is_some());
+                        }
+                    }
+                    for valid in validity {
+                        out.append(valid);
                     }
                 }
                 _ => return Err("unexpected BGEN entry field".into()),
@@ -616,6 +641,7 @@ fn scan(
             .map(String::as_str)
             .unwrap_or(&raw_contig);
         let position = u32(&mut r)?;
+        i32::try_from(position).map_err(|_| "BGEN position exceeds signed 32-bit locus range")?;
         let k = u16(&mut r)?;
         if k != 2 {
             return Err("BGEN requires biallelic variants".into());

@@ -1,0 +1,26 @@
+{
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "generator": "conformance/vcf_golden.py --generate",
+  "interpreter": "/tmp/vail-plink-oracle/bin/python",
+  "pythonpath": "/Users/danielking/projects/vail/hail/hail/python",
+  "java_home": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+  "spark_local_ip": "127.0.0.1",
+  "fixtures_local_only": "/tmp/vail-vcf-golden-20261021",
+  "oracle_files": [
+    {
+      "name": "HG00096.g.vcf.gz.json.gz",
+      "bytes": 5455596,
+      "sha256": "5ffdcedc2f316d03a8db9f74ab0d72e7923ee86aa0a5e2d1a2aebdb0288270b3"
+    },
+    {
+      "name": "ex.vcf.json.gz",
+      "bytes": 879,
+      "sha256": "99a9898882dabcd15c1ee6a3edaad1367c61002ddc280c21d0ae215da76bc111"
+    },
+    {
+      "name": "sample.vcf.json.gz",
+      "bytes": 231357,
+      "sha256": "b04648689083843dc95aa1c10fbc7fce460f599062ac96ef61d82bbf6465c106"
+    }
+  ]
+}
