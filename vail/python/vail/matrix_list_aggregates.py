@@ -728,15 +728,17 @@ def reduce_list(
                 initial = dict(node.get("init", []))["n_alleles"]
                 n_alleles = raw(bind(initial, fixed), tint32)
                 arguments = [n_alleles, values]
-                function_name = "__vail_list_call_stats"
-            else:
-                function_name = "__vail_list_reduce_" + function
             if function == "take":
                 arguments.append(literal(options["n"], tint64))
                 if options.get("ordered"):
                     function = "take_ordered"
             if function == "linreg":
                 arguments.append(literal(options.get("nested_dim", 1), tint64))
+            function_name = (
+                "__vail_list_call_stats"
+                if function == "call_stats"
+                else "__vail_list_reduce_" + function
+            )
             result = _function(
                 function_name, arguments, dtype
             )

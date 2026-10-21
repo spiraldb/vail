@@ -334,8 +334,11 @@ impl Rewrite<'_> {
                     let body = value
                         .as_deref()
                         .ok_or_else(|| value_error("collection reducer requires input"))?;
-                    let mapped = self.mapped(items, body)?;
-                    let mut args = vec![mapped];
+                    let mut args = if function == "call_stats" {
+                        Vec::new()
+                    } else {
+                        vec![self.mapped(items.clone(), body)?]
+                    };
                     let reducer = match function.as_str() {
                         "take" => {
                             let n = options
@@ -372,18 +375,33 @@ impl Rewrite<'_> {
                                     value: datafusion_common::ScalarValue::Int32(Some(n)),
                                 }
                             };
+                            // The direct list kernel accepts only Call values and
+                            // takes the row/list initializer first. Avoid packing
+                            // each list element into the generic reducer format.
+                            let call = Expr::GetField {
+                                value: Arc::new(body.clone()),
+                                name: "__vail_genomic_call".into(),
+                            };
+                            let calls = self.mapped(items.clone(), &call)?;
                             args.push(initializer);
-                            "call_stats"
+                            args.push(calls);
+                            "__vail_list_call_stats"
                         }
                         other => other,
                     };
-                    if !vail_execution::supports_list_reducer(reducer) {
+                    if function != "call_stats"
+                        && !vail_execution::supports_list_reducer(reducer)
+                    {
                         return Err(pyo3::exceptions::PyNotImplementedError::new_err(format!(
                             "per-list {function} reducer is not implemented"
                         )));
                     }
                     Expr::NestedFunction {
-                        function: format!("__vail_list_reduce_{reducer}"),
+                        function: if function == "call_stats" {
+                            reducer.into()
+                        } else {
+                            format!("__vail_list_reduce_{reducer}")
+                        },
                         args,
                         dtype: result,
                     }
