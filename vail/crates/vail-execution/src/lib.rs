@@ -31,7 +31,6 @@ pub mod array_aggregate_scan;
 mod array_fold;
 pub mod array_length_aggregate;
 pub mod calls;
-pub mod collect_aggregate;
 mod conditionals;
 pub mod csv_line;
 mod expression_effects;

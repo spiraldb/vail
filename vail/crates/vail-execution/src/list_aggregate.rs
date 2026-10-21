@@ -79,7 +79,11 @@ pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
         }
         function
     };
-    let arity = if direct_call_stats { 2 } else { arity(function)? };
+    let arity = if direct_call_stats {
+        2
+    } else {
+        arity(function)?
+    };
     Some(Arc::new(ScalarUDF::from(ListAggregate {
         name: name.to_owned(),
         function: function.to_owned(),
@@ -194,6 +198,14 @@ fn kernel(
         .alias("list_reducer")
         .build()?,
     ))
+}
+
+fn normalize_collect_empty(value: ScalarValue, input: &DataType) -> ScalarValue {
+    if value.is_null() {
+        ScalarValue::List(ScalarValue::new_list(&[], input, true))
+    } else {
+        value
+    }
 }
 
 fn update_grouped_lists(
@@ -568,7 +580,12 @@ impl ScalarUDFImpl for ListAggregate {
             } else {
                 accumulator.update_batch(&[values])?;
             }
-            output.push(accumulator.evaluate()?);
+            let value = accumulator.evaluate()?;
+            output.push(if self.function == "collect" {
+                normalize_collect_empty(value, &input_type)
+            } else {
+                value
+            });
         }
         let result: ArrayRef = if output.is_empty() {
             new_empty_array(&output_type)

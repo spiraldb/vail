@@ -20,6 +20,8 @@ pub fn make_udf(
         ));
     };
     let count_where = function == "count_where";
+    let collect_empty_identity = function == "collect";
+    let collect_item_type = element.data_type().clone();
     if count_where {
         if element.data_type() != &DataType::Boolean {
             return Err(ExprError::Invalid(
@@ -72,9 +74,15 @@ pub fn make_udf(
                 .ok_or_else(|| {
                     DataFusionError::Execution("aggregate scan predicate is not a list".into())
                 })?;
-            let result = scan_lists(values, predicates, &output_element, count_where, || {
-                descriptor.accumulator()
-            })?;
+            let result = scan_lists(
+                values,
+                predicates,
+                &output_element,
+                count_where,
+                || descriptor.accumulator(),
+                collect_empty_identity,
+                &collect_item_type,
+            )?;
             Ok(ColumnarValue::Array(result))
         }),
     )))
@@ -86,6 +94,8 @@ fn scan_lists(
     output_element: &DataType,
     count_where: bool,
     accumulator: impl Fn() -> Result<Box<dyn datafusion_expr::Accumulator>>,
+    collect_empty_identity: bool,
+    collect_item_type: &DataType,
 ) -> Result<Arc<ListArray>> {
     let mut outputs = Vec::new();
     let mut lengths = Vec::with_capacity(values.len());
@@ -114,7 +124,12 @@ fn scan_lists(
         let mut accumulator = accumulator()?;
         lengths.push(input.len());
         for index in 0..input.len() {
-            outputs.push(accumulator.evaluate()?);
+            let value = accumulator.evaluate()?;
+            outputs.push(if collect_empty_identity && value.is_null() {
+                ScalarValue::List(ScalarValue::new_list(&[], collect_item_type, true))
+            } else {
+                value
+            });
             let count_selected = !count_where
                 || (input.data_type() == &DataType::Boolean
                     && input

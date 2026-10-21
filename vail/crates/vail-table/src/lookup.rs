@@ -322,16 +322,17 @@ fn reduce_right(input: PhysicalPlan, key_name: &str, ordinal_name: &str) -> Resu
     Ok(Arc::new(FilterExec::try_new(keep_first, windowed)?))
 }
 
-/// Retain every right row in source order, grouped by canonical key.
+/// Retain every right row in source order, grouped by canonical key. The caller
+/// supplies the single, ordered `prepared_ordered` stream; native array_agg's
+/// grouped accumulator records rows in their input batch/row order, so this
+/// does not need a per-value ORDER BY accumulator.
 fn collect_right(
     input: PhysicalPlan,
     key_name: &str,
-    ordinal_name: &str,
     payload: &[(String, String)],
 ) -> Result<(PhysicalPlan, String, String)> {
     let schema = input.schema();
     let key = column(&input, schema.index_of(key_name)?);
-    let ordinal = column(&input, schema.index_of(ordinal_name)?);
     let mut args: Vec<Arc<dyn PhysicalExpr>> = Vec::with_capacity(payload.len().max(1) * 2);
     for (field, name) in payload {
         args.push(Arc::new(Literal::new(ScalarValue::Utf8(Some(
@@ -358,7 +359,6 @@ fn collect_right(
         datafusion_functions_aggregate::array_agg::array_agg_udaf(),
         vec![row],
     )
-    .order_by(vec![PhysicalSortExpr::new(ordinal, SortOptions::default())])
     .schema(schema.clone())
     .alias(rows_name.clone())
     .build()?;
@@ -566,9 +566,11 @@ fn join_partition(
             )?)
         };
         let collected = AggregateExprBuilder::new(
-            vail_execution::collect_aggregate::collect_udf(&row.data_type(&input_schema)?),
+            datafusion_functions_aggregate::array_agg::array_agg_udaf(),
             vec![row],
         )
+        // NestedLoopJoinExec does not preserve either input's ordering, while
+        // interval all_matches exposes right-table source order.
         .order_by(vec![PhysicalSortExpr::new(
             column(&joined, right_ord_idx),
             SortOptions::default(),
@@ -836,7 +838,7 @@ pub(crate) async fn prepare(
             (right_projected, None, right_marker)
         } else {
             let (grouped, name, marker) =
-                collect_right(right_projected, &right_key, &right_ordinal, &right_payload)?;
+                collect_right(right_projected, &right_key, &right_payload)?;
             (grouped, Some(name), marker)
         }
     } else {

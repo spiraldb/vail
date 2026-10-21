@@ -18,6 +18,15 @@ def test_issue_3654_array_aggregate_division():
     assert table.aggregate(hl.agg.array_sum(table.x) / [2, 2]) == [5.0, 10.0]
 
 
+def test_list_collect_uses_empty_list_identity_and_preserves_null_items():
+    values = hl.literal([[], [None, 2]], hl.tarray(hl.tarray(hl.tint32)))
+    collected = values.map(lambda xs: xs.aggregate(lambda x: hl.agg.collect(x)))
+    assert hl.eval(collected) == [[], [None, 2]]
+    assert hl.eval(hl.literal([], hl.tarray(hl.tint32)).aggregate(
+        lambda x: hl.agg.collect(x)
+    )) == []
+
+
 def test_array_array_and_reverse_arithmetic():
     left = hl.array([8, 9])
     right = hl.array([2, 3])

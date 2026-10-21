@@ -14,11 +14,6 @@ fn configured_udaf_impl(
     dtype: Option<&DataType>,
     options: &serde_json::Value,
 ) -> Result<Arc<AggregateUDF>, ExprError> {
-    if function == "collect" {
-        return Ok(crate::collect_aggregate::collect_udf(dtype.ok_or_else(
-            || ExprError::Invalid("collect requires input".into()),
-        )?));
-    }
     if let Some(dtype) = dtype {
         if let Some(udf) =
             crate::advanced_collection_aggregates::make_udaf(function, dtype, options)?
@@ -68,6 +63,13 @@ pub fn configured_udaf(
     dtype: Option<&DataType>,
     options: &serde_json::Value,
 ) -> Result<Arc<AggregateUDF>, ExprError> {
+    // DataFusion's array_agg owns the optimized grouped accumulator. Returning
+    // it directly preserves that specialization instead of wrapping it in an
+    // identity UDAF.
+    if function == "collect" {
+        dtype.ok_or_else(|| ExprError::Invalid("collect requires input".into()))?;
+        return Ok(datafusion_functions_aggregate::array_agg::array_agg_udaf());
+    }
     let inner = configured_udaf_impl(function, dtype, options)?;
     let output = inner.return_type(&dtype.cloned().into_iter().collect::<Vec<_>>())?;
     Ok(Arc::new(AggregateUDF::from(IdentifiedReducer {

@@ -99,6 +99,49 @@ def test_collect_multiset_semantics_across_partitions():
     assert grouped_multisets == expected_multisets
 
 
+def test_grouped_collect_preserves_empty_filtered_groups_and_zero_field_values():
+    table = hl.Table.parallelize(
+        [
+            {"group": 0, "keep": False, "value": None},
+            {"group": 1, "keep": True, "value": None},
+            {"group": 1, "keep": True, "value": 2},
+        ],
+        schema=hl.tstruct(group=hl.tint32, keep=hl.tbool, value=hl.tint32),
+        n_partitions=3,
+    )
+    filtered = table.group_by(group=table.group).aggregate(
+        values=hl.agg.filter(table.keep, hl.agg.collect(table.value))
+    ).collect()
+    assert {row.group: sorted(map(repr, row["values"])) for row in filtered} == {
+        0: [], 1: sorted(map(repr, [None, 2]))
+    }
+
+    zero_field = hl.Table.parallelize(
+        [{"group": 0}, {"group": 0}, {"group": 1}],
+        schema=hl.tstruct(group=hl.tint32),
+        n_partitions=3,
+    )
+    grouped_zero_field = zero_field.group_by(group=zero_field.group).aggregate(
+        values=hl.agg.collect(hl.literal(()))
+    )
+    collected = grouped_zero_field.collect()
+    assert {row.group: len(row["values"]) for row in collected} == {0: 2, 1: 1}
+    assert all(value == () for row in collected for value in row["values"])
+    assert grouped_zero_field.values.dtype == hl.tarray(hl.ttuple())
+
+    ordered = hl.Table.parallelize(
+        [{"idx": 2, "nested": ()}, {"idx": 0, "nested": ()}, {"idx": 1, "nested": ()}],
+        schema=hl.tstruct(idx=hl.tint32, nested=hl.ttuple()),
+        n_partitions=3,
+    )
+    ordered_values = ordered.aggregate(hl.agg._ordered_collect(ordered.row))
+    assert ordered_values == [
+        hl.Struct(idx=2, nested=()),
+        hl.Struct(idx=0, nested=()),
+        hl.Struct(idx=1, nested=()),
+    ]
+
+
 def test_query_backed_scalar_reduction_is_lazy_and_reusable(tmp_path):
     path = tmp_path / 'source'
     hl.range_table(6, n_partitions=2).write(path)

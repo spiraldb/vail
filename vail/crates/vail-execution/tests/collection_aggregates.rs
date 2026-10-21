@@ -1,12 +1,14 @@
 //! Public collection UDAFs executed on Arrow batches, including invalid packing.
 use arrow_array::{Array, ArrayRef, Int64Array, ListArray, RecordBatch, StructArray};
 use arrow_buffer::NullBuffer;
-use arrow_schema::{Field, Schema};
-use datafusion_common::DataFusionError;
+use arrow_schema::{Field, Schema, SortOptions};
+use datafusion_common::{DataFusionError, ScalarValue};
 use datafusion_datasource::memory::MemorySourceConfig;
 use datafusion_execution::TaskContext;
 use datafusion_expr::AggregateUDF;
-use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Column};
+use datafusion_physical_expr::{
+    PhysicalSortExpr, aggregate::AggregateExprBuilder, expressions::Column,
+};
 use datafusion_physical_plan::{
     aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
     execution_plan::{ExecutionPlan, collect},
@@ -131,14 +133,14 @@ fn ordered_take_factory_rejects_noncanonical_field_order() {
     );
 }
 #[tokio::test]
-async fn collect_preserves_nullable_struct_values_and_input_order() {
+async fn array_agg_preserves_nullable_struct_values_and_input_order() {
     let input = packed(
         vec![Some(999), Some(1), Some(2), Some(3)],
         vec![Some(999), None, Some(2), Some(3)],
         vec![true, true, false, true],
     )
     .slice(1, 3);
-    let udf = vail_execution::collect_aggregate::collect_udf(input.data_type());
+    let udf = datafusion_functions_aggregate::array_agg::array_agg_udaf();
     let result = execute(udf, vec![input.slice(0, 1), input.slice(1, 2)])
         .await
         .unwrap();
@@ -148,6 +150,59 @@ async fn collect_preserves_nullable_struct_values_and_input_order() {
         .unwrap()
         .value(0);
     assert_eq!(result.as_ref(), input.as_ref());
+}
+
+#[tokio::test]
+async fn native_ordered_array_agg_preserves_zero_field_struct_values() {
+    let value: ArrayRef = Arc::new(StructArray::new_empty_fields(3, None));
+    let ordering: ArrayRef = Arc::new(Int64Array::from(vec![2, 0, 1]));
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("value", value.data_type().clone(), true),
+        Field::new("ordering", ordering.data_type().clone(), false),
+    ]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![value, ordering]).unwrap();
+    let source = MemorySourceConfig::try_new_exec(&[vec![batch]], schema.clone(), None).unwrap();
+    let aggregate = AggregateExprBuilder::new(
+        datafusion_functions_aggregate::array_agg::array_agg_udaf(),
+        vec![Arc::new(Column::new("value", 0))],
+    )
+    .order_by(vec![PhysicalSortExpr::new(
+        Arc::new(Column::new("ordering", 1)),
+        SortOptions::default(),
+    )])
+    .schema(schema)
+    .alias("result")
+    .build()
+    .unwrap();
+    let plan = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Single,
+            PhysicalGroupBy::new_single(vec![]),
+            vec![Arc::new(aggregate)],
+            vec![None],
+            source.clone(),
+            source.schema(),
+        )
+        .unwrap(),
+    );
+    let result = collect(plan, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let values = result[0]
+        .column(0)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap()
+        .value(0);
+    assert_eq!(values.len(), 3);
+    assert_eq!(values.null_count(), 0);
+
+    let compacted =
+        ScalarValue::Struct(Arc::new(StructArray::new_empty_fields(1, None))).compacted();
+    let ScalarValue::Struct(compacted) = compacted else {
+        panic!("expected zero-field struct scalar")
+    };
+    assert_eq!(compacted.len(), 1);
 }
 
 #[tokio::test]

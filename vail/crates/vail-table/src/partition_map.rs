@@ -1,13 +1,13 @@
 //! A partition stream is packed by DataFusion, transformed by expression IR,
 //! and unnested by DataFusion. No Python callback runs during execution.
 use crate::globals::GlobalBindings;
-use crate::plan::{PhysicalPlan, TablePlan, bind_external, bind_globals, column, ordinal};
+use crate::plan::{PhysicalPlan, TablePlan, bind_external, bind_globals, column};
 use crate::{Result, ScalarIR, TableError, TableRef};
-use arrow_schema::{DataType, Field, Schema, SortOptions};
+use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions, config::ConfigOptions};
 use datafusion_physical_expr::ScalarFunctionExpr;
 use datafusion_physical_expr::{
-    PhysicalExpr, PhysicalSortExpr, aggregate::AggregateExprBuilder, expressions::Literal,
+    PhysicalExpr, aggregate::AggregateExprBuilder, expressions::Literal,
 };
 use datafusion_physical_plan::{
     aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
@@ -66,7 +66,10 @@ pub(crate) fn lower(
     body: &ScalarIR,
     bindings: &GlobalBindings,
 ) -> Result<TablePlan> {
-    let numbered = ordinal(input.rows);
+    // This callback is planned against one prepared source partition and the
+    // AggregateExec below is single-pass/non-partial. Native array_agg keeps
+    // input batch and row order, so no ordinal column or per-row sort is needed.
+    let numbered = input.rows;
     let schema = numbered.schema();
     let mut args = Vec::<Arc<dyn PhysicalExpr>>::new();
     for field in child.schema().fields() {
@@ -82,16 +85,9 @@ pub(crate) fn lower(
         Arc::new(ConfigOptions::default()),
     )?);
     let collected = AggregateExprBuilder::new(
-        // DF's array_agg compacts struct scalars through a constructor that
-        // panics on nested zero-field structs. Our Arrow-native collect UDAF
-        // retains those arrays (and their typing metadata) without scalarization.
-        vail_execution::collect_aggregate::collect_udf(&row.data_type(&schema)?),
+        datafusion_functions_aggregate::array_agg::array_agg_udaf(),
         vec![row],
     )
-    .order_by(vec![PhysicalSortExpr::new(
-        column(&numbered, schema.fields().len() - 1),
-        SortOptions::default(),
-    )])
     .schema(schema.clone())
     .alias(rows_name)
     .build()?;

@@ -4,6 +4,7 @@ use crate::logical_aggregation::{body_plan, col, columns, join_scope, unique};
 use crate::{Result, TableError, TableRef};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions};
+use datafusion_expr::expr::NullTreatment;
 use datafusion_expr::{
     Expr as DFExpr, ExprSchemable, LogicalPlan, LogicalPlanBuilder, expr_fn::ExprFunctionExt, lit,
 };
@@ -75,18 +76,20 @@ fn collect(
     used: &mut HashSet<String>,
 ) -> Result<(LogicalPlan, ScalarValue, String)> {
     let physical_type = value.get_type(input.schema())?;
-    // DataFusion's ordered array_agg carries sort keys through partial states.
-    // A plain collect accumulator cannot merge independently sorted partitions.
-    let udf = if order.is_empty() {
-        vail_execution::collect_aggregate::collect_udf(&physical_type)
-    } else {
-        datafusion_functions_aggregate::array_agg::array_agg_udaf()
-    };
+    // Native array_agg supplies DataFusion's grouped kernel for unordered
+    // collect and carries sort keys through partial states when the nested
+    // scope requires ordering.
+    let udf = datafusion_functions_aggregate::array_agg::array_agg_udaf();
     let empty = ScalarValue::List(ScalarValue::new_list(&[], &physical_type, true));
     let empty = restore_arrow_array_type(&empty.to_array_of_size(1)?, &dtype)?;
     let empty = vail_execution::expressions::scalar_at(&empty, 0)?;
     let p = unique(used, "__vail_nested_presence");
-    let collected = udf.call(vec![value]).order_by(order).build()?.alias(name);
+    let collected = udf
+        .call(vec![value])
+        .null_treatment(NullTreatment::RespectNulls)
+        .order_by(order)
+        .build()?
+        .alias(name);
     let result = LogicalPlanBuilder::from(input)
         .aggregate(
             keys.iter().map(col).collect::<Vec<_>>(),
@@ -94,7 +97,13 @@ fn collect(
         )?
         .build()?;
     let mut fields = keys.iter().map(col).collect::<Vec<_>>();
-    fields.push(restore_type(col(name), dtype).alias(name));
+    fields.push(
+        restore_type(
+            datafusion_functions::core::coalesce().call(vec![col(name), lit(empty.clone())]),
+            dtype,
+        )
+        .alias(name),
+    );
     fields.push(col(&p));
     Ok((
         LogicalPlanBuilder::from(result).project(fields)?.build()?,

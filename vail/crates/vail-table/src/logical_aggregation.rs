@@ -3,8 +3,9 @@ use crate::aggregation::{Group, Reducer, Step, extract, resolve};
 use crate::{Result, TableError, TableNode, TableRef};
 use arrow_schema::{DataType, Schema};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions};
+use datafusion_expr::expr::NullTreatment;
 use datafusion_expr::{
-    AggregateUDF, Expr as DFExpr, JoinType, LogicalPlan, LogicalPlanBuilder, lit,
+    AggregateUDF, Expr as DFExpr, ExprFunctionExt, JoinType, LogicalPlan, LogicalPlanBuilder, lit,
 };
 use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Literal};
 use std::{
@@ -358,6 +359,7 @@ pub(crate) fn scope_plan(
     let mut aggregates = Vec::new();
     let mut defaults = BTreeMap::new();
     let mut native_sums = BTreeMap::new();
+    let mut native_collects = BTreeMap::new();
     for reducer in &group.reducers {
         if reducer.function == "__nested" {
             continue;
@@ -421,7 +423,7 @@ pub(crate) fn scope_plan(
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
             lower_logical_with_bindings(value, input.schema(), table.globals().schema(), bindings)?;
-        let mut dtype = if matches!(reducer.function.as_str(), "count" | "count_where") {
+        let dtype = if matches!(reducer.function.as_str(), "count" | "count_where") {
             None
         } else {
             Some(
@@ -467,6 +469,7 @@ pub(crate) fn scope_plan(
             native_sums.insert(reducer.name.clone(), zero);
             dtype = Some(output_type);
         }
+        let native_collect = reducer.function == "collect";
         let udf = match fold_udf {
             Some(udf) => udf,
             None if native_sums.contains_key(&reducer.name) => {
@@ -478,25 +481,48 @@ pub(crate) fn scope_plan(
             None if reducer.function == "count_where" => {
                 datafusion_functions_aggregate::count::count_udaf()
             }
+            // DataFusion's array_agg has native batch-oriented grouped and
+            // scalar accumulators. Hail collect respects null elements and
+            // leaves order unspecified unless an ordered input scope is used.
+            None if native_collect => datafusion_functions_aggregate::array_agg::array_agg_udaf(),
             None => factory(reducer, dtype.as_ref())?,
         };
-        // Query the existing UDAF for its empty-input identity. This does not
-        // evaluate input rows or construct an executable aggregate pipeline.
-        let argument = ScalarValue::try_from(dtype.as_ref().unwrap_or(&DataType::Int64))?;
-        let dummy_schema = Arc::new(Schema::empty());
-        let physical =
-            AggregateExprBuilder::new(udf.clone(), vec![Arc::new(Literal::new(argument))])
-                .schema(dummy_schema)
-                .alias(&reducer.name)
-                .build()?;
-        defaults.insert(
-            reducer.name.clone(),
+        let default = if native_collect {
+            // A filtered/exploded scope may contribute no rows for a group.
+            // join_scope restores that group with collect's valid empty-list
+            // identity; array_agg's empty accumulator is null.
+            ScalarValue::List(ScalarValue::new_list(
+                &[],
+                dtype
+                    .as_ref()
+                    .ok_or_else(|| TableError::Invalid("collect requires an input type".into()))?,
+                true,
+            ))
+        } else {
+            // Query the existing UDAF for its empty-input identity. This does
+            // not evaluate input rows or build an executable aggregate plan.
+            let argument = ScalarValue::try_from(dtype.as_ref().unwrap_or(&DataType::Int64))?;
+            let dummy_schema = Arc::new(Schema::empty());
+            let physical =
+                AggregateExprBuilder::new(udf.clone(), vec![Arc::new(Literal::new(argument))])
+                    .schema(dummy_schema)
+                    .alias(&reducer.name)
+                    .build()?;
             match native_sums.get(&reducer.name) {
                 Some(zero) => zero.clone(),
                 None => physical.create_accumulator()?.evaluate()?,
-            },
-        );
-        aggregates.push(udf.call(vec![logical_value]).alias(&reducer.name));
+            }
+        };
+        if native_collect {
+            native_collects.insert(reducer.name.clone(), default.clone());
+        }
+        defaults.insert(reducer.name.clone(), default);
+        let aggregate = udf
+            .call(vec![logical_value])
+            .null_treatment(NullTreatment::RespectNulls)
+            .build()?
+            .alias(&reducer.name);
+        aggregates.push(aggregate);
     }
     let presence = unique(used, "__vail_scope_presence");
     aggregates.push(
@@ -518,7 +544,12 @@ pub(crate) fn scope_plan(
             Some(zero) => datafusion_functions::core::coalesce()
                 .call(vec![DFExpr::Column(column.clone()), lit(zero.clone())])
                 .alias(&column.name),
-            None => DFExpr::Column(column),
+            None => match native_collects.get(&column.name) {
+                Some(empty) => datafusion_functions::core::coalesce()
+                    .call(vec![DFExpr::Column(column.clone()), lit(empty.clone())])
+                    .alias(&column.name),
+                None => DFExpr::Column(column),
+            },
         })
         .collect::<Vec<_>>();
     let restored_keys = group_names
