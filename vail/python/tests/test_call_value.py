@@ -35,19 +35,36 @@ def test_call_equality_with_expressions_and_phase_order():
     assert hl.eval(expression == value)
 
 
-@pytest.mark.parametrize('fields', [(0,0,3,False),(1,0,0,False),(0,1,1,False),(2,1,2,False),(None,0,2,False)])
-@pytest.mark.parametrize('accessor', ['phase', 'alleles', 'ploidy', 'alternate_count', 'first', 'het', 'hom_var'])
-def test_imported_malformed_call_is_rejected_by_executed_accessors(fields, accessor):
+@pytest.mark.parametrize('fields,expected', [
+    ((1, 0, 0, False), ([], 0, 0, False, False)),
+    ((0, 1, 1, False), ([0], 1, 0, False, False)),
+    ((2, 1, 2, False), ([2, 1], 2, 2, True, False)),
+])
+def test_imported_calls_use_stored_fields_without_canonical_validation(fields, expected):
     import pyarrow as pa
     from vail.arrow import arrow_type
-    dtype=arrow_type(hl.tcall)
-    calls=pa.StructArray.from_arrays([pa.array([value],type=field.type) for value,field in zip(fields,dtype)],fields=list(dtype))
-    table=hl.Table.parallelize(pa.table({'c':calls}))
-    value={'phase':lambda:table.c.phased,'alleles':lambda:table.c.alleles,'ploidy':lambda:table.c.ploidy,
-           'alternate_count':lambda:table.c.n_alt_alleles(),'first':lambda:table.c[0],
-           'het':lambda:table.c.is_het(),'hom_var':lambda:table.c.is_hom_var()}[accessor]()
-    with pytest.raises((ValueError,RuntimeError),match='Call|call'):
-        table.select(value=value).collect()
+    dtype = arrow_type(hl.tcall)
+    calls = pa.StructArray.from_arrays(
+        [pa.array([value], type=field.type) for value, field in zip(fields, dtype)],
+        fields=list(dtype),
+    )
+    table = hl.Table.parallelize(pa.table({'c': calls}))
+    row = table.select(alleles=table.c.alleles, ploidy=table.c.ploidy,
+                       n=table.c.n_alt_alleles(), het=table.c.is_het(),
+                       hom_var=table.c.is_hom_var()).collect()[0]
+    assert (row.alleles, row.ploidy, row.n, row.het, row.hom_var) == expected
+
+
+def test_imported_calls_do_not_scan_unreferenced_storage_invariants():
+    import pyarrow as pa
+    from vail.arrow import arrow_type
+    dtype = arrow_type(hl.tcall)
+    calls = pa.StructArray.from_arrays(
+        [pa.array([value], type=field.type) for value, field in zip((None, 0, 3, False), dtype)],
+        fields=list(dtype),
+    )
+    table = hl.Table.parallelize(pa.table({'c': calls}))
+    assert table.select(n=table.c.ploidy, phase=table.c.phased).collect() == [hl.Struct(n=3, phase=False)]
 
 
 def test_imported_parent_missing_call_ignores_invalid_hidden_word():
