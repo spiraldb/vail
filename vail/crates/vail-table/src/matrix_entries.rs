@@ -7,7 +7,7 @@
 //! the next key. This preserves composite ordering without sorting the
 //! expanded table.
 
-use crate::plan::PhysicalPlan;
+use crate::plan::{PhysicalPlan, properties};
 use arrow_array::{
     Array, ArrayRef, LargeListArray, ListArray, RecordBatch, StructArray, UInt64Array,
 };
@@ -24,8 +24,9 @@ use datafusion_physical_plan::{
     stream::RecordBatchStreamAdapter,
 };
 use futures::TryStreamExt;
-use std::{fmt, fs::File, path::PathBuf, sync::Arc};
+use std::{collections::HashSet, fmt, fs::File, path::PathBuf, sync::Arc};
 use tempfile::TempDir;
+use tokio::sync::OnceCell;
 use vail_storage::fragment_index::make_typed_key_comparators;
 
 const RUN_MEMORY_BUDGET: usize = 64 * 1024 * 1024;
@@ -42,12 +43,26 @@ struct KeyRun {
     spill_dir: Option<TempDir>,
     memory_bytes: usize,
     rows: usize,
+    last_source_batch: Option<u64>,
+    first_source_batch: Option<(u64, usize)>,
 }
 
 impl KeyRun {
-    async fn push(&mut self, batch: RecordBatch) -> datafusion_common::Result<()> {
+    async fn push(
+        &mut self,
+        batch: RecordBatch,
+        source_batch_id: u64,
+        source_batch_bytes: usize,
+    ) -> datafusion_common::Result<()> {
+        let added_bytes = if self.last_source_batch == Some(source_batch_id) {
+            0
+        } else {
+            source_batch_bytes
+        };
+        let new_rows = self.rows.saturating_add(batch.num_rows());
         if self.spill_dir.is_none()
-            && self.memory_bytes.saturating_add(batch_memory_size(&batch)) > RUN_MEMORY_BUDGET
+            && new_rows > 1
+            && self.memory_bytes.saturating_add(added_bytes) > RUN_MEMORY_BUDGET
         {
             self.spill_dir = Some(tempfile::tempdir()?);
             for existing in std::mem::take(&mut self.batches) {
@@ -55,11 +70,15 @@ impl KeyRun {
             }
             self.memory_bytes = 0;
         }
-        self.rows += batch.num_rows();
+        if self.first_source_batch.is_none() {
+            self.first_source_batch = Some((source_batch_id, source_batch_bytes));
+        }
+        self.rows = new_rows;
+        self.last_source_batch = Some(source_batch_id);
         if self.spill_dir.is_some() {
             self.spill_batch(batch).await?;
         } else {
-            self.memory_bytes = self.memory_bytes.saturating_add(batch_memory_size(&batch));
+            self.memory_bytes = self.memory_bytes.saturating_add(added_bytes);
             self.batches.push(batch);
         }
         Ok(())
@@ -144,18 +163,117 @@ pub(crate) struct Config {
     pub global_schema: SchemaRef,
 }
 
+/// Cache one globals batch across all independently executable entry ranges.
+/// The cache is an execution-plan node so reset_plan_states resets it once and
+/// preserves the shared identity for every output partition.
+#[derive(Debug)]
+pub(crate) struct SharedColumnsExec {
+    input: PhysicalPlan,
+    schema: SchemaRef,
+    config: Config,
+    cached_batch: Arc<OnceCell<RecordBatch>>,
+    properties: Arc<PlanProperties>,
+}
+
+impl SharedColumnsExec {
+    pub(crate) fn new(input: PhysicalPlan, config: Config) -> Self {
+        let schema = input.schema();
+        Self {
+            input,
+            schema: schema.clone(),
+            config,
+            cached_batch: Arc::new(OnceCell::new()),
+            properties: properties(schema, EmissionType::Incremental),
+        }
+    }
+}
+
+impl DisplayAs for SharedColumnsExec {
+    fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "MatrixEntriesColumnsCacheExec")
+    }
+}
+
+impl ExecutionPlan for SharedColumnsExec {
+    fn name(&self) -> &'static str { "MatrixEntriesColumnsCacheExec" }
+    fn properties(&self) -> &Arc<PlanProperties> { &self.properties }
+    fn children(&self) -> Vec<&PhysicalPlan> { vec![&self.input] }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        vec![datafusion_physical_plan::Distribution::SinglePartition]
+    }
+    fn maintains_input_order(&self) -> Vec<bool> { vec![true] }
+    fn with_new_children(
+        self: Arc<Self>,
+        children: Vec<PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        if children.len() != 1 {
+            return Err(DataFusionError::Plan(
+                "MatrixEntriesColumnsCacheExec expects one child".into(),
+            ));
+        }
+        Ok(Arc::new(Self {
+            input: children[0].clone(),
+            schema: self.schema.clone(),
+            config: self.config.clone(),
+            cached_batch: self.cached_batch.clone(),
+            properties: self.properties.clone(),
+        }))
+    }
+    fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
+        Ok(Arc::new(Self::new(self.input.clone(), self.config.clone())))
+    }
+    fn execute(
+        &self,
+        partition: usize,
+        context: Arc<TaskContext>,
+    ) -> datafusion_common::Result<SendableRecordBatchStream> {
+        if partition != 0 {
+            return Err(DataFusionError::Execution(
+                "MatrixEntriesColumnsCacheExec requires partition zero".into(),
+            ));
+        }
+        let input = self.input.clone();
+        let cache = self.cached_batch.clone();
+        let schema = self.schema.clone();
+        Ok(Box::pin(RecordBatchStreamAdapter::new(
+            schema,
+            async_stream::try_stream! {
+                let batch = cache.get_or_try_init(|| async {
+                    let mut stream = input.execute(0, context.clone())?;
+                    let batch = stream.try_next().await?.ok_or_else(|| {
+                        DataFusionError::Execution("matrix column globals produced no row".into())
+                    })?;
+                    if batch.num_rows() != 1 {
+                        return Err(DataFusionError::Execution(
+                            "matrix column globals must have exactly one row".into(),
+                        ));
+                    }
+                    Ok::<_, DataFusionError>(batch)
+                }).await?;
+                yield batch.clone();
+            },
+        )))
+    }
+    fn apply_expressions(
+        &self,
+        _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
+    ) -> datafusion_common::Result<TreeNodeRecursion> {
+        Ok(TreeNodeRecursion::Continue)
+    }
+}
+
 pub(crate) fn lower(
     rows: PhysicalPlan,
-    globals: PhysicalPlan,
+    columns: PhysicalPlan,
     config: Config,
 ) -> datafusion_common::Result<PhysicalPlan> {
-    Ok(Arc::new(MatrixEntriesExec::new(rows, globals, config)?))
+    Ok(Arc::new(MatrixEntriesExec::new(rows, columns, config)?))
 }
 
 #[derive(Debug)]
 struct MatrixEntriesExec {
     rows: PhysicalPlan,
-    globals: PhysicalPlan,
+    columns: PhysicalPlan,
     config: Config,
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
@@ -164,7 +282,7 @@ struct MatrixEntriesExec {
 impl MatrixEntriesExec {
     fn new(
         rows: PhysicalPlan,
-        globals: PhysicalPlan,
+        columns: PhysicalPlan,
         config: Config,
     ) -> datafusion_common::Result<Self> {
         let mut fields = config.output_schema.fields().to_vec();
@@ -197,7 +315,7 @@ impl MatrixEntriesExec {
         ));
         Ok(Self {
             rows,
-            globals,
+            columns,
             config,
             schema,
             properties,
@@ -221,7 +339,7 @@ impl ExecutionPlan for MatrixEntriesExec {
     }
 
     fn children(&self) -> Vec<&PhysicalPlan> {
-        vec![&self.rows, &self.globals]
+        vec![&self.rows, &self.columns]
     }
 
     fn maintains_input_order(&self) -> Vec<bool> {
@@ -265,21 +383,30 @@ impl ExecutionPlan for MatrixEntriesExec {
             ));
         }
         let rows_plan = self.rows.clone();
-        let globals_plan = self.globals.clone();
+        let columns_plan = self.columns.clone();
         let config = self.config.clone();
         let schema = self.schema.clone();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
-                let columns = read_columns(globals_plan, &config, context.clone()).await?;
+                let columns_batch = columns_plan.execute(0, context.clone())?
+                    .try_next().await?.ok_or_else(|| DataFusionError::Execution(
+                        "matrix column cache produced no row".into()
+                    ))?;
+                let columns = read_columns(&columns_batch, &config)?;
                 let mut input = rows_plan.execute(0, context)?;
                 let mut run = KeyRun::default();
                 let mut singleton_rows = Vec::<RecordBatch>::new();
                 let mut singleton_bytes = 0usize;
-                let singleton_limit = (8192 / columns.len().max(1)).max(1);
+                let mut singleton_source_batches = HashSet::<u64>::new();
+                let mut last_budget_flush_source_batch = None;
                 let mut previous_key: Option<Vec<ArrayRef>> = None;
+                let mut source_batch_id = 0u64;
                 while let Some(batch) = input.try_next().await? {
                     if batch.num_rows() == 0 { continue; }
+                    let current_batch_id = source_batch_id;
+                    source_batch_id = source_batch_id.wrapping_add(1);
+                    let source_batch_bytes = batch_memory_size(&batch);
                     let key_columns = config.key_indices.iter().map(|&i| batch.column(i).clone()).collect::<Vec<_>>();
                     let options = vec![SortOptions { descending: false, nulls_first: false }; key_columns.len()];
                     let within = if key_columns.is_empty() { vec![] } else {
@@ -302,28 +429,39 @@ impl ExecutionPlan for MatrixEntriesExec {
                         // equal-key run boundaries; do not revalidate or sort
                         // the full row stream here.
                         if comparison == Some(std::cmp::Ordering::Less) {
-                            if row > start { run.push(batch.slice(start, row - start)).await?; }
+                            if row > start { run.push(batch.slice(start, row - start), current_batch_id, source_batch_bytes).await?; }
                             let finished = std::mem::take(&mut run);
                             if finished.rows == 1 {
                                 if finished.spill_dir.is_some() {
                                     let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
                                     while let Some(output) = pending.try_next().await? { yield output; }
                                     singleton_bytes = 0;
+                                    singleton_source_batches.clear();
                                     let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                                     while let Some(output) = expanded.try_next().await? { yield output; }
                                 } else {
-                                    singleton_bytes = singleton_bytes.saturating_add(finished.memory_bytes);
+                                    let (id, bytes) = finished.first_source_batch.expect("singleton has an input batch");
+                                    let added_source = singleton_source_batches.insert(id);
+                                    if added_source {
+                                        singleton_bytes = singleton_bytes.saturating_add(bytes);
+                                    }
                                     singleton_rows.extend(finished.batches);
-                                    if singleton_rows.len() >= singleton_limit || singleton_bytes >= RUN_MEMORY_BUDGET {
+                                    if added_source
+                                        && singleton_bytes >= RUN_MEMORY_BUDGET
+                                        && last_budget_flush_source_batch != Some(id)
+                                    {
                                         let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
                                         while let Some(output) = pending.try_next().await? { yield output; }
                                         singleton_bytes = 0;
+                                        singleton_source_batches.clear();
+                                        last_budget_flush_source_batch = Some(id);
                                     }
                                 }
                             } else if finished.rows > 1 {
                                 let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
                                 while let Some(output) = pending.try_next().await? { yield output; }
                                 singleton_bytes = 0;
+                                singleton_source_batches.clear();
                                 let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                                 while let Some(output) = expanded.try_next().await? {
                                     yield output;
@@ -332,7 +470,7 @@ impl ExecutionPlan for MatrixEntriesExec {
                             start = row;
                         }
                     }
-                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start)).await?; }
+                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start), current_batch_id, source_batch_bytes).await?; }
                     if !key_columns.is_empty() {
                         previous_key = Some(key_columns.iter().map(|column| column.slice(batch.num_rows() - 1, 1)).collect());
                     }
@@ -710,15 +848,10 @@ fn compare(
     Some(std::cmp::Ordering::Equal)
 }
 
-async fn read_columns(
-    plan: PhysicalPlan,
+fn read_columns(
+    batch: &RecordBatch,
     config: &Config,
-    context: Arc<TaskContext>,
 ) -> datafusion_common::Result<Arc<StructArray>> {
-    let mut stream = plan.execute(0, context)?;
-    let batch = stream.try_next().await?.ok_or_else(|| {
-        DataFusionError::Execution("matrix column metadata produced no row".into())
-    })?;
     if batch.num_rows() != 1 {
         return Err(DataFusionError::Execution(
             "matrix column globals must have exactly one row".into(),

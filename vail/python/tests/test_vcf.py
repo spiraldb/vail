@@ -50,6 +50,24 @@ def test_import_vcf_builds_nullable_entry_slots(tmp_path):
     ]
 
 
+def test_entries_orders_unsorted_vcf_samples_without_moving_entry_slots(tmp_path):
+    path = tmp_path / 'unsorted-samples.vcf'
+    path.write_text(HEADER.replace('\ta\tb\n', '\tz\ta\n') +
+        '1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t0/0:20\t1/1:10\n' +
+        '1\t2\t.\tG\tT\t.\tPASS\t.\tGT:DP\t0/1:21\t1/0:11\n')
+
+    mt = hl.import_vcf(path)
+
+    assert mt.s.collect() == ['z', 'a']
+    entries = mt.entries().collect()
+    assert [(entry.locus.position, entry.s, entry.GT, entry.DP) for entry in entries] == [
+        (1, 'a', hl.Call([1, 1]), 10),
+        (1, 'z', hl.Call([0, 0]), 20),
+        (2, 'a', hl.Call([1, 0]), 11),
+        (2, 'z', hl.Call([0, 1]), 21),
+    ]
+
+
 def test_bgzf_members_header_override_and_drop_samples(tmp_path):
     rows='1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t0/1:7\t0/0:9\n'
     path=tmp_path/'test.vcf.bgz'
