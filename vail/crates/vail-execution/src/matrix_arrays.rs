@@ -226,7 +226,6 @@ fn dense_type(value_field: &arrow_schema::Field) -> DataType {
         DataType::Struct(
             vec![
                 Arc::new(Field::new(CID, DataType::Int64, true)),
-                Arc::new(Field::new("present", DataType::Boolean, true)),
                 Arc::new(value_field.clone().with_name("value").with_nullable(true)),
             ]
             .into(),
@@ -285,7 +284,6 @@ fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
         output_ids.extend((0..width).map(|column| column as i64));
         offset += width;
     }
-    let presence = indices.iter().map(Option::is_some).collect::<Vec<_>>();
     let selected = take(values.as_ref(), &UInt32Array::from(indices), None)?;
     let DataType::List(field) = dense_type(
         records
@@ -301,11 +299,7 @@ fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
     };
     let records = Arc::new(StructArray::try_new(
         fields.clone(),
-        vec![
-            Arc::new(Int64Array::from(output_ids)),
-            Arc::new(BooleanArray::from(presence)),
-            selected,
-        ],
+        vec![Arc::new(Int64Array::from(output_ids)), selected],
         None,
     )?);
     Ok(Arc::new(ListArray::try_new(
@@ -330,13 +324,7 @@ fn aligned(cells: &ListArray, columns: &ListArray, scalar_columns: bool) -> Resu
         .as_any()
         .downcast_ref::<StructArray>()
         .unwrap();
-    let presence = records
-        .column_by_name("present")
-        .and_then(|a| a.as_any().downcast_ref::<BooleanArray>())
-        .ok_or_else(|| {
-            datafusion_common::exec_datafusion_err!("matrix entry presence must be boolean")
-        })?;
-    // When list, entry-record, presence and identity arrays have no nulls,
+    // When list, entry-record and identity arrays have no nulls,
     // including explicit all-valid bitmaps, Arrow's
     // primitive value slices can check each row's complete identity span with
     // a single slice comparison instead of repeated per-value null checks.
@@ -345,7 +333,6 @@ fn aligned(cells: &ListArray, columns: &ListArray, scalar_columns: bool) -> Resu
     let all_valid = cells.null_count() == 0
         && columns.null_count() == 0
         && records.null_count() == 0
-        && presence.null_count() == 0
         && cell_ids.null_count() == 0
         && column_ids.null_count() == 0;
     for row in 0..cells.len() {
@@ -373,9 +360,6 @@ fn aligned(cells: &ListArray, columns: &ListArray, scalar_columns: bool) -> Resu
             let right = b + position;
             if records.is_null(left) {
                 return exec_err!("matrix entry records must not be missing");
-            }
-            if presence.is_null(left) {
-                return exec_err!("matrix entry presence must not be missing");
             }
             if cell_ids.is_null(left)
                 || column_ids.is_null(right)

@@ -17,10 +17,10 @@ def reduce_row_predicate(matrix, expr, base):
     reductions can instead apply entry presence inside the primitive projection,
     leaving DataFusion to map the predicate and reduce the resulting list.
     """
-    from . import if_else, literal, missing, struct
+    from . import if_else, is_defined, literal, missing, struct
     from .collections import _function
-    from .types import tfloat64
-    from .matrixtable import _CELLS, _COL, _PRESENT, _VALUE, _zip_arrays
+    from .types import tfloat64, tstruct
+    from .matrixtable import _CELLS, _COL, _VALUE, _zip_arrays
 
     node = expr.to_ir()
     functions = {"count_where", "fraction", "any", "all"}
@@ -42,10 +42,17 @@ def reduce_row_predicate(matrix, expr, base):
     if required["col"]:
         # Project before zipping: arrays_zip must not replicate unrelated column
         # annotations, and the predicate never needs a full entry context.
+        projected_type = tstruct(**{
+            name: matrix.entry.dtype[name]
+            for name in matrix.entry.dtype if name in required["entry"]
+        })
         cells = cells.map(lambda cell: struct(**{
-            _PRESENT: cell[_PRESENT],
-            _VALUE: struct(**{name: cell[_VALUE][name]
-                             for name in matrix.entry.dtype if name in required["entry"]}),
+            _VALUE: if_else(
+                is_defined(cell[_VALUE]),
+                struct(**{name: cell[_VALUE][name]
+                          for name in matrix.entry.dtype if name in required["entry"]}),
+                missing(projected_type),
+            ),
         }))
         columns = matrix._mir.column_records.map(lambda column: struct(**{
             name: column[_COL][name]
@@ -56,20 +63,20 @@ def reduce_row_predicate(matrix, expr, base):
         def project(item):
             cell = item["1"]
             value = matrix._lower_cell(predicate, base, cell, item["2"])
-            return if_else(cell[_PRESENT], value, missing(tbool))
+            return if_else(is_defined(cell[_VALUE]), value, missing(tbool))
 
     else:
         items = cells
 
         def project(cell):
             value = matrix._lower_cell(predicate, base, cell, struct())
-            return if_else(cell[_PRESENT], value, missing(tbool))
+            return if_else(is_defined(cell[_VALUE]), value, missing(tbool))
 
     values = items.map(project)
     if function == "fraction":
         count = _function("__vail_list_reduce_count_where", [values], tint64)
         present = _function("__vail_list_reduce_count_where",
-                            [base[_CELLS].map(lambda cell: cell[_PRESENT])], tint64)
+                            [base[_CELLS].map(lambda cell: is_defined(cell[_VALUE]))], tint64)
         return if_else(present > 0, count / present, literal(float("nan"), tfloat64))
     return _function("__vail_list_reduce_" + function, [values], expr.dtype)
 
@@ -163,7 +170,7 @@ def reduce_list(
 
     if direct_entry_sum:
         from . import if_else, missing, sum as array_sum
-        from .matrixtable import _CELLS, _PRESENT, _VALUE
+        from .matrixtable import _CELLS, _VALUE
 
         aggregate = expr.to_ir()
         if aggregate.get("op") != "aggregate" or aggregate.get("function") != "sum":
@@ -206,7 +213,7 @@ def reduce_list(
         cells = base[_CELLS]
         values = cells.map(
             lambda cell: if_else(
-                cell[_PRESENT],
+                is_defined(cell[_VALUE]),
                 cast(raw(bind_entry(aggregate["value"], cell), result_type), result_type),
                 missing(result_type),
             )

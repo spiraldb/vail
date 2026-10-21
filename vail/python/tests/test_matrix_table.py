@@ -347,6 +347,51 @@ def test_filtered_cells_distinct_from_missing_and_dimensions_retained():
     assert m.filter_entries(hl.missing(hl.tbool), keep=False).entries().count() == 0
 
 
+def test_entry_struct_validity_for_missing_children_and_zero_field_entries(tmp_path):
+    all_missing = matrix(2, 3).annotate_entries(x=hl.missing(hl.tint32))
+    assert all_missing.aggregate_entries(hl.agg.count()) == 6
+    assert all_missing.aggregate_entries(hl.agg.sum(hl.int64(1))) == 6
+    assert all_missing.aggregate_entries(hl.agg.fraction(hl.is_defined(all_missing.x))) == 0
+
+    filtered = all_missing.filter_entries(all_missing.col_idx != 1)
+    assert filtered.aggregate_entries(hl.agg.count()) == 4
+    assert filtered.aggregate_entries(hl.agg.sum(hl.int64(1))) == 4
+    assert filtered.aggregate_entries(hl.agg.fraction(hl.is_defined(filtered.x))) == 0
+    assert filtered.entries().count() == 4
+    selected = filtered.select_entries("x")
+    assert selected.aggregate_entries(hl.agg.count()) == 4
+    assert all_missing.filter_entries(False).unfilter_entries().aggregate_entries(
+        hl.agg.count()
+    ) == 6
+    all_missing_path = str(tmp_path / "all-missing-entries.mt")
+    filtered.write(all_missing_path)
+    reopened_missing = hl.read_matrix_table(all_missing_path)
+    assert reopened_missing.aggregate_entries(hl.agg.count()) == 4
+    assert reopened_missing.x.collect() == [None] * 4
+
+    empty_entry = hl.range_matrix_table(2, 3)
+    filtered_empty = empty_entry.filter_entries(empty_entry.col_idx == 0)
+    assert filtered_empty.entry.dtype == hl.tstruct()
+    assert filtered_empty.aggregate_entries(hl.agg.count()) == 2
+    assert filtered_empty.aggregate_entries(hl.agg.sum(hl.int64(1))) == 2
+    assert filtered_empty.aggregate_entries(hl.agg.fraction(True)) == 1
+    assert filtered_empty.unfilter_entries().aggregate_entries(hl.agg.count()) == 6
+    row_counts = filtered_empty.annotate_rows(n=hl.agg.count()).n.collect()
+    col_counts = filtered_empty.annotate_cols(n=hl.agg.count()).n.collect()
+    assert row_counts == [1, 1]
+    assert col_counts == [2, 0, 0]
+
+    path = str(tmp_path / "zero-entry-fields.mt")
+    filtered_empty.write(path)
+    reopened = hl.read_matrix_table(path)
+    assert reopened.count() == (2, 3)
+    assert reopened.aggregate_entries(hl.agg.count()) == 2
+    localized = reopened.localize_entries("entries", "columns")
+    assert [row.entries for row in localized.collect()] == [
+        [hl.Struct(), None, None], [hl.Struct(), None, None]
+    ]
+
+
 def test_row_column_aggregation_and_empty_initialization():
     m = matrix(3, 2)
     rows = m.annotate_rows(total=hl.agg.sum(m.x), mixed=m.row_idx + hl.agg.count())

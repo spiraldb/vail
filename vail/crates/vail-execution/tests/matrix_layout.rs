@@ -149,10 +149,6 @@ fn records(ids: Vec<Option<i64>>, cells: bool) -> ArrayRef {
         true,
     ))];
     let mut arrays: Vec<ArrayRef> = vec![Arc::new(Int64Array::from(ids))];
-    if cells {
-        fields.push(Arc::new(Field::new("present", DataType::Boolean, true)));
-        arrays.push(Arc::new(BooleanArray::from(vec![true; length])));
-    }
     fields.push(Arc::new(Field::new(
         if cells { "value" } else { "__vail_matrix_col" },
         DataType::Struct(Vec::<Field>::new().into()),
@@ -278,7 +274,7 @@ fn alignment_fast_path_handles_sliced_and_nullable_arrays() {
         Arc::new(BooleanArray::from(vec![true])).as_ref()
     );
 
-    nullable_columns[1] = Arc::new(BooleanArray::from(vec![Some(true), None]));
+    nullable_columns[0] = Arc::new(Int64Array::from(vec![Some(7), None]));
     let malformed_records = Arc::new(StructArray::new(
         valid.fields().clone(),
         nullable_columns,
@@ -292,7 +288,7 @@ fn alignment_fast_path_handles_sliced_and_nullable_arrays() {
             &DataType::Boolean
         )
         .unwrap_err()
-        .contains("presence must not be missing")
+        .contains("identity differs")
     );
 
     let DataType::List(entry_type) = cells.data_type() else {
@@ -422,20 +418,20 @@ fn empty_batch_does_not_validate_unused_missing_scalar_gather_owner() {
 }
 
 #[test]
-fn alignment_rejects_missing_entry_records_and_presence() {
+fn alignment_rejects_missing_entry_records_and_identities() {
     use arrow_buffer::NullBuffer;
     let valid = records(vec![Some(7)], true);
     let valid = valid.as_any().downcast_ref::<StructArray>().unwrap();
     let columns = list_wrap(records(vec![Some(7)], false), vec![1]);
-    let mut missing_presence = valid.columns().to_vec();
-    missing_presence[1] = Arc::new(BooleanArray::from(vec![None]));
+    let mut missing_identity = valid.columns().to_vec();
+    missing_identity[0] = Arc::new(Int64Array::from(vec![None]));
     for malformed in [
         StructArray::new(
             valid.fields().clone(),
             valid.columns().to_vec(),
             Some(NullBuffer::from(vec![false])),
         ),
-        StructArray::new(valid.fields().clone(), missing_presence, None),
+        StructArray::new(valid.fields().clone(), missing_identity, None),
     ] {
         let cells = list_wrap(Arc::new(malformed), vec![1]);
         assert!(

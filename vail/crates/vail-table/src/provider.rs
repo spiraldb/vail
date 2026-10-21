@@ -1275,7 +1275,7 @@ mod interval_intersection_tests {
 #[cfg(test)]
 mod projected_provider_tests {
     use super::*;
-    use arrow_array::{Array, BooleanArray, Int32Array, ListArray, RecordBatch, StructArray};
+    use arrow_array::{Array, Int32Array, ListArray, RecordBatch, StructArray};
     use arrow_buffer::{OffsetBuffer, ScalarBuffer};
     use arrow_schema::{DataType, Field, Schema};
     use datafusion::execution::context::SessionContext;
@@ -1409,7 +1409,6 @@ mod projected_provider_tests {
         ];
         let cell_fields = vec![
             Arc::new(Field::new("cid", DataType::Int32, true)),
-            Arc::new(Field::new("present", DataType::Boolean, true)),
             Arc::new(Field::new(
                 "value",
                 DataType::Struct(value_fields.clone().into()),
@@ -1437,7 +1436,6 @@ mod projected_provider_tests {
             cell_fields.into(),
             vec![
                 Arc::new(Int32Array::from(vec![0, 1, 0])),
-                Arc::new(BooleanArray::from(vec![true, false, true])),
                 values,
             ],
             None,
@@ -1458,7 +1456,7 @@ mod projected_provider_tests {
             false,
             schema,
             vec![vec![batch]],
-            json!([["k", "int32"], ["cells", {"array": {"struct": [["cid", "int32"], ["present", "bool"], ["value", {"struct": [["GT", "int32"], ["DP", "int32"]]}]]}}]]),
+            json!([["k", "int32"], ["cells", {"array": {"struct": [["cid", "int32"], ["value", {"struct": [["GT", "int32"], ["DP", "int32"]]}]]}}]]),
             vec!["k".into()],
         )
         .await
