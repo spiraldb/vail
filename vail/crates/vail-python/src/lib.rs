@@ -499,6 +499,35 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
+    #[allow(clippy::too_many_arguments)]
+    fn matrix_entries_by_key_runs(
+        &self,
+        row_field: String,
+        cells_field: String,
+        columns_global: String,
+        row_key_aliases: Vec<String>,
+        row_key_fields: Vec<String>,
+        col_struct_field: String,
+        col_key_fields: Vec<String>,
+        value_field: String,
+    ) -> PyResult<Self> {
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self
+                .ir
+                .matrix_entries_by_key_runs(
+                    row_field,
+                    cells_field,
+                    columns_global,
+                    row_key_aliases,
+                    row_key_fields,
+                    col_struct_field,
+                    col_key_fields,
+                    value_field,
+                )
+                .map_err(table_error)?,
+        })
+    }
     #[pyo3(signature = (rows_name, body, references=None))]
     fn map_partitions(
         &self,

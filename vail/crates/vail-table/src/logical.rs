@@ -386,6 +386,7 @@ fn node_name(node: &TableNode) -> &'static str {
         TableNode::Repartition { .. } => "Repartition",
         TableNode::FilterPartitions { .. } => "FilterPartitions",
         TableNode::GroupWithinPartitions { .. } => "GroupWithinPartitions",
+        TableNode::MatrixEntriesByKeyRuns { .. } => "MatrixEntriesByKeyRuns",
         TableNode::MapPartitions { .. } => "MapPartitions",
         TableNode::Read { .. } => "Read",
         TableNode::TextRead { .. } => "TextRead",
@@ -428,6 +429,7 @@ pub(crate) fn children(table: &TableRef) -> Vec<TableRef> {
         TableNode::Repartition { child, .. }
         | TableNode::FilterPartitions { child, .. }
         | TableNode::GroupWithinPartitions { child, .. }
+        | TableNode::MatrixEntriesByKeyRuns { child, .. }
         | TableNode::MapPartitions { child, .. }
         | TableNode::MapGlobals { child }
         | TableNode::MapRows { child, .. }
@@ -1920,6 +1922,7 @@ fn replace_children(table: &TableRef, mut children: Vec<TableRef>) -> Result<Tab
         | TableNode::Repartition { child, .. }
         | TableNode::FilterPartitions { child, .. }
         | TableNode::GroupWithinPartitions { child, .. }
+        | TableNode::MatrixEntriesByKeyRuns { child, .. }
         | TableNode::MapPartitions { child, .. }
         | TableNode::MapGlobals { child }
         | TableNode::MapRows { child, .. }

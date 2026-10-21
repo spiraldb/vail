@@ -1412,11 +1412,10 @@ class MatrixTable:
         return self._with_globals(range_table(1).key_by().select())
 
     def entries(self):
-        if (
-            self._mir.row_key_unique
-            and self._mir.row_key
-            and self._mir.col_key
-        ):
+        # Preserve the parallel explode path when the IR already proves row
+        # key uniqueness. Each row then owns a disjoint contiguous column-key
+        # range, so the composite key order follows without coordination.
+        if self._mir.row_key_unique and self._mir.row_key and self._mir.col_key:
             base = self._mir.core
             if self._mir.column_ordering == self._mir.col_key:
                 column_records = self._mir.column_records
@@ -1435,8 +1434,23 @@ class MatrixTable:
                 "entry", column_records=column_records, cell_positions=positions,
                 base_table=base,
             )
-        else:
-            context = self._context("entry")
+            fields = {
+                n: context[p][n]
+                for p, schema in (
+                    (_ROW, self.row.dtype),
+                    (_COL, self.col.dtype),
+                    (_ENTRY, self.entry.dtype),
+                )
+                for n in schema
+            }
+            result = self._with_globals(_project(context, list(fields.items())))
+            return result._with_keys(*(self._mir.row_key + self._mir.col_key))
+
+        # Unknown or duplicate row keys cannot safely use row-wise expansion:
+        # column-key order may reset at a repeated row key. Until the native
+        # run operator can preserve the source's disjoint ordered partitions,
+        # use the ordinary parallel keyed-table sort for this case.
+        context = self._context("entry")
         fields = {
             n: context[p][n]
             for p, schema in (
@@ -1448,10 +1462,6 @@ class MatrixTable:
         }
         result = self._with_globals(_project(context, list(fields.items())))
         keys = self._mir.row_key + self._mir.col_key
-        if self._mir.row_key_unique and self._mir.row_key and self._mir.col_key:
-            # Each unique row emits its entries in column-key order, so the
-            # exploded table already satisfies the full composite key order.
-            return result._with_keys(*keys)
         return result.key_by(*keys)
 
     def _aggregate(self, axis, expr, localize):
