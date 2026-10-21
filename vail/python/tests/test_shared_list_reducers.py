@@ -35,6 +35,30 @@ def test_empty_matrix_call_stats_retains_shared_identity_and_validates_initializ
         mt.annotate_rows(stats=hl.agg.call_stats(mt.GT, -1)).rows().collect()
 
 
+def test_filtered_matrix_call_stats_uses_call_list_and_row_initializer():
+    mt = hl.range_matrix_table(2, 4)
+    mt = mt.annotate_rows(n=mt.row_idx + 2)
+    mt = mt.annotate_entries(GT=hl.if_else(
+        mt.row_idx == 0,
+        hl.if_else(
+            mt.col_idx == 0, hl.call(0, 0),
+            hl.if_else(mt.col_idx == 1, hl.call(0, 1),
+                       hl.if_else(mt.col_idx == 2, hl.call(1, 1), hl.missing(hl.tcall)))),
+        hl.if_else(
+            mt.col_idx == 0, hl.call(0, 2),
+            hl.if_else(mt.col_idx == 1, hl.call(1, 2),
+                       hl.if_else(mt.col_idx == 2, hl.call(2, 2), hl.missing(hl.tcall)))),
+    ))
+    selected = hl.agg.filter(mt.col_idx % 2 == 0, hl.agg.call_stats(mt.GT, mt.n))
+    rows = mt.annotate_rows(stats=selected).rows().collect()
+    assert [row.stats for row in rows] == [
+        hl.Struct(AC=[2, 2], AF=[0.5, 0.5], AN=4,
+                  homozygote_count=[1, 1]),
+        hl.Struct(AC=[1, 0, 3], AF=[0.25, 0.0, 0.75], AN=4,
+                  homozygote_count=[0, 0, 1]),
+    ]
+
+
 def test_collection_and_table_reducers_share_large_integer_and_empty_semantics():
     values = hl.literal([2**53 + 1, 7, None, -2], hl.tarray(hl.tint64))
     table = hl.Table.parallelize(
