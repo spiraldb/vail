@@ -24,8 +24,91 @@ use datafusion_physical_plan::{
     stream::RecordBatchStreamAdapter,
 };
 use futures::TryStreamExt;
-use std::{fmt, sync::Arc};
+use std::{fmt, fs::File, path::PathBuf, sync::Arc};
+use tempfile::TempDir;
 use vail_storage::fragment_index::make_typed_key_comparators;
+
+const RUN_MEMORY_BUDGET: usize = 64 * 1024 * 1024;
+
+/// A single equal-row-key run. Keep ordinary duplicate runs in memory, but
+/// spill oversized runs batch-by-batch so transposition never retains an
+/// unbounded expanded output or raw input run in memory.
+#[derive(Debug, Default)]
+struct KeyRun {
+    batches: Vec<RecordBatch>,
+    spilled_batches: Vec<PathBuf>,
+    spill_dir: Option<TempDir>,
+    memory_bytes: usize,
+    rows: usize,
+}
+
+impl KeyRun {
+    fn push(&mut self, batch: RecordBatch) -> datafusion_common::Result<()> {
+        if self.spill_dir.is_none()
+            && self.memory_bytes.saturating_add(batch_memory_size(&batch)) > RUN_MEMORY_BUDGET
+        {
+            self.spill_dir = Some(tempfile::tempdir()?);
+            for existing in std::mem::take(&mut self.batches) {
+                self.write_batch(&existing)?;
+            }
+            self.memory_bytes = 0;
+        }
+        self.rows += batch.num_rows();
+        if self.spill_dir.is_some() {
+            self.write_batch(&batch)?;
+        } else {
+            self.memory_bytes = self.memory_bytes.saturating_add(batch_memory_size(&batch));
+            self.batches.push(batch);
+        }
+        Ok(())
+    }
+
+    fn write_batch(&mut self, batch: &RecordBatch) -> datafusion_common::Result<()> {
+        let path = self
+            .spill_dir
+            .as_ref()
+            .expect("spill directory exists")
+            .path()
+            .join(format!("batch-{}.arrow", self.spilled_batches.len()));
+        let file = File::create(&path)?;
+        let mut writer = arrow_ipc::writer::StreamWriter::try_new(file, batch.schema().as_ref())?;
+        writer.write(batch)?;
+        writer.finish()?;
+        self.spilled_batches.push(path);
+        Ok(())
+    }
+
+    fn batch_count(&self) -> usize {
+        if self.spill_dir.is_some() {
+            self.spilled_batches.len()
+        } else {
+            self.batches.len()
+        }
+    }
+
+    fn batch(&self, index: usize) -> datafusion_common::Result<RecordBatch> {
+        if self.spill_dir.is_none() {
+            return self.batches.get(index).cloned().ok_or_else(|| {
+                DataFusionError::Execution("matrix key-run batch is absent".into())
+            });
+        }
+        let path = self.spilled_batches.get(index).ok_or_else(|| {
+            DataFusionError::Execution("spilled matrix key-run batch is absent".into())
+        })?;
+        let mut reader = arrow_ipc::reader::StreamReader::try_new(File::open(path)?, None)?;
+        reader.next().transpose()?.ok_or_else(|| {
+            DataFusionError::Execution("spilled matrix key-run batch is empty".into())
+        })
+    }
+}
+
+fn batch_memory_size(batch: &RecordBatch) -> usize {
+    batch
+        .columns()
+        .iter()
+        .map(|column| column.get_array_memory_size())
+        .sum()
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct Config {
@@ -124,7 +207,10 @@ impl ExecutionPlan for MatrixEntriesExec {
     }
 
     fn maintains_input_order(&self) -> Vec<bool> {
-        vec![true, true]
+        // The operator preserves the input row-key sequence, but emits each
+        // duplicate row-key run column-major. That reorders occurrences
+        // within the run, so it does not preserve either input's row order.
+        vec![false, false]
     }
 
     fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
@@ -169,12 +255,10 @@ impl ExecutionPlan for MatrixEntriesExec {
             async_stream::try_stream! {
                 let columns = read_columns(globals_plan, &config, context.clone()).await?;
                 let mut input = rows_plan.execute(0, context)?;
-                let mut run = Vec::<RecordBatch>::new();
+                let mut run = KeyRun::default();
                 let mut singleton_rows = Vec::<RecordBatch>::new();
                 let singleton_limit = (8192 / columns.len().max(1)).max(1);
                 let mut previous_key: Option<Vec<ArrayRef>> = None;
-                let mut output_batches = Vec::<RecordBatch>::new();
-                let mut output_rows = 0usize;
                 while let Some(batch) = input.try_next().await? {
                     if batch.num_rows() == 0 { continue; }
                     let key_columns = config.key_indices.iter().map(|&i| batch.column(i).clone()).collect::<Vec<_>>();
@@ -198,44 +282,46 @@ impl ExecutionPlan for MatrixEntriesExec {
                             Err(DataFusionError::Execution("matrix rows are not ordered by row key".into()))?;
                         }
                         if comparison == Some(std::cmp::Ordering::Less) {
-                            if row > start { run.push(batch.slice(start, row - start)); }
-                            for output in finish_run(
-                                &mut run, &mut singleton_rows, singleton_limit,
-                                &columns, &config, &schema,
-                            )? {
-                                output_rows += output.num_rows();
-                                output_batches.push(output);
-                                if output_rows >= 8192 {
-                                    yield combine_batches(&schema, &mut output_batches)?;
-                                    output_rows = 0;
+                            if row > start { run.push(batch.slice(start, row - start))?; }
+                            if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                                yield output;
+                            }
+                            let finished = std::mem::take(&mut run);
+                            if finished.rows == 1 {
+                                singleton_rows.extend(finished.batches);
+                                if singleton_rows.len() >= singleton_limit {
+                                    if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                                        yield output;
+                                    }
+                                }
+                            } else if finished.rows > 1 {
+                                let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
+                                while let Some(output) = expanded.try_next().await? {
+                                    yield output;
                                 }
                             }
                             start = row;
                         }
                     }
-                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start)); }
+                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start))?; }
                     if !key_columns.is_empty() {
                         previous_key = Some(key_columns.iter().map(|column| column.slice(batch.num_rows() - 1, 1)).collect());
                     }
                 }
-                for output in finish_run(
-                    &mut run, &mut singleton_rows, singleton_limit,
-                    &columns, &config, &schema,
-                )? {
-                    output_rows += output.num_rows();
-                    output_batches.push(output);
-                    if output_rows >= 8192 {
-                        yield combine_batches(&schema, &mut output_batches)?;
-                        output_rows = 0;
+                if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                    yield output;
+                }
+                let finished = std::mem::take(&mut run);
+                if finished.rows == 1 {
+                    singleton_rows.extend(finished.batches);
+                } else if finished.rows > 1 {
+                    let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
+                    while let Some(output) = expanded.try_next().await? {
+                        yield output;
                     }
                 }
-                if !singleton_rows.is_empty() {
-                    if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                        output_batches.push(output);
-                    }
-                }
-                if !output_batches.is_empty() {
-                    yield combine_batches(&schema, &mut output_batches)?;
+                if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                    yield output;
                 }
             },
         )))
@@ -249,72 +335,165 @@ impl ExecutionPlan for MatrixEntriesExec {
     }
 }
 
-fn finish_run(
-    run: &mut Vec<RecordBatch>,
-    singletons: &mut Vec<RecordBatch>,
-    singleton_limit: usize,
-    columns: &StructArray,
-    config: &Config,
-    schema: &SchemaRef,
-) -> datafusion_common::Result<Vec<RecordBatch>> {
-    if run.is_empty() {
-        return Ok(Vec::new());
-    }
-    let row_count = run.iter().map(RecordBatch::num_rows).sum::<usize>();
-    if row_count == 1 {
-        singletons.push(run.pop().expect("one-row run has a batch"));
-        run.clear();
-        if singletons.len() < singleton_limit {
-            return Ok(Vec::new());
-        }
-        return Ok(emit_singletons(singletons, columns, config, schema)?
-            .into_iter()
-            .collect());
-    }
-    let mut output = Vec::with_capacity(2);
-    if let Some(batch) = emit_singletons(singletons, columns, config, schema)? {
-        output.push(batch);
-    }
-    if let Some(batch) = emit_run(run, columns, config, schema)? {
-        output.push(batch);
-    }
-    run.clear();
-    Ok(output)
-}
-
-fn combine_batches(
-    schema: &SchemaRef,
-    batches: &mut Vec<RecordBatch>,
-) -> datafusion_common::Result<RecordBatch> {
-    if batches.len() == 1 {
-        return Ok(batches
-            .pop()
-            .ok_or_else(|| DataFusionError::Execution("missing matrix entry batch".into()))?);
-    }
-    let combined = arrow_select::concat::concat_batches(schema, batches.iter())?;
-    batches.clear();
-    Ok(combined)
-}
-
 fn emit_run(
-    run: &[RecordBatch],
-    columns: &StructArray,
-    config: &Config,
-    schema: &SchemaRef,
-) -> datafusion_common::Result<Option<RecordBatch>> {
-    let mut batches = Vec::new();
-    for col in 0..columns.len() {
-        for chunk in run {
-            if let Some(batch) = emit_run_chunk(chunk, col, columns, config, schema)? {
-                batches.push(batch);
+    run: KeyRun,
+    columns: Arc<StructArray>,
+    config: Config,
+    schema: SchemaRef,
+) -> SendableRecordBatchStream {
+    Box::pin(RecordBatchStreamAdapter::new(
+        schema.clone(),
+        async_stream::try_stream! {
+            if columns.is_empty() { return; }
+            let column_index = columns.fields().iter().position(|field| field.name() == &config.column_struct)
+                .ok_or_else(|| DataFusionError::Execution("matrix column struct field is absent".into()))?;
+            let col_struct = downcast_struct(columns.column(column_index).clone(), "matrix columns")?;
+            let value_index = config.value_field.clone();
+            let mut prepared = Vec::new();
+            if run.spill_dir.is_none() {
+                for index in 0..run.batch_count() {
+                    prepared.push(prepare_run_chunk(run.batch(index)?, &config, &value_index)?);
+                }
             }
+            let rows_per_chunk = (8192 / columns.len().max(1)).max(1);
+            for col in 0..columns.len() {
+                for index in 0..run.batch_count() {
+                    let owned;
+                    let chunk = if run.spill_dir.is_none() {
+                        &prepared[index]
+                    } else {
+                        owned = prepare_run_chunk(run.batch(index)?, &config, &value_index)?;
+                        &owned
+                    };
+                    let mut start = 0;
+                    while start < chunk.num_rows {
+                        let end = (start + rows_per_chunk).min(chunk.num_rows);
+                        if let Some(batch) = emit_prepared_run_chunk(chunk, col, start, end, &col_struct, &config, &schema)? {
+                            yield batch;
+                        }
+                        start = end;
+                    }
+                }
+            }
+        },
+    ))
+}
+
+struct PreparedRunChunk {
+    row: Arc<StructArray>,
+    cells: ArrayRef,
+    cell_values: Arc<StructArray>,
+    entry_values: Arc<StructArray>,
+    row_offsets: Vec<i64>,
+    num_rows: usize,
+}
+
+fn prepare_run_chunk(
+    batch: RecordBatch,
+    config: &Config,
+    value_field: &str,
+) -> datafusion_common::Result<PreparedRunChunk> {
+    let row = downcast_struct(batch.column(config.row_struct).clone(), "matrix row")?;
+    let cells = batch.column(config.cells).clone();
+    let row_offsets = offsets(&cells)?;
+    let cell_values = downcast_struct(list_child_values(&cells)?, "matrix cells")?;
+    let value_index = cell_values
+        .fields()
+        .iter()
+        .position(|field| field.name() == value_field)
+        .ok_or_else(|| DataFusionError::Execution("matrix entry value field is absent".into()))?;
+    let entry_values = downcast_struct(
+        cell_values.column(value_index).clone(),
+        "matrix entry values",
+    )?;
+    Ok(PreparedRunChunk {
+        row,
+        cells,
+        cell_values,
+        entry_values,
+        row_offsets,
+        num_rows: batch.num_rows(),
+    })
+}
+
+fn emit_prepared_run_chunk(
+    chunk: &PreparedRunChunk,
+    col: usize,
+    start: usize,
+    end: usize,
+    col_struct: &StructArray,
+    config: &Config,
+    output_schema: &SchemaRef,
+) -> datafusion_common::Result<Option<RecordBatch>> {
+    let mut row_indices = Vec::<u64>::with_capacity(end - start);
+    let mut entry_indices = Vec::<u64>::with_capacity(end - start);
+    for row_index in start..end {
+        if chunk.cells.is_null(row_index) {
+            continue;
         }
+        let cell_start = chunk.row_offsets[row_index];
+        let cell_end = chunk.row_offsets[row_index + 1];
+        if cell_end - cell_start != col_struct.len() as i64 {
+            return Err(DataFusionError::Execution(format!(
+                "matrix row has {} cells for {} columns",
+                cell_end - cell_start,
+                col_struct.len()
+            )));
+        }
+        let slot = usize::try_from(cell_start + col as i64)
+            .map_err(|_| DataFusionError::Execution("negative matrix cell offset".into()))?;
+        if chunk.cell_values.is_null(slot) || chunk.entry_values.is_null(slot) {
+            continue;
+        }
+        row_indices.push(row_index as u64);
+        entry_indices.push(slot as u64);
     }
-    if batches.is_empty() {
-        Ok(None)
-    } else {
-        combine_batches(schema, &mut batches).map(Some)
+    if row_indices.is_empty() {
+        return Ok(None);
     }
+    let output_len = row_indices.len();
+    let row_take = UInt64Array::from(row_indices);
+    let entry_take = UInt64Array::from(entry_indices);
+    let column_take = UInt64Array::from_value(col as u64, output_len);
+    let mut arrays = Vec::<ArrayRef>::with_capacity(output_schema.fields().len());
+    for name in &config.row_field_names {
+        let index = chunk
+            .row
+            .fields()
+            .iter()
+            .position(|field| field.name() == name)
+            .ok_or_else(|| {
+                DataFusionError::Execution(format!("matrix row field {name:?} is absent"))
+            })?;
+        arrays.push(arrow_select::take::take(
+            chunk.row.column(index),
+            &row_take,
+            None,
+        )?);
+    }
+    for name in &config.col_field_names {
+        let index = col_struct
+            .fields()
+            .iter()
+            .position(|field| field.name() == name)
+            .ok_or_else(|| {
+                DataFusionError::Execution(format!("matrix column field {name:?} is absent"))
+            })?;
+        arrays.push(arrow_select::take::take(
+            col_struct.column(index),
+            &column_take,
+            None,
+        )?);
+    }
+    for (index, _) in chunk.entry_values.fields().iter().enumerate() {
+        arrays.push(arrow_select::take::take(
+            chunk.entry_values.column(index),
+            &entry_take,
+            None,
+        )?);
+    }
+    arrays.push(Arc::new(UInt64Array::from_value(0, output_len)));
+    Ok(Some(RecordBatch::try_new(output_schema.clone(), arrays)?))
 }
 
 fn emit_singletons(
@@ -536,131 +715,4 @@ fn offsets(array: &ArrayRef) -> datafusion_common::Result<Vec<i64>> {
     Err(DataFusionError::Execution(
         "matrix cell field must be a list".into(),
     ))
-}
-
-fn emit_run_chunk(
-    batch: &RecordBatch,
-    col: usize,
-    columns: &StructArray,
-    config: &Config,
-    output_schema: &SchemaRef,
-) -> datafusion_common::Result<Option<RecordBatch>> {
-    if columns.is_empty() {
-        return Ok(None);
-    }
-    let column_struct_index = columns
-        .fields()
-        .iter()
-        .position(|field| field.name() == &config.column_struct)
-        .ok_or_else(|| DataFusionError::Execution("matrix column struct field is absent".into()))?;
-    let col_struct = downcast_struct(
-        columns.column(column_struct_index).clone(),
-        "matrix columns",
-    )?;
-    let value_field = config.value_field.as_str();
-    let row = downcast_struct(batch.column(config.row_struct).clone(), "matrix row")?;
-    let cells = batch.column(config.cells).clone();
-    let row_offsets = offsets(&cells)?;
-    let cell_values = downcast_struct(list_child_values(&cells)?, "matrix cells")?;
-    let value_index = cell_values
-        .fields()
-        .iter()
-        .position(|field| field.name() == value_field)
-        .ok_or_else(|| DataFusionError::Execution("matrix entry value field is absent".into()))?;
-    let entry_values = downcast_struct(
-        cell_values.column(value_index).clone(),
-        "matrix entry values",
-    )?;
-    let mut row_indices = Vec::<u64>::new();
-    let mut entry_indices = Vec::<u64>::new();
-    let mut single_index = None;
-    for row_index in 0..batch.num_rows() {
-        if cells.is_null(row_index) {
-            continue;
-        }
-        let start = row_offsets[row_index];
-        let end = row_offsets[row_index + 1];
-        if end - start != columns.len() as i64 {
-            return Err(DataFusionError::Execution(format!(
-                "matrix row has {} cells for {} columns",
-                end - start,
-                columns.len()
-            )));
-        }
-        let slot = start + col as i64;
-        if slot >= end {
-            return Err(DataFusionError::Execution(
-                "matrix cell and column counts differ".into(),
-            ));
-        }
-        let slot = usize::try_from(slot)
-            .map_err(|_| DataFusionError::Execution("negative matrix cell offset".into()))?;
-        if cell_values.is_null(slot) || entry_values.is_null(slot) {
-            continue;
-        }
-        if batch.num_rows() == 1 {
-            single_index = Some((row_index as u64, slot as u64));
-        } else {
-            row_indices.push(row_index as u64);
-            entry_indices.push(slot as u64);
-        }
-    }
-    if single_index.is_none() && row_indices.is_empty() {
-        return Ok(None);
-    }
-    let output_len = if single_index.is_some() {
-        1
-    } else {
-        row_indices.len()
-    };
-    let (row_take, entry_take) = if let Some((row, entry)) = single_index {
-        (
-            UInt64Array::from_value(row, 1),
-            UInt64Array::from_value(entry, 1),
-        )
-    } else {
-        (
-            UInt64Array::from(row_indices),
-            UInt64Array::from(entry_indices),
-        )
-    };
-    let column_take = UInt64Array::from_value(col as u64, output_len);
-    let mut arrays = Vec::<ArrayRef>::with_capacity(output_schema.fields().len());
-    for name in &config.row_field_names {
-        let index = row
-            .fields()
-            .iter()
-            .position(|field| field.name() == name)
-            .ok_or_else(|| {
-                DataFusionError::Execution(format!("matrix row field {name:?} is absent"))
-            })?;
-        arrays.push(arrow_select::take::take(
-            row.column(index),
-            &row_take,
-            None,
-        )?);
-    }
-    for name in &config.col_field_names {
-        let index = col_struct
-            .fields()
-            .iter()
-            .position(|field| field.name() == name)
-            .ok_or_else(|| {
-                DataFusionError::Execution(format!("matrix column field {name:?} is absent"))
-            })?;
-        arrays.push(arrow_select::take::take(
-            col_struct.column(index),
-            &column_take,
-            None,
-        )?);
-    }
-    for (index, _) in entry_values.fields().iter().enumerate() {
-        arrays.push(arrow_select::take::take(
-            entry_values.column(index),
-            &entry_take,
-            None,
-        )?);
-    }
-    arrays.push(Arc::new(UInt64Array::from_value(0, output_len)));
-    Ok(Some(RecordBatch::try_new(output_schema.clone(), arrays)?))
 }

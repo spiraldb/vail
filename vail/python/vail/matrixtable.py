@@ -1412,6 +1412,40 @@ class MatrixTable:
         return self._with_globals(range_table(1).key_by().select())
 
     def entries(self):
+        # Preserve the parallel explode path when the IR already proves row
+        # key uniqueness. Each row then owns a disjoint contiguous column-key
+        # range, so the composite key order follows without coordination.
+        if self._mir.row_key_unique and self._mir.row_key and self._mir.col_key:
+            base = self._mir.core
+            if self._mir.column_ordering == self._mir.col_key:
+                column_records = self._mir.column_records
+                positions = None
+            else:
+                sorted_columns, positions = self._columns_in_key_order()
+                columns_name = "__vail_sorted_matrix_columns_" + uuid4().hex
+                positions_name = "__vail_sorted_matrix_positions_" + uuid4().hex
+                base = base.annotate_globals(
+                    **{columns_name: sorted_columns, positions_name: positions}
+                )
+                globals = base.index_globals()
+                column_records = globals[columns_name]
+                positions = globals[positions_name]
+            context = self._context(
+                "entry", column_records=column_records, cell_positions=positions,
+                base_table=base,
+            )
+            fields = {
+                n: context[p][n]
+                for p, schema in (
+                    (_ROW, self.row.dtype),
+                    (_COL, self.col.dtype),
+                    (_ENTRY, self.entry.dtype),
+                )
+                for n in schema
+            }
+            result = self._with_globals(_project(context, list(fields.items())))
+            return result._with_keys(*(self._mir.row_key + self._mir.col_key))
+
         if self._mir.row_key and self._mir.col_key:
             base = self._mir.core
             aliases = tuple(

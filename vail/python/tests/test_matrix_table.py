@@ -297,6 +297,22 @@ def test_entries_orders_duplicate_multikey_runs_across_partitions():
     )
 
 
+def test_entries_streams_duplicate_row_key_run_larger_than_arrow_batch():
+    mt = hl.range_matrix_table(1, 2, 1)
+    mt = mt.annotate_rows(replica=hl.range(9000)).explode_rows("replica")
+    mt = mt.key_cols_by(group=mt.col_idx % 2, col_idx=mt.col_idx)
+    mt = mt.annotate_entries(value=hl.int32(mt.replica * 10 + mt.col_idx))
+
+    entries = mt.entries().collect()
+    keys = [(entry.row_idx, entry.group, entry.col_idx) for entry in entries]
+    assert keys == sorted(keys)
+    assert Counter((entry.replica, entry.col_idx, entry.value) for entry in entries) == Counter(
+        (replica, col_idx, replica * 10 + col_idx)
+        for replica in range(9000)
+        for col_idx in range(2)
+    )
+
+
 def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
     mt = hl.range_matrix_table(3, 5, 2).choose_cols([4, 1, 3])
     mt = mt.filter_cols(mt.col_idx != 3)
