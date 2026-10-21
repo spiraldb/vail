@@ -4,8 +4,8 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, RecordBatch, StringArray,
-    StructArray, UInt8Array, UInt16Array,
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, RecordBatch, StructArray,
+    UInt8Array, UInt16Array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema};
@@ -413,41 +413,21 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
     ));
 
     let payload = "x".repeat(payload_bytes);
-    let payloads = StringArray::from(vec![payload; columns_count]);
-    let column_payload: ArrayRef = Arc::new(StructArray::new(
-        vec![
-            Field::new("marker", DataType::Int64, true),
-            Field::new("payload", DataType::Utf8, true),
-        ]
-        .into(),
-        vec![
-            Arc::new(Int64Array::from_iter_values(0..columns_count as i64)),
-            Arc::new(payloads),
-        ],
-        None,
-    ));
-    let columns_child: ArrayRef = Arc::new(StructArray::new(
-        vec![
-            Field::new("__vail_matrix_col_id", DataType::Int64, true),
-            Field::new("col", column_payload.data_type().clone(), true),
-        ]
-        .into(),
-        vec![
-            Arc::new(Int64Array::from_iter_values(0..columns_count as i64)),
-            column_payload,
-        ],
-        None,
-    ));
-    let columns: ArrayRef = Arc::new(ListArray::new(
-        Arc::new(Field::new("item", columns_child.data_type().clone(), true)),
-        OffsetBuffer::new(ScalarBuffer::from(
-            (0..=row_count)
-                .map(|row| if row == 0 { 0 } else { columns_count as i32 })
-                .collect::<Vec<_>>(),
-        )),
-        columns_child,
-        None,
-    ));
+    let columns = Expr::Literal {
+        dtype: Type::Array {
+            array: Box::new(column_record_type.clone()),
+        },
+        value: serde_json::Value::Array(
+            (0..columns_count)
+                .map(|index| {
+                    serde_json::json!({
+                        "__vail_matrix_col_id": index as i64,
+                        "col": {"marker": index as i64, "payload": payload},
+                    })
+                })
+                .collect(),
+        ),
+    };
     let rows: ArrayRef = Arc::new(StructArray::new(
         vec![Field::new("row_idx", DataType::Int64, true)].into(),
         vec![Arc::new(Int64Array::from_iter_values(0..row_count as i64))],
@@ -455,10 +435,9 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
     ));
     let schema = Arc::new(Schema::new(vec![
         Field::new("entries", entries.data_type().clone(), true),
-        Field::new("columns", columns.data_type().clone(), true),
         Field::new("rows", rows.data_type().clone(), true),
     ]));
-    let batch = RecordBatch::try_new(schema, vec![entries, columns, rows]).unwrap();
+    let batch = RecordBatch::try_new(schema, vec![entries, rows]).unwrap();
 
     let column_input = Expr::AlignedMapInput {
         axis: "col".into(),
@@ -493,9 +472,7 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         entries: Arc::new(Expr::Column {
             name: "entries".into(),
         }),
-        columns: Arc::new(Expr::Column {
-            name: "columns".into(),
-        }),
+        columns: Arc::new(columns),
         rows: Arc::new(Expr::Column {
             name: "rows".into(),
         }),
