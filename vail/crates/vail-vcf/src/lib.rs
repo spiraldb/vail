@@ -2,7 +2,7 @@
 //! FORMAT plans are cached; delimiter discovery is shared across all fields and
 //! field dispatch happens outside each contiguous sample loop.
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int64Array, ListArray, RecordBatch, StructArray, builder::*,
+    Array, ArrayRef, Int64Array, ListArray, RecordBatch, StructArray, builder::*,
 };
 use arrow_buffer::{OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
@@ -324,7 +324,6 @@ impl Header {
     pub fn core_schema(&self, options: &Options) -> Result<SchemaRef> {
         let cell = structure(vec![
             ("__vail_matrix_col_id".into(), primitive(P::Int64)),
-            ("present".into(), primitive(P::Bool)),
             ("value".into(), self.entry_type()),
         ]);
         Ok(Arc::new(Schema::new(vec![
@@ -1124,7 +1123,7 @@ impl Batch {
         let DataType::Struct(cell_fields) = cell_field.data_type() else {
             unreachable!()
         };
-        let DataType::Struct(entry_fields) = cell_fields[2].data_type() else {
+        let DataType::Struct(entry_fields) = cell_fields[1].data_type() else {
             unreachable!()
         };
         let n = self.rows * self.samples;
@@ -1139,7 +1138,6 @@ impl Batch {
                 Arc::new(Int64Array::from_iter_values(
                     (0..n).map(|i| (i % self.samples) as i64),
                 )),
-                Arc::new(BooleanArray::from(vec![true; n])),
                 entries,
             ],
             n,
