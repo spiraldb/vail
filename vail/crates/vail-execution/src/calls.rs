@@ -112,69 +112,17 @@ impl<'a> CallRows<'a> {
         if self.parent.is_null(row) {
             return Ok(None);
         }
-        if self.first.is_null(row)
-            || self.second.is_null(row)
-            || self.ploidy.is_null(row)
-            || self.phased.is_null(row)
-        {
-            return Err(ExprError::Invalid("present Call has missing fields".into()));
-        }
-        Call::from_fields(
+        Ok(Some(Call::from_storage(
             self.first.value(row),
             self.second.value(row),
             self.ploidy.value(row),
             self.phased.value(row),
-        )
-        .map(Some)
-        .map_err(ExprError::Invalid)
-    }
-    fn validate(&self) -> Result<(), ExprError> {
-        // A present parent requires every child. Check this relation a bitmap
-        // word at a time, rather than branching on four child nulls per Call.
-        let parent = self.parent.nulls();
-        for child in [
-            self.first.nulls(),
-            self.second.nulls(),
-            self.ploidy.nulls(),
-            self.phased.nulls(),
-        ]
-        .into_iter()
-        .flatten()
-        {
-            if parent.map_or(child.null_count() != 0, |p| !p.contains(child)) {
-                return Err(ExprError::Invalid("present Call has missing fields".into()));
-            }
-        }
-        let fields = self
-            .first
-            .values()
-            .iter()
-            .zip(self.second.values().iter())
-            .zip(self.ploidy.values().iter())
-            .zip(self.phased.values().iter());
-        let invalid = if let Some(parent) = parent {
-            fields
-                .enumerate()
-                .fold(false, |bad, (i, (((&a, &b), &n), phased))| {
-                    bad | (parent.is_valid(i) & !Call::fields_are_valid(a, b, n, phased))
-                })
-        } else {
-            fields.fold(false, |bad, (((&a, &b), &n), phased)| {
-                bad | !Call::fields_are_valid(a, b, n, phased)
-            })
-        };
-        if invalid {
-            return Err(ExprError::Invalid(
-                "invalid Call ploidy, padding, or allele order".into(),
-            ));
-        }
-        Ok(())
+        )))
     }
 }
 
 pub(crate) fn access(value: &ArrayRef, accessor: CallAccessor) -> Result<ArrayRef, ExprError> {
     let rows = CallRows::new(value)?;
-    rows.validate()?;
     let nulls = rows.parent.nulls().cloned();
     let a = rows.first.values();
     let b = rows.second.values();

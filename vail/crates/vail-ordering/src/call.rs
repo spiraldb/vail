@@ -36,6 +36,15 @@ impl Call {
             phased,
         })
     }
+    /// Read trusted storage without rechecking canonicalization invariants.
+    /// Uses safe Rust; malformed ploidy remains subject to ordinary slice bounds.
+    pub fn from_storage(first: u16, second: u16, ploidy: u8, phased: bool) -> Self {
+        Self {
+            alleles: [first, second],
+            ploidy,
+            phased,
+        }
+    }
     /// Check canonical physical fields without allocating or constructing a Call.
     pub fn fields_are_valid(first: u16, second: u16, ploidy: u8, phased: bool) -> bool {
         (ploidy <= 2)

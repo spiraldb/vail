@@ -314,3 +314,43 @@ fn public_direct_properties_cover_uint16_alleles() {
         }
     }
 }
+
+#[test]
+fn call_execution_trusts_stored_fields_and_parent_validity() {
+    let dtype = Type::Primitive(PrimitiveType::Call).to_arrow().unwrap();
+    let DataType::Struct(fields) = dtype else {
+        unreachable!()
+    };
+    // Accessors consume stored values, without checking canonical allele order,
+    // unused padding, or child validity. Only parent validity defines missing Calls.
+    let input = Arc::new(StructArray::new(
+        fields,
+        vec![
+            Arc::new(UInt16Array::from(vec![Some(2), Some(1), None, Some(0)])),
+            Arc::new(UInt16Array::from(vec![Some(0), Some(9), Some(1), Some(0)])),
+            Arc::new(UInt8Array::from(vec![2, 1, 2, 3])),
+            Arc::new(BooleanArray::from(vec![false; 4])),
+        ],
+        Some(NullBuffer::from(vec![true, true, true, false])),
+    ));
+    let rows = vail_execution::calls::CallRows::from_struct(&input).unwrap();
+    assert_eq!(rows.get(0).unwrap().unwrap().alleles(), &[2, 0]);
+    assert_eq!(rows.get(1).unwrap().unwrap().alleles(), &[1]);
+    assert!(rows.get(2).unwrap().is_some());
+    assert!(rows.get(3).unwrap().is_none());
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "c",
+        input.data_type().clone(),
+        true,
+    )]));
+    let batch = RecordBatch::try_new(schema, vec![input]).unwrap();
+    let expression = Expr::GetField {
+        value: Arc::new(Expr::Column { name: "c".into() }),
+        name: "__vail_call_is_het".into(),
+    };
+    let (output, _) = execute(&batch, &expression);
+    let values = output.as_any().downcast_ref::<BooleanArray>().unwrap();
+    assert!(values.value(0));
+    assert!(!values.value(1));
+    assert!(values.is_null(3));
+}
