@@ -313,13 +313,17 @@ def test_entries_streams_duplicate_row_key_run_larger_than_arrow_batch():
     )
 
 
-def test_entries_bounds_many_singleton_rows_within_one_source_batch():
+def test_entries_bounds_many_singleton_rows_within_one_source_batch(tmp_path):
     mt = hl.range_matrix_table(9000, 2, 1)
+    mt = mt.key_rows_by(k=mt.row_idx)
     mt = mt.annotate_entries(value=hl.int32(mt.row_idx * 10 + mt.col_idx))
+    path = tmp_path / "singleton-rows.mt"
+    mt.write(path)
+    mt = hl.read_matrix_table(path)
 
     entries = mt.entries().collect()
 
-    assert [(entry.row_idx, entry.col_idx, entry.value) for entry in entries] == [
+    assert [(entry.k, entry.col_idx, entry.value) for entry in entries] == [
         (row_idx, col_idx, row_idx * 10 + col_idx)
         for row_idx in range(9000)
         for col_idx in range(2)
