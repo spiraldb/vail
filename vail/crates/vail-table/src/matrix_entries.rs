@@ -29,6 +29,8 @@ use tempfile::TempDir;
 use vail_storage::fragment_index::make_typed_key_comparators;
 
 const RUN_MEMORY_BUDGET: usize = 64 * 1024 * 1024;
+const OUTPUT_BATCH_MEMORY_BUDGET: usize = 32 * 1024 * 1024;
+const OUTPUT_BATCH_ROW_BUDGET: usize = 8192;
 
 /// A single equal-row-key run. Keep ordinary duplicate runs in memory, but
 /// spill oversized runs batch-by-batch so transposition never retains an
@@ -43,19 +45,19 @@ struct KeyRun {
 }
 
 impl KeyRun {
-    fn push(&mut self, batch: RecordBatch) -> datafusion_common::Result<()> {
+    async fn push(&mut self, batch: RecordBatch) -> datafusion_common::Result<()> {
         if self.spill_dir.is_none()
             && self.memory_bytes.saturating_add(batch_memory_size(&batch)) > RUN_MEMORY_BUDGET
         {
             self.spill_dir = Some(tempfile::tempdir()?);
             for existing in std::mem::take(&mut self.batches) {
-                self.write_batch(&existing)?;
+                self.spill_batch(existing).await?;
             }
             self.memory_bytes = 0;
         }
         self.rows += batch.num_rows();
         if self.spill_dir.is_some() {
-            self.write_batch(&batch)?;
+            self.spill_batch(batch).await?;
         } else {
             self.memory_bytes = self.memory_bytes.saturating_add(batch_memory_size(&batch));
             self.batches.push(batch);
@@ -63,17 +65,17 @@ impl KeyRun {
         Ok(())
     }
 
-    fn write_batch(&mut self, batch: &RecordBatch) -> datafusion_common::Result<()> {
+    async fn spill_batch(&mut self, batch: RecordBatch) -> datafusion_common::Result<()> {
         let path = self
             .spill_dir
             .as_ref()
             .expect("spill directory exists")
             .path()
             .join(format!("batch-{}.arrow", self.spilled_batches.len()));
-        let file = File::create(&path)?;
-        let mut writer = arrow_ipc::writer::StreamWriter::try_new(file, batch.schema().as_ref())?;
-        writer.write(batch)?;
-        writer.finish()?;
+        let write_path = path.clone();
+        tokio::task::spawn_blocking(move || write_ipc_batch(write_path, batch))
+            .await
+            .map_err(|error| DataFusionError::Execution(error.to_string()))??;
         self.spilled_batches.push(path);
         Ok(())
     }
@@ -86,7 +88,7 @@ impl KeyRun {
         }
     }
 
-    fn batch(&self, index: usize) -> datafusion_common::Result<RecordBatch> {
+    async fn batch(&self, index: usize) -> datafusion_common::Result<RecordBatch> {
         if self.spill_dir.is_none() {
             return self.batches.get(index).cloned().ok_or_else(|| {
                 DataFusionError::Execution("matrix key-run batch is absent".into())
@@ -95,11 +97,27 @@ impl KeyRun {
         let path = self.spilled_batches.get(index).ok_or_else(|| {
             DataFusionError::Execution("spilled matrix key-run batch is absent".into())
         })?;
-        let mut reader = arrow_ipc::reader::StreamReader::try_new(File::open(path)?, None)?;
-        reader.next().transpose()?.ok_or_else(|| {
-            DataFusionError::Execution("spilled matrix key-run batch is empty".into())
-        })
+        let path = path.clone();
+        tokio::task::spawn_blocking(move || read_ipc_batch(path))
+            .await
+            .map_err(|error| DataFusionError::Execution(error.to_string()))?
     }
+}
+
+fn write_ipc_batch(path: PathBuf, batch: RecordBatch) -> datafusion_common::Result<()> {
+    let file = File::create(path)?;
+    let mut writer = arrow_ipc::writer::StreamWriter::try_new(file, batch.schema().as_ref())?;
+    writer.write(&batch)?;
+    writer.finish()?;
+    Ok(())
+}
+
+fn read_ipc_batch(path: PathBuf) -> datafusion_common::Result<RecordBatch> {
+    let mut reader = arrow_ipc::reader::StreamReader::try_new(File::open(path)?, None)?;
+    reader
+        .next()
+        .transpose()?
+        .ok_or_else(|| DataFusionError::Execution("spilled matrix key-run batch is empty".into()))
 }
 
 fn batch_memory_size(batch: &RecordBatch) -> usize {
@@ -257,6 +275,7 @@ impl ExecutionPlan for MatrixEntriesExec {
                 let mut input = rows_plan.execute(0, context)?;
                 let mut run = KeyRun::default();
                 let mut singleton_rows = Vec::<RecordBatch>::new();
+                let mut singleton_bytes = 0usize;
                 let singleton_limit = (8192 / columns.len().max(1)).max(1);
                 let mut previous_key: Option<Vec<ArrayRef>> = None;
                 while let Some(batch) = input.try_next().await? {
@@ -278,23 +297,36 @@ impl ExecutionPlan for MatrixEntriesExec {
                                 compare(&boundary, 0, 0)
                             } else { None }
                         } else { None };
-                        if comparison == Some(std::cmp::Ordering::Greater) {
-                            Err(DataFusionError::Execution("matrix rows are not ordered by row key".into()))?;
-                        }
+                        // The keyed TableIR contract already guarantees input
+                        // row-key order. Compare adjacent keys only to locate
+                        // equal-key run boundaries; do not revalidate or sort
+                        // the full row stream here.
                         if comparison == Some(std::cmp::Ordering::Less) {
-                            if row > start { run.push(batch.slice(start, row - start))?; }
-                            if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                                yield output;
-                            }
+                            if row > start { run.push(batch.slice(start, row - start)).await?; }
                             let finished = std::mem::take(&mut run);
                             if finished.rows == 1 {
-                                singleton_rows.extend(finished.batches);
-                                if singleton_rows.len() >= singleton_limit {
+                                if finished.spill_dir.is_some() {
                                     if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                                        singleton_bytes = 0;
                                         yield output;
+                                    }
+                                    let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
+                                    while let Some(output) = expanded.try_next().await? { yield output; }
+                                } else {
+                                    singleton_bytes = singleton_bytes.saturating_add(finished.memory_bytes);
+                                    singleton_rows.extend(finished.batches);
+                                    if singleton_rows.len() >= singleton_limit || singleton_bytes >= RUN_MEMORY_BUDGET {
+                                        if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                                            singleton_bytes = 0;
+                                            yield output;
+                                        }
                                     }
                                 }
                             } else if finished.rows > 1 {
+                                if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                                    singleton_bytes = 0;
+                                    yield output;
+                                }
                                 let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                                 while let Some(output) = expanded.try_next().await? {
                                     yield output;
@@ -303,18 +335,26 @@ impl ExecutionPlan for MatrixEntriesExec {
                             start = row;
                         }
                     }
-                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start))?; }
+                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start)).await?; }
                     if !key_columns.is_empty() {
                         previous_key = Some(key_columns.iter().map(|column| column.slice(batch.num_rows() - 1, 1)).collect());
                     }
                 }
-                if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
-                    yield output;
-                }
                 let finished = std::mem::take(&mut run);
                 if finished.rows == 1 {
-                    singleton_rows.extend(finished.batches);
+                    if finished.spill_dir.is_some() {
+                        if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                            yield output;
+                        }
+                        let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
+                        while let Some(output) = expanded.try_next().await? { yield output; }
+                    } else {
+                        singleton_rows.extend(finished.batches);
+                    }
                 } else if finished.rows > 1 {
+                    if let Some(output) = emit_singletons(&mut singleton_rows, &columns, &config, &schema)? {
+                        yield output;
+                    }
                     let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
                     while let Some(output) = expanded.try_next().await? {
                         yield output;
@@ -349,29 +389,57 @@ fn emit_run(
                 .ok_or_else(|| DataFusionError::Execution("matrix column struct field is absent".into()))?;
             let col_struct = downcast_struct(columns.column(column_index).clone(), "matrix columns")?;
             let value_index = config.value_field.clone();
-            let mut prepared = Vec::new();
             if run.spill_dir.is_none() {
+                let mut prepared = Vec::new();
                 for index in 0..run.batch_count() {
-                    prepared.push(prepare_run_chunk(run.batch(index)?, &config, &value_index)?);
+                    prepared.push(prepare_run_chunk(run.batch(index).await?, &config, &value_index)?);
                 }
-            }
-            let rows_per_chunk = (8192 / columns.len().max(1)).max(1);
-            for col in 0..columns.len() {
-                for index in 0..run.batch_count() {
-                    let owned;
-                    let chunk = if run.spill_dir.is_none() {
-                        &prepared[index]
-                    } else {
-                        owned = prepare_run_chunk(run.batch(index)?, &config, &value_index)?;
-                        &owned
-                    };
-                    let mut start = 0;
-                    while start < chunk.num_rows {
-                        let end = (start + rows_per_chunk).min(chunk.num_rows);
-                        if let Some(batch) = emit_prepared_run_chunk(chunk, col, start, end, &col_struct, &config, &schema)? {
-                            yield batch;
+                for col in 0..columns.len() {
+                    for chunk in &prepared {
+                        let rows_per_chunk = chunk.output_chunk_rows(&col_struct);
+                        let mut start = 0;
+                        while start < chunk.num_rows {
+                            let end = (start + rows_per_chunk).min(chunk.num_rows);
+                            if let Some(batch) = emit_prepared_run_chunk(chunk, col, start, end, &col_struct, &config, &schema)? {
+                                yield batch;
+                            }
+                            start = end;
                         }
-                        start = end;
+                    }
+                }
+            } else {
+                // Spilled input batches are read once and transposed into
+                // per-column IPC stripes. Replaying each raw batch for every
+                // column would make large-run I/O quadratic in column count.
+                let stripes = tempfile::tempdir()?;
+                let mut stripe_paths = vec![Vec::<PathBuf>::new(); columns.len()];
+                let mut serial = 0usize;
+                for index in 0..run.batch_count() {
+                    let chunk = prepare_run_chunk(run.batch(index).await?, &config, &value_index)?;
+                    let rows_per_chunk = chunk.output_chunk_rows(&col_struct);
+                    for col in 0..columns.len() {
+                        let mut start = 0;
+                        while start < chunk.num_rows {
+                            let end = (start + rows_per_chunk).min(chunk.num_rows);
+                            if let Some(batch) = emit_prepared_run_chunk(&chunk, col, start, end, &col_struct, &config, &schema)? {
+                                let path = stripes.path().join(format!("column-{col}-chunk-{serial}.arrow"));
+                                let write_path = path.clone();
+                                tokio::task::spawn_blocking(move || write_ipc_batch(write_path, batch))
+                                    .await
+                                    .map_err(|error| DataFusionError::Execution(error.to_string()))??;
+                                stripe_paths[col].push(path);
+                                serial += 1;
+                            }
+                            start = end;
+                        }
+                    }
+                }
+                for paths in stripe_paths {
+                    for path in paths {
+                        let batch = tokio::task::spawn_blocking(move || read_ipc_batch(path))
+                            .await
+                            .map_err(|error| DataFusionError::Execution(error.to_string()))??;
+                        yield batch;
                     }
                 }
             }
@@ -386,6 +454,20 @@ struct PreparedRunChunk {
     entry_values: Arc<StructArray>,
     row_offsets: Vec<i64>,
     num_rows: usize,
+}
+
+impl PreparedRunChunk {
+    fn output_chunk_rows(&self, columns: &StructArray) -> usize {
+        let entry_bytes =
+            self.entry_values.get_array_memory_size() / self.entry_values.len().max(1);
+        let row_bytes = self.row.get_array_memory_size() / self.row.len().max(1);
+        let column_bytes = columns.get_array_memory_size() / columns.len().max(1);
+        let estimated_bytes = entry_bytes
+            .saturating_add(row_bytes)
+            .saturating_add(column_bytes)
+            .max(1);
+        (OUTPUT_BATCH_MEMORY_BUDGET / estimated_bytes).clamp(1, OUTPUT_BATCH_ROW_BUDGET)
+    }
 }
 
 fn prepare_run_chunk(

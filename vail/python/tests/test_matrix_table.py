@@ -313,6 +313,31 @@ def test_entries_streams_duplicate_row_key_run_larger_than_arrow_batch():
     )
 
 
+def test_entries_spills_large_singleton_run_without_dropping_it():
+    payload = "x" * (65 * 1024 * 1024)
+    mt = hl.utils.range_matrix_table(1, 1, 1)
+    mt = mt.annotate_rows(replica=hl.array([7])).explode_rows("replica")
+    mt = mt.annotate_entries(payload=hl.literal(payload))
+
+    entries = mt.entries().collect()
+    assert len(entries) == 1
+    assert (entries[0].row_idx, entries[0].col_idx, entries[0].replica) == (0, 0, 7)
+    assert entries[0].payload == payload
+
+
+def test_entries_spills_duplicate_run_as_column_stripes():
+    payload = "y" * (33 * 1024 * 1024)
+    mt = hl.utils.range_matrix_table(1, 1, 1)
+    mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
+    mt = mt.annotate_entries(payload=hl.literal(payload))
+
+    entries = mt.entries().collect()
+    assert {(entry.row_idx, entry.col_idx, entry.replica) for entry in entries} == {
+        (0, 0, 0), (0, 0, 1)
+    }
+    assert all(entry.payload == payload for entry in entries)
+
+
 def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
     mt = hl.range_matrix_table(3, 5, 2).choose_cols([4, 1, 3])
     mt = mt.filter_cols(mt.col_idx != 3)
