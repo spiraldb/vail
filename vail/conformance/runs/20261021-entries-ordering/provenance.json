@@ -1,0 +1,41 @@
+{
+  "base_revision": "57cfbd2cc4835bcecb06cf22160a5aa94a100100",
+  "reviewed_candidate_revision": "2f448f5fad544560d39001bb716a05aa8587764f",
+  "test_only_followup_revision": "de07a4114dd5c1f5b29402f77934c3cb04318435",
+  "base_wheel": {
+    "filename": "vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+    "sha256": "1cdcb3e8237ca26f8da1916e3a475fb6f719821c7d9cd400db4bcb1ecb1c80df",
+    "built_from": "57cfbd2cc4835bcecb06cf22160a5aa94a100100"
+  },
+  "candidate_wheel": {
+    "filename": "vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+    "sha256": "ce6b5f744a0fe71904447bfd7f547cf3bea1550d2431bd2116bd9081fbfd5f58",
+    "built_from": "2f448f5fad544560d39001bb716a05aa8587764f"
+  },
+  "build": {
+    "rust": "1.98.0",
+    "python": "3.14.2",
+    "command": "RUSTUP_TOOLCHAIN=1.98.0 CARGO_TARGET_DIR=<isolated-release-target> uv run --with maturin==1.15.0 maturin build --release --out <wheel-dir> --interpreter .venv/bin/python3.14",
+    "candidate_wheel_path_during_run": "/tmp/entries-final-wheel/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+    "base_wheel_path_during_run": "/tmp/entries-base-wheel/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl"
+  },
+  "fixture_generation": {
+    "source": "conformance/runs/20261016-laptop-hail-paired/data/profile.vcf.bgz",
+    "source_sha256": "cdacd409124e0f647e08b2eff0dda7705759e971d88d6c9b054dc252c91d4b93",
+    "command_semantics": "hl.import_vcf(source, min_partitions=16).write('/tmp/entries-profile25.mt')",
+    "snapshot_vail_metadata": "/tmp/entries-profile25.mt/_vail_matrix.json"
+  },
+  "profile": {
+    "file": "candidate-sample.txt",
+    "tool": "/usr/bin/sample",
+    "duration_seconds": 4,
+    "candidate_wheel_sha256": "ce6b5f744a0fe71904447bfd7f547cf3bea1550d2431bd2116bd9081fbfd5f58",
+    "sha256": "e35091fabdd39e69fca6d1e713cd0bf48d66668b155b59a8dda4d712b911da83"
+  },
+  "validation": {
+    "cargo": "cargo +1.98.0 check -p vail-table --lib passed; final release wheel build passed",
+    "matrix_table_pytest": "python/tests/test_matrix_table.py -k entries: 17 passed",
+    "vcf_pytest": "targeted nullable-slot, unsorted-sample ownership, duplicate-boundary repeated-action tests: 3 passed",
+    "diff_check": "git diff --check passed"
+  }
+}

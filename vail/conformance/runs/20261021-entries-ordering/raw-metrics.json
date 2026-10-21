@@ -1,0 +1,57 @@
+{
+  "benchmark": "matrix_table_entries_table",
+  "action": "entries()._force_count()",
+  "fixture": {
+    "dataset": "profile25_mt regenerated from profile.vcf.bgz with min_partitions=16",
+    "matrix_snapshot": "/tmp/entries-profile25.mt",
+    "source_vcf": "conformance/runs/20261016-laptop-hail-paired/data/profile.vcf.bgz",
+    "source_vcf_sha256": "cdacd409124e0f647e08b2eff0dda7705759e971d88d6c9b054dc252c91d4b93",
+    "source_vcf_bytes": 224033197,
+    "rows": 24885,
+    "columns": 2535,
+    "expanded_entries": 63083475,
+    "row_key_unique": false,
+    "column_ordering_metadata": null,
+    "row_partitions": 16
+  },
+  "environment": {
+    "os": "macOS 27.0.1 (26A434)",
+    "cpu": "Apple M3 Max",
+    "logical_cpus": 14,
+    "rust": "1.98.0",
+    "python": "3.14.2",
+    "runs_per_revision": 3,
+    "measurement": "time.perf_counter and time.process_time around entries()._force_count()"
+  },
+  "baseline": {
+    "revision": "57cfbd2cc4835bcecb06cf22160a5aa94a100100",
+    "wheel_sha256": "1cdcb3e8237ca26f8da1916e3a475fb6f719821c7d9cd400db4bcb1ecb1c80df",
+    "result_each_run": 63083475,
+    "wall_seconds": [13.05110241699731, 12.73323704203358, 12.563467417028733],
+    "cpu_seconds": [36.151777, 33.57720499999999, 32.87809899999999],
+    "wall_median_seconds": 12.73323704203358,
+    "cpu_median_seconds": 33.57720499999999
+  },
+  "candidate": {
+    "revision": "2f448f5fad544560d39001bb716a05aa8587764f",
+    "wheel_sha256": "ce6b5f744a0fe71904447bfd7f547cf3bea1550d2431bd2116bd9081fbfd5f58",
+    "result_each_run": 63083475,
+    "wall_seconds": [1.2704033330082893, 1.1873072910238989, 1.175586250028573],
+    "cpu_seconds": [15.772206, 14.889081000000001, 14.768283000000004],
+    "wall_median_seconds": 1.1873072910238989,
+    "cpu_median_seconds": 14.889081000000001,
+    "sampled_profile": "candidate-sample.txt",
+    "sampled_profile_sha256": "e35091fabdd39e69fca6d1e713cd0bf48d66668b155b59a8dda4d712b911da83",
+    "sampled_current_physical_footprint_reported": "1.5G",
+    "sampled_peak_physical_footprint_reported": "7.2G"
+  },
+  "speedup": {
+    "wall_median_ratio": 10.725,
+    "cpu_median_ratio": 2.255
+  },
+  "notes": [
+    "Base and candidate wheels were built from the same fixture-producing input state; candidate includes the reviewed entries source at 2f448f5 and precedes test-only commit de07a411.",
+    "These are local measurements on this fixture, not a universal performance claim.",
+    "The 4-second sampled profile includes startup/idle intervals as well as the action; its peak physical footprint is recorded as reported by macOS sample and was not separately measured on the baseline."
+  ]
+}
