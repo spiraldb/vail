@@ -206,7 +206,11 @@ impl Accumulator for CompositionAccumulator {
         let columns = self
             .children
             .iter_mut()
-            .map(|child| child.evaluate()?.to_array_of_size(1))
+            .zip(&self.spec.children)
+            .map(|(child, descriptor)| {
+                crate::scan_state::normalize_empty_collect(descriptor, child.evaluate()?)
+                    .to_array_of_size(1)
+            })
             .collect::<Result<Vec<_>>>()?;
         let batch = RecordBatch::try_new(self.spec.schema.clone(), columns)?;
         let value = self.spec.projection.evaluate(&batch)?.into_array(1)?;
@@ -284,6 +288,7 @@ pub fn transformed(
         Arc::new(move |_| {
             Ok(Box::new(TransformAccumulator {
                 inner: child.accumulator()?,
+                child: child.clone(),
                 transform,
                 input: input.clone(),
             }))
@@ -293,6 +298,7 @@ pub fn transformed(
 #[derive(Debug)]
 struct TransformAccumulator {
     inner: Box<dyn Accumulator>,
+    child: ScanState,
     transform: Transform,
     input: DataType,
 }
@@ -322,7 +328,10 @@ impl Accumulator for TransformAccumulator {
         self.inner.update_batch(&[argument])
     }
     fn evaluate(&mut self) -> Result<ScalarValue> {
-        self.inner.evaluate()
+        Ok(crate::scan_state::normalize_empty_collect(
+            &self.child,
+            self.inner.evaluate()?,
+        ))
     }
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
         self.inner.state()

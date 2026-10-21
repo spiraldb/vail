@@ -94,7 +94,7 @@ impl ScanState {
                         .collect::<Vec<_>>(),
                 )?;
             }
-            values.push(accumulator.evaluate()?);
+            values.push(normalize_empty_collect(self, accumulator.evaluate()?));
         }
         if values.is_empty() {
             Ok(arrow_array::new_empty_array(&self.output))
@@ -333,7 +333,7 @@ fn finish_generic_states(
         let mut accumulator = descriptor.accumulator()?;
         carry.merge_row(accumulator.as_mut(), row)?;
         local.merge_row(accumulator.as_mut(), row)?;
-        values.push(accumulator.evaluate()?);
+        values.push(normalize_empty_collect(descriptor, accumulator.evaluate()?));
     }
     if values.is_empty() {
         Ok(arrow_array::new_empty_array(&descriptor.output))
@@ -341,6 +341,16 @@ fn finish_generic_states(
         ScalarValue::iter_to_array(values)
     }
 }
+
+pub(crate) fn normalize_empty_collect(descriptor: &ScanState, value: ScalarValue) -> ScalarValue {
+    if descriptor.aggregate.name() == "array_agg" && value.is_null() {
+        if let DataType::List(field) = &descriptor.output {
+            return ScalarValue::List(ScalarValue::new_list(&[], field.data_type(), true));
+        }
+    }
+    value
+}
+
 #[derive(Debug)]
 struct StateAccumulator {
     inner: Box<dyn Accumulator>,

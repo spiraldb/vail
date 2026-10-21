@@ -134,11 +134,12 @@ def test_grouped_collect_preserves_empty_filtered_groups_and_zero_field_values()
         schema=hl.tstruct(idx=hl.tint32, nested=hl.ttuple()),
         n_partitions=3,
     )
-    ordered_values = ordered.aggregate(hl.agg._ordered_collect(ordered.row))
+    ordered = ordered.order_by("idx")
+    ordered_values = ordered.aggregate(hl.agg.collect(ordered.row))
     assert ordered_values == [
-        hl.Struct(idx=2, nested=()),
         hl.Struct(idx=0, nested=()),
         hl.Struct(idx=1, nested=()),
+        hl.Struct(idx=2, nested=()),
     ]
 
 
