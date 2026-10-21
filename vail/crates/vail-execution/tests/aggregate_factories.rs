@@ -499,11 +499,11 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
         None,
     );
     let mut malformed_groups = aggregate.create_groups_accumulator().unwrap();
-    assert!(
-        malformed_groups
-            .update_batch(&[Arc::new(malformed)], &[0], None, 1)
-            .is_err()
-    );
+    // Storage is trusted: child null bits are not a second Call validity mask.
+    malformed_groups
+        .update_batch(&[Arc::new(malformed)], &[0], None, 1)
+        .unwrap();
+    assert_eq!(malformed_groups.evaluate(EmitTo::All).unwrap().len(), 1);
 }
 
 #[test]
