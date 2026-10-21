@@ -7,6 +7,7 @@ All transformations build native DAGs. Python never evaluates cell expressions.
 
 from __future__ import annotations
 
+from ._native import NativeExpr
 from .expressions import _native_expression, _native_expressions, _native_projection
 
 from .expressions import IR_NODE_TYPES
@@ -802,6 +803,8 @@ class MatrixTable:
                 raise ValueError("column position requires the indexed-context map path")
             else:
                 result = {key: rewrite(value) for key, value in node.items()}
+            if not isinstance(result, NativeExpr):
+                result = NativeExpr(result)
             rewrite_cache[identity] = result
             return result
 

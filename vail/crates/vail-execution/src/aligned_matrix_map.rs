@@ -297,8 +297,11 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             } else {
                 let mut memo = HashMap::new();
                 let bound_body = rebind_body(&self.body, &bindings, &mut memo)?;
-                let values = entry_values(entry_slice.as_ref())?;
-                let entry_presence = values
+                // CASE-based slot preservation lets DataFusion avoid evaluating
+                // the body for null parent slots. Its filtered-batch path may
+                // allocate subset metadata when only some slots are valid;
+                // the all-valid path keeps the borrowed aligned arrays intact.
+                let entry_presence = entry_slice
                     .nulls()
                     .map(|validity| validity.inner().clone())
                     .unwrap_or_else(|| BooleanBuffer::new_set(entry_count));
@@ -586,128 +589,4 @@ fn inherit_parent_validity(values: ArrayRef, parent: &dyn Array) -> Result<Array
     let nulls = NullBuffer::union(values.nulls(), parent.nulls());
     let data = values.to_data().into_builder().nulls(nulls).build()?;
     Ok(make_array(data))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::Int64Array;
-    use datafusion_physical_expr::expressions::{Column, Literal};
-
-    #[derive(Debug)]
-    struct BufferAddressExpr;
-
-    impl PhysicalExpr for BufferAddressExpr {
-        fn fmt_sql(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-            write!(f, "buffer_address")
-        }
-        fn data_type(&self, _: &Schema) -> Result<DataType> {
-            Ok(DataType::Int64)
-        }
-        fn nullable(&self, _: &Schema) -> Result<bool> {
-            Ok(false)
-        }
-        fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
-            let array = batch.column(1);
-            let address = array.to_data().buffers()[0].as_ptr() as usize as i64;
-            Ok(ColumnarValue::Scalar(ScalarValue::Int64(Some(address))))
-        }
-        fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
-            Vec::new()
-        }
-        fn with_new_children(
-            self: Arc<Self>,
-            children: Vec<Arc<dyn PhysicalExpr>>,
-        ) -> Result<Arc<dyn PhysicalExpr>> {
-            if !children.is_empty() {
-                return Err(DataFusionError::Internal(
-                    "buffer address has no children".into(),
-                ));
-            }
-            Ok(self)
-        }
-    }
-
-    #[test]
-    fn aligned_map_reuses_scalar_column_child_across_rows() {
-        let columns_child: ArrayRef = Arc::new(Int64Array::from(vec![4, 8, 12]));
-        let source_address = columns_child.to_data().buffers()[0].as_ptr() as usize as i64;
-        let columns = Arc::new(ListArray::new(
-            Arc::new(arrow_schema::Field::new("item", DataType::Int64, true)),
-            OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, 3])),
-            columns_child,
-            None,
-        ));
-        let entry_fields = vec![
-            Arc::new(arrow_schema::Field::new(
-                "__vail_matrix_col_id",
-                DataType::Int64,
-                true,
-            )),
-            Arc::new(arrow_schema::Field::new("value", DataType::Int64, true)),
-        ];
-        let entry_struct: ArrayRef = Arc::new(StructArray::new(
-            entry_fields.into(),
-            vec![
-                Arc::new(Int64Array::from(vec![0, 1, 2, 0, 1, 2])),
-                Arc::new(Int64Array::from(vec![1, 2, 3, 4, 5, 6])),
-            ],
-            None,
-        ));
-        let entries = Arc::new(ListArray::new(
-            Arc::new(arrow_schema::Field::new(
-                "item",
-                entry_struct.data_type().clone(),
-                true,
-            )),
-            OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, 3, 6])),
-            entry_struct,
-            None,
-        ));
-        let row_schema = vec![Arc::new(arrow_schema::Field::new(
-            "unused",
-            DataType::Int64,
-            true,
-        ))];
-        let rows: ArrayRef = Arc::new(StructArray::new(
-            row_schema.into(),
-            vec![Arc::new(Int64Array::from(vec![0, 0]))],
-            None,
-        ));
-        let input_schema = Arc::new(Schema::new(vec![
-            Arc::new(arrow_schema::Field::new(
-                "entries",
-                entries.data_type().clone(),
-                true,
-            )),
-            Arc::new(arrow_schema::Field::new(
-                "rows",
-                rows.data_type().clone(),
-                true,
-            )),
-        ]));
-        let batch = RecordBatch::try_new(input_schema, vec![entries.clone(), rows]).unwrap();
-        let globals = Arc::new(Literal::new(ScalarValue::Struct(Arc::new(
-            StructArray::new_empty_fields(1, None),
-        )))) as Arc<dyn PhysicalExpr>;
-        let list_field = Arc::new(arrow_schema::Field::new("item", DataType::Int64, true));
-        let expr = AlignedMatrixMapExpr::new(
-            Arc::new(Column::new("entries", 0)),
-            Arc::new(Literal::new(ScalarValue::List(columns))),
-            Arc::new(Column::new("rows", 1)),
-            globals,
-            Arc::new(BufferAddressExpr),
-            DataType::List(list_field),
-            DataType::Int64,
-            false,
-        );
-        let output = expr.evaluate(&batch).unwrap().into_array(2).unwrap();
-        let output = output.as_any().downcast_ref::<ListArray>().unwrap();
-        let output = output
-            .values()
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .unwrap();
-        assert_eq!(output.values(), &[source_address; 6]);
-    }
 }

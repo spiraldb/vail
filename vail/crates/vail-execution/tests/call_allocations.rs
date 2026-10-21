@@ -4,23 +4,29 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int32Array, ListArray, RecordBatch, StructArray, UInt8Array,
-    UInt16Array,
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, RecordBatch, StringArray,
+    StructArray, UInt8Array, UInt16Array,
 };
-use arrow_buffer::{NullBuffer, OffsetBuffer};
+use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema};
 use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
 
 thread_local! {
     static ALLOCATIONS: Cell<Option<usize>> = const { Cell::new(None) };
+    static ALLOCATED_BYTES: Cell<Option<usize>> = const { Cell::new(None) };
 }
 
 struct CountingAllocator;
 
-fn count_allocation() {
+fn count_allocation(bytes: usize) {
     let _ = ALLOCATIONS.try_with(|count| {
         if let Some(value) = count.get() {
             count.set(Some(value.saturating_add(1)));
+        }
+    });
+    let _ = ALLOCATED_BYTES.try_with(|count| {
+        if let Some(value) = count.get() {
+            count.set(Some(value.saturating_add(bytes)));
         }
     });
 }
@@ -29,15 +35,15 @@ fn count_allocation() {
 // test thread. Const-initialized TLS does not allocate while counting an alloc.
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        count_allocation();
+        count_allocation(layout.size());
         unsafe { System.alloc(layout) }
     }
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        count_allocation();
+        count_allocation(layout.size());
         unsafe { System.alloc_zeroed(layout) }
     }
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, size: usize) -> *mut u8 {
-        count_allocation();
+        count_allocation(size);
         unsafe { System.realloc(ptr, layout, size) }
     }
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
@@ -353,4 +359,164 @@ fn call_execution_trusts_stored_fields_and_parent_validity() {
     assert!(values.value(0));
     assert!(!values.value(1));
     assert!(values.is_null(3));
+}
+
+fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
+    let columns_count = 128;
+    let int64 = Type::Primitive(PrimitiveType::Int64);
+    let string = Type::Primitive(PrimitiveType::Str);
+    let payload_type = Type::Struct {
+        r#struct: vec![("marker".into(), int64.clone()), ("payload".into(), string)],
+    };
+    let column_record_type = Type::Struct {
+        r#struct: vec![
+            ("__vail_matrix_col_id".into(), int64.clone()),
+            ("col".into(), payload_type.clone()),
+        ],
+    };
+    let entry_value_type = Type::Struct { r#struct: vec![] };
+    let entry_type = Type::Struct {
+        r#struct: vec![
+            ("__vail_matrix_col_id".into(), int64.clone()),
+            ("value".into(), entry_value_type),
+        ],
+    };
+
+    let entry_values: ArrayRef = Arc::new(StructArray::new_empty_fields(columns_count, None));
+    let entries_child: ArrayRef = Arc::new(StructArray::new(
+        vec![
+            Field::new("__vail_matrix_col_id", DataType::Int64, true),
+            Field::new("value", entry_values.data_type().clone(), true),
+        ]
+        .into(),
+        vec![
+            Arc::new(Int64Array::from_iter_values(0..columns_count as i64)),
+            entry_values,
+        ],
+        None,
+    ));
+    let entries: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new("item", entries_child.data_type().clone(), true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, columns_count as i32])),
+        entries_child,
+        None,
+    ));
+
+    let payload = "x".repeat(payload_bytes);
+    let payloads = StringArray::from(vec![payload; columns_count]);
+    let column_payload: ArrayRef = Arc::new(StructArray::new(
+        vec![
+            Field::new("marker", DataType::Int64, true),
+            Field::new("payload", DataType::Utf8, true),
+        ]
+        .into(),
+        vec![
+            Arc::new(Int64Array::from_iter_values(0..columns_count as i64)),
+            Arc::new(payloads),
+        ],
+        None,
+    ));
+    let columns_child: ArrayRef = Arc::new(StructArray::new(
+        vec![
+            Field::new("__vail_matrix_col_id", DataType::Int64, true),
+            Field::new("col", column_payload.data_type().clone(), true),
+        ]
+        .into(),
+        vec![
+            Arc::new(Int64Array::from_iter_values(0..columns_count as i64)),
+            column_payload,
+        ],
+        None,
+    ));
+    let columns: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new("item", columns_child.data_type().clone(), true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, columns_count as i32])),
+        columns_child,
+        None,
+    ));
+    let rows: ArrayRef = Arc::new(StructArray::new(
+        vec![Field::new("row_idx", DataType::Int64, true)].into(),
+        vec![Arc::new(Int64Array::from(vec![0_i64]))],
+        None,
+    ));
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("entries", entries.data_type().clone(), true),
+        Field::new("columns", columns.data_type().clone(), true),
+        Field::new("rows", rows.data_type().clone(), true),
+    ]));
+    let batch = RecordBatch::try_new(schema, vec![entries, columns, rows]).unwrap();
+
+    let column_input = Expr::AlignedMapInput {
+        axis: "col".into(),
+        name: None,
+        dtype: column_record_type,
+    };
+    let marker = Expr::GetField {
+        value: Arc::new(Expr::GetField {
+            value: Arc::new(column_input),
+            name: "col".into(),
+        }),
+        name: "marker".into(),
+    };
+    let entry_present = Expr::AlignedMapInput {
+        axis: "entry_present".into(),
+        name: None,
+        dtype: Type::Primitive(PrimitiveType::Bool),
+    };
+    let body = Expr::IfElse {
+        condition: Arc::new(entry_present),
+        consequent: Arc::new(marker),
+        alternate: Arc::new(Expr::Literal {
+            dtype: int64.clone(),
+            value: serde_json::Value::Null,
+        }),
+    };
+    let expression = Expr::AlignedMatrixMap {
+        entries: Arc::new(Expr::Column {
+            name: "entries".into(),
+        }),
+        columns: Arc::new(Expr::Column {
+            name: "columns".into(),
+        }),
+        rows: Arc::new(Expr::Column {
+            name: "rows".into(),
+        }),
+        globals: Arc::new(Expr::Struct { fields: vec![] }),
+        body: Arc::new(body),
+        dtype: Type::Array {
+            array: Box::new(int64),
+        },
+        preserve_cell: false,
+    };
+    let _ = (payload_type, entry_type);
+    (batch, expression)
+}
+
+fn evaluate_aligned_allocated_bytes(batch: &RecordBatch, expression: &Expr) -> (ArrayRef, usize) {
+    let compiled = lower(expression, batch.schema().as_ref()).unwrap();
+    ALLOCATED_BYTES.with(|bytes| bytes.set(Some(0)));
+    let output = compiled
+        .evaluate(batch)
+        .unwrap()
+        .into_array(batch.num_rows())
+        .unwrap();
+    let bytes = ALLOCATED_BYTES.with(|bytes| bytes.replace(None).unwrap());
+    (output, bytes)
+}
+
+#[test]
+fn aligned_map_column_metadata_allocations_do_not_scale_with_payload_bytes() {
+    let (small_batch, small_expr) = aligned_column_input(8);
+    let (wide_batch, wide_expr) = aligned_column_input(1024);
+    let (small_output, small_bytes) = evaluate_aligned_allocated_bytes(&small_batch, &small_expr);
+    let (wide_output, wide_bytes) = evaluate_aligned_allocated_bytes(&wide_batch, &wide_expr);
+    for output in [small_output, wide_output] {
+        let rows = output.as_any().downcast_ref::<ListArray>().unwrap();
+        let markers = rows.values().as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(markers.values(), &(0..128_i64).collect::<Vec<_>>());
+    }
+    assert!(
+        wide_bytes <= small_bytes + 1_000_000,
+        "metadata payload grew allocations from {small_bytes} to {wide_bytes} bytes"
+    );
 }

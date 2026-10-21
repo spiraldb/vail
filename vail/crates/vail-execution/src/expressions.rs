@@ -5678,14 +5678,45 @@ fn lower_uncached(
             dtype,
             preserve_cell,
         } => {
+            let entry_expr_type =
+                entries.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+            let column_expr_type =
+                columns.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let entries = lower_cached(entries, schema, globals, scope, memo, context)?;
             let columns = lower_cached(columns, schema, globals, scope, memo, context)?;
             let rows = lower_cached(rows, schema, globals, scope, memo, context)?;
             let global_inputs = lower_cached(globals_expr, schema, globals, scope, memo, context)?;
+            let Type::Array { array: entry_type } = entry_expr_type else {
+                return Err(ExprError::Invalid(
+                    "aligned entry expression must be an array".into(),
+                ));
+            };
+            let Type::Array { array: column_type } = column_expr_type else {
+                return Err(ExprError::Invalid(
+                    "aligned column expression must be an array".into(),
+                ));
+            };
+            let body_schema = Schema::new(vec![
+                Field::new(
+                    crate::aligned_matrix_map::ENTRY_COLUMN,
+                    entry_type.to_arrow()?,
+                    true,
+                ),
+                Field::new(
+                    crate::aligned_matrix_map::COLUMN_COLUMN,
+                    column_type.to_arrow()?,
+                    true,
+                ),
+                Field::new(
+                    crate::aligned_matrix_map::ENTRY_PRESENT_COLUMN,
+                    DataType::Boolean,
+                    false,
+                ),
+            ]);
             let body_dtype = body
                 .dtype_scoped(schema, globals.schema(), scope, memo, context)?
                 .to_arrow()?;
-            let body = lower_scoped(body, schema, globals, scope, memo)?;
+            let body = lower_scoped(body, &body_schema, globals, scope, memo)?;
             Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
                 entries,
                 columns,
