@@ -150,7 +150,8 @@ fn walk(
         | Expr::MatrixField { .. }
         | Expr::MatrixNumCols { .. }
         | Expr::MatrixColumnPosition { .. }
-        | Expr::TableLookup { .. } => walk_all_columns(expression, arrays, deps),
+        | Expr::TableLookup { .. }
+        | Expr::AlignedMatrixMap { .. } => walk_all_columns(expression, arrays, deps),
 
         Expr::Column { name } => {
             deps.full.insert(name.clone());
@@ -283,6 +284,7 @@ fn walk(
         | Expr::ArrayGrouped { .. } => walk_all_columns(expression, arrays, deps),
         Expr::ExternalGlobal { .. }
         | Expr::Global { .. }
+        | Expr::AlignedMapInput { .. }
         | Expr::Literal { .. }
         | Expr::RuntimeLiteral { .. } => {}
         Expr::GetField { value, .. } => walk(value, arrays, deps, context, seen, next_context),
