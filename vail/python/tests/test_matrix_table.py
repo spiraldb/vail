@@ -272,6 +272,103 @@ def test_entries_does_not_assume_exploded_row_keys_are_unique():
     )
 
 
+def test_entries_orders_duplicate_multikey_runs_across_partitions():
+    mt = hl.range_matrix_table(2, 3, 1)
+    mt = mt.key_rows_by(row_group=mt.row_idx // 2, row_idx=mt.row_idx)
+    mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
+    mt = mt.key_cols_by(col_group=mt.col_idx % 2, col_idx=mt.col_idx)
+    mt = mt.annotate_entries(value=hl.int32(mt.replica * 100 + mt.col_idx))
+    mt = mt.filter_entries(mt.col_idx != 1).repartition(3)
+
+    entries = mt.entries().collect()
+    keys = [
+        (entry.row_group, entry.row_idx, entry.col_group, entry.col_idx)
+        for entry in entries
+    ]
+    assert keys == sorted(keys)
+    assert Counter(
+        (entry.row_group, entry.row_idx, entry.col_group, entry.col_idx, entry.replica, entry.value)
+        for entry in entries
+    ) == Counter(
+        (row_idx // 2, row_idx, col_group, col_idx, item, item * 100 + col_idx)
+        for row_idx in range(2)
+        for item in (0, 1)
+        for col_group, col_idx in ((0, 0), (0, 2))
+    )
+
+
+def test_entries_streams_duplicate_row_key_run_larger_than_arrow_batch():
+    mt = hl.range_matrix_table(1, 2, 1)
+    mt = mt.annotate_rows(replica=hl.range(9000)).explode_rows("replica")
+    mt = mt.key_cols_by(group=mt.col_idx % 2, col_idx=mt.col_idx)
+    mt = mt.annotate_entries(value=hl.int32(mt.replica * 10 + mt.col_idx))
+
+    entries = mt.entries().collect()
+    keys = [(entry.row_idx, entry.group, entry.col_idx) for entry in entries]
+    assert keys == sorted(keys)
+    assert Counter((entry.replica, entry.col_idx, entry.value) for entry in entries) == Counter(
+        (replica, col_idx, replica * 10 + col_idx)
+        for replica in range(9000)
+        for col_idx in range(2)
+    )
+
+
+def test_entries_spills_large_singleton_run_without_dropping_it():
+    payload = "x" * (65 * 1024 * 1024)
+    mt = hl.utils.range_matrix_table(1, 1, 1)
+    mt = mt.annotate_rows(replica=hl.array([7])).explode_rows("replica")
+    mt = mt.annotate_entries(payload=hl.literal(payload))
+
+    entries = mt.entries().collect()
+    assert len(entries) == 1
+    assert (entries[0].row_idx, entries[0].col_idx, entries[0].replica) == (0, 0, 7)
+    assert entries[0].payload == payload
+
+
+def test_entries_spills_duplicate_run_as_column_stripes():
+    filler = "y" * (17 * 1024 * 1024)
+    mt = hl.utils.range_matrix_table(1, 2, 1)
+    mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
+    mt = mt.annotate_entries(
+        payload=hl.literal(filler) + hl.str(mt.replica) + ":" + hl.str(mt.col_idx)
+    )
+
+    entries = mt.entries().collect()
+    keys = [(entry.row_idx, entry.col_idx) for entry in entries]
+    assert keys == sorted(keys)
+    assert Counter(
+        (entry.replica, entry.col_idx, entry.payload[-3:]) for entry in entries
+    ) == Counter(
+        (replica, col_idx, f"{replica}:{col_idx}")
+        for replica in range(2)
+        for col_idx in range(2)
+    )
+    assert all(entry.payload[:-3] == filler for entry in entries)
+
+
+def test_entries_bounds_singleton_batches_with_repeated_row_and_column_payloads():
+    row_payload = "r" * (5 * 1024 * 1024)
+    column_payload = "c" * (1024 * 1024)
+    mt = hl.utils.range_matrix_table(2, 4, 1)
+    mt = mt.annotate_rows(
+        replica=hl.array([0]), row_payload=hl.literal(row_payload)
+    ).explode_rows("replica")
+    mt = mt.annotate_cols(
+        column_payload=hl.literal(column_payload) + hl.str(mt.col_idx)
+    )
+
+    entries = mt.entries().collect()
+    assert len(entries) == 8
+    assert {(entry.row_idx, entry.col_idx) for entry in entries} == {
+        (row_idx, col_idx) for row_idx in range(2) for col_idx in range(4)
+    }
+    assert all(entry.row_payload == row_payload for entry in entries)
+    assert all(entry.column_payload[:-1] == column_payload for entry in entries)
+    assert Counter(entry.column_payload[-1] for entry in entries) == Counter(
+        str(col_idx) for _row_idx in range(2) for col_idx in range(4)
+    )
+
+
 def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
     mt = hl.range_matrix_table(3, 5, 2).choose_cols([4, 1, 3])
     mt = mt.filter_cols(mt.col_idx != 3)
