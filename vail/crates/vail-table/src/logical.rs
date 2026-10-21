@@ -389,6 +389,7 @@ fn node_name(node: &TableNode) -> &'static str {
         TableNode::MapPartitions { .. } => "MapPartitions",
         TableNode::Read { .. } => "Read",
         TableNode::TextRead { .. } => "TextRead",
+        TableNode::BgenSelect { .. } => "BgenVariantSelection",
         TableNode::Parallelize { .. } => "Parallelize",
         TableNode::Expression { .. } => "Expression",
         TableNode::Range { .. } => "Range",
@@ -418,6 +419,7 @@ pub(crate) fn children(table: &TableRef) -> Vec<TableRef> {
         | TableNode::Parallelize { .. }
         | TableNode::Expression { .. }
         | TableNode::Prepared { .. } => vec![],
+        TableNode::BgenSelect { source, variants } => vec![source.clone(), variants.clone()],
         TableNode::Join { left, right, .. } | TableNode::Lookup { left, right, .. } => {
             vec![left.clone(), right.clone()]
         }
@@ -964,6 +966,11 @@ fn lower_inner(table: &TableRef, context: &mut LoweringContext) -> Result<Logica
 }
 fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<LogicalPlan> {
     match table.node() {
+        TableNode::BgenSelect { source, variants } => Ok(crate::bgen_select::logical(
+            source.clone(),
+            variants.clone(),
+            vec![lower_inner(source, context)?, lower_inner(variants, context)?],
+        )),
         TableNode::Read { .. }
         | TableNode::IntervalRead { .. }
         | TableNode::TextRead { .. }
@@ -1393,6 +1400,45 @@ async fn compile_mode(
 
 #[derive(Debug)]
 struct MetadataCrossJoin;
+
+/// Rewrite each physical node once, retaining shared inputs across branches.
+/// The original root is kept alive for the traversal, so pointer identities
+/// cannot be recycled while their memoized replacements are in use.
+fn rewrite_physical_dag(
+    plan: PhysicalPlan,
+    rewrite: &mut impl FnMut(PhysicalPlan) -> datafusion_common::Result<PhysicalPlan>,
+) -> datafusion_common::Result<PhysicalPlan> {
+    fn visit(
+        plan: PhysicalPlan,
+        memo: &mut std::collections::HashMap<usize, PhysicalPlan>,
+        rewrite: &mut impl FnMut(PhysicalPlan) -> datafusion_common::Result<PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        let identity = Arc::as_ptr(&plan) as *const () as usize;
+        if let Some(result) = memo.get(&identity) {
+            return Ok(result.clone());
+        }
+        let mut children = Vec::with_capacity(plan.children().len());
+        let mut changed = false;
+        for child in plan.children() {
+            let result = visit(child.clone(), memo, rewrite)?;
+            changed |= !Arc::ptr_eq(child, &result);
+            children.push(result);
+        }
+        let plan = if changed {
+            plan.replace_children(children, datafusion_physical_plan::ReplaceChildrenOptions::new(
+                datafusion_physical_plan::ChildrenPropertiesMode::Recompute,
+            ))?
+        } else { plan };
+        let result = rewrite(plan)?;
+        memo.insert(identity, result.clone());
+        Ok(result)
+    }
+    let original = plan.clone();
+    let result = visit(plan, &mut std::collections::HashMap::new(), rewrite);
+    drop(original);
+    result
+}
+
 impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin {
     fn name(&self) -> &str {
         "vail_arrow_metadata_cross_join"
@@ -1405,9 +1451,7 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin
         plan: PhysicalPlan,
         _: &datafusion_common::config::ConfigOptions,
     ) -> datafusion_common::Result<PhysicalPlan> {
-        use datafusion_common::tree_node::{Transformed, TreeNode};
-        Ok(plan
-            .transform_up(|plan| {
+        rewrite_physical_dag(plan, &mut |plan| {
                 if let Some(join) = plan
                     .as_ref()
                     .downcast_ref::<datafusion_physical_plan::joins::CrossJoinExec>()
@@ -1418,15 +1462,14 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin
                         .iter()
                         .any(|field| vail_ordering::has_type_metadata(field.data_type()));
                     if metadata {
-                        return Ok(Transformed::yes(crate::plan::cross_join(
+                        return crate::plan::cross_join(
                             join.left().clone(),
                             join.right().clone(),
-                        )?));
+                        );
                     }
                 }
-                Ok(Transformed::no(plan))
-            })?
-            .data)
+                Ok(plan)
+        })
     }
 }
 
@@ -1444,16 +1487,15 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for EliminateIdentity
         plan: PhysicalPlan,
         _: &datafusion_common::config::ConfigOptions,
     ) -> datafusion_common::Result<PhysicalPlan> {
-        use datafusion_common::tree_node::{Transformed, TreeNode};
-        Ok(plan.transform_up(|plan| {
+        rewrite_physical_dag(plan, &mut |plan| {
             if let Some(range) = plan.as_ref()
                 .downcast_ref::<crate::partitioned::ProtectedRangeRepartitionExec>()
                 && let Some(input) = range.identity_input()
             {
-                return Ok(Transformed::yes(input));
+                return Ok(input);
             }
-            Ok(Transformed::no(plan))
-        })?.data)
+            Ok(plan)
+        })
     }
 }
 
@@ -1604,6 +1646,9 @@ impl ExtensionPlanner for VailExtensionPlanner {
                     physical_inputs.to_vec(),
                 )));
             }
+        }
+        if let Some(node) = node.as_any().downcast_ref::<crate::bgen_select::SelectNode>() {
+            return Ok(Some(node.physical(physical_inputs)?));
         }
         if let Some(node) = node.as_any().downcast_ref::<crate::group_ranges::GroupRanges>() {
             return Ok(Some(node.physical(physical_inputs[0].clone())?));

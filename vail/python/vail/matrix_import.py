@@ -119,10 +119,13 @@ def export_expression(expr, output, delimiter='\t', missing='NA', header=True):
     en, cn, value = ['__export_' + uuid4().hex for _ in range(3)]
     matrix = source.select_entries(**{value: expr})
     keys = list(matrix.col_key.dtype)
-    cols = matrix.cols().select().collect()
-    ids = [str(col[keys[0]]) if keys else str(i) for i, col in enumerate(cols)]
     row_keys = list(matrix.row_key.dtype)
     localized = matrix.localize_entries(en, cn).key_by()
+    from . import eval as evaluate
+    # The global column records and every localized entry array share physical
+    # slot order. cols() may sort by key, so it cannot supply these labels.
+    cols = evaluate(localized.index_globals()[cn])
+    ids = [str(col[keys[0]]) if keys else str(i) for i, col in enumerate(cols)]
 
     def text(value):
         return if_else(is_missing(value), missing, hstr(value))

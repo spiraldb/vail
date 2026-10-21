@@ -62,6 +62,19 @@ def test_one_column_reference_export_bounds(tmp_path):
     assert value.includes_end and value.end.position == 2
 
 
+def test_one_column_reference_matches_pinned_hail_bounds_and_options(tmp_path):
+    # Independently checked with pinned Hail: this input branch delegates to
+    # parse_locus_interval, including its right-exclusive default and errors.
+    table = import_locus_intervals(write(tmp_path, '1:2-5\n'))
+    value = table.collect()[0].interval
+    assert value.includes_start and not value.includes_end
+    assert 2 == value.start.position and 5 == value.end.position
+    for text, options in [('chr1:2-5\n', {'contig_recoding': {'chr1': '1'}}),
+                          ('bad:2-5\n', {'skip_invalid_intervals': True})]:
+        with pytest.raises(hl.utils.FatalError):
+            import_locus_intervals(write(tmp_path, text), **options).collect()
+
+
 def test_interval_export_roundtrip_and_missing(tmp_path):
     path = tmp_path / 'exported.txt'
     table = hl.Table.parallelize([
@@ -69,6 +82,6 @@ def test_interval_export_roundtrip_and_missing(tmp_path):
         {'interval': None},
     ], schema=hl.tstruct(interval=hl.tinterval(hl.tlocus('GRCh37'))))
     table.export(str(path), header=False)
-    assert path.read_text() == '[1:1-1:5]\nNA\n'
+    assert path.read_text() == '[1:1-5]\nNA\n'
     path.write_text('[1:1-1:5]\n')
     assert import_locus_intervals(str(path)).collect()[0].interval == table.collect()[0].interval

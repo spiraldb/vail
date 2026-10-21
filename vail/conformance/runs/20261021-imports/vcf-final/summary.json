@@ -1,0 +1,52 @@
+{
+  "revision": "51d8cbb666a455773dbd3583315f871a9ab9fc58",
+  "counts": {
+    "passed": 53,
+    "failed": 8
+  },
+  "total": 61,
+  "failures": [
+    {
+      "nodeid": "test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:358: in test_combiner_parse_allele_specific_annotations\n    from vail.vds.combiner.combine import parse_allele_specific_fields\nE   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_combiner_works",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:325: in test_combiner_works\n    from vail.vds.combiner.combine import combine_variant_datasets, transform_gvcf\nE   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_haploid_combiner_ok",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:338: in test_haploid_combiner_ok\n    from vail.vds.combiner.combine import transform_gvcf\nE   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_import_gvcfs",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:296: in test_import_gvcfs\n    self.import_gvcfs_sample_vcf(path)\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf\n    parts_str = json.dumps(parts_type._convert_to_json(parts))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'tarray' object has no attribute '_convert_to_json'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_invalid_info_fields",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:504: in test_invalid_info_fields\n    with mock.patch('hail.methods.impex.warning', autospec=True) as warning:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/mock.py:1451: in __enter__\n    self.target = self.getter()\n                  ^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pkgutil.py:513: in resolve_name\n    mod = importlib.import_module(modname)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1324: in _find_and_load_unlocked\n    ???\nE   ModuleNotFoundError: No module named 'hail'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_tabix_export",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:284: in test_tabix_export\n    self.import_gvcfs_sample_vcf(tmp)\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf\n    parts_str = json.dumps(parts_type._convert_to_json(parts))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'tarray' object has no attribute '_convert_to_json'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:309: in test_vcf_parser_golden_master__ex_GRCh37\n    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_paths.py:24: in read_matrix_table\n    return self._read_matrix_table(str(path), *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2616: in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'"
+    },
+    {
+      "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37",
+      "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:316: in test_vcf_parser_golden_master__gvcf_GRCh37\n    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-lcpwtm_m/upstream_paths.py:24: in read_matrix_table\n    return self._read_matrix_table(str(path), *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2616: in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'"
+    }
+  ],
+  "files": {
+    "vail/python/vail/vcf.py": "76a0ab774e1ad3a43076ad2403281d51f6006e11ea769054b0e037bec2b50b48",
+    "vail/python/vail/vcf_export.py": "28a44cb9cd69f656d911dc2c9a0cb9b15e4d0a6441256c46407e8f877393148e",
+    "vail/python/vail/genotype_likelihoods.py": "ee93bc3b2564a13e10758ab8d62b0d02ee868190db3792b64527b6915578c9dd",
+    "vail/crates/vail-vcf/src/lib.rs": "454a566dc409c481729a37503928d4ee9868615f1e656f3a3aa81c1462529d57",
+    "vail/crates/vail-table/src/vcf_export.rs": "e8d980679511240487232d71175822f457d8bd8d71f8ad3119212fdd437151ba",
+    "vail/crates/vail-execution/src/variant_kernels.rs": "c5667f9669f288dd1bf701da6f92fc0845559800afb000859c49b72be7253b18",
+    "vail/crates/vail-execution/src/expressions.rs": "5f21a0fb01c93973046adda026a14a2f7efcb4f7ddea9c49d069a662b600c92a",
+    "vail/python/vail/_native.abi3.so": "ee2d6cf83f07e433219150bfa7962ed727fc1800a09e6ecf40e387456305da28"
+  }
+}

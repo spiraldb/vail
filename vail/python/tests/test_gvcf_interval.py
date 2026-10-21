@@ -77,3 +77,62 @@ def test_gvcf_interval_row_dependent_bounds(tmp_path):
     bounds = bounds.annotate(records=hl.import_gvcf_interval(
         path, 0, '1', bounds.idx + 10, bounds.idx + 10, header))
     assert [[record.locus.position for record in row.records] for row in bounds.collect()] == [[10], [11]]
+
+
+def _indexed_fixture(tmp_path, body, *, name='indexed.g.vcf.bgz'):
+    import shutil
+    import subprocess
+    bgzip = shutil.which('bgzip')
+    tabix = shutil.which('tabix')
+    if bgzip is None or tabix is None:
+        pytest.skip('indexed gVCF tests require htslib bgzip and tabix')
+    source = tmp_path / 'input.g.vcf'
+    source.write_text(HEADER + body)
+    output = tmp_path / name
+    with output.open('wb') as stream:
+        subprocess.run([bgzip, '-c', str(source)], stdout=stream, check=True)
+    subprocess.run([tabix, '-f', '-p', 'vcf', str(output)], check=True)
+    return output
+
+
+def test_indexed_gvcf_queries_do_not_decode_unselected_records(tmp_path):
+    # Invalid AD outside the selected interval and inside a reference block
+    # overlapping the interval both fail full VCF decoding. The indexed reader
+    # excludes them before decoding, according to Hail's POS-only semantics.
+    path = _indexed_fixture(tmp_path,
+        '1\t1\t.\tA\t<NON_REF>\t.\tPASS\tEND=100\tGT:AD\t0/0:bad\t0/0:bad\n' +
+        '1\t10\t.\tG\tT,<NON_REF>\t.\tPASS\t.\tGT:AD\t0/1:5,3,0\t0/0:8,0,0\n' +
+        '2\t20\t.\tA\tC\t.\tPASS\t.\tGT:AD\t0/1:bad\t0/0:bad\n')
+    header = hl.get_vcf_header_info(path)
+    records = hl.import_gvcf_interval(path, 0, '1', 10, 10, header)
+    rows = hl.eval(records)
+    assert [row.locus.position for row in rows] == [10]
+    assert rows[0].__entries[0].AD == [5, 3, 0]
+    with pytest.raises(Exception, match='invalid integer|invalid digit|VCF|vcf'):
+        hl.import_vcf(path).entries().collect()
+
+
+def test_indexed_gvcf_remains_lazy_and_supports_recoding(tmp_path):
+    body = '1\t10\t.\tG\tT,<NON_REF>\t.\tPASS\t.\tGT:AD\t0/1:5,3,0\t0/0:8,0,0\n'
+    path = _indexed_fixture(tmp_path, body)
+    header = hl.get_vcf_header_info(path)
+    records = hl.import_gvcf_interval(path, 0, 'chr1', 10, 10, header,
+                                    contig_recoding={'1': 'chr1'}, reference_genome='GRCh38')
+    # Replacing and reindexing the data after construction must change the
+    # result, proving no eager interval materialization occurred.
+    _indexed_fixture(tmp_path, body.replace('5,3,0', '6,4,0'))
+    row = hl.eval(records)[0]
+    assert row.locus == hl.Locus('chr1', 10, reference_genome='GRCh38')
+    assert row.__entries[0].AD == [6, 4, 0]
+    assert hl.eval(hl.import_gvcf_interval(path, 0, 'chr2', 1, 100, header,
+                                       contig_recoding={'1': 'chr1'}, reference_genome='GRCh38')) == []
+
+
+def test_indexed_gvcf_reports_index_failure_at_execution(tmp_path):
+    path = _indexed_fixture(tmp_path,
+        '1\t10\t.\tA\tC\t.\tPASS\t.\tGT:AD\t0/1:5,3\t0/0:8,0\n')
+    header = hl.get_vcf_header_info(path)
+    records = hl.import_gvcf_interval(path, 0, '1', 10, 10, header)
+    (tmp_path / (path.name + '.tbi')).write_bytes(b'corrupted')
+    with pytest.raises(Exception, match='tabix query failed'):
+        hl.eval(records)

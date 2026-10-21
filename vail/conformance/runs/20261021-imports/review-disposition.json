@@ -1,0 +1,58 @@
+{
+  "candidate_base": "c0ca9a04",
+  "initial_reviewed_revision": "51d8cbb6",
+  "initial_disposition": "request_changes",
+  "main_updated": false,
+  "findings": [
+    {
+      "finding": "BGEN missing parent validity",
+      "disposition": "closed by independent pinned-Hail oracle; missing BGEN samples filter whole entries, including fields=[]",
+      "evidence": "bgen/missing-oracle.json"
+    },
+    {
+      "finding": "matrix export physical column alignment",
+      "disposition": "fixed; header derives from the same physical globals array as entry bodies; public permuted-column roundtrip"
+    },
+    {
+      "finding": "one-column intervals endpoint/recoding/skip",
+      "disposition": "reviewer closed as intentional pinned-Hail parity",
+      "evidence": "interval-public-oracle.json"
+    },
+    {
+      "finding": "BGEN row-only allocations",
+      "disposition": "direct demanded Arrow builders; selected offsets and requested children only"
+    },
+    {
+      "finding": "BGEN/PLINK per-cell JSON conversion",
+      "disposition": "replaced with direct typed native Arrow builders"
+    },
+    {
+      "finding": "private PLINK and PreparedCsv test assertions",
+      "disposition": "replaced with public API comparisons and parser grammar tests"
+    },
+    {
+      "finding": "PLINK fixture extraction private comparison",
+      "disposition": "public schema/key/global/localized-data equality against pinned Hail",
+      "evidence": "plink/fixture-public-verification.json"
+    },
+    {
+      "finding": "PLINK export Python JSON bitpacking",
+      "disposition": "native Arrow to BED/BIM sink; original21 tests plus external33720-call concordance",
+      "evidence": "plink/summary-typed-native.json"
+    },
+    {
+      "finding": "BGEN index/source selection",
+      "disposition": "fixed: typed source/selector DAG dependency; native per-action key set intersects indexed key-offset records before seeking, shared across source partitions; public malformed-block and selector-mutation tests pass"
+    }
+  ],
+  "additional_changes": [
+    "typed nested JSON parse/annotation export",
+    "boolean numeric comparison parity",
+    "memoized shared physical DAG rewrites",
+    "indexed tabix-backed lazy gVCF interval reads",
+    "native Arrow memory cache",
+    "Call index conversion and ndarray expression prerequisites",
+    "Avro partition bounds metadata parity confirmed against pinned Hail",
+    "split_multi_hts preserves original entry field order"
+  ]
+}

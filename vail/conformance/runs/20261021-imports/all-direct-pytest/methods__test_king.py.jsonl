@@ -1,0 +1,13 @@
+{"kind": "inventory", "items": ["test_king.py::test_king_small", "test_king.py::test_king_large", "test_king.py::test_king_filtered_entries_no_error"]}
+{"kind": "started", "nodeid": "test_king.py::test_king_small"}
+{"kind": "test", "nodeid": "test_king.py::test_king_small", "when": "setup", "outcome": "passed", "duration": 0.0015909170033410192, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_king.py::test_king_small", "when": "call", "outcome": "failed", "duration": 0.22382383298827335, "category": "unsupported", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_king.py:21: in test_king_small\n    kinship = hl.king(mt.GT)\n              ^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'king'"}
+{"kind": "test", "nodeid": "test_king.py::test_king_small", "when": "teardown", "outcome": "passed", "duration": 8.041702676564455e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_king.py::test_king_large"}
+{"kind": "test", "nodeid": "test_king.py::test_king_large", "when": "setup", "outcome": "passed", "duration": 0.0001822090125642717, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_king.py::test_king_large", "when": "call", "outcome": "failed", "duration": 0.031105207977816463, "category": "unsupported", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_king.py:30: in test_king_large\n    kinship = hl.king(mt.GT)\n              ^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'king'"}
+{"kind": "test", "nodeid": "test_king.py::test_king_large", "when": "teardown", "outcome": "passed", "duration": 6.225000834092498e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_king.py::test_king_filtered_entries_no_error"}
+{"kind": "test", "nodeid": "test_king.py::test_king_filtered_entries_no_error", "when": "setup", "outcome": "passed", "duration": 0.0001551249879412353, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_king.py::test_king_filtered_entries_no_error", "when": "call", "outcome": "failed", "duration": 0.030593333998695016, "category": "unsupported", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_king.py:39: in test_king_filtered_entries_no_error\n    hl.king(mt.GT)._force_count_rows()\n    ^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'king'"}
+{"kind": "test", "nodeid": "test_king.py::test_king_filtered_entries_no_error", "when": "teardown", "outcome": "passed", "duration": 7.741694571450353e-05, "category": null, "error": ""}

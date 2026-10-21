@@ -1,0 +1,65 @@
+{"kind": "inventory", "items": ["test_expr.py::Tests::test_aggregator_info_score", "test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import", "test_expr.py::Tests::test_array_and_if_requiredness", "test_expr.py::Tests::test_export_genetic_data", "test_expr.py::test_export_entry[True-NA-\\t]", "test_expr.py::test_export_entry[True-NA-,]", "test_expr.py::test_export_entry[True-NA-@]", "test_expr.py::test_export_entry[True-null-\\t]", "test_expr.py::test_export_entry[True-null-,]", "test_expr.py::test_export_entry[True-null-@]", "test_expr.py::test_export_entry[False-NA-\\t]", "test_expr.py::test_export_entry[False-NA-,]", "test_expr.py::test_export_entry[False-NA-@]", "test_expr.py::test_export_entry[False-null-\\t]", "test_expr.py::test_export_entry[False-null-,]", "test_expr.py::test_export_entry[False-null-@]"]}
+{"kind": "started", "nodeid": "test_expr.py::Tests::test_aggregator_info_score"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_aggregator_info_score", "when": "setup", "outcome": "passed", "duration": 0.008010625024326146, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_aggregator_info_score", "when": "call", "outcome": "failed", "duration": 1.4561076660174876, "category": "unsupported", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py:716: in test_aggregator_info_score\n    violations = computed.filter((computed.n_included != computed.n_included_truth) | (hl.abs(computed.score - computed.score_truth) > 0.001))\n                                                                                       ^^^^^^\nE   AttributeError: module 'vail' has no attribute 'abs'"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_aggregator_info_score", "when": "teardown", "outcome": "passed", "duration": 0.00021050003124400973, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import", "when": "setup", "outcome": "passed", "duration": 0.0004607909941114485, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import", "when": "call", "outcome": "passed", "duration": 0.5477919580298476, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import", "when": "teardown", "outcome": "passed", "duration": 0.00013354199472814798, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::Tests::test_array_and_if_requiredness"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_array_and_if_requiredness", "when": "setup", "outcome": "passed", "duration": 0.0003753339988179505, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_array_and_if_requiredness", "when": "call", "outcome": "failed", "duration": 0.030034874973353, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py:1951: in test_array_and_if_requiredness\n    hl.tuple((mt.AD, mt.PL)).show()\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:880: in __getattr__\n    raise AttributeError(name)\nE   AttributeError: show"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_array_and_if_requiredness", "when": "teardown", "outcome": "passed", "duration": 0.00021612504497170448, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::Tests::test_export_genetic_data"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_export_genetic_data", "when": "setup", "outcome": "passed", "duration": 0.00038654200034216046, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_export_genetic_data", "when": "call", "outcome": "failed", "duration": 0.9159493329934776, "category": "unsupported", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py:1373: in test_export_genetic_data\n    actual = actual.transmute_entries(GT=hl.parse_call(actual.x))\n                                         ^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'parse_call'"}
+{"kind": "test", "nodeid": "test_expr.py::Tests::test_export_genetic_data", "when": "teardown", "outcome": "passed", "duration": 0.0002163329627364874, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[True-NA-\\t]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-\\t]", "when": "setup", "outcome": "passed", "duration": 0.0004948340356349945, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-\\t]", "when": "call", "outcome": "passed", "duration": 0.9547475419822149, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-\\t]", "when": "teardown", "outcome": "passed", "duration": 0.0001307909842580557, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[True-NA-,]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-,]", "when": "setup", "outcome": "passed", "duration": 0.00036454101791605353, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-,]", "when": "call", "outcome": "passed", "duration": 1.2328210420091636, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-,]", "when": "teardown", "outcome": "passed", "duration": 0.0002019170206040144, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[True-NA-@]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-@]", "when": "setup", "outcome": "passed", "duration": 0.0008034170023165643, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-@]", "when": "call", "outcome": "passed", "duration": 1.3467364579555579, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-NA-@]", "when": "teardown", "outcome": "passed", "duration": 0.0001347920042462647, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[True-null-\\t]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-\\t]", "when": "setup", "outcome": "passed", "duration": 0.0004253750084899366, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-\\t]", "when": "call", "outcome": "passed", "duration": 1.3276026250096038, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-\\t]", "when": "teardown", "outcome": "passed", "duration": 0.00018854200607165694, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[True-null-,]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-,]", "when": "setup", "outcome": "passed", "duration": 0.0006190420244820416, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-,]", "when": "call", "outcome": "passed", "duration": 1.3667210839921609, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-,]", "when": "teardown", "outcome": "passed", "duration": 0.00021329103037714958, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[True-null-@]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-@]", "when": "setup", "outcome": "passed", "duration": 0.0033912499784491956, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-@]", "when": "call", "outcome": "passed", "duration": 1.251898499962408, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[True-null-@]", "when": "teardown", "outcome": "passed", "duration": 0.00014304096112027764, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[False-NA-\\t]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-\\t]", "when": "setup", "outcome": "passed", "duration": 0.0004592500044964254, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-\\t]", "when": "call", "outcome": "passed", "duration": 1.5520340409711935, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-\\t]", "when": "teardown", "outcome": "passed", "duration": 0.00013641698751598597, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[False-NA-,]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-,]", "when": "setup", "outcome": "passed", "duration": 0.00042524997843429446, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-,]", "when": "call", "outcome": "passed", "duration": 1.5123804169707, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-,]", "when": "teardown", "outcome": "passed", "duration": 0.00017920800019055605, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[False-NA-@]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-@]", "when": "setup", "outcome": "passed", "duration": 0.0006440840079449117, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-@]", "when": "call", "outcome": "passed", "duration": 1.4145383749855682, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-NA-@]", "when": "teardown", "outcome": "passed", "duration": 0.00013675005175173283, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[False-null-\\t]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-\\t]", "when": "setup", "outcome": "passed", "duration": 0.0004170829779468477, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-\\t]", "when": "call", "outcome": "passed", "duration": 1.2496478750254028, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-\\t]", "when": "teardown", "outcome": "passed", "duration": 0.00019412499386817217, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[False-null-,]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-,]", "when": "setup", "outcome": "passed", "duration": 0.0006464169709943235, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-,]", "when": "call", "outcome": "passed", "duration": 1.1790633750497364, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-,]", "when": "teardown", "outcome": "passed", "duration": 0.00014041602844372392, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_expr.py::test_export_entry[False-null-@]"}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-@]", "when": "setup", "outcome": "passed", "duration": 0.0004152499604970217, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-@]", "when": "call", "outcome": "passed", "duration": 0.8276287079788744, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_expr.py::test_export_entry[False-null-@]", "when": "teardown", "outcome": "passed", "duration": 0.00012916699051856995, "category": null, "error": ""}

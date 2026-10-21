@@ -1,0 +1,674 @@
+{
+  "test_phase_outcomes": {
+    "passed": 430,
+    "failed": 87
+  },
+  "failure_categories": {
+    "downstream_missing_or_unsupported_api": 68,
+    "collection_dependency_or_api": 7,
+    "missing_fixture_or_storage_path": 2,
+    "fixture_private_or_tooling": 16,
+    "downstream_split_multi_field_order": 1
+  },
+  "interpretation": "No confirmed importer parser defect among these executed failures. Collection failures prevent complete coverage. Missing abs is a stale pre-fix observation. Classifications are diagnostic, not scope exclusions.",
+  "failures": [
+    {
+      "module": "experimental__test_experimental.py",
+      "test": "test_experimental.py::Tests::test_mt_full_outer_join_self",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'experimental'"
+    },
+    {
+      "module": "experimental__test_experimental.py",
+      "test": "test_experimental.py::Tests::test_sparse",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'experimental'"
+    },
+    {
+      "module": "expr__test_expr.py",
+      "test": "test_expr.py::Tests::test_aggregator_info_score",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'abs'"
+    },
+    {
+      "module": "expr__test_expr.py",
+      "test": "test_expr.py::Tests::test_array_and_if_requiredness",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: show"
+    },
+    {
+      "module": "expr__test_expr.py",
+      "test": "test_expr.py::Tests::test_export_genetic_data",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'parse_call'"
+    },
+    {
+      "module": "expr__test_functions.py",
+      "test": "test_functions.py::test_pgenchisq",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'pgenchisq'"
+    },
+    {
+      "module": "expr__test_types.py",
+      "test": "test_types.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   ImportError: cannot import name 'coercer_from_dtype' from 'vail.expr' (/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expr/__init__.py)"
+    },
+    {
+      "module": "genetics__test_reference_genome.py",
+      "test": "test_reference_genome.py::test_reference_genome_sequence",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: FASTA-backed reference construction is not implemented"
+    },
+    {
+      "module": "genetics__test_reference_genome.py",
+      "test": "test_reference_genome.py::test_reference_genome_liftover",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: 'ReferenceGenome' object has no attribute 'has_liftover'"
+    },
+    {
+      "module": "matrixtable__test_matrix_table.py",
+      "test": "test_matrix_table.py::Tests::test_aggregate_cols_by_init_op",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: matrix-axis aggregate initialization requires native Table support for group-dependent initializers"
+    },
+    {
+      "module": "matrixtable__test_matrix_table.py",
+      "test": "test_matrix_table.py::Tests::test_fix3307_read_mt_wrong",
+      "phase": "call",
+      "category": "missing_fixture_or_storage_path",
+      "error_summary": "E   FileNotFoundError: No such file or directory (os error 2)"
+    },
+    {
+      "module": "matrixtable__test_matrix_table.py",
+      "test": "test_matrix_table.py::Tests::test_partitioned_write_coerce",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'"
+    },
+    {
+      "module": "methods__relatedness__test_pc_relate.py",
+      "test": "test_pc_relate.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_de_novo",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_1",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_2",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_3",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_4",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_5",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_6",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_7",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_8",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_mendel_errors_9",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_tdt",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_trio_matrix_1",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_trio_matrix_2",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_trio_matrix_incomplete_trios",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_family_methods.py",
+      "test": "test_family_methods.py::Tests::test_trio_matrix_null_keys",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::VCFTests::test_combiner_works",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   ModuleNotFoundError: No module named 'vail.vds'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::VCFTests::test_invalid_info_fields",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'hail'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::VCFTests::test_tabix_export",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   AttributeError: 'tarray' object has no attribute '_convert_to_json'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_import_plink_same",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_plink",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   FileNotFoundError: [Errno 2] No such file or directory: 'plink'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_plink_call_expression",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_plink_default_arguments",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_plink_non_default_arguments",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_import_plink_a1_major",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_import_plink_empty_bim",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::PLINKTests::test_import_plink_empty_fam",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::BGENTests::test_export_bgen",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: 'builtins.NativeTable' object has no attribute 'export_bgen'. Did you mean: 'export_plink'?"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::BGENTests::test_export_bgen_from_vcf",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'triangle'"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::BGENTests::test_export_bgen_parallel",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: 'builtins.NativeTable' object has no attribute 'export_bgen'. Did you mean: 'export_plink'?"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::BGENTests::test_export_bgen_zstd",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: 'builtins.NativeTable' object has no attribute 'export_bgen'. Did you mean: 'export_plink'?"
+    },
+    {
+      "module": "methods__test_impex.py",
+      "test": "test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'abs'"
+    },
+    {
+      "module": "methods__test_king.py",
+      "test": "test_king.py::test_king_small",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'king'"
+    },
+    {
+      "module": "methods__test_king.py",
+      "test": "test_king.py::test_king_large",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'king'"
+    },
+    {
+      "module": "methods__test_king.py",
+      "test": "test_king.py::test_king_filtered_entries_no_error",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'king'"
+    },
+    {
+      "module": "methods__test_misc.py",
+      "test": "test_misc.py::Tests::test_annotate_intervals_bed1",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_misc.py",
+      "test": "test_misc.py::Tests::test_annotate_intervals_bed2",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_misc.py",
+      "test": "test_misc.py::Tests::test_annotate_intervals_bed3",
+      "phase": "call",
+      "category": "fixture_private_or_tooling",
+      "error_summary": "E   ModuleNotFoundError: No module named 'plink_fixture'"
+    },
+    {
+      "module": "methods__test_misc.py",
+      "test": "test_misc.py::Tests::test_verify_biallelic",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'methods'"
+    },
+    {
+      "module": "methods__test_pca.py",
+      "test": "test_pca.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   ModuleNotFoundError: No module named 'vail.methods'"
+    },
+    {
+      "module": "methods__test_qc.py",
+      "test": "test_qc.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   ModuleNotFoundError: No module named 'vail.methods'"
+    },
+    {
+      "module": "methods__test_skat.py",
+      "test": "test_skat.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute '_linear_skat'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_de_novo",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_de_novo_error",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_de_novo_ignore_computed_af_runs",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'Pedigree'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_impute_sex_same_as_plink",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'impute_sex'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_ld_prune",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'ld_prune'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_ld_prune_call_expression",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'ld_prune'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_ld_prune_identical_variants",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'ld_prune'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_ld_prune_missing_entries",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'ld_prune'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_ld_prune_with_duplicate_row_keys",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'ld_prune'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_equivalence_between_ds_and_gt",
+      "phase": "call",
+      "category": "missing_fixture_or_storage_path",
+      "error_summary": "E   FileNotFoundError: No such file or directory (os error 2)"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_multi_pheno_same",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_pl",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_with_cov",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_with_dosage",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_with_import_fam_boolean",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_with_import_fam_quant",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linear_regression_without_intercept",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.linear_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linreg_basic",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: MatrixTable caching requires native Table result-cache support"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linreg_chained",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: MatrixTable caching requires native Table result-cache support"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_linreg_pass_through",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.linear_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_lrt",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_score",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_wald_dosage",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_wald_test",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_wald_test_apply_multi_pheno",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_wald_test_multi_pheno_bgen_dosage",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: cache"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logistic_regression_wald_test_pl",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_logreg_pass_through",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_poission_regression_wald_test",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'poisson_regression_rows'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_poisson_pass_through",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'poisson_regression_rows'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_poisson_regression_lrt",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'poisson_regression_rows'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_poisson_regression_score_test",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'poisson_regression_rows'"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_split_multi_hts",
+      "phase": "call",
+      "category": "downstream_split_multi_field_order",
+      "error_summary": "Both VCF imports yield GT,AD,DP,GQ,PL; split_multi_hts changes entry order to GT,DP,GQ,AD,PL, causing schema comparison failure."
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_split_multi_table",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute 'split_multi'. Did you mean: 'split_multi_hts'?"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_weighted_linear_regression",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: values"
+    },
+    {
+      "module": "methods__test_statgen.py",
+      "test": "test_statgen.py::Tests::test_weighted_linear_regression__missing_weights_are_excluded",
+      "phase": "call",
+      "category": "downstream_missing_or_unsupported_api",
+      "error_summary": "E   AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'"
+    },
+    {
+      "module": "table__test_table.py",
+      "test": "test_table.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   ModuleNotFoundError: No module named 'pyspark'"
+    },
+    {
+      "module": "vds__test_vds.py",
+      "test": "test_vds.py",
+      "phase": "collection",
+      "category": "collection_dependency_or_api",
+      "error_summary": "E   ModuleNotFoundError: No module named 'vail.vds'"
+    }
+  ]
+}

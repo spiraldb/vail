@@ -108,8 +108,11 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
         if 'GQ' in fields:
             quality = hl.gq_from_pl(pl)
             updates['GQ'] = hl.coalesce(quality, split.GQ)
-    return (split.annotate_entries(**updates)
-            .drop('old_locus', 'old_alleles', prepared)
+    split = split.annotate_entries(**updates)
+    # AD and PL were temporarily replaced by the prepared reductions. Restore
+    # the original entry field order when exposing the split entries.
+    split = split.select_entries(**{field: split[field] for field in fields})
+    return (split.drop('old_locus', 'old_alleles')
             .key_rows_by('locus', 'alleles'))
 
 

@@ -1,0 +1,52 @@
+FFF...F                                                                  [100%]
+=================================== FAILURES ===================================
+______________________ Tests.test_annotate_intervals_bed1 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py:17: in test_annotate_intervals_bed1
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_paths.py:23: in read_matrix_table
+    path = resource_path(self._resources, path.name, self._cache_dir)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_paths.py:39: in resource_path
+    from plink_fixture import materialize
+E   ModuleNotFoundError: No module named 'plink_fixture'
+______________________ Tests.test_annotate_intervals_bed2 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py:28: in test_annotate_intervals_bed2
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_paths.py:23: in read_matrix_table
+    path = resource_path(self._resources, path.name, self._cache_dir)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_paths.py:39: in resource_path
+    from plink_fixture import materialize
+E   ModuleNotFoundError: No module named 'plink_fixture'
+______________________ Tests.test_annotate_intervals_bed3 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py:44: in test_annotate_intervals_bed3
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_paths.py:23: in read_matrix_table
+    path = resource_path(self._resources, path.name, self._cache_dir)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_paths.py:39: in resource_path
+    from plink_fixture import materialize
+E   ModuleNotFoundError: No module named 'plink_fixture'
+_________________________ Tests.test_verify_biallelic __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py:142: in test_verify_biallelic
+    hl.methods.misc.require_biallelic(mt, '')._force_count_rows()
+    ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'methods'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py::Tests::test_annotate_intervals_bed1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py::Tests::test_annotate_intervals_bed2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py::Tests::test_annotate_intervals_bed3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_misc.py::Tests::test_verify_biallelic
+4 failed, 3 passed, 12 deselected in 40.64s

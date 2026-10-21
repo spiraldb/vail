@@ -44,6 +44,7 @@ def import_vcf(
     contig_recoding=None, array_elements_required=True, skip_invalid_loci=False,
     entry_float_type=None, filter=None, find_replace=None, n_partitions=None,
     block_size=None, _create_row_uids=False, _create_col_uids=False,
+    _indexed_region=None,
 ):
     from . import Table, _native_session, _schema_from_native, _validate_n
     from .types import tfloat32, tfloat64, tint64, tstr, tstruct
@@ -73,6 +74,7 @@ def import_vcf(
         contig_recoding=contig_recoding or {}, call_fields=sorted(set(call_fields) | {"GT"}),
         entry_float32=entry_float_type == tfloat32,
         array_elements_required=array_elements_required, skip_invalid_loci=skip_invalid_loci,
+        indexed_region=_indexed_region,
         drop_samples=drop_samples, filter=filter, find_replace=None if find_replace is None else tuple(find_replace),
     )
     paths = _paths(path)

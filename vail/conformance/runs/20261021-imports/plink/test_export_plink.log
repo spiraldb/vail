@@ -1,0 +1,71 @@
+PLINK v1.9.0 64-bit (27 Sep 2026)                  cog-genomics.org/plink/1.9/
+(C) 2005-2026 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.log.
+Options in effect:
+  --const-fid
+  --keep-allele-order
+  --make-bed
+  --out /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD
+  --vcf /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-LxJf9PxAAsC3VEiR4wG3uZ
+
+98304 MB RAM detected; reserving 49152 MB for main workspace.
+--vcf:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD-temporary.bed
++
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD-temporary.bim
++
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD-temporary.fam
+written.
+346 variants loaded from .bim file.
+100 people (0 males, 0 females, 100 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.nosex
+.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 100 founders and 0 nonfounders present.
+Calculating allele frequencies... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99% done.
+Total genotyping rate is 0.974566.
+346 variants and 100 people pass filters and QC.
+Note: No phenotypes present.
+--make-bed to
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.bed
++
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.bim
++
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.fam
+... 0%1%2%3%4%5%6%7%8%9%10%11%12%13%14%15%16%17%18%19%20%21%22%23%24%25%26%27%28%29%30%31%32%33%34%35%36%37%38%39%40%41%42%43%44%45%46%47%48%49%50%51%52%53%54%55%56%57%58%59%60%61%62%63%64%65%66%67%68%69%70%71%72%73%74%75%76%77%78%79%80%81%82%83%84%85%86%87%88%89%90%91%92%93%94%95%96%97%98%99%done.
+PLINK v1.9.0 64-bit (27 Sep 2026)                  cog-genomics.org/plink/1.9/
+(C) 2005-2026 Shaun Purcell, Christopher Chang   GNU General Public License v3
+Logging to /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-MK3465HNC6srD4sQeTs1OJ.log.
+Options in effect:
+  --bfile /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD
+  --bmerge /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-9ziloaBucT3BDOO1fzCiAK
+  --merge-mode 6
+  --out /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-MK3465HNC6srD4sQeTs1OJ
+
+98304 MB RAM detected; reserving 49152 MB for main workspace.
+100 people loaded from
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.fam.
+100 people to be merged from
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-9ziloaBucT3BDOO1fzCiAK.fam.
+Of these, 0 are new, while 100 are present in the base dataset.
+346 markers loaded from
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-a79AHQF9mRbD0L2hFk9wZD.bim.
+346 markers to be merged from
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-9ziloaBucT3BDOO1fzCiAK.bim.
+Of these, 0 are new, while 346 are present in the base dataset.
+Warning: Unusually long variant ID(s) present.  PLINK 1.9 does not scale well
+to length-80+ variant IDs; consider using a different naming scheme for long
+indels and the like.
+Warning: Variants '20:10273694:CT:C' and '20:10273694:C:CT' have the same
+position.
+Warning: Variants '20:10622080:CA:C' and '20:10622080:C:CA' have the same
+position.
+Warning: Variants '20:13090733:AT:A' and '20:13090733:A:AT' have the same
+position.
+14 more same-position warnings: see log file.
+Performing 1-pass diff (mode 6), writing results to
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/temp-MK3465HNC6srD4sQeTs1OJ.diff
+.
+Pass 1: fileset #1 complete.                                              34600 overlapping calls, 33720 nonmissing in both filesets.
+33720 concordant, for a concordance rate of 1.

@@ -4,7 +4,7 @@
   "source_fixture": "/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt",
   "oracle_payload_sha256": "e759b4010e0cbb71b8b07a010965b620f424359d11de960525ee6f645d9ccc5b",
   "extract_command": "PYTHONPATH=/Users/danielking/projects/vail/hail/hail/python SPARK_LOCAL_IP=127.0.0.1 JAVA_HOME=<Zulu21 JDK> /private/tmp/vail-plink-oracle/bin/python conformance/extract_plink_fixture.py --resources /Users/danielking/projects/vail/hail/hail/hail/test/resources --output conformance/fixtures/split-multi-sample.oracle.json.gz",
-  "oracle_equality": "Original Hail fixture _same(split_multi_hts(import_vcf(sample.vcf,array_elements_required=False)).select_globals(),tolerance=0) returned True",
+  "oracle_equality": "Public Hail equality of every axis schema, row/column keys, globals, physical localized columns, and all localized rows/entries; exact equality passed. Fresh public extraction payload equals the stored golden payload exactly.",
   "rows": 346,
   "schemas": [
     "row",
@@ -14,6 +14,6 @@
   ],
   "test_only": true,
   "typed_fixture_verification": "Materialize via conformance/plink_fixture.py, read with Vail, and compare all schemas and plain typed values exactly against the independently extracted golden payload; passed (346 rows).",
-  "oracle_log": "conformance/runs/20261021-imports/plink/fixture-oracle.log",
+  "oracle_log": "conformance/runs/20261021-imports/plink/fixture-public-oracle.log",
   "vail_verification": "conformance/runs/20261021-imports/plink/fixture-verification.json"
 }

@@ -3,6 +3,17 @@ import pytest
 import vail as hl
 
 
+def test_export_labels_follow_permuted_column_slots(tmp_path):
+    matrix = hl.utils.range_matrix_table(1, 2)
+    matrix = matrix.key_cols_by(s='s' + hl.str(matrix.col_idx))
+    matrix = matrix.annotate_entries(x=matrix.col_idx + 10).choose_cols([1, 0])
+    path = tmp_path / 'permuted.tsv'
+    matrix.x.export(path)
+    assert path.read_text().splitlines() == ['row_idx\ts1\ts0', '0\t11\t10']
+    restored = hl.import_matrix_table(path, row_fields={'row_idx': hl.tint32}, row_key='row_idx')
+    assert [(row.col_id, row.x) for row in restored.entries().collect()] == [('s0', 10), ('s1', 11)]
+
+
 def test_header_order_missing_values_and_native_laziness(tmp_path):
     path = tmp_path / 'matrix.tsv'
     path.write_text('name\tposition\ts1\ts2\na\t7\t1\tNA\n')

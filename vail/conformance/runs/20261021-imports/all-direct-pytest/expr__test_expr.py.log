@@ -1,0 +1,24 @@
+F.FF............                                                         [100%]
+=================================== FAILURES ===================================
+_______________________ Tests.test_aggregator_info_score _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py:716: in test_aggregator_info_score
+    violations = computed.filter((computed.n_included != computed.n_included_truth) | (hl.abs(computed.score - computed.score_truth) > 0.001))
+                                                                                       ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'abs'
+_____________________ Tests.test_array_and_if_requiredness _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py:1951: in test_array_and_if_requiredness
+    hl.tuple((mt.AD, mt.PL)).show()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expressions.py:880: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+________________________ Tests.test_export_genetic_data ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py:1373: in test_export_genetic_data
+    actual = actual.transmute_entries(GT=hl.parse_call(actual.x))
+                                         ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'parse_call'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py::Tests::test_aggregator_info_score
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py::Tests::test_array_and_if_requiredness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_expr.py::Tests::test_export_genetic_data
+3 failed, 13 passed, 261 deselected in 20.40s

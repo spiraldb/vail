@@ -98,8 +98,8 @@ parse_float64 = _unsupported_string('Java float64 parsing')
 parse_int = parse_int32
 parse_float = parse_float64
 format = _unsupported_string('Java printf formatting')
-json = _unsupported_string('Hail typed JSON serialization')
-parse_json = _unsupported_string('Hail typed JSON parsing')
+from .text import json
+from .text import parse_json
 from .streams import StreamExpression, stream_range
 _stream_range = stream_range
 
@@ -523,6 +523,18 @@ class Table:
     def export(self, output, types_file=None, header=True, parallel=None, delimiter='\t'):
         from .text import export
         return export(self, output, types_file, header, parallel, delimiter)
+
+    def cache(self):
+        """Eagerly snapshot rows and globals in native Arrow memory."""
+        return Table(self._native.cache(), self._schema, self._keys)
+
+    def persist(self, storage_level="MEMORY_AND_DISK"):
+        """Snapshot in memory; other persistence levels are not implemented."""
+        if not isinstance(storage_level, builtins.str):
+            raise TypeError("storage_level must be a string")
+        if storage_level != "MEMORY_ONLY":
+            raise NotImplementedError("only MEMORY_ONLY persistence is implemented")
+        return self.cache()
 
     def checkpoint(self, output, overwrite=False, stage_locally=False,
                    _codec_spec=None, _read_if_exists=False, _intervals=None,
@@ -1976,8 +1988,8 @@ from .expressions import bind
 from .matrixtable import MatrixTable, GroupedMatrixTable, range_matrix_table, read_matrix_table
 utils.range_matrix_table = range_matrix_table
 from .vcf import import_vcf, get_vcf_metadata
-from .bgen import import_bgen, index_bgen
-from .gen import import_gen
+from .bgen import import_bgen, index_bgen, export_bgen
+from .gen import import_gen, export_gen
 from .fam import import_fam
 from .context import TemporaryFilename, TemporaryDirectory
 from .interval_import import import_locus_intervals, locus_interval, parse_locus_interval
@@ -1987,6 +1999,7 @@ from .plink import import_plink, export_plink
 from .avro import import_avro
 from .csv_import import import_csv
 from .gvcf_interval import import_gvcf_interval, get_vcf_header_info
+from .import_support import parse_call, abs, triangle
 
 def hadoop_open(path, mode='r', buffer_size=8192):
     """Open a local filesystem path or file URI using the backend interface."""
@@ -2041,4 +2054,6 @@ from . import linalg
 from .simulation import balding_nichols_model
 
 from .qc import variant_qc, hardy_weinberg_test
-from .genotype_likelihoods import pl_to_gp, pl_dosage, gp_dosage, gq_from_pl
+from .genotype_likelihoods import pl_to_gp, pl_dosage, gp_dosage, gq_from_pl, unphased_diploid_gt_index_call
+
+from .expressions import compare as _compare

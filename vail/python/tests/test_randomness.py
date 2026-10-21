@@ -186,3 +186,24 @@ def test_dirichlet_extremes_remain_normalized(concentrations):
     assert all(math.isfinite(value) and value >= 0 for value in values)
     assert sum(values) == pytest.approx(1)
     assert all(value == 0 for value, concentration in zip(values, concentrations) if concentration == 0)
+
+
+def test_random_callback_preserves_opaque_call_elements():
+    element_type = hl.tstruct(GT=hl.tcall)
+    values = [hl.Struct(GT=hl.Call([0, 1])), hl.Struct(GT=None), None]
+    collection = hl.literal(values, hl.tarray(element_type))
+
+    def selected(items):
+        return items.map(lambda item: hl.if_else(
+            hl.rand_bool(1.0, seed=1234), item, hl.missing(element_type)
+        ))
+
+    # Exercise both scalar physical lowering and relational logical lowering.
+    assert hl.eval(selected(collection)) == values
+    for partitions in (1, 3):
+        table = hl.Table.parallelize(
+            [hl.Struct(items=values)],
+            schema=hl.tstruct(items=hl.tarray(element_type)),
+            n_partitions=partitions,
+        )
+        assert table.select(items=selected(table.items)).collect() == [hl.Struct(items=values)]

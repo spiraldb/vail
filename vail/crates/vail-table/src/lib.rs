@@ -7,6 +7,8 @@ mod diagnostics;
 use arrow_batches::ArrowBatches;
 pub mod avro_source;
 mod bgen_source;
+mod bgen_select;
+pub mod bgen_export;
 pub mod comparison;
 mod compressed_text;
 mod conditional_globals;
@@ -34,6 +36,7 @@ pub mod partitioned;
 mod partitioning;
 pub mod plan;
 mod plink_source;
+pub mod plink_export;
 mod projection_broadcast;
 mod provider;
 mod range_lookup;
@@ -219,6 +222,10 @@ pub enum TableNode {
         paths: Vec<String>,
         format: String,
         options_json: Value,
+    },
+    BgenSelect {
+        source: TableRef,
+        variants: TableRef,
     },
     Parallelize {
         rows: ArrowBatches,
@@ -658,6 +665,16 @@ impl TableIR {
             source.keys.clone(),
             globals,
             TableNode::Read { source },
+        ))
+    }
+
+    pub fn bgen_select(self: &Arc<Self>, variants: TableRef) -> Result<TableRef> {
+        crate::bgen_select::validate(self, &variants)?;
+        Ok(Self::new(
+            self.schema.clone(),
+            self.keys.clone(),
+            self.globals.clone(),
+            TableNode::BgenSelect { source: self.clone(), variants },
         ))
     }
 
@@ -1585,6 +1602,9 @@ impl TableIR {
             TableNode::Read { source } => {
                 json!({"node":"TableRead", "metadata":source.metadata_location()})
             }
+            TableNode::BgenSelect { source, variants } => {
+                json!({"node":"BgenVariantSelection", "source":source.explain(), "variants":variants.explain()})
+            }
             TableNode::TextRead {
                 paths,
                 format,
@@ -1682,7 +1702,7 @@ impl TableIR {
             }
             TableNode::IntervalRead { .. } => None,
             TableNode::Read { source } => Some(source.partition_rows().to_vec()),
-            TableNode::TextRead { .. } => None,
+            TableNode::BgenSelect { .. } | TableNode::TextRead { .. } => None,
             TableNode::Parallelize { rows, n_partitions } => Some(
                 (0..*n_partitions)
                     .map(|p| rows.partition_bounds(p, *n_partitions).len())
@@ -1778,7 +1798,7 @@ impl TableIR {
             } => count.or_else(|| partition_counts.as_ref().map(|counts| counts.iter().sum())),
             TableNode::IntervalRead { .. } => None,
             TableNode::Read { source } => Some(source.partition_rows().iter().sum()),
-            TableNode::TextRead { .. } => None,
+            TableNode::BgenSelect { .. } | TableNode::TextRead { .. } => None,
             TableNode::Parallelize { rows, .. } => Some(rows.num_rows()),
             TableNode::Expression { .. } => None,
             TableNode::Range { n, .. } => Some(*n),
@@ -1832,6 +1852,7 @@ impl TableIR {
                 }
             }
             TableNode::Read { source } => Some(source.partition_rows().len()),
+            TableNode::BgenSelect { source, .. } => source.known_n_partitions(),
             TableNode::TextRead { paths, .. } => Some(paths.len()),
             TableNode::Range { n_partitions, .. }
             | TableNode::Parallelize { n_partitions, .. }
@@ -1924,6 +1945,20 @@ impl TableIR {
 
     pub async fn collect_partitions(self: &Arc<Self>) -> Result<Vec<Vec<RecordBatch>>> {
         collect_partitions(self.execute()).await
+    }
+
+    /// Eager in-memory Arrow snapshot with no dependency on the input plan.
+    pub async fn cache(self: &Arc<Self>) -> Result<TableRef> {
+        let partitions = self.collect_partitions().await?;
+        // Physical optimization can coalesce empty inputs; retain the public
+        // logical partition count when the source declares one.
+        let n_partitions = self.known_n_partitions().unwrap_or(partitions.len());
+        let batches = partitions.into_iter().flatten()
+            .map(|batch| vail_storage::local_table::normalize(&batch, self.schema.clone()))
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        let globals = GlobalsIR::arrow_literal(self.globals.evaluate().await?)?;
+        let snapshot = Self::parallelize_batches(self.schema.clone(), batches, n_partitions)?;
+        Ok(Self::new(self.schema.clone(), self.keys.clone(), globals, snapshot.node.clone()))
     }
 
     /// Collect an ordered prefix without counting unknown source partitions.

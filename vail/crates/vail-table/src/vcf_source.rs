@@ -11,7 +11,90 @@ use datafusion_datasource::{
 };
 use datafusion_physical_plan::metrics::ExecutionPlanMetricsSet;
 use object_store::ObjectStore;
-use std::{fmt, io::BufRead, sync::Arc};
+use std::{
+    fmt,
+    io::{BufRead, BufReader, Read},
+    process::{Child, Command, Stdio},
+    sync::Arc,
+    thread::JoinHandle,
+};
+
+/// htslib tabix regions use one-based inclusive coordinates. The decoder's
+/// subsequent locus predicate narrows overlap queries to records whose POS is
+/// in the interval, matching Hail's GVCFPartitionReader.
+#[derive(Clone, Debug, serde::Deserialize)]
+struct IndexedRegion {
+    executable: String,
+    contig: String,
+    start: i32,
+    end: i32,
+}
+
+struct VcfInput {
+    reader: Box<dyn BufRead + Send>,
+    child: Option<Child>,
+    stderr: Option<JoinHandle<Vec<u8>>>,
+}
+impl VcfInput {
+    fn open(path: &str, region: Option<&IndexedRegion>) -> vail_vcf::Result<Self> {
+        let Some(region) = region else {
+            return Ok(Self { reader: vail_vcf::open(path)?, child: None, stderr: None });
+        };
+        if region.end < region.start || region.end < 1 {
+            return Ok(Self {
+                reader: Box::new(std::io::Cursor::new(Vec::<u8>::new())),
+                child: None,
+                stderr: None,
+            });
+        }
+        let query = format!("{}:{}-{}", region.contig, region.start.max(1), region.end);
+        let mut child = Command::new(&region.executable)
+            .args(["--", path, &query])
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| format!("could not execute tabix for {path}: {e}"))?;
+        let stdout = child.stdout.take().expect("piped tabix stdout");
+        let mut stderr = child.stderr.take().expect("piped tabix stderr");
+        // Drain stderr concurrently to avoid pipe deadlocks, retaining bounded
+        // diagnostics even if htslib reports many warnings.
+        let stderr = std::thread::spawn(move || {
+            let mut diagnostic = Vec::new();
+            let _ = stderr.by_ref().take(8192).read_to_end(&mut diagnostic);
+            let _ = std::io::copy(&mut stderr, &mut std::io::sink());
+            diagnostic
+        });
+        Ok(Self {
+            reader: Box::new(BufReader::new(stdout)),
+            child: Some(child),
+            stderr: Some(stderr),
+        })
+    }
+    fn finish(&mut self) -> vail_vcf::Result<()> {
+        if let Some(mut child) = self.child.take() {
+            let status = child.wait().map_err(|e| format!("waiting for tabix: {e}"))?;
+            let diagnostic = self.stderr.take().and_then(|worker| worker.join().ok()).unwrap_or_default();
+            if !status.success() {
+                return Err(format!("tabix query failed ({status}): {}", String::from_utf8_lossy(&diagnostic)));
+            }
+        }
+        Ok(())
+    }
+}
+impl Drop for VcfInput {
+    fn drop(&mut self) {
+        // A downstream limit or cancellation must stop and reap the decoder's
+        // child even if its stdout pipe has not been drained.
+        if let Some(mut child) = self.child.take() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+        if let Some(worker) = self.stderr.take() {
+            let _ = worker.join();
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct VcfSource {
@@ -19,6 +102,7 @@ pub struct VcfSource {
     header: vail_vcf::Header,
     options: vail_vcf::Options,
     batch_size: usize,
+    indexed_region: Option<IndexedRegion>,
     metrics: ExecutionPlanMetricsSet,
     projection: Option<datafusion_physical_expr::projection::ProjectionExprs>,
     decode_paths: Option<Vec<vail_vcf::DecodePath>>,
@@ -34,6 +118,11 @@ impl VcfSource {
             header,
             options,
             batch_size: 8192,
+            indexed_region: value.get("indexed_region")
+                .filter(|v| !v.is_null())
+                .map(|v| serde_json::from_value(v.clone()))
+                .transpose()
+                .map_err(|e| DataFusionError::Execution(e.to_string()))?,
             metrics: ExecutionPlanMetricsSet::new(),
             projection: None,
             decode_paths: value
@@ -124,7 +213,7 @@ impl FileOpener for VcfOpener {
             let (sender, receiver) = tokio::sync::mpsc::channel::<Result<RecordBatch>>(2);
             tokio::task::spawn_blocking(move || {
                 let run = || -> vail_vcf::Result<()> {
-                    let mut reader = vail_vcf::open(&path)?;
+                    let mut input = VcfInput::open(&path, source.indexed_region.as_ref())?;
                     let indices = source.projection.as_ref().map(|p| {
                         p.expr_iter()
                             .map(|expr| {
@@ -201,7 +290,7 @@ impl FileOpener for VcfOpener {
                             return Ok(());
                         }
                         line.clear();
-                        if reader
+                        if input.reader
                             .read_line(&mut line)
                             .map_err(|e| format!("{path}: {e}"))?
                             == 0
@@ -210,6 +299,17 @@ impl FileOpener for VcfOpener {
                         }
                         line_number += 1;
                         let record = line.trim_end_matches(['\r', '\n']);
+                        if let Some(region) = &source.indexed_region {
+                            // tabix returns overlapping deletions/reference
+                            // blocks; Hail imports by POS, not span overlap.
+                            let position = record.split('\t').nth(1)
+                                .ok_or_else(|| format!("{path}: tabix record missing POS"))?
+                                .parse::<i32>()
+                                .map_err(|e| format!("{path}: invalid tabix POS: {e}"))?;
+                            if position < region.start || position > region.end {
+                                continue;
+                            }
+                        }
                         if count_only {
                             if parser.count_record(record)? {
                                 batch.rows += 1;
@@ -225,6 +325,7 @@ impl FileOpener for VcfOpener {
                             }
                         }
                     }
+                    input.finish()?;
                     if batch.rows > 0 {
                         let _ = sender.blocking_send(Ok(finish(&mut batch)?));
                     }

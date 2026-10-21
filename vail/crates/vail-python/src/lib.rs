@@ -109,6 +109,12 @@ impl NativeSession {
         options: &Bound<'_, PyAny>,
     ) -> PyResult<(NativeTable, Vec<String>, Bound<'py, PyAny>)> {
         let reference = options.get_item("reference")?;
+        let indexed_region: Option<(String, String, i32, i32)> = options
+            .get_item("indexed_region")
+            .ok()
+            .filter(|value| !value.is_none())
+            .map(|value| value.extract())
+            .transpose()?;
         let options = vail_vcf::Options {
             reference: if reference.is_none() {
                 None
@@ -150,7 +156,10 @@ impl NativeSession {
             header.samples.clone()
         };
         let metadata = header.metadata.clone().into_pyobject(py)?.into_any();
-        let config = serde_json::json!({"header": header, "options": options});
+        let indexed_region = indexed_region.map(|(executable, contig, start, end)| {
+            serde_json::json!({"executable": executable, "contig": contig, "start": start, "end": end})
+        });
+        let config = serde_json::json!({"header": header, "options": options, "indexed_region": indexed_region});
         let ir = TableIR::read_text(schema, paths, "vcf", &config).map_err(table_error)?;
         Ok((
             NativeTable {
@@ -640,6 +649,20 @@ impl NativeTable {
         py.detach(|| self.runtime.block_on(self.ir.write(&path, overwrite)))
             .map_err(table_error)
     }
+    fn bgen_select(&self, variants: &NativeTable) -> PyResult<NativeTable> {
+        Ok(NativeTable {
+            runtime: self.runtime.clone(),
+            ir: self.ir.bgen_select(variants.ir.clone()).map_err(table_error)?,
+        })
+    }
+    fn export_bgen(
+        &self, py: Python<'_>, path: String, samples: Vec<String>,
+        parallel: Option<String>, compression_codec: String,
+    ) -> PyResult<()> {
+        py.detach(|| self.runtime.block_on(vail_table::bgen_export::export(
+            self.ir.clone(), &path, &samples, parallel.as_deref(), &compression_codec,
+        ))).map_err(table_error)
+    }
     fn export_vcf(
         &self,
         py: Python<'_>,
@@ -660,6 +683,11 @@ impl NativeTable {
             ))
         })
         .map_err(table_error)
+    }
+    fn export_plink(&self, py: Python<'_>, path: String, sample_count: usize) -> PyResult<()> {
+        py.detach(|| self.runtime.block_on(vail_table::plink_export::export(
+            self.ir.clone(), &path, sample_count,
+        ))).map_err(table_error)
     }
     fn export_text(
         &self,
@@ -900,6 +928,10 @@ impl NativeTable {
     fn n_partitions(&self, py: Python<'_>) -> PyResult<usize> {
         py.detach(|| self.runtime.block_on(self.ir.n_partitions()))
             .map_err(table_error)
+    }
+    fn cache(&self, py: Python<'_>) -> PyResult<Self> {
+        let ir = py.detach(|| self.runtime.block_on(self.ir.cache())).map_err(table_error)?;
+        Ok(Self { runtime: self.runtime.clone(), ir })
     }
     fn collect_arrow<'py>(&self, py: Python<'py>) -> PyResult<NativeArrow> {
         let batches = py.detach(|| {

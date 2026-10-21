@@ -1,0 +1,162 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_export_genetic_data",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "execution_mode": "isolated_original_body",
+  "structural_ir_assertions": [
+    {
+      "module": "expr/test_expr.py",
+      "line": 4339,
+      "end_line": 4339,
+      "column": 4,
+      "end_column": 34,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4346,
+      "end_line": 4346,
+      "column": 4,
+      "end_column": 34,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4351,
+      "end_line": 4351,
+      "column": 4,
+      "end_column": 42,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4357,
+      "end_line": 4357,
+      "column": 4,
+      "end_column": 39,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4362,
+      "end_line": 4362,
+      "column": 4,
+      "end_column": 40,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4370,
+      "end_line": 4370,
+      "column": 4,
+      "end_column": 41,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4373,
+      "end_line": 4373,
+      "column": 4,
+      "end_column": 41,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4378,
+      "end_line": 4378,
+      "column": 4,
+      "end_column": 44,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4383,
+      "end_line": 4383,
+      "column": 4,
+      "end_column": 45,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4389,
+      "end_line": 4389,
+      "column": 4,
+      "end_column": 42,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4395,
+      "end_line": 4395,
+      "column": 4,
+      "end_column": 42,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4401,
+      "end_line": 4401,
+      "column": 4,
+      "end_column": 41,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4405,
+      "end_line": 4405,
+      "column": 4,
+      "end_column": 41,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4410,
+      "end_line": 4410,
+      "column": 4,
+      "end_column": 45,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4417,
+      "end_line": 4417,
+      "column": 4,
+      "end_column": 42,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "line": 4429,
+      "end_line": 4429,
+      "column": 4,
+      "end_column": 47,
+      "reason": "Hail structural IR assertion; Vail IR topology intentionally differs"
+    }
+  ],
+  "randomness_fixture": {
+    "replacement": "vail.reset_global_randomness",
+    "scope": "each parameter variant",
+    "timing": "before requested fixtures and test body"
+  },
+  "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209",
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "fixture_adapters": [
+    "Upstream function-autouse randomness reset uses public vail.reset_global_randomness"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "passed"
+}

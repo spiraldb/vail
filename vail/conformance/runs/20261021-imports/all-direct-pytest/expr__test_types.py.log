@@ -1,0 +1,15 @@
+
+==================================== ERRORS ====================================
+________________________ ERROR collecting test_types.py ________________________
+ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_types.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_types.py:5: in <module>
+    from vail.expr import coercer_from_dtype
+E   ImportError: cannot import name 'coercer_from_dtype' from 'vail.expr' (/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/expr/__init__.py)
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/expr/test_types.py
+1 error in 0.04s

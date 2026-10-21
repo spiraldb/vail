@@ -1,0 +1,40 @@
+F....FF...                                                               [100%]
+=================================== FAILURES ===================================
+__________________________ VCFTests.test_tabix_export __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py:284: in test_tabix_export
+    self.import_gvcfs_sample_vcf(tmp)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf
+    parts_str = json.dumps(parts_type._convert_to_json(parts))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'tarray' object has no attribute '_convert_to_json'
+______________ VCFTests.test_vcf_parser_golden_master__ex_GRCh37 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py:309: in test_vcf_parser_golden_master__ex_GRCh37
+    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2615: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'
+_____________ VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37 ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py:316: in test_vcf_parser_golden_master__gvcf_GRCh37
+    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/matrixtable.py:2615: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ax3j1df7/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37
+3 failed, 7 passed, 191 deselected in 6.61s

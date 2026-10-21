@@ -49,11 +49,10 @@ class Indices:
 
 
 def _validate_ndarray_scope(base, operands):
-    """Report base-scoped matrix errors before unsupported ndarray kernels.
+    """Report matrix operand errors against the ndarray base's axis scope.
 
-    A global or literal base has no row/column scope to check. Since these
-    kernels are not implemented, no result expression exists for the enclosing
-    MatrixTable operation to validate in that case.
+    A global or literal base has no row/column scope to check here; a produced
+    expression is validated by the enclosing MatrixTable operation.
     """
     source = base.source
     if source is None or not hasattr(source, "_validate"):
@@ -310,6 +309,11 @@ class Expression:
     def _compare(self, other, operator):
         other = as_expr(other)
         source = _merge_sources(self.source, other.source)
+        numeric = (tint32, tint64, tfloat32, tfloat64)
+        if self.dtype == tbool and other.dtype in numeric:
+            return cast(self, other.dtype)._compare(other, operator)
+        if other.dtype == tbool and self.dtype in numeric:
+            return self._compare(cast(other, self.dtype), operator)
         if operator in ("eq", "ne"):
             from .collections import _contains_unordered_or_ndarray, _native_equality_value
             if (_contains_unordered_or_ndarray(self.dtype)
@@ -379,12 +383,30 @@ class Expression:
         _validate_ndarray_scope(self, (other,))
         raise NotImplementedError("ndarray matrix multiplication is not implemented")
 
-    def reshape(self, shape):
+    def reshape(self, *shape):
         if not isinstance(self.dtype, tndarray):
             raise TypeError("reshape requires an ndarray expression")
+        if not shape:
+            raise TypeError("reshape requires a shape")
+        shape = shape[0] if len(shape) == 1 else shape
         dimensions = as_expr(shape)
         _validate_ndarray_scope(self, (dimensions,))
-        raise NotImplementedError("ndarray reshape is not implemented")
+        if isinstance(dimensions.dtype, ttuple):
+            if any(t not in (tint32, tint64) for t in dimensions.dtype.types):
+                raise TypeError("reshape dimensions must be integers")
+            rank = len(dimensions.dtype.types)
+            sizes = (array([cast(dimensions[i], tint64) for i in range(rank)])
+                     if rank else literal([], tarray(tint64)))
+            sizes = or_missing(is_defined(dimensions), sizes)
+        elif dimensions.dtype in (tint32, tint64):
+            rank, sizes = 1, array([cast(dimensions, tint64)])
+        else:
+            raise TypeError("reshape requires an integer or tuple of integers")
+        return Expression(tndarray(self.dtype.element_type, rank),
+                          _merge_sources(self.source, dimensions.source),
+                          {"op": "nested_function", "function": f"__vail_ndarray_reshape_{rank}",
+                           "args": [self.to_ir(), sizes.to_ir()],
+                           "dtype": type_to_wire(tndarray(self.dtype.element_type, rank))})
 
     def __eq__(self, other): return self._compare(other, "eq")
     def __ne__(self, other): return self._compare(other, "ne")
@@ -730,6 +752,8 @@ class Expression:
                 return lambda: call_field("__vail_call_" + name, tbool)
             if name == "n_alt_alleles":
                 return lambda: call_field("__vail_call_n_alt_alleles", tint32)
+            if name == "unphased_diploid_gt_index":
+                return lambda: call_field("__vail_call_unphased_diploid_gt_index", tint32)
         if isinstance(dtype, tlocus):
             if name in ("contig", "position"):
                 return self._locus_op(name, tstr if name == "contig" else tint32)
@@ -932,6 +956,41 @@ class Expression:
     def export(self, output, delimiter='\t', missing='NA', header=True):
         from .matrix_import import export_expression
         return export_expression(self, output, delimiter, missing, header)
+
+    def show(self, n=None, width=None, truncate=None, types=True, handler=None,
+             n_rows=None, n_cols=None):
+        """Display a bounded expression prefix with its axis keys."""
+        from . import Table
+        from .matrixtable import MatrixTable
+        if n is not None and n_rows is not None:
+            raise ValueError("specify one of n_rows or n")
+        count = n_rows if n_rows is not None else n
+        source = self.source
+        name = self._top_level_name or "<expr>"
+        named = {name: self}
+        axes = self._indices.axes
+        if isinstance(source, MatrixTable) and axes == {"row", "col"}:
+            matrix = source.select_entries(**named).select_rows().select_cols()
+            return matrix.show(n_rows=10 if count is None else count,
+                               n_cols=10 if n_cols is None else n_cols,
+                               handler=print if handler is None else handler,
+                               width=width, truncate=truncate, types=types)
+        if isinstance(source, MatrixTable) and axes:
+            keys = source.row_key.dtype if axes == {"row"} else source.col_key.dtype
+            if name in keys:
+                named = {}
+            table = (source.select_rows(**named).rows() if axes == {"row"}
+                     else source.select_cols(**named).key_cols_by().cols())
+        elif isinstance(source, Table) and axes:
+            table = source.select(**({} if name in source.key.dtype else named))
+        elif isinstance(source, MatrixTable):
+            globals_table = source.globals_table()
+            value = globals_table.aggregate(source._lower(self, globals_table), _localize=False)
+            table = Table.parallelize(array([struct(**{name: value})]))
+        else:
+            value = self if source is None else source.aggregate(self, _localize=False)
+            table = Table.parallelize(array([struct(**{name: value})]))
+        return table.show(n=count, width=width, truncate=truncate, types=types, handler=handler)
 
     def collect(self, _localize=True):
         """Collect values, or return an unindexed lazy array expression."""
@@ -1521,3 +1580,15 @@ def _native_expressions(values):
 
 def _native_projection(fields):
     return [(name, _native_expression(value)) for name, value in fields]
+
+
+def compare(left, right):
+    """Compare two values with missing values ordered after defined values."""
+    left, right = as_expr(left), as_expr(right)
+    if left.dtype != right.dtype:
+        raise TypeError(f"'compare' expected matching types: found {left.dtype} vs {right.dtype}")
+    from .collections import _native_equality_value
+    left, right = _native_equality_value(left), _native_equality_value(right)
+    return (case().when(is_missing(left) & is_missing(right), 0)
+            .when(is_missing(left), 1).when(is_missing(right), -1)
+            .when(left == right, 0).when(left < right, -1).default(1))

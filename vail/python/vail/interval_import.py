@@ -1,7 +1,9 @@
 """Lazy interval-list imports.
 
-Picard's interval_list specification (Broad GATK BedToIntervalList) uses
-one-based inclusive coordinates; Hail additionally accepts one/three columns.
+Picard's interval_list specification uses one-based inclusive coordinates.
+Reference-backed one-column inputs follow Hail's parse_locus_interval branch,
+including right-exclusive shorthand and its unmodified contig validation;
+recoding and invalid-row skipping apply to the other input branches.
 """
 from .expressions import (as_expr, literal, int32, float64, interval, locus,
                           struct, is_valid_locus, if_else, case, or_missing,

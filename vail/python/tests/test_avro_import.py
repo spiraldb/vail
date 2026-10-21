@@ -84,4 +84,8 @@ def test_avro_batches_projection_and_intervals(tmp_path):
     assert table.count() == 17000
     assert table.select('x').take(2) == [hl.Struct(x=0), hl.Struct(x=1)]
     selected = hl.import_avro(path, key='x', intervals=[hl.Interval(5, 8, point_type=hl.tint64)])
-    assert [r.x for r in selected.collect()] == [5, 6, 7]
+    # These are declared file bounds, not row filters (pinned Hail parity).
+    assert selected.count() == 17000
+    assert [r.x for r in selected.take(3)] == [0, 1, 2]
+    with pytest.raises(ValueError, match='one partition interval'):
+        hl.import_avro([path, path], key=['x'], intervals=[hl.Interval(0, 17000, point_type=hl.tint64)])

@@ -47,7 +47,19 @@ def test_roundtrip_and_projection(tmp_path):
         cm_position=mt.cm_position,
     )
     rt = import_plink(*(output + s for s in (".bed", ".bim", ".fam")))
-    assert mt._same(rt)
+    assert mt.row.dtype == rt.row.dtype
+    assert mt.col.dtype == rt.col.dtype
+    assert mt.entry.dtype == rt.entry.dtype
+    assert mt.globals.dtype == rt.globals.dtype
+    assert list(mt.row_key) == list(rt.row_key)
+    assert list(mt.col_key) == list(rt.col_key)
+    assert hl.eval(mt.index_globals()) == hl.eval(rt.index_globals())
+    assert mt.rows().collect() == rt.rows().collect()
+    assert mt.cols().collect() == rt.cols().collect()
+    assert (
+        mt.localize_entries("entries", "cols").collect()
+        == rt.localize_entries("entries", "cols").collect()
+    )
     assert rt.rows().count() == 1
     assert rt.count_cols() == 5
 

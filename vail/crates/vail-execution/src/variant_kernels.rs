@@ -1,7 +1,9 @@
 //! Linear Unicode normalization and shared per-original-entry HTS reductions.
 use crate::expressions::{ExprError, PrimitiveType, Type};
 use arrow_array::builder::{Int32Builder, ListBuilder, StringBuilder};
-use arrow_array::{Array, ArrayRef, Int32Array, ListArray, StructArray};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Int32Array, ListArray, StructArray, UInt8Array, UInt16Array,
+};
 use arrow_schema::DataType;
 use datafusion_common::{Result, ScalarValue, exec_err};
 use datafusion_expr::{ColumnarValue, ScalarUDF, Volatility, expr_fn::create_udf};
@@ -15,7 +17,9 @@ pub(crate) fn function(
 ) -> std::result::Result<(Arc<ScalarUDF>, Vec<Type>, Type), ExprError> {
     let i = Type::Primitive(PrimitiveType::Int32);
     let s = Type::Primitive(PrimitiveType::Str);
-    let (args, output) = if name == "variant_min_rep" {
+    let (args, output) = if name == "unphased_diploid_gt_index_call" {
+        (vec![i.clone()], Type::Primitive(PrimitiveType::Call))
+    } else if name == "variant_min_rep" {
         (
             vec![s.clone(), s.clone()],
             Type::Struct {
@@ -58,7 +62,9 @@ pub(crate) fn function(
                     _ => None,
                 })
                 .unwrap_or(1);
-            let result = if kernel == "variant_min_rep" {
+            let result = if kernel == "unphased_diploid_gt_index_call" {
+                diploid_index_call(&values[0], rows, &out_type)?
+            } else if kernel == "variant_min_rep" {
                 min_rep(values, rows, &out_type)?
             } else {
                 let arrays = values.iter().map(Input::new).collect::<Result<Vec<_>>>()?;
@@ -74,6 +80,54 @@ pub(crate) fn function(
         }),
     );
     Ok((Arc::new(udf), args, output))
+}
+
+// Each nonnegative int32 index fits the diploid UInt16 allele representation.
+// Estimate its triangular bucket once, then correct with exact int64 bounds.
+fn diploid_index_call(value: &ColumnarValue, rows: usize, dtype: &DataType) -> Result<ArrayRef> {
+    let input = Input::new(value)?;
+    let indices = input.down::<Int32Array>()?;
+    let mut first = Vec::with_capacity(rows);
+    let mut second = Vec::with_capacity(rows);
+    let mut valid = Vec::with_capacity(rows);
+    for row in 0..rows {
+        let index = row;
+        if indices.is_null(index) {
+            first.push(0u16);
+            second.push(0u16);
+            valid.push(false);
+            continue;
+        }
+        let value = i64::from(indices.value(index));
+        if value < 0 {
+            return exec_err!("genotype index must be nonnegative");
+        }
+        let mut b = (((8 * value + 1) as f64).sqrt() - 1.0) as i64 / 2;
+        while b * (b + 1) / 2 > value {
+            b -= 1;
+        }
+        while (b + 1) * (b + 2) / 2 <= value {
+            b += 1;
+        }
+        let a = value - b * (b + 1) / 2;
+        debug_assert!(0 <= a && a <= b && b <= i64::from(u16::MAX));
+        first.push(a as u16);
+        second.push(b as u16);
+        valid.push(true);
+    }
+    let DataType::Struct(fields) = dtype else {
+        return exec_err!("Call kernel requires struct output storage");
+    };
+    Ok(Arc::new(StructArray::new(
+        fields.clone(),
+        vec![
+            Arc::new(UInt16Array::from(first)),
+            Arc::new(UInt16Array::from(second)),
+            Arc::new(UInt8Array::from(vec![2; rows])),
+            Arc::new(BooleanArray::from(vec![false; rows])),
+        ],
+        Some(arrow_buffer::NullBuffer::from(valid)),
+    )))
 }
 
 // Array ownership is shared; scalar conversion happens once, never per row.

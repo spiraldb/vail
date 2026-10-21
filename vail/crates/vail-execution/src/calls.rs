@@ -37,6 +37,7 @@ pub(crate) enum CallAccessor {
 pub(crate) enum CallProperty {
     Ploidy,
     NAltAlleles,
+    UnphasedDiploidGtIndex,
     IsHaploid,
     IsDiploid,
     IsHomRef,
@@ -54,6 +55,7 @@ impl CallAccessor {
             PHASED => Self::Phased,
             PLOIDY => Self::Property(Ploidy),
             "__vail_call_n_alt_alleles" => Self::Property(NAltAlleles),
+            "__vail_call_unphased_diploid_gt_index" => Self::Property(UnphasedDiploidGtIndex),
             "__vail_call_is_haploid" => Self::Property(IsHaploid),
             "__vail_call_is_diploid" => Self::Property(IsDiploid),
             "__vail_call_is_hom_ref" => Self::Property(IsHomRef),
@@ -70,7 +72,7 @@ impl CallAccessor {
             Self::Alleles => Type::Array {
                 array: Box::new(Type::Primitive(PrimitiveType::Int32)),
             },
-            Self::Property(CallProperty::Ploidy | CallProperty::NAltAlleles) => {
+            Self::Property(CallProperty::Ploidy | CallProperty::NAltAlleles | CallProperty::UnphasedDiploidGtIndex) => {
                 Type::Primitive(PrimitiveType::Int32)
             }
             _ => Type::Primitive(PrimitiveType::Bool),
@@ -160,6 +162,24 @@ pub(crate) fn access(value: &ArrayRef, accessor: CallAccessor) -> Result<ArrayRe
                 .collect(),
             nulls,
         )),
+        CallAccessor::Property(UnphasedDiploidGtIndex) => {
+            let mut out = Int32Builder::with_capacity(value.len());
+            for i in 0..value.len() {
+                if rows.parent.is_null(i) {
+                    out.append_null();
+                    continue;
+                }
+                if n[i] != 2 {
+                    return Err(ExprError::Invalid("unphased_diploid_gt_index only supports ploidy == 2".into()));
+                }
+                let high = i64::from(a[i].max(b[i]));
+                let low = i64::from(a[i].min(b[i]));
+                // Full UInt16 alleles require a widened intermediate. The
+                // public result is int32, with explicit final wrapping.
+                out.append_value((high * (high + 1) / 2 + low) as i32);
+            }
+            Arc::new(out.finish())
+        }
         CallAccessor::Property(IsHaploid) => boolean(value.len(), nulls, |i| n[i] == 1),
         CallAccessor::Property(IsDiploid) => boolean(value.len(), nulls, |i| n[i] == 2),
         CallAccessor::Property(IsHomRef) => boolean(value.len(), nulls, |i| {

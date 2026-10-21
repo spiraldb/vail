@@ -14,6 +14,16 @@ def gq_from_pl(pl):
     return if_else(is_missing(pl), missing(tint32), ordered[1] - ordered[0])
 
 
+def unphased_diploid_gt_index_call(gt_index):
+    """Invert the triangular VCF diploid genotype ordering."""
+    from .variant import _kernel
+    from .types import tcall
+    index = as_expr(gt_index)
+    if index.dtype != tint32:
+        raise TypeError('genotype index must be int32')
+    return _kernel('unphased_diploid_gt_index_call', tcall, index)
+
+
 def gp_dosage(gp):
     """Expected alternate-allele count for three genotype probabilities."""
     from . import case, float64

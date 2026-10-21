@@ -109,8 +109,7 @@ def test_datafusion_semantic_gaps_raise_explicitly():
     value = hl.literal('abc')
     for action in (
         lambda: hl.parse_int32('١'), lambda: hl.parse_float64('0x1.8p1'),
-        lambda: hl.format('%s', value), lambda: hl.json(value),
-        lambda: hl.parse_json('{}', hl.tstruct()),
+        lambda: hl.format('%s', value),
     ):
         with pytest.raises((NotImplementedError, TypeError)):
             action()

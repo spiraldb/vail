@@ -47,6 +47,11 @@ pub fn table<'py>(py: Python<'py>, t: &TableIR) -> PyResult<Bound<'py, PyDict>> 
             d.set_item("metadata", source.metadata_location())?;
             "TableRead"
         }
+        TableNode::BgenSelect { source, variants } => {
+            d.set_item("source", table(py, source)?)?;
+            d.set_item("variants", table(py, variants)?)?;
+            "BgenVariantSelection"
+        }
         TableNode::TextRead {
             paths,
             format,

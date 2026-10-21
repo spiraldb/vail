@@ -1,0 +1,62 @@
+[
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_undeclared_info",
+    "line": 70,
+    "body": "def test_undeclared_info(self):\n    mt = hl.import_vcf(resource('undeclaredinfo.vcf'))\n    rows = mt.rows()\n    self.assertTrue(rows.all(hl.is_defined(rows.info)))\n    info_type = mt.row.dtype['info']\n    self.assertTrue('InbreedingCoeff' in info_type)\n    self.assertFalse('undeclared' in info_type)\n    self.assertFalse('undeclaredFlag' in info_type)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_unsorted_alleles",
+    "line": 313,
+    "body": "def test_vcf_unsorted_alleles(self):\n    _vcf_unsorted_alleles()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_unsorted_alleles_no_codegen",
+    "line": 316,
+    "body": "def test_vcf_unsorted_alleles_no_codegen(self):\n    with_flags(no_whole_stage_codegen='1')(_vcf_unsorted_alleles)()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_tabix_export",
+    "line": 508,
+    "body": "def test_tabix_export(self):\n    mt = hl.import_vcf(resource('sample.vcf.bgz'))\n    tmp = new_temp_file(extension='bgz')\n    hl.export_vcf(mt, tmp, tabix=True)\n    self.import_gvcfs_sample_vcf(tmp)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_tabix_export_file_exists",
+    "line": 514,
+    "body": "def test_tabix_export_file_exists(self):\n    mt = hl.import_vcf(resource('sample.vcf.bgz'))\n    tmp = new_temp_file(extension='bgz')\n    hl.export_vcf(mt, tmp, tabix=True, parallel='header_per_shard')\n    files = hl.current_backend().fs.ls(tmp)\n    self.assertTrue(any((f.path.endswith('.tbi') for f in files)))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parser_golden_master__ex_GRCh37",
+    "line": 537,
+    "body": "def test_vcf_parser_golden_master__ex_GRCh37(self):\n    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parser_golden_master__sample_GRCh37",
+    "line": 540,
+    "body": "def test_vcf_parser_golden_master__sample_GRCh37(self):\n    self._test_vcf_parser_golden_master(resource('sample.vcf'), 'GRCh37')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37",
+    "line": 544,
+    "body": "@test_timeout(6 * 60)\ndef test_vcf_parser_golden_master__gvcf_GRCh37(self):\n    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parallel_separate_header_export",
+    "line": 658,
+    "body": "def test_vcf_parallel_separate_header_export(self):\n    fs = hl.current_backend().fs\n\n    def concat_files(outpath, inpaths):\n        with fs.open(outpath, 'wb') as outfile:\n            for path in inpaths:\n                with fs.open(path, 'rb') as infile:\n                    shutil.copyfileobj(infile, outfile)\n    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4)\n    f = new_temp_file(extension='vcf.bgz')\n    hl.export_vcf(mt, f, parallel='separate_header')\n    stat = fs.stat(f)\n    assert stat\n    assert stat.is_dir()\n    shard_paths = [info.path for info in fs.ls(f) if os.path.splitext(info.path)[-1] == '.bgz']\n    assert shard_paths\n    shard_paths.sort()\n    nf = new_temp_file(extension='vcf.bgz')\n    concat_files(nf, shard_paths)\n    assert hl.import_vcf(nf)._same(mt)\n    manifest_files = [os.path.join(f, line.strip()) for line in fs.open(os.path.join(f, 'shard-manifest.txt'))]\n    assert hl.import_vcf(manifest_files[1:], header_file=manifest_files[0])._same(mt)\n    assert [p.split('/')[-1] for p in shard_paths] == [p.split('/')[-1] for p in manifest_files]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_different_info_errors",
+    "line": 819,
+    "body": "def test_vcf_different_info_errors(self):\n    with self.assertRaisesRegex(FatalError, 'Check that all files have same INFO fields'):\n        mt = hl.import_vcf([resource('different_info_test1.vcf'), resource('different_info_test2.vcf')])\n        mt.rows()._force_count()"
+  }
+]

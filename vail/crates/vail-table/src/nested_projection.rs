@@ -852,7 +852,9 @@ fn vcf_source(table: &crate::TableRef) -> bool {
             | TableNode::Explode { child, .. }
             | TableNode::Head { child, .. }
             | TableNode::Tail { child, .. } => source = child,
-            TableNode::TextRead { format, .. } => return format == "vcf",
+            TableNode::BgenSelect { source: child, .. } => source = child,
+            TableNode::Union { children } => return children.iter().all(vcf_source),
+            TableNode::TextRead { format, .. } => return matches!(format.as_str(), "vcf" | "bgen"),
             _ => return false,
         }
     }
@@ -901,7 +903,7 @@ fn narrow_vcf_paths<'a>(
             paths: files,
             format,
             options_json,
-        } if format == "vcf" => {
+        } if matches!(format.as_str(), "vcf" | "bgen") => {
             let mut options = options_json.clone();
             options["decode_paths"] = serde_json::json!(paths);
             TableNode::TextRead {
@@ -995,6 +997,15 @@ fn narrow_vcf_paths<'a>(
         },
         TableNode::MapGlobals { child } => TableNode::MapGlobals {
             child: narrow_vcf_paths(child, paths, analyzer),
+        },
+        TableNode::BgenSelect { source, variants } => TableNode::BgenSelect {
+            source: narrow_vcf_paths(source, paths, analyzer),
+            variants: variants.clone(),
+        },
+        TableNode::Union { children } => TableNode::Union {
+            children: children.iter()
+                .map(|child| narrow_vcf_paths(child, paths.clone(), analyzer))
+                .collect(),
         },
         _ => return table.clone(),
     };

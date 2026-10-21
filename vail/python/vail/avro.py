@@ -11,8 +11,8 @@ def _schema_type(schema, names=None, namespace='', active=()):
                   'double': tfloat64, 'string': tstr}
     if isinstance(schema, list):
         choices = [s for s in schema if s != 'null' and s != {'type': 'null'}]
-        if len(choices) != 1:
-            raise ValueError('Avro unions must contain exactly one non-null type')
+        if len(schema) != 2 or len(choices) != 1:
+            raise ValueError('Avro unions must contain null and exactly one non-null type')
         return _schema_type(choices[0], names, namespace, active)
     if isinstance(schema, str):
         if schema in primitives:
@@ -44,7 +44,11 @@ def _schema_type(schema, names=None, namespace='', active=()):
 
 
 def import_avro(paths, *, key=None, intervals=None):
-    """Read Avro container records lazily, preserving primitive and nested types."""
+    """Read Avro container records lazily, preserving primitive and nested types.
+
+    ``intervals`` supplies one declared partition bound per file, as in Hail;
+    it does not filter records. Keys are sorted by Vail's normal key operator.
+    """
     from . import _native_session
     if (key is None) != (intervals is None):
         raise ValueError('key and intervals must either be both defined or both undefined')
@@ -58,7 +62,15 @@ def import_avro(paths, *, key=None, intervals=None):
     table = _read(paths, schema, 'avro', {})
     if key is not None:
         keys = [key] if isinstance(key, str) else list(key)
+        if len(intervals) != len(paths):
+            raise ValueError('There must be one partition interval per Avro file')
+        from .types import Interval
+        for bound in intervals:
+            if not isinstance(bound, Interval):
+                raise TypeError('intervals must contain Interval values')
+            point_types = (list(bound.point_type.values()) if isinstance(bound.point_type, tstruct)
+                           else [bound.point_type])
+            if point_types != [schema[name] for name in keys]:
+                raise TypeError('Avro partition interval point type must match the key')
         table = table.key_by(*keys)
-        from . import filter_intervals
-        table = filter_intervals(table, intervals)
     return table

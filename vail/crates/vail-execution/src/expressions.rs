@@ -1767,6 +1767,37 @@ impl Expr {
                 args,
                 dtype,
             } => {
+                if function == "__vail_parse_json"
+                    || matches!(
+                        function.as_str(),
+                        "__vail_export_annotation" | "__vail_json_annotation"
+                    )
+                {
+                    if args.len() != 1 {
+                        return Err(ExprError::Invalid(
+                            "typed JSON/text kernel requires one argument".into(),
+                        ));
+                    }
+                    let input = args[0].dtype_scoped(schema, globals, scope, memo, context)?;
+                    if function == "__vail_parse_json"
+                        && input != Type::Primitive(PrimitiveType::Str)
+                    {
+                        return Err(ExprError::Invalid(
+                            "parse_json requires string input".into(),
+                        ));
+                    }
+                    if matches!(
+                        function.as_str(),
+                        "__vail_export_annotation" | "__vail_json_annotation"
+                    ) && dtype != &Type::Primitive(PrimitiveType::Str)
+                    {
+                        return Err(ExprError::Invalid(
+                            "annotation export requires string output".into(),
+                        ));
+                    }
+                    dtype.to_arrow()?;
+                    return Ok(dtype.clone());
+                }
                 if let Some(function) = function.strip_prefix("random_") {
                     let types = args
                         .iter()
@@ -1804,7 +1835,8 @@ impl Expr {
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
                 if function.starts_with("__vail_list_reduce_")
-                    || function == "__vail_list_call_stats"
+                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs")
+                    || function.starts_with("__vail_ndarray_reshape_")
                 {
                     let result = udf.return_type(&args)?;
                     if !same_collection_storage(&result, &dtype.to_arrow()?) {
@@ -3901,16 +3933,20 @@ fn java_float32_text(value: f32) -> String {
 }
 
 fn hail_float_string(value: f64) -> String {
+    scientific_float_string(value, 5)
+}
+
+fn scientific_float_string(value: f64, precision: usize) -> String {
     if !value.is_finite() {
         return float_text(value);
     }
     if value == 0.0 {
-        return if value.is_sign_negative() {
-            "-0.00000e+00"
-        } else {
-            "0.00000e+00"
-        }
-        .into();
+        return format!(
+            "{}{:.*}e+00",
+            if value.is_sign_negative() { "-" } else { "" },
+            precision,
+            0.0
+        );
     }
     let decimal = java_float_text(value)
         .parse::<bigdecimal::BigDecimal>()
@@ -3922,9 +3958,11 @@ fn hail_float_string(value: f64) -> String {
     let exponent: i32 = exponent
         .parse()
         .expect("BigDecimal emits an integer exponent");
-    let rounded =
-        decimal.with_scale_round(i64::from(5 - exponent), bigdecimal::RoundingMode::HalfUp);
-    let rendered = format!("{rounded:.5e}");
+    let rounded = decimal.with_scale_round(
+        precision as i64 - i64::from(exponent),
+        bigdecimal::RoundingMode::HalfUp,
+    );
+    let rendered = format!("{rounded:.precision$e}");
     let (mantissa, exponent) = rendered
         .split_once('e')
         .expect("BigDecimal emits scientific notation");
@@ -3936,6 +3974,34 @@ fn hail_float_string(value: f64) -> String {
         if exponent < 0 { '-' } else { '+' },
         abs = exponent.abs()
     )
+}
+
+pub(crate) fn json_annotation(
+    array: &ArrayRef,
+    row: usize,
+    dtype: &Type,
+) -> Result<String, ExprError> {
+    hail_value_string(array, row, dtype, false)
+}
+
+pub(crate) fn export_annotation(
+    array: &ArrayRef,
+    row: usize,
+    dtype: &Type,
+) -> Result<String, ExprError> {
+    Ok(match dtype {
+        Type::Primitive(PrimitiveType::Float64) => {
+            scientific_float_string(down::<Float64Array>(array.as_ref())?.value(row), 4)
+        }
+        Type::Primitive(PrimitiveType::Float32) => {
+            java_float32_text(down::<Float32Array>(array.as_ref())?.value(row))
+        }
+        Type::Primitive(PrimitiveType::Str) => {
+            down::<StringArray>(array.as_ref())?.value(row).to_owned()
+        }
+        Type::Primitive(_) | Type::Locus { .. } => annotation_text(array, row, dtype)?,
+        _ => hail_value_string(array, row, dtype, false)?,
+    })
 }
 
 fn annotation_text(array: &ArrayRef, row: usize, dtype: &Type) -> Result<String, ExprError> {
@@ -4838,7 +4904,7 @@ pub(crate) fn string_function(
     let strings = Type::Array {
         array: Box::new(text.clone()),
     };
-    if matches!(name, "variant_min_rep" | "variant_entry") {
+    if matches!(name, "variant_min_rep" | "variant_entry" | "unphased_diploid_gt_index_call") {
         return crate::variant_kernels::function(name);
     }
     Ok(match name {
@@ -4977,6 +5043,10 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
     if name == "__vail_ndarray_from_array" {
         return Ok(crate::ndarray::udf());
     }
+    if let Some(rank) = name.strip_prefix("__vail_ndarray_reshape_") {
+        let rank = rank.parse::<usize>().map_err(|_| ExprError::Invalid("invalid reshape rank".into()))?;
+        return Ok(crate::ndarray::reshape_udf(rank));
+    }
     if let Some(function) = crate::matrix_transpose::udf(name) {
         return Ok(function);
     }
@@ -4992,6 +5062,7 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
     Ok(match name {
         "vail_array_mean" => crate::numeric_lists::mean_udf(false),
         "vail_array_mean_strict" => crate::numeric_lists::mean_udf(true),
+        "abs" => datafusion_functions::math::abs(),
         "array_sort" => nested::sort::array_sort_udf(),
         "array_distinct" => nested::set_ops::array_distinct_udf(),
         "array_union" => nested::set_ops::array_union_udf(),
@@ -5768,7 +5839,24 @@ fn lower_uncached(
             let no = Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
             boolean_case(base, yes, no, fallback)?
         }
-        Expr::NestedFunction { function, args, .. } => {
+        Expr::NestedFunction {
+            function,
+            args,
+            dtype: target,
+        } => {
+            let special = if function == "__vail_parse_json" {
+                Some(crate::json_io::parse_udf(target.clone())?)
+            } else if matches!(
+                function.as_str(),
+                "__vail_export_annotation" | "__vail_json_annotation"
+            ) {
+                Some(crate::json_io::export_udf(
+                    args[0].dtype_scoped(schema, globals.schema(), scope, memo, context)?,
+                    function == "__vail_json_annotation",
+                )?)
+            } else {
+                None
+            };
             let args = args
                 .iter()
                 .map(|arg| {
@@ -5776,11 +5864,15 @@ fn lower_uncached(
                     let ty = arg
                         .dtype_scoped(schema, globals.schema(), scope, memo, context)?
                         .to_arrow()?;
-                    Ok(cast(
-                        value,
-                        schema,
-                        vail_ordering::without_type_metadata(&ty),
-                    )?)
+                    // Indexing constructs a logical tuple containing the original
+                    // element. Its UDF must retain opaque logical descriptors
+                    // (for example Call), rather than reinterpret their storage.
+                    let input_type = if function == "__vail_index_values" {
+                        ty
+                    } else {
+                        vail_ordering::without_type_metadata(&ty)
+                    };
+                    Ok(cast(value, schema, input_type)?)
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
             if let Some(function) = function.strip_prefix("random_") {
@@ -5792,7 +5884,10 @@ fn lower_uncached(
                 }));
             }
             let function = Arc::new(ScalarFunctionExpr::try_new(
-                nested_function(function)?,
+                match special {
+                    Some(udf) => Arc::new(udf),
+                    None => nested_function(function)?,
+                },
                 args,
                 schema,
                 Arc::new(ConfigOptions::default()),

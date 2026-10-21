@@ -40,3 +40,10 @@ def test_genotype_probability_and_quality_helpers():
     for values, expected in [([0, 1352, 1569], 99), ([100, 101], 0), ([], 0), ([None, 5], 94)]:
         assert hl.eval(hl.gq_from_pl(hl.literal(values, hl.tarray(hl.tint32)))) == expected
     assert hl.eval(hl.gq_from_pl(hl.missing(hl.tarray(hl.tint32)))) is None
+    assert [hl.eval(hl.unphased_diploid_gt_index_call(i)) for i in range(6)] == [
+        hl.Call([0, 0]), hl.Call([0, 1]), hl.Call([1, 1]),
+        hl.Call([0, 2]), hl.Call([1, 2]), hl.Call([2, 2])]
+    assert hl.eval(hl.unphased_diploid_gt_index_call(2147483647)) == hl.Call([32767, 65535])
+    assert hl.eval(hl.literal(True) == 1.0) is True
+    assert hl.eval(hl.literal(False) == 0) is True
+    assert hl.eval(hl.missing(hl.tbool) == 1.0) is None

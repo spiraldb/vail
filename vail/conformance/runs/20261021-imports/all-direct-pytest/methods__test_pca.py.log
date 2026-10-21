@@ -1,0 +1,15 @@
+
+==================================== ERRORS ====================================
+_________________________ ERROR collecting test_pca.py _________________________
+ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_pca.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_pca.py:5: in <module>
+    from vail.methods.pca import _make_tsm
+E   ModuleNotFoundError: No module named 'vail.methods'
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/methods/test_pca.py
+1 error in 0.46s

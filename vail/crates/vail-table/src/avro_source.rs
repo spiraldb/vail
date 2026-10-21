@@ -106,7 +106,7 @@ impl FileOpener for AvroOpener {
     fn open(&self, file: PartitionedFile) -> Result<FileOpenFuture> {
         if file.range.is_some() {
             return Err(DataFusionError::NotImplemented(
-                "BGEN byte-range partitions are not implemented".into(),
+                "Avro byte-range partitions are not implemented".into(),
             ));
         }
         let source = self.source.clone();

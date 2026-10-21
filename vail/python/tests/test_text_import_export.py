@@ -4,6 +4,17 @@ import pytest
 import vail as hl
 
 
+def test_regex_csv_public_grammar_and_record_width(tmp_path):
+    assert hl.eval(hl.split_line('1  "two words" NA ', r'\s+', quote='"', regex=True)) == ['1', 'two words', None, '']
+    for line in ['1 "unterminated', '1 "a"tail']:
+        with pytest.raises(RuntimeError):
+            hl.eval(hl.split_line(line, r' +', quote='"', regex=True))
+    path = tmp_path / 'wrong-width.tsv'
+    path.write_text('a b\n1 2 3\n')
+    with pytest.raises(RuntimeError, match='Expected 2 fields'):
+        hl.import_table(path, delimiter=r' +').collect()
+
+
 def test_import_typed_integer_arrays_and_type_aliases(tmp_path):
     path = tmp_path / 'arrays.tsv'
     path.write_text('idx\txs\n0\t[1, null, -2]\n1\t[]\n2\tNA\n3\t [ 2147483647 ] \n')
@@ -297,3 +308,51 @@ def test_import_table_regex_quotes_and_empty_fields(tmp_path):
     assert rows == [hl.Struct(a='1', b='two  words', c=None),
                     hl.Struct(a='2', b='end', c='')]
     assert hl.eval(hl.split_line('1  "two  words"  NA', r' +', quote='"', regex=True)) == ['1', 'two  words', None]
+
+
+def test_typed_json_import_and_roundtrip(tmp_path):
+    schema = hl.tstruct(nested=hl.tstruct(name=hl.tstr, scores=hl.tarray(hl.tfloat64)),
+                        tags=hl.tset(hl.tstr), pair=hl.ttuple(hl.tint32, hl.tstr),
+                        mapping=hl.tdict(hl.tstr, hl.tint32))
+    rows = [hl.Struct(nested=hl.Struct(name='hello', scores=[1.25, None]),
+                      tags={'a', 'b'}, pair=(3, 'x'), mapping={'key': 4}),
+            hl.Struct(nested=None, tags=set(), pair=(None, 'z'), mapping={})]
+    table = hl.Table.parallelize(rows, schema=schema)
+    path = tmp_path / 'nested.tsv'
+    table.export(path)
+    assert hl.import_table(path, types=dict(schema))._same(table)
+    assert hl.eval(hl.parse_json('{"a":5,"unknown":1}', 'struct{a:int32,b:str}')) == hl.Struct(a=5, b=None)
+    assert hl.eval(hl.parse_json('[1,true,null]', 'array<int32>')) == [1, None, None]
+
+
+def test_export_primitive_float_annotation_format(tmp_path):
+    table = hl.utils.range_table(1).annotate(x=1.234567, y=hl.float32(1.25), z=-0.0)
+    path = tmp_path / 'floats.tsv'
+    table.export(path)
+    assert path.read_text() == 'idx\tx\ty\tz\n0\t1.2346e+00\t1.25\t-0.0000e+00\n'
+
+
+def test_public_json_scalar_roundtrip_preserves_logical_types():
+    values = [hl.missing('int32'), hl.missing('str'),
+              hl.missing('struct{a:int32,b:str}'), hl.locus('1', 10000),
+              hl.set({'x', 'y'}), hl.array([1, 2, hl.missing('int32')]),
+              hl.call(0, 2, phased=True), hl.locus_interval('1', 10000, 10005),
+              hl.struct(foo='bar'), hl.tuple([1, 2, 'str']), hl.tuple([]), hl.struct()]
+    for value in values:
+        assert hl.eval(hl._compare(value, hl.parse_json(hl.json(value), value.dtype))) == 0
+    assert hl.eval(hl.json('abc')) == '"abc"'
+    assert hl.eval(hl.json(hl.missing(hl.tint32))) == 'null'
+
+
+def test_typed_import_roundtrip_genomic_and_ndarray_fields(tmp_path):
+    table = hl.utils.range_table(2).annotate(
+        locus=hl.locus('chr22', 33878978, 'GRCh38'),
+        interval=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)),
+        call=hl.call(0, 1), missing_call=hl.missing(hl.tcall),
+        pair=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]),
+        matrix=hl.nd.array([[0, 1], [2, 3]]),
+    )
+    path = tmp_path / 'genomic.tsv'
+    table.export(path)
+    restored = hl.import_table(path, types=dict(table.row.dtype)).key_by('idx')
+    assert table._same(restored)

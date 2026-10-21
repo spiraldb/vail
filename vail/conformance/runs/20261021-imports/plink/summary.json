@@ -1,0 +1,130 @@
+{
+  "tests": 21,
+  "passed": 21,
+  "results": [
+    {
+      "name": "test_import_fam",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_fam.json"
+    },
+    {
+      "name": "test_export_import_plink_same",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_import_plink_same.json"
+    },
+    {
+      "name": "test_import_plink_empty_fam",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_empty_fam.json"
+    },
+    {
+      "name": "test_import_plink_empty_bim",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_empty_bim.json"
+    },
+    {
+      "name": "test_import_plink_a1_major",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_a1_major.json"
+    },
+    {
+      "name": "test_import_plink_same_locus",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_same_locus.json"
+    },
+    {
+      "name": "test_import_plink_partitions",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_partitions.json"
+    },
+    {
+      "name": "test_import_plink_contig_recoding_w_reference",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_contig_recoding_w_reference.json"
+    },
+    {
+      "name": "test_import_plink_no_reference_specified",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_no_reference_specified.json"
+    },
+    {
+      "name": "test_import_plink_and_ignore_rows",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_and_ignore_rows.json"
+    },
+    {
+      "name": "test_import_plink_skip_invalid_loci",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_import_plink_skip_invalid_loci.json"
+    },
+    {
+      "name": "test_export_plink",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink.json"
+    },
+    {
+      "name": "test_export_plink_default_arguments",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_default_arguments.json"
+    },
+    {
+      "name": "test_export_plink_non_default_arguments",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_non_default_arguments.json"
+    },
+    {
+      "name": "test_export_plink_quantitative_phenotype",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_quantitative_phenotype.json"
+    },
+    {
+      "name": "test_export_plink_non_default_bim_arguments",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_non_default_bim_arguments.json"
+    },
+    {
+      "name": "test_export_plink_call_expression",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_call_expression.json"
+    },
+    {
+      "name": "test_export_plink_white_space_in_fam_id_raises_error",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_white_space_in_fam_id_raises_error.json"
+    },
+    {
+      "name": "test_export_plink_white_space_in_varid_raises_error",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_white_space_in_varid_raises_error.json"
+    },
+    {
+      "name": "test_contig_recoding_defaults",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_contig_recoding_defaults.json"
+    },
+    {
+      "name": "test_export_plink_struct_locus",
+      "status": "passed",
+      "evidence": "vail/conformance/runs/20261021-imports/plink/test_export_plink_struct_locus.json"
+    }
+  ],
+  "source_sha256": {
+    "vail/python/vail/plink.py": "611294851a4ff0654f71108a596a5e9f63ff06c4518b045d6a4cc74a5bafa8bc",
+    "vail/crates/vail-table/src/plink_source.rs": "09c9fd2c56e78f7d3f3e8ec75c9e20f297e63c7987908417f2e225155694364a",
+    "vail/crates/vail-table/src/plink_export.rs": "0fa03c1ab622146887ab8567e27d27d7032368d14d7a1472417b8542799abaa5",
+    "vail/python/vail/fam.py": "ba1ec663685f2f626f39ea64a3fbc2433b7b2b6932f662769f9c78c72e153089",
+    "vail/conformance/plink_fixture.py": "3d9513f7ca1ecb3e3abd8a3b9e1b5b334e591e3a19a6cf109a199a0e33cb600f",
+    "vail/conformance/extract_plink_fixture.py": "cb1c2d7d2c1102b031da815b11deb7b1393937543f7044c9aa1cfb5fd1e28060",
+    "vail/python/tests/test_plink.py": "98ec428bbd734943d8bc87ddfa039dabed89efbbc2e136060ca72b7cde0b2f4e"
+  },
+  "implementation": "Direct typed primitive Arrow import builders and native Arrow-to-BED/BIM streaming sink; no per-cell JSON objects, temporary genotype file, or Python genotype loops.",
+  "local_tests": "14 passed (test_plink.py + test_fam_import.py), including public schemas/keys/globals/rows/columns/localized equality.",
+  "external_binary": "PLINK v1.9.0 64-bit (27 Sep 2026)",
+  "external_concordance": "33720 nonmissing overlapping calls; all33720 concordant",
+  "fixture": "Exact independently extracted original Hail fixture, public typed fixture equality verified all schemas/keys/globals/localized columns/rows/entries.",
+  "commands": [
+    "PYTHONPATH=$PWD/vail/python /Users/danielking/projects/vail/vail/.venv/bin/python -m pytest vail/python/tests/test_plink.py vail/python/tests/test_fam_import.py -q",
+    "PATH=/private/tmp/vail-plink-bin:$PATH PYTHONPATH=$PWD/vail/python /Users/danielking/projects/vail/vail/.venv/bin/python vail/conformance/full_hail_bodies.py --suite /Users/danielking/projects/vail/hail/hail/python/test/hail --output <case>.json --worker-source /Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py --worker-name PLINKTests.<name>"
+  ],
+  "followup": "All21 original bodies rerun; narrow original whitespace varid test rerun after correcting sink error to FatalError; all14 public local tests rerun after final wrapper change."
+}

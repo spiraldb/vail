@@ -120,8 +120,8 @@ def export_plink(
     varid=None,
     cm_position=None,
 ):
-    """Export bounded text records through the native sink, then pack BED bytes."""
-    import os, re, tempfile, json
+    """Stream typed Arrow calls directly to native BED/BIM output."""
+    import re
     from . import eval as evaluate
     from . import literal, or_else, str as string, if_else, delimit, float64
     from .expressions import Expression
@@ -130,8 +130,7 @@ def export_plink(
         return Expression(e.dtype, mt, e.to_ir()) if e.source is not None else e
 
     from .types import tbool, tcall, tstr, tarray, tstruct, tint32, tlocus
-    from .utils import FatalError
-    from . import MatrixTable, missing, case, len as length, is_defined
+    from . import MatrixTable, missing, case, len as length
 
     if not isinstance(dataset, MatrixTable):
         raise TypeError("export_plink requires a MatrixTable")
@@ -237,22 +236,7 @@ def export_plink(
             if any(x is None or re.search(r"\s", x) for x in fields):
                 raise TypeError("has spaces in the following values: " + repr(fields))
             f.write("\t".join(fields) + "\n")
-    # Each temporary row is one variant, avoiding a driver collection of genotypes.
     t = localized.key_by()
-
-    def code(entry):
-        gt = entry._plink_gt
-        value = case().when(
-            gt.is_diploid() & ~gt.phased & (gt[0] <= 1) & (gt[1] <= 1),
-            string(if_else(gt.is_hom_ref(), 3, if_else(gt.is_het(), 2, 0))),
-        )
-        return if_else(
-            is_defined(gt),
-            value.or_error("PLINK requires unphased diploid biallelic calls"),
-            "1",
-        )
-
-    codes = t._plink_entries.map(code)
     t = t.select(
         contig=t._plink_contig,
         varid=t._plink_varid,
@@ -260,42 +244,11 @@ def export_plink(
         position=t._plink_pos,
         a1=t._plink_alleles[1],
         a2=t._plink_alleles[0],
-        genotypes=delimit(codes, ""),
+        entries=t._plink_entries,
     )
-    fd, path = tempfile.mkstemp(prefix="vail-plink-")
-    os.close(fd)
+    from .utils import FatalError
+
     try:
-        t._native.export_text(path, "json", {"newline_delimited": True})
-        with (
-            open(path) as records,
-            open(output + ".bim", "w") as bim,
-            open(output + ".bed", "wb") as bed,
-        ):
-            bed.write(b"\x6c\x1b\x01")
-            for line in records:
-                record = json.loads(line)
-                fields = [
-                    str(record[k])
-                    for k in (
-                        "contig",
-                        "varid",
-                        "cm",
-                        "position",
-                        "a1",
-                        "a2",
-                        "genotypes",
-                    )
-                ]
-                if len(fields) != 7 or any(re.search(r"\s", x) for x in fields[:6]):
-                    raise FatalError("no white space allowed: " + repr(fields))
-                fields[2] = str(float(fields[2]))
-                bim.write("\t".join(fields[:6]) + "\n")
-                genotypes = fields[6]
-                if len(genotypes) != len(columns):
-                    raise FatalError("PLINK entry count mismatch")
-                packed = bytearray((len(genotypes) + 3) // 4)
-                for i, g in enumerate(genotypes):
-                    packed[i // 4] |= int(g) << (2 * (i % 4))
-                bed.write(packed)
-    finally:
-        os.unlink(path)
+        t._native.export_plink(output, len(columns))
+    except ValueError as error:
+        raise FatalError(str(error)) from error

@@ -2463,14 +2463,15 @@ class MatrixTable:
         return handler(rendered)
 
     def cache(self):
-        raise NotImplementedError(
-            "MatrixTable caching requires native Table result-cache support"
-        )
+        """Eagerly snapshot rows, entry slots and column/global metadata."""
+        return self._copy(rows=self._mir.core.cache())
 
     def persist(self, storage_level="MEMORY_AND_DISK"):
-        raise NotImplementedError(
-            "MatrixTable persistence levels require native Table result-cache support; use checkpoint"
-        )
+        if not isinstance(storage_level, str):
+            raise TypeError("storage_level must be a string")
+        if storage_level != "MEMORY_ONLY":
+            raise NotImplementedError("only MEMORY_ONLY persistence is implemented")
+        return self.cache()
 
     def unpersist(self):
         return self

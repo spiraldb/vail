@@ -1,0 +1,19 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_reference_genome_sequence ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/genetics/test_reference_genome.py:42: in test_reference_genome_sequence
+    gr4 = ReferenceGenome.from_fasta_file('test_rg', resource('fake_reference.fasta'), resource('fake_reference.fasta.fai'), mt_contigs=['b', 'c'], x_contigs=['a'])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/6963/vail/vail/python/vail/reference_genome.py:298: in from_fasta_file
+    def from_fasta_file(cls, *_args, **_kwargs): raise NotImplementedError("FASTA-backed reference construction is not implemented")
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   NotImplementedError: FASTA-backed reference construction is not implemented
+________________________ test_reference_genome_liftover ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/genetics/test_reference_genome.py:60: in test_reference_genome_liftover
+    assert not grch37.has_liftover('GRCh38')
+               ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'ReferenceGenome' object has no attribute 'has_liftover'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/genetics/test_reference_genome.py::test_reference_genome_sequence
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ddy1wz72/upstream_hail/genetics/test_reference_genome.py::test_reference_genome_liftover
+2 failed, 7 deselected in 0.06s

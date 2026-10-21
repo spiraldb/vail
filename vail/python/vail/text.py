@@ -118,6 +118,21 @@ def split_line(value, delimiter, missing=None, quote=None, regex=False):
     return _split_line(value, delimiter, quote, markers)
 
 
+def json(value):
+    """Serialize an expression as a Hail JSON annotation."""
+    return _function('__vail_json_annotation', [as_expr(value)], tstr)
+
+
+def parse_json(value, dtype):
+    """Parse JSON to a statically typed expression in the native engine."""
+    from .types import dtype as parse_type
+    value = as_expr(value)
+    if value.dtype != tstr:
+        raise TypeError('parse_json requires a string expression')
+    target = parse_type(dtype) if isinstance(dtype, str) else dtype
+    return _function('__vail_parse_json', [value], target)
+
+
 def _parse_integer_array(value, target):
     from . import case, empty_array, if_else, is_missing, missing
 
@@ -156,6 +171,21 @@ def _parse_primitive(value, target):
         # Java's floating parser accepts an optional precision suffix.
         value = value.strip().replace(r'[fFdD]$', '')
     return cast(value, target)
+
+
+def _parse_import_field(value, target):
+    from .types import tcall, tlocus, tinterval
+    if target in (tstr, tint32, tint64, tfloat32, tfloat64, tbool):
+        return _parse_primitive(value, target)
+    if target == tcall:
+        return parse_json(json(value), target)
+    if isinstance(target, tlocus):
+        from . import parse_locus
+        return parse_locus(value, target.reference_genome)
+    if isinstance(target, tinterval) and isinstance(target.point_type, tlocus):
+        from . import parse_locus_interval
+        return parse_locus_interval(value, reference_genome=target.point_type.reference_genome)
+    return parse_json(value, target)
 
 
 def _impute_fields(table, split, names, types):
@@ -280,10 +310,9 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
         if isinstance(target, str):
             target = dtype(target)
         integer_array = isinstance(target, tarray) and target.element_type in (tint32, tint64)
-        if target not in (tstr, tint32, tint64, tfloat32, tfloat64, tbool) and not integer_array:
-            raise NotImplementedError('typed text imports support primitive fields and integer arrays')
         value = _function('array_element', [split, literal(index + 1, tint64)], tstr)
-        fields[name] = _parse_integer_array(value, target) if integer_array else _parse_primitive(value, target)
+        fields[name] = (_parse_integer_array(value, target) if integer_array else
+                        _parse_import_field(value, target))
         if not impute:
             from . import case, len as length, str as stringify
             fields[name] = (case().when(length(split) == len(names), fields[name])
@@ -344,14 +373,14 @@ def export(table, output, types_file=None, header=True, parallel=None, delimiter
                 value = or_missing(is_defined(value),
                     if_else(value.includes_start, '[', '(')
                     + value.start.contig + ':' + str_(value.start.position) + '-'
-                    + value.end.contig + ':' + str_(value.end.position)
+                    + if_else(value.start.contig == value.end.contig, '', value.end.contig + ':') + str_(value.end.position)
                     + if_else(value.includes_end, ']', ')'))
             fields[name] = value
         table = table.select(**fields)
     if any(ty not in (tstr, tint32, tint64, tbool) for ty in table._schema.values()):
         table = table.key_by()
         table = table.select(**{name: table[name] if ty in (tstr, tint32, tint64, tbool)
-                                else str_(table[name]) for name, ty in table._schema.items()})
+                                else _function('__vail_export_annotation', [table[name]], tstr) for name, ty in table._schema.items()})
     table._native.export_text(_local_path(output, allow_compressed=True), 'text', {
         'delimiter': ord(delimiter), 'has_header': header, 'null_value': 'NA',
     })

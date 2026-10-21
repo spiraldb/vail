@@ -264,7 +264,11 @@ def main():
         (test_package / 'hail').symlink_to(target, target_is_directory=True)
         (root / 'vail_pytest_reporter.py').write_text(PLUGIN)
         env = dict(os.environ)
-        env['PYTHONPATH'] = str(root) + os.pathsep + env.get('PYTHONPATH', '')
+        # Fixture converters retain their checked-in payloads beside their
+        # modules. Resolve them from the conformance directory, while the
+        # adapted upstream test package remains first on the import path.
+        env['PYTHONPATH'] = os.pathsep.join((str(root), str(Path(__file__).resolve().parent),
+                                           env.get('PYTHONPATH', '')))
         env['HAIL_TEST_RESOURCES_DIR'] = str(source.parents[2] / 'hail' / 'test' / 'resources')
         env['HAIL_DOCTEST_DATA_DIR'] = doctest_data_dir(source)
         env['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'

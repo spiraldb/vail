@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import shutil
 from collections.abc import Mapping
 
 
@@ -49,8 +50,9 @@ def import_gvcf_interval(
     """Return a lazy array of VCF records with POS in [start, end].
 
     Records retain reference blocks and symbolic alleles, with samples in the
-    supplied header order under ``__entries``. This currently scans the source;
-    tabix seeking and row-dependent path expressions are not yet supported.
+    supplied header order under ``__entries``. Indexed BGZF input uses the optional htslib ``tabix`` executable for scalar
+    bounds; unindexed input and row-dependent bounds use a sequential scan.
+    Row-dependent paths are not yet supported.
     ``file_num`` supplies internal reader identity only; it adds no public field.
     """
     from . import eval as evaluate
@@ -78,18 +80,34 @@ def import_gvcf_interval(
             raise NotImplementedError('header_info must be a scalar expression')
         header_info = evaluate(header_info)
     entry_float_type = dtype(entry_float_type) if isinstance(entry_float_type, str) else entry_float_type
+    scalar_bounds = all(value.source is None and not value._lexical_types for value in (contig, start, end))
+    indexed_region = None
+    if scalar_bounds:
+        from .vcf import _local_path
+        local_path = _local_path(path)
+        index_exists = any(os.path.isfile(local_path + suffix) for suffix in ('.tbi', '.csi'))
+        if index_exists:
+            executable = shutil.which('tabix')
+            if executable is None:
+                raise NotImplementedError('indexed gVCF intervals require the htslib tabix executable')
+            chromosome, begin, finish = map(evaluate, (contig, start, end))
+            if chromosome is not None and begin is not None and finish is not None:
+                raw_chromosome = next((raw for raw, recoded in (contig_recoding or {}).items()
+                                       if recoded == chromosome), chromosome)
+                indexed_region = (executable, raw_chromosome, begin, finish)
     # read_vcf captures the parsed header in its native source configuration,
     # so the temporary header can be removed as soon as construction finishes.
     with tempfile.NamedTemporaryFile(mode='w', suffix='.vcf') as header_file:
         header_file.write(_header_text(header_info))
         header_file.flush()
         mt = import_vcf(path, header_file=header_file.name, call_fields=call_fields,
+                        _indexed_region=indexed_region,
                         entry_float_type=entry_float_type, array_elements_required=array_elements_required,
                         reference_genome=reference_genome, contig_recoding=contig_recoding,
                         skip_invalid_loci=skip_invalid_loci, filter=filter,
                         find_replace=None if find is None else (find, replace))
     rows = mt.localize_entries('__entries', '__cols')
-    if all(value.source is None and not value._lexical_types for value in (contig, start, end)):
+    if scalar_bounds:
         rows = rows.filter((rows.locus.contig == contig) &
                            (rows.locus.position >= start) & (rows.locus.position <= end))
         return rows.collect(_localize=False)

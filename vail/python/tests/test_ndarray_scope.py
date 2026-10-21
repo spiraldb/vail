@@ -35,7 +35,5 @@ def test_unsupported_ndarray_operations_do_not_create_frontend_only_ir():
     value = hl.nd.array([1, 2, 3])
     with pytest.raises(NotImplementedError, match="ndarray indexing"):
         _ = value[0]
-    with pytest.raises(NotImplementedError, match="ndarray reshape"):
-        value.reshape((3, 1))
     with pytest.raises(NotImplementedError, match="ndarray matrix multiplication"):
         _ = value @ value

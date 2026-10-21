@@ -534,11 +534,14 @@ fn lower(
                     let ty = arg
                         .dtype_with_globals(schema.as_arrow(), globals)?
                         .to_arrow()?;
-                    coerce_type(
-                        recurse(arg)?,
-                        vail_ordering::without_type_metadata(&ty),
-                        schema,
-                    )
+                    // The indexing UDF derives its tuple descriptor from the
+                    // element's logical type, including opaque Call storage.
+                    let input_type = if function == "__vail_index_values" {
+                        ty
+                    } else {
+                        vail_ordering::without_type_metadata(&ty)
+                    };
+                    coerce_type(recurse(arg)?, input_type, schema)
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
             let dtype = expr

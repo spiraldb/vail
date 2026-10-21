@@ -308,6 +308,22 @@ pub(crate) fn source_partition_projected_with_nested_paths(
     projection: Option<&Vec<usize>>,
     nested_paths: Vec<Vec<String>>,
 ) -> Result<PhysicalPlan> {
+    source_partition_with_selection(table, part, projection, nested_paths, None)
+}
+pub(crate) fn bgen_source_partition(
+    table: &Arc<TableIR>,
+    part: usize,
+    selection: Arc<crate::bgen_select::Selection>,
+) -> Result<PhysicalPlan> {
+    source_partition_with_selection(table, part, None, Vec::new(), Some(selection))
+}
+fn source_partition_with_selection(
+    table: &Arc<TableIR>,
+    part: usize,
+    projection: Option<&Vec<usize>>,
+    nested_paths: Vec<Vec<String>>,
+    bgen_selection: Option<Arc<crate::bgen_select::Selection>>,
+) -> Result<PhysicalPlan> {
     let row_schema = table.schema().clone();
     let name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
     let schema = with_partition(&row_schema, &name);
@@ -341,13 +357,26 @@ pub(crate) fn source_partition_projected_with_nested_paths(
                         options_json,
                     )?),
                 ),
-                "bgen" => (
-                    row_schema.clone(),
-                    Arc::new(crate::bgen_source::BgenSource::new(
+                "bgen" => {
+                    let mut selected = if let Some(parts) = options_json.get("partition_options") {
+                        parts.as_array().and_then(|parts| parts.get(part)).cloned()
+                            .ok_or_else(|| TableError::Invalid(
+                                "BGEN partition option count disagrees with source paths".into(),
+                            ))?
+                    } else {
+                        options_json.clone()
+                    };
+                    if let Some(paths) = options_json.get("decode_paths") {
+                        selected["decode_paths"] = paths.clone();
+                    }
+                    (
                         row_schema.clone(),
-                        options_json,
-                    )?),
-                ),
+                        Arc::new(crate::bgen_source::BgenSource::new(
+                            row_schema.clone(),
+                            &selected,
+                        )?.with_selection(bgen_selection.clone())),
+                    )
+                },
                 "vcf" => (
                     row_schema.clone(),
                     Arc::new(crate::vcf_source::VcfSource::new(

@@ -15,6 +15,9 @@ def entries(mt):
 
 
 def test_diploid_likelihoods_depth_and_quality():
+    mt = matrix(GT=hl.call(1, 2), AD=[5, 7, 11], DP=23, GQ=99,
+                PL=[40, 30, 20, 10, 0, 50])
+    assert hl.split_multi_hts(mt).entry.dtype == mt.entry.dtype
     row = entries(matrix(GT=hl.call(1, 2), AD=[5, 7, 11], PL=[40, 30, 20, 10, 0, 50], GQ=99, DP=23))
     assert [r.alleles for r in row] == [['A', 'C'], ['A', 'G']]
     assert [r.GT.alleles for r in row] == [[0, 1], [0, 1]]

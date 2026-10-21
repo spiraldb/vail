@@ -91,6 +91,12 @@ Text interoperability includes lazy `import_lines`, delimited `import_table`,
 See [Text import and export](docs/TEXT_IMPORT_EXPORT.md) for supported options
 and explicit limitations, including Hail float and nested text rendering.
 
+`import_gvcf_interval` reads indexed BGZF intervals lazily through the optional
+htslib `tabix` executable on `PATH` when a `.tbi` or `.csi` index exists and bounds
+are scalar. It streams selected records into the native VCF decoder. Unindexed
+input and row-dependent bounds use a sequential scan; paths and supplied headers
+must be scalar. `get_vcf_header_info` reads header metadata without decoding rows.
+
 Random expressions implement all 13 public `hl.rand_...` functions, seeded
 reproducibility, dynamic row/collection contexts, and random ndarray draws.
 See [Random expressions](docs/RANDOMNESS.md) for the design and verification.
@@ -164,4 +170,4 @@ only; data files open when an action pulls batches. MapRows and Filter process
 batches incrementally; Head stops upstream reads once satisfied. Collect localizes
 its result and Tail retains a bounded suffix. Write consumes the execution stream
 with bounded file buffers and backpressure; explicit sorting is a DataFusion operator
-which can spill under a configured memory limit. Each action executes afresh; TableIR has no result cache.
+which can spill under a configured memory limit. Each action executes afresh unless `cache()` or `persist("MEMORY_ONLY")` creates an eager native Arrow snapshot. Cached rows and globals no longer depend on the source files. Other persistence levels are not yet supported.

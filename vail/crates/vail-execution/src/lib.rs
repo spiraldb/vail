@@ -49,6 +49,7 @@ pub mod reference;
 pub mod scan_scopes;
 pub mod scan_state;
 mod string_kernels;
+mod json_io;
 
 #[derive(Debug, Error)]
 pub enum OrderError {

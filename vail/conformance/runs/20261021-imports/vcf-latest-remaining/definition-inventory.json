@@ -1,0 +1,200 @@
+[
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_info_char",
+    "line": 53,
+    "body": "def test_info_char(self):\n    self.assertEqual(hl.import_vcf(resource('infochar.vcf')).count_rows(), 1)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_info_float64",
+    "line": 56,
+    "body": "def test_info_float64(self):\n    \"\"\"Test that floating-point info fields are 64-bit regardless of the entry float type\"\"\"\n    mt = hl.import_vcf(resource('infochar.vcf'), entry_float_type=hl.tfloat32)\n    for f in _FLOAT_INFO_FIELDS:\n        self.assertEqual(mt['info'][f].dtype, hl.tfloat64)\n    for f in _FLOAT_ARRAY_INFO_FIELDS:\n        self.assertEqual(mt['info'][f].dtype, hl.tarray(hl.tfloat64))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_undeclared_info",
+    "line": 70,
+    "body": "def test_undeclared_info(self):\n    mt = hl.import_vcf(resource('undeclaredinfo.vcf'))\n    rows = mt.rows()\n    self.assertTrue(rows.all(hl.is_defined(rows.info)))\n    info_type = mt.row.dtype['info']\n    self.assertTrue('InbreedingCoeff' in info_type)\n    self.assertFalse('undeclared' in info_type)\n    self.assertFalse('undeclaredFlag' in info_type)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_malformed",
+    "line": 84,
+    "body": "def test_malformed(self):\n    with self.assertRaisesRegex(FatalError, 'invalid character'):\n        mt = hl.import_vcf(resource('malformed.vcf'))\n        mt._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_not_identical_headers",
+    "line": 89,
+    "body": "def test_not_identical_headers(self):\n    t = new_temp_file(extension='vcf')\n    mt = hl.import_vcf(resource('sample.vcf'))\n    hl.export_vcf(mt.filter_cols((mt.s != 'C1048::HG02024') & (mt.s != 'HG00255')), t)\n    with self.assertRaisesRegex(FatalError, 'invalid sample IDs'):\n        hl.import_vcf([resource('sample.vcf'), t])._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_empty",
+    "line": 178,
+    "body": "def test_import_vcf_empty(self):\n    mt = hl.import_vcf([resource('0var.vcf.bgz'), resource('3var.vcf.bgz')])\n    assert mt._same(hl.import_vcf(resource('3var.vcf.bgz')))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_no_reference_specified",
+    "line": 182,
+    "body": "def test_import_vcf_no_reference_specified(self):\n    vcf = hl.import_vcf(resource('sample2.vcf'), reference_genome=None)\n    self.assertEqual(vcf.locus.dtype, hl.tstruct(contig=hl.tstr, position=hl.tint32))\n    self.assertEqual(vcf.count_rows(), 735)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_bad_reference_allele",
+    "line": 187,
+    "body": "def test_import_vcf_bad_reference_allele(self):\n    vcf = hl.import_vcf(resource('invalid_base.vcf'))\n    self.assertEqual(vcf.count_rows(), 1)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_flags_are_defined",
+    "line": 191,
+    "body": "def test_import_vcf_flags_are_defined(self):\n    t = hl.import_vcf(resource('sample.vcf')).rows()\n    self.assertTrue(t.all(hl.is_defined(t.info.NEGATIVE_TRAIN_SITE) & hl.is_defined(t.info.POSITIVE_TRAIN_SITE) & hl.is_defined(t.info.DB) & hl.is_defined(t.info.DS)))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_can_import_float_array_format",
+    "line": 203,
+    "body": "def test_import_vcf_can_import_float_array_format(self):\n    mt = hl.import_vcf(resource('floating_point_array.vcf'))\n    self.assertTrue(mt.aggregate_entries(hl.agg.all(mt.numeric_array == [1.5, 2.5])))\n    self.assertEqual(hl.tarray(hl.tfloat64), mt['numeric_array'].dtype)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_can_import_float32_array_format",
+    "line": 208,
+    "body": "def test_import_vcf_can_import_float32_array_format(self):\n    mt = hl.import_vcf(resource('floating_point_array.vcf'), entry_float_type=hl.tfloat32)\n    self.assertTrue(mt.aggregate_entries(hl.agg.all(mt.numeric_array == [1.5, 2.5])))\n    self.assertEqual(hl.tarray(hl.tfloat32), mt['numeric_array'].dtype)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_can_import_negative_numbers",
+    "line": 213,
+    "body": "def test_import_vcf_can_import_negative_numbers(self):\n    mt = hl.import_vcf(resource('negative_format_fields.vcf'))\n    self.assertTrue(mt.aggregate_entries(hl.agg.all(mt.negative_int == -1) & hl.agg.all(mt.negative_float == -1.5) & hl.agg.all(mt.negative_int_array == [-1, -2]) & hl.agg.all(mt.negative_float_array == [-0.5, -1.5])))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements",
+    "line": 224,
+    "body": "def test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements(self):\n    mt = hl.import_vcf(resource('missingInfoArray.vcf'), reference_genome='GRCh37')\n    with pytest.raises(FatalError, match=\".*Missing value in INFO array. Use 'hl.import_vcf[(][.][.][.], array_elements_required=False[)]'[.].*\"):\n        mt._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements",
+    "line": 232,
+    "body": "def test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements(self):\n    mt = hl.import_vcf(resource('missingInfoArray.vcf'), reference_genome='GRCh37', array_elements_required=False)\n    mt = mt.select_rows(**mt.info)\n    expected = hl.Table.parallelize([{'locus': hl.Locus('X', 16050036), 'alleles': ['A', 'C'], 'FOO': [1, None], 'BAR': [2, None, None], 'JUST_A_DOT': None, 'NOT_EVEN_PRESENT': None}, {'locus': hl.Locus('X', 16061250), 'alleles': ['T', 'A', 'C'], 'FOO': [None, 2, None], 'BAR': [None, 1.0, None], 'JUST_A_DOT': None, 'NOT_EVEN_PRESENT': None}], hl.tstruct(locus=hl.tlocus('GRCh37'), alleles=hl.tarray(hl.tstr), FOO=hl.tarray(hl.tint), BAR=hl.tarray(hl.tfloat64), JUST_A_DOT=hl.tarray(hl.tfloat64), NOT_EVEN_PRESENT=hl.tarray(hl.tfloat64)), key=['locus', 'alleles'])\n    assert mt.rows()._same(expected)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_missing_format_field_elements",
+    "line": 266,
+    "body": "def test_import_vcf_missing_format_field_elements(self):\n    mt = hl.import_vcf(resource('missingFormatArray.vcf'), reference_genome='GRCh37', array_elements_required=False)\n    mt = mt.select_rows().select_entries('AD', 'PL')\n    expected = hl.Table.parallelize([{'locus': hl.Locus('X', 16050036), 'alleles': ['A', 'C'], 's': 'C1046::HG02024', 'AD': [None, None], 'PL': [0, None, 180]}, {'locus': hl.Locus('X', 16050036), 'alleles': ['A', 'C'], 's': 'C1046::HG02025', 'AD': [None, 6], 'PL': [70, None]}, {'locus': hl.Locus('X', 16061250), 'alleles': ['T', 'A', 'C'], 's': 'C1046::HG02024', 'AD': [0, 0, None], 'PL': [396, None, None, 33, None, 0]}, {'locus': hl.Locus('X', 16061250), 'alleles': ['T', 'A', 'C'], 's': 'C1046::HG02025', 'AD': [0, 0, 9], 'PL': [None, None, None]}], hl.tstruct(locus=hl.tlocus('GRCh37'), alleles=hl.tarray(hl.tstr), s=hl.tstr, AD=hl.tarray(hl.tint), PL=hl.tarray(hl.tint)), key=['locus', 'alleles', 's'])\n    self.assertTrue(mt.entries()._same(expected))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_unsorted_alleles",
+    "line": 313,
+    "body": "def test_vcf_unsorted_alleles(self):\n    _vcf_unsorted_alleles()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_unsorted_alleles_no_codegen",
+    "line": 316,
+    "body": "def test_vcf_unsorted_alleles_no_codegen(self):\n    with_flags(no_whole_stage_codegen='1')(_vcf_unsorted_alleles)()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_skip_invalid_loci",
+    "line": 319,
+    "body": "def test_import_vcf_skip_invalid_loci(self):\n    mt = hl.import_vcf(resource('skip_invalid_loci.vcf'), reference_genome='GRCh37', skip_invalid_loci=True)\n    self.assertEqual(mt._force_count_rows(), 3)\n    with self.assertRaisesRegex(FatalError, 'Invalid locus'):\n        hl.import_vcf(resource('skip_invalid_loci.vcf')).count()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_set_field_missing",
+    "line": 326,
+    "body": "def test_import_vcf_set_field_missing(self):\n    mt = hl.import_vcf(resource('test_set_field_missing.vcf'))\n    mt.aggregate_entries(hl.agg.sum(mt.DP))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_dosages_as_doubles_or_floats",
+    "line": 330,
+    "body": "def test_import_vcf_dosages_as_doubles_or_floats(self):\n    mt = hl.import_vcf(resource('small-ds.vcf'))\n    self.assertEqual(hl.expr.expressions.typed_expressions.Float64Expression, type(mt.entry.DS))\n    mt32 = hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tfloat32)\n    self.assertEqual(hl.expr.expressions.typed_expressions.Float32Expression, type(mt32.entry.DS))\n    mt_result = mt.annotate_entries(DS32=mt32.index_entries(mt.row_key, mt.col_key).DS)\n    compare = mt_result.annotate_entries(test=hl.coalesce(hl.approx_equal(mt_result.DS, mt_result.DS32, nan_same=True), True))\n    self.assertTrue(all(compare.test.collect()))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_invalid_float_type",
+    "line": 341,
+    "body": "def test_import_vcf_invalid_float_type(self):\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tstr)\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tint)\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tint32)\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tint64)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_tabix_export",
+    "line": 508,
+    "body": "def test_tabix_export(self):\n    mt = hl.import_vcf(resource('sample.vcf.bgz'))\n    tmp = new_temp_file(extension='bgz')\n    hl.export_vcf(mt, tmp, tabix=True)\n    self.import_gvcfs_sample_vcf(tmp)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_tabix_export_file_exists",
+    "line": 514,
+    "body": "def test_tabix_export_file_exists(self):\n    mt = hl.import_vcf(resource('sample.vcf.bgz'))\n    tmp = new_temp_file(extension='bgz')\n    hl.export_vcf(mt, tmp, tabix=True, parallel='header_per_shard')\n    files = hl.current_backend().fs.ls(tmp)\n    self.assertTrue(any((f.path.endswith('.tbi') for f in files)))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parser_golden_master__ex_GRCh37",
+    "line": 537,
+    "body": "def test_vcf_parser_golden_master__ex_GRCh37(self):\n    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parser_golden_master__sample_GRCh37",
+    "line": 540,
+    "body": "def test_vcf_parser_golden_master__sample_GRCh37(self):\n    self._test_vcf_parser_golden_master(resource('sample.vcf'), 'GRCh37')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37",
+    "line": 544,
+    "body": "@test_timeout(6 * 60)\ndef test_vcf_parser_golden_master__gvcf_GRCh37(self):\n    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_missing_float_entries",
+    "line": 644,
+    "body": "def test_missing_float_entries(self):\n    vcf = hl.import_vcf(resource('noglgp.vcf'), array_elements_required=False, reference_genome='GRCh38')\n    gl_gp = vcf.aggregate_entries(hl.agg.collect(hl.struct(GL=vcf.GL, GP=vcf.GP)))\n    assert gl_gp == [hl.Struct(GL=[None, None, None], GP=[0.22, 0.5, 0.27]), hl.Struct(GL=[None, None, None], GP=[None, None, None])]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_same_bgzip",
+    "line": 652,
+    "body": "def test_same_bgzip(self):\n    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4)\n    f = new_temp_file(extension='vcf.bgz')\n    hl.export_vcf(mt, f)\n    assert hl.import_vcf(f)._same(mt)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_parallel_separate_header_export",
+    "line": 658,
+    "body": "def test_vcf_parallel_separate_header_export(self):\n    fs = hl.current_backend().fs\n\n    def concat_files(outpath, inpaths):\n        with fs.open(outpath, 'wb') as outfile:\n            for path in inpaths:\n                with fs.open(path, 'rb') as infile:\n                    shutil.copyfileobj(infile, outfile)\n    mt = hl.import_vcf(resource('sample.vcf'), min_partitions=4)\n    f = new_temp_file(extension='vcf.bgz')\n    hl.export_vcf(mt, f, parallel='separate_header')\n    stat = fs.stat(f)\n    assert stat\n    assert stat.is_dir()\n    shard_paths = [info.path for info in fs.ls(f) if os.path.splitext(info.path)[-1] == '.bgz']\n    assert shard_paths\n    shard_paths.sort()\n    nf = new_temp_file(extension='vcf.bgz')\n    concat_files(nf, shard_paths)\n    assert hl.import_vcf(nf)._same(mt)\n    manifest_files = [os.path.join(f, line.strip()) for line in fs.open(os.path.join(f, 'shard-manifest.txt'))]\n    assert hl.import_vcf(manifest_files[1:], header_file=manifest_files[0])._same(mt)\n    assert [p.split('/')[-1] for p in shard_paths] == [p.split('/')[-1] for p in manifest_files]"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_sorted",
+    "line": 690,
+    "body": "def test_sorted(self):\n    mt = hl.utils.range_matrix_table(10, 10, n_partitions=4).filter_cols(False)\n    mt = mt.key_cols_by(s='dummy')\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(0))\n    mt = mt.key_rows_by(locus=hl.locus('1', 100 - mt.row_idx), alleles=['A', 'T'])\n    f = new_temp_file(extension='vcf')\n    hl.export_vcf(mt, f)\n    last = 0\n    with hl.current_backend().fs.open(f, 'r') as i:\n        for line in i:\n            if line.startswith('#'):\n                continue\n            else:\n                pos = int(line.split('\\t')[1])\n                assert pos >= last\n                last = pos"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_metadata_argument",
+    "line": 780,
+    "body": "def test_metadata_argument(self):\n    mt = hl.import_vcf(resource('multipleChromosomes.vcf'))\n    f = new_temp_file(extension='vcf')\n    metadata = {'filter': {'LowQual': {'Description': 'Low quality'}}, 'format': {'GT': {'Description': 'Genotype call.', 'Number': 'foo'}}, 'fakeField': {}}\n    hl.export_vcf(mt, f, metadata=metadata)\n    saw_gt = False\n    saw_lq = False\n    with hl.current_backend().fs.open(f, 'r') as f:\n        for line in f:\n            print(line[:25])\n            if line.startswith('##FORMAT=<ID=GT'):\n                assert line.strip() == '##FORMAT=<ID=GT,Number=foo,Type=String,Description=\"Genotype call.\">'\n                assert not saw_gt\n                saw_gt = True\n            elif line.startswith('##FILTER=<ID=LowQual'):\n                assert line.strip() == '##FILTER=<ID=LowQual,Description=\"Low quality\">'\n                assert not saw_lq\n                saw_lq = True\n    assert saw_gt\n    assert saw_lq"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_invalid_info_fields",
+    "line": 806,
+    "body": "def test_invalid_info_fields(self):\n    t = new_temp_file(extension='vcf')\n    mt = hl.import_vcf(resource('sample.vcf'))\n    with mock.patch('hail.methods.impex.warning', autospec=True) as warning:\n        hl.export_vcf(mt, t)\n        assert warning.call_count == 0\n    for invalid_field in ['foo-1', '123', 'bar baz']:\n        with mock.patch('hail.methods.impex.warning', autospec=True) as warning:\n            hl.export_vcf(mt.annotate_rows(info=mt.info.annotate(**{invalid_field: True})), t)\n            assert warning.call_count == 1"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_vcf_different_info_errors",
+    "line": 819,
+    "body": "def test_vcf_different_info_errors(self):\n    with self.assertRaisesRegex(FatalError, 'Check that all files have same INFO fields'):\n        mt = hl.import_vcf([resource('different_info_test1.vcf'), resource('different_info_test2.vcf')])\n        mt.rows()._force_count()"
+  }
+]

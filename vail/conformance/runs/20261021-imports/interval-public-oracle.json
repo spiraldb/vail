@@ -1,0 +1,19 @@
+{
+  "boolean_numeric_equality": true,
+  "numeric": [
+    {
+      "start": "1:2",
+      "end": "1:5",
+      "includes_start": true,
+      "includes_end": false
+    }
+  ],
+  "recode": {
+    "error": "FatalError",
+    "message": "ets ('[' or ']') for open endpoints, or parenthesis ('('\n            or ')') for closed endpoints. The POS field may be the words\n            'START' or 'END' to denote the start or end of the chromosome.\n    CHR:POS-POS e.g. 1:14244-912382\n            The same interval as '[1:14244-1:912382)'\n    CHR-CHR e.g. '1-22' or 'X-Y'\n            The same intervals as '[1:START-22:END'] or '[X:START-Y:END]'\n    CHR e.g. '5' or 'X'\n            The same intervals as '[5:START-5:END]' or '[X:START-X:END]'  "
+  },
+  "skip": {
+    "error": "FatalError",
+    "message": "ets ('[' or ']') for open endpoints, or parenthesis ('('\n            or ')') for closed endpoints. The POS field may be the words\n            'START' or 'END' to denote the start or end of the chromosome.\n    CHR:POS-POS e.g. 1:14244-912382\n            The same interval as '[1:14244-1:912382)'\n    CHR-CHR e.g. '1-22' or 'X-Y'\n            The same intervals as '[1:START-22:END'] or '[X:START-Y:END]'\n    CHR e.g. '5' or 'X'\n            The same intervals as '[5:START-5:END]' or '[X:START-X:END]'  "
+  }
+}

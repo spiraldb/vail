@@ -173,7 +173,6 @@ fn scan(
     source: &PlinkSource,
     sender: &tokio::sync::mpsc::Sender<Result<RecordBatch>>,
 ) -> std::result::Result<(), String> {
-    use serde_json::{Value, json};
     use std::io::BufRead;
     let o = &source.options;
     let n = o.n_samples;
@@ -195,39 +194,32 @@ fn scan(
     });
     let decode = indices.as_ref().is_none_or(|p| p.contains(&1));
     let batch_size = source.batch_size.min((65536 / n.max(1)).max(1));
-    let mut values = Vec::with_capacity(batch_size);
-    let emit = |values: &mut Vec<Value>| -> std::result::Result<bool, String> {
-        let batch = if indices.as_ref().is_some_and(Vec::is_empty) {
-            RecordBatch::try_new_with_options(
-                Arc::new(arrow_schema::Schema::empty()),
-                vec![],
-                &RecordBatchOptions::new().with_row_count(Some(values.len())),
-            )
-            .map_err(|e| e.to_string())?
-        } else {
-            let mut decoder = arrow_json::ReaderBuilder::new(source.schema.table_schema().clone())
-                .with_batch_size(values.len())
-                .build_decoder()
-                .map_err(|e| e.to_string())?;
-            decoder.serialize(values).map_err(|e| e.to_string())?;
-            let batch = decoder
-                .flush()
-                .map_err(|e| e.to_string())?
-                .ok_or("empty PLINK batch")?;
-            if let Some(p) = &indices {
-                batch.project(p).map_err(|e| e.to_string())?
-            } else {
-                batch
-            }
-        };
-        values.clear();
-        Ok(sender.blocking_send(Ok(batch)).is_ok())
-    };
-    // Decode table depends only on the chosen reference orientation.
-    let hom0 = if o.a2_reference { 1 } else { 0 };
+    let mut batch = PlinkBatch::new(batch_size);
+    // Fixed primitive decode table, selected once per scan.
+    let hom0: u16 = if o.a2_reference { 1 } else { 0 };
     let hom1 = 1 - hom0;
-    let call = |a, b| json!({"__vail_call_allele0":a,"__vail_call_allele1":b,"__vail_call_ploidy":2,"__vail_call_phased":false});
-    let calls = [call(hom0, hom0), Value::Null, call(0, 1), call(hom1, hom1)];
+    let calls = [(hom0, hom0), (0, 0), (0, 1), (hom1, hom1)];
+    let emit = |batch: &mut PlinkBatch| -> std::result::Result<bool, String> {
+        let rows = batch.rows;
+        let arrays = batch.finish(
+            source.schema.table_schema(),
+            n,
+            decode,
+            o.contig_ordinals.is_some(),
+        )?;
+        let full = RecordBatch::try_new_with_options(
+            source.schema.table_schema().clone(),
+            arrays,
+            &RecordBatchOptions::new().with_row_count(Some(rows)),
+        )
+        .map_err(|e| e.to_string())?;
+        let projected = if let Some(p) = &indices {
+            full.project(p).map_err(|e| e.to_string())?
+        } else {
+            full
+        };
+        Ok(sender.blocking_send(Ok(projected)).is_ok())
+    };
     let mut bytes = vec![0; width];
     let bim = std::io::BufReader::new(std::fs::File::open(&o.bim).map_err(|e| e.to_string())?);
     let mut variants = 0u64;
@@ -270,23 +262,36 @@ fn scan(
         if !valid {
             continue;
         }
-        let locus = if let Some(ord) = &o.contig_ordinals {
-            json!({"__vail_locus_contig":contig,"__vail_locus_ordinal":ord.get(contig).ok_or("unknown reference contig")?,"__vail_locus_position":pos})
-        } else {
-            json!({"contig":contig,"position":pos})
-        };
+        if let Some(ord) = &o.contig_ordinals {
+            batch
+                .ordinals
+                .append_value(*ord.get(contig).ok_or("unknown reference contig")? as i32);
+        }
+        batch.contigs.append_value(contig);
+        batch.positions.append_value(pos);
+        batch.rsids.append_value(f[1]);
+        batch.cm.append_value(cm);
         let alleles = if o.a2_reference {
             [f[5], f[4]]
         } else {
             [f[4], f[5]]
         };
-        let cells = if decode {
-            (0..n).map(|i|json!({"__vail_matrix_col_id":i,"value":{"GT":calls[((bytes[i/4]>>(2*(i%4)))&3) as usize]}})).collect::<Vec<_>>()
-        } else {
-            vec![]
-        };
-        values.push(json!({"__vail_matrix_row":{"locus":locus,"alleles":alleles,"rsid":f[1],"cm_position":cm},"__vail_matrix_cells":cells}));
-        if values.len() == batch_size && !emit(&mut values)? {
+        for allele in alleles {
+            batch.alleles.values().append_value(allele);
+        }
+        batch.alleles.append(true);
+        if decode {
+            for i in 0..n {
+                let code = ((bytes[i / 4] >> (2 * (i % 4))) & 3) as usize;
+                let (a, b) = calls[code];
+                batch.cids.append_value(i as i64);
+                batch.allele0.append_value(a);
+                batch.allele1.append_value(b);
+                batch.called.push(code != 1);
+            }
+        }
+        batch.rows += 1;
+        if batch.rows == batch_size && !emit(&mut batch)? {
             return Ok(());
         }
     }
@@ -296,8 +301,132 @@ fn scan(
     if bed.metadata().map_err(|e| e.to_string())?.len() != expected {
         return Err("PLINK BED size does not match BIM/FAM dimensions".into());
     }
-    if !values.is_empty() {
-        emit(&mut values)?;
+    if batch.rows != 0 {
+        emit(&mut batch)?;
     }
     Ok(())
+}
+
+/// Independent primitive buffers avoid per-genotype object allocation and JSON decoding.
+struct PlinkBatch {
+    rows: usize,
+    contigs: arrow_array::builder::StringBuilder,
+    ordinals: arrow_array::builder::Int32Builder,
+    positions: arrow_array::builder::Int32Builder,
+    alleles: arrow_array::builder::ListBuilder<arrow_array::builder::StringBuilder>,
+    rsids: arrow_array::builder::StringBuilder,
+    cm: arrow_array::builder::Float64Builder,
+    cids: arrow_array::builder::Int64Builder,
+    allele0: arrow_array::builder::UInt16Builder,
+    allele1: arrow_array::builder::UInt16Builder,
+    called: Vec<bool>,
+}
+impl PlinkBatch {
+    fn new(rows: usize) -> Self {
+        use arrow_array::builder::*;
+        Self {
+            rows: 0,
+            contigs: StringBuilder::with_capacity(rows, rows * 4),
+            ordinals: Int32Builder::with_capacity(rows),
+            positions: Int32Builder::with_capacity(rows),
+            alleles: ListBuilder::new(StringBuilder::new()),
+            rsids: StringBuilder::with_capacity(rows, rows * 16),
+            cm: Float64Builder::with_capacity(rows),
+            cids: Int64Builder::new(),
+            allele0: UInt16Builder::new(),
+            allele1: UInt16Builder::new(),
+            called: Vec::new(),
+        }
+    }
+    fn finish(
+        &mut self,
+        schema: &SchemaRef,
+        n: usize,
+        decode: bool,
+        reference: bool,
+    ) -> std::result::Result<Vec<arrow_array::ArrayRef>, String> {
+        use arrow_array::{ArrayRef, BooleanArray, ListArray, StructArray, UInt8Array};
+        use arrow_schema::{DataType, Fields};
+        fn fields(t: &DataType) -> std::result::Result<Fields, String> {
+            match t {
+                DataType::Struct(f) => Ok(f.clone()),
+                _ => Err("invalid PLINK struct schema".into()),
+            }
+        }
+        fn element(t: &DataType) -> std::result::Result<Arc<arrow_schema::Field>, String> {
+            match t {
+                DataType::List(f) => Ok(f.clone()),
+                _ => Err("invalid PLINK list schema".into()),
+            }
+        }
+        let row_fields = fields(schema.field(0).data_type())?;
+        let locus_fields = fields(row_fields[0].data_type())?;
+        let contigs = Arc::new(self.contigs.finish()) as ArrayRef;
+        let positions = Arc::new(self.positions.finish()) as ArrayRef;
+        let locus_values = if reference {
+            vec![
+                Arc::new(self.ordinals.finish()) as ArrayRef,
+                contigs,
+                positions,
+            ]
+        } else {
+            vec![contigs, positions]
+        };
+        let locus =
+            StructArray::try_new(locus_fields, locus_values, None).map_err(|e| e.to_string())?;
+        // Retain the source schema's metadata on list children and struct fields.
+        let alleles = self.alleles.finish();
+        let alleles = ListArray::try_new(
+            element(row_fields[1].data_type())?,
+            alleles.offsets().clone(),
+            alleles.values().clone(),
+            None,
+        )
+        .map_err(|e| e.to_string())?;
+        let row = StructArray::try_new(
+            row_fields,
+            vec![
+                Arc::new(locus),
+                Arc::new(alleles),
+                Arc::new(self.rsids.finish()),
+                Arc::new(self.cm.finish()),
+            ],
+            None,
+        )
+        .map_err(|e| e.to_string())?;
+        let cell_field = element(schema.field(1).data_type())?;
+        let cell_fields = fields(cell_field.data_type())?;
+        let entry_fields = fields(cell_fields[1].data_type())?;
+        let call_fields = fields(entry_fields[0].data_type())?;
+        let count = self.called.len();
+        let call = StructArray::try_new(
+            call_fields,
+            vec![
+                Arc::new(self.allele0.finish()),
+                Arc::new(self.allele1.finish()),
+                Arc::new(UInt8Array::from(vec![2u8; count])),
+                Arc::new(BooleanArray::from(vec![false; count])),
+            ],
+            Some(arrow_buffer::NullBuffer::from(std::mem::take(
+                &mut self.called,
+            ))),
+        )
+        .map_err(|e| e.to_string())?;
+        let entry = StructArray::try_new(entry_fields, vec![Arc::new(call)], None)
+            .map_err(|e| e.to_string())?;
+        let cells = StructArray::try_new(
+            cell_fields,
+            vec![Arc::new(self.cids.finish()), Arc::new(entry)],
+            None,
+        )
+        .map_err(|e| e.to_string())?;
+        let offsets = arrow_buffer::OffsetBuffer::<i32>::from_lengths(std::iter::repeat_n(
+            if decode { n } else { 0 },
+            self.rows,
+        ));
+        let cells = ListArray::try_new(cell_field, offsets, Arc::new(cells), None)
+            .map_err(|e| e.to_string())?;
+        self.rows = 0;
+        Ok(vec![Arc::new(row), Arc::new(cells)])
+    }
 }

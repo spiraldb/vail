@@ -22,7 +22,17 @@ def main():
                 str(args.resources / "sample.vcf"), array_elements_required=False
             )
         ).select_globals()
-        assert matrix._same(candidate, tolerance=0)
+        for axis in ("row", "col", "entry", "globals"):
+            assert getattr(matrix, axis).dtype == getattr(candidate, axis).dtype
+        assert list(matrix.row_key) == list(candidate.row_key)
+        assert list(matrix.col_key) == list(candidate.col_key)
+        assert hl.eval(matrix.index_globals()) == hl.eval(candidate.index_globals())
+        original = matrix.localize_entries("entries", "cols")
+        rebuilt = candidate.localize_entries("entries", "cols")
+        assert hl.eval(original.index_globals().cols) == hl.eval(
+            rebuilt.index_globals().cols
+        )
+        assert original.collect() == rebuilt.collect()
         record = dict(
             rows=plain(hl, matrix.localize_entries("entries", "cols").collect()),
             cols=plain(hl, matrix.cols().collect()),

@@ -46,6 +46,7 @@ bytes = "1"
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 memchr = "2"
 serde_json.workspace = true
+serde.workspace = true
 thiserror.workspace = true
 vail-execution = { path = "../vail-execution" }
 vail-ordering = { path = "../vail-ordering" }
