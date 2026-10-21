@@ -36,8 +36,8 @@ def test_call_equality_with_expressions_and_phase_order():
 
 
 @pytest.mark.parametrize('fields,expected', [
-    ((1, 0, 0, False), ([], 0, 0, False, False)),
-    ((0, 1, 1, False), ([0], 1, 0, False, False)),
+    ((1, 0, 0, False), ([], 0, 1, False, False)),
+    ((0, 1, 1, False), ([0], 1, 1, False, False)),
     ((2, 1, 2, False), ([2, 1], 2, 2, True, False)),
 ])
 def test_imported_calls_use_stored_fields_without_canonical_validation(fields, expected):
