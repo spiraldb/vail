@@ -147,10 +147,10 @@ impl AlignedMatrixMapExpr {
 
 impl PartialEq for AlignedMatrixMapExpr {
     fn eq(&self, other: &Self) -> bool {
-        self.entries == other.entries
-            && self.columns == other.columns
-            && self.rows == other.rows
-            && self.body == other.body
+        self.entries.as_ref() == other.entries.as_ref()
+            && self.columns.as_ref() == other.columns.as_ref()
+            && self.rows.as_ref() == other.rows.as_ref()
+            && self.body.as_ref() == other.body.as_ref()
             && self.dtype == other.dtype
             && self.body_dtype == other.body_dtype
             && self.preserve_cell == other.preserve_cell
@@ -438,7 +438,7 @@ fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> 
         .column_by_name("__vail_matrix_col_id")
         .ok_or_else(|| DataFusionError::Execution("aligned entry slot lacks column id".into()))?;
     let fields = match mapped.data_type() {
-        DataType::Struct(fields) => vec![
+        DataType::Struct(_) => vec![
             Arc::new(arrow_schema::Field::new(
                 "__vail_matrix_col_id",
                 id.data_type().clone(),
@@ -460,7 +460,7 @@ fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> 
         }
     };
     Ok(Arc::new(StructArray::try_new(
-        fields,
+        fields.into(),
         vec![id.clone(), mapped],
         entries.nulls().cloned(),
     )?))

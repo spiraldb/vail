@@ -1151,6 +1151,19 @@ impl Expr {
             Self::MatrixField { .. }
             | Self::MatrixNumCols { .. }
             | Self::MatrixColumnPosition { .. } => {}
+            Self::AlignedMapInput { .. } => {}
+            Self::AlignedMatrixMap {
+                entries,
+                columns,
+                rows,
+                body,
+                ..
+            } => {
+                *entries = Arc::new(f(entries)?);
+                *columns = Arc::new(f(columns)?);
+                *rows = Arc::new(f(rows)?);
+                *body = Arc::new(f(body)?);
+            }
             Self::Aggregate { value, init, .. } => {
                 if let Some(value) = value {
                     *value = Arc::new(f(value)?);

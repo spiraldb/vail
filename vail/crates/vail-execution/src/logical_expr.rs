@@ -223,7 +223,8 @@ fn lower(
         | Expr::TableLookup { .. }
         | Expr::MatrixField { .. }
         | Expr::MatrixNumCols { .. }
-        | Expr::MatrixColumnPosition { .. } => {
+        | Expr::MatrixColumnPosition { .. }
+        | Expr::AlignedMapInput { .. } => {
             return Err(ExprError::Invalid(
                 "unresolved frontend expression scope".into(),
             ));
@@ -626,6 +627,7 @@ fn lower(
         | Expr::ArrayIndex { .. }
         | Expr::ArraySlice { .. }
         | Expr::ArrayReduce { .. }
+        | Expr::AlignedMatrixMap { .. }
         | Expr::Locus { .. }
         | Expr::LocusOp { .. }
         | Expr::LocusValid { .. }
