@@ -2307,6 +2307,20 @@ impl LinregAccumulator {
     }
 }
 
+#[inline]
+fn linreg_hypot(a: f64, b: f64) -> f64 {
+    let scale = a.abs().max(b.abs());
+    // The common QR path has moderate finite values. Squaring is safe in this
+    // range and lets LLVM use a hardware sqrt instead of the general-purpose
+    // hypot implementation. Keep hypot for extremes, where direct squares
+    // could overflow or underflow.
+    if (1e-150..=1e150).contains(&scale) {
+        a.mul_add(a, b * b).sqrt()
+    } else {
+        a.hypot(b)
+    }
+}
+
 fn append_linreg_work(p: usize, qr: &mut [f64], work: &mut [f64], invalid_numeric: &mut bool) {
     let d = p + 1;
     for j in 0..d {
@@ -2315,7 +2329,7 @@ fn append_linreg_work(p: usize, qr: &mut [f64], work: &mut [f64], invalid_numeri
         if b == 0. {
             continue;
         }
-        let norm = a.hypot(b);
+        let norm = linreg_hypot(a, b);
         if !norm.is_finite() {
             *invalid_numeric = true;
             return;
