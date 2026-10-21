@@ -1,9 +1,7 @@
 //! VCF text decoding directly into Arrow child buffers. No per-cell objects.
 //! FORMAT plans are cached; delimiter discovery is shared across all fields and
 //! field dispatch happens outside each contiguous sample loop.
-use arrow_array::{
-    Array, ArrayRef, Int64Array, ListArray, RecordBatch, StructArray, builder::*,
-};
+use arrow_array::{Array, ArrayRef, Int64Array, ListArray, RecordBatch, StructArray, builder::*};
 use arrow_buffer::{OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use serde::{Deserialize, Serialize};
@@ -480,6 +478,85 @@ impl Sink {
         }
         Ok(())
     }
+    /// Append only each sample's value-validity bit. FORMAT field paths used
+    /// by missingness checks must not parse otherwise-unused scalar payloads.
+    fn append_validity_stripe<'a>(&mut self, tokens: impl Iterator<Item = &'a str>) -> Result<()> {
+        macro_rules! primitive_validity_loop {
+            ($builder:ty, $value:expr) => {{
+                let builder = self
+                    .builder
+                    .as_any_mut()
+                    .downcast_mut::<$builder>()
+                    .unwrap();
+                for token in tokens {
+                    if token == "." {
+                        builder.append_null();
+                    } else {
+                        builder.append_value($value);
+                    }
+                }
+            }};
+        }
+        match &self.dtype {
+            Type::Primitive(P::Int32) => primitive_validity_loop!(Int32Builder, 0),
+            Type::Primitive(P::Float32) => primitive_validity_loop!(Float32Builder, 0.0),
+            Type::Primitive(P::Float64) => primitive_validity_loop!(Float64Builder, 0.0),
+            Type::Primitive(P::Str) => {
+                let builder = self
+                    .builder
+                    .as_any_mut()
+                    .downcast_mut::<StringBuilder>()
+                    .unwrap();
+                for token in tokens {
+                    if token == "." {
+                        builder.append_null();
+                    } else {
+                        builder.append_value("");
+                    }
+                }
+            }
+            Type::Primitive(P::Bool) => {
+                let builder = self
+                    .builder
+                    .as_any_mut()
+                    .downcast_mut::<BooleanBuilder>()
+                    .unwrap();
+                for token in tokens {
+                    if token == "." {
+                        builder.append_null();
+                    } else {
+                        builder.append_value(false);
+                    }
+                }
+            }
+            Type::Primitive(P::Call) => {
+                let builder = self
+                    .builder
+                    .as_any_mut()
+                    .downcast_mut::<StructBuilder>()
+                    .unwrap();
+                for token in tokens {
+                    if token.split(['/', '|']).any(|allele| allele == ".") {
+                        append_call(builder, ".")?;
+                    } else {
+                        append_call(builder, "0")?;
+                    }
+                }
+            }
+            Type::Array { .. } => {
+                let builder = self
+                    .builder
+                    .as_any_mut()
+                    .downcast_mut::<ListBuilder<Box<dyn ArrayBuilder>>>()
+                    .unwrap();
+                for token in tokens {
+                    builder.append(token != ".");
+                }
+            }
+            _ => return Err("unsupported VCF field type".into()),
+        }
+        Ok(())
+    }
     fn skip(&mut self, n: usize) {
         self.skipped += n;
     }
@@ -590,6 +667,8 @@ impl FormatPlan {
 pub struct DecodePath {
     pub fields: Vec<String>,
     pub shape: bool,
+    #[serde(default)]
+    pub validity: bool,
 }
 struct DecodeProjection {
     rsid: bool,
@@ -597,6 +676,7 @@ struct DecodeProjection {
     filters: bool,
     info: Vec<bool>,
     format: Vec<bool>,
+    format_validity: Vec<bool>,
     samples: bool,
 }
 impl DecodeProjection {
@@ -607,12 +687,18 @@ impl DecodeProjection {
             filters: true,
             info: vec![true; header.info.len()],
             format: vec![true; header.format.len()],
+            format_validity: vec![false; header.format.len()],
             samples: true,
         }
     }
     fn from_paths(header: &Header, paths: &[DecodePath]) -> Self {
         let (mut row_all, mut info_all, mut format_all, mut samples) = (false, false, false, false);
-        let (mut fixed, mut info, mut format) = (HashSet::new(), HashSet::new(), HashSet::new());
+        let (mut fixed, mut info, mut format, mut format_validity) = (
+            HashSet::new(),
+            HashSet::new(),
+            HashSet::new(),
+            HashSet::new(),
+        );
         for requested in paths {
             let path = &requested.fields;
             match path.first().map(String::as_str) {
@@ -633,13 +719,18 @@ impl DecodeProjection {
                 Some("__vail_matrix_cells") => {
                     samples = true;
                     if !requested.shape
+                        && !requested.validity
                         && (path.len() == 1
                             || (path.get(1).is_some_and(|v| v == "value") && path.len() == 2))
                     {
                         format_all = true;
                     } else if path.get(1).is_some_and(|v| v == "value") {
                         if let Some(name) = path.get(2) {
-                            format.insert(name.as_str());
+                            if requested.validity {
+                                format_validity.insert(name.as_str());
+                            } else if !requested.shape {
+                                format.insert(name.as_str());
+                            }
                         }
                     }
                 }
@@ -659,6 +750,15 @@ impl DecodeProjection {
                 .format
                 .iter()
                 .map(|f| format_all || format.contains(f.name.as_str()))
+                .collect(),
+            format_validity: header
+                .format
+                .iter()
+                .map(|f| {
+                    !format_all
+                        && !format.contains(f.name.as_str())
+                        && format_validity.contains(f.name.as_str())
+                })
                 .collect(),
             samples,
         }
@@ -980,13 +1080,14 @@ impl Parser {
                 if count != samples {
                     return Err(format!("expected {samples} samples, found {count}"));
                 }
-                for ((sink, position), &wanted) in batch
+                for (((sink, position), &wanted), &validity_only) in batch
                     .entries
                     .iter_mut()
                     .zip(&plan.fields)
                     .zip(&self.projection.format)
+                    .zip(&self.projection.format_validity)
                 {
-                    if !wanted {
+                    if !wanted && !validity_only {
                         sink.skip(samples);
                         continue;
                     }
@@ -997,7 +1098,11 @@ impl Parser {
                         let (start, end) = self.tokens[sample * plan.width + field];
                         if start == end { "." } else { &tail[start..end] }
                     });
-                    sink.append_stripe(tokens, self.options.array_elements_required, "FORMAT")?;
+                    if wanted {
+                        sink.append_stripe(tokens, self.options.array_elements_required, "FORMAT")?;
+                    } else {
+                        sink.append_validity_stripe(tokens)?;
+                    }
                 }
                 if excess_samples {
                     return Err("too many sample columns".into());

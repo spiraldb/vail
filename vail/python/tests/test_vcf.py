@@ -179,15 +179,40 @@ def test_projection_skips_unrequested_bad_fields_but_keeps_requested_errors(tmp_
     assert preview.head(1).collect() == [hl.Struct(position=1)]
     with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
         mt.GT.collect()
-    localized = mt.localize_entries('entries', 'columns').key_by()
-    mapped_gt = localized.entries.map(lambda cell: cell.GT).map(lambda gt: hl.is_missing(gt))
-    with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
-        localized.select(missing=mapped_gt).collect()
     with pytest.raises(RuntimeError, match='parse|invalid'):
         mt.info.AF.collect()
     filtered = mt.filter_entries(mt.GT == hl.call(0, 1))
     with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
         filtered.DP.collect()
+
+
+def test_nested_map_missingness_reads_computed_vcf_values(tmp_path):
+    path = tmp_path / 'nested-missingness.vcf'
+    path.write_text(HEADER + '1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t./.:7\t0/1:9\n')
+    mt = hl.import_vcf(path)
+    localized = mt.localize_entries('entries', 'columns').key_by()
+    mapped_gt = localized.entries.map(lambda cell: cell.GT)
+    missing = mapped_gt.map(lambda gt: hl.is_missing(gt))
+    defined = mapped_gt.map(lambda gt: hl.is_defined(gt))
+    row = localized.select(missing=missing, defined=defined).collect()[0]
+    assert row.missing == [True, False]
+    assert row.defined == [False, True]
+
+
+def test_nested_map_missingness_preserves_gt_validity_only(tmp_path):
+    header = HEADER.replace("\ta\tb\n", "\ta\tb\tc\td\te\n")
+    path = tmp_path / 'gt-validity.vcf'
+    path.write_text(header +
+                    '1\t1\t.\tA\tC\t.\tPASS\t.\tDP:GT\t1:0\t1:1|0\t1:0/.\t1:./1\t1\n')
+    mt = hl.import_vcf(path)
+    localized = mt.localize_entries('entries', 'columns').key_by()
+    mapped_gt = localized.entries.map(lambda cell: cell.GT)
+    row = localized.select(
+        missing=mapped_gt.map(lambda gt: hl.is_missing(gt)),
+        defined=mapped_gt.map(lambda gt: hl.is_defined(gt)),
+    ).collect()[0]
+    assert row.missing == [False, False, True, True, True]
+    assert row.defined == [True, True, False, False, False]
 
 
 def test_many_format_layouts_decode_consistently(tmp_path):

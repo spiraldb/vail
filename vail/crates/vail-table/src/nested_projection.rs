@@ -457,6 +457,7 @@ struct VcfNeeds {
     full: BTreeSet<String>,
     paths: BTreeMap<String, BTreeSet<Vec<String>>>,
     shapes: BTreeMap<String, BTreeSet<Vec<String>>>,
+    validities: BTreeMap<String, BTreeSet<Vec<String>>>,
 }
 struct Scope<'a> {
     name: String,
@@ -468,6 +469,7 @@ struct VcfDependencies<'a> {
     scopes: Vec<Scope<'a>>,
     scope_ids: HashMap<(usize, usize), usize>,
     memo: HashMap<(usize, Vec<String>, usize, bool), VcfNeeds>,
+    validity_memo: HashMap<(usize, Vec<String>, usize), VcfNeeds>,
     structs: HashMap<usize, HashMap<&'a str, &'a Expr>>,
 }
 fn merge_deps(into: &mut VcfNeeds, other: VcfNeeds) {
@@ -478,26 +480,11 @@ fn merge_deps(into: &mut VcfNeeds, other: VcfNeeds) {
     for (root, paths) in other.paths {
         into.paths.entry(root).or_default().extend(paths);
     }
+    for (root, paths) in other.validities {
+        into.validities.entry(root).or_default().extend(paths);
+    }
 }
 impl<'a> VcfDependencies<'a> {
-    fn is_stored_path(&self, expr: &Expr, scope: usize) -> bool {
-        match expr {
-            Expr::Column { .. } => true,
-            Expr::GetField { value, .. } => self.is_stored_path(value, scope),
-            Expr::LambdaVariable { name, .. } => {
-                let mut current = scope;
-                while current > 0 {
-                    let binding = &self.scopes[current - 1];
-                    if &binding.name == name {
-                        return self.is_stored_path(binding.value, binding.parent);
-                    }
-                    current = binding.parent;
-                }
-                false
-            }
-            _ => false,
-        }
-    }
     fn scope(&mut self, node: &'a Expr, name: &str, value: &'a Expr, parent: usize) -> usize {
         let key = (node as *const Expr as usize, parent);
         if let Some(&id) = self.scope_ids.get(&key) {
@@ -515,6 +502,136 @@ impl<'a> VcfDependencies<'a> {
     fn collect(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> VcfNeeds {
         self.request(expr, tail, scope, false)
     }
+    fn request_validity(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> VcfNeeds {
+        let key = (expr as *const Expr as usize, tail.to_vec(), scope);
+        if let Some(result) = self.validity_memo.get(&key) {
+            return result.clone();
+        }
+        let mut result = VcfNeeds::default();
+        match expr {
+            Expr::MatrixField { axis, name, .. } if axis == "entry" => {
+                let mut path = vec!["__vail_matrix_cells".into(), "value".into(), name.clone()];
+                path.extend_from_slice(tail);
+                result
+                    .validities
+                    .entry("__vail_matrix_cells".into())
+                    .or_default()
+                    .insert(path);
+            }
+            Expr::Column { name } => {
+                let mut path = vec![name.clone()];
+                path.extend_from_slice(tail);
+                result
+                    .validities
+                    .entry(name.clone())
+                    .or_default()
+                    .insert(path);
+            }
+            Expr::GetField { value, name } => {
+                let mut path = vec![name.clone()];
+                path.extend_from_slice(tail);
+                result = self.request_validity(value, &path, scope);
+            }
+            Expr::LambdaVariable { name, .. } => {
+                let mut current = scope;
+                while current > 0 {
+                    let binding = &self.scopes[current - 1];
+                    if &binding.name == name {
+                        let value = binding.value;
+                        let parent = binding.parent;
+                        result = self.request_array_element_validity(value, tail, parent);
+                        break;
+                    }
+                    current = binding.parent;
+                }
+            }
+            Expr::Struct { fields } => {
+                if let Some((field, rest)) = tail.split_first() {
+                    if let Some((_, value)) = fields.iter().find(|(name, _)| name == field) {
+                        result = self.request_validity(value, rest, scope);
+                    }
+                }
+            }
+            Expr::ArrayMap {
+                value,
+                parameter,
+                body,
+            } => {
+                if tail.is_empty() {
+                    // The mapped array itself is null exactly when its input is.
+                    result = self.request_validity(value, &[], scope);
+                } else {
+                    // A projected element's validity depends on the callback
+                    // result. Preserve the input offsets and trace that result
+                    // through the callback's lexical binding.
+                    merge_deps(&mut result, self.request(value, &[], scope, true));
+                    let nested = self.scope(expr, parameter, value, scope);
+                    merge_deps(&mut result, self.request_validity(body, tail, nested));
+                }
+            }
+            Expr::IfElse {
+                condition,
+                consequent,
+                alternate,
+            } => {
+                merge_deps(&mut result, self.collect(condition, &[], scope));
+                merge_deps(&mut result, self.request_validity(consequent, tail, scope));
+                merge_deps(&mut result, self.request_validity(alternate, tail, scope));
+            }
+            Expr::Array { elements, .. } => {
+                if let Some(index) = tail.first().and_then(|value| value.parse::<usize>().ok()) {
+                    if let Some(element) = elements.get(index) {
+                        result = self.request_validity(element, &tail[1..], scope);
+                    }
+                } else if !tail.is_empty() {
+                    for element in elements {
+                        merge_deps(&mut result, self.request_validity(element, tail, scope));
+                    }
+                }
+            }
+            // For operations whose nullness can depend on computed values,
+            // retain their normal value dependencies.
+            _ => merge_deps(&mut result, self.collect(expr, tail, scope)),
+        }
+        self.validity_memo.insert(key, result.clone());
+        result
+    }
+    fn request_array_element_validity(
+        &mut self,
+        array: &'a Expr,
+        tail: &[String],
+        scope: usize,
+    ) -> VcfNeeds {
+        let mut result = VcfNeeds::default();
+        match array {
+            Expr::ArrayMap {
+                value,
+                parameter,
+                body,
+            } => {
+                // Keep the container offsets/nullness, then project the
+                // callback's element validity through its lexical origin.
+                merge_deps(&mut result, self.request(value, &[], scope, true));
+                let nested = self.scope(array, parameter, value, scope);
+                merge_deps(&mut result, self.request_validity(body, tail, nested));
+            }
+            Expr::Array { elements, .. } => {
+                for element in elements {
+                    merge_deps(&mut result, self.request_validity(element, tail, scope));
+                }
+            }
+            Expr::MatrixField { axis, .. } if axis == "entry" => {
+                merge_deps(&mut result, self.request(array, &[], scope, true));
+                merge_deps(&mut result, self.request_validity(array, tail, scope));
+            }
+            Expr::Column { .. } | Expr::GetField { .. } | Expr::LambdaVariable { .. } => {
+                merge_deps(&mut result, self.request(array, &[], scope, true));
+                merge_deps(&mut result, self.request_validity(array, tail, scope));
+            }
+            _ => merge_deps(&mut result, self.collect(array, &[], scope)),
+        }
+        result
+    }
     fn request(&mut self, expr: &'a Expr, tail: &[String], scope: usize, shape: bool) -> VcfNeeds {
         let key = (expr as *const Expr as usize, tail.to_vec(), scope, shape);
         if let Some(result) = self.memo.get(&key) {
@@ -522,19 +639,25 @@ impl<'a> VcfDependencies<'a> {
         }
         let mut result = VcfNeeds::default();
         match expr {
-            Expr::IsMissing { value } => {
-                // A null check on a stored field only needs the field's
-                // validity bitmap. In particular, MatrixTable uses
-                // `is_defined(cell.value)` to preserve nullable entry
-                // structs; decoding every FORMAT child here defeats field
-                // projection and can fail on malformed, unused fields.
-                // For computed expressions, nullness may depend on values,
-                // so retain the ordinary value dependencies.
-                if self.is_stored_path(value, scope) {
-                    merge_deps(&mut result, self.request(value, &[], scope, true));
+            Expr::MatrixField { axis, name, .. } if axis == "entry" => {
+                let mut path = vec!["__vail_matrix_cells".into(), "value".into(), name.clone()];
+                path.extend_from_slice(tail);
+                if shape {
+                    result
+                        .shapes
+                        .entry("__vail_matrix_cells".into())
+                        .or_default()
+                        .insert(vec!["__vail_matrix_cells".into()]);
                 } else {
-                    merge_deps(&mut result, self.collect(value, &[], scope));
+                    result
+                        .paths
+                        .entry("__vail_matrix_cells".into())
+                        .or_default()
+                        .insert(path);
                 }
+            }
+            Expr::IsMissing { value } => {
+                merge_deps(&mut result, self.request_validity(value, &[], scope));
             }
             Expr::Column { name } => {
                 if shape {
@@ -669,12 +792,14 @@ impl<'a> VcfDependencies<'a> {
     }
 }
 fn all_paths(deps: VcfNeeds) -> Vec<DecodePath> {
+    let value_paths = deps.paths.clone();
     let mut result = deps
         .full
         .iter()
         .map(|root| DecodePath {
             fields: vec![root.clone()],
             shape: false,
+            validity: false,
         })
         .collect::<Vec<_>>();
     for (root, paths) in deps.paths {
@@ -682,6 +807,7 @@ fn all_paths(deps: VcfNeeds) -> Vec<DecodePath> {
             result.extend(paths.into_iter().map(|fields| DecodePath {
                 fields,
                 shape: false,
+                validity: false,
             }));
         }
     }
@@ -690,6 +816,21 @@ fn all_paths(deps: VcfNeeds) -> Vec<DecodePath> {
             result.extend(paths.into_iter().map(|fields| DecodePath {
                 fields,
                 shape: true,
+                validity: false,
+            }));
+        }
+    }
+    for (root, paths) in deps.validities {
+        if !deps.full.contains(&root) {
+            result.extend(paths.into_iter().filter_map(|fields| {
+                (!value_paths
+                    .get(&root)
+                    .is_some_and(|values| values.contains(&fields)))
+                .then_some(DecodePath {
+                    fields,
+                    shape: false,
+                    validity: true,
+                })
             }));
         }
     }
@@ -726,6 +867,7 @@ pub(crate) fn prepare_vcf(table: &crate::TableRef) -> crate::TableRef {
             .map(|f| DecodePath {
                 fields: vec![f.name().clone()],
                 shape: false,
+                validity: false,
             })
             .collect(),
         &mut VcfDependencies::default(),
@@ -779,7 +921,11 @@ fn narrow_vcf_paths<'a>(
                 if let Some(expr) = path.fields.first().and_then(|name| positions.get(name)) {
                     merge_deps(
                         &mut deps,
-                        analyzer.request(expr, &path.fields[1..], 0, path.shape),
+                        if path.validity {
+                            analyzer.request_validity(expr, &path.fields[1..], 0)
+                        } else {
+                            analyzer.request(expr, &path.fields[1..], 0, path.shape)
+                        },
                     );
                 }
             }
@@ -793,6 +939,7 @@ fn narrow_vcf_paths<'a>(
             paths.extend(keys.iter().map(|key| DecodePath {
                 fields: vec![key.clone()],
                 shape: false,
+                validity: false,
             }));
             TableNode::KeyBy {
                 child: narrow_vcf_paths(child, paths, analyzer),
@@ -803,6 +950,7 @@ fn narrow_vcf_paths<'a>(
             paths.extend(keys.iter().map(|(key, _)| DecodePath {
                 fields: vec![key.clone()],
                 shape: false,
+                validity: false,
             }));
             TableNode::OrderBy {
                 child: narrow_vcf_paths(child, paths, analyzer),
@@ -827,6 +975,7 @@ fn narrow_vcf_paths<'a>(
             paths.push(DecodePath {
                 fields: path.clone(),
                 shape: true,
+                validity: false,
             });
             TableNode::Explode {
                 child: narrow_vcf_paths(child, paths, analyzer),

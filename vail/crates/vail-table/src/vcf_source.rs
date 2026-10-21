@@ -141,10 +141,12 @@ impl FileOpener for VcfOpener {
                             vail_vcf::DecodePath {
                                 fields: vec!["__vail_matrix_row".into()],
                                 shape: false,
+                                validity: false,
                             },
                             vail_vcf::DecodePath {
                                 fields: vec!["__vail_matrix_cells".into()],
                                 shape: false,
+                                validity: false,
                             },
                         ]
                     });
