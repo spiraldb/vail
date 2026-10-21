@@ -179,6 +179,10 @@ def test_projection_skips_unrequested_bad_fields_but_keeps_requested_errors(tmp_
     assert preview.head(1).collect() == [hl.Struct(position=1)]
     with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
         mt.GT.collect()
+    localized = mt.localize_entries('entries', 'columns').key_by()
+    mapped_gt = localized.entries.map(lambda cell: cell.GT).map(lambda gt: hl.is_missing(gt))
+    with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
+        localized.select(missing=mapped_gt).collect()
     with pytest.raises(RuntimeError, match='parse|invalid'):
         mt.info.AF.collect()
     filtered = mt.filter_entries(mt.GT == hl.call(0, 1))

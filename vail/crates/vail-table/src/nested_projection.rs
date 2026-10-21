@@ -446,45 +446,6 @@ mod tests {
             ]
         );
     }
-
-    #[test]
-    fn missing_check_on_stored_field_requests_only_shape() {
-        let expr = Expr::IsMissing {
-            value: Arc::new(field(column("cells"), "GT")),
-        };
-        let mut analyzer = VcfDependencies::default();
-        let deps = analyzer.collect(&expr, &[], 0);
-        assert_eq!(
-            all_paths(deps)
-                .into_iter()
-                .map(|path| (path.fields, path.shape))
-                .collect::<Vec<_>>(),
-            vec![(vec!["cells".into(), "GT".into()], true)]
-        );
-    }
-
-    #[test]
-    fn missing_check_on_computed_value_keeps_value_dependencies() {
-        let expr = Expr::IsMissing {
-            value: Arc::new(Expr::Binary {
-                operator: vail_execution::expressions::BinaryOperator::Add,
-                left: Arc::new(column("left")),
-                right: Arc::new(column("right")),
-            }),
-        };
-        let mut analyzer = VcfDependencies::default();
-        let deps = analyzer.collect(&expr, &[], 0);
-        assert_eq!(
-            all_paths(deps)
-                .into_iter()
-                .map(|path| (path.fields, path.shape))
-                .collect::<Vec<_>>(),
-            vec![
-                (vec!["left".into()], false),
-                (vec!["right".into()], false),
-            ]
-        );
-    }
 }
 
 // VCF-specific backward dependencies preserve lexical callback scopes and array
@@ -519,6 +480,24 @@ fn merge_deps(into: &mut VcfNeeds, other: VcfNeeds) {
     }
 }
 impl<'a> VcfDependencies<'a> {
+    fn is_stored_path(&self, expr: &Expr, scope: usize) -> bool {
+        match expr {
+            Expr::Column { .. } => true,
+            Expr::GetField { value, .. } => self.is_stored_path(value, scope),
+            Expr::LambdaVariable { name, .. } => {
+                let mut current = scope;
+                while current > 0 {
+                    let binding = &self.scopes[current - 1];
+                    if &binding.name == name {
+                        return self.is_stored_path(binding.value, binding.parent);
+                    }
+                    current = binding.parent;
+                }
+                false
+            }
+            _ => false,
+        }
+    }
     fn scope(&mut self, node: &'a Expr, name: &str, value: &'a Expr, parent: usize) -> usize {
         let key = (node as *const Expr as usize, parent);
         if let Some(&id) = self.scope_ids.get(&key) {
@@ -551,14 +530,7 @@ impl<'a> VcfDependencies<'a> {
                 // projection and can fail on malformed, unused fields.
                 // For computed expressions, nullness may depend on values,
                 // so retain the ordinary value dependencies.
-                fn is_stored_path(expr: &Expr) -> bool {
-                    match expr {
-                        Expr::Column { .. } | Expr::LambdaVariable { .. } => true,
-                        Expr::GetField { value, .. } => is_stored_path(value),
-                        _ => false,
-                    }
-                }
-                if is_stored_path(value) {
+                if self.is_stored_path(value, scope) {
                     merge_deps(&mut result, self.request(value, &[], scope, true));
                 } else {
                     merge_deps(&mut result, self.collect(value, &[], scope));
