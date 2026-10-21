@@ -378,9 +378,22 @@ impl Rewrite<'_> {
                             // The direct list kernel accepts only Call values and
                             // takes the row/list initializer first. Avoid packing
                             // each list element into the generic reducer format.
-                            let call = Expr::GetField {
-                                value: Arc::new(body.clone()),
-                                name: "__vail_genomic_call".into(),
+                            let call = match body {
+                                Expr::Struct { fields } => fields
+                                    .iter()
+                                    .find(|(name, _)| name == "__vail_genomic_call")
+                                    .map(|(_, call)| call.clone())
+                                    .ok_or_else(|| {
+                                        value_error("call_stats aggregate is missing its Call input")
+                                    })?,
+                                _ if self.dtype(body)? == Type::Primitive(P::Call) => {
+                                    body.clone()
+                                }
+                                _ => {
+                                    return Err(value_error(
+                                        "call_stats aggregate requires Call values",
+                                    ));
+                                }
                             };
                             let calls = self.mapped(items.clone(), &call)?;
                             args.push(initializer);
