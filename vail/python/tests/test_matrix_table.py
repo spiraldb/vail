@@ -44,6 +44,55 @@ def test_named_column_entry_projection_does_not_construct_positions():
     assert result.y.collect() == [9, 9, 20, 20]
 
 
+def test_aligned_entry_map_binds_row_column_and_global_captures():
+    m = matrix(2, 3).choose_cols([2, 0, 2])
+    m = m.filter_entries(m.col_idx != 0)
+    annotated = m.annotate_entries(
+        y=m.x + hl.int32(m.row_idx) + hl.int32(m.col_idx) + m.offset
+    )
+    localized = annotated.localize_entries("entries", "columns")
+    assert [[None if entry is None else entry.y for entry in row.entries]
+            for row in localized.collect()] == [[14, None, 14], [25, None, 25]]
+
+
+def test_aligned_row_aggregate_maps_captured_values_without_compacting_slots():
+    m = matrix(2, 3)
+    m = m.filter_entries(m.col_idx != 1)
+    totals = m.annotate_rows(
+        total=hl.agg.sum(m.x + hl.int32(m.row_idx) + hl.int32(m.col_idx) + m.offset)
+    )
+    assert totals.total.collect() == [24, 46]
+
+
+def test_aligned_entry_map_preserves_filtered_zero_field_slots():
+    m = hl.range_matrix_table(2, 3)
+    m = m.filter_entries(m.col_idx != 1)
+    annotated = m.annotate_entries(c=hl.int32(m.col_idx))
+    localized = annotated.localize_entries("entries", "columns")
+    assert [[None if entry is None else entry.c for entry in row.entries]
+            for row in localized.collect()] == [[0, None, 2], [0, None, 2]]
+
+
+def test_aligned_entry_map_preserves_missing_row_and_entry_fields():
+    m = matrix(2, 2).annotate_rows(missing_row=hl.missing(hl.tint32))
+    m = m.annotate_entries(y=m.x + m.missing_row)
+    localized = m.localize_entries("entries", "columns")
+    rows = localized.collect()
+    assert [[entry.y for entry in row.entries] for row in rows] == [
+        [None, None], [None, None]
+    ]
+    assert all(entry is not None for row in rows for entry in row.entries)
+
+    missing_entry = matrix(2, 2).annotate_entries(x=hl.missing(hl.tint32))
+    missing_entry = missing_entry.annotate_entries(
+        y=missing_entry.x + hl.int32(missing_entry.row_idx)
+    )
+    rows = missing_entry.localize_entries("entries", "columns").collect()
+    assert [[entry.y for entry in row.entries] for row in rows] == [
+        [None, None], [None, None]
+    ]
+
+
 @pytest.mark.parametrize("nr,nc", [(0, 0), (0, 3), (3, 0), (2, 3)])
 def test_range_dimensions_schema_and_empty_axes(nr, nc):
     m = hl.range_matrix_table(nr, nc, 2)

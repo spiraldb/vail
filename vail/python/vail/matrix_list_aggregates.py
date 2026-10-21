@@ -81,6 +81,57 @@ def reduce_row_predicate(matrix, expr, base):
     return _function("__vail_list_reduce_" + function, [values], expr.dtype)
 
 
+def reduce_aligned_plain(matrix, expr, base):
+    """Map a plain row aggregate input directly over aligned entry slots.
+
+    This avoids constructing per-entry context structs for the common
+    row/column/entry field expression. Aggregate combinators keep using the
+    established context binder below.
+    """
+    node = expr.to_ir()
+    from .matrixtable import (
+        _contains_matrix_num_cols,
+        _is_scan,
+        _uses_axis_field,
+        _uses_column_position,
+    )
+    if (node.get("op") != "aggregate" or _is_scan(node)
+            or node.get("value") is None or node.get("init")
+            or set(node.get("options") or {}) - {"__vail_result_type"}
+            or expr._lookup_refs):
+        return None
+    function = node.get("function")
+    if function not in {
+        "sum", "product", "min", "max", "mean", "stddev_pop",
+        "count_where", "any", "all",
+    }:
+        return None
+    value_node = node["value"]
+    if value_node.contains_random() or _uses_column_position(value_node):
+        return None
+    if not any((
+        _uses_axis_field(value_node, "row"),
+        _uses_axis_field(value_node, "col"),
+        _uses_axis_field(value_node, "global"),
+        _contains_matrix_num_cols(value_node),
+    )):
+        return None
+
+    # Infer from the actual row/global schema. The native compiler understands
+    # matrix_field types here, before the field references are replaced by
+    # aligned input leaves.
+    value_type = type_from_wire(value_node.infer_type(
+        [(name, dtype._native_type) for name, dtype in base._schema.items()],
+        [(name, dtype._native_type) for name, dtype in base._global_schema.items()],
+        [(name, dtype._native_type) for name, dtype in expr._lexical_types.items()],
+    ))
+    values = matrix._aligned_matrix_map(
+        base, value_node, value_type, preserve_cell=False
+    )
+    from .collections import _function
+    return _function("__vail_list_reduce_" + function, [values], expr.dtype)
+
+
 def reduce_list(
     matrix, expr, base, contexts, outside=None, bound=None, *, direct_entry_sum=False
 ):

@@ -83,6 +83,8 @@ pub(crate) fn effects(expr: &Expr) -> Effects {
             | Expr::GetField { .. }
             | Expr::Array { .. }
             | Expr::ArrayMap { .. }
+            | Expr::AlignedMatrixMap { .. }
+            | Expr::AlignedMapInput { .. }
             | Expr::ArrayFilter { .. }
             | Expr::ArrayPredicate { .. }
             | Expr::ArrayFold { .. }

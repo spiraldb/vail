@@ -128,6 +128,16 @@ def _uses_column_position(node):
     return False
 
 
+def _contains_matrix_num_cols(node):
+    if isinstance(node, IR_NODE_TYPES):
+        if node.get("op") == "matrix_num_cols":
+            return True
+        return any(_contains_matrix_num_cols(value) for value in node.values())
+    if isinstance(node, list):
+        return any(_contains_matrix_num_cols(value) for value in node)
+    return False
+
+
 def _indexed_cells(cells):
     """Zip each cell with its current row-local position using DataFusion."""
     from . import range as array_range, len as length
@@ -719,6 +729,95 @@ class MatrixTable:
 
         return Expression(expr.dtype, base, _IR(rewrite(expr.to_ir()), refs, lookups))
 
+    def _aligned_matrix_map(self, base, body, body_type, *, preserve_cell):
+        """Build a row-aligned map node without zipping/copying column contexts."""
+        from .types import tstruct
+
+        row_values = base[_ROW]
+        entries = base[_CELLS]
+        columns = self._mir.column_records
+        output_type = tarray(
+            tstruct(**{_CID: tint64, _VALUE: body_type})
+            if preserve_cell else body_type
+        )
+        refs = dict(row_values._global_refs) | dict(entries._global_refs) | dict(columns._global_refs)
+        lookups = {}
+        globals = self.index_globals()
+        global_values = {}
+        row_type = row_values.dtype
+        cell_type = entries.dtype.element_type
+        column_type = columns.dtype.element_type
+
+        def aligned_input(axis, dtype, name=None):
+            result = {"op": "aligned_map_input", "axis": axis,
+                      "dtype": dtype._native_type}
+            if name is not None:
+                result["name"] = name
+            return result
+
+        def get_field(value, name):
+            return {"op": "get_field", "value": value, "name": name}
+
+        def rewrite(node):
+            if isinstance(node, list):
+                return [rewrite(value) for value in node]
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
+                return node
+            op = node.get("op")
+            if op == "matrix_scope":
+                return rewrite(node["value"])
+            if op == "matrix_field":
+                axis, name = node["axis"], node["name"]
+                if axis == "global":
+                    value = globals[name]
+                    refs.update(value._global_refs)
+                    global_values[name] = value
+                    return aligned_input("global", value.dtype, name)
+                if axis == "row":
+                    return aligned_input("row", row_type[name], name)
+                if axis == "entry":
+                    value = aligned_input("entry", cell_type)
+                    return get_field(get_field(value, _VALUE), name)
+                if axis == "col":
+                    value = aligned_input("col", column_type)
+                    return get_field(get_field(value, _COL), name)
+                raise ValueError(f"unsupported aligned matrix map axis {axis!r}")
+            if op == "matrix_num_cols":
+                return aligned_input("num_cols", tint32)
+            if op == "matrix_column_position":
+                raise ValueError("column position requires the indexed-context map path")
+            return {key: rewrite(value) for key, value in node.items()}
+
+        rewritten = rewrite(body)
+        row_bundle = struct(
+            __vail_aligned_row=row_values,
+            __vail_aligned_globals=struct(**global_values),
+        )
+        node = {
+            "op": "aligned_matrix_map",
+            "entries": entries.to_ir(),
+            "columns": columns.to_ir(),
+            "rows": row_bundle.to_ir(),
+            "body": rewritten,
+            "dtype": output_type._native_type,
+            "preserve_cell": preserve_cell,
+        }
+        return Expression(output_type, base, _IR(node, refs, lookups))
+
+    @staticmethod
+    def _aligned_map_eligible(fields):
+        has_capture = False
+        for _, value in fields:
+            node = value.to_ir()
+            if (value._lookup_refs or _has_aggregate(node)
+                    or _uses_column_position(node) or node.contains_random()):
+                return False
+            has_capture |= (_uses_axis_field(node, "row")
+                            or _uses_axis_field(node, "col")
+                            or _uses_axis_field(node, "global")
+                            or _contains_matrix_num_cols(node))
+        return has_capture
+
     def _row_contexts(
         self, base, *, filter_present=True, with_position=True,
         entry_fields=None, col_fields=None,
@@ -785,8 +884,15 @@ class MatrixTable:
 
     def _axis_aggregates(self, expr, axis, base):
         if axis == "row":
-            from .matrix_list_aggregates import reduce_list, reduce_row_predicate
+            from .matrix_list_aggregates import (
+                reduce_aligned_plain,
+                reduce_list,
+                reduce_row_predicate,
+            )
 
+            direct = reduce_aligned_plain(self, expr, base)
+            if direct is not None:
+                return direct
             direct = reduce_row_predicate(self, expr, base)
             if direct is not None:
                 return direct
@@ -881,6 +987,22 @@ class MatrixTable:
             raise ValueError("field names must be nonempty strings")
         if axis == "entry":
             base = self._mir.core
+            if self._aligned_map_eligible(fields):
+                from .types import tstruct
+
+                body = struct(**{name: value for name, value in fields}).to_ir()
+                body_type = tstruct(**{name: value.dtype for name, value in fields})
+                cells = self._aligned_matrix_map(
+                    base, body, body_type, preserve_cell=True
+                )
+                projected = _project(
+                    base,
+                    [(_ROW, base[_ROW]), (_CELLS, cells)]
+                    + [(name, base[name]) for name in self._mir.row_index_keys],
+                )
+                if self._mir.row_index_keys:
+                    projected = projected._with_keys(*self._mir.row_index_keys)
+                return self._copy(rows=projected)
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
             fields = [(n, v) for (n, _), v in zip(fields, prepared)]
             uses_column = any(_uses_axis_field(v.to_ir(), "col") for _, v in fields)

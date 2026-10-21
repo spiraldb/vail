@@ -520,6 +520,27 @@ pub enum Expr {
     Tuple {
         elements: Vec<Expr>,
     },
+    /// One row's entry-list map evaluated against aligned row, entry, and
+    /// column inputs. Unlike ArrayMap this node owns the outer matrix row
+    /// loop and keeps the shared column arrays out of each entry's data.
+    AlignedMatrixMap {
+        entries: Arc<Expr>,
+        columns: Arc<Expr>,
+        rows: Arc<Expr>,
+        body: Arc<Expr>,
+        dtype: Type,
+        #[serde(default)]
+        preserve_cell: bool,
+    },
+    /// A placeholder used only by an AlignedMatrixMap body. Its immutable
+    /// physical counterpart is rebound once per outer row to a scalar or a
+    /// borrowed Arrow child array.
+    AlignedMapInput {
+        axis: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        name: Option<String>,
+        dtype: Type,
+    },
     ArrayMap {
         value: Arc<Expr>,
         parameter: String,
@@ -845,6 +866,8 @@ impl Expr {
                     | Expr::MatrixScope { .. }
                     | Expr::MatrixNumCols { .. }
                     | Expr::MatrixColumnPosition { .. }
+                    | Expr::AlignedMapInput { .. }
+                    | Expr::AlignedMatrixMap { .. }
                     | Expr::Aggregate { .. }
                     | Expr::AggregateFold { .. }
                     | Expr::AggFilter { .. }
@@ -938,6 +961,7 @@ impl Expr {
                 f(body);
             }
             Self::LambdaVariable { .. }
+            | Self::AlignedMapInput { .. }
             | Self::ExternalGlobal { .. }
             | Self::Global { .. }
             | Self::Column { .. }
@@ -952,6 +976,18 @@ impl Expr {
             }
             Self::ArrayMap { value, body, .. } => {
                 f(value);
+                f(body);
+            }
+            Self::AlignedMatrixMap {
+                entries,
+                columns,
+                rows,
+                body,
+                ..
+            } => {
+                f(entries);
+                f(columns);
+                f(rows);
                 f(body);
             }
             Self::ArrayFold {
@@ -1381,6 +1417,68 @@ impl Expr {
         context: usize,
     ) -> Result<Type, ExprError> {
         match self {
+            Self::AlignedMapInput { dtype, .. } => Ok(dtype.clone()),
+            Self::AlignedMatrixMap {
+                entries,
+                columns,
+                rows,
+                body,
+                dtype,
+                preserve_cell,
+            } => {
+                let Type::Array { .. } =
+                    entries.dtype_scoped(schema, globals, scope, memo, context)?
+                else {
+                    return Err(ExprError::Invalid(
+                        "aligned matrix map entries must be an array".into(),
+                    ));
+                };
+                let Type::Array { .. } =
+                    columns.dtype_scoped(schema, globals, scope, memo, context)?
+                else {
+                    return Err(ExprError::Invalid(
+                        "aligned matrix map columns must be an array".into(),
+                    ));
+                };
+                let Type::Struct { .. } =
+                    rows.dtype_scoped(schema, globals, scope, memo, context)?
+                else {
+                    return Err(ExprError::Invalid(
+                        "aligned matrix map rows must be a struct".into(),
+                    ));
+                };
+                let body_type = body.dtype_scoped(schema, globals, scope, memo, context)?;
+                let Type::Array {
+                    array: result_element,
+                } = dtype
+                else {
+                    return Err(ExprError::Invalid(
+                        "aligned matrix map result must be an array".into(),
+                    ));
+                };
+                if *preserve_cell {
+                    let Type::Struct { r#struct: fields } = result_element.as_ref() else {
+                        return Err(ExprError::Invalid(
+                            "aligned matrix map cell result must be a struct".into(),
+                        ));
+                    };
+                    if fields
+                        .iter()
+                        .find(|(name, _)| name == "value")
+                        .map(|(_, ty)| ty)
+                        != Some(&body_type)
+                    {
+                        return Err(ExprError::Invalid(
+                            "aligned matrix map body type disagrees with value field".into(),
+                        ));
+                    }
+                } else if result_element.as_ref() != &body_type {
+                    return Err(ExprError::Invalid(
+                        "aligned matrix map body type disagrees with result element".into(),
+                    ));
+                }
+                Ok(dtype.clone())
+            }
             Self::MatrixScope { value, .. } => {
                 value.dtype_scoped(schema, globals, scope, memo, context)
             }
@@ -5527,6 +5625,38 @@ fn lower_uncached(
         .to_arrow()?;
     let output_type = dtype.clone();
     let result: Arc<dyn PhysicalExpr> = match expr {
+        Expr::AlignedMapInput { axis, name, dtype } => {
+            Arc::new(crate::aligned_matrix_map::BoundInputExpr::unbound(
+                axis.clone(),
+                name.clone(),
+                dtype.to_arrow()?,
+            ))
+        }
+        Expr::AlignedMatrixMap {
+            entries,
+            columns,
+            rows,
+            body,
+            dtype,
+            preserve_cell,
+        } => {
+            let entries = lower_cached(entries, schema, globals, scope, memo, context)?;
+            let columns = lower_cached(columns, schema, globals, scope, memo, context)?;
+            let rows = lower_cached(rows, schema, globals, scope, memo, context)?;
+            let body_dtype = body
+                .dtype_scoped(schema, globals.schema(), scope, memo, context)?
+                .to_arrow()?;
+            let body = lower_scoped(body, schema, globals, scope, memo)?;
+            Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
+                entries,
+                columns,
+                rows,
+                body,
+                dtype.to_arrow()?,
+                body_dtype,
+                *preserve_cell,
+            ))
+        }
         Expr::MatrixScope { .. }
         | Expr::TableLookup { .. }
         | Expr::MatrixField { .. }

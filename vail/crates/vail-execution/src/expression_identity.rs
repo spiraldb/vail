@@ -36,6 +36,8 @@ enum Properties<'a> {
     Fold(&'a str, &'a str, bool),
     Scan(&'a str, &'a serde_json::Value, &'a Type),
     Predicate(&'a str, bool),
+    AlignedMap(&'a Type, bool),
+    AlignedInput(&'a str, &'a Option<String>, &'a Type),
     Switch(&'a str, bool),
     Binary(BinaryOperator),
     Unary(UnaryOperator),
@@ -93,6 +95,12 @@ fn properties(expr: &Expr) -> (Discriminant<Expr>, Properties<'_>) {
             Properties::Binary(*operator)
         }
         Expr::Tuple { .. } => Properties::None,
+        Expr::AlignedMatrixMap {
+            dtype,
+            preserve_cell,
+            ..
+        } => Properties::AlignedMap(dtype, *preserve_cell),
+        Expr::AlignedMapInput { axis, name, dtype } => Properties::AlignedInput(axis, name, dtype),
         Expr::ArrayMap { parameter, .. } | Expr::ArrayFilter { parameter, .. } => {
             Properties::Text(parameter)
         }
