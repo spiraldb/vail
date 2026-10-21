@@ -117,7 +117,9 @@ pub(crate) struct AlignedMatrixMapExpr {
     entries: Arc<dyn PhysicalExpr>,
     columns: Arc<dyn PhysicalExpr>,
     rows: Arc<dyn PhysicalExpr>,
+    globals: Arc<dyn PhysicalExpr>,
     body: Arc<dyn PhysicalExpr>,
+    input_keys: HashSet<InputKey>,
     dtype: DataType,
     body_dtype: DataType,
     preserve_cell: bool,
@@ -128,16 +130,22 @@ impl AlignedMatrixMapExpr {
         entries: Arc<dyn PhysicalExpr>,
         columns: Arc<dyn PhysicalExpr>,
         rows: Arc<dyn PhysicalExpr>,
+        globals: Arc<dyn PhysicalExpr>,
         body: Arc<dyn PhysicalExpr>,
         dtype: DataType,
         body_dtype: DataType,
         preserve_cell: bool,
     ) -> Self {
+        let mut input_keys = HashSet::new();
+        let mut visited = HashSet::new();
+        collect_input_keys(&body, &mut input_keys, &mut visited);
         Self {
             entries,
             columns,
             rows,
+            globals,
             body,
+            input_keys,
             dtype,
             body_dtype,
             preserve_cell,
@@ -150,6 +158,7 @@ impl PartialEq for AlignedMatrixMapExpr {
         self.entries.as_ref() == other.entries.as_ref()
             && self.columns.as_ref() == other.columns.as_ref()
             && self.rows.as_ref() == other.rows.as_ref()
+            && self.globals.as_ref() == other.globals.as_ref()
             && self.body.as_ref() == other.body.as_ref()
             && self.dtype == other.dtype
             && self.body_dtype == other.body_dtype
@@ -162,6 +171,7 @@ impl Hash for AlignedMatrixMapExpr {
         self.entries.hash(state);
         self.columns.hash(state);
         self.rows.hash(state);
+        self.globals.hash(state);
         self.body.hash(state);
         self.dtype.hash(state);
         self.body_dtype.hash(state);
@@ -188,14 +198,20 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
     }
 
     fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
-        vec![&self.entries, &self.columns, &self.rows, &self.body]
+        vec![
+            &self.entries,
+            &self.columns,
+            &self.rows,
+            &self.globals,
+            &self.body,
+        ]
     }
 
     fn with_new_children(
         self: Arc<Self>,
         children: Vec<Arc<dyn PhysicalExpr>>,
     ) -> Result<Arc<dyn PhysicalExpr>> {
-        if children.len() != 4 {
+        if children.len() != 5 {
             return Err(DataFusionError::Internal(
                 "aligned matrix map child count mismatch".into(),
             ));
@@ -204,7 +220,9 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             entries: children[0].clone(),
             columns: children[1].clone(),
             rows: children[2].clone(),
-            body: children[3].clone(),
+            globals: children[3].clone(),
+            body: children[4].clone(),
+            input_keys: self.input_keys.clone(),
             dtype: self.dtype.clone(),
             body_dtype: self.body_dtype.clone(),
             preserve_cell: self.preserve_cell,
@@ -225,10 +243,16 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
         let rows = rows.as_any().downcast_ref::<StructArray>().ok_or_else(|| {
             DataFusionError::Execution("aligned matrix map rows must be StructArray".into())
         })?;
+        let globals = self.globals.evaluate(batch)?;
+        let globals = array_value(globals, "global captures")?;
+        let globals = globals
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("aligned matrix map globals must be StructArray".into())
+            })?;
         let columns = self.columns.evaluate(batch)?;
         let columns = shared_list_values(columns)?;
-        let mut input_keys = HashSet::new();
-        collect_input_keys(&self.body, &mut input_keys);
 
         let entry_slots = entries.values();
         let mut mapped_rows = Vec::with_capacity(entries.len());
@@ -241,9 +265,10 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             let end = offsets[row_index + 1] as usize;
             let entry_count = end - start;
             let entry_slice = entry_slots.slice(start, entry_count);
-            let row_values = bind_row_inputs(&input_keys, rows, row_index, columns.len())?;
+            let row_values =
+                bind_row_inputs(&self.input_keys, rows, globals, row_index, columns.len())?;
             let mut bindings = row_values;
-            for key in &input_keys {
+            for key in &self.input_keys {
                 match key.axis.as_str() {
                     "entry" => {
                         bindings.insert(key.clone(), ColumnarValue::Array(entry_slice.clone()));
@@ -264,7 +289,8 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             let mapped = if entry_count == 0 {
                 new_empty_array(&self.body_dtype)
             } else {
-                let bound_body = rebind_body(&self.body, &bindings)?;
+                let mut memo = HashMap::new();
+                let bound_body = rebind_body(&self.body, &bindings, &mut memo)?;
                 let empty_batch = RecordBatch::try_new_with_options(
                     Arc::new(Schema::empty()),
                     Vec::new(),
@@ -284,10 +310,24 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             let mapped = if self.preserve_cell {
                 preserve_cell_slots(entry_slice, mapped)?
             } else {
-                inherit_parent_validity(mapped, entry_slice.as_ref())?
+                let values = entry_values(entry_slice.as_ref())?;
+                inherit_parent_validity(mapped, values.as_ref())?
             };
-            result_offsets
-                .push(result_offsets.last().copied().unwrap_or_default() + entry_count as i32);
+            let next_offset = result_offsets
+                .last()
+                .copied()
+                .unwrap_or_default()
+                .checked_add(i32::try_from(entry_count).map_err(|_| {
+                    DataFusionError::Execution(
+                        "aligned row exceeds ListArray offset capacity".into(),
+                    )
+                })?)
+                .ok_or_else(|| {
+                    DataFusionError::Execution(
+                        "aligned output exceeds ListArray offset capacity".into(),
+                    )
+                })?;
+            result_offsets.push(next_offset);
             mapped_rows.push(mapped);
         }
 
@@ -332,6 +372,10 @@ fn array_value(value: ColumnarValue, what: &str) -> Result<ArrayRef> {
 
 fn shared_list_values(value: ColumnarValue) -> Result<ArrayRef> {
     let value = match value {
+        ColumnarValue::Scalar(ScalarValue::List(values)) => {
+            let values: ArrayRef = values;
+            return Ok(values);
+        }
         ColumnarValue::Scalar(value) => value.to_array()?,
         ColumnarValue::Array(value) => value,
     };
@@ -347,18 +391,30 @@ fn shared_list_values(value: ColumnarValue) -> Result<ArrayRef> {
     Ok(lists.value(0))
 }
 
-fn collect_input_keys(expr: &Arc<dyn PhysicalExpr>, out: &mut HashSet<InputKey>) {
+fn node_id(expr: &Arc<dyn PhysicalExpr>) -> usize {
+    Arc::as_ptr(expr) as *const () as usize
+}
+
+fn collect_input_keys(
+    expr: &Arc<dyn PhysicalExpr>,
+    out: &mut HashSet<InputKey>,
+    visited: &mut HashSet<usize>,
+) {
+    if !visited.insert(node_id(expr)) {
+        return;
+    }
     if let Some(input) = expr.downcast_ref::<BoundInputExpr>() {
         out.insert(input.key.clone());
     }
     for child in expr.children() {
-        collect_input_keys(child, out);
+        collect_input_keys(child, out, visited);
     }
 }
 
 fn bind_row_inputs(
     keys: &HashSet<InputKey>,
     rows: &StructArray,
+    globals: &StructArray,
     row_index: usize,
     num_columns: usize,
 ) -> Result<HashMap<InputKey, ColumnarValue>> {
@@ -384,13 +440,7 @@ fn bind_row_inputs(
                 let name = key.name.as_deref().ok_or_else(|| {
                     DataFusionError::Execution("global aligned input needs a field name".into())
                 })?;
-                let fields = rows
-                    .column_by_name("__vail_aligned_globals")
-                    .and_then(|value| value.as_any().downcast_ref::<StructArray>())
-                    .ok_or_else(|| {
-                        DataFusionError::Execution("aligned global bundle is malformed".into())
-                    })?;
-                let field = fields.column_by_name(name).ok_or_else(|| {
+                let field = globals.column_by_name(name).ok_or_else(|| {
                     DataFusionError::Execution(format!("global field {name:?} is absent"))
                 })?;
                 ColumnarValue::Scalar(ScalarValue::try_from_array(field, row_index)?)
@@ -406,7 +456,12 @@ fn bind_row_inputs(
 fn rebind_body(
     expr: &Arc<dyn PhysicalExpr>,
     bindings: &HashMap<InputKey, ColumnarValue>,
+    memo: &mut HashMap<usize, Arc<dyn PhysicalExpr>>,
 ) -> Result<Arc<dyn PhysicalExpr>> {
+    let id = node_id(expr);
+    if let Some(cached) = memo.get(&id) {
+        return Ok(cached.clone());
+    }
     if let Some(input) = expr.downcast_ref::<BoundInputExpr>() {
         let value = bindings.get(&input.key).cloned().ok_or_else(|| {
             DataFusionError::Execution(format!(
@@ -414,17 +469,22 @@ fn rebind_body(
                 input.key.axis, input.key.name
             ))
         })?;
-        return Ok(input.bind(value));
+        let rebound = input.bind(value);
+        memo.insert(id, rebound.clone());
+        return Ok(rebound);
     }
     let children = expr.children();
     if children.is_empty() {
+        memo.insert(id, expr.clone());
         return Ok(expr.clone());
     }
     let rebound = children
         .into_iter()
-        .map(|child| rebind_body(child, bindings))
+        .map(|child| rebind_body(child, bindings, memo))
         .collect::<Result<Vec<_>>>()?;
-    expr.clone().with_new_children(rebound)
+    let rebound = expr.clone().with_new_children(rebound)?;
+    memo.insert(id, rebound.clone());
+    Ok(rebound)
 }
 
 fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> {
@@ -437,6 +497,8 @@ fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> 
     let id = entries
         .column_by_name("__vail_matrix_col_id")
         .ok_or_else(|| DataFusionError::Execution("aligned entry slot lacks column id".into()))?;
+    let input_values = entry_values(entries)?;
+    let mapped = inherit_parent_validity(mapped, input_values.as_ref())?;
     let fields = match mapped.data_type() {
         DataType::Struct(_) => vec![
             Arc::new(arrow_schema::Field::new(
@@ -466,6 +528,19 @@ fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> 
     )?))
 }
 
+fn entry_values(entries: &dyn Array) -> Result<ArrayRef> {
+    let entries = entries
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .ok_or_else(|| {
+            DataFusionError::Execution("aligned entry slots must be StructArray".into())
+        })?;
+    entries
+        .column_by_name("value")
+        .cloned()
+        .ok_or_else(|| DataFusionError::Execution("aligned entry slot lacks value".into()))
+}
+
 fn inherit_parent_validity(values: ArrayRef, parent: &dyn Array) -> Result<ArrayRef> {
     if parent.null_count() == 0 {
         return Ok(values);
@@ -473,4 +548,27 @@ fn inherit_parent_validity(values: ArrayRef, parent: &dyn Array) -> Result<Array
     let nulls = NullBuffer::union(values.nulls(), parent.nulls());
     let data = values.to_data().into_builder().nulls(nulls).build()?;
     Ok(make_array(data))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arrow_array::Int64Array;
+
+    #[test]
+    fn shared_column_child_reuses_its_value_buffer() {
+        let source: ArrayRef = Arc::new(Int64Array::from(vec![4, 8, 12]));
+        let source_values = source.to_data().buffers()[0].as_ptr();
+        let lists = ListArray::new(
+            Arc::new(arrow_schema::Field::new("item", DataType::Int64, true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, 3])),
+            source,
+            None,
+        );
+
+        let shared = shared_list_values(ColumnarValue::Array(Arc::new(lists))).unwrap();
+        let shared_values = shared.to_data().buffers()[0].as_ptr();
+        assert_eq!(shared.len(), 3);
+        assert_eq!(shared_values, source_values);
+    }
 }

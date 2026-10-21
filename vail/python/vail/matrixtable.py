@@ -791,13 +791,14 @@ class MatrixTable:
         rewritten = rewrite(body)
         row_bundle = struct(
             __vail_aligned_row=row_values,
-            __vail_aligned_globals=struct(**global_values),
         )
+        globals_bundle = struct(**global_values)
         node = {
             "op": "aligned_matrix_map",
             "entries": entries.to_ir(),
             "columns": columns.to_ir(),
             "rows": row_bundle.to_ir(),
+            "globals": globals_bundle.to_ir(),
             "body": rewritten,
             "dtype": output_type._native_type,
             "preserve_cell": preserve_cell,
@@ -988,8 +989,6 @@ class MatrixTable:
         if axis == "entry":
             base = self._mir.core
             if self._aligned_map_eligible(fields):
-                from .types import tstruct
-
                 body = struct(**{name: value for name, value in fields}).to_ir()
                 body_type = tstruct(**{name: value.dtype for name, value in fields})
                 cells = self._aligned_matrix_map(

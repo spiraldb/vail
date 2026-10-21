@@ -527,6 +527,7 @@ pub enum Expr {
         entries: Arc<Expr>,
         columns: Arc<Expr>,
         rows: Arc<Expr>,
+        globals: Arc<Expr>,
         body: Arc<Expr>,
         dtype: Type,
         #[serde(default)]
@@ -982,12 +983,14 @@ impl Expr {
                 entries,
                 columns,
                 rows,
+                globals: globals_expr,
                 body,
                 ..
             } => {
                 f(entries);
                 f(columns);
                 f(rows);
+                f(globals_expr);
                 f(body);
             }
             Self::ArrayFold {
@@ -1156,12 +1159,14 @@ impl Expr {
                 entries,
                 columns,
                 rows,
+                globals: globals_expr,
                 body,
                 ..
             } => {
                 *entries = Arc::new(f(entries)?);
                 *columns = Arc::new(f(columns)?);
                 *rows = Arc::new(f(rows)?);
+                *globals_expr = Arc::new(f(globals_expr)?);
                 *body = Arc::new(f(body)?);
             }
             Self::Aggregate { value, init, .. } => {
@@ -1435,6 +1440,7 @@ impl Expr {
                 entries,
                 columns,
                 rows,
+                globals: globals_expr,
                 body,
                 dtype,
                 preserve_cell,
@@ -1453,6 +1459,7 @@ impl Expr {
                         "aligned matrix map columns must be an array".into(),
                     ));
                 };
+                globals_expr.dtype_scoped(schema, globals, scope, memo, context)?;
                 let Type::Struct { .. } =
                     rows.dtype_scoped(schema, globals, scope, memo, context)?
                 else {
@@ -5649,6 +5656,7 @@ fn lower_uncached(
             entries,
             columns,
             rows,
+            globals: globals_expr,
             body,
             dtype,
             preserve_cell,
@@ -5656,6 +5664,7 @@ fn lower_uncached(
             let entries = lower_cached(entries, schema, globals, scope, memo, context)?;
             let columns = lower_cached(columns, schema, globals, scope, memo, context)?;
             let rows = lower_cached(rows, schema, globals, scope, memo, context)?;
+            let global_inputs = lower_cached(globals_expr, schema, globals, scope, memo, context)?;
             let body_dtype = body
                 .dtype_scoped(schema, globals.schema(), scope, memo, context)?
                 .to_arrow()?;
@@ -5664,6 +5673,7 @@ fn lower_uncached(
                 entries,
                 columns,
                 rows,
+                global_inputs,
                 body,
                 dtype.to_arrow()?,
                 body_dtype,

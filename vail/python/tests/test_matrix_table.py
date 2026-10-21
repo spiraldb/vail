@@ -64,6 +64,13 @@ def test_aligned_row_aggregate_maps_captured_values_without_compacting_slots():
     assert totals.total.collect() == [24, 46]
 
 
+def test_aligned_row_aggregate_masks_constant_values_at_filtered_slots():
+    m = matrix(2, 3)
+    m = m.filter_entries(m.col_idx != 1)
+    totals = m.annotate_rows(total=hl.agg.sum(hl.int32(m.row_idx + 1)))
+    assert totals.total.collect() == [2, 4]
+
+
 def test_aligned_entry_map_preserves_filtered_zero_field_slots():
     m = hl.range_matrix_table(2, 3)
     m = m.filter_entries(m.col_idx != 1)

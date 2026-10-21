@@ -385,6 +385,8 @@ impl NativeExpr {
             Expr::MatrixScope { .. } => "matrix_scope",
             Expr::MatrixNumCols { .. } => "matrix_num_cols",
             Expr::MatrixColumnPosition { .. } => "matrix_column_position",
+            Expr::AlignedMatrixMap { .. } => "aligned_matrix_map",
+            Expr::AlignedMapInput { .. } => "aligned_map_input",
             Expr::TableLookup { .. } => "table_lookup",
             Expr::RuntimeLiteral { .. } => "literal",
             Expr::Aggregate { .. } => "aggregate",
@@ -492,6 +494,29 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         },
         "matrix_num_cols" => Expr::MatrixNumCols {},
         "matrix_column_position" => Expr::MatrixColumnPosition {},
+        "aligned_matrix_map" => Expr::AlignedMatrixMap {
+            entries: expression_ref(&get(d, "entries")?)?,
+            columns: expression_ref(&get(d, "columns")?)?,
+            rows: expression_ref(&get(d, "rows")?)?,
+            globals: expression_ref(&get(d, "globals")?)?,
+            body: expression_ref(&get(d, "body")?)?,
+            dtype: native_type(&get(d, "dtype")?)?,
+            preserve_cell: d
+                .get_item("preserve_cell")
+                .ok()
+                .map(|value| value.extract::<bool>())
+                .transpose()?
+                .unwrap_or(false),
+        },
+        "aligned_map_input" => Expr::AlignedMapInput {
+            axis: get(d, "axis")?.extract::<String>()?,
+            name: d
+                .get_item("name")
+                .ok()
+                .map(|value| value.extract::<String>())
+                .transpose()?,
+            dtype: native_type(&get(d, "dtype")?)?,
+        },
         "table_lookup" => Expr::TableLookup {
             reference: get(d, "reference")?.extract::<String>()?,
             dtype: d
@@ -878,7 +903,12 @@ fn validate_table_aggregate_expr(root: &Expr) -> Result<(), &'static str> {
                 Err("row fields in Table.aggregate must be inside an aggregate")
             }
             Expr::Column { .. } => Ok(()),
-            Expr::AggregateFold { initial, seq, combine, .. } => {
+            Expr::AggregateFold {
+                initial,
+                seq,
+                combine,
+                ..
+            } => {
                 if has_aggregate(seq, aggregate_memo) || has_aggregate(combine, aggregate_memo) {
                     return Err("nested aggregations are not supported inside fold");
                 }
@@ -1171,7 +1201,11 @@ impl NativeExpr {
             }
             node.visit_children(&mut |child| pending.push(child));
         }
-        (entries.into_iter().collect(), columns.into_iter().collect(), position)
+        (
+            entries.into_iter().collect(),
+            columns.into_iter().collect(),
+            position,
+        )
     }
     fn references_rows(&self) -> bool {
         crate::random_binding::rows_referenced(&self.inner)
@@ -1276,6 +1310,46 @@ impl NativeExpr {
             }
             Expr::MatrixColumnPosition {} => {
                 d.set_item("op", "matrix_column_position")?;
+            }
+            Expr::AlignedMatrixMap {
+                entries,
+                columns,
+                rows,
+                globals,
+                body,
+                dtype,
+                preserve_cell,
+            } => {
+                d.set_item("op", "aligned_matrix_map")?;
+                for (name, node) in [
+                    ("entries", entries),
+                    ("columns", columns),
+                    ("rows", rows),
+                    ("globals", globals),
+                    ("body", body),
+                ] {
+                    d.set_item(
+                        name,
+                        Py::new(
+                            py,
+                            NativeExpr {
+                                inner: node.clone(),
+                            },
+                        )?
+                        .into_bound(py)
+                        .into_any(),
+                    )?;
+                }
+                d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
+                d.set_item("preserve_cell", preserve_cell)?;
+            }
+            Expr::AlignedMapInput { axis, name, dtype } => {
+                d.set_item("op", "aligned_map_input")?;
+                d.set_item("axis", axis)?;
+                if let Some(name) = name {
+                    d.set_item("name", name)?;
+                }
+                d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
             }
             Expr::TableLookup {
                 reference,
