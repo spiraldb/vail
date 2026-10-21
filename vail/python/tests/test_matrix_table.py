@@ -7,6 +7,7 @@ import math
 import subprocess
 import os
 import sys
+from collections import Counter
 
 import pytest
 import vail as hl
@@ -218,6 +219,57 @@ def test_annotations_actions_globals_and_native_plan():
     assert m.entries().collect() == m.entries().collect()
     with pytest.raises(ValueError):
         hl.eval(m.x)
+
+
+def test_entries_reuses_proven_row_major_column_key_order():
+    base = hl.range_matrix_table(3, 4, 2)
+    matrix = base.annotate_entries(value=hl.int32(base.row_idx * 10 + base.col_idx))
+    matrix = matrix.filter_entries(matrix.col_idx != 1)
+    entries = matrix.entries()
+    assert [(r.row_idx, r.col_idx, r.value) for r in entries.collect()] == [
+        (i, j, i * 10 + j) for i in range(3) for j in (0, 2, 3)
+    ]
+    assert list(entries.key) == ["row_idx", "col_idx"]
+    empty = hl.range_matrix_table(2, 3).entries().collect()
+    assert [(r.row_idx, r.col_idx) for r in empty] == [
+        (i, j) for i in range(2) for j in range(3)
+    ]
+
+
+def test_entries_sorts_when_column_key_order_is_not_proven():
+    base = hl.range_matrix_table(2, 3, 1)
+    matrix = base.annotate_entries(value=hl.int32(base.row_idx * 10 + base.col_idx))
+    matrix = matrix.key_cols_by(c=-matrix.col_idx)
+    entries = matrix.entries()
+    assert [(r.row_idx, r.c, r.value) for r in entries.collect()] == [
+        (i, -j, i * 10 + j) for i in range(2) for j in reversed(range(3))
+    ]
+    assert list(entries.key) == ["row_idx", "c"]
+
+
+def test_entries_column_permutation_uses_all_column_key_fields():
+    base = hl.range_matrix_table(2, 4)
+    matrix = base.annotate_cols(group=base.col_idx % 2)
+    matrix = matrix.key_cols_by("group", "col_idx")
+    entries = matrix.entries()
+    assert [(r.row_idx, r.group, r.col_idx) for r in entries.collect()] == [
+        (i, group, col)
+        for i in range(2)
+        for group, col in ((0, 0), (0, 2), (1, 1), (1, 3))
+    ]
+
+
+def test_entries_does_not_assume_exploded_row_keys_are_unique():
+    matrix = hl.range_matrix_table(1, 2, 1).annotate_rows(items=hl.array([0, 1]))
+    matrix = matrix.explode_rows("items")
+    matrix = matrix.annotate_entries(value=hl.int32(matrix.items + matrix.col_idx))
+    entries = matrix.entries()
+    observed = [(r.row_idx, r.col_idx, r.value) for r in entries.collect()]
+    keys = [(row, col) for row, col, _ in observed]
+    assert keys == sorted(keys)
+    assert Counter(observed) == Counter(
+        [(0, 0, 0), (0, 0, 1), (0, 1, 1), (0, 1, 2)]
+    )
 
 
 def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
@@ -1002,6 +1054,12 @@ def test_row_aligned_views_and_transformations_do_not_index_rows(monkeypatch, tm
 def test_duplicate_row_keys_preserve_entry_ownership():
     m = matrix(2, 2)
     m = m.key_rows_by(k=0).select_rows("row_idx")
+    observed = [(r.k, r.col_idx, r.x) for r in m.entries().collect()]
+    keys = [(key, col) for key, col, _ in observed]
+    assert keys == sorted(keys)
+    assert Counter(observed) == Counter(
+        [(0, 0, 5), (0, 0, 15), (0, 1, 6), (0, 1, 16)]
+    )
     localized = m.localize_entries("cells", "columns").collect()
     assert [r.row_idx for r in localized] == [0, 1]
     assert [[e.x for e in r.cells] for r in localized] == [[5, 6], [15, 16]]

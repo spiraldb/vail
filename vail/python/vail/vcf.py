@@ -86,7 +86,13 @@ def import_vcf(
     # The native parser emits exactly one ordered cell per header sample and
     # checks sample cardinality when entries are decoded. Avoid adding a generic
     # whole-entry alignment predicate that defeats source field projection.
-    matrix = MatrixTable(MatrixIR(core, cols, row_key=("locus", "alleles"), col_key=("s",), _aligned=True))
+    # Samples arrive in VCF header order. Preserve that order, and only attach
+    # an ordering proof when the header itself establishes the key order.
+    column_ordering = ("s",) if all(a <= b for a, b in zip(samples, samples[1:])) else None
+    matrix = MatrixTable(MatrixIR(
+        core, cols, row_key=("locus", "alleles"), col_key=("s",), _aligned=True,
+        _column_ordering=column_ordering,
+    ))
     core = matrix._sort_rows(matrix._mir.core, matrix._mir.row_key)
     matrix = matrix._copy(rows=core)
     partitions = n_partitions if n_partitions is not None else min_partitions
