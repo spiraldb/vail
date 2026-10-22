@@ -1767,8 +1767,10 @@ impl Expr {
                 args,
                 dtype,
             } => {
-                if function == "__vail_parse_json"
-                    || matches!(
+                if matches!(
+                    function.as_str(),
+                    "__vail_parse_json" | "__vail_parse_import_integer"
+                ) || matches!(
                         function.as_str(),
                         "__vail_export_annotation" | "__vail_json_annotation"
                     )
@@ -1779,11 +1781,13 @@ impl Expr {
                         ));
                     }
                     let input = args[0].dtype_scoped(schema, globals, scope, memo, context)?;
-                    if function == "__vail_parse_json"
-                        && input != Type::Primitive(PrimitiveType::Str)
+                    if matches!(
+                        function.as_str(),
+                        "__vail_parse_json" | "__vail_parse_import_integer"
+                    ) && input != Type::Primitive(PrimitiveType::Str)
                     {
                         return Err(ExprError::Invalid(
-                            "parse_json requires string input".into(),
+                            "typed JSON/integer parser requires string input".into(),
                         ));
                     }
                     if matches!(
@@ -5942,6 +5946,8 @@ fn lower_uncached(
         } => {
             let special = if function == "__vail_parse_json" {
                 Some(crate::json_io::parse_udf(target.clone())?)
+            } else if function == "__vail_parse_import_integer" {
+                Some(crate::integer_import::make_udf(target.clone())?)
             } else if matches!(
                 function.as_str(),
                 "__vail_export_annotation" | "__vail_json_annotation"

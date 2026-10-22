@@ -7,6 +7,7 @@ mod diagnostics;
 use arrow_batches::ArrowBatches;
 pub mod avro_source;
 mod bgen_source;
+mod bgzf_lines;
 mod bgen_select;
 pub mod bgen_export;
 pub mod comparison;
@@ -734,10 +735,14 @@ impl TableIR {
             }
             if options
                 .iter()
-                .any(|(key, value)| key != "force_bgz" || !value.is_boolean())
+                .any(|(key, value)| !match key.as_str() {
+                    "force_bgz" | "file_per_partition" => value.is_boolean(),
+                    "min_partitions" => value.as_u64().is_some_and(|n| n > 0),
+                    _ => false,
+                })
             {
                 return Err(TableError::Invalid(
-                    "lines input accepts only the boolean force_bgz option".into(),
+                    "lines input accepts boolean force_bgz/file_per_partition and positive min_partitions".into(),
                 ));
             }
         } else if format == "csv" {
@@ -770,6 +775,34 @@ impl TableIR {
                     })
             })
             .collect::<Result<Vec<_>>>()?;
+        let mut native_options = options_json.clone();
+        let paths = if format == "lines"
+            && !options.get("file_per_partition").and_then(Value::as_bool).unwrap_or(false)
+        {
+            let requested = options.get("min_partitions").and_then(Value::as_u64)
+                .map(|n| usize::try_from(n).unwrap_or(usize::MAX).div_ceil(paths.len()));
+            let mut expanded = Vec::new();
+            let mut ranges = Vec::new();
+            for path in paths {
+                let compressed = path.ends_with(".gz") || path.ends_with(".bgz")
+                    || options.get("force_bgz").and_then(Value::as_bool).unwrap_or(false);
+                let parts = if compressed {
+                    crate::bgzf_lines::partitions(&path, requested)
+                        .map_err(|error| TableError::Invalid(format!("cannot prepare BGZF input {path:?}: {error}")))?
+                } else { None };
+                if let Some(parts) = parts {
+                    for range in parts {
+                        expanded.push(path.clone());
+                        ranges.push(serde_json::to_value(range).map_err(|error| TableError::Invalid(error.to_string()))?);
+                    }
+                } else {
+                    expanded.push(path);
+                    ranges.push(Value::Null);
+                }
+            }
+            native_options["bgzf_ranges"] = Value::Array(ranges);
+            expanded
+        } else { paths };
         Ok(Self::new(
             schema,
             vec![],
@@ -777,7 +810,7 @@ impl TableIR {
             TableNode::TextRead {
                 paths,
                 format: format.to_owned(),
-                options_json: options_json.to_owned(),
+                options_json: native_options,
             },
         ))
     }

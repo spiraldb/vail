@@ -50,6 +50,7 @@ pub mod scan_scopes;
 pub mod scan_state;
 mod string_kernels;
 mod json_io;
+mod integer_import;
 
 #[derive(Debug, Error)]
 pub enum OrderError {

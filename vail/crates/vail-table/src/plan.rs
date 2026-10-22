@@ -418,7 +418,11 @@ fn source_partition_with_selection(
                                     .unwrap_or(false)
                                     || path.ends_with(".gz")
                                     || path.ends_with(".bgz"),
-                            ),
+                            ).with_bgzf(path.clone(), options.get("bgzf_ranges")
+                                .and_then(serde_json::Value::as_array).and_then(|ranges| ranges.get(part))
+                                .filter(|range| !range.is_null())
+                                .map(|range| serde_json::from_value(range.clone()))
+                                .transpose().map_err(|error| TableError::Invalid(format!("invalid BGZF range: {error}")))?),
                         ),
                     )
                 }
