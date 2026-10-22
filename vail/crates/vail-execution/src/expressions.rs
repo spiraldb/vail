@@ -5883,7 +5883,7 @@ fn lower_uncached(
             // Python's aligned map wraps the body in an entry-presence guard.
             // Prepare its consequent once for batches whose entry parents are
             // all valid; sparse batches retain the original lazy guard.
-            let all_present = match body {
+            let all_present = match body.as_ref() {
                 Expr::IfElse { condition, consequent, .. }
                     if matches!(condition.as_ref(), Expr::AlignedMapInput { axis, .. }
                         if axis == "entry_present") => Some(consequent.as_ref()),
