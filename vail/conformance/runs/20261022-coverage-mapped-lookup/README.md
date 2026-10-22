@@ -73,3 +73,9 @@ Public native lower/evaluate lexical-collision regression: 1 passed under
 public_mapped_dictionary_lookup_preserves_colliding_outer_binding`.
 All source/test review findings were closed before final evidence submission.
 Original full-cloud fixture and timings remain unchanged; no VM was restarted.
+
+Profiles cover the complete short-lived process, including Python import and
+query construction; printed wall/CPU deltas cover only the force-count action.
+The CPU-weighted profile totals are 23.779s before and 4.270s after. Thus these
+percentages describe the captured process rather than a surgically isolated
+query interval; this is especially relevant to the smaller final denominator.
