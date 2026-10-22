@@ -1,0 +1,146 @@
+{"kind": "scope_excluded", "module": "table/test_table.py", "name": "Tests.test_from_spark_works", "line": 768, "reason": "Spark DataFrame interoperability is outside the embedded Vail API audit"}
+{"kind": "inventory", "items": ["test_table.py::test_table_randomness_range_table", "test_table.py::test_table_randomness_range_matrix_rows_table", "test_table.py::test_table_randomness_join", "test_table.py::test_table_randomness_left_join_right_distinct", "test_table.py::test_table_randomness_interval_join", "test_table.py::test_table_randomness_union", "test_table.py::test_table_randomness_map_globals_with_body_randomness", "test_table.py::test_table_randomness_map_globals_without_body_randomness", "test_table.py::test_table_randomness_explode", "test_table.py::test_table_randomness_key_by", "test_table.py::test_table_randomness_map_rows_with_body_randomness", "test_table.py::test_table_randomness_map_rows_with_scan_randomness", "test_table.py::test_table_randomness_map_rows_without_body_randomness", "test_table.py::test_table_randomness_map_partitions", "test_table.py::test_table_randomness_read", "test_table.py::test_table_randomness_matrix_entries_table", "test_table.py::test_table_randomness_filter_with_cond_randomness", "test_table.py::test_table_randomness_filter_without_cond_randomness", "test_table.py::test_table_randomness_key_by_and_aggregate_with_body_randomness", "test_table.py::test_table_randomness_key_by_and_aggregate_with_agg_randomness", "test_table.py::test_table_randomness_key_by_and_aggregate_without_body_randomness", "test_table.py::test_table_randomness_aggregate_by_key", "test_table.py::test_table_randomness_matrix_cols_table", "test_table.py::test_table_randomness_parallelize_with_body_randomness", "test_table.py::test_table_randomness_parallelize_without_body_randomness", "test_table.py::test_table_randomness_head", "test_table.py::test_table_randomness_tail", "test_table.py::test_table_randomness_order_by", "test_table.py::test_table_randomness_distinct", "test_table.py::test_table_randomness_repartition", "test_table.py::test_table_randomness_cast_matrix_to_table", "test_table.py::test_table_randomness_rename", "test_table.py::test_table_randomness_multi_way_zip_join", "test_table.py::test_table_randomness_filter_intervals", "test_table.py::test_table_randomness_table_gen", "test_table.py::test_query_table_randomness"]}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_range_table"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_range_table", "when": "setup", "outcome": "passed", "duration": 0.0008577079861424863, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_range_table", "when": "call", "outcome": "passed", "duration": 0.015451624989509583, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_range_table", "when": "teardown", "outcome": "passed", "duration": 0.00012375001097097993, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_range_matrix_rows_table"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_range_matrix_rows_table", "when": "setup", "outcome": "passed", "duration": 0.004323125001974404, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_range_matrix_rows_table", "when": "call", "outcome": "passed", "duration": 0.0080797920236364, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_range_matrix_rows_table", "when": "teardown", "outcome": "passed", "duration": 0.00010466598905622959, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_join"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_join", "when": "setup", "outcome": "passed", "duration": 0.00026062503457069397, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_join", "when": "call", "outcome": "passed", "duration": 0.10828033299185336, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_join", "when": "teardown", "outcome": "passed", "duration": 0.00011475000064820051, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_left_join_right_distinct"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_left_join_right_distinct", "when": "setup", "outcome": "passed", "duration": 0.00028241699328646064, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_left_join_right_distinct", "when": "call", "outcome": "passed", "duration": 0.014590167033020407, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_left_join_right_distinct", "when": "teardown", "outcome": "passed", "duration": 0.00011770904529839754, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_interval_join"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_interval_join", "when": "setup", "outcome": "passed", "duration": 0.00029737502336502075, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_interval_join", "when": "call", "outcome": "passed", "duration": 0.16701370797818527, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_interval_join", "when": "teardown", "outcome": "passed", "duration": 0.00010350003140047193, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_union"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_union", "when": "setup", "outcome": "passed", "duration": 0.0002519170520827174, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_union", "when": "call", "outcome": "passed", "duration": 0.00943458400433883, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_union", "when": "teardown", "outcome": "passed", "duration": 0.00013691600179299712, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_map_globals_with_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_globals_with_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00034241698449477553, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_globals_with_body_randomness", "when": "call", "outcome": "passed", "duration": 0.005989749974105507, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_globals_with_body_randomness", "when": "teardown", "outcome": "passed", "duration": 8.37499974295497e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_map_globals_without_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_globals_without_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00023441598750650883, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_globals_without_body_randomness", "when": "call", "outcome": "passed", "duration": 0.0044038749765604734, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_globals_without_body_randomness", "when": "teardown", "outcome": "passed", "duration": 8.44579772092402e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_explode"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_explode", "when": "setup", "outcome": "passed", "duration": 0.00024937500711530447, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_explode", "when": "call", "outcome": "passed", "duration": 0.004692875023465604, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_explode", "when": "teardown", "outcome": "passed", "duration": 7.89170153439045e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_key_by"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by", "when": "setup", "outcome": "passed", "duration": 0.00023783301003277302, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by", "when": "call", "outcome": "passed", "duration": 0.005669833044521511, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by", "when": "teardown", "outcome": "passed", "duration": 7.837498560547829e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_map_rows_with_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_with_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00022975000320002437, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_with_body_randomness", "when": "call", "outcome": "passed", "duration": 0.013329749985132366, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_with_body_randomness", "when": "teardown", "outcome": "passed", "duration": 8.37499974295497e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_map_rows_with_scan_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_with_scan_randomness", "when": "setup", "outcome": "passed", "duration": 0.00021999998716637492, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_with_scan_randomness", "when": "call", "outcome": "passed", "duration": 0.03945995803223923, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_with_scan_randomness", "when": "teardown", "outcome": "passed", "duration": 0.00010479200864210725, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_map_rows_without_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_without_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00025874999118968844, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_without_body_randomness", "when": "call", "outcome": "passed", "duration": 0.006499582959804684, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_rows_without_body_randomness", "when": "teardown", "outcome": "passed", "duration": 8.170900400727987e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_map_partitions"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_partitions", "when": "setup", "outcome": "passed", "duration": 0.00022612500470131636, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_partitions", "when": "call", "outcome": "passed", "duration": 0.00271520804380998, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_map_partitions", "when": "teardown", "outcome": "passed", "duration": 7.512501906603575e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_read"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_read", "when": "setup", "outcome": "passed", "duration": 0.00021345895947888494, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_read", "when": "call", "outcome": "passed", "duration": 0.04812854196643457, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_read", "when": "teardown", "outcome": "passed", "duration": 9.637500625103712e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_matrix_entries_table"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_matrix_entries_table", "when": "setup", "outcome": "passed", "duration": 0.00032350001856684685, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_matrix_entries_table", "when": "call", "outcome": "passed", "duration": 0.02052737498888746, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_matrix_entries_table", "when": "teardown", "outcome": "passed", "duration": 9.970803512260318e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_filter_with_cond_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_with_cond_randomness", "when": "setup", "outcome": "passed", "duration": 0.0002708749962039292, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_with_cond_randomness", "when": "call", "outcome": "passed", "duration": 0.013987458019983023, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_with_cond_randomness", "when": "teardown", "outcome": "passed", "duration": 9.312503971159458e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_filter_without_cond_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_without_cond_randomness", "when": "setup", "outcome": "passed", "duration": 0.00026237498968839645, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_without_cond_randomness", "when": "call", "outcome": "passed", "duration": 0.006141417019534856, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_without_cond_randomness", "when": "teardown", "outcome": "passed", "duration": 9.037501877173781e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00023691699607297778, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_body_randomness", "when": "call", "outcome": "passed", "duration": 0.011986666999291629, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_body_randomness", "when": "teardown", "outcome": "passed", "duration": 8.074997458606958e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_agg_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_agg_randomness", "when": "setup", "outcome": "passed", "duration": 0.0002316250465810299, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_agg_randomness", "when": "call", "outcome": "passed", "duration": 0.011136457964312285, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_with_agg_randomness", "when": "teardown", "outcome": "passed", "duration": 8.820800576359034e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_without_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_without_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.0002318329643458128, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_without_body_randomness", "when": "call", "outcome": "passed", "duration": 0.006359791033901274, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_key_by_and_aggregate_without_body_randomness", "when": "teardown", "outcome": "passed", "duration": 9.829096961766481e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_aggregate_by_key"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_aggregate_by_key", "when": "setup", "outcome": "passed", "duration": 0.0002589999930933118, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_aggregate_by_key", "when": "call", "outcome": "passed", "duration": 0.008867416996508837, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_aggregate_by_key", "when": "teardown", "outcome": "passed", "duration": 8.804199751466513e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_matrix_cols_table"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_matrix_cols_table", "when": "setup", "outcome": "passed", "duration": 0.00022487499518319964, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_matrix_cols_table", "when": "call", "outcome": "passed", "duration": 0.009675250039435923, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_matrix_cols_table", "when": "teardown", "outcome": "passed", "duration": 8.26249597594142e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_parallelize_with_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_parallelize_with_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00022674998035654426, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_parallelize_with_body_randomness", "when": "call", "outcome": "passed", "duration": 0.004294916987419128, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_parallelize_with_body_randomness", "when": "teardown", "outcome": "passed", "duration": 8.383399108424783e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_parallelize_without_body_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_parallelize_without_body_randomness", "when": "setup", "outcome": "passed", "duration": 0.00023020902881398797, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_parallelize_without_body_randomness", "when": "call", "outcome": "passed", "duration": 0.0033462499850429595, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_parallelize_without_body_randomness", "when": "teardown", "outcome": "passed", "duration": 7.30419997125864e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_head"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_head", "when": "setup", "outcome": "passed", "duration": 0.00020287500228732824, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_head", "when": "call", "outcome": "passed", "duration": 0.004254541010595858, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_head", "when": "teardown", "outcome": "passed", "duration": 7.67079764045775e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_tail"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_tail", "when": "setup", "outcome": "passed", "duration": 0.00020454201148822904, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_tail", "when": "call", "outcome": "passed", "duration": 0.004104666993953288, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_tail", "when": "teardown", "outcome": "passed", "duration": 8.86659836396575e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_order_by"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_order_by", "when": "setup", "outcome": "passed", "duration": 0.0002288329997099936, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_order_by", "when": "call", "outcome": "passed", "duration": 0.005329792038537562, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_order_by", "when": "teardown", "outcome": "passed", "duration": 7.666699821129441e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_distinct"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_distinct", "when": "setup", "outcome": "passed", "duration": 0.0002074579824693501, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_distinct", "when": "call", "outcome": "passed", "duration": 0.007410874997731298, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_distinct", "when": "teardown", "outcome": "passed", "duration": 7.73330102674663e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_repartition"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_repartition", "when": "setup", "outcome": "passed", "duration": 0.0002060420229099691, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_repartition", "when": "call", "outcome": "passed", "duration": 0.11067445803200826, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_repartition", "when": "teardown", "outcome": "passed", "duration": 9.316601790487766e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_cast_matrix_to_table"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_cast_matrix_to_table", "when": "setup", "outcome": "passed", "duration": 0.00024691701401025057, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_cast_matrix_to_table", "when": "call", "outcome": "passed", "duration": 0.019996582996100187, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_cast_matrix_to_table", "when": "teardown", "outcome": "passed", "duration": 0.00010420900071039796, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_rename"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_rename", "when": "setup", "outcome": "passed", "duration": 0.0002679169992916286, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_rename", "when": "call", "outcome": "passed", "duration": 0.005881707998923957, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_rename", "when": "teardown", "outcome": "passed", "duration": 7.945799734443426e-05, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_multi_way_zip_join"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_multi_way_zip_join", "when": "setup", "outcome": "passed", "duration": 0.00022437499137595296, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_multi_way_zip_join", "when": "call", "outcome": "passed", "duration": 0.5358982079778798, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_multi_way_zip_join", "when": "teardown", "outcome": "passed", "duration": 0.00013537501217797399, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_filter_intervals"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_intervals", "when": "setup", "outcome": "passed", "duration": 0.00032587500754743814, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_intervals", "when": "call", "outcome": "passed", "duration": 0.012156000011600554, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_filter_intervals", "when": "teardown", "outcome": "passed", "duration": 0.00014387501869350672, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_table_randomness_table_gen"}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_table_gen", "when": "setup", "outcome": "passed", "duration": 0.00037041702307760715, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_table_gen", "when": "call", "outcome": "passed", "duration": 0.01992595801129937, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_table_randomness_table_gen", "when": "teardown", "outcome": "passed", "duration": 0.00017512502381578088, "category": null, "error": ""}
+{"kind": "started", "nodeid": "test_table.py::test_query_table_randomness"}
+{"kind": "test", "nodeid": "test_table.py::test_query_table_randomness", "when": "setup", "outcome": "passed", "duration": 0.07345241698203608, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_query_table_randomness", "when": "call", "outcome": "passed", "duration": 0.09349512500921264, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_table.py::test_query_table_randomness", "when": "teardown", "outcome": "passed", "duration": 0.0004259580164216459, "category": null, "error": ""}
