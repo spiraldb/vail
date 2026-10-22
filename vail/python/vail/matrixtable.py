@@ -2148,7 +2148,8 @@ class MatrixTable:
         t = (
             _project(
                 base,
-                [(n, base[p][n]) for n in keys] + [(n, base[n]) for n in base._schema],
+                [(n, base[p][n]) for n in keys]
+                + [(n, base[n]) for n in base._schema if n not in keys],
             )
             .key_by(*keys)
             .distinct()
@@ -2157,7 +2158,9 @@ class MatrixTable:
         t = t.select(*base._schema)
         if axis == "col":
             return self._select_columns_table(t.order_by(t[self._column_position_name]))
-        return self._copy(rows=t)
+        # Native reads may already expose the logical key as a physical index.
+        # Preserve that index certificate when rebuilding the matrix core.
+        return self._copy(rows=t.key_by(*self._mir.row_index_keys))
 
     def _explode(self, axis, field_expr):
         from . import agg, len as length, enumerate as array_enumerate, case

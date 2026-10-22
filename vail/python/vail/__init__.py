@@ -2075,3 +2075,5 @@ from .qc import variant_qc, hardy_weinberg_test
 from .genotype_likelihoods import pl_to_gp, pl_dosage, gp_dosage, gq_from_pl, unphased_diploid_gt_index_call
 
 from .expressions import compare as _compare
+
+from . import vds
