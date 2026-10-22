@@ -1835,7 +1835,7 @@ impl Expr {
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
                 if function.starts_with("__vail_list_reduce_")
-                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs")
+                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs" | "isnan")
                     || function.starts_with("__vail_ndarray_reshape_")
                 {
                     let result = udf.return_type(&args)?;
