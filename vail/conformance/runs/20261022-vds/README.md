@@ -44,3 +44,8 @@ interval reads entirely and bounds both global/local G allele counts at 32767.
 Canonical LA mapping preconditions are documented. Nineteen targeted tests pass
 (including seven new regressions); follow-up review is requested. These fixes
 do not change the experimental-only disposition or authorize a main merge.
+
+Follow-up review cleared the limited source/test fixes at exact
+`06f47aa91456b36b8f2d721be62bb17a1bb78e8d` and closed both scoped correctness
+findings. This is not merge approval or performance acceptance; the port remains
+stopped on its development branch. Reviewer performed no builds, tests, or edits.

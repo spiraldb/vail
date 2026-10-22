@@ -48,7 +48,7 @@
     "limits": "Not a full upstream VDS suite pass; advanced methods and workflow intentionally absent. No performance acceptance."
   },
   "review": {
-    "status": "initial findings addressed; follow-up pending",
+    "status": "scoped experimental source/test clearance; no merge approval",
     "reviewed_revision": "fc1abd169280e2a9966aa7ec1bc8ad7aaf2a7fbe",
     "disposition": "experimental only; no merge approval",
     "main_updated": false,
@@ -66,6 +66,14 @@
         "fix": "document LA[0]=0, unique mapping, and defined elements addressed by nonreference calls"
       }
     ],
-    "followup_validation": "19 targeted tests passed, 9 deselected; includes 5 large-domain and 2 interval-rejection regressions. Previous 48-test run remains recorded separately."
+    "followup_validation": "19 targeted tests passed, 9 deselected; includes 5 large-domain and 2 interval-rejection regressions. Previous 48-test run remains recorded separately.",
+    "followup_reviewed_revision": "06f47aa91456b36b8f2d721be62bb17a1bb78e8d",
+    "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+    "open_scoped_correctness_findings": [],
+    "limits": [
+      "Not merge approval",
+      "Not performance acceptance",
+      "Port remains stopped and isolated"
+    ]
   }
 }
