@@ -66,3 +66,12 @@ def test_array_scalar_reduction_hoisted_with_missing_and_empty_lists():
     assert result[2].reversed is None
     assert result[3].normalized == [None, 1.0]
     assert result[3].reversed == [None, 0]
+
+
+def test_scalar_operand_stays_lazy_on_missing_and_empty_arrays():
+    t = hl.Table.parallelize([
+        {'a': [], 'divisor': 0}, {'a': None, 'divisor': 0},
+        {'a': [1, 2], 'divisor': 2},
+    ], schema=hl.tstruct(a=hl.tarray(hl.tint32), divisor=hl.tint32))
+    result = t.annotate(value=t.a + (10 // t.divisor)).value.collect()
+    assert result == [[], None, [6, 7]]
