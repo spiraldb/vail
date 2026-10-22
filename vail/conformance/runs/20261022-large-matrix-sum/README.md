@@ -58,7 +58,7 @@ it through a cross join. No benchmark-specific sum constant folding is proposed.
 
 ## Native scalar-context path and final validation
 
-Projection-only external captures now use DataFusion55's native uncorrelated
+Projection-only external captures now use DataFusion 55's native uncorrelated
 ScalarSubqueryExpr/ScalarSubqueryExec instead of an explicit cross join. Existing
 scan/RNG indexed-input paths remain unchanged. Public tests exercise nested
 scalar collections, null parent records, empty arrays, separate same-schema
@@ -71,7 +71,7 @@ scalar values reprepare. Tests invoke the same public UDF with changed/empty and
 restored captures and concurrent row batches, checking outputs only. The cache
 is bounded by one combination, not by a fixed byte limit.
 
-The first scalar-subquery diagnostic regressed to53.06wall/572.26CPU because
+The first scalar-subquery diagnostic regressed to 53.06 wall / 572.26 CPU because
 DataFusion ScalarSubqueryExpr::Display formats the entire resolved nested value.
 Projection metric creation called that Display per partition. A scoped physical
 projection label decorator now leaves native evaluation intact while avoiding
@@ -82,28 +82,53 @@ re-expanding singleton nested values after scalar binding. Parent nullness and
 physical descriptors remain preserved; array-valued parent handling is unchanged.
 
 Final production ac676b82, test-only76b9e893, current-main integration base0976b1bc.
-Normal Rust1.98 release/kache native SHA256:
+Normal Rust 1.98 release/kache native SHA256:
 c45023e1475d248016795eea3f938111520a9415e582a53721d8fcac6c8c90d1.
-60public Python tests passed;2public Rust lower/evaluate or UDF runtime tests
+60 public Python tests passed;2 public Rust lower/evaluate or UDF runtime tests
 passed (promoted dense/sparse output types, changing scalar bindings/concurrency).
-The final actual5Bentry profile observed10.724wall/83.202CPU seconds and process
+The final actual 5B-entry profile observed 10.724 wall / 83.202 CPU seconds and process
 high-water RSS6,074,793,984bytes. Other laptop compilation was active; these are
 diagnostic observations rather than controlled wall-time/Hail comparisons.
-The initial diagnostic had10.912wall/106.609CPU seconds. Process RSS high-water
+The initial diagnostic had 10.912 wall / 106.609 CPU seconds. Process RSS high-water
 includes setup and uncontrolled scheduling, so no memory improvement is claimed.
 
-Final47,530sample attribution:
-- native grouped SUM validity accumulation21.22%
-- Arrow take bitmap construction17.76%
-- take Int32 values12.08%
-- memmove10.61%
-- run-end row metadata decoding10.28%
-- native addition6.25%, Int32→Int64 cast6.00%
+Final 47,530-sample attribution:
+- native grouped SUM validity accumulation 21.22%
+- Arrow take bitmap construction 17.76%
+- take Int32 values 12.08%
+- memmove 10.61%
+- run-end row metadata decoding 10.28%
+- native addition 6.25%, Int32→Int64 cast 6.00%
 - Boolean CASE equality has no sampled leaf
-- all formatting inclusive0.048%; lower_uncached3samples(0.006%)
+- all formatting inclusive 0.048%; lower_uncached 3 samples (0.006%)
 - bind_scalar_captures has no samples
 
 Thus the introduced formatting/repeated-preparation work and redundant dense
 presence CASE disappear from the hot path. Remaining column-field repetition,
 row-capture decoding and native grouped SUM are still material costs; this is
 not a claim that the benchmark is now faster than Hail on the cloud host.
+
+## Three interleaved diagnostic pairs
+
+After the final production build, three serial baseline/candidate pairs ran the
+exact full query without sampling. Other unrelated laptop builds continued, so
+these are diagnostic comparisons, not controlled same-host isolation or cloud
+Hail estimates. Baseline used the pre-existing normally built audit native
+59c30b4f with restored ae88922d Python, as described above; candidate used final
+normal native c45023e1. No compiled artifacts were copied/saved for reuse.
+
+| | Trial wall seconds | Trial process CPU seconds | Process high-water RSS GiB |
+|---|---|---|---|
+| Baseline |14.406,13.639,12.773 |172.148,146.839,146.967 |3.79,3.35,3.20 |
+| Candidate |11.209,10.540,10.218 |127.659,121.356,113.892 |5.54,5.00,5.37 |
+
+Medians: wall13.639→10.540seconds (22.7% lower), CPU146.967→121.356seconds
+(17.4% lower). Every candidate pair was lower in wall and CPU. Resource contention
+and differing unrelated baseline native changes limit causal precision. Candidate
+process peaks were higher, so this is not a RAM reduction claim. Cloud Hail's
+20.899seconds/429.17CPU from another host must not be compared directly to these
+laptop observations.
+
+Remaining substantial costs are column-field repetition through Arrow take,
+row-context run-end expansion, and the native grouped SUM path. No algebraic
+folding specific to the benchmark was added.
