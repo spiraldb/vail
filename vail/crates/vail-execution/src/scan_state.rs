@@ -142,7 +142,11 @@ impl ScanState {
             let initial =
                 crate::logical_expr::restore_arrow_array_type(&initial.to_array()?, &self.output)?;
             let present = BooleanArray::new(states.nulls().unwrap().inner().clone(), None);
-            return arrow_select::zip::zip(&present, values, &Scalar::new(initial));
+            return Ok(arrow_select::zip::zip(
+                &present,
+                values,
+                &Scalar::new(initial),
+            )?);
         }
         let mut values = Vec::with_capacity(states.len());
         for row in 0..states.len() {

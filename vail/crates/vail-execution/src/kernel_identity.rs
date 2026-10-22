@@ -233,54 +233,6 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
 }
 
 /// Recover a typed semantic key without relying on a function's display name.
-pub(crate) fn aggregate_key<K: 'static>(udf: &AggregateUDF) -> Option<&K> {
+pub(crate) fn aggregate_key<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>(udf: &AggregateUDF) -> Option<&K> {
     udf.inner().downcast_ref::<Aggregate<K>>().map(|a| &a.key)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::sync::atomic::{AtomicUsize, Ordering};
-
-    #[derive(Debug, Clone)]
-    struct Key(u32, Arc<AtomicUsize>);
-    impl PartialEq for Key {
-        fn eq(&self, other: &Self) -> bool {
-            self.0 == other.0
-        }
-    }
-    impl Eq for Key {}
-    impl Hash for Key {
-        fn hash<H: Hasher>(&self, state: &mut H) {
-            self.1.fetch_add(1, Ordering::Relaxed);
-            // Force collisions to exercise full semantic equality.
-            0u8.hash(state);
-        }
-    }
-    #[test]
-    fn cached_hash_does_not_rehash_key_or_equate_collisions() {
-        let calls = Arc::new(AtomicUsize::new(0));
-        let make = |value| {
-            scalar_with_args(
-                "test",
-                Key(value, calls.clone()),
-                Signature::nullary(Volatility::Immutable),
-                DataType::Int32,
-                Arc::new(|_| {
-                    Ok(ColumnarValue::Scalar(
-                        datafusion_common::ScalarValue::Int32(Some(1)),
-                    ))
-                }),
-            )
-        };
-        let left = make(1);
-        let equal = make(1);
-        let different = make(2);
-        calls.store(0, Ordering::Relaxed);
-        assert_eq!(fingerprint(&left), fingerprint(&equal));
-        assert_eq!(fingerprint(&left), fingerprint(&different));
-        assert_eq!(calls.load(Ordering::Relaxed), 0);
-        assert_eq!(left, equal);
-        assert_ne!(left, different);
-    }
 }

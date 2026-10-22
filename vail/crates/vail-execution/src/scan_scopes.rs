@@ -559,6 +559,12 @@ impl IndexedInner {
             }
             let batch = entries.value(row);
             let batch = packed(&batch)?;
+            // No array has been observed in this partial state. Its unknown
+            // shape and empty entries form the merge identity, even when a
+            // different partition has already established a nonempty shape.
+            if self.spec.array && lengths.is_null(row) && batch.is_empty() {
+                continue;
+            }
             if batch.num_columns() != 2 || batch.column(0).data_type() != &self.spec.key {
                 return Err(error("indexed scan entry schema mismatch"));
             }
