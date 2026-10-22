@@ -1,4 +1,23 @@
-# VDS attempt disposition
+# Current disposition
+
+The user accepted the limited VDS implementation and requested integration on
+2026-10-22. The initial stopped-attempt report below is historical, including
+its debug timings and previous development-only review restrictions.
+
+The accepted candidate includes batch aligned-map execution, cached kernel
+hashes/scan descriptors, and direct fold-state finalization. No public backend
+API was added. The supported subset and explicit unsupported APIs remain
+listed in `python/vail/vds/README.md`; this is not a complete Hail VDS port.
+
+Fresh serial release medians on the small five-sample fixture were 3.04s before
+the final cleanup, 1.66s after it, and 1.54s for Hail. Host load varied strongly;
+these do not establish a Hail win or general throughput. Larger synthetic
+aligned-map results, memory costs, exact merged artifact provenance, runtime
+tests and required review disposition are recorded in `integration/README.md`.
+
+# Historical initial attempt
+
+# VDS implementation and integration disposition
 
 Stopped on the development branch at the user's performance boundary. This is
 an experimental partial port, not a completed VDS module or a main candidate.

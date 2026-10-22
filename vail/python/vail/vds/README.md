@@ -1,9 +1,13 @@
 # Partial VDS port
 
 This module is an experimental subset, not a completed Hail VDS replacement.
-The attempt stopped after the direct densification translation failed the
-performance requirement. Do not use its passing correctness tests as evidence
-of cohort-scale performance.
+The initial direct densification attempt failed the performance requirement;
+subsequent batch evaluation and scan/planning fixes improved it. The user has
+accepted this limited implementation for integration with required review.
+It has not established Hail parity or cohort-scale performance. Batch captures
+are materialized once per input batch because Arrow arithmetic rejects run-end
+encoded inputs; wide captured metadata can increase peak memory. See the current
+integration evidence in `conformance/runs/20261022-vds/integration/`.
 
 Available operations:
 
