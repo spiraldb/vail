@@ -37,3 +37,21 @@ def test_pl_cache_negative_indices_match_hail_without_a_broadcast_cache():
         hl.pl_dosage([1.0, 2.0, 3.0])
     with pytest.raises(RuntimeError):
         hl.eval(hl.pl_dosage([0, 10]))
+
+
+@pytest.mark.parametrize('pl', [
+    [None, 0, 10], [0, None, 10], [0, 10, None], [None, None, None],
+])
+def test_pl_dosage_missing_probability_at_every_position(pl):
+    assert hl.eval(hl.pl_dosage(hl.literal(pl, hl.tarray(hl.tint32)))) is None
+
+
+def test_pl_dosage_extreme_likelihoods_and_cache_boundaries():
+    import math
+    assert math.isnan(hl.eval(hl.pl_dosage([100000, 100000, 100000])))
+    assert hl.eval(hl.pl_dosage([-2048, 0, 10])) == pytest.approx(1.2 / 2.1)
+    with pytest.raises(RuntimeError, match='out of bounds'):
+        hl.eval(hl.pl_dosage([-2049, 0, 10]))
+    for pl in ([], [0], [0, 10], [0, 10, 20, 30]):
+        with pytest.raises(RuntimeError, match='exactly three'):
+            hl.eval(hl.pl_dosage(hl.literal(pl, hl.tarray(hl.tint32))))
