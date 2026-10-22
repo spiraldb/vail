@@ -1,0 +1,327 @@
+{
+  "sampled_cpu_seconds": 224.626495,
+  "leaf": [
+    {
+      "name": "<csv_core::reader::ReaderBuilder>::build",
+      "percent": 64.07346737970514
+    },
+    {
+      "name": "_platform_memmove",
+      "percent": 5.484396664783466
+    },
+    {
+      "name": "__psynch_cvwait",
+      "percent": 4.038348637368001
+    },
+    {
+      "name": "regex_automata::hybrid::search::find_fwd",
+      "percent": 1.9921443372029644
+    },
+    {
+      "name": "zlib_rs::inflate::inflate_fast_help",
+      "percent": 1.2363661730999276
+    },
+    {
+      "name": "vail_execution::string_kernels::split",
+      "percent": 1.1369629393006377
+    },
+    {
+      "name": "<i32 as atoi::FromRadix10SignedChecked>::from_radix_10_signed_checked",
+      "percent": 1.1221285360838666
+    },
+    {
+      "name": "arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>",
+      "percent": 1.1187037397347093
+    },
+    {
+      "name": "<csv_core::reader::Reader>::read_record",
+      "percent": 0.959791942620126
+    },
+    {
+      "name": "arrow_data::transform::utils::try_extend_offsets::<i32>",
+      "percent": 0.927544188409297
+    },
+    {
+      "name": "<str>::trim_end_matches::<&[char]>",
+      "percent": 0.8255192692206679
+    },
+    {
+      "name": "<str>::trim_start_matches::<&[char]>",
+      "percent": 0.808160675792052
+    },
+    {
+      "name": "<arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericStringType<i32>>>::is_ascii",
+      "percent": 0.7426425809653487
+    },
+    {
+      "name": "arrow_data::transform::build_extend_null_bits::{closure#1}",
+      "percent": 0.725795948514444
+    },
+    {
+      "name": "arrow_data::transform::variable_size::build_extend::<i32>::{closure#0}",
+      "percent": 0.6341308935973915
+    },
+    {
+      "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+      "percent": 0.6061457710053304
+    },
+    {
+      "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+      "percent": 0.5928606062254588
+    },
+    {
+      "name": "datafusion_functions::string::common::build_trimmed::<i32, datafusion_functions::string::common::string_trim<i32, datafusion_functions::string::common::TrimBoth>::{closure#1}>",
+      "percent": 0.5134545682155616
+    },
+    {
+      "name": "<regex::regex::string::Regex>::replacen::<&str>",
+      "percent": 0.40314344930681484
+    },
+    {
+      "name": "<datafusion_functions::string::common::TrimBoth as datafusion_functions::string::common::Trimmer>::trim",
+      "percent": 0.39090669157260366
+    },
+    {
+      "name": "memchr::memchr::memchr::{closure#0}",
+      "percent": 0.37528075216594553
+    },
+    {
+      "name": "<vail_execution::csv_line::PreparedCsv>::append",
+      "percent": 0.3723412057869665
+    },
+    {
+      "name": "datafusion_functions_nested::extract::general_array_element::<i32>",
+      "percent": 0.37007032496322395
+    },
+    {
+      "name": "<regex_automata::util::iter::Searcher>::advance::<<regex_automata::meta::regex::FindMatches as core::iter::traits::iterator::Iterator>::next::{closure#0}>",
+      "percent": 0.3059977408275012
+    },
+    {
+      "name": "<regex_automata::meta::strategy::Pre<regex_automata::util::prefilter::memchr::Memchr> as regex_automata::meta::strategy::Strategy>::search",
+      "percent": 0.24178136243456053
+    },
+    {
+      "name": "<regex_automata::meta::regex::Regex>::search_half",
+      "percent": 0.23659096848748853
+    },
+    {
+      "name": "<regex_automata::hybrid::regex::Regex>::try_search",
+      "percent": 0.2177557015257706
+    },
+    {
+      "name": "<csv::byte_record::ByteRecord>::validate",
+      "percent": 0.20308557100532598
+    },
+    {
+      "name": "__psynch_cvsignal",
+      "percent": 0.20113878373964744
+    },
+    {
+      "name": "<core::iter::adapters::map::Map<arrow_array::iterator::ArrayIter<&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericStringType<i32>>>, arrow_cast::cast::string::parse_string_iter<arrow_array::types::Int32Type, arrow_array::iterator::ArrayIter<&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericStringType<i32>>>, arrow_cast::cast::string::parse_string<arrow_array::types::Int32Type, i32>::{closure#0}>::{closure#1}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<arrow_array::iterator::ArrayIter<&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericStringType<i32>>>, arrow_cast::cast::string::parse_string_iter<arrow_array::types::Int32Type, arrow_array::iterator::ArrayIter<&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericStringType<i32>>>, arrow_cast::cast::string::parse_string<arrow_array::types::Int32Type, i32>::{closure#0}>::{closure#1}>, core::result::Result<core::convert::Infallible, arrow_schema::error::ArrowError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<i32, core::ops::control_flow::ControlFlow<i32>, core::ops::control_flow::ControlFlow<i32>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<i32>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<i32>>>",
+      "percent": 0.19477666692880552
+    }
+  ],
+  "inclusive": [
+    {
+      "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+      "percent": 99.525004830797
+    },
+    {
+      "name": "_pthread_start",
+      "percent": 99.525004830797
+    },
+    {
+      "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+      "percent": 99.525004830797
+    },
+    {
+      "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+      "percent": 99.525004830797
+    },
+    {
+      "name": "<tokio::runtime::blocking::pool::Inner>::run",
+      "percent": 99.525004830797
+    },
+    {
+      "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      "percent": 98.76935888618125
+    },
+    {
+      "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+      "percent": 95.41372134217738
+    },
+    {
+      "name": "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+      "percent": 95.34116489686579
+    },
+    {
+      "name": "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+      "percent": 95.33324641868272
+    },
+    {
+      "name": "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+      "percent": 95.33292633177578
+    },
+    {
+      "name": "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+      "percent": 95.331651771533
+    },
+    {
+      "name": "<datafusion_physical_expr::projection::Projector>::project_batch",
+      "percent": 93.01961195628326
+    },
+    {
+      "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+      "percent": 93.0190755102153
+    },
+    {
+      "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 93.0190755102153
+    },
+    {
+      "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+      "percent": 93.01735665688057
+    },
+    {
+      "name": "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 92.27657494277334
+    },
+    {
+      "name": "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+      "percent": 92.25861357094139
+    },
+    {
+      "name": "<vail_execution::kernel_identity::Scalar<(vail_execution::expression_identity::Identity, alloc::sync::Arc<arrow_schema::schema::Schema>)> as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      "percent": 92.02194113388093
+    },
+    {
+      "name": "vail_execution::logical_expr::logical_kernel::{closure#2}",
+      "percent": 92.01935639871867
+    },
+    {
+      "name": "vail_execution::kernel_identity::scalar::<arrow_schema::datatype::DataType>::{closure#0}",
+      "percent": 72.06092763010882
+    },
+    {
+      "name": "<vail_execution::kernel_identity::Scalar<(alloc::string::String, core::option::Option<alloc::string::String>, alloc::vec::Vec<alloc::string::String>, usize)> as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      "percent": 68.61365129701196
+    },
+    {
+      "name": "vail_execution::csv_line::parse_csv_line_udf::{closure#0}",
+      "percent": 68.61106789740008
+    },
+    {
+      "name": "<vail_execution::csv_line::PreparedCsv>::append",
+      "percent": 68.59256295656485
+    },
+    {
+      "name": "<csv_core::reader::ReaderBuilder>::build",
+      "percent": 64.12961124643822
+    },
+    {
+      "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 24.149991745185716
+    },
+    {
+      "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+      "percent": 24.140991026014095
+    },
+    {
+      "name": "<datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 14.128419267727077
+    },
+    {
+      "name": "<datafusion_physical_expr::expressions::binary::BinaryExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 12.092433263493694
+    },
+    {
+      "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 10.70791982931488
+    },
+    {
+      "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+      "percent": 10.70791982931488
+    },
+    {
+      "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, core::slice::iter::Iter<datafusion_physical_expr::higher_order_function::ArgSlot>>, <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, core::slice::iter::Iter<datafusion_physical_expr::higher_order_function::ArgSlot>>, <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>>>",
+      "percent": 7.850128721458259
+    },
+    {
+      "name": "<alloc::vec::Vec<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, core::slice::iter::Iter<datafusion_physical_expr::higher_order_function::ArgSlot>>, <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 7.850128721458259
+    },
+    {
+      "name": "<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, core::slice::iter::Iter<datafusion_physical_expr::higher_order_function::ArgSlot>>, <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, core::slice::iter::Iter<datafusion_physical_expr::higher_order_function::ArgSlot>>, <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>, core::ops::control_flow::ControlFlow<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>>, core::ops::control_flow::ControlFlow<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<datafusion_expr::higher_order_function::ValueOrLambda<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_expr::higher_order_function::LambdaArgument>>>>",
+      "percent": 7.847961123196977
+    },
+    {
+      "name": "<datafusion_functions_nested::array_transform::ArrayTransform as datafusion_expr::higher_order_function::HigherOrderUDFImpl>::invoke_with_args",
+      "percent": 7.791970399573746
+    },
+    {
+      "name": "<datafusion_expr::higher_order_function::LambdaArgument>::evaluate::<datafusion_functions_nested::lambda_utils::evaluate_single_list_lambda::{closure#1}>",
+      "percent": 7.770181785545824
+    },
+    {
+      "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 5.917871798694095
+    },
+    {
+      "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#2}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#2}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+      "percent": 5.491496895769131
+    },
+    {
+      "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 5.49095288158238
+    },
+    {
+      "name": "_platform_memmove",
+      "percent": 5.484396664783466
+    },
+    {
+      "name": "<datafusion_physical_expr::expressions::cast::CastExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 5.0832703417288325
+    },
+    {
+      "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+      "percent": 4.9693011503384765
+    },
+    {
+      "name": "<datafusion_functions::string::btrim::BTrimFunc as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      "percent": 4.199584292137933
+    },
+    {
+      "name": "datafusion_functions::string::btrim::btrim",
+      "percent": 4.18195814345053
+    },
+    {
+      "name": "datafusion_functions::string::common::general_trim::<i32, datafusion_functions::string::common::TrimBoth>",
+      "percent": 4.175513222516337
+    }
+  ]
+}

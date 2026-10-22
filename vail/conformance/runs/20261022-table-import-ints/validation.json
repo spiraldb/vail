@@ -1,0 +1,27 @@
+{
+  "base_revision": "701d5eb4774739324407b9897cda6e903d8a844c",
+  "candidate_revision": "df3cd7667930fcc7597d73a1ba806ae3abed8366",
+  "baseline_native_sha256": "c62a6a53395095fa3b4e7326e52c582668c56cd9a78c7e2f20f8b744494187e7",
+  "candidate_native_sha256": "cf397e3d9b5c424ffc9cdff8074b9e9f94ab6cd2b73af92605fc237b9a28521d",
+  "baseline": {
+    "iteration": 0,
+    "wall_seconds": 466.1377603330184,
+    "cpu_seconds": 224.285331,
+    "process_peak_rss_bytes": 365510656
+  },
+  "candidate": {
+    "iteration": 0,
+    "wall_seconds": 43.79866920801578,
+    "cpu_seconds": 43.321059000000005,
+    "process_peak_rss_bytes": 374145024
+  },
+  "cpu_reduction_factor": 5.1772818157561655,
+  "candidate_sampled_parser_builder_cpu_microseconds": 0,
+  "public_import_tests": {
+    "passed": 103,
+    "failed": 0,
+    "seconds": 3.5
+  },
+  "wall_time_caveat": "Other builds competed with baseline for CPU; wall comparison uncontrolled. Report process CPU plus actual-workload sample profile.",
+  "rss_caveat": "Process-lifetime peak RSS, not query-only incremental memory."
+}

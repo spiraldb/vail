@@ -1,0 +1,18 @@
+{
+  "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "reviewed_source_revision": "df3cd7667930fcc7597d73a1ba806ae3abed8366",
+  "reviewed_policy_followup": "788b6e8528e65f4596a3dd28406cf9c591594e89",
+  "main_base": "701d5eb4774739324407b9897cda6e903d8a844c",
+  "disposition": "approved; no remaining source/test findings",
+  "source_review": "Reviewer inspected csv1.4 seek_raw/reset callees and confirmed reuse of cached headers, DFA and buffers with only primitive state reset per record. No hidden per-row configuration/setup/compilation/preparation.",
+  "runtime_gate": "103 public import tests passed on final cf397e3d wheel; unchanged actual upstream workload CPU224.285->43.321 seconds; parser construction absent from sampled after-profile.",
+  "limitations": [
+    "One profiled run per version",
+    "Uncontrolled baseline host load prevents controlled wall-time speedup claim",
+    "Sampled attribution is observational",
+    "RSS is process-lifetime peak, not query-only incremental memory"
+  ],
+  "policy_followup": "AGENTS.md requires kache, prohibits manual compiled-.so artifact-saving/caching workarounds, and requires communicating slow builds. Policy-only followup cleared without new runtime gate.",
+  "receipt_only_child": "Accurate evidence/review-only child authorized as nonmaterial, no renewed runtime gate",
+  "integration": "Local main fast-forward only against unchanged reviewed base; preserve unrelated dirty evidence; no remote push"
+}
