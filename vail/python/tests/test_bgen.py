@@ -239,8 +239,9 @@ def test_unsigned_position_outside_locus_range_is_rejected(tmp_path):
 
 
 @pytest.mark.parametrize('codec', ['zlib', 'zstd'])
-def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_path, codec):
-    mt = hl.range_matrix_table(17, 5, n_partitions=2)
+@pytest.mark.parametrize('n_samples', [5, 64, 65])
+def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_path, codec, n_samples):
+    mt = hl.range_matrix_table(17, n_samples, n_partitions=2)
     mt = mt.annotate_cols(s=hl.str(mt.col_idx)).key_cols_by('s')
     mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 1), alleles=['A', 'G'])
     mt = mt.key_rows_by('locus', 'alleles')
@@ -252,9 +253,9 @@ def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_p
     hl.index_bgen(output + '.bgen')
     imported = hl.import_bgen(output + '.bgen', ['GP', 'GT', 'dosage'],
                               sample_file=output + '.sample', n_partitions=3)
-    indices = [(row + col) % 3 for row in range(17) for col in range(5)
+    indices = [(row + col) % 3 for row in range(17) for col in range(n_samples)
                if (row + col) % 4 != 0]
-    assert imported.count() == (17, 5)
+    assert imported.count() == (17, n_samples)
     assert imported.GP.collect() == [[float(i == j) for j in range(3)] for i in indices]
     assert imported.GT.collect() == [hl.Call((0, 0) if i == 0 else (0, 1) if i == 1 else (1, 1), False)
                                      for i in indices]

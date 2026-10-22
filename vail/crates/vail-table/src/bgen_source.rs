@@ -531,6 +531,9 @@ impl Batch {
                 "GT" if gt => {
                     let mut first = Vec::with_capacity(n);
                     let mut second = Vec::with_capacity(n);
+                    // Pinned Arrow 59.2 collect_bool visits every index once,
+                    // in ascending order (including the final partial word).
+                    // Keep the allele columns in that same physical order.
                     let validity = BooleanBuffer::collect_bool(n, |sample| {
                         let a = probabilities[sample * 2] as i32;
                         let b = probabilities[sample * 2 + 1] as i32;
