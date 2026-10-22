@@ -1,3 +1,21 @@
+# Batch execution is mandatory
+
+Standing user instruction (2026-10-22): **NO per-row or per-entry configuration,
+setup, compilation, or preparation.** This is a hard performance requirement.
+
+Build parsers, state machines, regexes, schemas, expression evaluators, kernels,
+and other execution machinery outside row/entry loops. Reuse prepared machinery
+across Arrow batches. Use batch kernels and Arrow buffers; do not replace batch
+execution with scalar interpreter dispatch or temporary objects for each value.
+Primitive traversal of input buffers must not perform configuration, setup,
+compilation, or preparation for each row or entry.
+
+Implementation and review must inspect hot loops and their callees for hidden
+setup, including constructors and helpers that rebuild machinery. Profile the
+actual workload and verify that the offending setup disappears from the hot
+path before claiming a performance fix. Apply this requirement to adjacent
+execution paths touched by the change as well.
+
 # Required review before main
 
 Standing user instruction (2026-10-15): before committing or merging code into
