@@ -29,12 +29,14 @@ class _Parser(t._TypeParser):
     def fields(self, parse):
         self.expect('{')
         fields = []
+        seen = set()
         if not self.accept('}'):
             while True:
                 name = self.identifier()
                 self.expect(':')
-                if name in dict(fields):
+                if name in seen:
                     self.error(f'duplicate field {name!r}')
+                seen.add(name)
                 fields.append((name, parse()))
                 if not self.accept(','):
                     break
@@ -161,15 +163,23 @@ class _Input:
         self.pos = 0
         self.leb = leb
 
-    def read(self, n):
+    def view(self, n):
         if n < 0 or n > len(self.data) - self.pos:
             raise ValueError('truncated Hail data or invalid length')
-        result = self.data[self.pos:self.pos + n].tobytes()
+        result = self.data[self.pos:self.pos + n]
         self.pos += n
         return result
 
+    def read(self, n):
+        return self.view(n).tobytes()
+
     def number(self, fmt):
-        return struct.unpack('<' + fmt, self.read(struct.calcsize(fmt)))[0]
+        n = struct.calcsize(fmt)
+        if n > len(self.data) - self.pos:
+            raise ValueError('truncated Hail primitive')
+        value = struct.unpack_from('<' + fmt, self.data, self.pos)[0]
+        self.pos += n
+        return value
 
     def varint(self, bits=32):
         value = 0
@@ -256,19 +266,21 @@ def _decode(source, encoding):
         return source.read(source.length(kind))
     if kind == 'EBaseStruct':
         optional = sum(not e.required for _, e in encoding.children)
-        missing = int.from_bytes(source.read((optional + 7) // 8), 'little')
+        missing = source.view((optional + 7) // 8)
         result = {}
         i = 0
         for name, child in encoding.children:
-            absent = not child.required and missing & (1 << i)
+            absent = not child.required and missing[i >> 3] & (1 << (i & 7))
             i += not child.required
             result[name] = None if absent else _decode(source, child)
         return result
     if kind.startswith('EArray'):
         n = source.length(kind)
         child, = encoding.children
-        missing = 0 if child.required else int.from_bytes(source.read((n + 7) // 8), 'little')
-        return [None if missing & (1 << i) else _decode(source, child) for i in range(n)]
+        if child.required:
+            return [_decode(source, child) for _ in range(n)]
+        missing = source.view((n + 7) // 8)
+        return [None if missing[i >> 3] & (1 << (i & 7)) else _decode(source, child) for i in range(n)]
     if kind == 'ENDArrayColumnMajor':
         import numpy as np
         child, rank = encoding.children
@@ -343,13 +355,59 @@ def _localizer(dtype, *, key=False):
     return lambda value: None if value is None else convert(value)
 
 
-def _localize(value, dtype):
-    return _localizer(dtype)(value)
-
-
 def _metadata(path):
     with gzip.open(path / 'metadata.json.gz', 'rt', encoding='utf-8') as stream:
         return json.load(stream)
+
+
+def _check_encoding(encoding, dtype):
+    """Establish that decoded wire values have the declared logical types.
+
+    After this recursive check, the localizer and Arrow converter can process
+    records without repeating native type introspection for every cell.
+    Requiredness is carried by the wire encoding's bitmaps, not virtual types.
+    """
+    kind = encoding.kind
+    primitive = {
+        'EBoolean': (t.tbool,), 'EInt32': (t.tint32, t.tcall),
+        'EInt64': (t.tint64,), 'EVarint': (t.tint32, t.tint64, t.tcall),
+        'EFloat32': (t.tfloat32,), 'EFloat64': (t.tfloat64,),
+        'EBinary': (t.tstr,), 'EBinary2': (t.tstr,),
+        'EBinaryLegacyFullWidthIntegerLength': (t.tstr,),
+    }
+    if kind in primitive and dtype in primitive[kind]:
+        return
+    if kind == 'EBaseStruct':
+        if isinstance(dtype, t.tstruct):
+            fields = dict(dtype.items())
+        elif isinstance(dtype, t.ttuple):
+            fields = {str(i): ty for i, ty in enumerate(dtype.types)}
+        elif isinstance(dtype, t.tlocus):
+            fields = dict(contig=t.tstr, position=t.tint32)
+        elif isinstance(dtype, t.tinterval):
+            fields = dict(start=dtype.point_type, end=dtype.point_type,
+                          includesStart=t.tbool, includesEnd=t.tbool)
+        else:
+            fields = {}
+        if set(n for n, _ in encoding.children) == set(fields) and (
+            fields or isinstance(dtype, (t.tstruct, t.ttuple))
+        ):
+            for name, child in encoding.children:
+                _check_encoding(child, fields[name])
+            return
+    elif kind.startswith('EArray'):
+        if isinstance(dtype, (t.tarray, t.tset)):
+            _check_encoding(encoding.children[0], dtype.element_type)
+            return
+        if isinstance(dtype, t.tdict):
+            _check_encoding(encoding.children[0], t.tstruct(key=dtype.key_type, value=dtype.value_type))
+            return
+    elif kind == 'ENDArrayColumnMajor' and isinstance(dtype, t.tndarray):
+        child, rank = encoding.children
+        if rank == dtype.ndim:
+            _check_encoding(child, dtype.element_type)
+            return
+    raise ValueError(f'Hail encoding {kind} is incompatible with {dtype}')
 
 
 def _rvd(path):
@@ -375,6 +433,7 @@ def _rvd(path):
         buffer, parts = spec['codecSpec']['child'], spec['partFiles']
     else:
         raise NotImplementedError(f'unsupported Hail RVD {kind}')
+    _check_encoding(encoding, dtype)
     localize = _localizer(dtype)
     rows = []
     counts = []
@@ -454,18 +513,20 @@ def _check_counts(spec, counts):
 
 def read_table_legacy(path):
     from . import Table
+    from .arrow import rows_to_arrow
     root, spec = _open(path, 'TableSpec')
     relation = _parse(spec['table_type'], 'relation')
     dtype, rows, counts = _component(root, spec, 'rows')
     if dtype != relation['row'][0]:
         raise ValueError('Hail row schema differs from table metadata')
     _check_counts(spec, counts)
-    return Table.parallelize(rows, schema=dtype, key=relation['key'],
+    return Table.parallelize(rows_to_arrow(rows, dtype), schema=dtype, key=relation['key'],
                              globals=_globals(root, spec, relation['global'][0]))
 
 
 def read_matrix_legacy(path):
     from . import Table
+    from .arrow import rows_to_arrow
     from .matrixtable import MatrixTable, MatrixIR, _ROW, _CELLS, _CID, _VALUE, _COL, _COLUMNS
     root, spec = _open(path, 'MatrixTableSpec')
     relation = _parse(spec['matrix_type'], 'relation')
@@ -485,23 +546,27 @@ def read_matrix_legacy(path):
     globals = _globals(root, spec, relation['global'][0])
     if _COLUMNS in globals:
         raise NotImplementedError(f'Hail global field {_COLUMNS!r} is reserved by Vail matrices')
-    records = []
-    for row, entry in zip(rows, entries):
+    for row_index, (row, entry) in enumerate(zip(rows, entries)):
         cells = entry[entry_field]
         if cells is None or len(cells) != len(cols):
             raise ValueError('Hail entry array length differs from column count')
-        records.append({_ROW: row, _CELLS: [
+        rows[row_index] = {_ROW: row, _CELLS: [
             {_CID: i, _VALUE: cell} for i, cell in enumerate(cells)
-        ]})
+        ]}
+        # Release each source entry array as its slots acquire their owning
+        # core record. Do not retain both complete layouts during Arrow input.
+        entries[row_index] = None
+    del entries
     from .expressions import literal
     globals[_COLUMNS] = literal(
         [{_CID: i, _COL: col} for i, col in enumerate(cols)],
         t.tarray(t.tstruct(**{_CID: t.tint64, _COL: col_type})),
     )
-    table = Table.parallelize(records, schema=t.tstruct(**{
+    schema = t.tstruct(**{
         _ROW: row_type,
         _CELLS: t.tarray(t.tstruct(**{_CID: t.tint64, _VALUE: relation['entry'][0]})),
-    }), globals=globals)
+    })
+    table = Table.parallelize(rows_to_arrow(rows, schema), schema=schema, globals=globals)
     # The two physical partition streams have been checked above. Slot IDs
     # preserve column occurrences, including duplicate keys and filtered cells.
     return MatrixTable(MatrixIR(table, row_key=relation['row_key'],

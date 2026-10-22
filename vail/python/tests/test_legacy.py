@@ -2,19 +2,20 @@
 from pathlib import Path
 import gzip
 import json
+import runpy
 import shutil
 import struct
+import tarfile
 
 import numpy as np
 import pytest
 import vail as hl
-from vail.legacy import _Input, _buffer, _decode, _localize, _parse
-from vail.matrixtable import _ROW, _CELLS, _COLUMNS, _COL, _CID, _VALUE
 
 RESOURCES = Path(__file__).resolve().parents[3] / 'hail/hail/hail/test/resources'
 COMPAT = RESOURCES / 'backward_compatability'
 TABLES = sorted(COMPAT.glob('*/table/*.ht'))
 MATRICES = sorted(COMPAT.glob('*/matrix_table/*.hmt'))
+EVIDENCE = Path(__file__).resolve().parents[2] / 'conformance/runs/20261022-legacy-storage'
 
 
 def _all_values():
@@ -33,15 +34,35 @@ def _all_values():
     )
 
 
-def _assert_record(record, prefix='', **indices):
+def _assert_record(record, prefix='', *, version=(1, 8, 0), **indices):
     expected = {prefix + name: value for name, value in _all_values().items()}
+    if version < (1, 5, 0):
+        expected.pop(prefix + 'nd')
     expected.update(indices)
+    assert set(record) == set(expected)
     for name, actual in record.items():
         if isinstance(actual, np.ndarray):
             np.testing.assert_array_equal(actual, expected[name])
         else:
             assert actual == expected[name], name
-    assert set(indices) <= set(record)
+
+
+def _expected_schema(version, prefix='', **indices):
+    # Independent schema of Hail's create_all_values fixture. NDArray fields
+    # were introduced in the stored corpus at format 1.5.
+    fields = dict(
+        f32=hl.tfloat32, i64=hl.tint64, m=hl.tfloat64,
+        astruct=hl.tstruct(a=hl.tint32, b=hl.tfloat64),
+        mstruct=hl.tstruct(x=hl.tint32, y=hl.tstr),
+        aset=hl.tset(hl.tstr), mset=hl.tset(hl.tfloat64),
+        d=hl.tdict(hl.tarray(hl.tstr), hl.tfloat64), md=hl.tdict(hl.tint32, hl.tstr),
+        h38=hl.tlocus('GRCh38'), ml=hl.tlocus('GRCh37'),
+        i=hl.tinterval(hl.tlocus('GRCh37')), c=hl.tcall, mc=hl.tcall,
+        t=hl.ttuple(hl.tcall, hl.tstr, hl.tstr), mt=hl.ttuple(hl.tlocus('GRCh37'), hl.tbool),
+    )
+    if version >= (1, 5, 0):
+        fields['nd'] = hl.tndarray(hl.tint32, 2)
+    return hl.tstruct(**indices, **{prefix + name: ty for name, ty in fields.items()})
 
 
 def _id(path):
@@ -55,13 +76,16 @@ def test_compatibility_corpus_present():
 
 @pytest.mark.parametrize('path', TABLES, ids=_id)
 def test_hail_table_versions_and_codecs(path):
+    version = tuple(map(int, path.parts[-3].split('.')))
     table = hl.Table.read_legacy(path)
     assert list(table.key) == ['idx']
+    assert table.row.dtype == _expected_schema(version, idx=hl.tint32)
+    assert table.globals.dtype == _expected_schema(version, 'global_')
     rows = table.collect()
     assert len(rows) == 5
     for idx, row in enumerate(rows):
-        _assert_record(row, idx=idx)
-    _assert_record(hl.eval(table.index_globals()), 'global_')
+        _assert_record(row, version=version, idx=idx)
+    _assert_record(hl.eval(table.index_globals()), 'global_', version=version)
 
 
 @pytest.mark.parametrize('path', MATRICES, ids=_id)
@@ -69,23 +93,31 @@ def test_hail_matrix_versions_and_codecs(path):
     matrix = hl.MatrixTable.read_legacy(path)
     assert list(matrix.row_key) == ['row_idx']
     assert list(matrix.col_key) == ['col_idx']
-    # Collect the owning native relation to check every decoded axis and slot.
-    # The focused tests below exercise public localization/entries operations.
-    globals = hl.eval(matrix._mir.core.index_globals())
-    columns = globals[_COLUMNS]
+    version = tuple(map(int, path.parts[-3].split('.')))
+    localized = matrix.localize_entries('cells', 'columns')
+    assert localized.row.dtype == hl.tstruct(
+        **dict(_expected_schema(version, 'row_', row_idx=hl.tint32).items()),
+        cells=hl.tarray(_expected_schema(version, 'entry_')),
+    )
+    assert localized.globals.dtype == hl.tstruct(
+        **dict(_expected_schema(version, 'global_').items()),
+        columns=hl.tarray(_expected_schema(version, 'col_', col_idx=hl.tint32)),
+    )
+    globals = hl.eval(localized.index_globals())
+    columns = globals['columns']
     assert len(columns) == 2
     for idx, col in enumerate(columns):
-        assert col[_CID] == idx
-        _assert_record(col[_COL], 'col_', col_idx=idx)
-    rows = matrix._mir.core.collect()
+        _assert_record(col, 'col_', version=version, col_idx=idx)
+    rows = localized.collect()
     assert len(rows) == 3
     for idx, row in enumerate(rows):
-        _assert_record(row[_ROW], 'row_', row_idx=idx)
-        assert len(row[_CELLS]) == 2
-        for idx, cell in enumerate(row[_CELLS]):
-            assert cell[_CID] == idx
-            _assert_record(cell[_VALUE], 'entry_')
-    _assert_record({n: v for n, v in globals.items() if n != _COLUMNS}, 'global_')
+        _assert_record({n: v for n, v in row.items() if n != 'cells'},
+                       'row_', version=version, row_idx=idx)
+        assert len(row.cells) == 2
+        for cell in row.cells:
+            _assert_record(cell, 'entry_', version=version)
+    _assert_record({n: v for n, v in globals.items() if n != 'columns'},
+                   'global_', version=version)
 
 
 def test_table_docs_and_file_uri():
@@ -130,31 +162,64 @@ def test_unsupported_future_version(tmp_path):
         hl.Table.read_legacy(tmp_path)
 
 
-def test_stream_v2_and_varint_lengths():
-    # New encodings use varints for lengths even without LEB128BufferSpec.
-    payload = b'\x00\x03abc\x02' + struct.pack('<ii', -7, 9)
+def _small_table(path, virtual, encoded, records, buffer=None, raw=None):
+    _write_rvd(path / 'rows', virtual, encoded, records, buffer=buffer, raw=raw)
+    _write_rvd(path / 'globals', 'Struct{}', '+EBaseStruct{}', [b''])
+    metadata = dict(name='TableSpec', file_version=67584,
+                    table_type=f'Table{{global:Struct{{}},key:[],row:{virtual}}}',
+                    components={n: dict(name='RVDComponentSpec', rel_path=n) for n in ('rows', 'globals')})
+    with gzip.open(path / 'metadata.json.gz', 'wt') as stream:
+        json.dump(metadata, stream)
+    return path
+
+
+def test_stream_v2_and_varint_lengths(tmp_path):
+    # Independently encoded full dataset; the test only invokes public readers.
+    payload = b'\x01\x00\x03abc\x02' + struct.pack('<ii', -7, 9) + b'\x00'
     framed = bytes([len(payload)]) + payload
-    source = _buffer(framed, {'name': 'BlockingBufferSpec', 'blockSize': 65536,
-                              'child': {'name': 'StreamBlockBufferSpec2'}})
-    enc = _parse('+EBaseStruct{s:EBinary2,a:+EArray2[+EInt32]}', 'encoded')
-    ty, _ = _parse('Struct{s:String,a:Array[Int32]}', 'virtual')
-    assert _localize(_decode(source, enc), ty) == hl.Struct(s='abc', a=[-7, 9])
+    path = _small_table(tmp_path, 'Struct{s:String,a:Array[Int32]}',
+        '+EBaseStruct{s:EBinary2,a:+EArray2[+EInt32]}', [],
+        buffer={'name': 'BlockingBufferSpec', 'blockSize': 65536,
+                'child': {'name': 'StreamBlockBufferSpec2'}}, raw=framed)
+    assert hl.Table.read_legacy(path).collect() == [hl.Struct(s='abc', a=[-7, 9])]
 
 
 @pytest.mark.parametrize('data', [b'', b'\x80', b'\xff' * 10, b'\xff' * 9 + b'\x02'])
-def test_bad_varints(data):
-    with pytest.raises(ValueError):
-        _Input(data).varint(64)
+def test_bad_varints(tmp_path, data):
+    path = _small_table(tmp_path, 'Struct{x:Int64}', '+EBaseStruct{x:+EVarint}', [],
+                        raw=b'\x01' + data)
+    with pytest.raises(ValueError, match='cannot read Hail partition'):
+        hl.Table.read_legacy(path)
 
 
-def _write_rvd(path, virtual, encoded, records):
+def test_signed_varint_widths(tmp_path):
+    path = _small_table(tmp_path, 'Struct{x:Int64,y:Int32}',
+        '+EBaseStruct{x:+EVarint,y:+EVarint}',
+        [b'\xff' * 9 + b'\x01' + b'\xff' * 4 + b'\x0f'])
+    table = hl.Table.read_legacy(path)
+    assert table.row.dtype == hl.tstruct(x=hl.tint64, y=hl.tint32)
+    assert table.collect() == [hl.Struct(x=-1, y=-1)]
+
+
+@pytest.mark.parametrize(('virtual', 'encoded'), [
+    ('Struct{x:Int32}', '+EBaseStruct{x:+EFloat64}'),
+    ('Struct{x:String}', '+EBaseStruct{x:+EInt32}'),
+    ('Struct{x:Array[Int32]}', '+EBaseStruct{x:+EArray2[+EFloat32]}'),
+])
+def test_incompatible_wire_and_virtual_types(tmp_path, virtual, encoded):
+    path = _small_table(tmp_path, virtual, encoded, [])
+    with pytest.raises(ValueError, match='incompatible'):
+        hl.Table.read_legacy(path)
+
+
+def _write_rvd(path, virtual, encoded, records, *, buffer=None, raw=None):
     (path / 'parts').mkdir(parents=True)
     spec = dict(name='OrderedRVDSpec2', _key=[], _partFiles=['part-0'],
                 _codecSpec=dict(name='TypedCodecSpec', _vType=virtual, _eType=encoded,
-                    _bufferSpec=dict(name='StreamBufferSpec')))
+                    _bufferSpec=buffer or dict(name='StreamBufferSpec')))
     with gzip.open(path / 'metadata.json.gz', 'wt') as stream:
         json.dump(spec, stream)
-    (path / 'parts/part-0').write_bytes(b''.join(b'\x01' + row for row in records) + b'\x00')
+    (path / 'parts/part-0').write_bytes(raw if raw is not None else b''.join(b'\x01' + row for row in records) + b'\x00')
 
 
 def _small_matrix(path, *, nrows=2, ncols=3):
@@ -255,3 +320,17 @@ def test_empty_table_and_typed_missing_globals(tmp_path):
     assert table.row.dtype == hl.tstruct(x=hl.tint32)
     assert table.globals.dtype == hl.tstruct(g=hl.tarray(hl.tint32))
     assert hl.eval(table.g) is None
+
+
+@pytest.mark.parametrize('name', ['varied.ht', 'varied.mt'])
+def test_live_hail_generated_datasets(tmp_path, name):
+    # Data, values, keys, and schemas were produced by a separate live Hail
+    # process. The retained archive makes the comparison reproducible without
+    # requiring Hail/Spark in the Vail test environment.
+    with tarfile.open(EVIDENCE / 'live-oracle.tar.gz') as archive:
+        archive.extractall(tmp_path, filter='data')
+    expected = json.loads((tmp_path / 'expected.json').read_text())['datasets'][name]
+    public_snapshot = runpy.run_path(str(EVIDENCE / 'validate.py'))['snapshot']
+    matrix = name.endswith('.mt')
+    dataset = (hl.MatrixTable if matrix else hl.Table).read_legacy(tmp_path / name)
+    assert public_snapshot(hl, dataset, matrix) == expected

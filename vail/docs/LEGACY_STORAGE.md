@@ -65,6 +65,18 @@ matrix fixtures in Hail's `backward_compatability` corpus. These fixtures span
 formats 1.0 through 1.8 and were written by Hail using its supported codecs.
 Tests also cover documentation data, custom references, filtered entry slots,
 empty matrix axes, newer stream framing/varint lengths, and corrupt inputs.
+The corpus checks use public localization and collection APIs and assert exact
+version-specific schemas and field sets. A retained live-Hail oracle adds varied
+values, large Unicode strings spanning blocks, duplicate keys, filtered entries,
+and independent schema checks. See the [validation evidence](../conformance/runs/20261022-legacy-storage/README.md).
+
+Resource validation covers nullable arrays with 100,000 and 400,000 elements and
+a 5,000-by-100 matrix (500,000 entry slots). This is a bounded migration test,
+not evidence of viability for cohort-scale matrices with millions of rows or
+thousands of columns. Python objects, entry slot wrappers, and Arrow data can
+coexist during import; compressed on-disk size is not a useful memory bound.
+Leave substantial memory headroom and measure a representative subset first.
+
 After initializing the pinned Hail submodule and building Vail, run from `vail/`:
 
 ```sh
