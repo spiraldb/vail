@@ -3260,9 +3260,8 @@ impl LinregGroupsAccumulator {
             return Ok(true);
         }
         let d = self.dimension();
-        let mut source_rows = Vec::with_capacity(records);
         let mut predictors = Vec::with_capacity(records * self.p);
-        let mut weights = Vec::with_capacity(records);
+        let mut weight_scales = Vec::with_capacity(records);
         for record in 0..records {
             let row = record * width;
             let Some(x) = batch.predictor_row(row, self.p, &mut self.predictor_scratch)? else {
@@ -3272,9 +3271,8 @@ impl LinregGroupsAccumulator {
             if x.iter().any(|value| !value.is_finite()) || !weight.is_finite() || weight < 0.0 {
                 return Ok(false);
             }
-            source_rows.push(row);
             predictors.extend_from_slice(x);
-            weights.push(weight);
+            weight_scales.push(weight.sqrt());
         }
         // Each coordinate response must have the same selected observations.
         // Null responses use the original per-coordinate path, which naturally
@@ -3282,15 +3280,13 @@ impl LinregGroupsAccumulator {
         if batch.ys.null_count() != 0 {
             return Ok(false);
         }
-        let mut responses = Vec::with_capacity(records * width);
         for record in 0..records {
-            let row = source_rows[record];
+            let row = record * width;
             for coordinate in 0..width {
                 let value = batch.ys.value(row + coordinate);
                 if !value.is_finite() {
                     return Ok(false);
                 }
-                responses.push(value);
             }
         }
 
@@ -3307,7 +3303,7 @@ impl LinregGroupsAccumulator {
                     x_origins[column] = if value.is_finite() { value } else { 0.0 };
                 }
                 for coordinate in 0..width {
-                    let y = responses[record * width + coordinate] / x0;
+                    let y = batch.ys.value(record * width + coordinate) / x0;
                     y_origins[coordinate] = if y.is_finite() { y } else { 0.0 };
                 }
                 origin_set = true;
@@ -3326,7 +3322,7 @@ impl LinregGroupsAccumulator {
         let mut design = vec![0.0; matrix_rows * self.p];
         for record in 0..records {
             let x = &predictors[record * self.p..(record + 1) * self.p];
-            let weight_scale = weights[record].sqrt();
+            let weight_scale = weight_scales[record];
             let row = self.p + record;
             design[row] = weight_scale * x[0];
             for column in 1..self.p {
@@ -3406,8 +3402,8 @@ impl LinregGroupsAccumulator {
             let mut min = f64::INFINITY;
             for record in 0..records {
                 let x0 = predictors[record * self.p];
-                let y = responses[record * width + coordinate];
-                let value = weights[record].sqrt() * (-y_origins[coordinate]).mul_add(x0, y);
+                let y = batch.ys.value(record * width + coordinate);
+                let value = weight_scales[record] * (-y_origins[coordinate]).mul_add(x0, y);
                 if !value.is_finite() {
                     return Ok(false);
                 }
