@@ -166,3 +166,14 @@ def test_missing_local_to_global_arguments(number, values):
 def test_invalid_local_to_global(values, alleles, n, message):
     with pytest.raises((RuntimeError, ValueError), match=message):
         hl.eval(hl.vds.local_to_global(values, alleles, n, 0, "R"))
+
+
+@pytest.mark.parametrize("n", [32768, 46341, 65535, 2147483647])
+def test_g_conversion_rejects_unsupported_global_domain(n):
+    with pytest.raises(RuntimeError, match="at most 32767"):
+        hl.eval(hl.vds.local_to_global([1], [0], n, 0, "G"))
+
+
+def test_g_conversion_rejects_unsupported_local_domain():
+    with pytest.raises(RuntimeError, match="at most 32767"):
+        hl.eval(hl.vds.local_to_global([1], hl.range(46341), 2, 0, "G"))

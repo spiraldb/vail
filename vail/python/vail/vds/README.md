@@ -36,3 +36,10 @@ as Hail. That broader API was not changed by this port.
 Hail-derived implementations retain its MIT license in
 `../third_party/HAIL_LICENSE`. See `conformance/runs/20261022-vds` for the attempt
 report and independently extracted Hail fixture provenance.
+
+Review restrictions: `read_vds(intervals=...)` is rejected because filtering
+reference-block starts is not equivalent to selecting blocks overlapping the
+requested variants. G-numbered `local_to_global` accepts at most 32767 global
+and local alleles to prevent signed-int32 triangular intermediate overflow.
+Allele conversion assumes canonical LA with LA[0]=0 and unique global alleles;
+non-reference local call indices must address defined LA elements.

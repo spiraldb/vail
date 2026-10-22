@@ -34,6 +34,10 @@ def read_vds(
     -------
     :class:`.VariantDataset`
     """
+    if intervals is not None:
+        raise NotImplementedError(
+            "read_vds(intervals=...) needs overlap-aware reference-block selection, which is not ported"
+        )
     if n_partitions is not None:
         raise NotImplementedError(
             "read_vds(n_partitions=...) needs VDS partition planning, which is not ported"

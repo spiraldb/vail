@@ -181,3 +181,13 @@ def test_fresh_hail_dense_golden():
         return a == b
 
     assert equivalent(actual_table.collect(), expected_table.collect())
+
+
+@pytest.mark.parametrize(
+    "intervals", [[], [hl.Interval(hl.Locus("1", 50), hl.Locus("1", 51))]]
+)
+def test_interval_read_rejects_incomplete_reference_selection(intervals):
+    # Rejection occurs before I/O; filtering block starts would incorrectly
+    # omit a block starting at 1 with LEN=100 that covers variant 50.
+    with pytest.raises(NotImplementedError, match="overlap-aware reference-block"):
+        hl.vds.read_vds("unused", intervals=intervals)

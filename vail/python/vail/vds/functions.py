@@ -5,6 +5,11 @@ from vail.expressions import as_expr
 
 
 def lgt_to_gt(lgt, la):
+    """Map a local call through canonical LA: LA[0]=0 and unique global alleles.
+
+    Non-reference call alleles must index defined LA elements. Hom-reference
+    calls bypass LA, matching Hail even when the LA array itself is missing.
+    """
     lgt, la = as_expr(lgt), as_expr(la)
 
     if lgt.dtype != hl.tcall or la.dtype != hl.tarray(hl.tint32):
@@ -27,6 +32,11 @@ def lgt_to_gt(lgt, la):
 
 
 def local_to_global(array, local_alleles, n_alleles, fill_value, number):
+    """Expand canonical local alleles (LA[0]=0, unique mapping).
+
+    This experimental G-numbered implementation supports at most 32767 global
+    and local alleles, keeping triangular intermediates within signed int32.
+    """
     if number not in ("A", "R", "G"):
         raise ValueError("number must be A, R, or G")
     array, local_alleles, n_alleles = map(as_expr, (array, local_alleles, n_alleles))
@@ -96,6 +106,16 @@ def local_to_global(array, local_alleles, n_alleles, fill_value, number):
             .when(n >= 0, result)
             .or_error("local_to_global: n_total_alleles less than 0")
         )
+        if number == "G":
+            # Keep both global and local triangular products in a supported
+            # domain before evaluating any length checks or building outputs.
+            result = (
+                hl.case()
+                .when((n <= 32767) & (hl.len(alleles) <= 32767), result)
+                .or_error(
+                    "local_to_global: experimental G conversion supports at most 32767 global and local alleles"
+                )
+            )
         return hl.or_missing(
             hl.is_defined(values) & hl.is_defined(alleles) & hl.is_defined(n), result
         )

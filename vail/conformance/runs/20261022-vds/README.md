@@ -36,3 +36,11 @@ a default genotype; the existing stream tests pass unchanged.
 
 See `summary.json`, the module README, `tests.log`, `distinct-tests.log`, and
 `conformance/fixtures/vds/provenance.json` for scope and reproducibility.
+
+Review of `fc1abd16` found two correctness gaps: interval reads could omit
+covering blocks beginning before the requested interval, and G-numbered allele
+expansion could overflow int32 triangular intermediates. The follow-up rejects
+interval reads entirely and bounds both global/local G allele counts at 32767.
+Canonical LA mapping preconditions are documented. Nineteen targeted tests pass
+(including seven new regressions); follow-up review is requested. These fixes
+do not change the experimental-only disposition or authorize a main merge.
