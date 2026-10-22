@@ -46,7 +46,7 @@ def test_max_nan_grouped_filtered_and_exploded(dtype, partitions):
         schema=hl.tstruct(g=hl.tint32, x=dtype), n_partitions=partitions)
     grouped = table.group_by(table.g).aggregate(x=hl.agg.max(table.x)).collect()
     assert [r.g for r in grouped] == [0, 1, 2]
-    for row, expected in zip(grouped, [-2., None, math.nan]):
+    for row, expected in zip(grouped, [-2., None, math.nan], strict=True):
         assert_max(row.x, expected)
     nested = table.aggregate(hl.agg.group_by(table.g, hl.agg.max(table.x)))
     for key, expected in enumerate([-2., None, math.nan]):
@@ -68,18 +68,18 @@ def test_max_nan_coordinates_and_exclusive_scans(dtype, partitions):
             (-2., [math.nan, None, None])]],
         schema=hl.tstruct(x=dtype, xs=hl.tarray(dtype)), n_partitions=partitions)
     coordinates = table.aggregate(hl.agg.array_agg(hl.agg.max, table.xs))
-    for actual, expected in zip(coordinates, [-2., None, math.nan]):
+    for actual, expected in zip(coordinates, [-2., None, math.nan], strict=True):
         assert_max(actual, expected)
     scanned = table.annotate(prefix=hl.scan.max(table.x)).prefix.collect()
-    for actual, expected in zip(scanned, [None, None, math.nan, -5., -5.]):
+    for actual, expected in zip(scanned, [None, None, math.nan, -5., -5.], strict=True):
         assert_max(actual, expected)
     prefixes = table.annotate(prefix=hl.scan.array_agg(hl.scan.max, table.xs)).prefix.collect()
     assert prefixes[0] is None
     for actual, expected in zip(prefixes[1:], [
             [math.nan, None, math.nan], [math.nan, None, math.nan],
-            [-5., None, math.nan], [-2., None, math.nan]]):
+            [-5., None, math.nan], [-2., None, math.nan]], strict=True):
         assert len(actual) == len(expected)
-        for x, y in zip(actual, expected):
+        for x, y in zip(actual, expected, strict=True):
             assert_max(x, y)
 
 
