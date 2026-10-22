@@ -457,3 +457,42 @@ def test_json_nested_unordered_collections_use_logical_key_equality():
         assert hl.eval(mapping.get(hl.parse_json(json.dumps(key), 'dict<str,int32>'))) == 9
     sets = hl.parse_json(json.dumps([first, second]), 'set<dict<str,int32>>')
     assert hl.eval(hl.len(sets)) == 1
+
+
+@pytest.mark.parametrize('target,lower,upper', [
+    (hl.tint32, -2147483648, 2147483647),
+    (hl.tint64, -9223372036854775808, 9223372036854775807),
+])
+def test_integer_import_direct_buffers_preserve_boundaries_and_missing(tmp_path, target, lower, upper):
+    path = tmp_path / 'integers.tsv'
+    path.write_text(f'x\txs\n{lower}\t[ {lower}, null, {upper}, -0 ]\n+0007\t[]\nNA\tNA\n{upper}\t[0]\n')
+    table = hl.import_table(path, types={'x': target, 'xs': hl.tarray(target)})
+    assert table.row.dtype == hl.tstruct(x=target, xs=hl.tarray(target))
+    assert [(r.x, r.xs) for r in table.collect()] == [
+        (lower, [lower, None, upper, 0]), (7, []), (None, None), (upper, [0]),
+    ]
+
+
+@pytest.mark.parametrize('target,value', [
+    (hl.tint32, '2147483648'), (hl.tint32, '-2147483649'),
+    (hl.tint64, '9223372036854775808'), (hl.tint64, '-9223372036854775809'),
+    (hl.tint32, ' 1'), (hl.tint64, '1 '), (hl.tint32, '+'),
+    (hl.tint32, '1.0'), (hl.tint64, '١'),
+])
+def test_integer_import_rejects_invalid_scalars(tmp_path, target, value):
+    path = tmp_path / 'bad-integer.tsv'
+    path.write_text('x\n' + value + '\n')
+    with pytest.raises(RuntimeError, match='cannot parse int'):
+        hl.import_table(path, types={'x': target}).collect()
+
+
+@pytest.mark.parametrize('value', [
+    '[nullx]', '[NULL]', '[--1]', '[-]', '[00]', '[-01]', '[1,,2]',
+    '[1]x', '[1, null,]', '[\u00a01]', '[9223372036854775808]',
+    '[-9223372036854775809]',
+])
+def test_integer_import_rejects_invalid_int64_arrays(tmp_path, value):
+    path = tmp_path / 'bad-array.tsv'
+    path.write_text('x\n' + value + '\n')
+    with pytest.raises(RuntimeError, match='invalid JSON integer array'):
+        hl.import_table(path, types={'x': hl.tarray(hl.tint64)}).collect()

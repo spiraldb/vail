@@ -29,6 +29,7 @@ pub struct LineSource {
     batch_size: Option<usize>,
     metrics: ExecutionPlanMetricsSet,
     gzip: bool,
+    bgzf: Option<(String, crate::bgzf_lines::Partition)>,
 }
 
 impl Default for LineSource {
@@ -45,11 +46,21 @@ impl LineSource {
             batch_size: None,
             metrics: ExecutionPlanMetricsSet::new(),
             gzip: false,
+            bgzf: None,
         }
     }
 
     pub fn with_gzip(mut self, gzip: bool) -> Self {
         self.gzip = gzip;
+        self
+    }
+
+    pub(crate) fn with_bgzf(
+        mut self,
+        path: String,
+        partition: Option<crate::bgzf_lines::Partition>,
+    ) -> Self {
+        self.bgzf = partition.map(|partition| (path, partition));
         self
     }
 
@@ -70,6 +81,7 @@ impl FileSource for LineSource {
             schema: self.schema(),
             batch_size: self.batch_size.unwrap_or(8192).max(1),
             gzip: self.gzip,
+            bgzf: self.bgzf.clone(),
         }))
     }
 
@@ -121,6 +133,7 @@ struct LineOpener {
     schema: SchemaRef,
     batch_size: usize,
     gzip: bool,
+    bgzf: Option<(String, crate::bgzf_lines::Partition)>,
 }
 
 /// Recognizes the universal line endings accepted by Hail: LF, CRLF, and CR.
@@ -194,6 +207,15 @@ impl FileOpener for LineOpener {
             return Err(DataFusionError::NotImplemented(
                 "raw line scans do not support byte-range partitions".into(),
             ));
+        }
+        if let Some((path, partition)) = self.bgzf.clone() {
+            let schema = self.schema.clone();
+            let batch_size = self.batch_size;
+            return Ok(Box::pin(async move {
+                Ok(crate::bgzf_lines::batches(
+                    path, partition, schema, batch_size,
+                ))
+            }));
         }
         let store = Arc::clone(&self.object_store);
         let schema = Arc::clone(&self.schema);
@@ -330,6 +352,7 @@ mod tests {
             schema: LineSource::new().schema(),
             batch_size: 8192,
             gzip: false,
+            bgzf: None,
         };
         let stream = opener
             .open(PartitionedFile::new(

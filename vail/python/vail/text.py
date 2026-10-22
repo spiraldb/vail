@@ -78,8 +78,11 @@ def import_lines(paths, min_partitions=None, force_bgz=False, force=False, file_
         _validate_n(min_partitions, 'min_partitions', positive=True)
         if file_per_partition and min_partitions > len(paths):
             raise ValueError('min_partitions exceeds the number of files with file_per_partition=True')
-    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', {'force_bgz': force_bgz})
-    if min_partitions is not None and min_partitions > len(paths):
+    options = {'force_bgz': force_bgz, 'file_per_partition': file_per_partition}
+    if min_partitions is not None:
+        options['min_partitions'] = min_partitions
+    table = _read(paths, tstruct(file=tstr, text=tstr), 'lines', options)
+    if min_partitions is not None and min_partitions > table.n_partitions():
         table = table.repartition(min_partitions)
     return table
 
@@ -134,22 +137,7 @@ def parse_json(value, dtype):
 
 
 def _parse_integer_array(value, target):
-    from . import case, empty_array, if_else, is_missing, missing
-
-    whitespace = r'[ \t\r\n]*'
-    integer = r'(?:-?(?:0|[1-9][0-9]*)|null)'
-    grammar = (whitespace + r'\[' + whitespace
-               + '(?:' + integer + whitespace + '(?:,' + whitespace + integer + whitespace + ')*)?'
-               + r'\]' + whitespace)
-    inside = value.strip()[1:-1].strip()
-    elements = inside.split(',').map(lambda element: if_else(
-        element.strip() == 'null', missing(target.element_type),
-        cast(element.strip(), target.element_type),
-    ))
-    parsed = if_else(inside == '', empty_array(target.element_type), elements)
-    return (case().when(is_missing(value), missing(target))
-            .when(value.matches(grammar, full_match=True), parsed)
-            .or_error(f'invalid JSON integer array for {target}'))
+    return _function('__vail_parse_import_integer', [value], target)
 
 
 def _integer_fits(value, positive, negative):
@@ -162,11 +150,8 @@ def _integer_fits(value, positive, negative):
 
 
 def _parse_primitive(value, target):
-    from . import case, is_missing
     if target in (tint32, tint64):
-        bounds = ('2147483647', '2147483648') if target == tint32 else ('9223372036854775807', '9223372036854775808')
-        return (case().when(is_missing(value) | _integer_fits(value, *bounds), cast(value, target))
-                .or_error(f'cannot parse {target} from input string'))
+        return _function('__vail_parse_import_integer', [value], target)
     if target in (tfloat32, tfloat64):
         # Java's floating parser accepts an optional precision suffix.
         value = value.strip().replace(r'[fFdD]$', '')

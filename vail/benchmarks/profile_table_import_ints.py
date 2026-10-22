@@ -33,10 +33,13 @@ def main():
               'upstream_source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
               'iterations': []}
     for i in range(args.iterations):
+        start_wall_ns = time.time_ns()
         start, cpu = time.perf_counter(), time.process_time()
         namespace['test_table_import_ints'](args.input)
         result = {'iteration': i, 'wall_seconds': time.perf_counter() - start,
                   'cpu_seconds': time.process_time() - cpu,
+                  'phase': 'measured', 'start_wall_ns': start_wall_ns,
+                  'end_wall_ns': time.time_ns(),
                   'process_peak_rss_bytes': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}
         report['iterations'].append(result)
         args.output.write_text(json.dumps(report, indent=2) + '\n')

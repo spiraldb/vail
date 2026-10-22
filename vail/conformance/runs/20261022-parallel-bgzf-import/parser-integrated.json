@@ -1,0 +1,55 @@
+{
+  "input": "/Users/danielking/projects/vail/vail/local-data/upstream-benchmark-20261015/many_ints_table/many_ints_table.tsv.bgz",
+  "baseline_revision": "64924362055e69d3a45c51fd98479942aa3b5e1e",
+  "serial_scan": false,
+  "raw_source_partitions": 14,
+  "native_sha256": "4519816e6a4ac3e2cd662ed5410d8cdad387f5bac29eec9d6df4f2de5af05af7",
+  "runs": [
+    {
+      "pair": 0,
+      "mode": "generic",
+      "wall_seconds": 7.7889153330470435,
+      "cpu_seconds": 74.55963
+    },
+    {
+      "pair": 0,
+      "mode": "typed",
+      "wall_seconds": 2.051654708047863,
+      "cpu_seconds": 20.415737000000007
+    },
+    {
+      "pair": 1,
+      "mode": "typed",
+      "wall_seconds": 1.9340433339821175,
+      "cpu_seconds": 20.276681999999994
+    },
+    {
+      "pair": 1,
+      "mode": "generic",
+      "wall_seconds": 6.9710259169805795,
+      "cpu_seconds": 73.216605
+    },
+    {
+      "pair": 2,
+      "mode": "generic",
+      "wall_seconds": 6.273321999993641,
+      "cpu_seconds": 72.56629199999998
+    },
+    {
+      "pair": 2,
+      "mode": "typed",
+      "wall_seconds": 1.694162082974799,
+      "cpu_seconds": 20.064550999999994
+    }
+  ],
+  "median": {
+    "generic": {
+      "wall_seconds": 6.9710259169805795,
+      "cpu_seconds": 73.216605
+    },
+    "typed": {
+      "wall_seconds": 1.9340433339821175,
+      "cpu_seconds": 20.276681999999994
+    }
+  }
+}
