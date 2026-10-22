@@ -45,7 +45,10 @@ def test_case_filtered_captures_follow_selected_entry_rows():
         -m.offset - m.shift - m.col_idx,
     ))
     result = m.localize_entries("entries", "cols").collect()
+    assert len(result) == 9
+    assert sorted(row.row_idx for row in result) == list(range(9))
     for row in result:
+        assert len(row.entries) == 4
         for c, entry in enumerate(row.entries):
             if (row.row_idx + c) % 2:
                 assert entry is None
@@ -61,8 +64,24 @@ def test_column_occurrences_keep_metadata_alignment_after_gather():
     m = m.filter_entries((m.row_idx + m.col_idx) % 3 != 0)
     m = m.annotate_entries(value=m.row_idx * 100 + m.col_idx + m.shift)
     result = m.localize_entries("entries", "cols").collect()
+    assert len(result) == 7
+    assert sorted(row.row_idx for row in result) == list(range(7))
     for row in result:
-        for c, entry in zip([4, 1, 4, 0, 3], row.entries):
+        assert len(row.entries) == 5
+        for c, entry in zip([4, 1, 4, 0, 3], row.entries, strict=True):
             assert (entry is None) == ((row.row_idx + c) % 3 == 0)
             if entry is not None:
                 assert entry.value == row.row_idx * 100 + c + 7
+
+
+def test_multiple_same_schema_aligned_maps_keep_distinct_bodies():
+    m = hl.range_matrix_table(7, 5, 3)
+    m = m.annotate_entries(value=-1)
+    for offset in range(1, 9):
+        m = m.annotate_entries(value=m.row_idx * 100 + m.col_idx * 3 + offset)
+    result = m.localize_entries("entries", "cols").collect()
+    assert len(result) == 7
+    assert sorted(row.row_idx for row in result) == list(range(7))
+    for row in result:
+        assert len(row.entries) == 5
+        assert [entry.value for entry in row.entries] == [row.row_idx * 100 + c * 3 + 8 for c in range(5)]

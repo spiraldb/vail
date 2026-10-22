@@ -5835,7 +5835,8 @@ fn lower_uncached(
             }
             let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
             let body_schema = Schema::new(body_fields);
-            let body = lower_scoped(&body, &body_schema, globals, scope, memo)?;
+            let body_context = memo.context(&body_schema, globals.schema(), scope);
+            let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
             Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
                 entries,
                 columns,

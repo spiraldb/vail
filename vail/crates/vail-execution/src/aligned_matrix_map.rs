@@ -637,7 +637,7 @@ mod runend_experiment_tests {
     }
     #[test]
     fn flattened_map_preserves_sliced_offsets_short_empty_lists_and_null_slots() {
-        use datafusion_physical_expr::expressions::Column;
+        use crate::expressions::{Expr, PrimitiveType, Type, lower};
         let entry_values = StructArray::new(
             vec![Arc::new(arrow_schema::Field::new(
                 "x",
@@ -701,24 +701,28 @@ mod runend_experiment_tests {
             arrow_schema::Field::new("rows", arrays[1].data_type().clone(), true),
         ]));
         let batch = RecordBatch::try_new(schema, arrays).unwrap();
-        let output_type = DataType::List(Arc::new(arrow_schema::Field::new(
-            "item",
-            DataType::Int32,
-            true,
-        )));
-        let expr = AlignedMatrixMapExpr::new(
-            Arc::new(Column::new("entries", 0)),
-            Arc::new(datafusion_physical_expr::expressions::Literal::new(columns)),
-            Arc::new(Column::new("rows", 1)),
-            Arc::new(datafusion_physical_expr::expressions::Literal::new(
-                ScalarValue::Int32(None),
-            )),
-            Arc::new(Column::new("__vail_aligned_bound_3", 3)),
-            vec![("row".into(), Some("x".into()))],
-            output_type,
-            DataType::Int32,
-            false,
-        );
+        let expression = Expr::AlignedMatrixMap {
+            entries: Arc::new(Expr::Column {
+                name: "entries".into(),
+            }),
+            columns: Arc::new(Expr::RuntimeLiteral { value: columns }),
+            rows: Arc::new(Expr::Column {
+                name: "rows".into(),
+            }),
+            globals: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(None),
+            }),
+            body: Arc::new(Expr::AlignedMapInput {
+                axis: "row".into(),
+                name: Some("x".into()),
+                dtype: Type::Primitive(PrimitiveType::Int32),
+            }),
+            dtype: Type::Array {
+                array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+            },
+            preserve_cell: false,
+        };
+        let expr = lower(&expression, batch.schema().as_ref()).unwrap();
         let all = expr.evaluate(&batch).unwrap().into_array(4).unwrap();
         let all = all.as_any().downcast_ref::<ListArray>().unwrap();
         assert_eq!(all.value_offsets(), &[0, 2, 2, 3, 5]);
@@ -749,5 +753,101 @@ mod runend_experiment_tests {
         let empty = empty.as_any().downcast_ref::<ListArray>().unwrap();
         assert_eq!(empty.value_offsets(), &[0, 0]);
         assert!(empty.values().is_empty());
+    }
+    #[test]
+    fn public_aligned_maps_keep_same_schema_generated_bodies_distinct() {
+        use crate::expressions::{BinaryOperator, Expr, PrimitiveType, Type, lower};
+        let int_type = Type::Primitive(PrimitiveType::Int32);
+        let list_type = Type::Array {
+            array: Box::new(int_type.clone()),
+        };
+        let values = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new(
+                "value",
+                DataType::Struct(Vec::<FieldRef>::new().into()),
+                true,
+            )),
+            Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef,
+        )]);
+        let entries = ListArray::new(
+            Arc::new(arrow_schema::Field::new(
+                "item",
+                values.data_type().clone(),
+                true,
+            )),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, 2])),
+            Arc::new(values),
+            None,
+        );
+        let row = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new("x", DataType::Int32, true)),
+            Arc::new(Int32Array::from(vec![10])) as ArrayRef,
+        )]);
+        let rows = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new(
+                "__vail_aligned_row",
+                row.data_type().clone(),
+                true,
+            )),
+            Arc::new(row) as ArrayRef,
+        )]);
+        let arrays = vec![Arc::new(entries) as ArrayRef, Arc::new(rows) as ArrayRef];
+        let schema = Arc::new(Schema::new(vec![
+            arrow_schema::Field::new("entries", arrays[0].data_type().clone(), true),
+            arrow_schema::Field::new("rows", arrays[1].data_type().clone(), true),
+        ]));
+        let batch = RecordBatch::try_new(schema, arrays).unwrap();
+        let columns = ScalarValue::List(Arc::new(
+            ListArray::from_iter_primitive::<Int32Type, _, _>(vec![Some(vec![Some(0), Some(1)])]),
+        ));
+        let map = |amount: i32| Expr::AlignedMatrixMap {
+            entries: Arc::new(Expr::Column {
+                name: "entries".into(),
+            }),
+            columns: Arc::new(Expr::RuntimeLiteral {
+                value: columns.clone(),
+            }),
+            rows: Arc::new(Expr::Column {
+                name: "rows".into(),
+            }),
+            globals: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(None),
+            }),
+            body: Arc::new(Expr::Binary {
+                operator: BinaryOperator::Add,
+                left: Arc::new(Expr::AlignedMapInput {
+                    axis: "row".into(),
+                    name: Some("x".into()),
+                    dtype: int_type.clone(),
+                }),
+                right: Arc::new(Expr::RuntimeLiteral {
+                    value: ScalarValue::Int32(Some(amount)),
+                }),
+            }),
+            dtype: list_type.clone(),
+            preserve_cell: false,
+        };
+        let expression = Expr::Struct {
+            fields: (1..=8)
+                .map(|amount| (format!("map_{amount}"), map(amount)))
+                .collect(),
+        };
+        let result = lower(&expression, batch.schema().as_ref())
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+        assert_eq!(result.num_columns(), 8);
+        for (index, column) in result.columns().iter().enumerate() {
+            let list = column.as_any().downcast_ref::<ListArray>().unwrap();
+            assert_eq!(list.value_offsets(), &[0, 2]);
+            let expected = 11 + index as i32;
+            assert_eq!(
+                list.values().as_any().downcast_ref::<Int32Array>().unwrap(),
+                &Int32Array::from(vec![expected, expected])
+            );
+        }
     }
 }
