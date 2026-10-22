@@ -67,7 +67,12 @@ without its TBI (seven requested source partitions).
 
 Required reviewer thread: `01a14128-21b8-7a53-b399-4ad8f9b31f4f`.
 Source/test clearance received for d19259b9 and integrated exact a84e6195;
-no source/hot-loop blocker. Final merge approval remains pending at this draft.
+no source/hot-loop blocker. Final main-integration approval received for exact
+`76689e35fbde76e3f8535fc9f855ab5a5aba8951` against main
+`f64e5f5605be94f5a70de0379f098fcff5b05988`. Reviewer inspected committed
+evidence and confirmed all findings closed, including split-header lookahead
+and stale-range detection. This receipt-only documentation child was explicitly
+authorized as nonmaterial. Material source changes require renewed review.
 
 ## Integrated-artifact validation
 
