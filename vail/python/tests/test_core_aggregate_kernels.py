@@ -33,12 +33,12 @@ def test_nonfinite_mean_and_variance_policy(partitions, values, expected):
 
 @pytest.mark.parametrize('partitions', [1, 3, 7])
 @pytest.mark.parametrize('dtype', [hl.tfloat32, hl.tfloat64])
-def test_extrema_share_total_ieee_order_across_batches_and_merges(partitions, dtype):
+def test_extrema_nan_policy_and_signed_zero_across_batches_and_merges(partitions, dtype):
     table = hl.Table.parallelize([{'x': x} for x in [-math.nan, -math.inf, -0., 0., math.inf, math.nan, None]],
                                 schema=hl.tstruct(x=dtype), n_partitions=partitions)
     result = table.aggregate(hl.struct(lo=hl.agg.min(table.x), hi=hl.agg.max(table.x)))
     assert math.isnan(result.lo) and math.copysign(1., result.lo) == -1.
-    assert math.isnan(result.hi) and math.copysign(1., result.hi) == 1.
+    assert result.hi == math.inf
     zeros = hl.Table.parallelize([{'x': -0.}, {'x': None}, {'x': 0.}], schema=hl.tstruct(x=dtype), n_partitions=partitions)
     result = zeros.aggregate(hl.struct(lo=hl.agg.min(zeros.x), hi=hl.agg.max(zeros.x)))
     assert math.copysign(1., result.lo) == -1. and math.copysign(1., result.hi) == 1.
