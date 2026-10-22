@@ -288,8 +288,8 @@ pub(crate) fn partitions(
     let count = requested
         .unwrap_or_else(|| threads.min(blocks.size.div_ceil(MIN_SPLIT_BYTES) as usize))
         .max(1);
-    // At most one useful boundary per compressed byte. This also bounds absurd
-    // min_partitions requests without introducing empty source ranges.
+    // Bound native workers independently of a requested logical partition count.
+    // The public API can repartition further to honor larger minimums.
     let count = count
         .min(blocks.size as usize)
         .min(crate::EXECUTION_CONCURRENCY);
@@ -309,7 +309,9 @@ pub(crate) fn partitions(
             .partition_point(|&position| position <= target)
             .checked_sub(1)
             .map(|i| anchors[i]);
-        let block = if let Some(anchor) = anchor.filter(|&anchor| anchor > 0) {
+        let block = if let Some(anchor) =
+            anchor.filter(|&anchor| anchor > 0 && target - anchor <= MAX_BLOCK as u64)
+        {
             // Only use a sparse hint after validation against this input. Header
             // traversal from it reaches the desired byte split without inflating
             // intervening blocks or relying on chromosome/chunk completeness.
@@ -363,7 +365,7 @@ pub(crate) fn batches(
     batch_size: usize,
 ) -> BoxStream<'static, Result<RecordBatch>> {
     // Blocking file I/O and inflate run in independent workers with bounded
-    // backpressure. Dropping the receiver cancels the worker at its next batch.
+    // backpressure. Dropping the receiver cancels the worker at its next block.
     let (sender, mut receiver) = tokio::sync::mpsc::channel(2);
     let worker = tokio::task::spawn_blocking(move || {
         let result = scan(&path, &range, schema, batch_size, &sender);
@@ -393,6 +395,9 @@ fn scan(
     let mut rows = 0;
     let mut after_cr = false;
     while block < blocks.size && block <= range.end.block {
+        if sender.is_closed() {
+            return Ok(());
+        }
         let (next, len) = blocks.read(block)?;
         let start = if block == range.start.block {
             range.start.offset
