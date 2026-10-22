@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________________ test_reservoir_sampling ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-7fxifv1c/upstream_hail/expr/test_expr.py:2354: in test_reservoir_sampling
+    stats, samples = ht.aggregate((hl.agg.stats(ht.idx), tuple([hl.sorted(hl.agg._reservoir_sample(ht.idx, size)) for size in sample_sizes])))
+                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.agg' has no attribute '_reservoir_sample'
+=========================== short test summary info ============================
+FAILED ../../../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-7fxifv1c/upstream_hail/expr/test_expr.py::test_reservoir_sampling
+1 failed, 275 deselected in 3.40s

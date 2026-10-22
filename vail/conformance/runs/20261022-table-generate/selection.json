@@ -1,0 +1,1087 @@
+{
+  "source": "/Users/danielking/.codex/worktrees/d453/vail/hail/hail/python/test/hail",
+  "vail_commit": "861320e7b99e2ee9d412c8019050bf928c61d191",
+  "scope": "Full upstream Hail tests against Vail; shared module/definition exclusions for typecheck and Hadoop/Hail filesystem compatibility",
+  "note": "Public randomness assertions remain included; proven IR-shape helper assertions are removed in a manifested temporary copy. Backend/IR-only and JVM lifecycle suites are excluded. Exclusion reasons are recorded per definition.",
+  "included": [
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_range_table",
+      "line": 2331,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_range_matrix_rows_table",
+      "line": 2337,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_join",
+      "line": 2344,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_left_join_right_distinct",
+      "line": 2354,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_interval_join",
+      "line": 2364,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_union",
+      "line": 2376,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_map_globals_with_body_randomness",
+      "line": 2385,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_map_globals_without_body_randomness",
+      "line": 2393,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_explode",
+      "line": 2400,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_key_by",
+      "line": 2408,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_map_rows_with_body_randomness",
+      "line": 2415,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_map_rows_with_scan_randomness",
+      "line": 2423,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_map_rows_without_body_randomness",
+      "line": 2430,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_map_partitions",
+      "line": 2437,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_read",
+      "line": 2445,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_matrix_entries_table",
+      "line": 2454,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_filter_with_cond_randomness",
+      "line": 2461,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_filter_without_cond_randomness",
+      "line": 2469,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+      "line": 2476,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+      "line": 2484,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+      "line": 2492,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_aggregate_by_key",
+      "line": 2499,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_matrix_cols_table",
+      "line": 2507,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_parallelize_with_body_randomness",
+      "line": 2514,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_parallelize_without_body_randomness",
+      "line": 2521,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_head",
+      "line": 2527,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_tail",
+      "line": 2534,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_order_by",
+      "line": 2541,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_distinct",
+      "line": 2548,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_repartition",
+      "line": 2556,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_cast_matrix_to_table",
+      "line": 2565,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_rename",
+      "line": 2572,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_multi_way_zip_join",
+      "line": 2579,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_filter_intervals",
+      "line": 2591,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_table_randomness_table_gen",
+      "line": 2606,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "test_query_table_randomness",
+      "line": 2688,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    }
+  ],
+  "excluded": [
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_interrupt_propagates",
+      "line": 80,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_interrupt_closes_the_connection",
+      "line": 86,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_exceptions_do_not_close_the_connection",
+      "line": 93,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_successful_commands_pass_through",
+      "line": 100,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_patching_is_idempotent",
+      "line": 105,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_py4j_connections_are_interrupt_safe",
+      "line": 113,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_log_suppress_shutdown_exceptions_swallows_exceptions",
+      "line": 117,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_log_suppress_shutdown_exceptions_propagates_interrupts",
+      "line": 121,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_rpc_failures_cancel_the_operation_and_propagate",
+      "line": 127,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_rpc_cancel_failures_do_not_mask_the_original_failure",
+      "line": 134,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_rpc_returns_successful_responses",
+      "line": 139,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_py4j_backend.py",
+      "name": "test_rpc_java_errors_raise_fatal_errors",
+      "line": 149,
+      "source_sha256": "f840060e77c6671ad1d10c579a975ab68343f72bc1c675cd0635d9520f7dc3d3",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_big_worker_has_big_memory",
+      "line": 70,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_regions",
+      "line": 85,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_driver_and_worker_job_groups",
+      "line": 107,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_attach_to_existing_batch",
+      "line": 139,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_explicit_regions",
+      "line": 160,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_any_region",
+      "line": 170,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_service_backend.py",
+      "name": "test_default_region",
+      "line": 180,
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_spark_backend.py",
+      "name": "test_copy_spark_log",
+      "line": 24,
+      "source_sha256": "f8698df6467e5e5d2c105e2f7a4cff5d8625d8370c7933efd8183071663f604d",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_spark_backend.py",
+      "name": "test_init_without_existing_spark_context",
+      "line": 38,
+      "source_sha256": "f8698df6467e5e5d2c105e2f7a4cff5d8625d8370c7933efd8183071663f604d",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_spark_backend.py",
+      "name": "test_init_with_existing_spark_context",
+      "line": 46,
+      "source_sha256": "f8698df6467e5e5d2c105e2f7a4cff5d8625d8370c7933efd8183071663f604d",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_spark_backend.py",
+      "name": "TestSparkConf.test_",
+      "line": 110,
+      "source_sha256": "f8698df6467e5e5d2c105e2f7a4cff5d8625d8370c7933efd8183071663f604d",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "backend/test_spark_backend.py",
+      "name": "test_min_block_size_pos_int",
+      "line": 119,
+      "source_sha256": "f8698df6467e5e5d2c105e2f7a4cff5d8625d8370c7933efd8183071663f604d",
+      "reason": "Hail backend implementation tests are outside the Vail public API audit"
+    },
+    {
+      "module": "expr/test_expr.py",
+      "name": "Tests.test_shadowed_struct_fields",
+      "line": 1582,
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209",
+      "reason": "Private Hail expression IR/warning bookkeeping rather than field value behavior"
+    },
+    {
+      "module": "expr/test_types.py",
+      "name": "Tests.test_nested_type_to_spark",
+      "line": 110,
+      "source_sha256": "07c1f5d12ee8e7f1ad23cf55f796d4050df8bb1d2dcf75eaf87eb506959a5133",
+      "reason": "Spark DataFrame interoperability is outside the embedded Vail API audit"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_no_settings",
+      "line": 18,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_write_no_settings",
+      "line": 26,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_write_with_project",
+      "line": 38,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_with_project",
+      "line": 60,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_no_project",
+      "line": 69,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_with_project_more_than_one_partition",
+      "line": 86,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_requester_pays_with_project_more_than_one_partition_no_project",
+      "line": 119,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "name": "test_can_access_public_blobs",
+      "line": 126,
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_codecs_matrix",
+      "line": 1060,
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59",
+      "reason": "JVM BufferSpec enumeration tests Hail writer codecs rather than Vail storage"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_codecs_table",
+      "line": 1073,
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59",
+      "reason": "JVM BufferSpec enumeration tests Hail writer codecs rather than Vail storage"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch37_consequence_true",
+      "line": 338,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_consequence_true",
+      "line": 361,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch37_consequence_false",
+      "line": 386,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_consequence_false",
+      "line": 400,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch37_against_dataproc",
+      "line": 414,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_against_dataproc",
+      "line": 468,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "methods/test_qc.py",
+      "name": "Tests.test_vep_grch38_with_large_positions",
+      "line": 522,
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895",
+      "reason": "External cloud/container VEP service integration is not a local Vail API test"
+    },
+    {
+      "module": "table/test_table.py",
+      "name": "Tests.test_from_spark_works",
+      "line": 768,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reason": "Spark DataFrame interoperability is outside the embedded Vail API audit"
+    },
+    {
+      "module": "test_call_caching.py",
+      "name": "test_execution_cache_creation",
+      "line": 7,
+      "source_sha256": "9fdd51b8e2b02b2f3e42ff06e89d0936b295d9d5b5b6bf2ed55ac4aa0a9f0e6b",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_context.py",
+      "name": "test_init_hail_context_twice",
+      "line": 31,
+      "source_sha256": "955756d98ee4e70ae5361d87dcabbb09be8943bac2557eb849d47d23b09bda50",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_context.py",
+      "name": "test_top_level_functions_are_do_not_error",
+      "line": 48,
+      "source_sha256": "955756d98ee4e70ae5361d87dcabbb09be8943bac2557eb849d47d23b09bda50",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_context.py",
+      "name": "test_tmpdir_runs",
+      "line": 54,
+      "source_sha256": "955756d98ee4e70ae5361d87dcabbb09be8943bac2557eb849d47d23b09bda50",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_context.py",
+      "name": "test_get_flags",
+      "line": 58,
+      "source_sha256": "955756d98ee4e70ae5361d87dcabbb09be8943bac2557eb849d47d23b09bda50",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_context.py",
+      "name": "test_flags_same_in_scala_and_python",
+      "line": 64,
+      "source_sha256": "955756d98ee4e70ae5361d87dcabbb09be8943bac2557eb849d47d23b09bda50",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_context.py",
+      "name": "test_fast_restarts_feature",
+      "line": 69,
+      "source_sha256": "955756d98ee4e70ae5361d87dcabbb09be8943bac2557eb849d47d23b09bda50",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_exceptions_from_workers_have_stack_traces.py",
+      "name": "test_exceptions_from_workers_have_stack_traces",
+      "line": 12,
+      "source_sha256": "186488030c37db6bf8960d57e045c8fec42e81bf1ed97d1102856fb603cac5da",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_hail_in_notebook.py",
+      "name": "test_hail_in_notebook",
+      "line": 12,
+      "source_sha256": "c70e61a7c43bf707b1675db2435602a77cbc5293c50f721dc159ce84f4d6e034",
+      "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_ir_value_type",
+      "line": 191,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_ir_copies",
+      "line": 203,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_table_ir_table_type",
+      "line": 309,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_table_ir_highly_nested",
+      "line": 314,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_matrix_ir_matrix_type",
+      "line": 411,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_blockmatrix_ir_parses",
+      "line": 487,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_blockmatrix_ir_persist",
+      "line": 492,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_blockmatrix_ir_blockmatrix_type",
+      "line": 500,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "ValueTests.test_value_same_after_parsing",
+      "line": 524,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_cse",
+      "line": 543,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_cse_debug",
+      "line": 549,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_cse_complex_lifting",
+      "line": 555,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_stream_cse",
+      "line": 570,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_cse2",
+      "line": 586,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_cse_ifs",
+      "line": 603,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_shadowing",
+      "line": 619,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_agg_cse",
+      "line": 634,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_init_op",
+      "line": 655,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_agg_let",
+      "line": 672,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "CSETests.test_refs",
+      "line": 683,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_literal_encodings",
+      "line": 728,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_literal_ndarray_encodings",
+      "line": 742,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_decoding_multiple_dicts",
+      "line": 747,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_locus_interval_encoding",
+      "line": 754,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "test_ir.py",
+      "name": "test_very_large_ir_deserializes",
+      "line": 763,
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1",
+      "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_varargs",
+      "line": 21,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_helpers",
+      "line": 120,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_nested",
+      "line": 156,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_class_methods",
+      "line": 171,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_lazy",
+      "line": 215,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_coercion",
+      "line": 236,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_function_checker",
+      "line": 257,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_complex_signature",
+      "line": 284,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "name": "Tests.test_extra_args",
+      "line": 299,
+      "source_sha256": "4da09fe0a1ec9406a5fe73ae8a82a2e5decfab9325488a9a031fd90213779e53",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_hadoop_methods_1",
+      "line": 37,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_hadoop_methods_2",
+      "line": 53,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_hadoop_methods_3",
+      "line": 69,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_read_overwrite",
+      "line": 90,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_hadoop_exists",
+      "line": 106,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_hadoop_is_file",
+      "line": 117,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_hadoop_stat",
+      "line": 128,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_subdirs",
+      "line": 151,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_rmtree_empty_is_ok",
+      "line": 218,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_rmtree_empty_subdir_is_ok",
+      "line": 225,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "name": "test_remove_and_rmtree",
+      "line": 233,
+      "source_sha256": "2d6f1f50ae97371985212353263681f699283df8f4f050462eff228edb1b412b",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_methods",
+      "line": 37,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_exists",
+      "line": 81,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_mkdir_p",
+      "line": 85,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_mkdir_p_2",
+      "line": 98,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_copy_log",
+      "line": 105,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_is_file",
+      "line": 111,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_is_dir",
+      "line": 116,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_stat",
+      "line": 122,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_no_glob_in_bucket",
+      "line": 134,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_simple",
+      "line": 151,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls",
+      "line": 161,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_file_that_does_not_exist",
+      "line": 182,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_glob_heterogenous_structure",
+      "line": 192,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_glob_no_slash_in_group",
+      "line": 217,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_glob_1",
+      "line": 227,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_glob_2",
+      "line": 232,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_folder_glob",
+      "line": 368,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_prefix_folder_glob_qmarks",
+      "line": 374,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_two_folder_globs",
+      "line": 380,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_two_folder_globs_and_two_qmarks",
+      "line": 391,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_one_folder_glob_and_qmarks_in_multiple_components",
+      "line": 402,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_groups",
+      "line": 408,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_size_one_groups",
+      "line": 414,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_component_with_only_groups",
+      "line": 420,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_negated_group",
+      "line": 432,
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    }
+  ]
+}

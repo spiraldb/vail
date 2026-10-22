@@ -1,0 +1,52 @@
+[
+  {
+    "module": "backend/test_py4j_backend.py",
+    "reason": "Hail backend implementation tests are outside the Vail public API audit"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "reason": "Hail backend implementation tests are outside the Vail public API audit"
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "reason": "Hail backend implementation tests are outside the Vail public API audit"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+  },
+  {
+    "module": "test_call_caching.py",
+    "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+  },
+  {
+    "module": "test_context.py",
+    "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+  },
+  {
+    "module": "test_exceptions_from_workers_have_stack_traces.py",
+    "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+  },
+  {
+    "module": "test_hail_in_notebook.py",
+    "reason": "Hail JVM/Spark lifecycle, execution cache, stack traces or notebook infrastructure"
+  },
+  {
+    "module": "test_ir.py",
+    "reason": "Hail IR construction, parsing and compiler topology are out of scope"
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "reason": "Python typecheck decorator tests are out of scope"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_spark_works",
+    "line": 768,
+    "reason": "Spark DataFrame interoperability is outside the embedded Vail API audit"
+  }
+]

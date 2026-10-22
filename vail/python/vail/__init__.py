@@ -377,6 +377,57 @@ class Table:
         return table
 
     @classmethod
+    def _generate(cls, contexts, partitions, rowfn, globals=None):
+        """Lazily generate one partition of rows per context.
+
+        Integer partition counts and unkeyed interval lists are supported.
+        Keyed interval partitioners require native range/order validation.
+        Contexts and per-context outputs are native arrays, not streaming iterators.
+        """
+        from uuid import uuid4
+        from .inputs import bind_input
+
+        contexts = bind_input(as_expr(contexts))
+        if not isinstance(contexts.dtype, tarray):
+            raise TypeError("Table._generate contexts must be an array expression")
+        if type(partitions) is not builtins.int:
+            if not isinstance(partitions, Sequence) or isinstance(partitions, (builtins.str, bytes)):
+                raise TypeError("Table._generate partitions must be an integer or interval sequence")
+            if not partitions:
+                raise ValueError("Table._generate partitions must be nonempty")
+            if builtins.any(not isinstance(bound, Interval) for bound in partitions):
+                raise TypeError("Table._generate partitions must contain intervals")
+            if builtins.any(bound.point_type != tstruct() for bound in partitions):
+                raise NotImplementedError("Table._generate keyed interval partitions are not implemented")
+            partitions = builtins.len(partitions)
+        _validate_n(partitions, "partitions", positive=True)
+        if not callable(rowfn):
+            raise TypeError("Table._generate rowfn must be callable")
+        globals = bind_input(struct() if globals is None else as_expr(globals))
+        if not isinstance(globals.dtype, tstruct):
+            raise TypeError("Table._generate globals must be a struct expression")
+        checked = bind(
+            lambda values: case().when(
+                is_defined(values) & (len(values) == partitions), values,
+            ).or_error(
+                literal(f"TableGen: partitioner contains {partitions} partitions, got ")
+                + or_else(str(len(values)), "missing") + " contexts.",
+            ),
+            contexts,
+        )
+        context_name = "__vail_generate_context_" + uuid4().hex
+        rows_name = "__vail_generate_rows_" + uuid4().hex
+        source = cls.parallelize(
+            checked.map(lambda value: struct(**{context_name: value})),
+            n_partitions=partitions,
+        ).annotate_globals(**{name: globals[name] for name in globals.dtype})
+        rows = as_expr(rowfn(source[context_name], source.index_globals()))
+        if not isinstance(rows.dtype, tarray) or not isinstance(rows.dtype.element_type, tstruct):
+            raise TypeError("Table._generate rowfn must return an array of structs")
+        result = source.select(**{rows_name: rows}).explode(rows_name)
+        return result.select(**{name: result[rows_name][name] for name in rows.dtype.element_type})
+
+    @classmethod
     def _generate_rows(cls, n, partitions, batch_size, globals, rowfn):
         """Stream generated rows with explicitly supplied random context words.
 
