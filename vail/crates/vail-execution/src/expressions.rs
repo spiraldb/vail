@@ -7047,7 +7047,7 @@ mod tests {
         let float64 = Type::Primitive(PrimitiveType::Float64);
         for validity in [None, Some(NullBuffer::from(vec![true, false]))] {
             let values: ArrayRef = Arc::new(StructArray::new_empty_fields(2, validity));
-            let fields = vec![Arc::new(Field::new("_VALUE", values.data_type().clone(), true))];
+            let fields = vec![Arc::new(Field::new("value", values.data_type().clone(), true))];
             let cells: ArrayRef = Arc::new(StructArray::new(fields.into(), vec![values], None));
             let lists: ArrayRef = Arc::new(ListArray::new(
                 Arc::new(Field::new_list_field(cells.data_type().clone(), true)),
