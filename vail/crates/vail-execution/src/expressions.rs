@@ -6324,15 +6324,14 @@ fn lower_uncached(
             // Python bind uses map([argument], parameter => body)[0]. There
             // is exactly one callback value per input row, so bind it directly
             // instead of building, flattening and gathering singleton lists.
-            let singleton = match (value.as_ref(), index.as_ref()) {
-                (
-                    Expr::ArrayMap {
-                        value,
-                        parameter,
-                        body,
-                    },
-                    Expr::Literal { value: index, .. },
-                ) if index.as_i64() == Some(0) => match value.as_ref() {
+            let zero_index = match index.as_ref() {
+                // The Python frontend retains data literals as Arrow scalars.
+                Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(0)) } => true,
+                Expr::Literal { value, .. } => value.as_i64() == Some(0),
+                _ => false,
+            };
+            let singleton = match value.as_ref() {
+                Expr::ArrayMap { value, parameter, body } if zero_index => match value.as_ref() {
                     Expr::Array { elements, .. } if elements.len() == 1 => {
                         Some((&elements[0], parameter, body))
                     }
@@ -7020,6 +7019,40 @@ mod tests {
         )
         .unwrap()
     }
+    #[test]
+    fn singleton_bind_uses_a_lexical_frame_with_arrow_literal_index() {
+        let batch = source(vec![Some(2), None, Some(4)]);
+        let int32 = Type::Primitive(PrimitiveType::Int32);
+        for index in [
+            Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(0)) },
+            Expr::Literal { dtype: int32.clone(), value: json!(0) },
+        ] {
+            let variable = Arc::new(Expr::LambdaVariable { name: "bound".into() });
+            let expression = Expr::ArrayIndex {
+                value: Arc::new(Expr::ArrayMap {
+                    value: Arc::new(Expr::Array {
+                        element_type: int32.clone(),
+                        elements: vec![Expr::Column { name: "x".into() }],
+                    }),
+                    parameter: "bound".into(),
+                    body: Arc::new(Expr::Binary {
+                        operator: BinaryOperator::Add,
+                        left: variable.clone(),
+                        right: variable,
+                    }),
+                }),
+                index: Arc::new(index),
+            };
+            let compiled = lower(&expression, batch.schema().as_ref()).unwrap();
+            // Semantics alone also pass through the slow singleton-list path.
+            // Assert that the real Arrow-literal frontend form bypasses it.
+            assert_eq!(compiled.to_string(), "ScopedSwitch");
+            let output = compiled.evaluate(&batch).unwrap().into_array(3).unwrap();
+            let output = output.as_any().downcast_ref::<Int32Array>().unwrap();
+            assert_eq!(output.iter().collect::<Vec<_>>(), vec![Some(4), None, Some(8)]);
+        }
+    }
+
     fn expr(v: Value) -> Expr {
         serde_json::from_value(v).unwrap()
     }
