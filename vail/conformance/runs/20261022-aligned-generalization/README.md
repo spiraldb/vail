@@ -1,5 +1,8 @@
 # Broader aligned-map routing benchmark
 
+This records the initial broader experiment. The subsequent narrow production
+implementation and integration evidence are in [TARGETED.md](TARGETED.md).
+
 Recommendation: do not replace the general array-lambda path wholesale. The
 strong measured candidate is `filter_entries` with global captures. Row-only,
 column-only and entry-only cases do not justify a general switch in this study.

@@ -1,0 +1,15 @@
+{
+  "source_revision": "84c9526238a93f73963058a8194af159e1445650",
+  "baseline_revision": "8892034b6257ea85d4939184010e7104ecd6c807",
+  "native_sha256": "68254f5ee21c520edc7e3be33a2d74b496c7a41c477d2408106a7262bda8e12b",
+  "native_source_note": "No Rust/crate/Cargo changes between validated main138f830b and main8892034b; reused identical immutable release artifact.",
+  "candidate_pythonpath": "/Users/danielking/.codex/worktrees/vds-holes-experiment/packages/targetedglobal",
+  "baseline_pythonpath": "/Users/danielking/.codex/worktrees/vds-holes-experiment/packages/targetedbaseline",
+  "tests": {
+    "passed": 203,
+    "failed": 1,
+    "new_tests_passed": 10,
+    "baseline_failure": "test_matrix_table.py::test_make_table_filter_stats_and_explicit_blockers; expects cache() NotImplementedError; identical unchanged-main failure reproduced"
+  },
+  "review_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f"
+}

@@ -1,0 +1,22 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_make_table_filter_stats_and_explicit_blockers ______________
+
+    def test_make_table_filter_stats_and_explicit_blockers():
+        m = matrix(2, 2)
+        m = m.key_cols_by(s=hl.str(m.col_idx))
+        t = m.make_table()
+        assert [r["0.x"] for r in t.collect()] == [5, 15]
+        assert [r["1.x"] for r in t.collect()] == [6, 16]
+        assert hl.eval(t.offset) == 5
+        f = m.filter_entries(m.col_idx == 0).compute_entry_filter_stats()
+        assert [r.entry_stats_row.n_filtered for r in f.rows().collect()] == [1, 1]
+        assert [r.entry_stats_col.n_remaining for r in f.cols().collect()] == [2, 0]
+>       with pytest.raises(NotImplementedError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE NotImplementedError
+
+vail/python/tests/test_matrix_table.py:965: Failed
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_matrix_table.py::test_make_table_filter_stats_and_explicit_blockers
+1 failed in 2.07s
