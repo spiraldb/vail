@@ -2789,6 +2789,10 @@ def read_matrix_table(
             row_key=keys[0],
             col_key=keys[1],
             row_index_keys=row_index_keys,
+            # Native snapshots are produced by MatrixTable.write, whose
+            # operators maintain entry/column positional alignment. Trust that
+            # invariant instead of rescanning every stored column identity.
+            _aligned=True,
         )
     )
     if _assert_type is not None:

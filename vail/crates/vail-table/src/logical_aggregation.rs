@@ -20,6 +20,16 @@ pub(crate) fn col(name: impl AsRef<str>) -> DFExpr {
     DFExpr::Column(datafusion_common::Column::new_unqualified(name.as_ref()))
 }
 
+fn is_independent_of_callback_parameter(expression: &Expr, parameter: &str) -> bool {
+    let mut independent = true;
+    expression.visit_unique(&mut |node| {
+        if matches!(node, Expr::LambdaVariable { name, .. } if name == parameter) {
+            independent = false;
+        }
+    });
+    independent
+}
+
 /// Lift ordinary coordinate reductions to one mergeable DataFusion UDAF.
 /// Complex nested scopes retain the general relational implementation.
 fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
@@ -55,6 +65,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
             let coordinate_options = options.as_object().is_none_or(|options| {
                 options.keys().all(|key| {
                     key == "__vail_result_type"
+                        || key == "__vail_share_linreg_predictors"
                         || (function == "linreg"
                             && matches!(key.as_str(), "nested_dim" | "n_predictors"))
                 })
@@ -82,6 +93,31 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                 // Sum infers its widened output from the mapped argument's
                 // native Arrow type in factory(). Optional frontend result
                 // annotations must not select integer versus floating math.
+                let mut options = options.clone();
+                if function == "linreg" {
+                    if let Some(Expr::Struct { fields }) = argument.as_deref() {
+                        let predictors = fields
+                            .iter()
+                            .find(|(name, _)| name == "x")
+                            .map(|(_, value)| value);
+                        let weight = fields
+                            .iter()
+                            .find(|(name, _)| name == "weight")
+                            .map(|(_, value)| value);
+                        if predictors.is_some_and(|value| {
+                            is_independent_of_callback_parameter(value, parameter)
+                        }) && weight.is_none_or(|value| {
+                            is_independent_of_callback_parameter(value, parameter)
+                        }) {
+                            if let Some(options) = options.as_object_mut() {
+                                options.insert(
+                                    "__vail_share_linreg_predictors".into(),
+                                    serde_json::Value::Bool(true),
+                                );
+                            }
+                        }
+                    }
+                }
                 return Ok(Expr::Aggregate {
                     function: format!("__coordinate_{function}"),
                     value: Some(Arc::new(Expr::ArrayMap {
@@ -89,7 +125,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                         parameter: parameter.clone(),
                         body: Arc::new(element),
                     })),
-                    options: options.clone(),
+                    options,
                     result_type: result_type.clone(),
                     init: vec![],
                 });
@@ -187,14 +223,7 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
                     next
                 };
                 visit(
-                    body,
-                    next_scope,
-                    scopes,
-                    scope_ids,
-                    memo,
-                    leaves,
-                    leaf_ids,
-                    prefix,
+                    body, next_scope, scopes, scope_ids, memo, leaves, leaf_ids, prefix,
                 )?
             }
             Expr::AggArray { .. }
@@ -206,16 +235,9 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
             _ => {
                 let mut unsupported = false;
                 let mut failure = None;
-                let mapped =
-                    expr.try_map_children(|child| match visit(
-                        child,
-                        scope,
-                        scopes,
-                        scope_ids,
-                        memo,
-                        leaves,
-                        leaf_ids,
-                        prefix,
+                let mapped = expr.try_map_children(|child| {
+                    match visit(
+                        child, scope, scopes, scope_ids, memo, leaves, leaf_ids, prefix,
                     ) {
                         Ok(Some(value)) => {
                             Ok::<Expr, vail_execution::expressions::ExprError>(value)
@@ -228,15 +250,12 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
                             failure = Some(error);
                             Ok(child.clone())
                         }
-                    })?;
+                    }
+                })?;
                 if let Some(error) = failure {
                     return Err(error);
                 }
-                if unsupported {
-                    None
-                } else {
-                    Some(mapped)
-                }
+                if unsupported { None } else { Some(mapped) }
             }
         };
         memo.insert(memo_key, mapped.clone());
@@ -282,7 +301,8 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
         &mut leaves,
         &mut leaf_ids,
         &prefix,
-    )? else {
+    )?
+    else {
         return Ok(None);
     };
     // Indexed callbacks bind the source position separately from the source
@@ -310,6 +330,11 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
             init: vec![],
         });
     }
+    let slot_remap = leaves
+        .iter()
+        .enumerate()
+        .map(|(index, _)| (index, None))
+        .collect::<Vec<_>>();
     // The first traversal leaves stable slot names. Build one mapped struct
     // containing every reducer value and its optional row filter.
     use vail_execution::expressions::BinaryOperator;
@@ -383,13 +408,15 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
     while used_names.contains(&result_param) || result_param.starts_with(&prefix) {
         result_param.push('_');
     }
-    let slot_indices = (0..leaves.len())
-        .map(|index| (format!("{prefix}{index}"), index))
+    let slot_indices = slot_remap
+        .iter()
+        .enumerate()
+        .map(|(source_index, (index, fit))| (format!("{prefix}{source_index}"), (*index, *fit)))
         .collect::<HashMap<_, _>>();
     fn replace(
         expr: &Expr,
         param: &str,
-        slots: &HashMap<String, usize>,
+        slots: &HashMap<String, (usize, Option<usize>)>,
         memo: &mut HashMap<usize, Expr>,
     ) -> Result<Expr> {
         let key = expr as *const Expr as usize;
@@ -398,12 +425,21 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
         }
         let mapped = match expr {
             Expr::LambdaVariable { name, .. } if slots.contains_key(name) => {
-                Expr::GetField {
+                let (index, fit) = slots[name];
+                let aggregate_result = Expr::GetField {
                     value: Arc::new(Expr::LambdaVariable {
                         name: param.to_owned(),
                         dtype: None,
                     }),
-                    name: format!("r{}", slots[name]),
+                    name: format!("r{index}"),
+                };
+                if let Some(fit) = fit {
+                    Expr::GetField {
+                        value: Arc::new(aggregate_result),
+                        name: format!("fit{fit}"),
+                    }
+                } else {
+                    aggregate_result
                 }
             }
             other => other.try_map_children(|child| replace(child, param, slots, memo))?,

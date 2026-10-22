@@ -6320,14 +6320,52 @@ fn lower_uncached(
             )?);
             cast(udf, schema, dtype.clone())?
         }
-        Expr::ArrayIndex { value, index } => custom(
-            HailKind::ArrayIndex,
-            vec![
-                lower_cached(value, schema, globals, scope, memo, context)?,
-                lower_cached(index, schema, globals, scope, memo, context)?,
-            ],
-            dtype,
-        ),
+        Expr::ArrayIndex { value, index } => {
+            // Python bind uses map([argument], parameter => body)[0]. There
+            // is exactly one callback value per input row, so bind it directly
+            // instead of building, flattening and gathering singleton lists.
+            let singleton = match (value.as_ref(), index.as_ref()) {
+                (
+                    Expr::ArrayMap {
+                        value,
+                        parameter,
+                        body,
+                    },
+                    Expr::Literal { value: index, .. },
+                ) if index.as_i64() == Some(0) => match value.as_ref() {
+                    Expr::Array { elements, .. } if elements.len() == 1 => {
+                        Some((&elements[0], parameter, body))
+                    }
+                    _ => None,
+                },
+                _ => None,
+            };
+            if let Some((argument, parameter, body)) = singleton {
+                lower_synthetic(
+                    Expr::Switch {
+                        value: Arc::new(argument.clone()),
+                        parameter: parameter.clone(),
+                        cases: Vec::new(),
+                        default: body.clone(),
+                        missing: None,
+                    },
+                    schema,
+                    globals,
+                    scope,
+                    memo,
+                    context,
+                )?
+            } else {
+                custom(
+                    HailKind::ArrayIndex,
+                    vec![
+                        lower_cached(value, schema, globals, scope, memo, context)?,
+                        lower_cached(index, schema, globals, scope, memo, context)?,
+                    ],
+                    dtype,
+                )
+            }
+        }
         Expr::ArraySlice {
             value,
             start,
