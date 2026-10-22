@@ -259,3 +259,6 @@ def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_p
                                      for i in indices]
     assert imported.dosage.collect() == [float(i) for i in indices]
     assert imported.aggregate_entries(hl.agg.count()) == len(indices)
+    empty = hl.import_bgen(output + '.bgen', [], sample_file=output + '.sample', n_partitions=3)
+    assert empty.aggregate_entries(hl.agg.count()) == len(indices)
+    assert empty.entries().count() == len(indices)
