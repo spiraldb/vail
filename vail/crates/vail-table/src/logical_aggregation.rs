@@ -153,126 +153,6 @@ struct CoordinateLeafKey {
     init: Vec<(String, Expr)>,
 }
 
-#[derive(Hash, PartialEq, Eq)]
-struct SharedLinregKey {
-    predictors: Expr,
-    weight: Option<Expr>,
-    filters: Vec<Expr>,
-    options: String,
-}
-
-/// Replace several coordinate linregs that use the same design and weights
-/// with one multi-response reducer. The response columns remain independent;
-/// the execution kernel can share a factorization when their selected rows
-/// match and falls back to independent fits when response validity differs.
-fn combine_shared_linreg_leaves(
-    leaves: &[CoordinateLeaf],
-) -> (Vec<CoordinateLeaf>, Vec<(usize, Option<usize>)>) {
-    let mut key_to_group = HashMap::<SharedLinregKey, usize>::new();
-    let mut groups = Vec::<Vec<usize>>::new();
-    let mut parsed = Vec::<Option<(Expr, Option<Expr>, Expr)>>::with_capacity(leaves.len());
-    for (index, leaf) in leaves.iter().enumerate() {
-        let fields = leaf.value.as_ref().and_then(|value| match value {
-            Expr::Struct { fields } => Some(fields),
-            _ => None,
-        });
-        let Some(fields) = fields.filter(|_| leaf.function == "linreg") else {
-            parsed.push(None);
-            continue;
-        };
-        let get = |name: &str| {
-            fields
-                .iter()
-                .find(|(field, _)| field == name)
-                .map(|(_, v)| v.clone())
-        };
-        let Some(y) = get("y") else {
-            parsed.push(None);
-            continue;
-        };
-        let Some(predictors) = get("x") else {
-            parsed.push(None);
-            continue;
-        };
-        let weight = get("weight");
-        let key = SharedLinregKey {
-            predictors: predictors.clone(),
-            weight: weight.clone(),
-            filters: leaf.filters.clone(),
-            options: serde_json::to_string(&leaf.options).unwrap_or_default(),
-        };
-        let group = if let Some(group) = key_to_group.get(&key) {
-            *group
-        } else {
-            let group = groups.len();
-            groups.push(Vec::new());
-            key_to_group.insert(key, group);
-            group
-        };
-        groups[group].push(index);
-        parsed.push(Some((predictors, weight, y)));
-    }
-    let mut group_for_leaf = vec![None; leaves.len()];
-    for (group, indices) in groups
-        .iter()
-        .enumerate()
-        .filter(|(_, indices)| indices.len() > 1)
-    {
-        for (fit, index) in indices.iter().copied().enumerate() {
-            group_for_leaf[index] = Some((group, fit));
-        }
-    }
-    let mut output = Vec::with_capacity(leaves.len());
-    let mut remap = vec![(usize::MAX, None); leaves.len()];
-    let mut appended_groups = HashSet::new();
-    for (index, leaf) in leaves.iter().enumerate() {
-        if let Some((group, fit)) = group_for_leaf[index] {
-            let new_index = if appended_groups.insert(group) {
-                let indices = &groups[group];
-                let (predictors, weight, _) = parsed[indices[0]].as_ref().unwrap();
-                let mut fields = vec![("x".to_owned(), predictors.clone())];
-                let weight_index = weight.as_ref().map(|weight| {
-                    let index = fields.len();
-                    fields.push(("weight".to_owned(), weight.clone()));
-                    index
-                });
-                let mut y_indices = Vec::with_capacity(indices.len());
-                for (fit_index, source_index) in indices.iter().copied().enumerate() {
-                    let (_, _, y) = parsed[source_index].as_ref().unwrap();
-                    y_indices.push(fields.len());
-                    fields.push((format!("y{fit_index}"), y.clone()));
-                }
-                let mut options = leaves[indices[0]].options.clone();
-                if let Some(object) = options.as_object_mut() {
-                    object.insert("x_index".into(), serde_json::json!(0));
-                    object.insert("weight_index".into(), serde_json::json!(weight_index));
-                    object.insert("y_indices".into(), serde_json::json!(y_indices));
-                }
-                let combined = CoordinateLeaf {
-                    function: "linreg_multi".into(),
-                    value: Some(Expr::Struct { fields }),
-                    options,
-                    filters: leaf.filters.clone(),
-                    init: vec![],
-                };
-                let new_index = output.len();
-                output.push(combined);
-                new_index
-            } else {
-                // The group leaf is inserted at its first source occurrence;
-                // recover that output index from the remap already populated.
-                remap[groups[group][0]].0
-            };
-            remap[index] = (new_index, Some(fit));
-        } else {
-            let new_index = output.len();
-            output.push(leaf.clone());
-            remap[index] = (new_index, None);
-        }
-    }
-    (output, remap)
-}
-
 /// Lift direct reducer leaves from a callback into one packed coordinate
 /// aggregate. Nested aggregate scopes retain the relational fallback.
 fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Result<Option<Expr>> {
@@ -450,10 +330,11 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
             init: vec![],
         });
     }
-    // Combine only exact predictor/weight/filter matches. In particular, a
-    // predictor may depend on the array callback index or matrix entry value;
-    // identical expression DAGs still denote the same design per coordinate.
-    let (leaves, slot_remap) = combine_shared_linreg_leaves(&leaves);
+    let slot_remap = leaves
+        .iter()
+        .enumerate()
+        .map(|(index, _)| (index, None))
+        .collect::<Vec<_>>();
     // The first traversal leaves stable slot names. Build one mapped struct
     // containing every reducer value and its optional row filter.
     use vail_execution::expressions::BinaryOperator;
