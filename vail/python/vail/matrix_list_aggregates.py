@@ -10,6 +10,17 @@ from .expressions import Expression, _IR, cast
 from .types import tarray, tbool, tcall, tint32, tint64, type_from_wire
 
 
+
+def _entry_field_input(node):
+    """Whether a direct entry-field access already carries entry validity.
+
+    Do not infer this merely from entry dependence: constants, coalesce and
+    missingness predicates can produce defined values for an absent entry.
+    Keep the conservative presence guard for every computed expression.
+    """
+    return node.get("op") == "matrix_field" and node.get("axis") == "entry"
+
+
 def reduce_row_predicate(matrix, expr, base):
     """Reduce a primitive predicate without filtering or rebuilding cell structs.
 
@@ -151,11 +162,13 @@ def reduce_aligned_plain(matrix, expr, base):
                 base, call_node, call_ir.dtype, preserve_cell=False
             )
         else:
-            calls = base[_CELLS].map(lambda cell: if_else(
-                is_defined(cell[_VALUE]),
-                matrix._lower_cell(call_ir, base, cell, struct()),
-                missing(tcall),
-            ))
+            def project_call(cell):
+                call = matrix._lower_cell(call_ir, base, cell, struct())
+                if _entry_field_input(call_node):
+                    return call
+                return if_else(is_defined(cell[_VALUE]), call, missing(tcall))
+
+            calls = base[_CELLS].map(project_call)
         from .collections import _function
         return _function("__vail_list_call_stats", [n_alleles, calls], expr.dtype)
     if function not in {
@@ -319,13 +332,13 @@ def reduce_list(
 
         result_type = expr.dtype
         cells = base[_CELLS]
-        values = cells.map(
-            lambda cell: if_else(
-                is_defined(cell[_VALUE]),
-                cast(raw(bind_entry(aggregate["value"], cell), result_type), result_type),
-                missing(result_type),
-            )
-        )
+        def project_sum(cell):
+            value = cast(raw(bind_entry(aggregate["value"], cell), result_type), result_type)
+            if _entry_field_input(aggregate["value"]):
+                return value
+            return if_else(is_defined(cell[_VALUE]), value, missing(result_type))
+
+        values = cells.map(project_sum)
         result = array_sum(values)
         return Expression(expr.dtype, base, _IR(result.to_ir(), refs, lookups))
 

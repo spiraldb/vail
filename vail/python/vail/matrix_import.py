@@ -106,7 +106,8 @@ def import_matrix_table(paths, row_fields=None, row_key=(), entry_type=None,
 def export_expression(expr, output, delimiter='\t', missing='NA', header=True):
     """Stream a matrix entry expression as delimited rows in the native sink."""
     from uuid import uuid4
-    from . import literal, str as hstr, if_else, is_missing, array, tarray, tstr
+    from . import literal, str as hstr, array, tarray, tstr
+    from .strings import _call
     from .matrixtable import MatrixTable, _axes
     from .text import _local_path
     if not isinstance(delimiter, str) or len(delimiter) != 1:
@@ -127,12 +128,9 @@ def export_expression(expr, output, delimiter='\t', missing='NA', header=True):
     cols = evaluate(localized.index_globals()[cn])
     ids = [str(col[keys[0]]) if keys else str(i) for i, col in enumerate(cols)]
 
-    def text(value):
-        return if_else(is_missing(value), missing, hstr(value))
-
-    row_values = array([text(localized[key]) for key in row_keys]) if row_keys else literal([], tarray(tstr))
-    entry_values = localized[en].map(lambda entry: text(entry[value]))
-    line = literal(delimiter).join(row_values.extend(entry_values))
+    row_values = array([hstr(localized[key]) for key in row_keys]) if row_keys else literal([], tarray(tstr))
+    entry_values = localized[en].map(lambda entry: hstr(entry[value]))
+    line = _call('array_to_string', row_values.extend(entry_values), literal(delimiter), literal(missing))
     name = delimiter.join([*row_keys, *ids])
     table = localized.select(**{name: line})
     table._native.export_text(_local_path(output, allow_compressed=True), 'text', {

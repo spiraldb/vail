@@ -36,8 +36,8 @@ def gp_dosage(gp):
         .or_error('gp_dosage requires exactly three probabilities')), gp)
 
 
-def pl_to_gp(pl, _cache_size=2048):
-    """Normalize Phred-scaled int32 likelihoods using a uniform prior."""
+def _pl_probabilities(pl, _cache_size):
+    """Construct unnormalized probabilities with Hail's cache-index rules."""
     from . import case, float64
 
     try:
@@ -60,11 +60,17 @@ def pl_to_gp(pl, _cache_size=2048):
         else:
             index = case().when(value >= _cache_size, value).or_error(
                 "PL probability cache index out of bounds")
-        return if_else(is_missing(value), missing(tfloat64), 10.0 ** (-float64(index) / 10.0))
+        # The checked index and numeric operators already propagate nulls.
+        return 10.0 ** (-float64(index) / 10.0)
 
+    return pl.map(probability)
+
+
+def pl_to_gp(pl, _cache_size=2048):
+    """Normalize Phred-scaled int32 likelihoods using a uniform prior."""
     return bind(lambda probabilities: probabilities / coalesce(
         _function("array_sum", [probabilities], tfloat64), 0.0,
-    ), pl.map(probability))
+    ), _pl_probabilities(pl, _cache_size))
 
 
 def pl_dosage(pl):
@@ -72,10 +78,12 @@ def pl_dosage(pl):
     from . import case
 
     def dosage(probabilities):
-        value = if_else(probabilities.any(is_missing), missing(tfloat64),
-                        probabilities[1] + 2.0 * probabilities[2])
-        checked = case().when(probabilities.length() == 3, value).or_error(
+        # A dosage only needs one weighted reduction, not a normalized list.
+        # Strict scalar addition also propagates a missing probability at any
+        # of the three positions without a separate list missingness scan.
+        value = bind(lambda p0, p1, p2: (p1 + 2.0 * p2) / (p0 + p1 + p2),
+                     probabilities[0], probabilities[1], probabilities[2])
+        return case().when(probabilities.length() == 3, value).or_error(
             "pl_dosage requires exactly three likelihoods")
-        return if_else(is_missing(probabilities), missing(tfloat64), checked)
 
-    return bind(dosage, pl_to_gp(pl))
+    return bind(dosage, _pl_probabilities(pl, 2048))
