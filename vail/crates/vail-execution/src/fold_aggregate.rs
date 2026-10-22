@@ -153,6 +153,15 @@ struct ProgramIdentity {
     bindings: std::collections::BTreeMap<String, usize>,
     storage: Option<DataType>,
 }
+
+type FoldIdentity = (ScalarValue, SchemaRef, ProgramIdentity, ProgramIdentity);
+
+/// A fold exports its final result as its sole state field. Keep this proof
+/// tied to the concrete native identity, rather than recognizing a UDAF name.
+pub(crate) fn state_initializer(aggregate: &AggregateUDF) -> Option<ScalarValue> {
+    crate::kernel_identity::aggregate_key::<FoldIdentity>(aggregate)
+        .map(|identity| identity.0.clone())
+}
 impl FoldProgram {
     pub fn lower(
         expression: &crate::expressions::Expr,

@@ -17,14 +17,19 @@ use std::{
     sync::Arc,
 };
 
-pub(crate) fn name(key: &impl Hash, label: &str) -> String {
+fn fingerprint(key: &impl Hash) -> u64 {
     let mut state = std::collections::hash_map::DefaultHasher::new();
     key.hash(&mut state);
-    format!("{label}_{:016x}", state.finish())
+    state.finish()
+}
+
+pub(crate) fn name(key: &impl Hash, label: &str) -> String {
+    format!("{label}_{:016x}", fingerprint(key))
 }
 
 pub(crate) struct Scalar<K> {
     key: K,
+    fingerprint: u64,
     name: String,
     signature: Signature,
     output: DataType,
@@ -53,10 +58,7 @@ impl<K: PartialEq> PartialEq for Scalar<K> {
 impl<K: Eq> Eq for Scalar<K> {}
 impl<K: Hash> Hash for Scalar<K> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-        self.key.hash(state);
-        self.signature.hash(state);
-        self.output.hash(state);
+        self.fingerprint.hash(state);
     }
 }
 impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> ScalarUDFImpl for Scalar<K> {
@@ -97,7 +99,9 @@ pub(crate) fn scalar_with_args<K: fmt::Debug + Eq + Hash + Send + Sync + 'static
     function: Arc<dyn Fn(ScalarFunctionArgs) -> Result<ColumnarValue> + Send + Sync>,
 ) -> ScalarUDF {
     let name = name(&(&key, &signature, &output), label);
+    let fingerprint = fingerprint(&(&name, &key, &signature, &output));
     ScalarUDF::from(Scalar {
+        fingerprint,
         key,
         name,
         signature,
@@ -108,6 +112,7 @@ pub(crate) fn scalar_with_args<K: fmt::Debug + Eq + Hash + Send + Sync + 'static
 
 struct Aggregate<K> {
     key: K,
+    fingerprint: u64,
     name: String,
     signature: Signature,
     output: DataType,
@@ -135,11 +140,7 @@ impl<K: PartialEq> PartialEq for Aggregate<K> {
 impl<K: Eq> Eq for Aggregate<K> {}
 impl<K: Hash> Hash for Aggregate<K> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-        self.key.hash(state);
-        self.signature.hash(state);
-        self.output.hash(state);
-        self.fields.hash(state);
+        self.fingerprint.hash(state);
     }
 }
 impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> AggregateUDFImpl for Aggregate<K> {
@@ -217,7 +218,9 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
         .map(|(i, t)| Arc::new(Field::new(i.to_string(), t, true)))
         .collect::<Vec<_>>();
     let name = label.to_owned();
+    let fingerprint = fingerprint(&(&name, &key, &signature, &output, &fields));
     Arc::new(AggregateUDF::from(Aggregate {
+        fingerprint,
         key,
         name,
         signature,
@@ -227,4 +230,57 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
         groups_factory,
         groups_supported,
     }))
+}
+
+/// Recover a typed semantic key without relying on a function's display name.
+pub(crate) fn aggregate_key<K: 'static>(udf: &AggregateUDF) -> Option<&K> {
+    udf.inner().downcast_ref::<Aggregate<K>>().map(|a| &a.key)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    #[derive(Debug, Clone)]
+    struct Key(u32, Arc<AtomicUsize>);
+    impl PartialEq for Key {
+        fn eq(&self, other: &Self) -> bool {
+            self.0 == other.0
+        }
+    }
+    impl Eq for Key {}
+    impl Hash for Key {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            self.1.fetch_add(1, Ordering::Relaxed);
+            // Force collisions to exercise full semantic equality.
+            0u8.hash(state);
+        }
+    }
+    #[test]
+    fn cached_hash_does_not_rehash_key_or_equate_collisions() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let make = |value| {
+            scalar_with_args(
+                "test",
+                Key(value, calls.clone()),
+                Signature::nullary(Volatility::Immutable),
+                DataType::Int32,
+                Arc::new(|_| {
+                    Ok(ColumnarValue::Scalar(
+                        datafusion_common::ScalarValue::Int32(Some(1)),
+                    ))
+                }),
+            )
+        };
+        let left = make(1);
+        let equal = make(1);
+        let different = make(2);
+        calls.store(0, Ordering::Relaxed);
+        assert_eq!(fingerprint(&left), fingerprint(&equal));
+        assert_eq!(fingerprint(&left), fingerprint(&different));
+        assert_eq!(calls.load(Ordering::Relaxed), 0);
+        assert_eq!(left, equal);
+        assert_ne!(left, different);
+    }
 }

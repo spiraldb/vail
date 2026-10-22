@@ -115,6 +115,43 @@ def test_local_global_collections_keep_metadata_when_broadcast():
     assert hl.eval(restored.index_globals()) == hl.eval(table.index_globals())
 
 
+def test_nested_scalar_dictionary_projection_retains_exact_metadata(tmp_path):
+    dtype = hl.tstruct(
+        locus=hl.tlocus('GRCh37'),
+        call=hl.tcall,
+        pair=hl.ttuple(hl.tint32, hl.tarray(hl.tcall)),
+        nested=hl.tarray(hl.tstruct(
+            locus=hl.tlocus('GRCh38'), pair=hl.ttuple(hl.tstr, hl.tint32))),
+    )
+    value = hl.Struct(
+        locus=hl.Locus('1', 2, hl.get_reference('GRCh37')),
+        call=hl.Call((1, 2), True),
+        pair=(7, [hl.Call((0, 1)), None]),
+        nested=[None, hl.Struct(
+            locus=hl.Locus('chr1', 3, hl.get_reference('GRCh38')),
+            pair=('tag', None))],
+    )
+    table = hl.range_table(4, n_partitions=2).key_by().annotate_globals(
+        mapping=hl.literal({'present': value, 'missing': None}, hl.tdict(hl.tstr, dtype)))
+    key = hl.array(['present', 'missing', 'absent', 'present'])[table.idx]
+    table = table.select(value=table.mapping.get(key))
+    table = table.select(value=table.value, absent=hl.missing(dtype),
+                         empty=hl.tuple([]), scalar=hl.int64(17))
+    expected = [hl.Struct(value=v, absent=None, empty=(), scalar=17)
+                for v in [value, None, None, value]]
+    assert table.collect() == expected
+    exported = table.to_arrow()
+    assert dtype_from_arrow(exported.schema.field('value').type) == dtype
+    imported = hl.Table.parallelize(exported)
+    assert imported.collect() == expected
+    assert imported.to_arrow().equals(exported, check_metadata=True)
+    path = tmp_path / 'nested-scalar-metadata'
+    table.write(path)
+    reopened = hl.read_table(path)
+    assert reopened.collect() == expected
+    assert reopened.to_arrow().equals(exported, check_metadata=True)
+
+
 def test_colliding_struct_names_work_as_join_and_lookup_keys():
     ordinary = hl.tstruct(__vail_tuple_0=hl.tint32)
     raw = pa.table({'x': pa.array([{'__vail_tuple_0': 1}, {'__vail_tuple_0': 2}],

@@ -626,6 +626,36 @@ def test_scan_fold_configuration_preserves_nested_call_metadata():
     assert [row.prefix for row in table.annotate(prefix=expression).collect()] == [initial] * 4
 
 
+@pytest.mark.parametrize('partitions', [1, 7])
+@pytest.mark.parametrize('initial', [
+    None,
+    hl.Struct(calls=[], label='empty'),
+    hl.Struct(calls=[hl.Call([0, 1], phased=True), None], label='seed'),
+])
+def test_nested_indexed_fold_finalization_preserves_initializer(initial, partitions):
+    dtype = hl.tstruct(calls=hl.tarray(hl.tcall), label=hl.tstr)
+    table = hl.Table.parallelize(
+        [{'a': a} for a in [None, [[1, None], [2, 3]], None,
+                           [[4, 5], [None, 6]], [[None, None], [7, 8]]]],
+        schema=hl.tstruct(a=hl.tarray(hl.tarray(hl.tint32))),
+        n_partitions=partitions,
+    )
+    initial_expr = hl.literal(initial, dtype)
+    prefix = hl.scan.array_agg(
+        lambda inner: hl.scan.array_agg(
+            lambda _: hl.scan.fold(initial_expr, lambda state: state,
+                                   lambda left, right: left), inner), table.a)
+    scanned = table.annotate(prefix=prefix)
+    expected = [None, None] + [[[initial, initial], [initial, initial]]] * 3
+    assert [row.prefix for row in scanned.collect()] == expected
+    # Finalized fold states must retain nested Call metadata, including empty
+    # and missing initializers, when leaving native scan execution.
+    arrow = scanned.to_arrow()
+    restored = hl.Table.parallelize(arrow)
+    assert restored.prefix.dtype == hl.tarray(hl.tarray(dtype))
+    assert [row.prefix for row in restored.collect()] == expected
+
+
 @pytest.mark.parametrize('n,partitions', [(10000, 3), (100000, 64)])
 @pytest.mark.parametrize('reducer', ['sum', 'mean'])
 def test_scan_batch_crossing_partitions_preserve_source_order_and_boundaries(n, partitions, reducer):

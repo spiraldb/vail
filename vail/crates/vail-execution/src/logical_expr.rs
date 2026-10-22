@@ -100,6 +100,15 @@ pub fn restore_arrow_array_type(
     if array.data_type() == dtype {
         return Ok(array.clone());
     }
+    restore_arrow_array_type_mismatch(array, dtype)
+}
+
+// The caller has already checked the actual descriptor. Avoid repeating its
+// potentially deep metadata equality test after scalar materialization.
+fn restore_arrow_array_type_mismatch(
+    array: &arrow_array::ArrayRef,
+    dtype: &arrow_schema::DataType,
+) -> datafusion_common::Result<arrow_array::ArrayRef> {
     if vail_ordering::same_layout(array.data_type(), dtype) {
         fn retag_data(
             data: arrow_data::ArrayData,
@@ -118,7 +127,15 @@ pub fn restore_arrow_array_type(
                 .child_data()
                 .iter()
                 .zip(child_types)
-                .map(|(child, child_type)| retag_data(child.clone(), child_type))
+                .map(|(child, child_type)| {
+                    // A changed parent descriptor need not rebuild children
+                    // which already carry the exact requested metadata.
+                    if child.data_type() == child_type {
+                        Ok(child.clone())
+                    } else {
+                        retag_data(child.clone(), child_type)
+                    }
+                })
                 .collect::<datafusion_common::Result<Vec<_>>>()?;
             Ok(data
                 .into_builder()
@@ -137,23 +154,29 @@ pub fn restore_arrow_value_type(
     dtype: &arrow_schema::DataType,
 ) -> datafusion_common::Result<datafusion_expr::ColumnarValue> {
     use datafusion_expr::ColumnarValue;
-    let scalar = matches!(value, ColumnarValue::Scalar(_));
-    let array: arrow_array::ArrayRef = match value {
-        ColumnarValue::Array(array) => array,
-        ColumnarValue::Scalar(ScalarValue::List(array)) => array,
-        ColumnarValue::Scalar(ScalarValue::Struct(array)) => array,
-        ColumnarValue::Scalar(value) => value.to_array()?,
+    let scalar = match value {
+        ColumnarValue::Array(array) => {
+            return restore_arrow_array_type(&array, dtype).map(ColumnarValue::Array);
+        }
+        ColumnarValue::Scalar(value) => value,
     };
-    let array = restore_arrow_array_type(&array, dtype)?;
-    if scalar {
-        Ok(ColumnarValue::Scalar(
-            crate::expressions::scalar_at(&array, 0).map_err(|error| {
-                datafusion_common::DataFusionError::Execution(error.to_string())
-            })?,
-        ))
-    } else {
-        Ok(ColumnarValue::Array(array))
+    // Compare the actual scalar descriptor, not an expression's advertised
+    // type: library kernels can lose nested metadata despite reporting the
+    // requested logical type. Matching scalars need neither materialization
+    // nor extraction through a one-element array.
+    if scalar.data_type() == *dtype {
+        return Ok(ColumnarValue::Scalar(scalar));
     }
+    let array: arrow_array::ArrayRef = match scalar {
+        ScalarValue::List(array) => array,
+        ScalarValue::Struct(array) => array,
+        value => value.to_array()?,
+    };
+    let array = restore_arrow_array_type_mismatch(&array, dtype)?;
+    Ok(ColumnarValue::Scalar(
+        crate::expressions::scalar_at(&array, 0)
+            .map_err(|error| datafusion_common::DataFusionError::Execution(error.to_string()))?,
+    ))
 }
 
 /// Restore an IR-declared type after a library operator constructs new Arrow
