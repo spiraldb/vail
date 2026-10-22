@@ -1124,7 +1124,20 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             } else {
                 &empty_globals
             };
-            let (input, indices) = crate::logical_globals::bind_external(input, bindings, context)?;
+            // Native DataFusion scalar subqueries keep singleton nested
+            // metadata scalar all the way into opaque expression arguments.
+            // Scans/RNG retain their existing indexed-input lowering contract.
+            let scalar_bindings = !fields.iter().any(|(_, expr)|
+                is_rng_uid(expr) || contains_scan_expr(expr));
+            let (input, binding_schema, indices, scalar_replacements) = if scalar_bindings {
+                let (schema, indices, replacements) =
+                    crate::logical_globals::scalar_external_bindings(&input, bindings, context)?;
+                (input, schema, indices, replacements)
+            } else {
+                let (input, indices) = crate::logical_globals::bind_external(input, bindings, context)?;
+                let schema = input.schema().clone();
+                (input, schema, indices, Default::default())
+            };
             if fields.iter().any(|(_, expr)| is_rng_uid(expr)) {
                 return lower_rng_uids(child, input, fields, &indices);
             }
@@ -1153,7 +1166,19 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             let projected = fields
                 .iter()
                 .map(|(name, expr)| {
-                    lower_logical_with_bindings(expr, input.schema(), globals_schema, &indices)
+                    lower_logical_with_bindings(expr, &binding_schema, globals_schema, &indices)
+                        .and_then(|e| {
+                            use datafusion_common::tree_node::{Transformed, TreeNode};
+                            e.transform_up(|node| {
+                                if let Expr::Column(column) = &node
+                                    && column.relation.is_none()
+                                    && let Some(value) = scalar_replacements.get(&column.name)
+                                {
+                                    return Ok(Transformed::yes(value.clone()));
+                                }
+                                Ok(Transformed::no(node))
+                            }).map(|result| result.data).map_err(Into::into)
+                        })
                         .map(|e| match expr {
                             vail_execution::expressions::Expr::Column { name: source }
                                 if source == name =>
