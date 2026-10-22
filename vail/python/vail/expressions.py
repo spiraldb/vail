@@ -1359,9 +1359,9 @@ def approx_equal(x, y, tolerance=1e-6, absolute=False, nan_same=False):
     absolute, nan_same = as_expr(absolute), as_expr(nan_same)
     if absolute.dtype != tbool or nan_same.dtype != tbool:
         raise TypeError("absolute and nan_same must be bool expressions")
-    ax, ay = if_else(x < 0, -x, x), if_else(y < 0, -y, y)
-    difference = x - y
-    difference = if_else(difference < 0, -difference, difference)
+    from .import_support import abs
+    ax, ay = abs(x), abs(y)
+    difference = abs(x - y)
     scale = tolerance * if_else(ax > ay, ax, ay)
     bound = if_else(absolute, tolerance, if_else(scale > 2 ** -1022, scale, 2 ** -1022))
     nx, ny = x == float("nan"), y == float("nan")
