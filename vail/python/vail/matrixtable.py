@@ -354,6 +354,16 @@ class MatrixIR:
 class MatrixTable:
     """An immutable lazy matrix with global, row, column and entry fields."""
 
+    @classmethod
+    def read_legacy(cls, path):
+        """Import a local Hail 0.2 native ``.mt`` directory without Hail/JVM.
+
+        This eager migration reader materializes all axes and entries in
+        memory, preserving column order and missing (filtered) entry structs.
+        """
+        from .legacy import read_matrix_legacy
+        return read_matrix_legacy(path)
+
     def __init__(self, mir):
         if not isinstance(mir, MatrixIR):
             raise TypeError("MatrixTable requires a MatrixIR")

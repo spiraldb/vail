@@ -246,6 +246,16 @@ def _keys_from_native(native):
 class Table:
     """A lazy native Table for the explicitly supported initial operation subset."""
 
+    @classmethod
+    def read_legacy(cls, path):
+        """Import a local Hail 0.2 native ``.ht`` directory without Hail/JVM.
+
+        This eager migration reader materializes the dataset in memory. Use
+        ``write`` afterward to save it in Vail's native storage format.
+        """
+        from .legacy import read_table_legacy
+        return read_table_legacy(path)
+
     def __init__(self, native, schema, keys=(), key_sources=None):
         object.__setattr__(self, "_native", native)
         object.__setattr__(self, "_schema", schema)
