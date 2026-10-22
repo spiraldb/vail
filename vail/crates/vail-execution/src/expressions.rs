@@ -5880,16 +5880,32 @@ fn lower_uncached(
                 memo.insert(id, rewritten.clone());
                 Ok(rewritten)
             }
+            // Python's aligned map wraps the body in an entry-presence guard.
+            // Prepare its consequent once for batches whose entry parents are
+            // all valid; sparse batches retain the original lazy guard.
+            let all_present = match body {
+                Expr::IfElse { condition, consequent, .. }
+                    if matches!(condition.as_ref(), Expr::AlignedMapInput { axis, .. }
+                        if axis == "entry_present") => Some(consequent.as_ref()),
+                _ => None,
+            };
+            let all_present = all_present.map(|value|
+                rewrite_batch_inputs(value, &names, &mut Default::default())
+            ).transpose()?;
             let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
             let body_schema = Schema::new(body_fields);
             let body_context = memo.context(&body_schema, globals.schema(), scope);
             let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
+            let all_present_body = all_present.map(|value|
+                lower_synthetic(value, &body_schema, globals, scope, memo, body_context)
+            ).transpose()?;
             Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
                 entries,
                 columns,
                 rows,
                 global_inputs,
                 body,
+                all_present_body,
                 capture_keys,
                 column_dtype,
                 dtype.to_arrow()?,

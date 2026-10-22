@@ -972,11 +972,18 @@ class MatrixTable:
             core = self._mir.core
             argument_type = type_from_wire(node["value"].infer_type([], [], []))
             argument = _expression(argument_type, self, node["value"], expr)
-            values = core[_CELLS].map(lambda cell: if_else(
-                is_defined(cell[_VALUE]),
-                cast(self._lower_cell(argument, core, cell, struct()), expr.dtype),
-                missing(expr.dtype),
-            ))
+            from .matrix_list_aggregates import _entry_field_input
+
+            def project_sum_input(cell):
+                value = cast(self._lower_cell(argument, core, cell, struct()), expr.dtype)
+                # Direct field extraction already intersects the entry struct's
+                # validity. Preserve the guard for constants and expressions
+                # that can produce a value for an absent entry.
+                if _entry_field_input(node["value"]):
+                    return value
+                return if_else(is_defined(cell[_VALUE]), value, missing(expr.dtype))
+
+            values = core[_CELLS].map(project_sum_input)
             totals = core.aggregate(agg.array_sum(values), _localize=False)
             # An empty row axis still has one zero result per column.
             totals = if_else(
