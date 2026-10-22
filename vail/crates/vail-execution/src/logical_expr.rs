@@ -1421,7 +1421,7 @@ mod tests {
         assert_eq!(invoke(original.clone(), vec![3, 4]), vec![vec![4, 5], vec![5, 6]]);
         let changed = scalar(vec![10, 20]);
         assert_eq!(invoke(changed.clone(), vec![3]), vec![vec![13, 23]]);
-        assert_eq!(invoke(scalar(vec![]), vec![8, 9]), vec![vec![], vec![]]);
+        assert_eq!(invoke(scalar(vec![]), vec![8, 9]), vec![Vec::<i64>::new(), Vec::<i64>::new()]);
         std::thread::scope(|scope| {
             let handles = (0..4).map(|shift| {
                 let invoke = &invoke;
