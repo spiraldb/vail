@@ -29,7 +29,7 @@ def test_grouped_collect_nested_values_and_nulls(partitions, interleaved):
         2: [[None]],
     }
     for row in result:
-        assert sorted(map(repr, row.values)) == sorted(map(repr, expected[row.key]))
+        assert sorted(map(repr, row["values"])) == sorted(map(repr, expected[row.key]))
         assert sorted(map(repr, row.filtered)) == (
             [] if row.key == 1 else sorted(map(repr, expected[row.key]))
         )
@@ -42,5 +42,5 @@ def test_grouped_collect_empty_structs(partitions):
     result = table.group_by(key=table.idx // 3).aggregate(
         values=hl.agg.collect(table.empty),
     ).collect()
-    assert [len(row.values) for row in result] == [3, 3, 3]
-    assert [sum(value is None for value in row.values) for row in result] == [1, 2, 1]
+    assert [len(row["values"]) for row in result] == [3, 3, 3]
+    assert [sum(value is None for value in row["values"]) for row in result] == [1, 2, 1]
