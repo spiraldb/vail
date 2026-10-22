@@ -4597,6 +4597,23 @@ impl PhysicalExpr for HailPhysicalExpr {
             .iter()
             .map(|argument| argument.evaluate(batch))
             .collect::<datafusion_common::Result<Vec<_>>>()?;
+        // Selecting a shared struct field must preserve its scalar form.
+        // Expanding the parent first copies nested column/global lists once
+        // per outer row, even though field selection itself is zero-copy.
+        if let HailKind::GetField(name) = &self.kind
+            && let Some(ColumnarValue::Scalar(ScalarValue::Struct(parent))) = evaluated.first()
+        {
+            if parent.len() != 1 {
+                return Err(DataFusionError::Execution("scalar struct requires one row".into()));
+            }
+            let child = parent.column_by_name(name).ok_or_else(||
+                DataFusionError::Execution(format!("struct field {name:?} absent")))?;
+            let value = if parent.is_null(0) {
+                new_null_array(&self.dtype, 1)
+            } else { child.clone() };
+            return Ok(ColumnarValue::Scalar(scalar_at(&value, 0)
+                .map_err(|error| DataFusionError::Execution(error.to_string()))?));
+        }
         // A captured scalar collection must not be expanded once per source
         // row merely to select individual elements. Arrow take copies only
         // selected children, preserving ownership of the original scalar.
