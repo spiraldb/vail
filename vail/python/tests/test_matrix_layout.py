@@ -184,3 +184,26 @@ def test_from_parts_empty_entries_preserves_rows_columns_globals():
     assert hl.eval(m.g) == 7
     assert [(e.row_idx, e.col_idx, e.r, e.c) for e in m.entries().collect()] == [
         (i, j, r, c) for i, r in enumerate([4, 5]) for j, c in enumerate(['a', 'b', 'c'])]
+
+
+def test_native_snapshot_preserves_filtered_missing_and_empty_entries(tmp_path):
+    matrix = hl.range_matrix_table(3, 3, 2)
+    matrix = matrix.annotate_entries(value=hl.or_missing(matrix.col_idx != 1, matrix.row_idx * 10 + matrix.col_idx))
+    matrix = matrix.choose_cols([2, 0, 1])
+    matrix = matrix.filter_entries(matrix.col_idx != 0)
+    path = tmp_path / "filtered-missing.mt"
+    matrix.write(path)
+    restored = hl.read_matrix_table(path)
+    assert [(entry.row_idx, entry.col_idx, entry.value) for entry in restored.entries().collect()] == [
+        (row, col, row * 10 + col if col == 2 else None)
+        for row in range(3) for col in (1, 2)
+    ]
+    localized = restored.localize_entries("entries", "columns")
+    assert [column.col_idx for column in hl.eval(localized.columns)] == [2, 0, 1]
+
+    empty = matrix.select_entries()
+    empty_path = tmp_path / "empty-entries.mt"
+    empty.write(empty_path)
+    assert [(entry.row_idx, entry.col_idx) for entry in hl.read_matrix_table(empty_path).entries().collect()] == [
+        (row, col) for row in range(3) for col in (1, 2)
+    ]
