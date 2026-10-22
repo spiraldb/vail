@@ -4,7 +4,7 @@ use arrow_array::{Array, ArrayRef, ListArray, StructArray, UInt32Array};
 use arrow_buffer::{BooleanBuffer, NullBuffer, OffsetBuffer};
 use arrow_ord::sort::{SortColumn, lexsort_to_indices};
 use arrow_schema::{DataType, Field, Schema, SortOptions};
-use arrow_select::{concat::concat, take::take};
+use arrow_select::take::take;
 use datafusion_common::{Result, exec_err, plan_err};
 use datafusion_expr::{
     AggregateUDF, ColumnarValue, EmitTo, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
@@ -680,38 +680,10 @@ fn selected_spans(
     Ok(selected)
 }
 
-// Submit a whole Arrow batch to DataFusion, rather than invoking its hash
-// interner and grouped accumulator once for every outer list. In the common
-// non-null contiguous case the child values remain a borrowed slice.
-fn flatten_spans(values: &ArrayRef, spans: &[(usize, usize)]) -> Result<Option<ArrayRef>> {
-    let Some(&(start, mut end)) = spans.first() else {
-        return Ok(None);
-    };
-    let mut contiguous = true;
-    for &(next, stop) in &spans[1..] {
-        contiguous &= next == end;
-        end = stop;
-    }
-    if contiguous {
-        return Ok(Some(values.slice(start, end - start)));
-    }
-    let slices = spans
-        .iter()
-        .map(|&(start, end)| values.slice(start, end - start))
-        .collect::<Vec<_>>();
-    Ok(Some(concat(
-        &slices
-            .iter()
-            .map(|array| array.as_ref())
-            .collect::<Vec<_>>(),
-    )?))
-}
-
 fn flatten_segment(keys: ListInput<'_>, row_count: usize) -> Result<GroupSegment> {
-    let selected = selected_spans(keys, None, row_count)?;
-    let mut spans = Vec::new();
-    let mut owners = Vec::new();
-    for span in selected {
+    let spans = selected_spans(keys, None, row_count)?;
+    let mut chunks = Vec::with_capacity(spans.len());
+    for span in spans {
         let (start, end) = span.key;
         if start == end {
             continue;
@@ -721,16 +693,11 @@ fn flatten_segment(keys: ListInput<'_>, row_count: usize) -> Result<GroupSegment
                 "collection owner count exceeds Arrow index capacity"
             )
         })?;
-        spans.push((start, end));
-        owners.extend(std::iter::repeat_n(owner, end - start));
+        chunks.push(GroupSegmentChunk {
+            keys: keys.array.values().slice(start, end - start),
+            owners: Arc::new(UInt32Array::from(vec![owner; end - start])),
+        });
     }
-    let chunks = flatten_spans(keys.array.values(), &spans)?
-        .map(|keys| GroupSegmentChunk {
-            keys,
-            owners: Arc::new(UInt32Array::from(owners)) as ArrayRef,
-        })
-        .into_iter()
-        .collect();
     Ok(GroupSegment { chunks })
 }
 
@@ -739,13 +706,11 @@ fn flatten_values(
     values: ListInput<'_>,
     row_count: usize,
 ) -> Result<Vec<ArrayRef>> {
-    let spans = selected_spans(keys, Some(values), row_count)?
+    Ok(selected_spans(keys, Some(values), row_count)?
         .into_iter()
         .filter_map(|span| span.value)
         .filter(|(start, end)| start != end)
-        .collect::<Vec<_>>();
-    Ok(flatten_spans(values.array.values(), &spans)?
-        .into_iter()
+        .map(|(start, end)| values.array.values().slice(start, end - start))
         .collect())
 }
 

@@ -5537,7 +5537,7 @@ fn lower_synthetic(
 // every element lane. Index each owning dictionary once, then probe its list of
 // keys in one batch. Restrict this rewrite to unconditional lookups/get: moving
 // an arbitrary lookup out of a lazy branch could introduce evaluation errors.
-fn mapped_dictionary_lookup(value: &Expr, parameter: &str, callback: &Expr) -> Option<Expr> {
+fn mapped_dictionary_lookup(value: &Expr, parameter: &str, callback: &Expr, scope: &[(String, Type, usize)], schema: &Schema) -> Option<Expr> {
     let lookup = match callback {
         Expr::GetField { value, name } if name == "found" || name == "value" => value.as_ref(),
         Expr::IfElse { condition, consequent, alternate } => {
@@ -5561,7 +5561,20 @@ fn mapped_dictionary_lookup(value: &Expr, parameter: &str, callback: &Expr) -> O
         }
     }
     if !plain_capture(&args[0]) { return None; }
-    let name = format!("__vail_lookup_result_{parameter}");
+    let mut used = scope.iter().map(|(name, _, _)| name.clone()).collect::<std::collections::HashSet<_>>();
+    used.extend(schema.fields().iter().map(|field| field.name().clone()));
+    for root in [value, callback] {
+        root.visit_unique(&mut |node| {
+            if let Expr::LambdaVariable { name, .. } = node { used.insert(name.clone()); }
+            let mut position = 0;
+            node.visit_children(&mut |_| {
+                used.extend(node.child_binders(position).into_iter().map(str::to_owned));
+                position += 1;
+            });
+        });
+    }
+    let mut name = format!("__vail_lookup_result_{parameter}");
+    while used.contains(&name) { name.push('_'); }
     let variable = Arc::new(Expr::LambdaVariable { name: name.clone(), dtype: Some(dtype.clone()) });
     let body = match callback {
         Expr::GetField { name, .. } => Expr::GetField { value: variable, name: name.clone() },
@@ -5595,7 +5608,7 @@ fn lower_array_lambda(
     context: usize,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
     if operation == "map" {
-        if let Some(rewritten) = mapped_dictionary_lookup(value, parameter, callback) {
+        if let Some(rewritten) = mapped_dictionary_lookup(value, parameter, callback, scope, schema) {
             return lower_synthetic(rewritten, schema, globals, scope, memo, context);
         }
     }
@@ -7203,6 +7216,34 @@ mod tests {
         .unwrap();
         let result = compiled.evaluate(&batch).unwrap().into_array(2).unwrap();
         assert_eq!(result.as_ref(), &Float64Array::from(vec![Some(5.0), None]));
+    }
+
+    #[test]
+    fn public_mapped_dictionary_lookup_preserves_colliding_outer_binding() {
+        let integer = Type::Primitive(PrimitiveType::Int32);
+        let literal = |values: Value| Expr::Literal { dtype: Type::Array { array: Box::new(integer.clone()) }, value: values };
+        let lookup = Arc::new(Expr::NestedFunction {
+            function: "__vail_dict_lookup".into(),
+            args: vec![Expr::Literal { dtype: Type::Dict { dict: Box::new((integer.clone(), integer.clone())) }, value: json!([]) },
+                Expr::LambdaVariable { name: "i".into(), dtype: None }],
+            dtype: Type::Struct { r#struct: vec![("found".into(), Type::Primitive(PrimitiveType::Bool)), ("value".into(), integer.clone())] },
+        });
+        let expression = Expr::ArrayMap {
+            value: Arc::new(literal(json!([42]))),
+            parameter: "__vail_lookup_result_i".into(),
+            body: Arc::new(Expr::ArrayMap {
+                value: Arc::new(literal(json!([9]))), parameter: "i".into(),
+                body: Arc::new(Expr::IfElse {
+                    condition: Arc::new(Expr::GetField { value: lookup.clone(), name: "found".into() }),
+                    consequent: Arc::new(Expr::GetField { value: lookup, name: "value".into() }),
+                    alternate: Arc::new(Expr::LambdaVariable { name: "__vail_lookup_result_i".into(), dtype: None }),
+                }),
+            }),
+        };
+        let batch = RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![], &RecordBatchOptions::new().with_row_count(Some(1))).unwrap();
+        let actual = lower(&expression, batch.schema_ref()).unwrap().evaluate(&batch).unwrap().into_array(1).unwrap();
+        let expected = literal_array(&json!([[42]]), &Type::Array { array: Box::new(Type::Array { array: Box::new(integer) }) }, 1).unwrap();
+        assert_eq!(actual.as_ref(), expected.as_ref());
     }
 
     #[test]
