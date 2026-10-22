@@ -813,7 +813,7 @@ fn select_entry_fields(
             .collect());
     }
     values.columns().iter()
-        .map(|column| arrow_select::take::take(column, indices, None))
+        .map(|column| Ok(arrow_select::take::take(column, indices, None)?))
         .collect()
 }
 
