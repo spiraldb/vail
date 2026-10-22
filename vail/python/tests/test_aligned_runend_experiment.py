@@ -85,3 +85,45 @@ def test_multiple_same_schema_aligned_maps_keep_distinct_bodies():
     for row in result:
         assert len(row.entries) == 5
         assert [entry.value for entry in row.entries] == [row.row_idx * 100 + c * 3 + 8 for c in range(5)]
+
+
+def test_row_only_map_ignores_wide_nested_column_payload_and_keeps_slots():
+    m = hl.range_matrix_table(7, 5, 3)
+    m = m.annotate_cols(payload=hl.struct(
+        text=hl.str(m.col_idx) + ("x" * 8192),
+        nested=hl.struct(values=hl.range(128), marker=m.col_idx),
+    ))
+    m = m.choose_cols([4, 1, 4, 0, 3])
+    m = m.filter_entries(m.col_idx != 1)
+    m = m.annotate_entries(value=m.row_idx * 3 + 1)
+    localized = m.localize_entries("entries", "cols")
+    rows = localized.collect()
+    assert len(rows) == 7
+    assert sorted(row.row_idx for row in rows) == list(range(7))
+    for row in rows:
+        assert len(row.entries) == 5
+        assert [None if entry is None else entry.value for entry in row.entries] == [
+            row.row_idx * 3 + 1, None, row.row_idx * 3 + 1,
+            row.row_idx * 3 + 1, row.row_idx * 3 + 1,
+        ]
+    cols = hl.eval(localized.cols)
+    assert len(cols) == 5
+    assert [col.payload.nested.marker for col in cols] == [4, 1, 4, 0, 3]
+    assert all(col.payload.text == str(col.col_idx) + "x" * 8192 for col in cols)
+
+
+def test_selected_nested_column_fields_keep_parent_missingness():
+    m = hl.range_matrix_table(7, 5, 3)
+    m = m.annotate_cols(payload=hl.or_missing(
+        m.col_idx % 2 == 0,
+        hl.struct(value=m.col_idx * 10, unused="x" * 8192),
+    ))
+    m = m.choose_cols([4, 1, 4, 0, 3])
+    m = m.annotate_entries(value=m.row_idx + m.payload.value)
+    rows = m.localize_entries("entries", "cols").collect()
+    assert len(rows) == 7
+    for row in rows:
+        assert len(row.entries) == 5
+        assert [entry.value for entry in row.entries] == [
+            row.row_idx + 40, None, row.row_idx + 40, row.row_idx, None,
+        ]

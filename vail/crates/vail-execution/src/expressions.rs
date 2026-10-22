@@ -5765,6 +5765,48 @@ fn lower_uncached(
                     "aligned column expression must be an array".into(),
                 ));
             };
+            #[derive(Default)]
+            struct ColumnDemand {
+                all: bool,
+                fields: std::collections::BTreeMap<String, ColumnDemand>,
+            }
+            impl ColumnDemand {
+                fn insert(&mut self, path: &[String]) {
+                    if self.all { return; }
+                    if path.is_empty() { self.all = true; self.fields.clear(); }
+                    else { self.fields.entry(path[0].clone()).or_default().insert(&path[1..]); }
+                }
+                fn projected(&self, ty: &Type) -> Type {
+                    if self.all { return ty.clone(); }
+                    // Logical types such as Locus/Call must retain their entire
+                    // physical descriptor; only ordinary structs are pruned.
+                    let Type::Struct { r#struct: fields } = ty else { return ty.clone(); };
+                    Type::Struct { r#struct: fields.iter().filter_map(|(name, child)| {
+                        self.fields.get(name).map(|demand| (name.clone(), demand.projected(child)))
+                    }).collect() }
+                }
+            }
+            fn column_path(expr: &Expr) -> Option<Vec<String>> {
+                match expr {
+                    Expr::AlignedMapInput { axis, .. } if axis == "col" => Some(vec![]),
+                    Expr::GetField { value, name } => {
+                        let mut path = column_path(value)?;
+                        path.push(name.clone()); Some(path)
+                    }
+                    _ => None,
+                }
+            }
+            fn column_demand(expr: &Expr, demand: &mut ColumnDemand, seen: &mut HashSet<usize>) {
+                if !seen.insert(expr as *const Expr as usize) { return; }
+                if let Some(path) = column_path(expr) { demand.insert(&path); }
+                else { expr.visit_children(&mut |child| column_demand(child, demand, seen)); }
+            }
+            let mut demand = ColumnDemand::default();
+            column_demand(body, &mut demand, &mut HashSet::new());
+            let column_dtype = if demand.all || !demand.fields.is_empty() {
+                Some(demand.projected(&column_type).to_arrow()?)
+            } else { None };
+            let body_column_dtype = column_dtype.clone().unwrap_or_else(|| DataType::Struct(vec![].into()));
             let mut body_fields = vec![
                 Field::new(
                     crate::aligned_matrix_map::ENTRY_COLUMN,
@@ -5773,7 +5815,7 @@ fn lower_uncached(
                 ),
                 Field::new(
                     crate::aligned_matrix_map::COLUMN_COLUMN,
-                    column_type.to_arrow()?,
+                    body_column_dtype,
                     true,
                 ),
                 Field::new(
@@ -5844,6 +5886,7 @@ fn lower_uncached(
                 global_inputs,
                 body,
                 capture_keys,
+                column_dtype,
                 dtype.to_arrow()?,
                 body_dtype,
                 *preserve_cell,

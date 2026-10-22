@@ -119,6 +119,7 @@ pub(crate) struct AlignedMatrixMapExpr {
     body: Arc<dyn PhysicalExpr>,
     input_keys: HashSet<InputKey>,
     binding_order: Vec<InputKey>,
+    column_dtype: Option<DataType>,
     dtype: DataType,
     body_dtype: DataType,
     preserve_cell: bool,
@@ -132,6 +133,7 @@ impl AlignedMatrixMapExpr {
         globals: Arc<dyn PhysicalExpr>,
         body: Arc<dyn PhysicalExpr>,
         capture_keys: Vec<(String, Option<String>)>,
+        column_dtype: Option<DataType>,
         dtype: DataType,
         body_dtype: DataType,
         preserve_cell: bool,
@@ -149,6 +151,7 @@ impl AlignedMatrixMapExpr {
             body,
             input_keys,
             binding_order,
+            column_dtype,
             dtype,
             body_dtype,
             preserve_cell,
@@ -164,6 +167,7 @@ impl PartialEq for AlignedMatrixMapExpr {
             && self.globals.as_ref() == other.globals.as_ref()
             && self.body.as_ref() == other.body.as_ref()
             && self.binding_order == other.binding_order
+            && self.column_dtype == other.column_dtype
             && self.dtype == other.dtype
             && self.body_dtype == other.body_dtype
             && self.preserve_cell == other.preserve_cell
@@ -178,6 +182,7 @@ impl Hash for AlignedMatrixMapExpr {
         self.globals.hash(state);
         self.body.hash(state);
         self.binding_order.hash(state);
+        self.column_dtype.hash(state);
         self.dtype.hash(state);
         self.body_dtype.hash(state);
         self.preserve_cell.hash(state);
@@ -229,6 +234,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             body: children[4].clone(),
             input_keys: self.input_keys.clone(),
             binding_order: self.binding_order.clone(),
+            column_dtype: self.column_dtype.clone(),
             dtype: self.dtype.clone(),
             body_dtype: self.body_dtype.clone(),
             preserve_cell: self.preserve_cell,
@@ -289,7 +295,10 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                 entries.nulls().cloned(),
             )?)));
         }
-        let mut column_indices = Vec::with_capacity(total);
+        let mut column_indices = self
+            .column_dtype
+            .as_ref()
+            .map(|_| Vec::with_capacity(total));
         let mut run_ends = Vec::new();
         let mut row_indices = Vec::new();
         for row_index in 0..entries.len() {
@@ -299,13 +308,26 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                     "aligned entry list exceeds column metadata length".into(),
                 ));
             }
-            column_indices.extend((0..count).map(|index| index as u32));
+            if let Some(indices) = &mut column_indices {
+                indices.extend((0..count).map(|index| index as u32));
+            }
             if count > 0 {
                 run_ends.push(offsets[row_index + 1] - base as i32);
                 row_indices.push(row_index as u32);
             }
         }
-        let repeated_columns = take(columns.as_ref(), &UInt32Array::from(column_indices), None)?;
+        let repeated_columns: ArrayRef = if let Some(dtype) = &self.column_dtype {
+            let projected = project_column_array(&columns, dtype)?;
+            take(
+                projected.as_ref(),
+                &UInt32Array::from(column_indices.unwrap()),
+                None,
+            )?
+        } else {
+            // The compiled body cannot read this slot. An empty typed struct
+            // carries its row count without allocating any payload children.
+            Arc::new(StructArray::new_empty_fields(total, None))
+        };
         let values = entry_values(entry_slots.as_ref())?;
         let entry_presence = values
             .nulls()
@@ -322,7 +344,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
         }
         let mut body_arrays = vec![
             entry_slots.clone(),
-            repeated_columns,
+            repeated_columns.clone(),
             Arc::new(BooleanArray::new(entry_presence, None)) as ArrayRef,
         ];
         let mut body_fields = vec![
@@ -333,7 +355,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             )),
             Arc::new(arrow_schema::Field::new(
                 COLUMN_COLUMN,
-                columns.data_type().clone(),
+                repeated_columns.data_type().clone(),
                 true,
             )),
             Arc::new(arrow_schema::Field::new(
@@ -474,6 +496,46 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
         )?;
         Ok(ColumnarValue::Array(Arc::new(output)))
     }
+}
+
+/// Prune borrowed nested struct children before gathering repeated columns.
+/// Parent null validity and field order are retained at every projected level.
+fn project_column_array(array: &ArrayRef, dtype: &DataType) -> Result<ArrayRef> {
+    if array.data_type() == dtype {
+        return Ok(array.clone());
+    }
+    let DataType::Struct(fields) = dtype else {
+        return Ok(cast(array.as_ref(), dtype)?);
+    };
+    let source = array
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .ok_or_else(|| {
+            DataFusionError::Execution("aligned column projection needs struct".into())
+        })?;
+    if fields.is_empty() {
+        return Ok(Arc::new(StructArray::new_empty_fields(
+            array.len(),
+            source.nulls().cloned(),
+        )));
+    }
+    let children = fields
+        .iter()
+        .map(|field| {
+            let child = source.column_by_name(field.name()).ok_or_else(|| {
+                DataFusionError::Execution(format!(
+                    "aligned column field {:?} absent",
+                    field.name()
+                ))
+            })?;
+            project_column_array(child, field.data_type())
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(Arc::new(StructArray::try_new(
+        fields.clone(),
+        children,
+        source.nulls().cloned(),
+    )?))
 }
 
 fn array_value(value: ColumnarValue, what: &str) -> Result<ArrayRef> {
