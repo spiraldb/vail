@@ -14,17 +14,23 @@ use std::sync::Arc;
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct Lookup {
     signature: Signature,
+    many: bool,
 }
 pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
-    (name == "__vail_dict_lookup").then(|| {
+    matches!(name, "__vail_dict_lookup" | "__vail_dict_lookup_many").then(|| {
         Arc::new(ScalarUDF::from(Lookup {
             signature: Signature::any(2, Volatility::Immutable),
+            many: name == "__vail_dict_lookup_many",
         }))
     })
 }
 impl ScalarUDFImpl for Lookup {
     fn name(&self) -> &str {
-        "__vail_dict_lookup"
+        if self.many {
+            "__vail_dict_lookup_many"
+        } else {
+            "__vail_dict_lookup"
+        }
     }
     fn signature(&self) -> &Signature {
         &self.signature
@@ -41,16 +47,29 @@ impl ScalarUDFImpl for Lookup {
         let (Some(key), Some(value)) = (key, value) else {
             return plan_err!("dictionary entries require key and value");
         };
+        let query = if self.many {
+            let DataType::List(item) = query else {
+                return plan_err!("batched dictionary keys must be lists");
+            };
+            item.data_type()
+        } else {
+            query
+        };
         if key.data_type() != query {
             return plan_err!("dictionary query key type mismatch");
         }
-        Ok(DataType::Struct(
+        let result = DataType::Struct(
             vec![
                 Arc::new(Field::new("found", DataType::Boolean, true)),
                 value.clone(),
             ]
             .into(),
-        ))
+        );
+        Ok(if self.many {
+            DataType::List(Arc::new(Field::new("item", result, true)))
+        } else {
+            result
+        })
     }
     fn invoke_with_args(&self, args: ScalarFunctionArgs) -> Result<ColumnarValue> {
         let scalar_dict = matches!(args.args[0], ColumnarValue::Scalar(_));
@@ -62,9 +81,23 @@ impl ScalarUDFImpl for Lookup {
         let dictionaries = args.args[0]
             .clone()
             .into_array(if scalar_dict { 1 } else { rows })?;
-        let query = args.args[1].clone().into_array(rows)?;
-        let dtype =
-            self.return_type(&[dictionaries.data_type().clone(), query.data_type().clone()])?;
+        let query_input = args.args[1].clone().into_array(rows)?;
+        let query_lists = if self.many {
+            Some(query_input.as_any().downcast_ref::<ListArray>().unwrap())
+        } else {
+            None
+        };
+        let query = if let Some(lists) = query_lists {
+            let start = lists.value_offsets()[0] as usize;
+            let end = lists.value_offsets()[lists.len()] as usize;
+            lists.values().slice(start, end - start)
+        } else {
+            query_input.clone()
+        };
+        let dtype = self.return_type(&[
+            dictionaries.data_type().clone(),
+            query_input.data_type().clone(),
+        ])?;
         let lists = dictionaries.as_any().downcast_ref::<ListArray>().unwrap();
         let entries = lists
             .values()
@@ -114,26 +147,33 @@ impl ScalarUDFImpl for Lookup {
                 selected[group] = Some(sources.value(index));
             }
         }
-        let query_owners = if scalar_dict {
-            vec![0; rows]
+        let query_rows = if let Some(queries) = query_lists {
+            let mut owners = Vec::with_capacity(query.len());
+            for row in 0..rows {
+                owners.extend(std::iter::repeat_n(row, queries.value_length(row) as usize));
+            }
+            owners
         } else {
-            (0..rows)
-                .map(|row| {
-                    u32::try_from(row).map_err(|_| {
-                        datafusion_common::exec_datafusion_err!(
-                            "dictionary owner exceeds Arrow index capacity"
-                        )
-                    })
-                })
-                .collect::<Result<Vec<_>>>()?
+            (0..rows).collect()
         };
+        let query_owners = query_rows
+            .iter()
+            .map(|&row| {
+                u32::try_from(if scalar_dict { 0 } else { row }).map_err(|_| {
+                    datafusion_common::exec_datafusion_err!(
+                        "dictionary owner exceeds Arrow index capacity"
+                    )
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
         groups.clear();
         grouping.intern(
             &[Arc::new(UInt32Array::from(query_owners)), query],
             &mut groups,
         )?;
-        let valid = (0..rows)
-            .map(|row| lists.is_valid(if scalar_dict { 0 } else { row }))
+        let valid = query_rows
+            .iter()
+            .map(|&row| lists.is_valid(if scalar_dict { 0 } else { row }))
             .collect::<Vec<_>>();
         let matches = groups
             .iter()
@@ -154,12 +194,41 @@ impl ScalarUDFImpl for Lookup {
             &UInt32Array::from(matches),
             None,
         )?;
-        let DataType::Struct(fields) = dtype else {
+        let item_type = if let DataType::List(item) = &dtype {
+            item.data_type().clone()
+        } else {
+            dtype.clone()
+        };
+        let DataType::Struct(fields) = item_type else {
             unreachable!()
         };
         let output =
             StructArray::try_new(fields, vec![found, values], Some(NullBuffer::from(valid)))?;
-        if all_scalar {
+        if let Some(queries) = query_lists {
+            let DataType::List(item) = dtype else {
+                unreachable!()
+            };
+            let start = queries.value_offsets()[0];
+            let offsets = arrow_buffer::OffsetBuffer::new(
+                queries
+                    .value_offsets()
+                    .iter()
+                    .map(|offset| offset - start)
+                    .collect::<Vec<_>>()
+                    .into(),
+            );
+            let output = Arc::new(ListArray::try_new(
+                item,
+                offsets,
+                Arc::new(output),
+                queries.nulls().cloned(),
+            )?);
+            if all_scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::List(output)))
+            } else {
+                Ok(ColumnarValue::Array(output))
+            }
+        } else if all_scalar {
             Ok(ColumnarValue::Scalar(ScalarValue::Struct(Arc::new(output))))
         } else {
             Ok(ColumnarValue::Array(Arc::new(output)))

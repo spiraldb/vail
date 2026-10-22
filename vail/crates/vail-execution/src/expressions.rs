@@ -1839,7 +1839,7 @@ impl Expr {
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
                 if function.starts_with("__vail_list_reduce_")
-                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs" | "isnan")
+                    || matches!(function.as_str(), "__vail_list_call_stats" | "__vail_dict_lookup_many" | "abs" | "isnan")
                     || function.starts_with("__vail_ndarray_reshape_")
                 {
                     let result = udf.return_type(&args)?;
@@ -5533,6 +5533,141 @@ fn lower_synthetic(
     lower_cached(&expr, schema, globals, scope, memo, context)
 }
 
+// A mapped dictionary lookup need not broadcast the complete dictionary into
+// every element lane. Index each owning dictionary once, then probe its list of
+// keys in one batch. Restrict this rewrite to unconditional lookups/get: moving
+// an arbitrary lookup out of a lazy branch could introduce evaluation errors.
+fn mapped_dictionary_lookup(
+    value: &Expr,
+    parameter: &str,
+    callback: &Expr,
+    scope: &[(String, Type, usize)],
+    schema: &Schema,
+) -> Option<Expr> {
+    let lookup = match callback {
+        Expr::GetField { value, name } if name == "found" || name == "value" => value.as_ref(),
+        Expr::IfElse {
+            condition,
+            consequent,
+            alternate,
+        } => {
+            let Expr::GetField { value: found, name } = condition.as_ref() else {
+                return None;
+            };
+            let Expr::GetField {
+                value: result,
+                name: result_name,
+            } = consequent.as_ref()
+            else {
+                return None;
+            };
+            if name != "found"
+                || result_name != "value"
+                || found != result
+                || alternate.free_parameters().contains(parameter)
+            {
+                return None;
+            }
+            found.as_ref()
+        }
+        _ => return None,
+    };
+    let Expr::NestedFunction {
+        function,
+        args,
+        dtype,
+    } = lookup
+    else {
+        return None;
+    };
+    if function != "__vail_dict_lookup"
+        || args.len() != 2
+        || args[0].free_parameters().contains(parameter)
+    {
+        return None;
+    }
+    // These captures cannot fail on empty/missing input lists. Computed
+    // dictionaries retain the ordinary lazy lambda path.
+    fn plain_capture(value: &Expr) -> bool {
+        match value {
+            Expr::Column { .. }
+            | Expr::Global { .. }
+            | Expr::ExternalGlobal { .. }
+            | Expr::LambdaVariable { .. }
+            | Expr::Literal { .. }
+            | Expr::RuntimeLiteral { .. } => true,
+            Expr::GetField { value, .. } | Expr::CollectionCast { value, .. } => {
+                plain_capture(value)
+            }
+            _ => false,
+        }
+    }
+    if !plain_capture(&args[0]) {
+        return None;
+    }
+    let mut used = scope
+        .iter()
+        .map(|(name, _, _)| name.clone())
+        .collect::<std::collections::HashSet<_>>();
+    used.extend(schema.fields().iter().map(|field| field.name().clone()));
+    for root in [value, callback] {
+        root.visit_unique(&mut |node| {
+            if let Expr::LambdaVariable { name, .. } = node {
+                used.insert(name.clone());
+            }
+            let mut position = 0;
+            node.visit_children(&mut |_| {
+                used.extend(node.child_binders(position).into_iter().map(str::to_owned));
+                position += 1;
+            });
+        });
+    }
+    let mut name = format!("__vail_lookup_result_{parameter}");
+    while used.contains(&name) {
+        name.push('_');
+    }
+    let variable = Arc::new(Expr::LambdaVariable {
+        name: name.clone(),
+        dtype: Some(dtype.clone()),
+    });
+    let body = match callback {
+        Expr::GetField { name, .. } => Expr::GetField {
+            value: variable,
+            name: name.clone(),
+        },
+        Expr::IfElse { alternate, .. } => Expr::IfElse {
+            condition: Arc::new(Expr::GetField {
+                value: variable.clone(),
+                name: "found".into(),
+            }),
+            consequent: Arc::new(Expr::GetField {
+                value: variable,
+                name: "value".into(),
+            }),
+            alternate: alternate.clone(),
+        },
+        _ => unreachable!(),
+    };
+    Some(Expr::ArrayMap {
+        value: Arc::new(Expr::NestedFunction {
+            function: "__vail_dict_lookup_many".into(),
+            args: vec![
+                args[0].clone(),
+                Expr::ArrayMap {
+                    value: Arc::new(value.clone()),
+                    parameter: parameter.into(),
+                    body: Arc::new(args[1].clone()),
+                },
+            ],
+            dtype: Type::Array {
+                array: Box::new(dtype.clone()),
+            },
+        }),
+        parameter: name,
+        body: Arc::new(body),
+    })
+}
+
 fn lower_array_lambda(
     value: &Expr,
     parameter: &str,
@@ -5544,6 +5679,11 @@ fn lower_array_lambda(
     memo: &mut CompilationMemo,
     context: usize,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    if operation == "map" {
+        if let Some(rewritten) = mapped_dictionary_lookup(value, parameter, callback, scope, schema) {
+            return lower_synthetic(rewritten, schema, globals, scope, memo, context);
+        }
+    }
     let input = lower_cached(value, schema, globals, scope, memo, context)?;
     let array = match value.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
         Type::Array { array } | Type::Set { set: array } => *array,
@@ -7208,6 +7348,81 @@ mod tests {
         .unwrap();
         let result = compiled.evaluate(&batch).unwrap().into_array(2).unwrap();
         assert_eq!(result.as_ref(), &Float64Array::from(vec![Some(5.0), None]));
+    }
+
+    #[test]
+    fn public_mapped_dictionary_lookup_preserves_colliding_outer_binding() {
+        let integer = Type::Primitive(PrimitiveType::Int32);
+        let literal = |values: Value| Expr::Literal {
+            dtype: Type::Array {
+                array: Box::new(integer.clone()),
+            },
+            value: values,
+        };
+        let lookup = Arc::new(Expr::NestedFunction {
+            function: "__vail_dict_lookup".into(),
+            args: vec![
+                Expr::Literal {
+                    dtype: Type::Dict {
+                        dict: Box::new((integer.clone(), integer.clone())),
+                    },
+                    value: json!([]),
+                },
+                Expr::LambdaVariable {
+                    name: "i".into(),
+                    dtype: None,
+                },
+            ],
+            dtype: Type::Struct {
+                r#struct: vec![
+                    ("found".into(), Type::Primitive(PrimitiveType::Bool)),
+                    ("value".into(), integer.clone()),
+                ],
+            },
+        });
+        let expression = Expr::ArrayMap {
+            value: Arc::new(literal(json!([42]))),
+            parameter: "__vail_lookup_result_i".into(),
+            body: Arc::new(Expr::ArrayMap {
+                value: Arc::new(literal(json!([9]))),
+                parameter: "i".into(),
+                body: Arc::new(Expr::IfElse {
+                    condition: Arc::new(Expr::GetField {
+                        value: lookup.clone(),
+                        name: "found".into(),
+                    }),
+                    consequent: Arc::new(Expr::GetField {
+                        value: lookup,
+                        name: "value".into(),
+                    }),
+                    alternate: Arc::new(Expr::LambdaVariable {
+                        name: "__vail_lookup_result_i".into(),
+                        dtype: None,
+                    }),
+                }),
+            }),
+        };
+        let batch = RecordBatch::try_new_with_options(
+            Arc::new(Schema::empty()),
+            vec![],
+            &RecordBatchOptions::new().with_row_count(Some(1)),
+        )
+        .unwrap();
+        let actual = lower(&expression, batch.schema_ref())
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        let outer = actual.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(outer.len(), 1);
+        assert!(outer.is_valid(0));
+        let inner = outer.value(0);
+        let inner = inner.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(inner.len(), 1);
+        assert!(inner.is_valid(0));
+        let values = inner.value(0);
+        assert_eq!(values.as_ref(), &Int32Array::from(vec![42]));
     }
 
     #[test]

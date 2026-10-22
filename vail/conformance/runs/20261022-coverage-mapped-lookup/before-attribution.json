@@ -1,0 +1,76 @@
+{
+  "total_cpu_delta_us": 23778556,
+  "leaf": [
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupValuesColumn<false> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern",
+      34.28632924556058
+    ],
+    [
+      "<hashbrown::table::HashTable<(u64, datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupIndexView)> as datafusion_common::utils::proxy::HashTableAllocExt>::insert_accounted::<<datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupValuesColumn<false>>::collect_vectorized_process_context::{closure#1}>",
+      16.55277553439326
+    ],
+    [
+      "<hashbrown::raw::RawTable<(u64, datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupIndexView)>>::reserve_rehash::<&<datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupValuesColumn<true>>::scalarized_intern::{closure#1}>",
+      14.023605975064255
+    ],
+    [
+      "<vail_execution::collection_lookup::Lookup as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      4.0335502290382985
+    ],
+    [
+      "_platform_memmove",
+      3.6914562852344774
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::primitive::PrimitiveGroupValueBuilder<arrow_array::types::UInt32Type, false> as datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupColumn>::vectorized_append",
+      2.9463395506438657
+    ],
+    [
+      "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+      2.6441639265227037
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::primitive::PrimitiveGroupValueBuilder<arrow_array::types::Int32Type, true> as datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupColumn>::vectorized_append",
+      2.0560373809074024
+    ],
+    [
+      "_kernelrpc_mach_vm_deallocate_trap",
+      1.9476498068259487
+    ],
+    [
+      "_platform_memset",
+      1.7522762946580945
+    ],
+    [
+      "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+      1.6521945235026048
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::primitive::PrimitiveGroupValueBuilder<arrow_array::types::Date32Type, false> as datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupColumn>::len",
+      1.4853509187017075
+    ],
+    [
+      "__bzero",
+      0.8701453528128453
+    ],
+    [
+      "<arrow_data::transform::MutableArrayData>::try_extend",
+      0.7988878719128277
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::primitive::PrimitiveGroupValueBuilder<arrow_array::types::Int32Type, true> as datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupColumn>::vectorized_equal_to",
+      0.7546841784673552
+    ]
+  ],
+  "lookup_inclusive_pct": 86.4636019108982,
+  "grouping_ancestor": [
+    [
+      "<vail_execution::collection_lookup::Lookup as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      77.92047170568306
+    ],
+    [
+      "vail_execution::collection_groups::grouped_aggregate",
+      0.8208993010340914
+    ]
+  ]
+}
