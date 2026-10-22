@@ -9,9 +9,11 @@ def test_mapped_dictionary_lookup_varied_rows():
         {'d': {}, 'q': [], 'fallback': 70},
         {'d': None, 'q': [1, None], 'fallback': 80},
         {'d': {1: 1}, 'q': None, 'fallback': 90},
-    ], schema=hl.tstruct(d=hl.tdict(hl.tint32, hl.tint32), q=hl.tarray(hl.tint32), fallback=hl.tint32))
+    ], schema=hl.tstruct(d=hl.tdict(hl.tint32, hl.tint32), q=hl.tarray(hl.tint32), fallback=hl.tint32), n_partitions=3)
     got = t.annotate(result=t.q.map(lambda k: t.d.get(k, t.fallback))).result.collect()
     assert got == [[10, None, 40, 30, 10], [50, 60], [], [None, None], None]
+    found = t.annotate(result=t.q.map(lambda k: t.d.contains(k))).result.collect()
+    assert found == [[True, True, False, True, True], [True, False], [], [None, None], None]
 
 
 def test_mapped_dictionary_lookup_query_capture_and_missing_default():
