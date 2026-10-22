@@ -7242,8 +7242,15 @@ mod tests {
         };
         let batch = RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![], &RecordBatchOptions::new().with_row_count(Some(1))).unwrap();
         let actual = lower(&expression, batch.schema_ref()).unwrap().evaluate(&batch).unwrap().into_array(1).unwrap();
-        let expected = literal_array(&json!([[42]]), &Type::Array { array: Box::new(Type::Array { array: Box::new(integer) }) }, 1).unwrap();
-        assert_eq!(actual.as_ref(), expected.as_ref());
+        let outer = actual.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(outer.len(), 1);
+        assert!(outer.is_valid(0));
+        let inner = outer.value(0);
+        let inner = inner.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(inner.len(), 1);
+        assert!(inner.is_valid(0));
+        let values = inner.value(0);
+        assert_eq!(values.as_ref(), &Int32Array::from(vec![42]));
     }
 
     #[test]
