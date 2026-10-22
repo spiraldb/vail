@@ -20,6 +20,16 @@ pub(crate) fn col(name: impl AsRef<str>) -> DFExpr {
     DFExpr::Column(datafusion_common::Column::new_unqualified(name.as_ref()))
 }
 
+fn is_independent_of_callback_parameter(expression: &Expr, parameter: &str) -> bool {
+    let mut independent = true;
+    expression.visit_unique(&mut |node| {
+        if matches!(node, Expr::LambdaVariable { name, .. } if name == parameter) {
+            independent = false;
+        }
+    });
+    independent
+}
+
 /// Lift ordinary coordinate reductions to one mergeable DataFusion UDAF.
 /// Complex nested scopes retain the general relational implementation.
 fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
@@ -55,6 +65,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
             let coordinate_options = options.as_object().is_none_or(|options| {
                 options.keys().all(|key| {
                     key == "__vail_result_type"
+                        || key == "__vail_share_linreg_predictors"
                         || (function == "linreg"
                             && matches!(key.as_str(), "nested_dim" | "n_predictors"))
                 })
@@ -82,6 +93,31 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                 // Sum infers its widened output from the mapped argument's
                 // native Arrow type in factory(). Optional frontend result
                 // annotations must not select integer versus floating math.
+                let mut options = options.clone();
+                if function == "linreg" {
+                    if let Some(Expr::Struct { fields }) = argument.as_deref() {
+                        let predictors = fields
+                            .iter()
+                            .find(|(name, _)| name == "x")
+                            .map(|(_, value)| value);
+                        let weight = fields
+                            .iter()
+                            .find(|(name, _)| name == "weight")
+                            .map(|(_, value)| value);
+                        if predictors.is_some_and(|value| {
+                            is_independent_of_callback_parameter(value, parameter)
+                        }) && weight.is_none_or(|value| {
+                            is_independent_of_callback_parameter(value, parameter)
+                        }) {
+                            if let Some(options) = options.as_object_mut() {
+                                options.insert(
+                                    "__vail_share_linreg_predictors".into(),
+                                    serde_json::Value::Bool(true),
+                                );
+                            }
+                        }
+                    }
+                }
                 return Ok(Expr::Aggregate {
                     function: format!("__coordinate_{function}"),
                     value: Some(Arc::new(Expr::ArrayMap {
@@ -89,7 +125,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                         parameter: parameter.clone(),
                         body: Arc::new(element),
                     })),
-                    options: options.clone(),
+                    options,
                     result_type: result_type.clone(),
                     init: vec![],
                 });
@@ -115,6 +151,126 @@ struct CoordinateLeafKey {
     options: String,
     filters: Vec<Expr>,
     init: Vec<(String, Expr)>,
+}
+
+#[derive(Hash, PartialEq, Eq)]
+struct SharedLinregKey {
+    predictors: Expr,
+    weight: Option<Expr>,
+    filters: Vec<Expr>,
+    options: String,
+}
+
+/// Replace several coordinate linregs that use the same design and weights
+/// with one multi-response reducer. The response columns remain independent;
+/// the execution kernel can share a factorization when their selected rows
+/// match and falls back to independent fits when response validity differs.
+fn combine_shared_linreg_leaves(
+    leaves: &[CoordinateLeaf],
+) -> (Vec<CoordinateLeaf>, Vec<(usize, Option<usize>)>) {
+    let mut key_to_group = HashMap::<SharedLinregKey, usize>::new();
+    let mut groups = Vec::<Vec<usize>>::new();
+    let mut parsed = Vec::<Option<(Expr, Option<Expr>, Expr)>>::with_capacity(leaves.len());
+    for (index, leaf) in leaves.iter().enumerate() {
+        let fields = leaf.value.as_ref().and_then(|value| match value {
+            Expr::Struct { fields } => Some(fields),
+            _ => None,
+        });
+        let Some(fields) = fields.filter(|_| leaf.function == "linreg") else {
+            parsed.push(None);
+            continue;
+        };
+        let get = |name: &str| {
+            fields
+                .iter()
+                .find(|(field, _)| field == name)
+                .map(|(_, v)| v.clone())
+        };
+        let Some(y) = get("y") else {
+            parsed.push(None);
+            continue;
+        };
+        let Some(predictors) = get("x") else {
+            parsed.push(None);
+            continue;
+        };
+        let weight = get("weight");
+        let key = SharedLinregKey {
+            predictors: predictors.clone(),
+            weight: weight.clone(),
+            filters: leaf.filters.clone(),
+            options: serde_json::to_string(&leaf.options).unwrap_or_default(),
+        };
+        let group = if let Some(group) = key_to_group.get(&key) {
+            *group
+        } else {
+            let group = groups.len();
+            groups.push(Vec::new());
+            key_to_group.insert(key, group);
+            group
+        };
+        groups[group].push(index);
+        parsed.push(Some((predictors, weight, y)));
+    }
+    let mut group_for_leaf = vec![None; leaves.len()];
+    for (group, indices) in groups
+        .iter()
+        .enumerate()
+        .filter(|(_, indices)| indices.len() > 1)
+    {
+        for (fit, index) in indices.iter().copied().enumerate() {
+            group_for_leaf[index] = Some((group, fit));
+        }
+    }
+    let mut output = Vec::with_capacity(leaves.len());
+    let mut remap = vec![(usize::MAX, None); leaves.len()];
+    let mut appended_groups = HashSet::new();
+    for (index, leaf) in leaves.iter().enumerate() {
+        if let Some((group, fit)) = group_for_leaf[index] {
+            let new_index = if appended_groups.insert(group) {
+                let indices = &groups[group];
+                let (predictors, weight, _) = parsed[indices[0]].as_ref().unwrap();
+                let mut fields = vec![("x".to_owned(), predictors.clone())];
+                let weight_index = weight.as_ref().map(|weight| {
+                    let index = fields.len();
+                    fields.push(("weight".to_owned(), weight.clone()));
+                    index
+                });
+                let mut y_indices = Vec::with_capacity(indices.len());
+                for (fit_index, source_index) in indices.iter().copied().enumerate() {
+                    let (_, _, y) = parsed[source_index].as_ref().unwrap();
+                    y_indices.push(fields.len());
+                    fields.push((format!("y{fit_index}"), y.clone()));
+                }
+                let mut options = leaves[indices[0]].options.clone();
+                if let Some(object) = options.as_object_mut() {
+                    object.insert("x_index".into(), serde_json::json!(0));
+                    object.insert("weight_index".into(), serde_json::json!(weight_index));
+                    object.insert("y_indices".into(), serde_json::json!(y_indices));
+                }
+                let combined = CoordinateLeaf {
+                    function: "linreg_multi".into(),
+                    value: Some(Expr::Struct { fields }),
+                    options,
+                    filters: leaf.filters.clone(),
+                    init: vec![],
+                };
+                let new_index = output.len();
+                output.push(combined);
+                new_index
+            } else {
+                // The group leaf is inserted at its first source occurrence;
+                // recover that output index from the remap already populated.
+                remap[groups[group][0]].0
+            };
+            remap[index] = (new_index, Some(fit));
+        } else {
+            let new_index = output.len();
+            output.push(leaf.clone());
+            remap[index] = (new_index, None);
+        }
+    }
+    (output, remap)
 }
 
 /// Lift direct reducer leaves from a callback into one packed coordinate
@@ -187,14 +343,7 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
                     next
                 };
                 visit(
-                    body,
-                    next_scope,
-                    scopes,
-                    scope_ids,
-                    memo,
-                    leaves,
-                    leaf_ids,
-                    prefix,
+                    body, next_scope, scopes, scope_ids, memo, leaves, leaf_ids, prefix,
                 )?
             }
             Expr::AggArray { .. }
@@ -206,16 +355,9 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
             _ => {
                 let mut unsupported = false;
                 let mut failure = None;
-                let mapped =
-                    expr.try_map_children(|child| match visit(
-                        child,
-                        scope,
-                        scopes,
-                        scope_ids,
-                        memo,
-                        leaves,
-                        leaf_ids,
-                        prefix,
+                let mapped = expr.try_map_children(|child| {
+                    match visit(
+                        child, scope, scopes, scope_ids, memo, leaves, leaf_ids, prefix,
                     ) {
                         Ok(Some(value)) => {
                             Ok::<Expr, vail_execution::expressions::ExprError>(value)
@@ -228,15 +370,12 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
                             failure = Some(error);
                             Ok(child.clone())
                         }
-                    })?;
+                    }
+                })?;
                 if let Some(error) = failure {
                     return Err(error);
                 }
-                if unsupported {
-                    None
-                } else {
-                    Some(mapped)
-                }
+                if unsupported { None } else { Some(mapped) }
             }
         };
         memo.insert(memo_key, mapped.clone());
@@ -282,7 +421,8 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
         &mut leaves,
         &mut leaf_ids,
         &prefix,
-    )? else {
+    )?
+    else {
         return Ok(None);
     };
     // Indexed callbacks bind the source position separately from the source
@@ -310,6 +450,10 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
             init: vec![],
         });
     }
+    // Combine only exact predictor/weight/filter matches. In particular, a
+    // predictor may depend on the array callback index or matrix entry value;
+    // identical expression DAGs still denote the same design per coordinate.
+    let (leaves, slot_remap) = combine_shared_linreg_leaves(&leaves);
     // The first traversal leaves stable slot names. Build one mapped struct
     // containing every reducer value and its optional row filter.
     use vail_execution::expressions::BinaryOperator;
@@ -383,13 +527,15 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
     while used_names.contains(&result_param) || result_param.starts_with(&prefix) {
         result_param.push('_');
     }
-    let slot_indices = (0..leaves.len())
-        .map(|index| (format!("{prefix}{index}"), index))
+    let slot_indices = slot_remap
+        .iter()
+        .enumerate()
+        .map(|(source_index, (index, fit))| (format!("{prefix}{source_index}"), (*index, *fit)))
         .collect::<HashMap<_, _>>();
     fn replace(
         expr: &Expr,
         param: &str,
-        slots: &HashMap<String, usize>,
+        slots: &HashMap<String, (usize, Option<usize>)>,
         memo: &mut HashMap<usize, Expr>,
     ) -> Result<Expr> {
         let key = expr as *const Expr as usize;
@@ -398,12 +544,21 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
         }
         let mapped = match expr {
             Expr::LambdaVariable { name, .. } if slots.contains_key(name) => {
-                Expr::GetField {
+                let (index, fit) = slots[name];
+                let aggregate_result = Expr::GetField {
                     value: Arc::new(Expr::LambdaVariable {
                         name: param.to_owned(),
                         dtype: None,
                     }),
-                    name: format!("r{}", slots[name]),
+                    name: format!("r{index}"),
+                };
+                if let Some(fit) = fit {
+                    Expr::GetField {
+                        value: Arc::new(aggregate_result),
+                        name: format!("fit{fit}"),
+                    }
+                } else {
+                    aggregate_result
                 }
             }
             other => other.try_map_children(|child| replace(child, param, slots, memo))?,
