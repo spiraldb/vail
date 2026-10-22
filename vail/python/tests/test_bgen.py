@@ -32,7 +32,8 @@ def _text(value, size=2):
 
 
 def _bgen(tmp_path, compressed=True, probabilities=None, allele="A"):
-    probabilities = probabilities or [(255, 0, False), (0, 255, False), (0, 0, True)]
+    if probabilities is None:
+        probabilities = [(255, 0, False), (0, 255, False), (0, 0, True)]
     n = len(probabilities)
     sample_block = struct.pack('<II', 8 + sum(2+len(f's{i}') for i in range(n)), n)
     sample_block += b''.join(_text(f's{i}') for i in range(n))
@@ -264,3 +265,12 @@ def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_p
     empty = hl.import_bgen(output + '.bgen', [], sample_file=output + '.sample', n_partitions=3)
     assert empty.aggregate_entries(hl.agg.count()) == len(indices)
     assert empty.entries().count() == len(indices)
+
+
+def test_native_bgen_zero_sample_probability_block(tmp_path):
+    path = _bgen(tmp_path, probabilities=[])
+    mt = hl.import_bgen(str(path), ['GP', 'GT', 'dosage'])
+    assert mt.count() == (1, 0)
+    assert mt.aggregate_entries(hl.agg.count()) == 0
+    assert mt.entries().count() == 0
+    assert mt.localize_entries('entries', 'cols').collect()[0]['entries'] == []
