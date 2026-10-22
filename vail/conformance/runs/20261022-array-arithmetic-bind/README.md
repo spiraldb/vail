@@ -58,7 +58,7 @@ The `profile-dosage` capture confirms that **`array_sum` and `array_any_match` a
 |---|---:|---:|---:|
 | `make_array_inner`, inclusive | 27.66% | no samples | no samples |
 | `array_sum`, self | 1.33% | 2.45% | no samples |
-| CASE `filter_struct`, inclusive | 9.34% | 11.60% | 6.66% |
+| Arrow `filter_struct`, inclusive | 6.75% | 11.60% | 6.66% |
 | CASE result merge, inclusive | — | 5.55% | 2.07% |
 | native power, inclusive | 4.64% | 8.15% | 13.53% |
 
@@ -71,3 +71,6 @@ Before direct dosage, CASE sites came from probability-null masking, cache lower
 DataFusion 55's `case.rs` projects the union of referenced columns (lines 1046 onward), then `filter_record_batch` filters those referenced columns for selected branches (346 onward; selected branch at 853). A referenced probability list/struct is still a nested Arrow array. Filtering copies its relevant children and validity bits, visible as `filter_struct -> filter_array -> MutableArrayData -> build_extend_null_bits` / primitive extend. `ResultBuilder::finish` merges branch results back into original positions. We do not claim DataFusion copies every unused column: it prunes unused columns before this filtering.
 
 Direct dosage removes the normalization, empty-array arithmetic, list-missingness and redundant null guards; cache index/error semantics and the three-likelihood arity guard remain. This capture has function symbols but no inline/source-site attribution, so its aggregate CASE cost cannot honestly be assigned to individual Python guards.
+
+
+Final public Rust semantic regression also passed on the normal isolated release target: **1 passed** (Arrow-scalar and JSON-IR zero-index construction forms, null-containing batch evaluation). No physical-plan topology assertion is used. Full build/test logs are retained.
