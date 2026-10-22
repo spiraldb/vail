@@ -799,8 +799,13 @@ mod tests {
             Arc::new(Field::new("left", DataType::Int64, true)),
             Arc::new(Field::new("right", DataType::Int64, true)),
         ]));
-        let list_type = list_type(packed_type.clone());
-        let input_schema = Arc::new(Schema::new(vec![Field::new("packed", list_type, true)]));
+        let packed_list_type =
+            DataType::List(Arc::new(Field::new_list_field(packed_type.clone(), true)));
+        let input_schema = Arc::new(Schema::new(vec![Field::new(
+            "packed",
+            packed_list_type,
+            true,
+        )]));
         let expression = AggregateExprBuilder::new(
             bundle,
             vec![Arc::new(Column::new("packed", 0))],
