@@ -1364,6 +1364,79 @@ mod tests {
         assert_eq!(case.when_then_expr.len(), 2);
     }
 
+    #[test]
+    fn scalar_capture_udf_reuses_semantics_after_binding_changes_and_parallel_batches() {
+        use arrow_array::{ArrayRef, Int64Array, ListArray};
+        use arrow_buffer::OffsetBuffer;
+        use datafusion_expr::{ColumnarValue, ScalarFunctionArgs};
+        let int64 = Type::Primitive(PrimitiveType::Int64);
+        let array_type = Type::Array { array: Box::new(int64.clone()) };
+        let arrow_array_type = array_type.to_arrow().unwrap();
+        let schema = DFSchema::try_from(Schema::new(vec![
+            Field::new("items", arrow_array_type.clone(), true),
+            Field::new("shift", DataType::Int64, true),
+        ])).unwrap();
+        let expression = Expr::ArrayMap {
+            value: Arc::new(Expr::Column { name: "items".into() }),
+            parameter: "element".into(),
+            body: Arc::new(Expr::Binary {
+                operator: BinaryOperator::Add,
+                left: Arc::new(Expr::LambdaVariable { name: "element".into(), dtype: None }),
+                right: Arc::new(Expr::Column { name: "shift".into() }),
+            }),
+        };
+        // Use the normal public lowering API to obtain the executable UDF,
+        // then exercise its public batch interface with different captures.
+        let LogicalExpr::ScalarFunction(function) = lower_logical(&expression, &schema).unwrap()
+            else { panic!("array map must be executable as a scalar function"); };
+        let scalar = |values: Vec<i64>| ScalarValue::List(Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(DataType::Int64, true)),
+            OffsetBuffer::from_lengths([values.len()]), Arc::new(Int64Array::from(values)), None,
+        )));
+        let invoke = |items: ScalarValue, shifts: Vec<i64>| {
+            let rows = shifts.len();
+            let shifts: ArrayRef = Arc::new(Int64Array::from(shifts));
+            let mut args = Vec::new();
+            let mut arg_fields = Vec::new();
+            for argument in &function.args {
+                let LogicalExpr::Column(column) = argument else { panic!("column argument required"); };
+                let field = schema.field_with_unqualified_name(&column.name).unwrap().clone();
+                arg_fields.push(Arc::new(field));
+                args.push(if column.name == "items" {
+                    ColumnarValue::Scalar(items.clone())
+                } else { ColumnarValue::Array(shifts.clone()) });
+            }
+            let output = function.func.invoke_with_args(ScalarFunctionArgs {
+                args, arg_fields, number_rows: rows,
+                return_field: Arc::new(Field::new("result", arrow_array_type.clone(), true)),
+                config_options: Arc::new(Default::default()),
+            }).unwrap().into_array(rows).unwrap();
+            let output = output.as_any().downcast_ref::<ListArray>().unwrap();
+            (0..rows).map(|row| {
+                let value = output.value(row);
+                value.as_any().downcast_ref::<Int64Array>().unwrap().values().to_vec()
+            }).collect::<Vec<_>>()
+        };
+        let original = scalar(vec![1, 2]);
+        assert_eq!(invoke(original.clone(), vec![3, 4]), vec![vec![4, 5], vec![5, 6]]);
+        let changed = scalar(vec![10, 20]);
+        assert_eq!(invoke(changed.clone(), vec![3]), vec![vec![13, 23]]);
+        assert_eq!(invoke(scalar(vec![]), vec![8, 9]), vec![vec![], vec![]]);
+        std::thread::scope(|scope| {
+            let handles = (0..4).map(|shift| {
+                let invoke = &invoke;
+                let changed = changed.clone();
+                scope.spawn(move || invoke(changed, vec![shift, shift + 1]))
+            }).collect::<Vec<_>>();
+            for (shift, handle) in handles.into_iter().enumerate() {
+                let shift = shift as i64;
+                assert_eq!(handle.join().unwrap(),
+                    vec![vec![10 + shift, 20 + shift], vec![11 + shift, 21 + shift]]);
+            }
+        });
+        assert_eq!(invoke(original, vec![0]), vec![vec![1, 2]]);
+    }
+
     fn evaluate_logical(
         expr: LogicalExpr,
         schema: &DFSchema,
