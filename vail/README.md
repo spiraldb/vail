@@ -35,6 +35,11 @@ uv run --no-sync maturin develop --locked
 uv run --no-sync python examples/table.py
 ```
 
+Existing Hail 0.2 native datasets can be imported with
+`Table.read_legacy(path)` and `MatrixTable.read_legacy(path)`. These local,
+eager migration readers support file formats 1.0 through 1.8 without a JVM.
+See [legacy storage compatibility and memory requirements](docs/LEGACY_STORAGE.md).
+
 The storage example supports separate writer and reader processes:
 
 ```sh

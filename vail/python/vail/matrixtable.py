@@ -354,6 +354,16 @@ class MatrixIR:
 class MatrixTable:
     """An immutable lazy matrix with global, row, column and entry fields."""
 
+    @classmethod
+    def read_legacy(cls, path):
+        """Import a local Hail 0.2 native ``.mt`` directory without Hail/JVM.
+
+        This eager migration reader materializes all axes and entries in
+        memory, preserving column order and missing (filtered) entry structs.
+        """
+        from .legacy import read_matrix_legacy
+        return read_matrix_legacy(path)
+
     def __init__(self, mir):
         if not isinstance(mir, MatrixIR):
             raise TypeError("MatrixTable requires a MatrixIR")
@@ -2948,15 +2958,20 @@ class GroupedMatrixTable:
                     return m._lower_cell(lowered, base, cell, column=pair["2"][_COL])
 
                 value = struct(**{n: prepare(v) for n, v in self._entry_fields.items()})
-                return struct(
-                    **{_CID: agg.take(cell[_CID], 1)[0], _VALUE: value}
-                )
+                return value
 
             cells = agg.array_agg(cell_result, _zip_arrays(base[_CELLS], m._mir.column_records))
             grouped = base.group_by(**keys).aggregate(**fields, **{_CELLS: cells})
             if self._partitions is not None:
                 grouped = grouped.repartition(self._partitions)
-            aligned = grouped[_CELLS]
+            # Position j always belongs to column j, across every source row.
+            # Attach that fixed ID after reduction rather than running an
+            # order-sensitive take for it over all the original entries.
+            aligned = _zip_arrays(grouped[_CELLS], m._mir.column_records).map(
+                lambda pair: struct(**{
+                    _CID: pair["2"][_CID], _VALUE: pair["1"],
+                })
+            )
             core = _project(
                 grouped,
                 [
