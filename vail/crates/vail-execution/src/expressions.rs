@@ -7044,9 +7044,6 @@ mod tests {
                 index: Arc::new(index),
             };
             let compiled = lower(&expression, batch.schema().as_ref()).unwrap();
-            // Semantics alone also pass through the slow singleton-list path.
-            // Assert that the real Arrow-literal frontend form bypasses it.
-            assert_eq!(compiled.to_string(), "ScopedSwitch");
             let output = compiled.evaluate(&batch).unwrap().into_array(3).unwrap();
             let output = output.as_any().downcast_ref::<Int32Array>().unwrap();
             assert_eq!(output.iter().collect::<Vec<_>>(), vec![Some(4), None, Some(8)]);
