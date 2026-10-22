@@ -16,6 +16,14 @@ actual workload and verify that the offending setup disappears from the hot
 path before claiming a performance fix. Apply this requirement to adjacent
 execution paths touched by the change as well.
 
+# Build caching
+
+Standing user instruction (2026-10-22): use **kache** for Rust build caching.
+Do not manually save, copy, hard-link, or reuse compiled `.so` files as a build
+cache or artifact-saving workaround. Build normally with kache and use the
+result of that build for validation. If builds are too slow, tell the user so
+that a better workflow can be agreed; do not invent artifact-reuse schemes.
+
 # Required review before main
 
 Standing user instruction (2026-10-15): before committing or merging code into
