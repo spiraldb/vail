@@ -149,6 +149,31 @@ def test_array_linreg_reuses_only_identical_predictor_batches():
         assert fit.beta == pytest.approx([4.0 + group, 2.5], abs=1e-8)
 
 
+def test_array_linreg_does_not_share_callback_dependent_predictors():
+    table = hl.Table.parallelize(
+        [{"x": float(x), "y": 3.0 + 2.0 * x, "w": 1.0 + (x % 3)} for x in range(20)],
+        schema=hl.tstruct(x=hl.tfloat64, y=hl.tfloat64, w=hl.tfloat64),
+        n_partitions=3,
+    )
+    fits = table.aggregate(
+        hl.agg.array_agg(
+            lambda offset: hl.agg.linreg(
+                table.y, [1.0, table.x + offset], weight=table.w
+            ),
+            hl.range(3),
+        )
+    )
+    for offset, fit in enumerate(fits):
+        # This design changes with the callback coordinate, so each result
+        # must retain the scalar linreg semantics instead of using shared X.
+        scalar = table.aggregate(
+            hl.agg.linreg(table.y, [1.0, table.x + offset], weight=table.w)
+        )
+        assert fit.n == scalar.n == 20
+        assert fit.beta == pytest.approx(scalar.beta)
+        assert fit.multiple_r_squared == pytest.approx(scalar.multiple_r_squared)
+
+
 def test_array_linreg_cached_qr_preserves_tiny_residual_norm():
     table = hl.Table.parallelize(
         [

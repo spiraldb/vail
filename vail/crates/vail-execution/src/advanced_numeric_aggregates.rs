@@ -2167,6 +2167,7 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
         return Err(invalid("linreg nested_dim exceeds predictor count"));
     }
     let weighted = fields.len() == 3;
+    let share_predictors = o["__vail_share_linreg_predictors"].as_bool() == Some(true);
     if fields.len() != 2 && !weighted {
         return Err(invalid("linreg expects y and x, plus optional weight"));
     }
@@ -2194,8 +2195,12 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
         Ok(Box::new(LinregAccumulator::new(p, nested, weighted)) as Box<dyn Accumulator>)
     });
     let groups_factory = Arc::new(move || {
-        Ok(Box::new(LinregGroupsAccumulator::new(p, nested, weighted))
-            as Box<dyn GroupsAccumulator>)
+        Ok(Box::new(LinregGroupsAccumulator::new(
+            p,
+            nested,
+            weighted,
+            share_predictors,
+        )) as Box<dyn GroupsAccumulator>)
     });
     let udaf_name = configured_udaf_name("linreg", t, o);
     let grouped_input = t.clone();
@@ -3164,6 +3169,7 @@ struct LinregGroupsAccumulator {
     p: usize,
     nested: usize,
     weighted: bool,
+    share_predictors: bool,
     n: Vec<i64>,
     // One contiguous upper-triangular QR state per group, with shared scratch.
     qr: Vec<f64>,
@@ -3189,11 +3195,12 @@ fn take_linreg_groups<T>(values: &mut Vec<T>, count: usize, width: usize, all: b
 }
 
 impl LinregGroupsAccumulator {
-    fn new(p: usize, nested: usize, weighted: bool) -> Self {
+    fn new(p: usize, nested: usize, weighted: bool, share_predictors: bool) -> Self {
         Self {
             p,
             nested,
             weighted,
+            share_predictors,
             n: Vec::new(),
             qr: Vec::new(),
             origins: Vec::new(),
@@ -3212,6 +3219,281 @@ impl LinregGroupsAccumulator {
 
     fn dimension(&self) -> usize {
         self.p + 1
+    }
+
+    /// Fast path for a coordinate linreg whose predictor and weight
+    /// expressions do not depend on the callback index. The row design is
+    /// built from one coordinate per source row and factored once; Qᵀ is then
+    /// applied to all coordinate responses as a multi-RHS operation.
+    ///
+    /// If validity or numerical edge cases make the selected design differ
+    /// across responses, return `false` before mutating state so the ordinary
+    /// per-coordinate implementation remains the semantic fallback.
+    fn update_shared_predictors(
+        &mut self,
+        batch: &LinregBatchInput<'_>,
+        group_indices: &[usize],
+        opt_filter: Option<&BooleanArray>,
+        total_num_groups: usize,
+    ) -> DfResult<bool> {
+        let width = total_num_groups;
+        if width < 2
+            || group_indices.is_empty()
+            || group_indices.len() % width != 0
+            || group_indices
+                .iter()
+                .enumerate()
+                .any(|(index, group)| *group != index % width)
+            || batch.rows.null_count() != 0
+            || batch.y_have_nulls
+            || batch.predictor_array_have_nulls
+            || batch.predictor_values_have_nulls
+            || batch.weights_have_nulls
+            || opt_filter.is_some_and(|filter| {
+                filter.null_count() != 0 || filter.values().iter().any(|value| !value)
+            })
+        {
+            return Ok(false);
+        }
+        let records = group_indices.len() / width;
+        if records == 0 {
+            return Ok(true);
+        }
+        let d = self.dimension();
+        let mut predictors = Vec::with_capacity(records * self.p);
+        let mut weight_scales = Vec::with_capacity(records);
+        for record in 0..records {
+            let row = record * width;
+            let Some(x) = batch.predictor_row(row, self.p, &mut self.predictor_scratch)? else {
+                return Ok(false);
+            };
+            let weight = batch.weights.map_or(1.0, |values| values.value(row));
+            if x.iter().any(|value| !value.is_finite()) || !weight.is_finite() || weight < 0.0 {
+                return Ok(false);
+            }
+            predictors.extend_from_slice(x);
+            weight_scales.push(weight.sqrt());
+        }
+        // Each coordinate response must have the same selected observations.
+        // Null responses use the original per-coordinate path, which naturally
+        // handles different validity masks without changing model counts.
+        if batch.ys.null_count() != 0 {
+            return Ok(false);
+        }
+        for record in 0..records {
+            let row = record * width;
+            for coordinate in 0..width {
+                let value = batch.ys.value(row + coordinate);
+                if !value.is_finite() {
+                    return Ok(false);
+                }
+            }
+        }
+
+        // Preserve the established centering origin: the first complete row
+        // with a nonzero first predictor anchors every coordinate fit.
+        let mut x_origins = vec![0.0; d];
+        let mut y_origins = vec![0.0; width];
+        let mut origin_set = false;
+        for record in 0..records {
+            let x0 = predictors[record * self.p];
+            if x0 != 0.0 {
+                for column in 1..self.p {
+                    let value = predictors[record * self.p + column] / x0;
+                    x_origins[column] = if value.is_finite() { value } else { 0.0 };
+                }
+                for coordinate in 0..width {
+                    let y = batch.ys.value(record * width + coordinate) / x0;
+                    y_origins[coordinate] = if y.is_finite() { y } else { 0.0 };
+                }
+                origin_set = true;
+                break;
+            }
+        }
+        if !origin_set {
+            x_origins.fill(0.0);
+            y_origins.fill(0.0);
+        }
+
+        // Factor one padded, column-major design. Padding by p zero rows
+        // matches the QR state shape used by the independent accumulator and
+        // keeps the factorization valid for short batches.
+        let matrix_rows = self.p + records;
+        let mut design = vec![0.0; matrix_rows * self.p];
+        for record in 0..records {
+            let x = &predictors[record * self.p..(record + 1) * self.p];
+            let weight_scale = weight_scales[record];
+            let row = self.p + record;
+            design[row] = weight_scale * x[0];
+            for column in 1..self.p {
+                design[row + column * matrix_rows] =
+                    weight_scale * (-x_origins[column]).mul_add(x[0], x[column]);
+            }
+        }
+        let mut scales = vec![1.0; self.p];
+        for column in 0..self.p {
+            let mut max = 0.0_f64;
+            let mut min = f64::INFINITY;
+            for row in self.p..matrix_rows {
+                let value = design[row + column * matrix_rows];
+                if !value.is_finite() {
+                    return Ok(false);
+                }
+                if value != 0.0 {
+                    max = max.max(value.abs());
+                    min = min.min(value.abs());
+                }
+            }
+            if min.is_finite() && min < max * 1e-150 {
+                return Ok(false);
+            }
+            if max != 0.0 && !(1e-100..=1e100).contains(&max) {
+                scales[column] = max;
+                for row in self.p..matrix_rows {
+                    design[row + column * matrix_rows] /= max;
+                }
+            }
+        }
+        let block_size = faer::linalg::qr::no_pivoting::factor::recommended_block_size::<f64>(
+            matrix_rows,
+            self.p,
+        );
+        let mut q_coeff = faer::Mat::<f64>::zeros(block_size, self.p);
+        let mut params: faer::linalg::qr::no_pivoting::factor::QrParams = faer::auto!(f64);
+        params.blocking_threshold = usize::MAX;
+        let scratch_req = faer::linalg::qr::no_pivoting::factor::qr_in_place_scratch::<f64>(
+            matrix_rows,
+            self.p,
+            block_size,
+            faer::Par::Seq,
+            params.into(),
+        );
+        let mut scratch = faer::dyn_stack::MemBuffer::new(scratch_req);
+        faer::linalg::qr::no_pivoting::factor::qr_in_place(
+            faer::MatMut::from_column_major_slice_mut(&mut design, matrix_rows, self.p),
+            q_coeff.as_mut(),
+            faer::Par::Seq,
+            faer::dyn_stack::MemStack::new(&mut scratch),
+            params.into(),
+        );
+        let mut predictor_r = vec![0.0; self.p * self.p];
+        let mut row_signs = vec![1.0; self.p];
+        for row in 0..self.p {
+            row_signs[row] = if design[row + row * matrix_rows] < 0.0 {
+                -1.0
+            } else {
+                1.0
+            };
+            for column in row..self.p {
+                let value = design[row + column * matrix_rows] * row_signs[row] * scales[column];
+                if !value.is_finite() {
+                    return Ok(false);
+                }
+                predictor_r[row * self.p + column] = value;
+            }
+        }
+
+        // Response columns are the only per-fit dense workspace. Scale them
+        // independently, then transform all fits in one Householder call.
+        let mut response_scales = vec![1.0; width];
+        let mut transformed = vec![0.0; matrix_rows * width];
+        for coordinate in 0..width {
+            let mut max = 0.0_f64;
+            let mut min = f64::INFINITY;
+            for record in 0..records {
+                let x0 = predictors[record * self.p];
+                let y = batch.ys.value(record * width + coordinate);
+                let value = weight_scales[record] * (-y_origins[coordinate]).mul_add(x0, y);
+                if !value.is_finite() {
+                    return Ok(false);
+                }
+                if value != 0.0 {
+                    max = max.max(value.abs());
+                    min = min.min(value.abs());
+                }
+                transformed[self.p + record + coordinate * matrix_rows] = value;
+            }
+            if min.is_finite() && min < max * 1e-150 {
+                return Ok(false);
+            }
+            if max != 0.0 && !(1e-100..=1e100).contains(&max) {
+                response_scales[coordinate] = max;
+                for row in self.p..matrix_rows {
+                    transformed[row + coordinate * matrix_rows] /= max;
+                }
+            }
+        }
+        let apply_scratch_req = faer::linalg::householder::apply_block_householder_sequence_transpose_on_the_left_in_place_scratch::<f64>(
+            matrix_rows,
+            block_size,
+            width,
+        );
+        let mut apply_scratch = faer::dyn_stack::MemBuffer::new(apply_scratch_req);
+        faer::linalg::householder::apply_block_householder_sequence_transpose_on_the_left_in_place_with_conj(
+            faer::MatRef::from_column_major_slice(&design, matrix_rows, self.p),
+            q_coeff.as_ref(),
+            faer::Conj::No,
+            faer::MatMut::from_column_major_slice_mut(&mut transformed, matrix_rows, width),
+            faer::Par::Seq,
+            faer::dyn_stack::MemStack::new(&mut apply_scratch),
+        );
+
+        let qr_width = self.qr_width();
+        let mut partial_qr = vec![0.0; width * qr_width];
+        for coordinate in 0..width {
+            let qr = &mut partial_qr[coordinate * qr_width..(coordinate + 1) * qr_width];
+            let response_scale = response_scales[coordinate];
+            for row in 0..self.p {
+                for column in row..self.p {
+                    qr[row * d + column] = predictor_r[row * self.p + column];
+                }
+                let value =
+                    transformed[row + coordinate * matrix_rows] * row_signs[row] * response_scale;
+                if !value.is_finite() {
+                    return Ok(false);
+                }
+                qr[row * d + self.p] = value;
+            }
+            let residual_scale = (self.p..matrix_rows)
+                .map(|row| transformed[row + coordinate * matrix_rows].abs())
+                .fold(0.0_f64, f64::max);
+            let residual = if residual_scale == 0.0 {
+                0.0
+            } else {
+                let sum = (self.p..matrix_rows).fold(0.0, |sum, row| {
+                    let value = transformed[row + coordinate * matrix_rows] / residual_scale;
+                    sum + value * value
+                });
+                residual_scale * sum.sqrt() * response_scale
+            };
+            if !residual.is_finite() {
+                return Ok(false);
+            }
+            qr[self.p * d + self.p] = residual;
+        }
+
+        self.ensure_groups(width)?;
+        for coordinate in 0..width {
+            let origins_start = coordinate * d;
+            let mut partial_origins = x_origins.clone();
+            partial_origins[self.p] = y_origins[coordinate];
+            if !self.origin_set[coordinate] && origin_set {
+                self.origins[origins_start..origins_start + d].copy_from_slice(&partial_origins);
+                self.origin_set[coordinate] = true;
+            }
+            self.n[coordinate] += records as i64;
+            let qr_start = coordinate * qr_width;
+            let current_origins = &self.origins[origins_start..origins_start + d];
+            merge_linreg_factor(
+                self.p,
+                &mut self.qr[qr_start..qr_start + qr_width],
+                &partial_qr[coordinate * qr_width..(coordinate + 1) * qr_width],
+                origin_set.then_some(partial_origins.as_slice()),
+                current_origins,
+                &mut self.invalid_numeric[coordinate],
+            );
+        }
+        Ok(true)
     }
 
     fn qr_width(&self) -> usize {
@@ -3312,6 +3594,11 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
         }
         self.ensure_groups(total_num_groups)?;
         let batch = LinregBatchInput::try_new(input, self.p, self.weighted)?;
+        if self.share_predictors
+            && self.update_shared_predictors(&batch, group_indices, opt_filter, total_num_groups)?
+        {
+            return Ok(());
+        }
         self.batch_group_counts.resize(total_num_groups, 0);
         self.batch_touched_groups.clear();
         self.batch_offsets.clear();
@@ -3622,7 +3909,7 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
                 "linreg converter filter length mismatch".into(),
             ));
         }
-        let mut groups = Self::new(self.p, self.nested, self.weighted);
+        let mut groups = Self::new(self.p, self.nested, self.weighted, self.share_predictors);
         let group_indices = (0..input.len()).collect::<Vec<_>>();
         groups.update_batch(values, &group_indices, opt_filter, input.len())?;
         groups.state(EmitTo::All)
