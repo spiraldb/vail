@@ -236,7 +236,8 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             globals: children[3].clone(),
             // Only retain the prepared fast path if the body is unchanged.
             all_present_body: (children[4].as_ref() == self.body.as_ref())
-                .then(|| self.all_present_body.clone()).flatten(),
+                .then(|| self.all_present_body.clone())
+                .flatten(),
             body: children[4].clone(),
             input_keys: self.input_keys.clone(),
             binding_order: self.binding_order.clone(),
