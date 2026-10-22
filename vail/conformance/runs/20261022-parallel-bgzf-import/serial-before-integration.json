@@ -1,0 +1,31 @@
+{
+  "input": "/Users/danielking/projects/vail/vail/local-data/upstream-benchmark-20261015/many_ints_table/many_ints_table.tsv.bgz",
+  "baseline_revision": "64924362055e69d3a45c51fd98479942aa3b5e1e",
+  "serial_scan": true,
+  "raw_source_partitions": 1,
+  "native_sha256": "50cc99622e8e02d6cece80364965bb8e6375b2805e669ff29cd5bfb2eab9f5c6",
+  "runs": [
+    {
+      "pair": 0,
+      "mode": "generic",
+      "wall_seconds": 69.63936933304649,
+      "cpu_seconds": 61.322096
+    },
+    {
+      "pair": 0,
+      "mode": "typed",
+      "wall_seconds": 18.481406082981266,
+      "cpu_seconds": 18.228798000000005
+    }
+  ],
+  "median": {
+    "generic": {
+      "wall_seconds": 69.63936933304649,
+      "cpu_seconds": 61.322096
+    },
+    "typed": {
+      "wall_seconds": 18.481406082981266,
+      "cpu_seconds": 18.228798000000005
+    }
+  }
+}
