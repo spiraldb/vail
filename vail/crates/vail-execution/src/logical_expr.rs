@@ -1401,7 +1401,7 @@ mod tests {
             for argument in &function.args {
                 let LogicalExpr::Column(column) = argument else { panic!("column argument required"); };
                 let field = schema.field_with_unqualified_name(&column.name).unwrap().clone();
-                arg_fields.push(Arc::new(field));
+                arg_fields.push(field);
                 args.push(if column.name == "items" {
                     ColumnarValue::Scalar(items.clone())
                 } else { ColumnarValue::Array(shifts.clone()) });
