@@ -14,6 +14,23 @@ use datafusion_expr::{Expr as LogicalExpr, ExprSchemable, Operator, Signature, V
 
 use crate::expressions::{BinaryOperator, Expr, ExprError, PrimitiveType, Type, UnaryOperator};
 
+/// Prepared scalar bindings retain their Arrow owners. Pointer equality is an
+/// execution-cache shortcut only (not expression identity): immutable nested
+/// buffers cannot change or have their addresses recycled while retained here.
+fn same_scalar_binding(left: &ScalarValue, right: &ScalarValue) -> bool {
+    match (left, right) {
+        (ScalarValue::Struct(a), ScalarValue::Struct(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::List(a), ScalarValue::List(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::LargeList(a), ScalarValue::LargeList(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::FixedSizeList(a), ScalarValue::FixedSizeList(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::ListView(a), ScalarValue::ListView(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::LargeListView(a), ScalarValue::LargeListView(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::Map(a), ScalarValue::Map(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::Dictionary(at, a), ScalarValue::Dictionary(bt, b)) => at == bt && same_scalar_binding(a, b),
+        _ => left == right,
+    }
+}
+
 /// Whether a volatile semantic kernel is closed and deterministic apart from
 /// value-domain errors, so a successful projection result may be reused.
 ///
@@ -910,6 +927,14 @@ fn logical_kernel(
     } else {
         Signature::any(refs.len(), volatility)
     };
+    // One prepared program per kernel, bounded to the most recent scalar
+    // binding combination. Singleton globals normally reuse one immutable
+    // Arrow owner for the entire action. New owners/values reprepare safely.
+    let prepared = std::sync::Mutex::new(None::<(
+        Vec<(usize, ScalarValue)>,
+        Arc<dyn datafusion_physical_expr::PhysicalExpr>,
+        Arc<Schema>,
+    )>);
     let udf = crate::kernel_identity::scalar_with_args(
         &udf_name,
         identity,
@@ -931,11 +956,28 @@ fn logical_kernel(
             } else {
                 invocation.number_rows
             };
+            let scalar_keys = args.iter().enumerate().filter_map(|(index, value)| {
+                match value {
+                    datafusion_expr::ColumnarValue::Scalar(value) => Some((index, value.clone())),
+                    _ => None,
+                }
+            }).collect::<Vec<_>>();
+            let mut prepared = if scalar_keys.is_empty() { None } else {
+                Some(prepared.lock().map_err(|_| {
+                    datafusion_common::DataFusionError::Internal("scalar kernel preparation poisoned".into())
+                })?)
+            };
+            let cached = prepared.as_ref().and_then(|guard| guard.as_ref()).filter(|(keys, _, _)| {
+                keys.len() == scalar_keys.len() && keys.iter().zip(&scalar_keys)
+                    .all(|((left_index, left), (right_index, right))|
+                        left_index == right_index && same_scalar_binding(left, right))
+            }).map(|(_, program, schema)| (program.clone(), schema.clone()));
             let mut arrays = vec![];
             let mut fields = vec![];
             let mut scalars = std::collections::HashMap::new();
             for (value, field) in args.iter().zip(kernel_schema.fields()) {
                 match value {
+                    datafusion_expr::ColumnarValue::Scalar(_) if cached.is_some() => {},
                     datafusion_expr::ColumnarValue::Scalar(value) => {
                         let scalar = restore_arrow_array_type(
                             &value.to_array_of_size(1)?,
@@ -959,11 +1001,11 @@ fn logical_kernel(
                     }
                 }
             }
-            // Scalars retain owned native Arrow buffers as literals. This
-            // request-local specialization costs O(native IR) for mixed scalar
-            // batches; it avoids broadcasting large captured collections and
-            // introduces no value cache or mutable evaluation frame.
-            let (program, schema) = if scalars.is_empty() {
+            // Specialize once for unchanged owned scalar bindings, rather than
+            // rebuilding evaluators (and formatting nested literals) per batch.
+            let (program, schema) = if let Some(cached) = cached {
+                cached
+            } else if scalars.is_empty() {
                 (kernel.clone(), kernel_schema.clone())
             } else {
                 let rewritten =
@@ -977,6 +1019,10 @@ fn logical_kernel(
                 })?;
                 (program, schema)
             };
+            if let Some(prepared) = prepared.as_mut() {
+                **prepared = Some((scalar_keys, program.clone(), schema.clone()));
+            }
+            drop(prepared);
             let batch = arrow_array::RecordBatch::try_new_with_options(
                 schema,
                 arrays,
@@ -1316,6 +1362,79 @@ mod tests {
             panic!("expected a CASE expression")
         };
         assert_eq!(case.when_then_expr.len(), 2);
+    }
+
+    #[test]
+    fn scalar_capture_udf_reuses_semantics_after_binding_changes_and_parallel_batches() {
+        use arrow_array::{ArrayRef, Int64Array, ListArray};
+        use arrow_buffer::OffsetBuffer;
+        use datafusion_expr::{ColumnarValue, ScalarFunctionArgs};
+        let int64 = Type::Primitive(PrimitiveType::Int64);
+        let array_type = Type::Array { array: Box::new(int64.clone()) };
+        let arrow_array_type = array_type.to_arrow().unwrap();
+        let schema = DFSchema::try_from(Schema::new(vec![
+            Field::new("items", arrow_array_type.clone(), true),
+            Field::new("shift", DataType::Int64, true),
+        ])).unwrap();
+        let expression = Expr::ArrayMap {
+            value: Arc::new(Expr::Column { name: "items".into() }),
+            parameter: "element".into(),
+            body: Arc::new(Expr::Binary {
+                operator: BinaryOperator::Add,
+                left: Arc::new(Expr::LambdaVariable { name: "element".into(), dtype: None }),
+                right: Arc::new(Expr::Column { name: "shift".into() }),
+            }),
+        };
+        // Use the normal public lowering API to obtain the executable UDF,
+        // then exercise its public batch interface with different captures.
+        let LogicalExpr::ScalarFunction(function) = lower_logical(&expression, &schema).unwrap()
+            else { panic!("array map must be executable as a scalar function"); };
+        let scalar = |values: Vec<i64>| ScalarValue::List(Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(DataType::Int64, true)),
+            OffsetBuffer::from_lengths([values.len()]), Arc::new(Int64Array::from(values)), None,
+        )));
+        let invoke = |items: ScalarValue, shifts: Vec<i64>| {
+            let rows = shifts.len();
+            let shifts: ArrayRef = Arc::new(Int64Array::from(shifts));
+            let mut args = Vec::new();
+            let mut arg_fields = Vec::new();
+            for argument in &function.args {
+                let LogicalExpr::Column(column) = argument else { panic!("column argument required"); };
+                let field = schema.field_with_unqualified_name(&column.name).unwrap().clone();
+                arg_fields.push(field);
+                args.push(if column.name == "items" {
+                    ColumnarValue::Scalar(items.clone())
+                } else { ColumnarValue::Array(shifts.clone()) });
+            }
+            let output = function.func.invoke_with_args(ScalarFunctionArgs {
+                args, arg_fields, number_rows: rows,
+                return_field: Arc::new(Field::new("result", arrow_array_type.clone(), true)),
+                config_options: Arc::new(Default::default()),
+            }).unwrap().into_array(rows).unwrap();
+            let output = output.as_any().downcast_ref::<ListArray>().unwrap();
+            (0..rows).map(|row| {
+                let value = output.value(row);
+                value.as_any().downcast_ref::<Int64Array>().unwrap().values().to_vec()
+            }).collect::<Vec<_>>()
+        };
+        let original = scalar(vec![1, 2]);
+        assert_eq!(invoke(original.clone(), vec![3, 4]), vec![vec![4, 5], vec![5, 6]]);
+        let changed = scalar(vec![10, 20]);
+        assert_eq!(invoke(changed.clone(), vec![3]), vec![vec![13, 23]]);
+        assert_eq!(invoke(scalar(vec![]), vec![8, 9]), vec![Vec::<i64>::new(), Vec::<i64>::new()]);
+        std::thread::scope(|scope| {
+            let handles = (0..4).map(|shift| {
+                let invoke = &invoke;
+                let changed = changed.clone();
+                scope.spawn(move || invoke(changed, vec![shift, shift + 1]))
+            }).collect::<Vec<_>>();
+            for (shift, handle) in handles.into_iter().enumerate() {
+                let shift = shift as i64;
+                assert_eq!(handle.join().unwrap(),
+                    vec![vec![10 + shift, 20 + shift], vec![11 + shift, 21 + shift]]);
+            }
+        });
+        assert_eq!(invoke(original, vec![0]), vec![vec![1, 2]]);
     }
 
     fn evaluate_logical(

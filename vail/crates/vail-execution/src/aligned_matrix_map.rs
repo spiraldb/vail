@@ -117,6 +117,7 @@ pub(crate) struct AlignedMatrixMapExpr {
     rows: Arc<dyn PhysicalExpr>,
     globals: Arc<dyn PhysicalExpr>,
     body: Arc<dyn PhysicalExpr>,
+    all_present_body: Option<Arc<dyn PhysicalExpr>>,
     input_keys: HashSet<InputKey>,
     binding_order: Vec<InputKey>,
     column_dtype: Option<DataType>,
@@ -132,6 +133,7 @@ impl AlignedMatrixMapExpr {
         rows: Arc<dyn PhysicalExpr>,
         globals: Arc<dyn PhysicalExpr>,
         body: Arc<dyn PhysicalExpr>,
+        all_present_body: Option<Arc<dyn PhysicalExpr>>,
         capture_keys: Vec<(String, Option<String>)>,
         column_dtype: Option<DataType>,
         dtype: DataType,
@@ -149,6 +151,7 @@ impl AlignedMatrixMapExpr {
             rows,
             globals,
             body,
+            all_present_body,
             input_keys,
             binding_order,
             column_dtype,
@@ -231,6 +234,10 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             columns: children[1].clone(),
             rows: children[2].clone(),
             globals: children[3].clone(),
+            // Only retain the prepared fast path if the body is unchanged.
+            all_present_body: (children[4].as_ref() == self.body.as_ref())
+                .then(|| self.all_present_body.clone())
+                .flatten(),
             body: children[4].clone(),
             input_keys: self.input_keys.clone(),
             binding_order: self.binding_order.clone(),
@@ -469,7 +476,15 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                 body_arrays,
                 &RecordBatchOptions::new().with_row_count(Some(total)),
             )?;
-            let value = self.body.evaluate(&body_batch)?.into_array(total)?;
+            // The guarded and unguarded bodies are compiled once. Avoid CASE's
+            // filter/take/scatter when this batch has no absent entries; retain
+            // lazy evaluation for sparse batches so absent values cannot error.
+            let body = if values.null_count() == 0 {
+                self.all_present_body.as_ref().unwrap_or(&self.body)
+            } else {
+                &self.body
+            };
+            let value = body.evaluate(&body_batch)?.into_array(total)?;
             if value.len() != total {
                 return Err(DataFusionError::Execution(format!(
                     "aligned batch body returned {} values for {total} entries",

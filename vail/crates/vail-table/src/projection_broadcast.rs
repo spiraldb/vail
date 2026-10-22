@@ -215,6 +215,76 @@ impl PhysicalExpr for ProjectionBroadcastExpr {
     }
 }
 
+/// DataFusion's projection metric setup calls Display for each partition.
+/// ScalarSubqueryExpr Display includes the resolved value, potentially a huge
+/// nested collection. Keep metric labels bounded without changing evaluation.
+#[derive(Debug)]
+struct ProjectionLabelExpr {
+    inner: Arc<dyn PhysicalExpr>,
+    label: String,
+}
+impl PartialEq for ProjectionLabelExpr {
+    fn eq(&self, other: &Self) -> bool { self.inner.eq(&other.inner) && self.label == other.label }
+}
+impl Eq for ProjectionLabelExpr {}
+impl Hash for ProjectionLabelExpr {
+    fn hash<H: Hasher>(&self, state: &mut H) { self.inner.hash(state); self.label.hash(state); }
+}
+impl std::fmt::Display for ProjectionLabelExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Projection({})", self.label)
+    }
+}
+impl PhysicalExpr for ProjectionLabelExpr {
+    fn return_field(&self, schema: &Schema) -> Result<Arc<arrow_schema::Field>> {
+        self.inner.return_field(schema)
+    }
+    fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> { self.inner.evaluate(batch) }
+    fn evaluate_selection(&self, batch: &RecordBatch, selection: &arrow_array::BooleanArray)
+        -> Result<ColumnarValue> { self.inner.evaluate_selection(batch, selection) }
+    fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> { vec![&self.inner] }
+    fn with_new_children(self: Arc<Self>, children: Vec<Arc<dyn PhysicalExpr>>)
+        -> Result<Arc<dyn PhysicalExpr>> {
+        if children.len() != 1 {
+            return Err(DataFusionError::Internal("projection label needs one child".into()));
+        }
+        Ok(Arc::new(Self { inner: children[0].clone(), label: self.label.clone() }))
+    }
+    fn fmt_sql(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Do not recursively format resolved scalar payloads for metric setup.
+        write!(f, "{}", self.label)
+    }
+    fn get_properties(&self, children: &[datafusion_expr::sort_properties::ExprProperties])
+        -> Result<datafusion_expr::sort_properties::ExprProperties> {
+        Ok(children.first().cloned().unwrap_or_else(
+            datafusion_expr::sort_properties::ExprProperties::new_unknown))
+    }
+    fn is_volatile_node(&self) -> bool { self.inner.is_volatile_node() }
+    fn snapshot(&self) -> Result<Option<Arc<dyn PhysicalExpr>>> {
+        Ok(self.inner.snapshot()?.map(|inner| Arc::new(Self {
+            inner, label: self.label.clone(),
+        }) as Arc<dyn PhysicalExpr>))
+    }
+    fn snapshot_generation(&self) -> u64 { self.inner.snapshot_generation() }
+    fn placement(&self) -> datafusion_expr::ExpressionPlacement { self.inner.placement() }
+}
+
+fn has_scalar_subquery(expr: &Arc<dyn PhysicalExpr>) -> Result<bool> {
+    let mut seen = std::collections::HashSet::new();
+    let mut pending = vec![expr.clone()];
+    // Retain the root throughout traversal so shared-node addresses remain
+    // valid memo keys; inspect each physical DAG node at most once.
+    while let Some(child) = pending.pop() {
+        let identity = Arc::as_ptr(&child) as *const () as usize;
+        if !seen.insert(identity) { continue; }
+        if child.is::<datafusion_physical_expr::scalar_subquery::ScalarSubqueryExpr>() {
+            return Ok(true);
+        }
+        pending.extend(child.children().into_iter().cloned());
+    }
+    Ok(false)
+}
+
 fn is_nested(dtype: &DataType) -> bool {
     matches!(
         dtype,
@@ -253,20 +323,23 @@ fn wrap_projection(projection: &ProjectionExec) -> Result<Option<ProjectionExec>
     let expressions = projection
         .expr()
         .iter()
-        .map(|projection_expr| {
-            let expr = if eligible(&projection_expr.expr, &schema) {
+        .map(|projection_expr| -> Result<ProjectionExpr> {
+            let mut expr = if eligible(&projection_expr.expr, &schema) {
                 changed = true;
                 Arc::new(ProjectionBroadcastExpr::new(projection_expr.expr.clone()))
                     as Arc<dyn PhysicalExpr>
             } else {
                 projection_expr.expr.clone()
             };
-            ProjectionExpr {
-                expr,
-                alias: projection_expr.alias.clone(),
+            if has_scalar_subquery(&expr)? {
+                changed = true;
+                expr = Arc::new(ProjectionLabelExpr {
+                    inner: expr, label: projection_expr.alias.clone(),
+                });
             }
+            Ok(ProjectionExpr { expr, alias: projection_expr.alias.clone() })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
     if !changed {
         return Ok(None);
     }

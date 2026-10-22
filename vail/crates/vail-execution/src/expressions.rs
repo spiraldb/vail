@@ -4597,6 +4597,24 @@ impl PhysicalExpr for HailPhysicalExpr {
             .iter()
             .map(|argument| argument.evaluate(batch))
             .collect::<datafusion_common::Result<Vec<_>>>()?;
+        // Selecting a shared struct field must preserve its scalar form.
+        // Expanding the parent first copies nested column/global lists once
+        // per outer row, even though field selection itself is zero-copy.
+        if let HailKind::GetField(name) = &self.kind
+            && let Some(ColumnarValue::Scalar(ScalarValue::Struct(parent))) = evaluated.first()
+        {
+            if parent.len() != 1 {
+                return Err(DataFusionError::Execution("scalar struct requires one row".into()));
+            }
+            let child = parent.column_by_name(name).ok_or_else(||
+                DataFusionError::Execution(format!("struct field {name:?} absent")))?;
+            let value = if parent.is_null(0) {
+                new_null_array(&self.dtype, 1)
+            } else { child.clone() };
+            let scalar = ColumnarValue::Scalar(scalar_at(&value, 0)
+                .map_err(|error| DataFusionError::Execution(error.to_string()))?);
+            return crate::logical_expr::restore_arrow_value_type(scalar, &self.dtype);
+        }
         // A captured scalar collection must not be expanded once per source
         // row merely to select individual elements. Arrow take copies only
         // selected children, preserving ownership of the original scalar.
@@ -5969,9 +5987,8 @@ fn lower_uncached(
                     false,
                 ),
             ];
-            let body_dtype = body
-                .dtype_scoped(schema, globals.schema(), scope, memo, context)?
-                .to_arrow()?;
+            let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+            let body_dtype = body_type.to_arrow()?;
             // Declare batch captures before lowering so nested fold/lambda/
             // conditional callbacks include these columns in their own schemas.
             let mut captures = std::collections::BTreeMap::new();
@@ -6020,16 +6037,33 @@ fn lower_uncached(
                 memo.insert(id, rewritten.clone());
                 Ok(rewritten)
             }
+            // Python's aligned map wraps the body in an entry-presence guard.
+            // Prepare its consequent once for batches whose entry parents are
+            // all valid; sparse batches retain the original lazy guard.
+            let all_present = match body.as_ref() {
+                Expr::IfElse { condition, consequent, .. }
+                    if matches!(condition.as_ref(), Expr::AlignedMapInput { axis, .. }
+                        if axis == "entry_present") => Some(consequent.as_ref()),
+                _ => None,
+            };
+            let all_present = all_present.map(|value|
+                rewrite_batch_inputs(value, &names, &mut Default::default())
+            ).transpose()?;
             let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
             let body_schema = Schema::new(body_fields);
             let body_context = memo.context(&body_schema, globals.schema(), scope);
             let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
+            let all_present_body = all_present.map(|value|
+                lower_synthetic(Expr::Cast { dtype: body_type, value: Arc::new(value) },
+                    &body_schema, globals, scope, memo, body_context)
+            ).transpose()?;
             Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
                 entries,
                 columns,
                 rows,
                 global_inputs,
                 body,
+                all_present_body,
                 capture_keys,
                 column_dtype,
                 dtype.to_arrow()?,
@@ -7165,6 +7199,50 @@ mod tests {
         )
         .unwrap()
     }
+    #[test]
+    fn aligned_presence_fast_body_preserves_promoted_result_type() {
+        use arrow_buffer::{NullBuffer, OffsetBuffer};
+        let float64 = Type::Primitive(PrimitiveType::Float64);
+        for validity in [None, Some(NullBuffer::from(vec![true, false]))] {
+            let values: ArrayRef = Arc::new(StructArray::new_empty_fields(2, validity));
+            let fields = vec![Arc::new(Field::new("value", values.data_type().clone(), true))];
+            let cells: ArrayRef = Arc::new(StructArray::new(fields.into(), vec![values], None));
+            let lists: ArrayRef = Arc::new(ListArray::new(
+                Arc::new(Field::new_list_field(cells.data_type().clone(), true)),
+                OffsetBuffer::from_lengths([2]), cells, None));
+            let rows: ArrayRef = Arc::new(StructArray::new_empty_fields(1, None));
+            let batch = RecordBatch::try_from_iter(vec![("entries", lists), ("rows", rows)]).unwrap();
+            let column = |name: &str| Arc::new(Expr::Column { name: name.into() });
+            let expr = Expr::AlignedMatrixMap {
+                entries: column("entries"), columns: column("entries"),
+                rows: column("rows"), globals: column("rows"),
+                body: Arc::new(Expr::IfElse {
+                    condition: Arc::new(Expr::AlignedMapInput {
+                        axis: "entry_present".into(), name: None,
+                        dtype: Type::Primitive(PrimitiveType::Bool),
+                    }),
+                    consequent: Arc::new(Expr::Literal {
+                        dtype: Type::Primitive(PrimitiveType::Int32), value: json!(7),
+                    }),
+                    alternate: Arc::new(Expr::Literal { dtype: float64.clone(), value: json!(9.5) }),
+                }),
+                dtype: Type::Array { array: Box::new(float64.clone()) },
+                preserve_cell: false,
+            };
+            let output = lower(&expr, batch.schema().as_ref()).unwrap()
+                .evaluate(&batch).unwrap().into_array(1).unwrap();
+            let output = output.as_any().downcast_ref::<ListArray>().unwrap();
+            assert_eq!(output.values().data_type(), &DataType::Float64);
+            let output = output.values().as_any().downcast_ref::<Float64Array>().unwrap();
+            assert_eq!(output.value(0), 7.0);
+            if batch.column(0).as_any().downcast_ref::<ListArray>().unwrap()
+                .values().as_any().downcast_ref::<StructArray>().unwrap()
+                .column(0).null_count() == 0 {
+                assert_eq!(output.value(1), 7.0);
+            } else { assert!(output.is_null(1)); }
+        }
+    }
+
     #[test]
     fn singleton_bind_uses_a_lexical_frame_with_arrow_literal_index() {
         let batch = source(vec![Some(2), None, Some(4)]);

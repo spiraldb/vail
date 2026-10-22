@@ -156,6 +156,46 @@ pub(crate) fn bind_globals(
         .build()?)
 }
 
+/// Bind external singleton values as scalar subqueries, without repeating
+/// nested Arrow buffers once per input row. The augmented schema is used only
+/// while lowering expressions; all synthetic references must be replaced before
+/// building a DataFusion plan against the unchanged row input.
+pub(crate) fn scalar_external_bindings(
+    input: &LogicalPlan,
+    bindings: &GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
+) -> Result<(DFSchemaRef, BTreeMap<String, usize>, BTreeMap<String, Expr>)> {
+    let mut schema = input.schema().as_ref().clone();
+    let mut indices = BTreeMap::new();
+    let mut replacements = BTreeMap::new();
+    for (ordinal, (reference, globals)) in bindings.iter().enumerate() {
+        let bound = lower_in_context(globals, context)?;
+        let mut arguments = Vec::new();
+        for column in bound.schema().columns() {
+            arguments.push(lit(column.name.clone()));
+            arguments.push(Expr::Column(column));
+        }
+        let value = if arguments.is_empty() {
+            lit(datafusion_common::ScalarValue::Struct(Arc::new(
+                StructArray::new_empty_fields(1, None),
+            )))
+        } else {
+            datafusion_functions::core::named_struct().call(arguments)
+        };
+        let mut name = format!("__vail_scalar_external_{ordinal}");
+        while schema.fields().iter().any(|field| field.name() == &name) {
+            name.push('_');
+        }
+        let bound = LogicalPlanBuilder::from(bound)
+            .project(vec![value.alias(&name)])?.build()?;
+        let index = schema.fields().len();
+        schema = schema.join(bound.schema())?;
+        indices.insert(reference.clone(), index);
+        replacements.insert(name, datafusion_expr::expr_fn::scalar_subquery(Arc::new(bound)));
+    }
+    Ok((Arc::new(schema), indices, replacements))
+}
+
 pub(crate) fn bind_external(
     mut input: LogicalPlan,
     bindings: &GlobalBindings,
