@@ -2725,11 +2725,18 @@ fn factor_linreg_stack_with_cached_predictors(
         }
         qr[row * d + p] = value;
     }
-    let residual_squared = (p..nrows).fold(0.0, |sum, row| {
-        let value = stack[row + p * nrows];
-        sum + value * value
-    });
-    let residual = residual_squared.sqrt() * response_scale;
+    let residual_scale = (p..nrows)
+        .map(|row| stack[row + p * nrows].abs())
+        .fold(0.0_f64, f64::max);
+    let residual = if residual_scale == 0.0 {
+        0.0
+    } else {
+        let scaled_sum_squares = (p..nrows).fold(0.0, |sum, row| {
+            let value = stack[row + p * nrows] / residual_scale;
+            sum + value * value
+        });
+        residual_scale * scaled_sum_squares.sqrt() * response_scale
+    };
     if !residual.is_finite() {
         *invalid_numeric = true;
         return;

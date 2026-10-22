@@ -149,6 +149,25 @@ def test_array_linreg_reuses_only_identical_predictor_batches():
         assert fit.beta == pytest.approx([4.0 + group, 2.5], abs=1e-8)
 
 
+def test_array_linreg_cached_qr_preserves_tiny_residual_norm():
+    table = hl.Table.parallelize(
+        [
+            {"x0": 1.0, "x1": 0.0, "y": 0.0},
+            {"x0": 0.0, "x1": 1.0, "y": 1e-50},
+            {"x0": 0.0, "x1": 0.0, "y": 1e-180},
+        ],
+        schema=hl.tstruct(x0=hl.tfloat64, x1=hl.tfloat64, y=hl.tfloat64),
+        n_partitions=1,
+    )
+    fits = table.aggregate(hl.agg.array_agg(
+        lambda scale: hl.agg.linreg(table.y * (scale + 1.0), [table.x0, table.x1]),
+        hl.range(2),
+    ))
+    for scale, fit in enumerate(fits, start=1):
+        assert fit.n == 3
+        assert fit.multiple_standard_error == pytest.approx(scale * 1e-180, rel=1e-12, abs=0.0)
+
+
 def test_linreg_extreme_column_range_preserves_tiny_residual():
     table = hl.Table.parallelize(
         [
@@ -163,7 +182,7 @@ def test_linreg_extreme_column_range_preserves_tiny_residual():
     assert fit.n == 3
     assert fit.beta == pytest.approx([0.0, 1e200])
     assert fit.multiple_standard_error > 0.0
-    assert fit.multiple_standard_error == pytest.approx(1e-200)
+    assert fit.multiple_standard_error == pytest.approx(1e-200, rel=1e-12, abs=0.0)
 
 
 def test_hist_right_endpoint_and_nan():
