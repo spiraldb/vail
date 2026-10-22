@@ -5806,7 +5806,7 @@ fn lower_uncached(
             let column_dtype = if demand.all || !demand.fields.is_empty() {
                 Some(demand.projected(&column_type).to_arrow()?)
             } else { None };
-            let body_column_dtype = column_dtype.clone().unwrap_or_else(|| DataType::Struct(vec![].into()));
+            let body_column_dtype = column_dtype.clone().unwrap_or_else(|| DataType::Struct(arrow_schema::Fields::empty()));
             let mut body_fields = vec![
                 Field::new(
                     crate::aligned_matrix_map::ENTRY_COLUMN,
