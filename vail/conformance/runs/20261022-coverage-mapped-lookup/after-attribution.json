@@ -1,0 +1,76 @@
+{
+  "total_cpu_delta_us": 4269706,
+  "leaf": [
+    [
+      "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#6}",
+      10.634174812036239
+    ],
+    [
+      "mach_absolute_time",
+      5.714117084408154
+    ],
+    [
+      "core::ptr::drop_glue::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Date32Type>>",
+      4.758500936598445
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupValuesColumn<false> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern",
+      4.2908340761635575
+    ],
+    [
+      "0x3c168",
+      2.9743265695577166
+    ],
+    [
+      "datafusion_functions_nested::make_array::make_array_inner",
+      2.783704545465191
+    ],
+    [
+      "<arrow_buffer::buffer::scalar::ScalarBuffer<i32>>::new",
+      2.455789696058698
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::primitive::PrimitiveGroupValueBuilder<arrow_array::types::Int32Type, true> as datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupColumn>::vectorized_equal_to",
+      2.299736796866107
+    ],
+    [
+      "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::slice",
+      2.064287330322041
+    ],
+    [
+      "0x3f4f0",
+      2.039648631545123
+    ],
+    [
+      "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+      1.935191790722827
+    ],
+    [
+      "<datafusion_physical_plan::aggregates::group_values::multi_group_by::primitive::PrimitiveGroupValueBuilder<arrow_array::types::UInt32Type, false> as datafusion_physical_plan::aggregates::group_values::multi_group_by::GroupColumn>::vectorized_equal_to",
+      1.9057752454150239
+    ],
+    [
+      "__psynch_cvwait",
+      1.8250671123491875
+    ],
+    [
+      "0x3c2ec",
+      1.7631190531619743
+    ],
+    [
+      "0x3bfd8",
+      1.7439374045894493
+    ]
+  ],
+  "lookup_inclusive_pct": 4.177852058197918,
+  "grouping_ancestor": [
+    [
+      "vail_execution::collection_groups::grouped_aggregate",
+      9.949935663017548
+    ],
+    [
+      "<vail_execution::collection_lookup::Lookup as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      2.8434744687339126
+    ]
+  ]
+}
