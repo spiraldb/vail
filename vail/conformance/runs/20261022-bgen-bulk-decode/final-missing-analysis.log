@@ -1,0 +1,75 @@
+TOTAL 43.655193000000025
+
+SELF
+ 26.45%       12 read
+ 12.31%        5 <core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<vail_table::bgen_source::Batch>::cells::{closure#3}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<vail_table::bgen_source::Batch>::cells::{closure#3}>::{closure#0}>>::{closure#0}>::{closure#0}>
+  9.96%        4 __lseek
+  9.94%        4 <arrow_buffer::buffer::boolean::BooleanBuffer>::collect_bool::<<vail_table::bgen_source::Batch>::cells::{closure#0}>
+  9.22%        4 <vail_table::bgen_source::Batch>::cells
+  9.13%        4 __psynch_cvwait
+  3.22%        1 zlib_rs::adler32::neon::adler32_neon
+  2.60%        1 <alloc::vec::Vec<f64> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<f64, core::iter::adapters::map::Map<core::slice::iter::ChunksExact<u8>, <vail_table::bgen_source::Batch>::cells::{closure#2}>>>::from_iter
+  2.21%        1 zlib_rs::inflate::inflate_fast_help
+  1.60%        1 <zlib_rs::inflate::writer::Writer>::copy_match_runtime_dispatch
+  1.36%        1 _platform_memset
+  0.91%        0 __psynch_cvsignal
+  0.48%        0 mach_absolute_time
+  0.44%        0 _PyEval_EvalFrameDefault
+  0.41%        0 0x33be0
+  0.36%        0 zlib_rs::inflate::inftrees::inflate_table
+  0.32%        0 zlib_rs::inflate::inflate
+  0.23%        0 <arrow_data::data::ArrayDataBuilder>::build
+  0.23%        0 <arrow_data::data::ArrayDataBuilder>::nulls
+  0.22%        0 serde_json::value::de::visit_array::<<serde_json::value::Value as serde_core::de::Deserialize>::deserialize::ValueVisitor>
+  0.21%        0 <arrow_buffer::buffer::null::NullBuffer>::new
+  0.17%        0 <arrow_array::builder::generic_bytes_builder::GenericByteBuilder<arrow_array::types::GenericStringType<i32>>>::finish
+  0.14%        0 __psynch_mutexwait
+  0.14%        0 <serde_json::value::Value as <[_]>::to_vec_in::ConvertVec>::to_vec::<alloc::alloc::Global>
+  0.12%        0 0x33d14
+  0.11%        0 0x3c168
+  0.11%        0 gc_collect_main.llvm.6325940347975832991
+  0.11%        0 core::ptr::drop_glue::<serde_json::value::Value>
+  0.11%        0 0x352b4
+  0.11%        0 list_traverse
+  0.10%        0 0x33cdc
+  0.10%        0 <tokio::runtime::park::CachedParkThread>::block_on::<<tokio::sync::mpsc::bounded::Sender<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>>>::send::{closure#0}>
+  0.09%        0 _PyObject_Malloc
+  0.09%        0 _platform_memmove
+  0.09%        0 <alloc::raw_vec::RawVecInner>::finish_grow
+
+INCLUSIVE
+ 95.90%       42 <std::sys::thread::unix::Thread>::new::thread_start
+ 95.90%       42 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+ 95.90%       42 <tokio::runtime::blocking::pool::Inner>::run
+ 95.90%       42 _pthread_start
+ 95.90%       42 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+ 84.29%       37 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<vail_table::bgen_source::BgenOpener as datafusion_datasource::file_stream::FileOpener>::open::{closure#0}::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+ 84.29%       37 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<vail_table::bgen_source::BgenOpener as datafusion_datasource::file_stream::FileOpener>::open::{closure#0}::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+ 84.27%       37 vail_table::bgen_source::scan
+ 34.83%       15 <vail_table::bgen_source::Batch>::cells
+ 26.48%       12 std::io::default_read_exact::<std::fs::File>
+ 26.46%       12 <std::fs::File as std::io::Read>::read
+ 26.45%       12 read
+ 21.38%        9 vail_table::bgen_source::string::<std::fs::File>
+ 12.33%        5 <arrow_buffer::buffer::boolean::BooleanBuffer>::collect_bool::<<vail_table::bgen_source::Batch>::cells::{closure#3}>
+ 12.31%        5 <core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<vail_table::bgen_source::Batch>::cells::{closure#3}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<vail_table::bgen_source::Batch>::cells::{closure#3}>::{closure#0}>>::{closure#0}>::{closure#0}>
+ 11.60%        5 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+ 11.60%        5 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+ 11.60%        5 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+ 11.60%        5 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+ 11.60%        5 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+ 11.60%        5 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+ 11.60%        5 tokio::runtime::scheduler::multi_thread::worker::run
+  9.99%        4 <arrow_buffer::buffer::boolean::BooleanBuffer>::collect_bool::<<vail_table::bgen_source::Batch>::cells::{closure#0}>
+  9.96%        4 __lseek
+  9.15%        4 <flate2::mem::Decompress>::decompress
+  9.14%        4 zlib_rs::inflate::inflate
+  9.14%        4 <zlib_rs::stable::Inflate>::decompress_uninit
+  9.13%        4 _pthread_cond_wait
+  9.13%        4 <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal
+  9.13%        4 __psynch_cvwait
+  9.12%        4 <tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar
+  8.21%        4 vail_table::bgen_source::u32::<std::fs::File>
+  7.44%        3 <std::fs::File as std::io::Seek>::stream_position
+  5.72%        2 vail_table::bgen_source::u16::<std::fs::File>
+  5.15%        2 zlib_rs::inflate::inflate_fast_help
