@@ -494,7 +494,9 @@ impl Batch {
         // Build data buffers directly. Array builders' per-value validity
         // updates were dominating decoding; one bitmap represents each
         // nullable array, while constant child buffers are shared by variants.
-        let present = NullBuffer::from_iter((0..n).map(|sample| data[8 + sample] & 128 == 0));
+        let present = NullBuffer::new(BooleanBuffer::collect_bool(n, |sample| {
+            data[8 + sample] & 128 == 0
+        }));
         let mut arrays: Vec<ArrayRef> = Vec::with_capacity(self.entry_fields.len());
         let probabilities = &data[10 + n..];
         for field in &self.entry_fields {
@@ -529,18 +531,17 @@ impl Batch {
                 "GT" if gt => {
                     let mut first = Vec::with_capacity(n);
                     let mut second = Vec::with_capacity(n);
-                    let mut validity = arrow_buffer::BooleanBufferBuilder::new(n);
-                    for (sample, pair) in probabilities.chunks_exact(2).enumerate() {
-                        let a = pair[0] as i32;
-                        let b = pair[1] as i32;
+                    let validity = BooleanBuffer::collect_bool(n, |sample| {
+                        let a = probabilities[sample * 2] as i32;
+                        let b = probabilities[sample * 2 + 1] as i32;
                         let c = 255 - a - b;
                         let hom_ref = (a > b) & (a > c);
                         let het = (b > a) & (b > c);
                         let hom_alt = (c > a) & (c > b);
                         first.push(hom_alt as u16);
                         second.push((het | hom_alt) as u16);
-                        validity.append((hom_ref | het | hom_alt) & (data[8 + sample] & 128 == 0));
-                    }
+                        (hom_ref | het | hom_alt) & (data[8 + sample] & 128 == 0)
+                    });
                     let DataType::Struct(fields) = field.data_type() else {
                         return Err("BGEN GT must be a struct".into());
                     };
@@ -553,7 +554,7 @@ impl Batch {
                                 self.ploidy.clone(),
                                 self.phase.clone(),
                             ],
-                            Some(NullBuffer::new(validity.finish())),
+                            Some(NullBuffer::new(validity)),
                         )
                         .map_err(|e| e.to_string())?,
                     )
