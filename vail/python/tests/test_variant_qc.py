@@ -154,3 +154,40 @@ def test_matrix_call_stats_row_initializer_and_aligned_call_captures():
         hl.Struct(AC=[1, 2, 2], AF=[0.2, 0.4, 0.4], AN=5,
                   homozygote_count=[0, 0, 0]),
     ]
+
+
+def test_variant_qc_fixed_call_predicates_preserve_complete_outputs():
+    biallelic = [hl.Call([0, 0]), hl.Call([0, 0], True),
+                 hl.Call([0, 1]), hl.Call([1, 0], True),
+                 hl.Call([1, 1]), hl.Call([1, 1], True),
+                 hl.Call([0]), hl.Call([1]), hl.Call([]), None,
+                 hl.Call([0, 1])]
+    multiallelic = [hl.Call([0, 2]), hl.Call([2, 0], True),
+                   hl.Call([1, 2]), hl.Call([2, 1], True),
+                   hl.Call([2, 2]), hl.Call([2, 2], True),
+                   hl.Call([2]), hl.Call([1]), hl.Call([]), None,
+                   hl.Call([2, 2])]
+    mt = hl.range_matrix_table(2, len(biallelic), n_partitions=2)
+    calls = hl.literal([biallelic, multiallelic], hl.tarray(hl.tarray(hl.tcall)))
+    mt = mt.annotate_rows(alleles=hl.if_else(mt.row_idx == 0, ['A', 'C'], ['A', 'C', 'G']))
+    mt = mt.annotate_entries(GT=calls[mt.row_idx][mt.col_idx])
+    mt = mt.filter_entries(mt.col_idx != 10)
+    rows = hl.variant_qc(mt).rows().collect()
+    for row, ac, het, nonref in [(rows[0], [7, 7], 2, 5),
+                               (rows[1], [2, 3, 9], 4, 8)]:
+        qc = row.variant_qc
+        assert (qc.n_called, qc.n_not_called, qc.n_filtered) == (9, 1, 1)
+        assert qc.AC == ac and qc.AN == 14
+        assert qc.AF == pytest.approx([x / 14 for x in ac])
+        assert qc.call_rate == pytest.approx(9 / 11)
+        assert (qc.n_het, qc.n_non_ref) == (het, nonref)
+    assert rows[0].variant_qc.homozygote_count == [2, 2]
+    assert rows[1].variant_qc.homozygote_count == [0, 0, 2]
+    expected = hl.eval(hl.hardy_weinberg_test(2, 2, 2))
+    assert rows[0].variant_qc.het_freq_hwe == pytest.approx(expected.het_freq_hwe)
+    assert rows[0].variant_qc.p_value_hwe == pytest.approx(expected.p_value)
+    assert rows[0].variant_qc.p_value_excess_het == pytest.approx(
+        hl.eval(hl.hardy_weinberg_test(2, 2, 2, True)).p_value)
+    assert rows[1].variant_qc.het_freq_hwe is None
+    assert rows[1].variant_qc.p_value_hwe is None
+    assert rows[1].variant_qc.p_value_excess_het is None

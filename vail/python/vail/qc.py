@@ -102,15 +102,16 @@ def variant_qc(mt, name='variant_qc'):
     n_cols_ref = mt._num_cols()
     bound_exprs['n_filtered'] = hl.int64(n_cols_ref) - hl.agg.count()
     bound_exprs['call_stats'] = hl.agg.call_stats(mt.GT, mt.alleles)
-    bound_exprs['n_het'] = hl.agg.count_where(hl.bind(
-        lambda a: hl.if_else(hl.len(a) == 2, a[0] != a[1], False), mt.GT.alleles))
-    bound_exprs['n_non_ref'] = hl.agg.count_where(hl.any(lambda a: a > 0, mt.GT.alleles))
+    bound_exprs['n_het'] = hl.agg.count_where(mt.GT.is_het())
+    bound_exprs['n_non_ref'] = hl.agg.count_where(mt.GT.is_non_ref())
+    # HWE counts exactly 0/0, 0/1 and 1/1, irrespective of phasing.
+    # Call equality compares fixed storage fields without an allele-list copy.
     for label, a, b in [('hom_ref', 0, 0), ('het', 0, 1), ('hom_var', 1, 1)]:
-        bound_exprs['hwe_' + label] = hl.agg.count_where(hl.bind(
-            lambda call, a=a, b=b: hl.if_else(
-                hl.len(call) == 2,
-                ((call[0] == a) & (call[1] == b)) | ((call[0] == b) & (call[1] == a)),
-                False), mt.GT.alleles))
+        unphased = mt.GT == hl.call(a, b)
+        phased = mt.GT == hl.call(a, b, phased=True)
+        if a != b:
+            phased = phased | (mt.GT == hl.call(b, a, phased=True))
+        bound_exprs['hwe_' + label] = hl.agg.count_where(unphased | phased)
 
     result = hl.rbind(
         hl.struct(**bound_exprs),
