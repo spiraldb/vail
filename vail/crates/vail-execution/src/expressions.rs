@@ -5765,7 +5765,49 @@ fn lower_uncached(
                     "aligned column expression must be an array".into(),
                 ));
             };
-            let body_schema = Schema::new(vec![
+            #[derive(Default)]
+            struct ColumnDemand {
+                all: bool,
+                fields: std::collections::BTreeMap<String, ColumnDemand>,
+            }
+            impl ColumnDemand {
+                fn insert(&mut self, path: &[String]) {
+                    if self.all { return; }
+                    if path.is_empty() { self.all = true; self.fields.clear(); }
+                    else { self.fields.entry(path[0].clone()).or_default().insert(&path[1..]); }
+                }
+                fn projected(&self, ty: &Type) -> Type {
+                    if self.all { return ty.clone(); }
+                    // Logical types such as Locus/Call must retain their entire
+                    // physical descriptor; only ordinary structs are pruned.
+                    let Type::Struct { r#struct: fields } = ty else { return ty.clone(); };
+                    Type::Struct { r#struct: fields.iter().filter_map(|(name, child)| {
+                        self.fields.get(name).map(|demand| (name.clone(), demand.projected(child)))
+                    }).collect() }
+                }
+            }
+            fn column_path(expr: &Expr) -> Option<Vec<String>> {
+                match expr {
+                    Expr::AlignedMapInput { axis, .. } if axis == "col" => Some(vec![]),
+                    Expr::GetField { value, name } => {
+                        let mut path = column_path(value)?;
+                        path.push(name.clone()); Some(path)
+                    }
+                    _ => None,
+                }
+            }
+            fn column_demand(expr: &Expr, demand: &mut ColumnDemand, seen: &mut HashSet<usize>) {
+                if !seen.insert(expr as *const Expr as usize) { return; }
+                if let Some(path) = column_path(expr) { demand.insert(&path); }
+                else { expr.visit_children(&mut |child| column_demand(child, demand, seen)); }
+            }
+            let mut demand = ColumnDemand::default();
+            column_demand(body, &mut demand, &mut HashSet::new());
+            let column_dtype = if demand.all || !demand.fields.is_empty() {
+                Some(demand.projected(&column_type).to_arrow()?)
+            } else { None };
+            let body_column_dtype = column_dtype.clone().unwrap_or_else(|| DataType::Struct(arrow_schema::Fields::empty()));
+            let mut body_fields = vec![
                 Field::new(
                     crate::aligned_matrix_map::ENTRY_COLUMN,
                     entry_type.to_arrow()?,
@@ -5773,7 +5815,7 @@ fn lower_uncached(
                 ),
                 Field::new(
                     crate::aligned_matrix_map::COLUMN_COLUMN,
-                    column_type.to_arrow()?,
+                    body_column_dtype,
                     true,
                 ),
                 Field::new(
@@ -5781,17 +5823,70 @@ fn lower_uncached(
                     DataType::Boolean,
                     false,
                 ),
-            ]);
+            ];
             let body_dtype = body
                 .dtype_scoped(schema, globals.schema(), scope, memo, context)?
                 .to_arrow()?;
-            let body = lower_scoped(body, &body_schema, globals, scope, memo)?;
+            // Declare batch captures before lowering so nested fold/lambda/
+            // conditional callbacks include these columns in their own schemas.
+            let mut captures = std::collections::BTreeMap::new();
+            body.visit_unique(&mut |node| {
+                if let Expr::AlignedMapInput { axis, name, dtype } = node {
+                    if !matches!(axis.as_str(), "entry" | "col" | "entry_present") {
+                        captures.insert((axis.clone(), name.clone()), dtype.clone());
+                    }
+                }
+            });
+            let mut names = std::collections::BTreeMap::new();
+            let mut capture_keys = Vec::new();
+            for (key, ty) in captures {
+                let name = format!("__vail_aligned_bound_{}", body_fields.len());
+                body_fields.push(Field::new(&name, ty.to_arrow()?, true));
+                capture_keys.push(key.clone());
+                names.insert(key, name);
+            }
+            fn rewrite_batch_inputs(
+                expr: &Expr,
+                names: &std::collections::BTreeMap<(String, Option<String>), String>,
+                memo: &mut std::collections::HashMap<usize, Expr>,
+            ) -> Result<Expr, ExprError> {
+                let id = expr as *const Expr as usize;
+                if let Some(cached) = memo.get(&id) {
+                    return Ok(cached.clone());
+                }
+                let rewritten = if let Expr::AlignedMapInput { axis, name, .. } = expr {
+                    let column = match axis.as_str() {
+                        "entry" => crate::aligned_matrix_map::ENTRY_COLUMN.to_owned(),
+                        "col" => crate::aligned_matrix_map::COLUMN_COLUMN.to_owned(),
+                        "entry_present" => {
+                            crate::aligned_matrix_map::ENTRY_PRESENT_COLUMN.to_owned()
+                        }
+                        _ => names
+                            .get(&(axis.clone(), name.clone()))
+                            .cloned()
+                            .ok_or_else(|| {
+                                ExprError::Invalid("missing aligned batch capture".into())
+                            })?,
+                    };
+                    Expr::Column { name: column }
+                } else {
+                    expr.try_map_original_children(|child| rewrite_batch_inputs(child, names, memo))?
+                };
+                memo.insert(id, rewritten.clone());
+                Ok(rewritten)
+            }
+            let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
+            let body_schema = Schema::new(body_fields);
+            let body_context = memo.context(&body_schema, globals.schema(), scope);
+            let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
             Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
                 entries,
                 columns,
                 rows,
                 global_inputs,
                 body,
+                capture_keys,
+                column_dtype,
                 dtype.to_arrow()?,
                 body_dtype,
                 *preserve_cell,

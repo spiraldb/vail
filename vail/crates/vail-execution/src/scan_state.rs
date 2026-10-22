@@ -9,14 +9,44 @@ use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::function::{AccumulatorArgs, StateFieldsArgs};
 use datafusion_expr::{Accumulator, AggregateUDF, ColumnarValue, ScalarUDF, Volatility};
 use datafusion_physical_expr::expressions::Literal;
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone)]
 pub struct ScanState {
     aggregate: Arc<AggregateUDF>,
     inputs: Vec<DataType>,
     output: DataType,
     fields: Fields,
+    factory: Arc<FactoryDescriptor>,
+}
+
+#[derive(Debug)]
+struct FactoryDescriptor {
+    schema: Schema,
+    output: FieldRef,
+    inputs: Vec<FieldRef>,
+    expressions: Vec<Arc<dyn datafusion_physical_expr::PhysicalExpr>>,
+}
+
+// Factory descriptors are immutable derivations of the semantic fields. Keep
+// identities exactly as before, without hashing the cached physical literals.
+impl PartialEq for ScanState {
+    fn eq(&self, other: &Self) -> bool {
+        self.aggregate == other.aggregate
+            && self.inputs == other.inputs
+            && self.output == other.output
+            && self.fields == other.fields
+    }
+}
+impl Eq for ScanState {}
+impl Hash for ScanState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.aggregate.hash(state);
+        self.inputs.hash(state);
+        self.output.hash(state);
+        self.fields.hash(state);
+    }
 }
 impl ScanState {
     pub fn new(aggregate: Arc<AggregateUDF>, inputs: Vec<DataType>) -> Result<Self> {
@@ -51,11 +81,24 @@ impl ScanState {
             ordering_fields: &[],
             is_distinct: false,
         })?;
+        let factory = Arc::new(FactoryDescriptor {
+            schema: Schema::empty(),
+            output: Arc::new(Field::new("value", output.clone(), true)),
+            inputs: input_fields,
+            expressions: inputs
+                .iter()
+                .map(|t| {
+                    Ok(Arc::new(Literal::new(ScalarValue::try_from(t)?))
+                        as Arc<dyn datafusion_physical_expr::PhysicalExpr>)
+                })
+                .collect::<Result<Vec<_>>>()?,
+        });
         Ok(Self {
             aggregate,
             inputs,
             output,
             fields: fields.into(),
+            factory,
         })
     }
 
@@ -82,6 +125,29 @@ impl ScanState {
                 "scan state schema mismatch".into(),
             ));
         }
+        if let Some(initial) = crate::fold_aggregate::state_initializer(&self.aggregate) {
+            if self.fields.len() != 1 || self.fields[0].data_type() != &self.output {
+                return Err(DataFusionError::Internal(
+                    "fold finalization requires one result-typed state field".into(),
+                ));
+            }
+            let values = states.column(0);
+            if states.null_count() == 0 {
+                // FoldAccumulator::state is exactly [evaluate()]. No replay,
+                // accumulator construction or expression evaluation is needed.
+                return Ok(values.clone());
+            }
+            // Null outer states denote an empty frame. Its result is the fold
+            // initializer, which may itself be a defined, non-identity value.
+            let initial =
+                crate::logical_expr::restore_arrow_array_type(&initial.to_array()?, &self.output)?;
+            let present = BooleanArray::new(states.nulls().unwrap().inner().clone(), None);
+            return Ok(arrow_select::zip::zip(
+                &present,
+                values,
+                &Scalar::new(initial),
+            )?);
+        }
         let mut values = Vec::with_capacity(states.len());
         for row in 0..states.len() {
             let mut accumulator = self.accumulator()?;
@@ -106,31 +172,16 @@ impl ScanState {
         DataType::Struct(self.fields.clone())
     }
     pub fn accumulator(&self) -> Result<Box<dyn Accumulator>> {
-        let schema = Schema::empty();
-        let expr_fields: Vec<FieldRef> = self
-            .inputs
-            .iter()
-            .enumerate()
-            .map(|(i, t)| Arc::new(Field::new(format!("input{i}"), t.clone(), true)))
-            .collect();
-        let exprs = self
-            .inputs
-            .iter()
-            .map(|t| {
-                Ok(Arc::new(Literal::new(ScalarValue::try_from(t)?))
-                    as Arc<dyn datafusion_physical_expr::PhysicalExpr>)
-            })
-            .collect::<Result<Vec<_>>>()?;
         self.aggregate.accumulator(AccumulatorArgs {
-            return_field: Arc::new(Field::new("value", self.output.clone(), true)),
-            schema: &schema,
+            return_field: self.factory.output.clone(),
+            schema: &self.factory.schema,
             ignore_nulls: false,
             order_bys: &[],
             is_reversed: false,
             name: "scan",
             is_distinct: false,
-            exprs: &exprs,
-            expr_fields: &expr_fields,
+            exprs: &self.factory.expressions,
+            expr_fields: &self.factory.inputs,
         })
     }
     pub fn state_udaf(&self) -> Arc<AggregateUDF> {

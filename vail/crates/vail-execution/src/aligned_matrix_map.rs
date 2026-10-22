@@ -1,22 +1,24 @@
 //! Physical execution for row-aligned MatrixTable maps.
 //!
-//! A row's entry slots are borrowed from the input ListArray. The shared
-//! columns list is unpacked once per evaluate call and its child arrays are
-//! reused for every row. The body is lowered once; only its immutable aligned
-//! input leaves are rebound for each owning row.
+//! Experimental batch implementation. Entry lists are flattened once per batch.
+//! Row/global captures are constructed as RunArray metadata, then explicitly
+//! decoded once per bound field because the body kernels require logical arrays.
+//! This trades metadata expansion for one body evaluation per RecordBatch.
 
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
+use arrow_array::types::Int32Type;
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, ListArray, RecordBatch, RecordBatchOptions, StructArray,
-    make_array, new_empty_array,
+    Array, ArrayRef, BooleanArray, Int32Array, ListArray, RecordBatch, RecordBatchOptions,
+    RunArray, StructArray, UInt32Array, make_array, new_empty_array,
 };
 use arrow_buffer::{BooleanBuffer, NullBuffer, OffsetBuffer, ScalarBuffer};
+use arrow_cast::cast;
 use arrow_schema::{DataType, FieldRef, Schema};
-use arrow_select::concat::concat;
+use arrow_select::take::take;
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::ColumnarValue;
 use datafusion_physical_expr::PhysicalExpr;
@@ -48,14 +50,6 @@ impl BoundInputExpr {
             dtype,
             value: None,
         }
-    }
-
-    fn bind(&self, value: ColumnarValue) -> Arc<dyn PhysicalExpr> {
-        Arc::new(Self {
-            key: self.key.clone(),
-            dtype: self.dtype.clone(),
-            value: Some(value),
-        })
     }
 }
 
@@ -124,6 +118,8 @@ pub(crate) struct AlignedMatrixMapExpr {
     globals: Arc<dyn PhysicalExpr>,
     body: Arc<dyn PhysicalExpr>,
     input_keys: HashSet<InputKey>,
+    binding_order: Vec<InputKey>,
+    column_dtype: Option<DataType>,
     dtype: DataType,
     body_dtype: DataType,
     preserve_cell: bool,
@@ -136,13 +132,17 @@ impl AlignedMatrixMapExpr {
         rows: Arc<dyn PhysicalExpr>,
         globals: Arc<dyn PhysicalExpr>,
         body: Arc<dyn PhysicalExpr>,
+        capture_keys: Vec<(String, Option<String>)>,
+        column_dtype: Option<DataType>,
         dtype: DataType,
         body_dtype: DataType,
         preserve_cell: bool,
     ) -> Self {
-        let mut input_keys = HashSet::new();
-        let mut visited = HashSet::new();
-        collect_input_keys(&body, &mut input_keys, &mut visited);
+        let binding_order = capture_keys
+            .into_iter()
+            .map(|(axis, name)| InputKey { axis, name })
+            .collect::<Vec<_>>();
+        let input_keys = binding_order.iter().cloned().collect();
         Self {
             entries,
             columns,
@@ -150,6 +150,8 @@ impl AlignedMatrixMapExpr {
             globals,
             body,
             input_keys,
+            binding_order,
+            column_dtype,
             dtype,
             body_dtype,
             preserve_cell,
@@ -164,6 +166,8 @@ impl PartialEq for AlignedMatrixMapExpr {
             && self.rows.as_ref() == other.rows.as_ref()
             && self.globals.as_ref() == other.globals.as_ref()
             && self.body.as_ref() == other.body.as_ref()
+            && self.binding_order == other.binding_order
+            && self.column_dtype == other.column_dtype
             && self.dtype == other.dtype
             && self.body_dtype == other.body_dtype
             && self.preserve_cell == other.preserve_cell
@@ -177,6 +181,8 @@ impl Hash for AlignedMatrixMapExpr {
         self.rows.hash(state);
         self.globals.hash(state);
         self.body.hash(state);
+        self.binding_order.hash(state);
+        self.column_dtype.hash(state);
         self.dtype.hash(state);
         self.body_dtype.hash(state);
         self.preserve_cell.hash(state);
@@ -227,6 +233,8 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             globals: children[3].clone(),
             body: children[4].clone(),
             input_keys: self.input_keys.clone(),
+            binding_order: self.binding_order.clone(),
+            column_dtype: self.column_dtype.clone(),
             dtype: self.dtype.clone(),
             body_dtype: self.body_dtype.clone(),
             preserve_cell: self.preserve_cell,
@@ -255,12 +263,91 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
         let columns = self.columns.evaluate(batch)?;
         let columns = shared_list_values(columns)?;
 
-        let entry_slots = entries.values();
-        let mut mapped_rows = Vec::with_capacity(entries.len());
+        let collect_stats = std::env::var_os("VAIL_EXPERIMENT_REE_STATS").is_some();
+        // Experimental batch implementation: genuine REE row/global metadata,
+        // decoded once per binding for kernels that require logical arrays.
+        // Each binding becomes a batch column so CASE's filtered evaluation
+        // filters the captured metadata alongside the entry arrays.
         let offsets = entries.offsets();
-        let mut result_offsets = Vec::with_capacity(entries.len() + 1);
-        result_offsets.push(0_i32);
-        let body_schema = Arc::new(Schema::new(vec![
+        let base = offsets[0] as usize;
+        let total = offsets[entries.len()] as usize - base;
+        let entry_slots = entries.values().slice(base, total);
+        let result_offsets = offsets
+            .iter()
+            .map(|offset| *offset - base as i32)
+            .collect::<Vec<_>>();
+        if total == 0 {
+            let mapped = new_empty_array(&self.body_dtype);
+            let output_values = if self.preserve_cell {
+                preserve_cell_slots(entry_slots, mapped)?
+            } else {
+                inherit_parent_validity(mapped, entry_values(entry_slots.as_ref())?.as_ref())?
+            };
+            let DataType::List(field) = &self.dtype else {
+                return Err(DataFusionError::Internal(
+                    "aligned matrix map output must be List".into(),
+                ));
+            };
+            return Ok(ColumnarValue::Array(Arc::new(ListArray::try_new(
+                field.clone(),
+                OffsetBuffer::new(ScalarBuffer::from(result_offsets)),
+                output_values,
+                entries.nulls().cloned(),
+            )?)));
+        }
+        let mut column_indices = self
+            .column_dtype
+            .as_ref()
+            .map(|_| Vec::with_capacity(total));
+        let mut run_ends = Vec::new();
+        let mut row_indices = Vec::new();
+        for row_index in 0..entries.len() {
+            let count = (offsets[row_index + 1] - offsets[row_index]) as usize;
+            if count > columns.len() {
+                return Err(DataFusionError::Execution(
+                    "aligned entry list exceeds column metadata length".into(),
+                ));
+            }
+            if let Some(indices) = &mut column_indices {
+                indices.extend((0..count).map(|index| index as u32));
+            }
+            if count > 0 {
+                run_ends.push(offsets[row_index + 1] - base as i32);
+                row_indices.push(row_index as u32);
+            }
+        }
+        let repeated_columns: ArrayRef = if let Some(dtype) = &self.column_dtype {
+            let projected = project_column_array(&columns, dtype)?;
+            take(
+                projected.as_ref(),
+                &UInt32Array::from(column_indices.unwrap()),
+                None,
+            )?
+        } else {
+            // The compiled body cannot read this slot. An empty typed struct
+            // carries its row count without allocating any payload children.
+            Arc::new(StructArray::new_empty_fields(total, None))
+        };
+        let values = entry_values(entry_slots.as_ref())?;
+        let entry_presence = values
+            .nulls()
+            .map(|validity| validity.inner().clone())
+            .unwrap_or_else(|| BooleanBuffer::new_set(total));
+        if collect_stats {
+            eprintln!(
+                "VAIL_REE_COLUMNS rows={} entries={} original_bytes={} flattened_bytes={}",
+                entries.len(),
+                total,
+                columns.get_array_memory_size(),
+                repeated_columns.get_array_memory_size()
+            );
+        }
+        let mut body_arrays = vec![
+            entry_slots.clone(),
+            repeated_columns.clone(),
+            Arc::new(BooleanArray::new(entry_presence, None)) as ArrayRef,
+        ];
+        let mut body_fields = vec![
             Arc::new(arrow_schema::Field::new(
                 ENTRY_COLUMN,
                 entry_slots.data_type().clone(),
@@ -268,7 +355,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             )),
             Arc::new(arrow_schema::Field::new(
                 COLUMN_COLUMN,
-                columns.data_type().clone(),
+                repeated_columns.data_type().clone(),
                 true,
             )),
             Arc::new(arrow_schema::Field::new(
@@ -276,90 +363,125 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                 DataType::Boolean,
                 false,
             )),
-        ]));
+        ];
 
-        for row_index in 0..entries.len() {
-            let start = offsets[row_index] as usize;
-            let end = offsets[row_index + 1] as usize;
-            let entry_count = end - start;
-            let entry_slice = entry_slots.slice(start, entry_count);
-            let row_values = bind_row_inputs(
-                &self.input_keys,
-                rows,
-                &global_bindings,
-                row_index,
-                columns.len(),
-            )?;
-            let bindings = row_values;
-
-            let mapped = if entry_count == 0 {
-                new_empty_array(&self.body_dtype)
-            } else {
-                let mut memo = HashMap::new();
-                let bound_body = rebind_body(&self.body, &bindings, &mut memo)?;
-                // CASE-based slot preservation lets DataFusion avoid evaluating
-                // the body for null parent slots. Its filtered-batch path may
-                // allocate subset metadata when only some slots are valid;
-                // the all-valid path keeps the borrowed aligned arrays intact.
-                let values = entry_values(entry_slice.as_ref())?;
-                let entry_presence = values
-                    .nulls()
-                    .map(|validity| validity.inner().clone())
-                    .unwrap_or_else(|| BooleanBuffer::new_set(entry_count));
-                let entry_present = Arc::new(BooleanArray::new(entry_presence, None)) as ArrayRef;
-                let body_batch = RecordBatch::try_new_with_options(
-                    body_schema.clone(),
-                    vec![entry_slice.clone(), columns.clone(), entry_present],
-                    &RecordBatchOptions::new().with_row_count(Some(entry_count)),
-                )?;
-                let value = bound_body.evaluate(&body_batch)?;
-                let value = value.into_array(entry_count)?;
-                if value.len() != entry_count {
-                    return Err(DataFusionError::Execution(format!(
-                        "aligned matrix map body returned {} values for {entry_count} entries",
-                        value.len()
-                    )));
+        let row_indices = UInt32Array::from(row_indices);
+        let row_run_ends = Int32Array::from(run_ends);
+        let mut ree_bytes = 0;
+        let mut dense_bytes = 0;
+        for key in &self.binding_order {
+            let (run_ends, run_values) = match key.axis.as_str() {
+                "row" => {
+                    let name = key.name.as_deref().ok_or_else(|| {
+                        DataFusionError::Execution("row aligned input needs a field name".into())
+                    })?;
+                    let fields = rows
+                        .column_by_name("__vail_aligned_row")
+                        .and_then(|value| value.as_any().downcast_ref::<StructArray>())
+                        .ok_or_else(|| {
+                            DataFusionError::Execution("aligned row bundle is malformed".into())
+                        })?;
+                    let field = fields.column_by_name(name).ok_or_else(|| {
+                        DataFusionError::Execution(format!("row field {name:?} is absent"))
+                    })?;
+                    let run_values = if row_indices.len() == field.len() {
+                        field.clone()
+                    } else {
+                        take(field.as_ref(), &row_indices, None)?
+                    };
+                    (row_run_ends.clone(), run_values)
                 }
-                value
+                "global" | "num_cols" => {
+                    let scalar = if key.axis == "num_cols" {
+                        ScalarValue::Int32(Some(columns.len() as i32))
+                    } else {
+                        match global_bindings.get(key) {
+                            Some(ColumnarValue::Scalar(value)) => value.clone(),
+                            _ => {
+                                return Err(DataFusionError::Execution(
+                                    "missing scalar global binding".into(),
+                                ));
+                            }
+                        }
+                    };
+                    if total == 0 {
+                        (
+                            Int32Array::from(Vec::<i32>::new()),
+                            new_empty_array(&scalar.data_type()),
+                        )
+                    } else {
+                        (Int32Array::from(vec![total as i32]), scalar.to_array()?)
+                    }
+                }
+                _ => continue,
             };
-
-            let mapped = if self.preserve_cell {
-                preserve_cell_slots(entry_slice, mapped)?
+            let logical_dtype = run_values.data_type().clone();
+            let encoded = RunArray::<Int32Type>::try_new(&run_ends, run_values.as_ref())?;
+            ree_bytes += encoded.get_array_memory_size();
+            // Arrow's generic REE cast materializes with one take. Binding the
+            // resulting column avoids decoding again at each consuming kernel.
+            let decoded = if total == 0 {
+                new_empty_array(&logical_dtype)
             } else {
-                let values = entry_values(entry_slice.as_ref())?;
-                inherit_parent_validity(mapped, values.as_ref())?
+                cast(&encoded, &logical_dtype)?
             };
-            let next_offset = result_offsets
-                .last()
-                .copied()
-                .unwrap_or_default()
-                .checked_add(i32::try_from(entry_count).map_err(|_| {
-                    DataFusionError::Execution(
-                        "aligned row exceeds ListArray offset capacity".into(),
-                    )
-                })?)
-                .ok_or_else(|| {
-                    DataFusionError::Execution(
-                        "aligned output exceeds ListArray offset capacity".into(),
-                    )
-                })?;
-            result_offsets.push(next_offset);
-            mapped_rows.push(mapped);
-        }
+            dense_bytes += decoded.get_array_memory_size();
+            if collect_stats {
+                let shape = match &logical_dtype {
+                    DataType::Struct(fields) => format!("Struct({} fields)", fields.len()),
+                    other => format!("{other:?}"),
+                };
+                eprintln!(
+                    "VAIL_REE_BIND axis={} name={:?} runs={} ree_bytes={} decoded_bytes={} shape={}",
+                    key.axis,
+                    key.name,
+                    run_ends.len(),
+                    encoded.get_array_memory_size(),
+                    decoded.get_array_memory_size(),
+                    shape
+                );
+            }
 
-        let output_values = if mapped_rows.is_empty() {
-            let DataType::List(field) = &self.dtype else {
-                return Err(DataFusionError::Internal(
-                    "aligned matrix map output must be List".into(),
-                ));
-            };
-            new_empty_array(field.data_type())
+            let index = body_arrays.len();
+            let name = format!("__vail_aligned_bound_{index}");
+            body_fields.push(Arc::new(arrow_schema::Field::new(
+                &name,
+                logical_dtype,
+                true,
+            )));
+            body_arrays.push(decoded);
+        }
+        if collect_stats {
+            eprintln!(
+                "VAIL_REE_BATCH rows={} entries={} bindings={} ree_bytes={} decoded_bytes={}",
+                entries.len(),
+                total,
+                self.binding_order.len(),
+                ree_bytes,
+                dense_bytes
+            );
+        }
+        let mapped = if total == 0 {
+            new_empty_array(&self.body_dtype)
         } else {
-            let arrays = mapped_rows
-                .iter()
-                .map(|array| array.as_ref())
-                .collect::<Vec<_>>();
-            concat(&arrays)?
+            let body_batch = RecordBatch::try_new_with_options(
+                Arc::new(Schema::new(body_fields)),
+                body_arrays,
+                &RecordBatchOptions::new().with_row_count(Some(total)),
+            )?;
+            let value = self.body.evaluate(&body_batch)?.into_array(total)?;
+            if value.len() != total {
+                return Err(DataFusionError::Execution(format!(
+                    "aligned batch body returned {} values for {total} entries",
+                    value.len()
+                )));
+            }
+            value
+        };
+        let output_values = if self.preserve_cell {
+            preserve_cell_slots(entry_slots, mapped)?
+        } else {
+            inherit_parent_validity(mapped, values.as_ref())?
         };
         let DataType::List(field) = &self.dtype else {
             return Err(DataFusionError::Internal(
@@ -374,6 +496,46 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
         )?;
         Ok(ColumnarValue::Array(Arc::new(output)))
     }
+}
+
+/// Prune borrowed nested struct children before gathering repeated columns.
+/// Parent null validity and field order are retained at every projected level.
+fn project_column_array(array: &ArrayRef, dtype: &DataType) -> Result<ArrayRef> {
+    if array.data_type() == dtype {
+        return Ok(array.clone());
+    }
+    let DataType::Struct(fields) = dtype else {
+        return Ok(cast(array.as_ref(), dtype)?);
+    };
+    let source = array
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .ok_or_else(|| {
+            DataFusionError::Execution("aligned column projection needs struct".into())
+        })?;
+    if fields.is_empty() {
+        return Ok(Arc::new(StructArray::new_empty_fields(
+            array.len(),
+            source.nulls().cloned(),
+        )));
+    }
+    let children = fields
+        .iter()
+        .map(|field| {
+            let child = source.column_by_name(field.name()).ok_or_else(|| {
+                DataFusionError::Execution(format!(
+                    "aligned column field {:?} absent",
+                    field.name()
+                ))
+            })?;
+            project_column_array(child, field.data_type())
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(Arc::new(StructArray::try_new(
+        fields.clone(),
+        children,
+        source.nulls().cloned(),
+    )?))
 }
 
 fn array_value(value: ColumnarValue, what: &str) -> Result<ArrayRef> {
@@ -402,65 +564,6 @@ fn shared_list_values(value: ColumnarValue) -> Result<ArrayRef> {
     // global row joined to the outer rows. `value(0)` is a zero-copy child
     // slice; the resulting ArrayRef is reused for every map row.
     Ok(lists.value(0))
-}
-
-fn node_id(expr: &Arc<dyn PhysicalExpr>) -> usize {
-    Arc::as_ptr(expr) as *const () as usize
-}
-
-fn collect_input_keys(
-    expr: &Arc<dyn PhysicalExpr>,
-    out: &mut HashSet<InputKey>,
-    visited: &mut HashSet<usize>,
-) {
-    if !visited.insert(node_id(expr)) {
-        return;
-    }
-    if let Some(input) = expr.downcast_ref::<BoundInputExpr>() {
-        out.insert(input.key.clone());
-    }
-    for child in expr.children() {
-        collect_input_keys(child, out, visited);
-    }
-}
-
-fn bind_row_inputs(
-    keys: &HashSet<InputKey>,
-    rows: &StructArray,
-    globals: &HashMap<InputKey, ColumnarValue>,
-    row_index: usize,
-    num_columns: usize,
-) -> Result<HashMap<InputKey, ColumnarValue>> {
-    let mut result = HashMap::new();
-    for key in keys {
-        let value = match key.axis.as_str() {
-            "row" => {
-                let name = key.name.as_deref().ok_or_else(|| {
-                    DataFusionError::Execution("row aligned input needs a field name".into())
-                })?;
-                let fields = rows
-                    .column_by_name("__vail_aligned_row")
-                    .and_then(|value| value.as_any().downcast_ref::<StructArray>())
-                    .ok_or_else(|| {
-                        DataFusionError::Execution("aligned row bundle is malformed".into())
-                    })?;
-                let field = fields.column_by_name(name).ok_or_else(|| {
-                    DataFusionError::Execution(format!("row field {name:?} is absent"))
-                })?;
-                ColumnarValue::Scalar(ScalarValue::try_from_array(field, row_index)?)
-            }
-            "global" => globals.get(key).cloned().ok_or_else(|| {
-                DataFusionError::Execution(format!(
-                    "no aligned global input bound for {:?}",
-                    key.name
-                ))
-            })?,
-            "num_cols" => ColumnarValue::Scalar(ScalarValue::Int32(Some(num_columns as i32))),
-            _ => continue,
-        };
-        result.insert(key.clone(), value);
-    }
-    Ok(result)
 }
 
 fn bind_globals(
@@ -493,40 +596,6 @@ fn bind_globals(
         result.insert(key.clone(), ColumnarValue::Scalar(scalar));
     }
     Ok(result)
-}
-
-fn rebind_body(
-    expr: &Arc<dyn PhysicalExpr>,
-    bindings: &HashMap<InputKey, ColumnarValue>,
-    memo: &mut HashMap<usize, Arc<dyn PhysicalExpr>>,
-) -> Result<Arc<dyn PhysicalExpr>> {
-    let id = node_id(expr);
-    if let Some(cached) = memo.get(&id) {
-        return Ok(cached.clone());
-    }
-    if let Some(input) = expr.downcast_ref::<BoundInputExpr>() {
-        let value = bindings.get(&input.key).cloned().ok_or_else(|| {
-            DataFusionError::Execution(format!(
-                "no aligned matrix input bound for {}:{:?}",
-                input.key.axis, input.key.name
-            ))
-        })?;
-        let rebound = input.bind(value);
-        memo.insert(id, rebound.clone());
-        return Ok(rebound);
-    }
-    let children = expr.children();
-    if children.is_empty() {
-        memo.insert(id, expr.clone());
-        return Ok(expr.clone());
-    }
-    let rebound = children
-        .into_iter()
-        .map(|child| rebind_body(child, bindings, memo))
-        .collect::<Result<Vec<_>>>()?;
-    let rebound = expr.clone().with_new_children(rebound)?;
-    memo.insert(id, rebound.clone());
-    Ok(rebound)
 }
 
 fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> {
@@ -590,4 +659,257 @@ fn inherit_parent_validity(values: ArrayRef, parent: &dyn Array) -> Result<Array
     let nulls = NullBuffer::union(values.nulls(), parent.nulls());
     let data = values.to_data().into_builder().nulls(nulls).build()?;
     Ok(make_array(data))
+}
+
+#[cfg(test)]
+mod runend_experiment_tests {
+    use super::*;
+    #[test]
+    fn native_numeric_kernel_does_not_accept_runend_input() {
+        let values = Int32Array::from(vec![2, 7]);
+        let run_ends = Int32Array::from(vec![3, 5]);
+        let encoded = RunArray::<Int32Type>::try_new(&run_ends, &values).unwrap();
+        let result = arrow_arith::numeric::add(&encoded, &encoded);
+        assert!(
+            result.is_err(),
+            "kernel support changed; revisit decode fallback"
+        );
+        eprintln!("REE add probe: {}", result.unwrap_err());
+        let decoded = cast(&encoded, &DataType::Int32).unwrap();
+        assert_eq!(decoded.as_ref(), &Int32Array::from(vec![2, 2, 2, 7, 7]));
+    }
+    #[test]
+    fn decode_once_supports_nested_structs_and_null_values() {
+        let values = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new("x", DataType::Int32, true)),
+            Arc::new(Int32Array::from(vec![Some(2), None])) as ArrayRef,
+        )]);
+        let encoded =
+            RunArray::<Int32Type>::try_new(&Int32Array::from(vec![2, 5]), &values).unwrap();
+        let decoded = cast(&encoded, values.data_type()).unwrap();
+        let decoded = decoded.as_any().downcast_ref::<StructArray>().unwrap();
+        assert_eq!(
+            decoded
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap(),
+            &Int32Array::from(vec![Some(2), Some(2), None, None, None])
+        );
+    }
+    #[test]
+    fn flattened_map_preserves_sliced_offsets_short_empty_lists_and_null_slots() {
+        use crate::expressions::{Expr, PrimitiveType, Type, lower};
+        let entry_values = StructArray::new(
+            vec![Arc::new(arrow_schema::Field::new(
+                "x",
+                DataType::Int32,
+                true,
+            ))]
+            .into(),
+            vec![Arc::new(Int32Array::from(vec![1, 2, 3, 4, 5]))],
+            Some(NullBuffer::from(vec![true, false, true, true, true])),
+        );
+        let slots = StructArray::from(vec![
+            (
+                Arc::new(arrow_schema::Field::new(
+                    "__vail_matrix_col_id",
+                    DataType::Int32,
+                    true,
+                )),
+                Arc::new(Int32Array::from(vec![0, 1, 0, 0, 1])) as ArrayRef,
+            ),
+            (
+                Arc::new(arrow_schema::Field::new(
+                    "value",
+                    entry_values.data_type().clone(),
+                    true,
+                )),
+                Arc::new(entry_values) as ArrayRef,
+            ),
+        ]);
+        let entries = ListArray::new(
+            Arc::new(arrow_schema::Field::new(
+                "item",
+                slots.data_type().clone(),
+                true,
+            )),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, 2, 2, 3, 5])),
+            Arc::new(slots),
+            None,
+        );
+        let row_fields = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new("x", DataType::Int32, true)),
+            Arc::new(Int32Array::from(vec![10, 20, 30, 40])) as ArrayRef,
+        )]);
+        let rows = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new(
+                "__vail_aligned_row",
+                row_fields.data_type().clone(),
+                true,
+            )),
+            Arc::new(row_fields) as ArrayRef,
+        )]);
+        let cols = Int32Array::from(vec![0, 1]);
+        let columns = ScalarValue::List(Arc::new(ListArray::new(
+            Arc::new(arrow_schema::Field::new("item", DataType::Int32, true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, 2])),
+            Arc::new(cols),
+            None,
+        )));
+        let arrays = vec![Arc::new(entries) as ArrayRef, Arc::new(rows) as ArrayRef];
+        let schema = Arc::new(Schema::new(vec![
+            arrow_schema::Field::new("entries", arrays[0].data_type().clone(), true),
+            arrow_schema::Field::new("rows", arrays[1].data_type().clone(), true),
+        ]));
+        let batch = RecordBatch::try_new(schema, arrays).unwrap();
+        let expression = Expr::AlignedMatrixMap {
+            entries: Arc::new(Expr::Column {
+                name: "entries".into(),
+            }),
+            columns: Arc::new(Expr::RuntimeLiteral { value: columns }),
+            rows: Arc::new(Expr::Column {
+                name: "rows".into(),
+            }),
+            globals: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(None),
+            }),
+            body: Arc::new(Expr::AlignedMapInput {
+                axis: "row".into(),
+                name: Some("x".into()),
+                dtype: Type::Primitive(PrimitiveType::Int32),
+            }),
+            dtype: Type::Array {
+                array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+            },
+            preserve_cell: false,
+        };
+        let expr = lower(&expression, batch.schema().as_ref()).unwrap();
+        let all = expr.evaluate(&batch).unwrap().into_array(4).unwrap();
+        let all = all.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(all.value_offsets(), &[0, 2, 2, 3, 5]);
+        assert_eq!(
+            all.values().as_any().downcast_ref::<Int32Array>().unwrap(),
+            &Int32Array::from(vec![Some(10), None, Some(30), Some(40), Some(40)])
+        );
+        let sliced = expr
+            .evaluate(&batch.slice(2, 2))
+            .unwrap()
+            .into_array(2)
+            .unwrap();
+        let sliced = sliced.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(sliced.value_offsets(), &[0, 1, 3]);
+        assert_eq!(
+            sliced
+                .values()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap(),
+            &Int32Array::from(vec![30, 40, 40])
+        );
+        let empty = expr
+            .evaluate(&batch.slice(1, 1))
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        let empty = empty.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(empty.value_offsets(), &[0, 0]);
+        assert!(empty.values().is_empty());
+    }
+    #[test]
+    fn public_aligned_maps_keep_same_schema_generated_bodies_distinct() {
+        use crate::expressions::{BinaryOperator, Expr, PrimitiveType, Type, lower};
+        let int_type = Type::Primitive(PrimitiveType::Int32);
+        let list_type = Type::Array {
+            array: Box::new(int_type.clone()),
+        };
+        let values = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new(
+                "value",
+                DataType::Struct(Vec::<FieldRef>::new().into()),
+                true,
+            )),
+            Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef,
+        )]);
+        let entries = ListArray::new(
+            Arc::new(arrow_schema::Field::new(
+                "item",
+                values.data_type().clone(),
+                true,
+            )),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, 2])),
+            Arc::new(values),
+            None,
+        );
+        let row = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new("x", DataType::Int32, true)),
+            Arc::new(Int32Array::from(vec![10])) as ArrayRef,
+        )]);
+        let rows = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new(
+                "__vail_aligned_row",
+                row.data_type().clone(),
+                true,
+            )),
+            Arc::new(row) as ArrayRef,
+        )]);
+        let arrays = vec![Arc::new(entries) as ArrayRef, Arc::new(rows) as ArrayRef];
+        let schema = Arc::new(Schema::new(vec![
+            arrow_schema::Field::new("entries", arrays[0].data_type().clone(), true),
+            arrow_schema::Field::new("rows", arrays[1].data_type().clone(), true),
+        ]));
+        let batch = RecordBatch::try_new(schema, arrays).unwrap();
+        let columns = ScalarValue::List(Arc::new(
+            ListArray::from_iter_primitive::<Int32Type, _, _>(vec![Some(vec![Some(0), Some(1)])]),
+        ));
+        let map = |amount: i32| Expr::AlignedMatrixMap {
+            entries: Arc::new(Expr::Column {
+                name: "entries".into(),
+            }),
+            columns: Arc::new(Expr::RuntimeLiteral {
+                value: columns.clone(),
+            }),
+            rows: Arc::new(Expr::Column {
+                name: "rows".into(),
+            }),
+            globals: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(None),
+            }),
+            body: Arc::new(Expr::Binary {
+                operator: BinaryOperator::Add,
+                left: Arc::new(Expr::AlignedMapInput {
+                    axis: "row".into(),
+                    name: Some("x".into()),
+                    dtype: int_type.clone(),
+                }),
+                right: Arc::new(Expr::RuntimeLiteral {
+                    value: ScalarValue::Int32(Some(amount)),
+                }),
+            }),
+            dtype: list_type.clone(),
+            preserve_cell: false,
+        };
+        let expression = Expr::Struct {
+            fields: (1..=8)
+                .map(|amount| (format!("map_{amount}"), map(amount)))
+                .collect(),
+        };
+        let result = lower(&expression, batch.schema().as_ref())
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+        assert_eq!(result.num_columns(), 8);
+        for (index, column) in result.columns().iter().enumerate() {
+            let list = column.as_any().downcast_ref::<ListArray>().unwrap();
+            assert_eq!(list.value_offsets(), &[0, 2]);
+            let expected = 11 + index as i32;
+            assert_eq!(
+                list.values().as_any().downcast_ref::<Int32Array>().unwrap(),
+                &Int32Array::from(vec![expected, expected])
+            );
+        }
+    }
 }

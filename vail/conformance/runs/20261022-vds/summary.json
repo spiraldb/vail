@@ -1,0 +1,79 @@
+{
+  "status": "partial; stopped at performance boundary; not merged",
+  "branch": "dk/vds-module",
+  "base_revision": "7e62dfbdadcc29af62d2581b5942f84b4d395e32",
+  "validation": {
+    "command": "PYTHONPATH=$PWD/vail/python /Users/danielking/projects/vail/vail/.venv/bin/python -m pytest -xq vail/python/tests/test_vds.py vail/python/tests/test_vds_functions.py vail/python/tests/test_map_partitions_streams.py",
+    "passed": 48,
+    "existing_distinct_tests_passed": 2,
+    "existing_distinct_tests_deselected": 96,
+    "ruff": "F821/F401 checks pass for new VDS modules",
+    "native_binary": "/Users/danielking/projects/vail/vail/target/debug/lib_native.dylib",
+    "native_sha256": "532ab6fc1cdcc588bef15c1f9f74d09913c7d0ce920e7a0b993f09c53346f696",
+    "scope": "Python-only port using existing compiled native library; no Rust/native modifications"
+  },
+  "api_changes": [
+    {
+      "api": "vail.vds",
+      "change": "new partial module: container, allele conversions, basic filtering, dense/sparse conversion, gVCF transform and cohort merging",
+      "why": "reuse Hail algorithms through existing native expressions, joins and scans"
+    },
+    {
+      "api": "MatrixTable.distinct_by_row",
+      "change": "avoid projecting physical index keys twice, and preserve the index keys when rebuilding the matrix core",
+      "why": "VDS.validate after write/read previously failed on duplicate locus projection or lost matrix core index metadata"
+    }
+  ],
+  "not_added": [
+    "No Hail IR compatibility layer",
+    "No new backend operators",
+    "No UDF registration API",
+    "No eager genomic-row collection in production code",
+    "No restartable combiner or multi-write implementation"
+  ],
+  "blockers": [
+    "Densification too slow in exploratory end-to-end comparison; execution/plan optimization needed before completing port",
+    "Existing Hail-native VDS storage requires a native Hail MatrixTable storage reader, a substantial additional feature"
+  ],
+  "performance": {
+    "files": [
+      "hail-timings.jsonl",
+      "vail-timings.jsonl"
+    ],
+    "workload": "1kg_chr22_5_samples.vds: 4077 reference rows, 81 variant rows, 5 samples; plan to_dense_mt and collect localized results",
+    "limitations": "Exploratory shared-host smoke timing, not a controlled throughput benchmark. Different native storage formats for equivalent independently extracted fixture values. Both engines initialized before timings; native read plan constructed before timings. No claim of faster performance."
+  },
+  "correctness": {
+    "golden": "Fresh independent pinned-Hail dense output; field names/types, globals, columns, and all 81 row values match, with NaNs equal. Entry field order is deliberately not compared because Hail uses Python set iteration.",
+    "limits": "Not a full upstream VDS suite pass; advanced methods and workflow intentionally absent. No performance acceptance."
+  },
+  "review": {
+    "status": "scoped experimental source/test clearance; no merge approval",
+    "reviewed_revision": "fc1abd169280e2a9966aa7ec1bc8ad7aaf2a7fbe",
+    "disposition": "experimental only; no merge approval",
+    "main_updated": false,
+    "findings": [
+      {
+        "finding": "interval reads omit covering reference blocks beginning before interval",
+        "fix": "reject all non-None intervals, including empty lists, before I/O"
+      },
+      {
+        "finding": "G triangular intermediates overflow signed int32",
+        "fix": "reject more than 32767 global or local alleles before triangular length checks/output construction"
+      },
+      {
+        "finding": "canonical local-allele mapping preconditions undocumented",
+        "fix": "document LA[0]=0, unique mapping, and defined elements addressed by nonreference calls"
+      }
+    ],
+    "followup_validation": "19 targeted tests passed, 9 deselected; includes 5 large-domain and 2 interval-rejection regressions. Previous 48-test run remains recorded separately.",
+    "followup_reviewed_revision": "06f47aa91456b36b8f2d721be62bb17a1bb78e8d",
+    "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+    "open_scoped_correctness_findings": [],
+    "limits": [
+      "Not merge approval",
+      "Not performance acceptance",
+      "Port remains stopped and isolated"
+    ]
+  }
+}

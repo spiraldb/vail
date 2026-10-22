@@ -17,14 +17,19 @@ use std::{
     sync::Arc,
 };
 
-pub(crate) fn name(key: &impl Hash, label: &str) -> String {
+fn fingerprint(key: &impl Hash) -> u64 {
     let mut state = std::collections::hash_map::DefaultHasher::new();
     key.hash(&mut state);
-    format!("{label}_{:016x}", state.finish())
+    state.finish()
+}
+
+pub(crate) fn name(key: &impl Hash, label: &str) -> String {
+    format!("{label}_{:016x}", fingerprint(key))
 }
 
 pub(crate) struct Scalar<K> {
     key: K,
+    fingerprint: u64,
     name: String,
     signature: Signature,
     output: DataType,
@@ -53,10 +58,7 @@ impl<K: PartialEq> PartialEq for Scalar<K> {
 impl<K: Eq> Eq for Scalar<K> {}
 impl<K: Hash> Hash for Scalar<K> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-        self.key.hash(state);
-        self.signature.hash(state);
-        self.output.hash(state);
+        self.fingerprint.hash(state);
     }
 }
 impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> ScalarUDFImpl for Scalar<K> {
@@ -97,7 +99,9 @@ pub(crate) fn scalar_with_args<K: fmt::Debug + Eq + Hash + Send + Sync + 'static
     function: Arc<dyn Fn(ScalarFunctionArgs) -> Result<ColumnarValue> + Send + Sync>,
 ) -> ScalarUDF {
     let name = name(&(&key, &signature, &output), label);
+    let fingerprint = fingerprint(&(&name, &key, &signature, &output));
     ScalarUDF::from(Scalar {
+        fingerprint,
         key,
         name,
         signature,
@@ -108,6 +112,7 @@ pub(crate) fn scalar_with_args<K: fmt::Debug + Eq + Hash + Send + Sync + 'static
 
 struct Aggregate<K> {
     key: K,
+    fingerprint: u64,
     name: String,
     signature: Signature,
     output: DataType,
@@ -135,11 +140,7 @@ impl<K: PartialEq> PartialEq for Aggregate<K> {
 impl<K: Eq> Eq for Aggregate<K> {}
 impl<K: Hash> Hash for Aggregate<K> {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-        self.key.hash(state);
-        self.signature.hash(state);
-        self.output.hash(state);
-        self.fields.hash(state);
+        self.fingerprint.hash(state);
     }
 }
 impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> AggregateUDFImpl for Aggregate<K> {
@@ -217,7 +218,9 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
         .map(|(i, t)| Arc::new(Field::new(i.to_string(), t, true)))
         .collect::<Vec<_>>();
     let name = label.to_owned();
+    let fingerprint = fingerprint(&(&name, &key, &signature, &output, &fields));
     Arc::new(AggregateUDF::from(Aggregate {
+        fingerprint,
         key,
         name,
         signature,
@@ -227,4 +230,9 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
         groups_factory,
         groups_supported,
     }))
+}
+
+/// Recover a typed semantic key without relying on a function's display name.
+pub(crate) fn aggregate_key<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>(udf: &AggregateUDF) -> Option<&K> {
+    udf.inner().downcast_ref::<Aggregate<K>>().map(|a| &a.key)
 }

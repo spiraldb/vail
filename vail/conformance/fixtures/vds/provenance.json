@@ -1,0 +1,30 @@
+{
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "interpreter": "/tmp/vail-plink-oracle/bin/python",
+  "pythonpath": "/Users/danielking/projects/vail/hail/hail/python",
+  "generator": "conformance/vds_oracle.py",
+  "initial_extraction": "/tmp/extract_vds.py (same extraction operations, also extracted larger two-sample fixture not committed)",
+  "fixture": "hail/hail/test/resources/vds/1kg_chr22_5_samples.vds",
+  "source_sha256": {
+    "hail/python/hail/vds/methods.py": "ab5c63ed39167dce72f7731a34d2a4058da19641fb5d7e0b6f472e0eed34542d",
+    "hail/python/hail/vds/variant_dataset.py": "f4a727df09e783dbad369b45665644d1441082b048c00e3a7279caa5dbefb084"
+  },
+  "files": [
+    {
+      "name": "1kg_chr22_5_samples.vds.dense.json.gz",
+      "bytes": 7808,
+      "sha256": "ad660254d8e6e9bcd98eb81adc58bd549bd50b75979a1fde748e0051ae120f02"
+    },
+    {
+      "name": "1kg_chr22_5_samples.vds.reference_data.json.gz",
+      "bytes": 48679,
+      "sha256": "1d51a0f24b8adede6a698e4f17c879374dd75cfb5543520dee66dd5a964cb1ac"
+    },
+    {
+      "name": "1kg_chr22_5_samples.vds.variant_data.json.gz",
+      "bytes": 6763,
+      "sha256": "ed6ec15102f2c85f045b800762018360fa23a69ee3150203f9844b976bb917c6"
+    }
+  ],
+  "semantics": "Independent Hail extraction; no candidate Vail code used. Dense entry struct field order varies with Hail Python set iteration; compare field names/types and values, with NaNs equal."
+}
