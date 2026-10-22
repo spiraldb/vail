@@ -246,7 +246,7 @@ def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_p
     mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 1), alleles=['A', 'G'])
     mt = mt.key_rows_by('locus', 'alleles')
     options = hl.literal([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
-    mt = mt.annotate_entries(GP=hl.or_missing((mt.row_idx + mt.col_idx) % 4 != 0,
+    mt = mt.annotate_entries(GP=hl.or_missing((mt.row_idx % 5 != 0) & ((mt.row_idx + mt.col_idx) % 4 != 0),
                                              options[(mt.row_idx + mt.col_idx) % 3]))
     output = str(tmp_path / 'multi')
     hl.export_bgen(mt, output, compression_codec=codec)
@@ -254,7 +254,7 @@ def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_p
     imported = hl.import_bgen(output + '.bgen', ['GP', 'GT', 'dosage'],
                               sample_file=output + '.sample', n_partitions=3)
     indices = [(row + col) % 3 for row in range(17) for col in range(n_samples)
-               if (row + col) % 4 != 0]
+               if row % 5 != 0 and (row + col) % 4 != 0]
     assert imported.count() == (17, n_samples)
     assert imported.GP.collect() == [[float(i == j) for j in range(3)] for i in indices]
     assert imported.GT.collect() == [hl.Call((0, 0) if i == 0 else (0, 1) if i == 1 else (1, 1), False)

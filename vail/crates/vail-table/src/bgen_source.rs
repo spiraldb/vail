@@ -307,6 +307,7 @@ struct Batch {
     ploidy: ArrayRef,
     phase: ArrayRef,
     gp_offsets: OffsetBuffer<i32>,
+    missing_cells: ArrayRef,
     cell_arrays: Vec<ArrayRef>,
     cell_offsets: Vec<i32>,
 }
@@ -357,6 +358,20 @@ impl Batch {
             (0..=samples).map(|i| (i * 3) as i32).collect::<Vec<_>>(),
         ));
         debug_assert_eq!(*gp_offsets.last().unwrap(), gp_end);
+        let sample_ids = Arc::new(Int64Array::from(
+            (0..samples).map(|i| i as i64).collect::<Vec<_>>(),
+        )) as ArrayRef;
+        let missing_entries =
+            arrow_array::new_null_array(&DataType::Struct(entry_fields.clone()), samples);
+        let missing_cells = Arc::new(
+            StructArray::try_new_with_length(
+                cell_fields.clone(),
+                vec![sample_ids.clone(), missing_entries],
+                None,
+                samples,
+            )
+            .map_err(|e| e.to_string())?,
+        ) as ArrayRef;
         Ok(Self {
             schema,
             indices,
@@ -366,12 +381,11 @@ impl Batch {
             cell_field: cell_field.clone(),
             cell_fields: cell_fields.clone(),
             entry_fields: entry_fields.clone(),
-            sample_ids: Arc::new(Int64Array::from(
-                (0..samples).map(|i| i as i64).collect::<Vec<_>>(),
-            )),
+            sample_ids,
             ploidy: Arc::new(UInt8Array::from(vec![2; samples])),
             phase: Arc::new(BooleanArray::new(BooleanBuffer::new_unset(samples), None)),
             gp_offsets,
+            missing_cells,
             cell_arrays: Vec::new(),
             cell_offsets: vec![0],
         })
@@ -497,6 +511,9 @@ impl Batch {
         let present = NullBuffer::new(BooleanBuffer::collect_bool(n, |sample| {
             data[8 + sample] & 128 == 0
         }));
+        if present.null_count() == n {
+            return self.push_cells(self.missing_cells.clone(), n);
+        }
         let mut arrays: Vec<ArrayRef> = Vec::with_capacity(self.entry_fields.len());
         let probabilities = &data[10 + n..];
         for field in &self.entry_fields {
@@ -580,6 +597,9 @@ impl Batch {
             )
             .map_err(|e| e.to_string())?,
         ) as ArrayRef;
+        self.push_cells(cells, n)
+    }
+    fn push_cells(&mut self, cells: ArrayRef, n: usize) -> std::result::Result<(), String> {
         let end = self
             .cell_offsets
             .last()
