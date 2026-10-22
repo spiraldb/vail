@@ -291,8 +291,9 @@ fn bgen_builder(dtype: &DataType, capacity: usize) -> Box<dyn ArrayBuilder> {
     }
 }
 
-/// A batch owns only the demanded top-level builders. Child capacities grow
-/// from decoded records; header sample counts never allocate cell buffers.
+/// Row builders and reusable sample-layout buffers belong to the scan. Entry
+/// batches own primitive Arrow buffers; fixed IDs, offsets and Call metadata
+/// are shared across variants. Undemanded cells allocate no sample buffers.
 struct Batch {
     schema: SchemaRef,
     indices: Vec<usize>,
