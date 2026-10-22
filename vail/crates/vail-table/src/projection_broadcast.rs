@@ -270,15 +270,19 @@ impl PhysicalExpr for ProjectionLabelExpr {
 }
 
 fn has_scalar_subquery(expr: &Arc<dyn PhysicalExpr>) -> Result<bool> {
-    use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
-    let mut found = false;
-    expr.apply(|child| {
+    let mut seen = std::collections::HashSet::new();
+    let mut pending = vec![expr.clone()];
+    // Retain the root throughout traversal so shared-node addresses remain
+    // valid memo keys; inspect each physical DAG node at most once.
+    while let Some(child) = pending.pop() {
+        let identity = Arc::as_ptr(&child) as *const () as usize;
+        if !seen.insert(identity) { continue; }
         if child.is::<datafusion_physical_expr::scalar_subquery::ScalarSubqueryExpr>() {
-            found = true;
-            Ok(TreeNodeRecursion::Stop)
-        } else { Ok(TreeNodeRecursion::Continue) }
-    })?;
-    Ok(found)
+            return Ok(true);
+        }
+        pending.extend(child.children().into_iter().cloned());
+    }
+    Ok(false)
 }
 
 fn is_nested(dtype: &DataType) -> bool {
