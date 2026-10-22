@@ -309,12 +309,14 @@ def test_array_linreg_coordinates_preserve_null_empty_and_length_semantics():
     # per-position row mask instead of becoming an unfiltered coordinate UDAF.
     filtered = table.aggregate(
         hl.agg.array_agg(
-            lambda y: hl.agg.filter(y > 0.0, hl.agg.linreg(y, [1.0, table.x])),
+            lambda y: hl.agg.filter(y > 4.0, hl.agg.linreg(y, [1.0, table.x])),
             table.ys,
         )
     )
-    assert filtered[0].n == 3
-    assert filtered[1].n == 4
+    assert filtered[0].n == 2
+    assert filtered[0].beta is None
+    assert filtered[1].n == 3
+    assert filtered[1].beta == pytest.approx([0.0, 2.0])
 
 
 def test_kll_rejects_int64_precision_loss():
