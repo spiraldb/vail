@@ -17,7 +17,7 @@ On this deterministic-range grouped-matrix case, the candidate was 19.4× faster
 
 ## Artifact provenance
 
-- Baseline source was `31ac0397f4c7b96d86852af826b63cd61569097c` (the pre-bundle baseline); wheel SHA-256: `d678a789e454b3438dc426a3636ad18b3748f18bea93dfd3998f802592051933`. The installed native module SHA-256 is `93114b1a296143af8cb7ac994a6794203079a076537256949b0c642472e1028b`; the installed `matrixtable.py` SHA-256 is `28e7ecf62392f0f5e5eb05769f7b09f684000b979903593394659af4595cc8ad`.
+- Baseline source was `eb048cca` (the preceding linreg candidate, before the generic callback bundle); wheel SHA-256: `069cc8672702505885a76cb452823d23a633d4e8e69de4078b9e9a12abc98b8a`. The installed native module SHA-256 is `93114b1a296143af8cb7ac994a6794203079a076537256949b0c642472e1028b`; the installed `matrixtable.py` SHA-256 is `28e7ecf62392f0f5e5eb05769f7b09f684000b979903593394659af4595cc8ad`.
 - Candidate production source is `eb406703cbb7327a3f18611e811e441bc0cbf63b`; final test-only cleanup is `7f263edb63b73a763310736aed3afdb594c5f56d`. The release wheel built with Rust 1.98.0 has SHA-256 `181a7a51ed5c83a00ba04e6f4bea27fb052654eab8027ec79060e78595390a6b`. The installed native module SHA-256 is `a11d7cc710d6ce250240d959b3ec6e2c0fee0b5ad6f07d2b247cfa44b68cd646`; the installed `matrixtable.py` SHA-256 is `03df28462fc3c601ce09931905833c7f16e07f85b641ebfe1689282011a6f6f6`.
 - Command per trial: `VAIL_BENCH_ROWS=100000 VAIL_BENCH_COLS=128 VAIL_BENCH_REPEATS=1 PYTHONPATH=<site> /Users/danielking/projects/vail/vail/.venv/bin/python vail/conformance/runs/20261022-arrayagg-coordinate/benchmark_matrix_group.py`.
 
