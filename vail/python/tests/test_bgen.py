@@ -241,6 +241,7 @@ def test_unsigned_position_outside_locus_range_is_rejected(tmp_path):
 @pytest.mark.parametrize('codec', ['zlib', 'zstd'])
 def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_path, codec):
     mt = hl.range_matrix_table(17, 5, n_partitions=2)
+    mt = mt.annotate_cols(s=hl.str(mt.col_idx)).key_cols_by('s')
     mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 1), alleles=['A', 'G'])
     mt = mt.key_rows_by('locus', 'alleles')
     options = hl.literal([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
