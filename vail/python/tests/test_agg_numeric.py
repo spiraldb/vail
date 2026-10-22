@@ -102,6 +102,70 @@ def test_grouped_corr_uses_native_groups_with_hail_empty_and_degenerate_results(
     assert math.isnan(by_group[4])
 
 
+def test_grouped_linreg_batches_rows_per_group_with_origins_weights_and_nulls():
+    rows = []
+    for group, offset in enumerate((0.0, 1_000_000.0)):
+        for i in range(10_000):
+            x = offset + i
+            rows.append({
+                "g": group,
+                "x": None if i == 7 else x,
+                "y": None if i == 13 else 4.0 + 2.5 * x,
+                "w": 0.0 if i == 21 else 1.0 + (i % 3),
+            })
+    table = hl.Table.parallelize(
+        rows,
+        schema=hl.tstruct(g=hl.tint32, x=hl.tfloat64, y=hl.tfloat64, w=hl.tfloat64),
+        n_partitions=1,
+    )
+    grouped = table.group_by(table.g).aggregate(
+        fit=hl.agg.linreg(table.y, [1.0, table.x], weight=table.w)
+    ).collect()
+    assert len(grouped) == 2
+    for row in grouped:
+        assert row.fit.n == 9_998
+        assert row.fit.beta == pytest.approx([4.0, 2.5], abs=1e-5)
+
+
+def test_array_linreg_reuses_only_identical_predictor_batches():
+    table = hl.range_table(10_000, n_partitions=1)
+    fits = table.aggregate(hl.agg.array_agg(
+        lambda offset: hl.agg.linreg(4.0 + 2.5 * table.idx + offset, [1.0, table.idx]),
+        hl.range(3),
+    ))
+    for offset, fit in enumerate(fits):
+        assert fit.n == 10_000
+        assert fit.beta == pytest.approx([4.0 + offset, 2.5], abs=1e-8)
+
+    masked = table.aggregate(hl.agg.array_agg(
+        lambda group: hl.agg.linreg(
+            hl.if_else(table.idx % 3 == group, None, 4.0 + 2.5 * table.idx + group),
+            [1.0, table.idx],
+        ),
+        hl.range(3),
+    ))
+    for group, fit in enumerate(masked):
+        assert fit.n == 6_666
+        assert fit.beta == pytest.approx([4.0 + group, 2.5], abs=1e-8)
+
+
+def test_linreg_extreme_column_range_preserves_tiny_residual():
+    table = hl.Table.parallelize(
+        [
+            {"x0": 1.0, "x1": 0.0, "y": 0.0},
+            {"x0": 1.0, "x1": 1.0, "y": 1e200},
+            {"x0": 0.0, "x1": 0.0, "y": 1e-200},
+        ],
+        schema=hl.tstruct(x0=hl.tfloat64, x1=hl.tfloat64, y=hl.tfloat64),
+        n_partitions=1,
+    )
+    fit = table.aggregate(hl.agg.linreg(table.y, [table.x0, table.x1]))
+    assert fit.n == 3
+    assert fit.beta == pytest.approx([0.0, 1e200])
+    assert fit.multiple_standard_error > 0.0
+    assert fit.multiple_standard_error == pytest.approx(1e-200)
+
+
 def test_hist_right_endpoint_and_nan():
     import math
     t = hl.Table.parallelize([{"x": -1.}, {"x": 0.}, {"x": 2.},

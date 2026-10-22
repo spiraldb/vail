@@ -13,6 +13,7 @@ arrow-ord = "=59.2.0"
 arrow-arith = "=59.2.0"
 kll-rs = "=0.1.4"
 nalgebra = "=0.34.1"
+faer = { version = "=0.24.4", default-features = false, features = ["std", "linalg"] }
 statrs = "=0.18.0"
 datafusion-functions-aggregate = "=55.0.0"
 datafusion-functions-aggregate-common = "=55.0.0"
