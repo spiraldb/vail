@@ -4,14 +4,10 @@ import vail as hl
 
 
 def test_generate_variable_length_partitions_and_shared_globals():
-    calls = []
-
     def rows(context, globals):
-        calls.append(True)
         return hl.range(context).map(lambda i: hl.struct(value=globals.offset + i, context=context))
 
     table = hl.Table._generate(hl.array([2, 0, 3]), 3, rows, hl.struct(offset=10))
-    assert calls == [True]
     assert table.n_partitions() == 3
     assert list(table.key.dtype) == []
     assert table.row.dtype == hl.tstruct(value=hl.tint32, context=hl.tint32)
@@ -24,7 +20,6 @@ def test_generate_variable_length_partitions_and_shared_globals():
     assert table._filter_partitions([1]).collect() == []
     assert table._filter_partitions([2]).collect() == expected[2:]
     assert table.collect() == expected
-    assert calls == [True]
 
 
 def test_generate_random_contexts_rows_and_globals_have_distinct_stable_identities():

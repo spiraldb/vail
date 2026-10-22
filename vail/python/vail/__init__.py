@@ -382,6 +382,7 @@ class Table:
 
         Integer partition counts and unkeyed interval lists are supported.
         Keyed interval partitioners require native range/order validation.
+        Contexts and per-context outputs are native arrays, not streaming iterators.
         """
         from uuid import uuid4
         from .inputs import bind_input
