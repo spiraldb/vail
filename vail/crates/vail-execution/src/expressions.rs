@@ -1839,7 +1839,7 @@ impl Expr {
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
                 if function.starts_with("__vail_list_reduce_")
-                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs" | "isnan")
+                    || matches!(function.as_str(), "__vail_list_call_stats" | "__vail_dict_lookup_many" | "abs" | "isnan")
                     || function.starts_with("__vail_ndarray_reshape_")
                 {
                     let result = udf.return_type(&args)?;
@@ -5533,6 +5533,56 @@ fn lower_synthetic(
     lower_cached(&expr, schema, globals, scope, memo, context)
 }
 
+// A mapped dictionary lookup need not broadcast the complete dictionary into
+// every element lane. Index each owning dictionary once, then probe its list of
+// keys in one batch. Restrict this rewrite to unconditional lookups/get: moving
+// an arbitrary lookup out of a lazy branch could introduce evaluation errors.
+fn mapped_dictionary_lookup(value: &Expr, parameter: &str, callback: &Expr) -> Option<Expr> {
+    let lookup = match callback {
+        Expr::GetField { value, name } if name == "found" || name == "value" => value.as_ref(),
+        Expr::IfElse { condition, consequent, alternate } => {
+            let Expr::GetField { value: found, name } = condition.as_ref() else { return None };
+            let Expr::GetField { value: result, name: result_name } = consequent.as_ref() else { return None };
+            if name != "found" || result_name != "value" || found != result || alternate.free_parameters().contains(parameter) { return None; }
+            found.as_ref()
+        }
+        _ => return None,
+    };
+    let Expr::NestedFunction { function, args, dtype } = lookup else { return None };
+    if function != "__vail_dict_lookup" || args.len() != 2 || args[0].free_parameters().contains(parameter) { return None; }
+    // These captures cannot fail on empty/missing input lists. Computed
+    // dictionaries retain the ordinary lazy lambda path.
+    fn plain_capture(value: &Expr) -> bool {
+        match value {
+            Expr::Column { .. } | Expr::Global { .. } | Expr::ExternalGlobal { .. }
+            | Expr::LambdaVariable { .. } | Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+            Expr::GetField { value, .. } | Expr::CollectionCast { value, .. } => plain_capture(value),
+            _ => false,
+        }
+    }
+    if !plain_capture(&args[0]) { return None; }
+    let name = format!("__vail_lookup_result_{parameter}");
+    let variable = Arc::new(Expr::LambdaVariable { name: name.clone(), dtype: Some(dtype.clone()) });
+    let body = match callback {
+        Expr::GetField { name, .. } => Expr::GetField { value: variable, name: name.clone() },
+        Expr::IfElse { alternate, .. } => Expr::IfElse {
+            condition: Arc::new(Expr::GetField { value: variable.clone(), name: "found".into() }),
+            consequent: Arc::new(Expr::GetField { value: variable, name: "value".into() }),
+            alternate: alternate.clone(),
+        },
+        _ => unreachable!(),
+    };
+    Some(Expr::ArrayMap {
+        value: Arc::new(Expr::NestedFunction {
+            function: "__vail_dict_lookup_many".into(),
+            args: vec![args[0].clone(), Expr::ArrayMap { value: Arc::new(value.clone()), parameter: parameter.into(), body: Arc::new(args[1].clone()) }],
+            dtype: Type::Array { array: Box::new(dtype.clone()) },
+        }),
+        parameter: name,
+        body: Arc::new(body),
+    })
+}
+
 fn lower_array_lambda(
     value: &Expr,
     parameter: &str,
@@ -5544,6 +5594,11 @@ fn lower_array_lambda(
     memo: &mut CompilationMemo,
     context: usize,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    if operation == "map" {
+        if let Some(rewritten) = mapped_dictionary_lookup(value, parameter, callback) {
+            return lower_synthetic(rewritten, schema, globals, scope, memo, context);
+        }
+    }
     let input = lower_cached(value, schema, globals, scope, memo, context)?;
     let array = match value.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
         Type::Array { array } | Type::Set { set: array } => *array,
