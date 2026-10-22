@@ -46,3 +46,40 @@ formula. These are bounded scale checks, not a production capacity guarantee.
 Import wall time is reported separately from the complete validation wall time.
 CPU excludes interpreter startup; peak RSS includes the full Python process and
 validation. Concurrent local compilation can inflate wall time.
+
+## Fresh release results
+
+Production/test source revision: `0c68a827571cdda28f5c1333410cf20d8bef8003`.
+A new release wheel was built from this checkout with Maturin, Rust 1.98.0 and
+CPython 3.12.12. Its packaged `legacy.py` was compared byte-for-byte with the
+reviewed source before extracting the native extension for the test run.
+`build.json` records the wheel/native SHA-256 digests, build command and runtime
+versions; `build.log` retains the successful build output. Existing warnings
+from other native crates were not modified in this Python reader change.
+
+With that exact native artifact, the public test suite passed **141 tests** in
+72.38 seconds using four workers: all 116 historical Hail fixtures, both retained
+live-Hail datasets, and 23 additional API/format/error/migration checks.
+`public-tests.log` retains the complete pytest result. Command from workspace
+root (the isolated environment also has pytest-xdist installed):
+
+```sh
+PYTHONPATH=vail/python /private/tmp/vail-legacy-review-env/bin/python \
+  -m pytest vail/python/tests/test_legacy.py -n 4 --dist worksteal -q
+```
+
+`resources.json` records separate-process measurements with the same native
+artifact. All checks passed; peak RSS is the complete process high-water mark.
+
+| Dataset | Import wall (s) | Validation wall (s) | CPU (s) | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| 100,000 nullable array elements | 0.265 | 0.281 | 0.277 | 96.8 |
+| 400,000 nullable array elements | 0.646 | 0.701 | 0.694 | 122.9 |
+| 5,000 rows × 100 columns, filtered primitive entry structs | 3.207 | 3.278 | 3.250 | 477.5 |
+
+The matrix payload has one int32 and one Boolean per present entry, with roughly
+one seventh of entry structs filtered. Larger/nested entry payloads and wider
+cohorts can consume substantially more memory. These measurements establish
+bounded import behavior for the recorded inputs; they do not establish a general
+memory bound or production throughput guarantee. Measurements ran while local
+pytest workers and unrelated local development tasks could consume CPU.
