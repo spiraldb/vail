@@ -180,6 +180,20 @@ impl PhysicalExpr for ScopedSwitch {
             columns,
             &RecordBatchOptions::new().with_row_count(Some(len)),
         )?;
+        if self.cases.is_empty() && self.missing.is_none() {
+            // A lexical binding has no selection: pass borrowed columns to
+            // its body without allocating row indices or output mappings.
+            let input = RecordBatch::try_new_with_options(
+                self.default.schema.clone(),
+                self.default
+                    .indices
+                    .iter()
+                    .map(|&index| bound.column(index).clone())
+                    .collect(),
+                &RecordBatchOptions::new().with_row_count(Some(len)),
+            )?;
+            return self.default.expr.evaluate(&input);
+        }
         let mut pending = (0..len).collect::<Vec<_>>();
         let mut pieces = Vec::new();
         let mut mapping = vec![None; len];

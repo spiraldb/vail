@@ -1425,9 +1425,22 @@ def _array_arithmetic(left, right, operator):
 
     array_expr = left if left_array else right
     scalar_expr = right if left_array else left
-    if left_array:
-        return array_expr.map(lambda value: value._binary(scalar_expr, operator, element_type))
-    return array_expr.map(lambda value: scalar_expr._binary(value, operator, element_type))
+    def mapped(array, scalar):
+        if left_array:
+            return array.map(lambda value: value._binary(scalar, operator, element_type))
+        return array.map(lambda value: scalar._binary(value, operator, element_type))
+
+    # DF captures referenced columns, not a computed scalar expression, inside
+    # array_transform. Bind the scalar outside the element map. Keep evaluation
+    # lazy for missing/empty arrays, whose element callback never runs.
+    from .randomness import contains
+    if contains(scalar_expr.to_ir()):
+        return mapped(array_expr, scalar_expr)
+    return bind(lambda array: if_else(
+        array.length() > 0,
+        bind(lambda scalar: mapped(array, scalar), scalar_expr),
+        literal([], tarray(element_type)),
+    ), array_expr)
 
 
 def _check_comparable(left, right, operator):
