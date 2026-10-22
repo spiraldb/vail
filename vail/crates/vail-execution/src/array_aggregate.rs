@@ -4,7 +4,9 @@
 //! in one batch; other UDAFs receive one Arrow batch per coordinate.
 use std::sync::{Arc, Mutex, Weak};
 
-use arrow_array::{Array, ArrayRef, Int64Array, ListArray, UInt32Array, new_empty_array};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Int64Array, ListArray, StructArray, UInt32Array, new_empty_array,
+};
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
 use arrow_schema::{DataType, Field, Schema};
@@ -29,6 +31,313 @@ fn list_scalar(values: ArrayRef) -> ScalarValue {
 }
 fn error(message: &str) -> DataFusionError {
     DataFusionError::Execution(message.into())
+}
+
+/// One reducer carried by a packed coordinate callback. `value_index` and
+/// `filter_index` address fields in the callback's per-coordinate struct.
+#[derive(Clone)]
+pub struct CoordinateReducer {
+    pub name: String,
+    pub aggregate: Arc<AggregateUDF>,
+    pub input: DataType,
+    pub value_index: usize,
+    pub filter_index: Option<usize>,
+    pub empty: ScalarValue,
+    /// Stable description of options not otherwise visible in the UDAF name.
+    pub identity: String,
+}
+
+/// Lift several reducers over the same packed array callback without first
+/// unnesting its positions. The callback is mapped once to `List<Struct>`;
+/// every reducer shares its implicit coordinate ids and width validation.
+pub fn coordinate_bundle_udaf(
+    packed: DataType,
+    reducers: Vec<CoordinateReducer>,
+) -> Result<Arc<AggregateUDF>> {
+    let DataType::Struct(fields) = &packed else {
+        return Err(error("coordinate bundle requires a struct element"));
+    };
+    if reducers.is_empty() {
+        return Err(error("coordinate bundle requires reducers"));
+    }
+    let mut output_fields = Vec::with_capacity(reducers.len());
+    let mut state_types = Vec::new();
+    let mut physical = Vec::with_capacity(reducers.len());
+    for reducer in &reducers {
+        let value_field = fields
+            .get(reducer.value_index)
+            .ok_or_else(|| error("coordinate bundle value slot is out of bounds"))?;
+        if value_field.data_type() != &reducer.input {
+            return Err(error("coordinate bundle value slot type mismatch"));
+        }
+        if let Some(index) = reducer.filter_index {
+            if fields.get(index).map(|f| f.data_type()) != Some(&DataType::Boolean) {
+                return Err(error("coordinate bundle filter slot must be Boolean"));
+            }
+        }
+        if reducer.empty.data_type() != reducer.aggregate.return_type(&[reducer.input.clone()])? {
+            return Err(error("coordinate bundle empty identity type mismatch"));
+        }
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "element",
+            reducer.input.clone(),
+            true,
+        )]));
+        let expression = Arc::new(
+            AggregateExprBuilder::new(
+                reducer.aggregate.clone(),
+                vec![Arc::new(Column::new("element", 0))],
+            )
+            .schema(schema)
+            .alias(&reducer.name)
+            .build()?,
+        );
+        output_fields.push(Arc::new(Field::new(
+            &reducer.name,
+            expression.field().data_type().clone(),
+            true,
+        )));
+        state_types.extend(
+            expression
+                .state_fields()?
+                .iter()
+                .map(|f| list_type(f.data_type().clone())),
+        );
+        physical.push((expression, reducer.clone()));
+    }
+    state_types.push(DataType::Int64);
+    let output_fields: arrow_schema::Fields = output_fields.into();
+    let output = list_type(DataType::Struct(output_fields.clone()));
+    let input = list_type(packed);
+    let identity = reducers
+        .iter()
+        .map(|r| {
+            Ok((
+                r.aggregate.clone(),
+                r.value_index,
+                r.filter_index,
+                r.input.clone(),
+                r.aggregate.return_type(std::slice::from_ref(&r.input))?,
+                r.empty.clone(),
+                r.identity.clone(),
+            ))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(crate::kernel_identity::aggregate_named(
+        "vail_coordinate_bundle",
+        (identity, input.clone(), output.clone(), state_types.clone()),
+        vec![input],
+        output,
+        state_types,
+        Arc::new(move |_| {
+            Ok(Box::new(CoordinateBundle::new(
+                physical.clone(),
+                output_fields.clone(),
+            )?))
+        }),
+    ))
+}
+
+#[derive(Debug)]
+struct CoordinateBundle {
+    reducers: Vec<(Coordinates, usize, Option<usize>)>,
+    width: Option<usize>,
+    packed_fields: usize,
+    output_fields: arrow_schema::Fields,
+}
+
+impl CoordinateBundle {
+    fn new(
+        physical: Vec<(Arc<AggregateFunctionExpr>, CoordinateReducer)>,
+        output_fields: arrow_schema::Fields,
+    ) -> Result<Self> {
+        let packed_fields = physical
+            .iter()
+            .map(|(_, r)| r.value_index.max(r.filter_index.unwrap_or(0)) + 1)
+            .max()
+            .unwrap_or(0);
+        let reducers = physical
+            .into_iter()
+            .map(|(aggregate, reducer)| {
+                Ok((
+                    Coordinates::new(
+                        aggregate,
+                        reducer.empty,
+                        reducer.input.clone(),
+                        reducer.input.clone(),
+                    )?,
+                    reducer.value_index,
+                    reducer.filter_index,
+                ))
+            })
+            .collect::<Result<Vec<_>>>()?;
+        Ok(Self {
+            reducers,
+            width: None,
+            packed_fields,
+            output_fields,
+        })
+    }
+}
+
+impl Accumulator for CoordinateBundle {
+    fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let arrays = values
+            .first()
+            .and_then(|a| a.as_any().downcast_ref::<ListArray>())
+            .ok_or_else(|| error("coordinate bundle requires list input"))?;
+        let mut chunks = Vec::new();
+        for row in 0..arrays.len() {
+            if arrays.is_valid(row) {
+                let width = arrays.value_length(row) as usize;
+                if self.width.is_some_and(|old| old != width) {
+                    return Err(error("array_agg requires equal array lengths"));
+                }
+                self.width = Some(width);
+            }
+        }
+        let Some(width) = self.width else {
+            return Ok(());
+        };
+        if width == 0 {
+            return Ok(());
+        }
+        let flat = if arrays.null_count() == 0 {
+            let offsets = arrays.value_offsets();
+            arrays.values().slice(
+                offsets[0] as usize,
+                (offsets[arrays.len()] - offsets[0]) as usize,
+            )
+        } else {
+            for row in 0..arrays.len() {
+                if arrays.is_valid(row) {
+                    chunks.push(arrays.value(row));
+                }
+            }
+            if chunks.is_empty() {
+                return Ok(());
+            }
+            concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
+        };
+        let packed = flat
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| error("coordinate bundle elements must be structs"))?;
+        if packed.num_columns() < self.packed_fields {
+            return Err(error("coordinate bundle struct is missing slots"));
+        }
+        let parent_filter = packed
+            .nulls()
+            .map(|nulls| BooleanArray::new(nulls.inner().clone(), None));
+        for (kernel, value_index, filter_index) in &mut self.reducers {
+            let filter = filter_index.map(|i| {
+                packed
+                    .column(i)
+                    .as_any()
+                    .downcast_ref::<arrow_array::BooleanArray>()
+                    .expect("validated filter type")
+            });
+            let combined_filter = match (parent_filter.as_ref(), filter) {
+                (Some(parent), Some(filter)) => {
+                    Some(arrow_arith::boolean::and(parent, filter)?)
+                }
+                (Some(parent), None) => Some(parent.clone()),
+                (None, Some(_)) => None,
+                (None, None) => None,
+            };
+            kernel.set_width(width)?;
+            kernel.update_flat(
+                packed.column(*value_index).clone(),
+                combined_filter.as_ref().or(filter),
+                width,
+            )?;
+        }
+        Ok(())
+    }
+    fn evaluate(&mut self) -> Result<ScalarValue> {
+        let Some(width) = self.width else {
+            return ScalarValue::try_from(&list_type(DataType::Struct(self.output_fields.clone())));
+        };
+        let fields = self.output_fields.clone();
+        if width == 0 {
+            return Ok(list_scalar(Arc::new(StructArray::new(
+                fields.clone(),
+                fields
+                    .iter()
+                    .map(|f| new_empty_array(f.data_type()))
+                    .collect(),
+                None,
+            ))));
+        }
+        let arrays = self
+            .reducers
+            .iter_mut()
+            .map(|(k, _, _)| k.evaluate_values())
+            .collect::<Result<Vec<_>>>()?;
+        let structs = Arc::new(StructArray::new(fields, arrays, None));
+        Ok(list_scalar(structs))
+    }
+    fn state(&mut self) -> Result<Vec<ScalarValue>> {
+        let mut states = Vec::new();
+        for (kernel, _, _) in &mut self.reducers {
+            states.extend(kernel.states()?.into_iter().map(list_scalar));
+        }
+        states.push(ScalarValue::Int64(self.width.map(|w| w as i64)));
+        Ok(states)
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
+        if states.is_empty() {
+            return Err(error("coordinate bundle has invalid state"));
+        }
+        let widths = states
+            .last()
+            .and_then(|a| a.as_any().downcast_ref::<Int64Array>())
+            .ok_or_else(|| error("coordinate bundle has invalid width state"))?;
+        let mut offset = 0;
+        for (kernel, _, _) in &mut self.reducers {
+            let count = kernel.aggregate.state_fields()?.len();
+            let slices = states
+                .get(offset..offset + count)
+                .ok_or_else(|| error("coordinate bundle has incomplete state"))?;
+            let width_state = states.last().unwrap();
+            let mut merged = slices.to_vec();
+            merged.push(width_state.clone());
+            kernel.merge_batch(&merged)?;
+            offset += count;
+        }
+        for row in 0..widths.len() {
+            if widths.is_null(row) {
+                continue;
+            }
+            let w = usize::try_from(widths.value(row)).map_err(|_| error("invalid array width"))?;
+            if self.width.is_some_and(|old| old != w) {
+                return Err(error("array_agg requires equal array lengths"));
+            }
+            self.width = Some(w);
+        }
+        Ok(())
+    }
+    fn size(&self) -> usize {
+        let mut shared_indices = std::collections::HashSet::new();
+        let kernels = self
+            .reducers
+            .iter()
+            .map(|(kernel, _, _)| {
+                let mut size = kernel.size();
+                if let Some(indices) = &kernel.group_indices {
+                    if !shared_indices.insert(Arc::as_ptr(indices)) {
+                        size = size.saturating_sub(
+                            indices.values.capacity() * std::mem::size_of::<usize>(),
+                        );
+                    }
+                }
+                size
+            })
+            .sum::<usize>();
+        std::mem::size_of::<Self>()
+            + self.reducers.capacity() * std::mem::size_of::<(Coordinates, usize, Option<usize>)>()
+            + kernels
+    }
 }
 
 #[derive(Debug)]
@@ -223,6 +532,79 @@ impl Coordinates {
             }
         }
     }
+
+    fn update_flat(
+        &mut self,
+        flat: ArrayRef,
+        filter: Option<&arrow_array::BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        let flat = if self.input == self.aggregate_input {
+            flat
+        } else {
+            cast(flat.as_ref(), &self.aggregate_input)?
+        };
+        if matches!(self.kernels, Kernels::Groups(_)) {
+            if self
+                .group_indices
+                .as_ref()
+                .is_none_or(|v| v.values.len() < flat.len())
+            {
+                self.group_indices = Some(coordinate_indices(width, flat.len())?);
+            }
+            let indices = &self.group_indices.as_ref().unwrap().values[..flat.len()];
+            let Kernels::Groups(kernel) = &mut self.kernels else {
+                unreachable!()
+            };
+            return kernel
+                .get_mut()
+                .map_err(|_| error("coordinate accumulator state poisoned"))?
+                .update_batch(&[flat], indices, filter, width);
+        }
+        let Kernels::Coordinates(kernels) = &mut self.kernels else {
+            unreachable!()
+        };
+        for (coordinate, kernel) in kernels.iter_mut().enumerate() {
+            let indices = UInt32Array::from_iter_values(
+                (coordinate..flat.len())
+                    .step_by(width)
+                    .filter(|i| filter.is_none_or(|mask| mask.is_valid(*i) && mask.value(*i)))
+                    .map(|i| i as u32),
+            );
+            if indices.is_empty() {
+                continue;
+            }
+            kernel.update_batch(&[take(flat.as_ref(), &indices, None)?])?;
+        }
+        Ok(())
+    }
+
+    fn evaluate_values(&mut self) -> Result<ArrayRef> {
+        if self.width == Some(0) {
+            return Ok(new_empty_array(self.aggregate.field().data_type()));
+        }
+        let mut values = match &mut self.kernels {
+            Kernels::Groups(_) => {
+                let width = self.width.unwrap_or(0);
+                let states = self.states()?;
+                let mut copy = self.aggregate.create_groups_accumulator()?;
+                copy.merge_batch(&states, &(0..width).collect::<Vec<_>>(), width)?;
+                copy.evaluate(EmitTo::All)?
+            }
+            Kernels::Coordinates(kernels) => ScalarValue::iter_to_array(
+                kernels
+                    .iter_mut()
+                    .map(|k| k.evaluate())
+                    .collect::<Result<Vec<_>>>()?,
+            )?,
+        };
+        if values.null_count() > 0 && !self.empty.is_null() {
+            let mask = arrow_arith::boolean::is_null(values.as_ref())?;
+            let fill = self.empty.to_scalar()?;
+            values = arrow_select::zip::zip(&mask, &fill, &values)?;
+        }
+        Ok(values)
+    }
 }
 impl Accumulator for Coordinates {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
@@ -274,24 +656,7 @@ impl Accumulator for Coordinates {
         {
             self.group_indices = Some(coordinate_indices(width, flat.len())?);
         }
-        match &mut self.kernels {
-            Kernels::Groups(kernel) => {
-                let kernel = kernel
-                    .get_mut()
-                    .map_err(|_| error("coordinate accumulator state poisoned"))?;
-                let groups = &self.group_indices.as_ref().unwrap().values[..flat.len()];
-                kernel.update_batch(&[flat], groups, None, width)
-            }
-            Kernels::Coordinates(kernels) => {
-                for (coordinate, kernel) in kernels.iter_mut().enumerate() {
-                    let indices = UInt32Array::from_iter_values(
-                        (coordinate..flat.len()).step_by(width).map(|i| i as u32),
-                    );
-                    kernel.update_batch(&[take(flat.as_ref(), &indices, None)?])?;
-                }
-                Ok(())
-            }
-        }
+        self.update_flat(flat, None, width)
     }
     fn evaluate(&mut self) -> Result<ScalarValue> {
         let Some(width) = self.width else {
@@ -302,29 +667,7 @@ impl Accumulator for Coordinates {
                 self.aggregate.field().data_type(),
             )));
         }
-        let values = match &mut self.kernels {
-            Kernels::Groups(_) => {
-                let states = self.states()?;
-                let mut copy = self.aggregate.create_groups_accumulator()?;
-                copy.merge_batch(&states, &(0..width).collect::<Vec<_>>(), width)?;
-                copy.evaluate(EmitTo::All)?
-            }
-            Kernels::Coordinates(kernels) => ScalarValue::iter_to_array(
-                kernels
-                    .iter_mut()
-                    .map(|k| k.evaluate())
-                    .collect::<Result<Vec<_>>>()?,
-            )?,
-        };
-        // Only language-level empty identities are added; reductions themselves
-        // use the underlying library's vectorized implementation.
-        let values = if values.null_count() > 0 && !self.empty.is_null() {
-            let mask = arrow_arith::boolean::is_null(values.as_ref())?;
-            let fill = self.empty.to_scalar()?;
-            arrow_select::zip::zip(&mask, &fill, &values)?
-        } else {
-            values
-        };
+        let values = self.evaluate_values()?;
         Ok(list_scalar(values))
     }
     fn size(&self) -> usize {
@@ -391,5 +734,115 @@ impl Accumulator for Coordinates {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arrow_array::{Int64Array};
+    use arrow_buffer::NullBuffer;
+    use arrow_schema::Fields;
+    use datafusion_physical_expr::expressions::Column;
+
+    fn reducer(value_index: usize, aggregate: Arc<AggregateUDF>) -> CoordinateReducer {
+        CoordinateReducer {
+            name: "count_value".into(),
+            aggregate,
+            input: DataType::Int64,
+            value_index,
+            filter_index: None,
+            empty: ScalarValue::Int64(Some(0)),
+            identity: "same-caller-identity".into(),
+        }
+    }
+
+    fn bundle(value_index: usize, aggregate: Arc<AggregateUDF>) -> Arc<AggregateUDF> {
+        coordinate_bundle_udaf(
+            DataType::Struct(Fields::from(vec![
+                Arc::new(Field::new("left", DataType::Int64, true)),
+                Arc::new(Field::new("right", DataType::Int64, true)),
+            ])),
+            vec![reducer(value_index, aggregate)],
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn bundle_identity_uses_semantic_reducer_and_selector() {
+        let first = crate::reducer::configured_udaf(
+            "count",
+            Some(&DataType::Int64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        let second = crate::reducer::configured_udaf(
+            "count",
+            Some(&DataType::Int64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        assert_eq!(bundle(0, first.clone()), bundle(0, second.clone()));
+        assert_ne!(bundle(0, first), bundle(1, second));
+    }
+
+    #[test]
+    fn nullable_packed_struct_masks_every_reducer() {
+        let count = crate::reducer::configured_udaf(
+            "count",
+            Some(&DataType::Int64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        let bundle = bundle(1, count);
+        let packed_type = DataType::Struct(Fields::from(vec![
+            Arc::new(Field::new("left", DataType::Int64, true)),
+            Arc::new(Field::new("right", DataType::Int64, true)),
+        ]));
+        let packed_list_type =
+            DataType::List(Arc::new(Field::new_list_field(packed_type.clone(), true)));
+        let input_schema = Arc::new(Schema::new(vec![Field::new(
+            "packed",
+            packed_list_type,
+            true,
+        )]));
+        let expression = AggregateExprBuilder::new(
+            bundle,
+            vec![Arc::new(Column::new("packed", 0))],
+        )
+        .schema(input_schema)
+        .alias("counts")
+        .build()
+        .unwrap();
+        let mut accumulator = expression.create_accumulator().unwrap();
+
+        let fields = match packed_type {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        };
+        let left = Int64Array::new(
+            vec![100, 0].into(),
+            Some(NullBuffer::from(vec![true, false])),
+        );
+        let right = Int64Array::from(vec![Some(100), Some(10)]);
+        let packed = Arc::new(StructArray::new(
+            fields,
+            vec![Arc::new(left), Arc::new(right)],
+            Some(NullBuffer::from(vec![false, true])),
+        ));
+        let input = Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(packed.data_type().clone(), true)),
+            OffsetBuffer::from_lengths([2]),
+            packed,
+            None,
+        ));
+        accumulator.update_batch(&[input]).unwrap();
+        let ScalarValue::List(result) = accumulator.evaluate().unwrap() else {
+            panic!("coordinate bundle did not return a list")
+        };
+        let result = result.as_any().downcast_ref::<ListArray>().unwrap();
+        let result = result.values().as_any().downcast_ref::<StructArray>().unwrap();
+        let counts = result.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(counts.values(), &[0, 1]);
     }
 }

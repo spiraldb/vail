@@ -9,7 +9,7 @@ use datafusion_expr::{
 };
 use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Literal};
 use std::{
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     sync::Arc,
 };
 use vail_execution::expressions::Expr;
@@ -39,6 +39,11 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
         body,
     } = expression
     {
+        if !matches!(body.as_ref(), Expr::Aggregate { .. }) {
+            if let Some(lifted) = coordinate_bundle(value, parameter, body)? {
+                return Ok(lifted);
+            }
+        }
         if let Expr::Aggregate {
             function,
             value: argument,
@@ -94,6 +99,326 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
     expression.try_map_children(coordinate_reductions)
 }
 
+#[derive(Clone)]
+struct CoordinateLeaf {
+    function: String,
+    value: Option<Expr>,
+    options: serde_json::Value,
+    filters: Vec<Expr>,
+    init: Vec<(String, Expr)>,
+}
+
+#[derive(Hash, PartialEq, Eq)]
+struct CoordinateLeafKey {
+    function: String,
+    value: Option<Expr>,
+    options: String,
+    filters: Vec<Expr>,
+    init: Vec<(String, Expr)>,
+}
+
+/// Lift direct reducer leaves from a callback into one packed coordinate
+/// aggregate. Nested aggregate scopes retain the relational fallback.
+fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Result<Option<Expr>> {
+    fn visit(
+        expr: &Expr,
+        scope: usize,
+        scopes: &mut Vec<Vec<Expr>>,
+        scope_ids: &mut HashMap<(usize, usize), usize>,
+        memo: &mut HashMap<(usize, usize), Option<Expr>>,
+        leaves: &mut Vec<CoordinateLeaf>,
+        leaf_ids: &mut HashMap<CoordinateLeafKey, usize>,
+        prefix: &str,
+    ) -> Result<Option<Expr>> {
+        let memo_key = (expr as *const Expr as usize, scope);
+        if let Some(mapped) = memo.get(&memo_key) {
+            return Ok(mapped.clone());
+        }
+        let mapped = match expr {
+            Expr::Aggregate {
+                function,
+                value,
+                options,
+                init,
+                ..
+            } => {
+                if !init.is_empty() || options.as_object().is_none() {
+                    None
+                } else {
+                    let leaf = CoordinateLeaf {
+                        function: function.clone(),
+                        value: value.as_deref().cloned(),
+                        options: options.clone(),
+                        filters: scopes[scope].clone(),
+                        init: init.clone(),
+                    };
+                    let key = CoordinateLeafKey {
+                        function: leaf.function.clone(),
+                        value: leaf.value.clone(),
+                        options: serde_json::to_string(&leaf.options)
+                            .map_err(|error| TableError::Invalid(error.to_string()))?,
+                        filters: leaf.filters.clone(),
+                        init: leaf.init.clone(),
+                    };
+                    let index = if let Some(index) = leaf_ids.get(&key) {
+                        *index
+                    } else {
+                        let index = leaves.len();
+                        leaves.push(leaf);
+                        leaf_ids.insert(key, index);
+                        index
+                    };
+                    Some(Expr::LambdaVariable {
+                        name: format!("{prefix}{index}"),
+                        dtype: None,
+                    })
+                }
+            }
+            Expr::AggFilter { predicate, body } => {
+                let key = (scope, predicate.as_ref() as *const Expr as usize);
+                let next_scope = if let Some(scope) = scope_ids.get(&key) {
+                    *scope
+                } else {
+                    let mut nested = scopes[scope].clone();
+                    nested.push((**predicate).clone());
+                    let next = scopes.len();
+                    scopes.push(nested);
+                    scope_ids.insert(key, next);
+                    next
+                };
+                visit(
+                    body,
+                    next_scope,
+                    scopes,
+                    scope_ids,
+                    memo,
+                    leaves,
+                    leaf_ids,
+                    prefix,
+                )?
+            }
+            Expr::AggArray { .. }
+            | Expr::AggGroupBy { .. }
+            | Expr::AggExplode { .. }
+            | Expr::AggregateFold { .. } => None,
+            Expr::Column { .. } | Expr::MatrixField { .. } => None,
+            Expr::Global { .. } | Expr::LambdaVariable { .. } => Some(expr.clone()),
+            _ => {
+                let mut unsupported = false;
+                let mut failure = None;
+                let mapped =
+                    expr.try_map_children(|child| match visit(
+                        child,
+                        scope,
+                        scopes,
+                        scope_ids,
+                        memo,
+                        leaves,
+                        leaf_ids,
+                        prefix,
+                    ) {
+                        Ok(Some(value)) => {
+                            Ok::<Expr, vail_execution::expressions::ExprError>(value)
+                        }
+                        Ok(None) => {
+                            unsupported = true;
+                            Ok(child.clone())
+                        }
+                        Err(error) => {
+                            failure = Some(error);
+                            Ok(child.clone())
+                        }
+                    })?;
+                if let Some(error) = failure {
+                    return Err(error);
+                }
+                if unsupported {
+                    None
+                } else {
+                    Some(mapped)
+                }
+            }
+        };
+        memo.insert(memo_key, mapped.clone());
+        Ok(mapped)
+    }
+    let mut used_names = HashSet::new();
+    body.visit_unique(&mut |node| match node {
+        Expr::LambdaVariable { name, .. } => {
+            used_names.insert(name.clone());
+        }
+        Expr::ArrayMap { parameter, .. }
+        | Expr::ArrayFilter { parameter, .. }
+        | Expr::ArrayPredicate { parameter, .. }
+        | Expr::AggArray { parameter, .. }
+        | Expr::AggExplode { parameter, .. } => {
+            used_names.insert(parameter.clone());
+        }
+        Expr::ArrayFold {
+            accumulator,
+            parameter,
+            ..
+        } => {
+            used_names.insert(accumulator.clone());
+            used_names.insert(parameter.clone());
+        }
+        _ => {}
+    });
+    let mut prefix = "__vail_coordinate_slot_".to_owned();
+    while used_names.iter().any(|name| name.starts_with(&prefix)) {
+        prefix.push('_');
+    }
+    let mut leaves = Vec::new();
+    let mut scopes = vec![vec![]];
+    let mut scope_ids = HashMap::new();
+    let mut memo = HashMap::new();
+    let mut leaf_ids: HashMap<CoordinateLeafKey, usize> = HashMap::new();
+    let Some(mut replaced) = visit(
+        body,
+        0,
+        &mut scopes,
+        &mut scope_ids,
+        &mut memo,
+        &mut leaves,
+        &mut leaf_ids,
+        &prefix,
+    )? else {
+        return Ok(None);
+    };
+    // Indexed callbacks bind the source position separately from the source
+    // element. The bundle output loop only binds its reducer struct, so keep
+    // those callbacks on the relational lowering that binds both values.
+    let mut references_source_parameter = false;
+    replaced.visit_unique(&mut |node| {
+        if matches!(node, Expr::LambdaVariable { name, .. } if name == parameter) {
+            references_source_parameter = true;
+        }
+    });
+    if references_source_parameter {
+        return Ok(None);
+    }
+    if leaves.is_empty() {
+        // Constant or global-only callbacks still need an implicit position
+        // group to validate widths and preserve the callback's output shape.
+        leaves.push(CoordinateLeaf {
+            function: "count".into(),
+            value: Some(Expr::RuntimeLiteral {
+                value: ScalarValue::Int64(Some(1)),
+            }),
+            options: serde_json::json!({}),
+            filters: vec![],
+            init: vec![],
+        });
+    }
+    // The first traversal leaves stable slot names. Build one mapped struct
+    // containing every reducer value and its optional row filter.
+    use vail_execution::expressions::BinaryOperator;
+    let mut fields = Vec::new();
+    let mut descriptors = Vec::new();
+    let mut ordered = false;
+    for (index, leaf) in leaves.iter().enumerate() {
+        let argument = leaf.value.clone().unwrap_or(Expr::RuntimeLiteral {
+            value: ScalarValue::Int64(Some(1)),
+        });
+        let value_index = fields.len();
+        fields.push((format!("v{index}"), argument));
+        let mut predicate = leaf.filters.first().cloned();
+        for extra in leaf.filters.iter().skip(1) {
+            predicate = Some(Expr::Binary {
+                operator: BinaryOperator::And,
+                left: Arc::new(predicate.unwrap()),
+                right: Arc::new(extra.clone()),
+            });
+        }
+        let mut function = leaf.function.clone();
+        let options = leaf.options.clone();
+        let mut filter_index = None;
+        if function == "count_where" {
+            // COUNT_WHERE counts defined true values, so its value slot is the
+            // filter; a constant one is counted after mask application.
+            fields.pop();
+            let mut mask = leaf.value.clone().unwrap();
+            if let Some(predicate) = predicate.take() {
+                mask = Expr::Binary {
+                    operator: BinaryOperator::And,
+                    left: Arc::new(mask),
+                    right: Arc::new(predicate),
+                };
+            }
+            filter_index = Some(fields.len());
+            fields.push((format!("p{index}"), mask));
+            let value_index = fields.len();
+            fields.push((
+                format!("v{index}"),
+                Expr::RuntimeLiteral {
+                    value: ScalarValue::Int64(Some(1)),
+                },
+            ));
+            function = "count".into();
+            descriptors.push(serde_json::json!({"function": function, "options": options, "value_index": value_index, "filter_index": filter_index, "name": format!("r{index}")}));
+            continue;
+        } else if let Some(predicate) = predicate {
+            let index = fields.len();
+            fields.push((format!("f{index}"), predicate));
+            filter_index = Some(index);
+        }
+        ordered |= (function == "collect"
+            && options.get("ordered").and_then(serde_json::Value::as_bool) == Some(true))
+            || function == "take";
+        descriptors.push(serde_json::json!({"function": function, "options": options, "value_index": value_index, "filter_index": filter_index, "name": format!("r{index}")}));
+    }
+    let packed = Expr::ArrayMap {
+        value: value.clone(),
+        parameter: parameter.to_owned(),
+        body: Arc::new(Expr::Struct { fields }),
+    };
+    let bundle = Expr::Aggregate {
+        function: "__coordinate_bundle".into(),
+        value: Some(Arc::new(packed)),
+        options: serde_json::json!({"reducers": descriptors, "ordered": ordered}),
+        result_type: None,
+        init: vec![],
+    };
+    let mut result_param = "__vail_coordinate_bundle_result".to_owned();
+    while used_names.contains(&result_param) || result_param.starts_with(&prefix) {
+        result_param.push('_');
+    }
+    let slot_indices = (0..leaves.len())
+        .map(|index| (format!("{prefix}{index}"), index))
+        .collect::<HashMap<_, _>>();
+    fn replace(
+        expr: &Expr,
+        param: &str,
+        slots: &HashMap<String, usize>,
+        memo: &mut HashMap<usize, Expr>,
+    ) -> Result<Expr> {
+        let key = expr as *const Expr as usize;
+        if let Some(mapped) = memo.get(&key) {
+            return Ok(mapped.clone());
+        }
+        let mapped = match expr {
+            Expr::LambdaVariable { name, .. } if slots.contains_key(name) => {
+                Expr::GetField {
+                    value: Arc::new(Expr::LambdaVariable {
+                        name: param.to_owned(),
+                        dtype: None,
+                    }),
+                    name: format!("r{}", slots[name]),
+                }
+            }
+            other => other.try_map_children(|child| replace(child, param, slots, memo))?,
+        };
+        memo.insert(key, mapped.clone());
+        Ok(mapped)
+    }
+    replaced = replace(&replaced, &result_param, &slot_indices, &mut HashMap::new())?;
+    Ok(Some(Expr::ArrayMap {
+        value: Arc::new(bundle),
+        parameter: result_param,
+        body: Arc::new(replaced),
+    }))
+}
+
 pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
     if reducer.function.starts_with("__coordinate_") {
         return factory_inner(reducer, dtype);
@@ -134,6 +459,100 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
 }
 fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
     let f = &reducer.function;
+    if f == "__coordinate_bundle" {
+        let Some(DataType::List(element)) = dtype else {
+            return Err(TableError::Invalid(
+                "coordinate bundle requires list input".into(),
+            ));
+        };
+        let DataType::Struct(fields) = element.data_type() else {
+            return Err(TableError::Invalid(
+                "coordinate bundle requires struct elements".into(),
+            ));
+        };
+        let descriptors = reducer
+            .options
+            .get("reducers")
+            .and_then(serde_json::Value::as_array)
+            .ok_or_else(|| {
+                TableError::Invalid("coordinate bundle descriptors are missing".into())
+            })?;
+        let mut specs = Vec::with_capacity(descriptors.len());
+        for descriptor in descriptors {
+            let function = descriptor
+                .get("function")
+                .and_then(serde_json::Value::as_str)
+                .ok_or_else(|| {
+                    TableError::Invalid("coordinate bundle reducer name is missing".into())
+                })?;
+            let options = descriptor
+                .get("options")
+                .cloned()
+                .unwrap_or_else(|| serde_json::json!({}));
+            let value_index = descriptor
+                .get("value_index")
+                .and_then(serde_json::Value::as_u64)
+                .ok_or_else(|| {
+                    TableError::Invalid("coordinate bundle value slot is missing".into())
+                })? as usize;
+            let filter_index = descriptor
+                .get("filter_index")
+                .and_then(serde_json::Value::as_u64)
+                .map(|n| n as usize);
+            let name = descriptor
+                .get("name")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or("value")
+                .to_owned();
+            let input = fields
+                .get(value_index)
+                .ok_or_else(|| {
+                    TableError::Invalid("coordinate bundle value slot is out of bounds".into())
+                })?
+                .data_type();
+            let aggregate =
+                vail_execution::reducer::configured_udaf(function, Some(input), &options)?;
+            let argument = ScalarValue::try_from(input)?;
+            let physical = AggregateExprBuilder::new(
+                aggregate.clone(),
+                vec![Arc::new(Literal::new(argument))],
+            )
+            .schema(Arc::new(Schema::empty()))
+            .alias(&name)
+            .build()?;
+            let mut empty = physical.create_accumulator()?.evaluate()?;
+            if function == "sum" {
+                empty = match aggregate.return_type(std::slice::from_ref(input))? {
+                    DataType::Int64 => ScalarValue::Int64(Some(0)),
+                    DataType::Float64 => ScalarValue::Float64(Some(0.0)),
+                    _ => empty,
+                };
+            } else if function == "collect" {
+                let DataType::List(output) = aggregate.return_type(std::slice::from_ref(input))?
+                else {
+                    return Err(TableError::Invalid("collect output must be a list".into()));
+                };
+                empty = ScalarValue::List(ScalarValue::new_list(&[], output.data_type(), true));
+            }
+            let identity = format!(
+                "{function}:{options}:value={value_index}:filter={filter_index:?}:name={name}:empty={empty:?}"
+            );
+            specs.push(vail_execution::array_aggregate::CoordinateReducer {
+                name,
+                aggregate,
+                input: input.clone(),
+                value_index,
+                filter_index,
+                empty,
+                identity,
+            });
+        }
+        let udf = vail_execution::array_aggregate::coordinate_bundle_udaf(
+            element.data_type().clone(),
+            specs,
+        )?;
+        return Ok(udf);
+    }
     if let Some(function) = f.strip_prefix("__coordinate_") {
         let Some(DataType::List(element)) = dtype else {
             return Err(TableError::Invalid(
@@ -247,6 +666,8 @@ pub(crate) fn needs_order(expression: &Expr) -> bool {
             function, options, ..
         } = node
         {
+            ordered |= function == "__coordinate_bundle"
+                && options.get("ordered").and_then(serde_json::Value::as_bool) == Some(true);
             ordered |= function == "collect"
                 && options.get("ordered").and_then(serde_json::Value::as_bool) == Some(true);
             ordered |= !function.starts_with("__coordinate_")
@@ -843,13 +1264,8 @@ pub(crate) fn lower_grouped_fields(
         .collect::<Vec<_>>();
     for (name, expr) in outputs {
         projection.push(
-            lower_logical_with_bindings(
-                &expr,
-                result.schema(),
-                output_globals,
-                &output_indices,
-            )?
-            .alias(name),
+            lower_logical_with_bindings(&expr, result.schema(), output_globals, &output_indices)?
+                .alias(name),
         );
     }
     Ok(LogicalPlanBuilder::from(result)
@@ -897,7 +1313,8 @@ pub(crate) fn lower_logical_total(
             child
         };
         let mut child = crate::logical_globals::bind_globals(child, table, context)?;
-        let (bound_child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
+        let (bound_child, indices) =
+            crate::logical_globals::bind_external(child, bindings, context)?;
         child = bound_child;
         // Fan out only this total aggregate's input. Preserve visible table
         // partitioning and avoid changing order-sensitive reducers.
