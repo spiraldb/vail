@@ -14,12 +14,9 @@ def import_gen(path, sample_file=None, tolerance=0.2, min_partitions=None,
     import gzip
     from . import (import_lines, literal, tarray, tstruct, tstr, tfloat64,
                    struct, array, int32, float64, len, case, locus, is_valid_locus,
-                   missing, if_else, sum, call, max, tcall, is_defined, bind, tdict)
+                   missing, if_else, sum, call, max, tcall, is_defined, bind, tdict, abs)
     from .text import _local_path
     from .reference_genome import resolve_reference
-
-    def absolute(value):
-        return if_else(value < 0, -value, value)
 
     if sample_file is None:
         raise ValueError('import_gen requires sample_file')
@@ -75,8 +72,8 @@ def import_gen(path, sample_file=None, tolerance=0.2, min_partitions=None,
     matrix = table._unlocalize_entries('entries', 'cols', ['s'], _aligned=True)
     def normalize(gp):
         return bind(lambda total: if_else(
-            (absolute(total - 1.0) <= tolerance) & (total != 0),
-            gp.map(lambda p: absolute(p / total)), missing(tarray(tfloat64))), sum(gp))
+            (abs(total - 1.0) <= tolerance) & (total != 0),
+            gp.map(lambda p: abs(p / total)), missing(tarray(tfloat64))), sum(gp))
 
     def hard_call(gp):
         return bind(lambda maximum: if_else(
