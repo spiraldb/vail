@@ -48,3 +48,21 @@ def test_dosage_with_nested_likelihood_lists_and_missing_entries():
             else:
                 p = [10**(-r), 10**(-c), 0.01]
                 assert entry.dosage == pytest.approx((p[1]+2*p[2])/sum(p))
+
+
+def test_array_scalar_reduction_hoisted_with_missing_and_empty_lists():
+    t = hl.Table.parallelize([
+        {'a': [1, 2, 3]}, {'a': []}, {'a': None}, {'a': [None, 3]},
+    ], schema=hl.tstruct(a=hl.tarray(hl.tint32)))
+    result = t.annotate(
+        normalized=t.a / hl.sum(t.a),
+        reversed=hl.sum(t.a) - t.a,
+    ).collect()
+    assert result[0].normalized == pytest.approx([1/6, 2/6, 3/6])
+    assert result[0].reversed == [5, 4, 3]
+    assert result[1].normalized == []
+    assert result[1].reversed == []
+    assert result[2].normalized is None
+    assert result[2].reversed is None
+    assert result[3].normalized == [None, 1.0]
+    assert result[3].reversed == [None, 0]
