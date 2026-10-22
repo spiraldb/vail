@@ -32,3 +32,26 @@ A Python-only direct-column-SUM guard removal alone yielded 10.138 s wall /
 established. It is not sufficient to fix the major aligned annotation CASE.
 
 Candidate validation and post-fix capture pending normal release build.
+
+## First candidate diagnostic
+
+Production bfef2f66, test fixture correction 8c546116. Normally built with
+Rust 1.98 release, unchanged Cargo kache configuration and a worktree-local
+target. 21 public Python tests pass (strict entry inputs, entry sum, aligned maps,
+coordinate aggregation). Promoted-type public Rust lower/evaluate test pending.
+
+The exact-query post-fix profile overlaps another compiler/test build. It has
+53,872 sampled stacks; the previous Boolean equality leaf under CASE has no
+samples. This substantiates removal of that path but not throughput improvement.
+Observed 14.279 s wall /110.480 CPU seconds /5,315,444,736 high-water RSS are
+contended diagnostics, not a speedup claim. Remaining leaf costs include memcpy
+18.55%, grouped SUM null-state18.32%, take validity16.37%, take Int32 values11.42%,
+run-end row expansion9.27%, addition5.49%, Int32→Int64 cast5.20%.
+
+Nearly all memmove samples are under ScalarValue::list_to_array_of_size:
+ExternalGlobal column records are cross-joined into each source row upstream,
+then the aligned physical expression borrows only the first repeated list.
+Therefore this patch does not remove the major column/global metadata broadcast.
+The next general design requires keeping singleton global input separate from
+row batches, binding its scalar buffers once per action rather than expanding
+it through a cross join. No benchmark-specific sum constant folding is proposed.
