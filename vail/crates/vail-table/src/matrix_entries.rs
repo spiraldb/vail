@@ -705,13 +705,7 @@ fn emit_prepared_run_chunk(
             None,
         )?);
     }
-    for (index, _) in chunk.entry_values.fields().iter().enumerate() {
-        arrays.push(arrow_select::take::take(
-            chunk.entry_values.column(index),
-            &entry_take,
-            None,
-        )?);
-    }
+    arrays.extend(select_entry_fields(&chunk.entry_values, &entry_take)?);
     arrays.push(Arc::new(UInt64Array::from_value(0, output_len)));
     Ok(Some(RecordBatch::try_new(output_schema.clone(), arrays)?))
 }
@@ -793,6 +787,36 @@ fn emit_singletons(
     )))
 }
 
+/// Entry positions in ordinary row-major expansion are contiguous. Retain
+/// their Arrow buffers rather than gathering/copying each nested entry field.
+/// Filtered slots and equal-key transposition still use the ordinary take.
+fn contiguous_range(indices: &UInt64Array) -> Option<(usize, usize)> {
+    if indices.null_count() != 0 || indices.is_empty() {
+        return None;
+    }
+    let start = usize::try_from(indices.value(0)).ok()?;
+    indices.values().iter().enumerate()
+        .all(|(offset, &index)| {
+            start.checked_add(offset)
+                .is_some_and(|expected| expected as u64 == index)
+        })
+        .then_some((start, indices.len()))
+}
+
+fn select_entry_fields(
+    values: &StructArray,
+    indices: &UInt64Array,
+) -> datafusion_common::Result<Vec<ArrayRef>> {
+    if let Some((start, length)) = contiguous_range(indices) {
+        return Ok(values.columns().iter()
+            .map(|column| column.slice(start, length))
+            .collect());
+    }
+    values.columns().iter()
+        .map(|column| arrow_select::take::take(column, indices, None))
+        .collect()
+}
+
 fn build_output_batch(
     row: &StructArray,
     col_struct: &StructArray,
@@ -829,13 +853,7 @@ fn build_output_batch(
             None,
         )?);
     }
-    for (index, _) in entry_values.fields().iter().enumerate() {
-        arrays.push(arrow_select::take::take(
-            entry_values.column(index),
-            entry_take,
-            None,
-        )?);
-    }
+    arrays.extend(select_entry_fields(entry_values, entry_take)?);
     arrays.push(Arc::new(UInt64Array::from_value(0, output_len)));
     Ok(RecordBatch::try_new(output_schema.clone(), arrays)?)
 }

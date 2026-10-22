@@ -207,3 +207,22 @@ def test_native_snapshot_preserves_filtered_missing_and_empty_entries(tmp_path):
     assert [(entry.row_idx, entry.col_idx) for entry in hl.read_matrix_table(empty_path).entries().collect()] == [
         (row, col) for row in range(3) for col in (1, 2)
     ]
+
+
+@pytest.mark.parametrize('filter_slots', [False, True])
+def test_entries_expansion_preserves_nested_child_offsets(filter_slots):
+    matrix = hl.range_matrix_table(5, 7, 2)
+    matrix = matrix.annotate_entries(
+        payload=hl.or_missing(matrix.col_idx != 3, hl.range(matrix.row_idx + matrix.col_idx)),
+        label=hl.str(matrix.row_idx) + ":" + hl.str(matrix.col_idx),
+    )
+    # Lose uniqueness metadata deliberately, so entries uses the duplicate-
+    # capable streaming expansion rather than the unique-row fast path.
+    matrix = matrix.key_rows_by(k=matrix.row_idx)
+    if filter_slots:
+        matrix = matrix.filter_entries((matrix.col_idx % 2) == 0)
+    assert [(entry.k, entry.col_idx, entry.payload, entry.label) for entry in matrix.entries().collect()] == [
+        (row, col, None if col == 3 else list(range(row + col)), f"{row}:{col}")
+        for row in range(5) for col in range(7)
+        if not filter_slots or col % 2 == 0
+    ]
