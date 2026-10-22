@@ -66,9 +66,21 @@ def min(expr):
 
 
 def max(expr):
+    """Maximum defined value, ignoring NaNs unless every defined value is NaN."""
     value = as_expr(expr)
     if value.dtype not in (tint32, tint64, tfloat32, tfloat64):
         raise TypeError("max requires a numeric expression")
+    if value.dtype in (tfloat32, tfloat64):
+        from .expressions import coalesce, or_missing
+        from .types import type_to_wire
+        isnan = Expression(tbool, value.source,
+                           {"op": "nested_function", "function": "isnan",
+                            "args": [value.to_ir()], "dtype": type_to_wire(tbool)})
+        # Both reductions use native MAX. Nullifying NaNs retains the ordinary
+        # grouped/scan/coordinate paths; the raw reduction distinguishes an
+        # all-NaN input from an empty or entirely missing input.
+        return coalesce(_aggregate("max", or_missing(~isnan, value)),
+                        _aggregate("max", value))
     return _aggregate("max", value)
 
 

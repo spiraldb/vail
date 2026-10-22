@@ -35,7 +35,8 @@ fn nested_effects(function: &str) -> Effects {
         return Effects::RandomContext;
     }
     match function {
-        "array_distinct"
+        "isnan"
+        | "array_distinct"
         | "array_union"
         | "array_intersect"
         | "array_except"

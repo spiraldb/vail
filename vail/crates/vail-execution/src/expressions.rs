@@ -1835,7 +1835,7 @@ impl Expr {
                 // Reducer adapters validate their own argument/init contracts;
                 // they are not unary collection-to-collection functions.
                 if function.starts_with("__vail_list_reduce_")
-                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs")
+                    || matches!(function.as_str(), "__vail_list_call_stats" | "abs" | "isnan")
                     || function.starts_with("__vail_ndarray_reshape_")
                 {
                     let result = udf.return_type(&args)?;
@@ -5063,6 +5063,7 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
         "vail_array_mean" => crate::numeric_lists::mean_udf(false),
         "vail_array_mean_strict" => crate::numeric_lists::mean_udf(true),
         "abs" => datafusion_functions::math::abs(),
+        "isnan" => datafusion_functions::math::isnan(),
         "array_sort" => nested::sort::array_sort_udf(),
         "array_distinct" => nested::set_ops::array_distinct_udf(),
         "array_union" => nested::set_ops::array_union_udf(),

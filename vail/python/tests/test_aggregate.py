@@ -112,13 +112,13 @@ class AggregateTests(unittest.TestCase):
         self.assertEqual(result.stats.n, 1)
         self.assertEqual(result.stats.sum, float(value))
 
-    def test_float_minmax_follow_arrow_nan_policy(self):
+    def test_float_minmax_ignore_nan(self):
         table = hl.Table.parallelize(
             [{"x": float("nan")}, {"x": 1.5}, {"x": None}],
             schema=hl.tstruct(x=hl.tfloat64),
         )
         self.assertEqual(table.aggregate(hl.agg.min(table.x)), 1.5)
-        self.assertTrue(math.isnan(table.aggregate(hl.agg.max(table.x))))
+        self.assertEqual(table.aggregate(hl.agg.max(table.x)), 1.5)
         all_nan = hl.Table.parallelize([{"x": float("nan")}, {"x": float("nan")}],
                                        schema=hl.tstruct(x=hl.tfloat64))
         self.assertTrue(math.isnan(all_nan.aggregate(hl.agg.min(all_nan.x))))
