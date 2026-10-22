@@ -1,0 +1,22 @@
+{
+  "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "reviewer_turn": "01a16512-d0ad-74b0-b974-32dfb540151e",
+  "reviewed_revision": "1e451c0762760d97dd505cd648b3112061dadfb6",
+  "main_base": "c8cf283ae8be0339822031251772493dd4f6feb6",
+  "disposition": "approved",
+  "findings": [
+    {
+      "finding": "Require exact cardinality in coordinate/scan regression comparisons",
+      "fixed_in": "0d02d81f",
+      "disposition": "closed; strict zip checks reviewed"
+    },
+    {
+      "finding": "Runtime preflight: isnan incorrectly treated as collection-only in type validation",
+      "fixed_in": "1e451c07",
+      "disposition": "closed; scalar native-UDF inference branch reviewed and 177 tests plus original Hail minmax passed"
+    }
+  ],
+  "scope": "floating agg.max only; no broader min or scalar-max claim",
+  "receipt_child": "Reviewer authorized accurate evidence/review-receipt-only child without renewed runtime tests",
+  "integration": "User-authorized local main fast-forward against stated unchanged base; preserve unrelated dirty files"
+}

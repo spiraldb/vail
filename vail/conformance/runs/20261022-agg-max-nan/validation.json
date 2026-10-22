@@ -1,0 +1,28 @@
+{
+  "source_revision": "1e451c0762760d97dd505cd648b3112061dadfb6",
+  "main_base": "c8cf283ae8be0339822031251772493dd4f6feb6",
+  "native_sha256": "72934f1db9427a971e49930e46b31d6575ea38e0c837fb7a432f31388bf12448",
+  "python": "3.12.12",
+  "build": "maturin build --release --locked",
+  "pytest": {
+    "passed": 177,
+    "failed": 0,
+    "duration_seconds": 18.37,
+    "modules": [
+      "test_agg_max_nan.py",
+      "test_aggregate.py",
+      "test_core_aggregate_kernels.py",
+      "test_agg_composition_execution.py",
+      "test_scan.py",
+      "test_array_agg_coordinate_callbacks.py",
+      "test_array_agg_coordinate_registry.py",
+      "test_aggregate_execution.py"
+    ]
+  },
+  "original_hail_test": {
+    "nodeid": "expr/test_expr.py::Tests.test_agg_minmax",
+    "passed": 1,
+    "failed": 0,
+    "body_assertions_modified": false
+  }
+}
