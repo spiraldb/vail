@@ -1,0 +1,16 @@
+--- a/vail/python/vail/matrixtable.py
++++ b/vail/python/vail/matrixtable.py
+@@ -877 +877 @@
+-        return has_capture
++        return True
+@@ -1292,0 +1293,10 @@
++            if self._aligned_map_eligible([("predicate", expr)]):
++                base = self._mir.core
++                selected = expr if keep else ~expr
++                body = if_else(selected, self.entry, missing(self.entry.dtype))
++                cells = self._aligned_matrix_map(base, body.to_ir(), self.entry.dtype, preserve_cell=True)
++                projected = _project(base, [(_ROW, base[_ROW]), (_CELLS, cells)]
++                                     + [(name, base[name]) for name in self._mir.row_index_keys])
++                if self._mir.row_index_keys:
++                    projected = projected._with_keys(*self._mir.row_index_keys)
++                return self._copy(rows=projected)

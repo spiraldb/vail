@@ -1,0 +1,163 @@
+{
+  "native_sha256": "68254f5ee21c520edc7e3be33a2d74b496c7a41c477d2408106a7262bda8e12b",
+  "routing_sha256": {
+    "targetedbaseline": [
+      "9b222639db0c2eed9504285a43976033c6d7e7e8620f45e615636d292ab3c253"
+    ],
+    "targetedglobal": [
+      "91283402470d8947739d37634b4f58066c9481ffaa800f3e1cdabacbc4ab244d"
+    ]
+  },
+  "cases": {
+    "filter_entry": {
+      "targetedbaseline": {
+        "expected": {
+          "n": 158876,
+          "checksum": 41648374350
+        },
+        "process_medians": [
+          0.019803375005722046,
+          0.020891541964374483,
+          0.01912216702476144
+        ],
+        "median_wall": 0.02081983396783471,
+        "median_cpu": 0.07257499999999995,
+        "peak_rss": 946683904
+      },
+      "targetedglobal": {
+        "expected": {
+          "n": 158876,
+          "checksum": 41648374350
+        },
+        "process_medians": [
+          0.01933875004760921,
+          0.019153458008076996,
+          0.01913725002668798
+        ],
+        "median_wall": 0.019153458008076996,
+        "median_cpu": 0.06592900000000002,
+        "peak_rss": 950452224
+      }
+    },
+    "filter_global": {
+      "targetedbaseline": {
+        "expected": {
+          "n": 95325,
+          "checksum": 24988710190
+        },
+        "process_medians": [
+          0.1731567500391975,
+          0.18798879202222452,
+          0.17029995803022757
+        ],
+        "median_wall": 0.1767941250000149,
+        "median_cpu": 0.6626650000000001,
+        "peak_rss": 4624891904
+      },
+      "targetedglobal": {
+        "expected": {
+          "n": 95325,
+          "checksum": 24988710190
+        },
+        "process_medians": [
+          0.018424415960907936,
+          0.01841708301799372,
+          0.017330375034362078
+        ],
+        "median_wall": 0.01841708301799372,
+        "median_cpu": 0.05910699999999991,
+        "peak_rss": 816037888
+      }
+    },
+    "filter_row": {
+      "targetedbaseline": {
+        "expected": {
+          "n": 95323,
+          "checksum": 24988175454
+        },
+        "process_medians": [
+          0.17493191600078717,
+          0.1746650410350412,
+          0.18406616698484868
+        ],
+        "median_wall": 0.17493191600078717,
+        "median_cpu": 0.671106,
+        "peak_rss": 4735762432
+      },
+      "targetedglobal": {
+        "expected": {
+          "n": 95323,
+          "checksum": 24988175454
+        },
+        "process_medians": [
+          0.021982959005981684,
+          0.022844541002996266,
+          0.02288062497973442
+        ],
+        "median_wall": 0.022844541002996266,
+        "median_cpu": 0.07529300000000005,
+        "peak_rss": 991772672
+      }
+    },
+    "filter_row_only": {
+      "targetedbaseline": {
+        "expected": {
+          "n": 95333,
+          "checksum": 24990289505
+        },
+        "process_medians": [
+          0.021511875034775585,
+          0.02159462496638298,
+          0.021436500013805926
+        ],
+        "median_wall": 0.021511875034775585,
+        "median_cpu": 0.074577,
+        "peak_rss": 860864512
+      },
+      "targetedglobal": {
+        "expected": {
+          "n": 95333,
+          "checksum": 24990289505
+        },
+        "process_medians": [
+          0.020807083987165242,
+          0.02191895799478516,
+          0.02257341699441895
+        ],
+        "median_wall": 0.02191895799478516,
+        "median_cpu": 0.07579800000000003,
+        "peak_rss": 864567296
+      }
+    },
+    "select": {
+      "targetedbaseline": {
+        "expected": {
+          "n": 476627,
+          "checksum": 374837132675
+        },
+        "process_medians": [
+          0.03423158300574869,
+          0.035929374978877604,
+          0.03500062500825152
+        ],
+        "median_wall": 0.03500062500825152,
+        "median_cpu": 0.12424599999999997,
+        "peak_rss": 1924874240
+      },
+      "targetedglobal": {
+        "expected": {
+          "n": 476627,
+          "checksum": 374837132675
+        },
+        "process_medians": [
+          0.033844874997157604,
+          0.03438829199876636,
+          0.03480145800858736
+        ],
+        "median_wall": 0.03438829199876636,
+        "median_cpu": 0.119834,
+        "peak_rss": 1927970816
+      }
+    }
+  }
+}

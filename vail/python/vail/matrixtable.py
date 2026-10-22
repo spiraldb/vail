@@ -1290,6 +1290,25 @@ class MatrixTable:
         if expr.dtype != tbool:
             raise TypeError("filter predicate must be bool")
         if axis == "entry":
+            # General array lambdas can expand an enclosing globals column,
+            # including unrelated matrix column metadata. Bind only referenced
+            # global fields through the aligned batch mapper instead.
+            if (_uses_axis_field(expr.to_ir(), "global")
+                    and self._aligned_map_eligible([("predicate", expr)])):
+                base = self._mir.core
+                selected = expr if keep else ~expr
+                body = if_else(selected, self.entry, missing(self.entry.dtype))
+                cells = self._aligned_matrix_map(
+                    base, body.to_ir(), self.entry.dtype, preserve_cell=True,
+                )
+                projected = _project(
+                    base,
+                    [(_ROW, base[_ROW]), (_CELLS, cells)]
+                    + [(name, base[name]) for name in self._mir.row_index_keys],
+                )
+                if self._mir.row_index_keys:
+                    projected = projected._with_keys(*self._mir.row_index_keys)
+                return self._copy(rows=projected)
             def coalesce(value, default):
                 return if_else(is_defined(value), value, default)
 
