@@ -124,6 +124,43 @@ def test_split_line_expression():
     assert hl.eval(hl.split_line('', ',', missing=[])) == ['']
 
 
+@pytest.mark.parametrize('line,expected', [
+    ('', ['']), ('\n', ['']), ('\r\n', ['']),
+    (',,', ['', '', '']), ('a,NA,', ['a', None, '']),
+    ('\r\na,b\n\r\n', ['a', 'b']),
+    ('a,"b,c"', ['a', '"b', 'c"']),
+    ('雪,😀,\x00', ['雪', '😀', '\x00']),
+])
+def test_unquoted_split_preserves_record_and_field_semantics(line, expected):
+    assert hl.eval(hl.split_line(line, ',')) == expected
+
+
+@pytest.mark.parametrize('line,message', [
+    ('\r', 'empty CSV line'), ('\n\n', 'empty CSV line'),
+    ('a\nb', 'expected exactly one CSV record'),
+    ('a\r\nb', 'expected exactly one CSV record'),
+    ('a\n ', 'expected exactly one CSV record'),
+])
+def test_unquoted_split_rejects_empty_or_multiple_records(line, message):
+    with pytest.raises(RuntimeError, match=message):
+        hl.eval(hl.split_line(line, ','))
+
+
+@pytest.mark.parametrize('quote', [None, '"'])
+def test_split_batch_keeps_rows_independent_with_long_null_and_multiline_values(quote):
+    long = '雪' * 10000
+    cases = [(None, None), ('', ['']), ('a,NA,', ['a', None, '']),
+             (long + ',end', [long, 'end']), ('small', ['small'])]
+    if quote is not None:
+        cases += [('"left\nright",NA', ['left\nright', None]),
+                  ('"a,b",tail', ['a,b', 'tail'])]
+    cases *= 1500
+    table = hl.Table.parallelize([{'line': line} for line, _ in cases],
+                                schema=hl.tstruct(line=hl.tstr), n_partitions=3)
+    actual = table.select(fields=hl.split_line(table.line, ',', quote=quote)).collect()
+    assert [row.fields for row in actual] == [expected for _, expected in cases]
+
+
 def test_text_source_transformations_and_globals(tmp_path):
     path = tmp_path / 'query.tsv'
     path.write_text('id\ttext\n1\ta,b\n2\tc,d\n')

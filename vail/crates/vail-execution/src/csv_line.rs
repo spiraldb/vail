@@ -5,8 +5,11 @@ use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{ColumnarValue, ScalarUDF, Signature, Volatility};
 use std::collections::HashSet;
+use std::io::{Cursor, SeekFrom};
 use std::num::NonZeroUsize;
 use std::sync::Arc;
+
+type RecordReader<'a> = csv::Reader<Cursor<&'a [u8]>>;
 
 fn csv_byte(value: &str, name: &str) -> Result<u8> {
     let bytes = value.as_bytes();
@@ -32,6 +35,7 @@ enum Quoting {
 /// mutable record scratch is local to each evaluated batch.
 struct PreparedCsv {
     reader: csv::ReaderBuilder,
+    delimiter: u8,
     separator: Option<regex::Regex>,
     quote: Option<u8>,
     quoting: Quoting,
@@ -89,6 +93,7 @@ impl PreparedCsv {
             NonZeroUsize::new(expected_fields).map_or(FieldCount::Unrestricted, FieldCount::Exact);
         Ok(Self {
             reader,
+            delimiter,
             separator,
             quote,
             quoting,
@@ -96,10 +101,11 @@ impl PreparedCsv {
             fields,
         })
     }
-    fn append(
+    fn append<'a>(
         &self,
-        line: &str,
+        line: &'a str,
         record: &mut csv::StringRecord,
+        reader: &mut Option<RecordReader<'a>>,
         out: &mut ListBuilder<StringBuilder>,
     ) -> Result<()> {
         if line.is_empty() || line == "\n" || line == "\r\n" {
@@ -116,7 +122,7 @@ impl PreparedCsv {
             }
         }
         if let Some(separator) = &self.separator {
-            let mut fields = Vec::new();
+            let mut count = 0;
             let mut start = 0;
             loop {
                 let (field, end) = if self
@@ -142,7 +148,9 @@ impl PreparedCsv {
                     }
                     (field, end)
                 };
-                fields.push(field);
+                out.values()
+                    .append_option((!self.missing.contains(field)).then_some(field));
+                count += 1;
                 if end == line.len() {
                     break;
                 }
@@ -155,16 +163,12 @@ impl PreparedCsv {
                 start = matched.end();
             }
             if let FieldCount::Exact(expected) = self.fields {
-                if fields.len() != expected.get() {
+                if count != expected.get() {
                     return Err(DataFusionError::Execution(format!(
                         "Expected {expected} fields, found {} fields",
-                        fields.len()
+                        count
                     )));
                 }
-            }
-            for field in fields {
-                out.values()
-                    .append_option((!self.missing.contains(field)).then_some(field));
             }
             out.append(true);
             return Ok(());
@@ -174,8 +178,45 @@ impl PreparedCsv {
                 return Err(DataFusionError::Execution("invalid CSV quoting".into()));
             }
         }
+        if matches!(self.quoting, Quoting::Disabled) {
+            // The default Hail import mode has no quoting or escaping. Split
+            // borrowed fields directly rather than building a CSV DFA, reader,
+            // and IO buffer for every physical line.
+            let line = line.trim_start_matches(['\r', '\n']);
+            if line.is_empty() {
+                return Err(DataFusionError::Execution("empty CSV line".into()));
+            }
+            let (line, remaining) = line.split_once(['\r', '\n']).unwrap_or((line, ""));
+            let fields = line.split(self.delimiter as char);
+            if let FieldCount::Exact(expected) = self.fields {
+                let count = fields.clone().count();
+                if count != expected.get() {
+                    return Err(DataFusionError::Execution(format!(
+                        "Expected {expected} fields, found {count} field(s)"
+                    )));
+                }
+            }
+            for field in fields {
+                out.values()
+                    .append_option((!self.missing.contains(field)).then_some(field));
+            }
+            // csv::Reader skips blank records around the one requested record.
+            if remaining.bytes().any(|byte| !matches!(byte, b'\r' | b'\n')) {
+                return Err(DataFusionError::Execution(
+                    "expected exactly one CSV record".into(),
+                ));
+            }
+            out.append(true);
+            return Ok(());
+        }
         let invalid = |error| DataFusionError::Execution(format!("invalid CSV line: {error}"));
-        let mut reader = self.reader.from_reader(line.as_bytes());
+        // Reuse the batch's configured CSV state machine and IO buffer. Only
+        // the input slice and parser position change between records.
+        let reader = reader.as_mut().expect("quoted CSV batch reader");
+        *reader.get_mut().get_mut() = line.as_bytes();
+        reader
+            .seek_raw(SeekFrom::Start(0), csv::Position::new())
+            .map_err(invalid)?;
         if !reader.read_record(record).map_err(invalid)? {
             return Err(DataFusionError::Execution("empty CSV line".into()));
         }
@@ -204,10 +245,14 @@ impl PreparedCsv {
     fn evaluate(&self, input: &ColumnarValue) -> Result<ColumnarValue> {
         let mut out = ListBuilder::new(StringBuilder::new());
         let mut record = csv::StringRecord::new();
+        // Parser configuration and allocation are batch work, never row work.
+        // Unquoted and regex-separated inputs do not need a CSV reader at all.
+        let mut reader = (self.separator.is_none() && matches!(self.quoting, Quoting::Enabled(_)))
+            .then(|| self.reader.from_reader(Cursor::new(&[][..])));
         match input {
             ColumnarValue::Scalar(ScalarValue::Utf8(value)) => {
                 match value {
-                    Some(line) => self.append(line, &mut record, &mut out)?,
+                    Some(line) => self.append(line, &mut record, &mut reader, &mut out)?,
                     None => out.append(false),
                 }
                 Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
@@ -233,7 +278,7 @@ impl PreparedCsv {
                     if strings.is_null(row) {
                         out.append(false);
                     } else {
-                        self.append(strings.value(row), &mut record, &mut out)?;
+                        self.append(strings.value(row), &mut record, &mut reader, &mut out)?;
                     }
                 }
                 Ok(ColumnarValue::Array(Arc::new(out.finish()) as ArrayRef))
