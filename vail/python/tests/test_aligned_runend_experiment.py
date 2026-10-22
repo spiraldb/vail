@@ -31,7 +31,7 @@ def test_batch_captures_empty_and_missing_slots(rows, cols):
             else:
                 assert entry.y == 11 * r + 4 * c + 17
                 assert entry.label == (str(r) if r % 2 == 0 else "missing") + ":suffix"
-                assert entry.values == [r, r + 1]
+                assert entry["values"] == [r, r + 1]
 
 
 def test_case_filtered_captures_follow_selected_entry_rows():
