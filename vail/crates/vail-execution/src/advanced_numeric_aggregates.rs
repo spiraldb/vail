@@ -2369,7 +2369,9 @@ impl<'a> LinregBatchInput<'a> {
             None
         };
         let predictor_values_have_nulls = match &predictors {
-            LinregPredictors::Struct(columns) => columns.iter().any(|column| column.null_count() > 0),
+            LinregPredictors::Struct(columns) => {
+                columns.iter().any(|column| column.null_count() > 0)
+            }
             LinregPredictors::List(_, values) => values.null_count() > 0,
             LinregPredictors::Scalar(values) => values.null_count() > 0,
             LinregPredictors::Unsupported => false,
@@ -2452,14 +2454,33 @@ fn factor_linreg_stack(
     invalid_numeric: &mut bool,
     qr_cache: Option<&mut LinregQrCache>,
 ) {
+    let nrows = stack.nrows();
+    factor_linreg_flat(
+        p,
+        qr,
+        stack.as_mut_slice(),
+        nrows,
+        invalid_numeric,
+        qr_cache,
+    );
+}
+
+fn factor_linreg_flat(
+    p: usize,
+    qr: &mut [f64],
+    stack: &mut [f64],
+    nrows: usize,
+    invalid_numeric: &mut bool,
+    qr_cache: Option<&mut LinregQrCache>,
+) {
     let d = p + 1;
     let mut scales = vec![0.0_f64; d];
     let mut needs_extreme_fallback = false;
     for column in 0..d {
         let mut max = 0.0_f64;
         let mut min = f64::INFINITY;
-        for row in 0..stack.nrows() {
-            let value = stack[(row, column)];
+        for row in 0..nrows {
+            let value = stack[row + column * nrows];
             if !value.is_finite() {
                 *invalid_numeric = true;
                 return;
@@ -2488,9 +2509,9 @@ fn factor_linreg_stack(
         // validated stable Givens update, while keeping ordinary batches on
         // library QR path.
         let mut work = vec![0.0; d];
-        for row in d..stack.nrows() {
+        for row in d..nrows {
             for column in 0..d {
-                work[column] = stack[(row, column)];
+                work[column] = stack[row + column * nrows];
             }
             append_linreg_givens(p, qr, &mut work, invalid_numeric);
             if *invalid_numeric {
@@ -2503,7 +2524,8 @@ fn factor_linreg_stack(
         factor_linreg_stack_with_cached_predictors(
             p,
             qr,
-            &mut stack,
+            stack,
+            nrows,
             &scales,
             cache,
             invalid_numeric,
@@ -2513,15 +2535,14 @@ fn factor_linreg_stack(
     for column in 0..d {
         let scale = scales[column];
         if scale != 1.0 {
-            for row in 0..stack.nrows() {
-                stack[(row, column)] /= scale;
+            for row in 0..nrows {
+                stack[row + column * nrows] /= scale;
             }
         }
     }
     // Factor in place to avoid a second copy of the tall batch matrix. Faer
     // receives explicit sequential parallelism because DataFusion already
     // parallelizes this work across partitions.
-    let nrows = stack.nrows();
     let block_size = faer::linalg::qr::no_pivoting::factor::recommended_block_size::<f64>(nrows, d);
     let mut q_coeff = faer::Mat::<f64>::zeros(block_size, d);
     let mut params: faer::linalg::qr::no_pivoting::factor::QrParams = faer::auto!(f64);
@@ -2536,7 +2557,7 @@ fn factor_linreg_stack(
         params.into(),
     );
     let mut scratch = faer::dyn_stack::MemBuffer::new(scratch_req);
-    let matrix = faer::MatMut::from_column_major_slice_mut(stack.as_mut_slice(), nrows, d);
+    let matrix = faer::MatMut::from_column_major_slice_mut(stack, nrows, d);
     faer::linalg::qr::no_pivoting::factor::qr_in_place(
         matrix,
         q_coeff.as_mut(),
@@ -2547,12 +2568,16 @@ fn factor_linreg_stack(
     for row in 0..d {
         // Keep the diagonal nonnegative, matching the prior Givens and
         // nalgebra state convention (especially for the residual entry).
-        let row_sign = if stack[(row, row)] < 0.0 { -1.0 } else { 1.0 };
+        let row_sign = if stack[row + row * nrows] < 0.0 {
+            -1.0
+        } else {
+            1.0
+        };
         for column in 0..row {
             qr[row * d + column] = 0.0;
         }
         for column in row..d {
-            let mut value = stack[(row, column)] * row_sign;
+            let mut value = stack[row + column * nrows] * row_sign;
             if scales[column] != 1.0 {
                 value *= scales[column];
             }
@@ -2582,13 +2607,13 @@ struct LinregQrCache {
 fn factor_linreg_stack_with_cached_predictors(
     p: usize,
     qr: &mut [f64],
-    stack: &mut DMatrix<f64>,
+    stack: &mut [f64],
+    nrows: usize,
     scales: &[f64],
     cache: &mut LinregQrCache,
     invalid_numeric: &mut bool,
 ) {
-    let nrows = stack.nrows();
-    let predictor_values = &stack.as_slice()[..nrows * p];
+    let predictor_values = &stack[..nrows * p];
     let cache_hit = cache.nrows == nrows
         && cache.p == p
         && predictor_values
@@ -2605,7 +2630,7 @@ fn factor_linreg_stack_with_cached_predictors(
             let scale = scales[column];
             if scale != 1.0 {
                 for row in 0..nrows {
-                    stack[(row, column)] /= scale;
+                    stack[row + column * nrows] /= scale;
                 }
             }
         }
@@ -2621,11 +2646,7 @@ fn factor_linreg_stack_with_cached_predictors(
             params.into(),
         );
         let mut scratch = faer::dyn_stack::MemBuffer::new(scratch_req);
-        let matrix = faer::MatMut::from_column_major_slice_mut(
-            &mut stack.as_mut_slice()[..nrows * p],
-            nrows,
-            p,
-        );
+        let matrix = faer::MatMut::from_column_major_slice_mut(&mut stack[..nrows * p], nrows, p);
         faer::linalg::qr::no_pivoting::factor::qr_in_place(
             matrix,
             q_coeff.as_mut(),
@@ -2637,10 +2658,14 @@ fn factor_linreg_stack_with_cached_predictors(
         let mut predictor_r = vec![0.0; p * p];
         let mut row_signs = vec![1.0; p];
         for row in 0..p {
-            let sign = if stack[(row, row)] < 0.0 { -1.0 } else { 1.0 };
+            let sign = if stack[row + row * nrows] < 0.0 {
+                -1.0
+            } else {
+                1.0
+            };
             row_signs[row] = sign;
             for column in row..p {
-                let value = stack[(row, column)] * sign * scales[column];
+                let value = stack[row + column * nrows] * sign * scales[column];
                 if !value.is_finite() {
                     *invalid_numeric = true;
                     return;
@@ -2651,7 +2676,7 @@ fn factor_linreg_stack_with_cached_predictors(
         cache.nrows = nrows;
         cache.p = p;
         cache.input_predictors = input_predictors;
-        cache.householder_basis = stack.as_slice()[..nrows * p].to_vec();
+        cache.householder_basis = stack[..nrows * p].to_vec();
         cache.householder_coefficients = Vec::with_capacity(block_size * p);
         for column in 0..p {
             for row in 0..block_size {
@@ -2664,8 +2689,11 @@ fn factor_linreg_stack_with_cached_predictors(
     }
 
     let response_scale = scales[p];
-    let mut response =
-        faer::Mat::<f64>::from_fn(nrows, 1, |row, _| stack[(row, p)] / response_scale);
+    if response_scale != 1.0 {
+        for row in 0..nrows {
+            stack[row + p * nrows] /= response_scale;
+        }
+    }
     let basis = faer::MatRef::from_column_major_slice(&cache.householder_basis, nrows, p);
     let coefficients =
         faer::MatRef::from_column_major_slice(&cache.householder_coefficients, cache.block_size, p);
@@ -2675,7 +2703,11 @@ fn factor_linreg_stack_with_cached_predictors(
         basis,
         coefficients,
         faer::Conj::No,
-        response.as_mut(),
+        faer::MatMut::from_column_major_slice_mut(
+            &mut stack[nrows * p..nrows * (p + 1)],
+            nrows,
+            1,
+        ),
         faer::Par::Seq,
         faer::dyn_stack::MemStack::new(&mut scratch),
     );
@@ -2686,7 +2718,7 @@ fn factor_linreg_stack_with_cached_predictors(
         for column in row..p {
             qr[row * d + column] = cache.predictor_r[row * p + column];
         }
-        let value = response[(row, 0)] * cache.row_signs[row] * response_scale;
+        let value = stack[row + p * nrows] * cache.row_signs[row] * response_scale;
         if !value.is_finite() {
             *invalid_numeric = true;
             return;
@@ -2694,7 +2726,7 @@ fn factor_linreg_stack_with_cached_predictors(
         qr[row * d + p] = value;
     }
     let residual_squared = (p..nrows).fold(0.0, |sum, row| {
-        let value = response[(row, 0)];
+        let value = stack[row + p * nrows];
         sum + value * value
     });
     let residual = residual_squared.sqrt() * response_scale;
@@ -3135,7 +3167,10 @@ struct LinregGroupsAccumulator {
     batch_group_counts: Vec<usize>,
     batch_touched_groups: Vec<usize>,
     batch_offsets: Vec<usize>,
-    batch_group_rows: Vec<usize>,
+    batch_group_matrix_starts: Vec<usize>,
+    batch_group_matrix_rows: Vec<usize>,
+    batch_group_cursor: Vec<usize>,
+    batch_matrix_values: Vec<f64>,
 }
 
 fn take_linreg_groups<T>(values: &mut Vec<T>, count: usize, width: usize, all: bool) -> Vec<T> {
@@ -3161,7 +3196,10 @@ impl LinregGroupsAccumulator {
             batch_group_counts: Vec::new(),
             batch_touched_groups: Vec::new(),
             batch_offsets: Vec::new(),
-            batch_group_rows: Vec::new(),
+            batch_group_matrix_starts: Vec::new(),
+            batch_group_matrix_rows: Vec::new(),
+            batch_group_cursor: Vec::new(),
+            batch_matrix_values: Vec::new(),
         }
     }
 
@@ -3270,7 +3308,6 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
         self.batch_group_counts.resize(total_num_groups, 0);
         self.batch_touched_groups.clear();
         self.batch_offsets.clear();
-        self.batch_group_rows.clear();
         for (row, group) in group_indices.iter().copied().enumerate() {
             if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row)) {
                 continue;
@@ -3288,37 +3325,109 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
             self.batch_group_counts[group] = start;
             debug_assert_eq!(self.batch_offsets[index], start);
         }
-        self.batch_group_rows
-            .resize(*self.batch_offsets.last().unwrap(), 0);
+        let d = self.dimension();
+        self.batch_group_matrix_starts
+            .resize(total_num_groups, usize::MAX);
+        self.batch_group_matrix_rows.resize(total_num_groups, 0);
+        self.batch_group_cursor.resize(total_num_groups, 0);
+        let mut matrix_values = 0usize;
+        for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+            let row_capacity = self.batch_offsets[bucket + 1] - self.batch_offsets[bucket];
+            self.batch_group_matrix_starts[group] = matrix_values;
+            self.batch_group_matrix_rows[group] = d + row_capacity;
+            self.batch_group_cursor[group] = 0;
+            matrix_values += (d + row_capacity) * d;
+            self.batch_group_counts[group] = 0;
+        }
+        self.batch_matrix_values.resize(matrix_values, 0.0);
+        self.batch_matrix_values.fill(0.0);
+        // Read Arrow columns in their native input order once, then consume
+        // contiguous per-group QR matrices below. Each group matrix is the
+        // sole dense copy needed by destructive Householder QR.
+        let mut predictor_scratch = vec![0.0; self.p];
         for (row, group) in group_indices.iter().copied().enumerate() {
             if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row)) {
                 continue;
             }
-            let cursor = self.batch_group_counts[group];
-            self.batch_group_rows[cursor] = row;
+            let row_offset = self.batch_group_cursor[group];
             self.batch_group_counts[group] += 1;
+            self.batch_group_cursor[group] += 1;
+            if batch.row_is_missing(row) {
+                continue;
+            }
+            let Some(x) = batch.predictor_row(row, self.p, &mut predictor_scratch)? else {
+                continue;
+            };
+            let y = batch.ys.value(row);
+            let weight = batch.weights.map_or(1.0, |weights| weights.value(row));
+            self.n[group] += 1;
+            if weight < 0.0
+                || !weight.is_finite()
+                || !y.is_finite()
+                || x.iter().any(|value| !value.is_finite())
+            {
+                self.invalid_numeric[group] = true;
+                continue;
+            }
+            if !self.origin_set[group] && x[0] != 0.0 {
+                let origins_start = group * d;
+                for column in 1..self.p {
+                    let origin = x[column] / x[0];
+                    self.origins[origins_start + column] =
+                        if origin.is_finite() { origin } else { 0.0 };
+                }
+                let origin = y / x[0];
+                self.origins[origins_start + self.p] =
+                    if origin.is_finite() { origin } else { 0.0 };
+                self.origin_set[group] = true;
+            }
+            let weight_scale = weight.sqrt();
+            let nrows = self.batch_group_matrix_rows[group];
+            let row_index = d + row_offset;
+            let matrix_start = self.batch_group_matrix_starts[group];
+            let origin_start = group * d;
+            let x0 = x[0];
+            let mut finite = true;
+            let first = weight_scale * x0;
+            self.batch_matrix_values[matrix_start + row_index] = first;
+            finite &= first.is_finite();
+            for column in 1..self.p {
+                let value =
+                    weight_scale * (-self.origins[origin_start + column]).mul_add(x0, x[column]);
+                self.batch_matrix_values[matrix_start + row_index + column * nrows] = value;
+                finite &= value.is_finite();
+            }
+            let value = weight_scale * (-self.origins[origin_start + self.p]).mul_add(x0, y);
+            self.batch_matrix_values[matrix_start + row_index + self.p * nrows] = value;
+            finite &= value.is_finite();
+            if !finite {
+                self.invalid_numeric[group] = true;
+                for column in 0..d {
+                    self.batch_matrix_values[matrix_start + row_index + column * nrows] = 0.0;
+                }
+            }
         }
-        let d = self.dimension();
         let qr_width = self.qr_width();
         let mut qr_cache = LinregQrCache::default();
         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
-            let start = self.batch_offsets[bucket];
-            let end = self.batch_offsets[bucket + 1];
             let qr_start = group * qr_width;
-            let origins_start = group * d;
-            update_linreg_batch(
+            let nrows = self.batch_group_matrix_rows[group];
+            let matrix_start = self.batch_group_matrix_starts[group];
+            let matrix_len = nrows * d;
+            for row in 0..d {
+                for column in row..d {
+                    self.batch_matrix_values[matrix_start + row + column * nrows] =
+                        self.qr[qr_start + row * d + column];
+                }
+            }
+            factor_linreg_flat(
                 self.p,
-                &batch,
-                &mut self.n[group],
                 &mut self.qr[qr_start..qr_start + qr_width],
-                &mut self.origins[origins_start..origins_start + d],
-                &mut self.origin_set[group],
+                &mut self.batch_matrix_values[matrix_start..matrix_start + matrix_len],
+                nrows,
                 &mut self.invalid_numeric[group],
-                self.batch_group_rows[start..end].iter().copied(),
-                end - start,
-                &mut self.predictor_scratch,
                 Some(&mut qr_cache),
-            )?;
+            );
             self.batch_group_counts[group] = 0;
         }
         Ok(())
@@ -3358,8 +3467,11 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
             + (self.batch_group_counts.capacity()
                 + self.batch_touched_groups.capacity()
                 + self.batch_offsets.capacity()
-                + self.batch_group_rows.capacity())
+                + self.batch_group_matrix_starts.capacity()
+                + self.batch_group_matrix_rows.capacity()
+                + self.batch_group_cursor.capacity())
                 * std::mem::size_of::<usize>()
+            + self.batch_matrix_values.capacity() * std::mem::size_of::<f64>()
     }
 
     fn state(&mut self, emit_to: EmitTo) -> DfResult<Vec<ArrayRef>> {

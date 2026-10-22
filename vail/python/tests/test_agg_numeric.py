@@ -139,13 +139,13 @@ def test_array_linreg_reuses_only_identical_predictor_batches():
 
     masked = table.aggregate(hl.agg.array_agg(
         lambda group: hl.agg.linreg(
-            hl.if_else(table.idx % 3 == group, None, 4.0 + 2.5 * table.idx + group),
+                hl.if_else(table.idx % 3 == group, hl.missing(hl.tfloat64), 4.0 + 2.5 * table.idx + group),
             [1.0, table.idx],
         ),
         hl.range(3),
     ))
     for group, fit in enumerate(masked):
-        assert fit.n == 6_666
+        assert fit.n == (6_666 if group == 0 else 6_667)
         assert fit.beta == pytest.approx([4.0 + group, 2.5], abs=1e-8)
 
 
