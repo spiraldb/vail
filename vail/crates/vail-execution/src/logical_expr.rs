@@ -14,6 +14,23 @@ use datafusion_expr::{Expr as LogicalExpr, ExprSchemable, Operator, Signature, V
 
 use crate::expressions::{BinaryOperator, Expr, ExprError, PrimitiveType, Type, UnaryOperator};
 
+/// Prepared scalar bindings retain their Arrow owners. Pointer equality is an
+/// execution-cache shortcut only (not expression identity): immutable nested
+/// buffers cannot change or have their addresses recycled while retained here.
+fn same_scalar_binding(left: &ScalarValue, right: &ScalarValue) -> bool {
+    match (left, right) {
+        (ScalarValue::Struct(a), ScalarValue::Struct(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::List(a), ScalarValue::List(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::LargeList(a), ScalarValue::LargeList(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::FixedSizeList(a), ScalarValue::FixedSizeList(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::ListView(a), ScalarValue::ListView(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::LargeListView(a), ScalarValue::LargeListView(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::Map(a), ScalarValue::Map(b)) => Arc::ptr_eq(a, b),
+        (ScalarValue::Dictionary(at, a), ScalarValue::Dictionary(bt, b)) => at == bt && same_scalar_binding(a, b),
+        _ => left == right,
+    }
+}
+
 /// Whether a volatile semantic kernel is closed and deterministic apart from
 /// value-domain errors, so a successful projection result may be reused.
 ///
@@ -910,6 +927,14 @@ fn logical_kernel(
     } else {
         Signature::any(refs.len(), volatility)
     };
+    // One prepared program per kernel, bounded to the most recent scalar
+    // binding combination. Singleton globals normally reuse one immutable
+    // Arrow owner for the entire action. New owners/values reprepare safely.
+    let prepared = std::sync::Mutex::new(None::<(
+        Vec<(usize, ScalarValue)>,
+        Arc<dyn datafusion_physical_expr::PhysicalExpr>,
+        Arc<Schema>,
+    )>);
     let udf = crate::kernel_identity::scalar_with_args(
         &udf_name,
         identity,
@@ -931,11 +956,28 @@ fn logical_kernel(
             } else {
                 invocation.number_rows
             };
+            let scalar_keys = args.iter().enumerate().filter_map(|(index, value)| {
+                match value {
+                    datafusion_expr::ColumnarValue::Scalar(value) => Some((index, value.clone())),
+                    _ => None,
+                }
+            }).collect::<Vec<_>>();
+            let mut prepared = if scalar_keys.is_empty() { None } else {
+                Some(prepared.lock().map_err(|_| {
+                    datafusion_common::DataFusionError::Internal("scalar kernel preparation poisoned".into())
+                })?)
+            };
+            let cached = prepared.as_ref().and_then(|guard| guard.as_ref()).filter(|(keys, _, _)| {
+                keys.len() == scalar_keys.len() && keys.iter().zip(&scalar_keys)
+                    .all(|((left_index, left), (right_index, right))|
+                        left_index == right_index && same_scalar_binding(left, right))
+            }).map(|(_, program, schema)| (program.clone(), schema.clone()));
             let mut arrays = vec![];
             let mut fields = vec![];
             let mut scalars = std::collections::HashMap::new();
             for (value, field) in args.iter().zip(kernel_schema.fields()) {
                 match value {
+                    datafusion_expr::ColumnarValue::Scalar(_) if cached.is_some() => {},
                     datafusion_expr::ColumnarValue::Scalar(value) => {
                         let scalar = restore_arrow_array_type(
                             &value.to_array_of_size(1)?,
@@ -959,11 +1001,11 @@ fn logical_kernel(
                     }
                 }
             }
-            // Scalars retain owned native Arrow buffers as literals. This
-            // request-local specialization costs O(native IR) for mixed scalar
-            // batches; it avoids broadcasting large captured collections and
-            // introduces no value cache or mutable evaluation frame.
-            let (program, schema) = if scalars.is_empty() {
+            // Specialize once for unchanged owned scalar bindings, rather than
+            // rebuilding evaluators (and formatting nested literals) per batch.
+            let (program, schema) = if let Some(cached) = cached {
+                cached
+            } else if scalars.is_empty() {
                 (kernel.clone(), kernel_schema.clone())
             } else {
                 let rewritten =
@@ -977,6 +1019,10 @@ fn logical_kernel(
                 })?;
                 (program, schema)
             };
+            if let Some(prepared) = prepared.as_mut() {
+                **prepared = Some((scalar_keys, program.clone(), schema.clone()));
+            }
+            drop(prepared);
             let batch = arrow_array::RecordBatch::try_new_with_options(
                 schema,
                 arrays,
