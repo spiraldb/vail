@@ -26,6 +26,55 @@ pub(crate) struct Position {
 pub(crate) struct Partition {
     start: Position,
     end: Position,
+    identity: Identity,
+}
+
+/// A prepared virtual range is valid only for the file it was planned against.
+/// Check once per scan, including inode/ctime on Unix to catch replacement or
+/// in-place changes whose modification time has been restored.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct Identity {
+    size: u64,
+    modified: (bool, u64, u32),
+    device_inode: Option<(u64, u64)>,
+    changed: Option<(i64, i64)>,
+}
+
+fn identity(file: &File) -> io::Result<Identity> {
+    let metadata = file.metadata()?;
+    let modified = match metadata.modified()?.duration_since(std::time::UNIX_EPOCH) {
+        Ok(duration) => (false, duration.as_secs(), duration.subsec_nanos()),
+        Err(error) => (
+            true,
+            error.duration().as_secs(),
+            error.duration().subsec_nanos(),
+        ),
+    };
+    #[cfg(unix)]
+    let (device_inode, changed) = {
+        use std::os::unix::fs::MetadataExt;
+        (
+            Some((metadata.dev(), metadata.ino())),
+            Some((metadata.ctime(), metadata.ctime_nsec())),
+        )
+    };
+    #[cfg(not(unix))]
+    let (device_inode, changed) = (None, None);
+    Ok(Identity {
+        size: metadata.len(),
+        modified,
+        device_inode,
+        changed,
+    })
+}
+
+fn check_identity(file: &File, planned: &Identity) -> io::Result<()> {
+    if identity(file)? != *planned {
+        return Err(invalid(
+            "BGZF input changed after range preparation; construct a new import",
+        ));
+    }
+    Ok(())
 }
 
 fn invalid(message: impl std::fmt::Display) -> io::Error {
@@ -136,11 +185,15 @@ impl Blocks {
     /// Like Hail's BGzipInputStream.resetState: search forward at a compressed
     /// split. Validate the whole candidate member, including CRC and ISIZE.
     fn find_block(&mut self, split: u64) -> io::Result<u64> {
-        let end = self.size.min(split.saturating_add(MAX_BLOCK as u64));
+        // A candidate near the end of the search window can have its header
+        // beyond that window. Read bounded lookahead so every legal extra field
+        // fits, while accepting candidate starts only within one block's width.
+        let starts = (self.size - split).min(MAX_BLOCK as u64) as usize;
+        let end = self.size.min(split.saturating_add(2 * MAX_BLOCK as u64));
         let mut probe = vec![0; (end - split) as usize];
         self.file.seek(SeekFrom::Start(split))?;
         self.file.read_exact(&mut probe)?;
-        for index in 0..probe.len().saturating_sub(11) {
+        for index in 0..starts.min(probe.len().saturating_sub(11)) {
             if probe[index] == 31 && header(&probe[index..]).is_some() {
                 let position = split + index as u64;
                 if self.read(position).is_ok() {
@@ -265,6 +318,7 @@ pub(crate) fn partitions(
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
         Err(error) => return Err(error),
     };
+    let planned_identity = identity(&blocks.file)?;
     if blocks.size < 18 {
         return Ok(None);
     }
@@ -347,12 +401,14 @@ pub(crate) fn partitions(
     });
     positions.sort_unstable();
     positions.dedup();
+    check_identity(&blocks.file, &planned_identity)?;
     Ok(Some(
         positions
             .windows(2)
             .map(|pair| Partition {
                 start: pair[0],
                 end: pair[1],
+                identity: planned_identity.clone(),
             })
             .collect(),
     ))
@@ -389,6 +445,7 @@ fn scan(
     sender: &tokio::sync::mpsc::Sender<Result<RecordBatch>>,
 ) -> io::Result<()> {
     let mut blocks = Blocks::open(path)?;
+    check_identity(&blocks.file, &range.identity)?;
     let mut block = range.start.block;
     let mut pending = Vec::new();
     let mut builder = StringBuilder::with_capacity(batch_size, batch_size * 32);
@@ -454,6 +511,7 @@ fn scan(
         }
         block = next;
     }
+    check_identity(&blocks.file, &range.identity)?;
     if !pending.is_empty() {
         builder.append_value(std::str::from_utf8(&pending).map_err(invalid)?);
         rows += 1;

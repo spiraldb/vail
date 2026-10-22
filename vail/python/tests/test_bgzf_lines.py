@@ -97,3 +97,51 @@ def test_bgzf_corruption_is_never_skipped_by_partition_discovery(tmp_path):
     path.write_bytes(data)
     with pytest.raises(Exception, match='checksum|CRC|crc|corrupt'):
         hl.import_lines(str(path), min_partitions=3).collect()
+
+
+@pytest.mark.parametrize('mutation', ['grow', 'rewrite', 'replace'])
+def test_prepared_bgzf_ranges_reject_changed_input(tmp_path, mutation):
+    path = tmp_path / 'changed.bgz'
+    original = [b'first\n', b'second\n', b'last\n'] * 30
+    _write(path, original)
+    table = hl.import_lines(str(path), min_partitions=3)
+    if mutation == 'grow':
+        with path.open('ab') as output:
+            output.write(_block(b'added\n'))
+    elif mutation == 'rewrite':
+        _write(path, [b'other\n', *original])
+    else:
+        replacement = tmp_path / 'replacement.bgz'
+        # Identical content/length still has a different file identity.
+        replacement.write_bytes(path.read_bytes())
+        replacement.replace(path)
+    with pytest.raises(Exception, match='BGZF input changed'):
+        table.collect()
+    fresh = hl.import_lines(str(path))
+    assert fresh.count() == (91 if mutation != 'replace' else 90)
+
+
+def test_bgzf_split_finds_header_at_end_of_search_window(tmp_path):
+    import os
+    if (os.cpu_count() or 1) < 2:
+        pytest.skip('requires at least two source workers')
+    path = tmp_path / 'edge.bgz'
+    rows = []
+    with path.open('wb') as output:
+        # Each stored member has exactly65536 compressed bytes. With126 such
+        # blocks plus a28-byte EOF marker, the halfway split is14 bytes into
+        # block63. The next header starts65522 bytes after the probe start, so
+        # its18-byte header straddles the original64KiB search-window end.
+        for index in range(126):
+            row = f'{index:03d}:' + 'a' * 65500
+            rows.append(row)
+            data = (row + '\n').encode()
+            assert len(data) == 65505
+            payload = b'\x01' + struct.pack('<HH', len(data), len(data) ^ 0xffff) + data
+            output.write(b'\x1f\x8b\x08\x04\0\0\0\0\0\xff\x06\0BC\x02\0'
+                         + struct.pack('<H', 65535) + payload
+                         + struct.pack('<II', zlib.crc32(data), len(data)))
+        output.write(_block(b''))
+    table = hl.import_lines(str(path))
+    assert table.n_partitions() >= 2
+    assert [row.text for row in table.collect()] == rows
