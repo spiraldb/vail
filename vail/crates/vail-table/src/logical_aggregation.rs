@@ -9,7 +9,7 @@ use datafusion_expr::{
 };
 use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Literal};
 use std::{
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     sync::Arc,
 };
 use vail_execution::expressions::Expr;
@@ -108,16 +108,33 @@ struct CoordinateLeaf {
     init: Vec<(String, Expr)>,
 }
 
+#[derive(Hash, PartialEq, Eq)]
+struct CoordinateLeafKey {
+    function: String,
+    value: Option<Expr>,
+    options: String,
+    filters: Vec<Expr>,
+    init: Vec<(String, Expr)>,
+}
+
 /// Lift direct reducer leaves from a callback into one packed coordinate
 /// aggregate. Nested aggregate scopes retain the relational fallback.
 fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Result<Option<Expr>> {
     fn visit(
         expr: &Expr,
-        filters: &[Expr],
+        scope: usize,
+        scopes: &mut Vec<Vec<Expr>>,
+        scope_ids: &mut HashMap<(usize, usize), usize>,
+        memo: &mut HashMap<(usize, usize), Option<Expr>>,
         leaves: &mut Vec<CoordinateLeaf>,
+        leaf_ids: &mut HashMap<CoordinateLeafKey, usize>,
         prefix: &str,
     ) -> Result<Option<Expr>> {
-        match expr {
+        let memo_key = (expr as *const Expr as usize, scope);
+        if let Some(mapped) = memo.get(&memo_key) {
+            return Ok(mapped.clone());
+        }
+        let mapped = match expr {
             Expr::Aggregate {
                 function,
                 value,
@@ -126,49 +143,80 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
                 ..
             } => {
                 if !init.is_empty() || options.as_object().is_none() {
-                    return Ok(None);
-                }
-                let leaf = CoordinateLeaf {
-                    function: function.clone(),
-                    value: value.as_deref().cloned(),
-                    options: options.clone(),
-                    filters: filters.to_vec(),
-                    init: init.clone(),
-                };
-                let index = leaves
-                    .iter()
-                    .position(|old| {
-                        old.function == leaf.function
-                            && old.value == leaf.value
-                            && old.options == leaf.options
-                            && old.filters == leaf.filters
-                            && old.init == leaf.init
-                    })
-                    .unwrap_or_else(|| {
+                    None
+                } else {
+                    let leaf = CoordinateLeaf {
+                        function: function.clone(),
+                        value: value.as_deref().cloned(),
+                        options: options.clone(),
+                        filters: scopes[scope].clone(),
+                        init: init.clone(),
+                    };
+                    let key = CoordinateLeafKey {
+                        function: leaf.function.clone(),
+                        value: leaf.value.clone(),
+                        options: serde_json::to_string(&leaf.options)
+                            .map_err(|error| TableError::Invalid(error.to_string()))?,
+                        filters: leaf.filters.clone(),
+                        init: leaf.init.clone(),
+                    };
+                    let index = if let Some(index) = leaf_ids.get(&key) {
+                        *index
+                    } else {
+                        let index = leaves.len();
                         leaves.push(leaf);
-                        leaves.len() - 1
-                    });
-                Ok(Some(Expr::LambdaVariable {
-                    name: format!("{prefix}{index}"),
-                    dtype: None,
-                }))
+                        leaf_ids.insert(key, index);
+                        index
+                    };
+                    Some(Expr::LambdaVariable {
+                        name: format!("{prefix}{index}"),
+                        dtype: None,
+                    })
+                }
             }
             Expr::AggFilter { predicate, body } => {
-                let mut nested = filters.to_vec();
-                nested.push((**predicate).clone());
-                visit(body, &nested, leaves, prefix)
+                let key = (scope, predicate.as_ref() as *const Expr as usize);
+                let next_scope = if let Some(scope) = scope_ids.get(&key) {
+                    *scope
+                } else {
+                    let mut nested = scopes[scope].clone();
+                    nested.push((**predicate).clone());
+                    let next = scopes.len();
+                    scopes.push(nested);
+                    scope_ids.insert(key, next);
+                    next
+                };
+                visit(
+                    body,
+                    next_scope,
+                    scopes,
+                    scope_ids,
+                    memo,
+                    leaves,
+                    leaf_ids,
+                    prefix,
+                )?
             }
             Expr::AggArray { .. }
             | Expr::AggGroupBy { .. }
             | Expr::AggExplode { .. }
-            | Expr::AggregateFold { .. } => Ok(None),
-            Expr::Column { .. } | Expr::MatrixField { .. } => Ok(None),
-            Expr::Global { .. } | Expr::LambdaVariable { .. } => Ok(Some(expr.clone())),
+            | Expr::AggregateFold { .. } => None,
+            Expr::Column { .. } | Expr::MatrixField { .. } => None,
+            Expr::Global { .. } | Expr::LambdaVariable { .. } => Some(expr.clone()),
             _ => {
                 let mut unsupported = false;
                 let mut failure = None;
                 let mapped =
-                    expr.try_map_children(|child| match visit(child, filters, leaves, prefix) {
+                    expr.try_map_children(|child| match visit(
+                        child,
+                        scope,
+                        scopes,
+                        scope_ids,
+                        memo,
+                        leaves,
+                        leaf_ids,
+                        prefix,
+                    ) {
                         Ok(Some(value)) => {
                             Ok::<Expr, vail_execution::expressions::ExprError>(value)
                         }
@@ -185,12 +233,14 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
                     return Err(error);
                 }
                 if unsupported {
-                    Ok(None)
+                    None
                 } else {
-                    Ok(Some(mapped))
+                    Some(mapped)
                 }
             }
-        }
+        };
+        memo.insert(memo_key, mapped.clone());
+        Ok(mapped)
     }
     let mut used_names = HashSet::new();
     body.visit_unique(&mut |node| match node {
@@ -219,7 +269,20 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
         prefix.push('_');
     }
     let mut leaves = Vec::new();
-    let Some(mut replaced) = visit(body, &[], &mut leaves, &prefix)? else {
+    let mut scopes = vec![vec![]];
+    let mut scope_ids = HashMap::new();
+    let mut memo = HashMap::new();
+    let mut leaf_ids: HashMap<CoordinateLeafKey, usize> = HashMap::new();
+    let Some(mut replaced) = visit(
+        body,
+        0,
+        &mut scopes,
+        &mut scope_ids,
+        &mut memo,
+        &mut leaves,
+        &mut leaf_ids,
+        &prefix,
+    )? else {
         return Ok(None);
     };
     // Indexed callbacks bind the source position separately from the source
@@ -320,30 +383,35 @@ fn coordinate_bundle(value: &Arc<Expr>, parameter: &str, body: &Arc<Expr>) -> Re
     while used_names.contains(&result_param) || result_param.starts_with(&prefix) {
         result_param.push('_');
     }
-    let slot_names = (0..leaves.len())
-        .map(|index| format!("{prefix}{index}"))
-        .collect::<Vec<_>>();
-    fn replace(expr: Expr, param: &str, slots: &[String]) -> Result<Expr> {
-        match expr {
-            Expr::LambdaVariable { name, .. } if slots.iter().any(|slot| slot == &name) => {
-                Ok(Expr::GetField {
+    let slot_indices = (0..leaves.len())
+        .map(|index| (format!("{prefix}{index}"), index))
+        .collect::<HashMap<_, _>>();
+    fn replace(
+        expr: &Expr,
+        param: &str,
+        slots: &HashMap<String, usize>,
+        memo: &mut HashMap<usize, Expr>,
+    ) -> Result<Expr> {
+        let key = expr as *const Expr as usize;
+        if let Some(mapped) = memo.get(&key) {
+            return Ok(mapped.clone());
+        }
+        let mapped = match expr {
+            Expr::LambdaVariable { name, .. } if slots.contains_key(name) => {
+                Expr::GetField {
                     value: Arc::new(Expr::LambdaVariable {
                         name: param.to_owned(),
                         dtype: None,
                     }),
-                    name: format!(
-                        "r{}",
-                        slots
-                            .iter()
-                            .position(|slot| slot == &name)
-                            .expect("known placeholder")
-                    ),
-                })
+                    name: format!("r{}", slots[name]),
+                }
             }
-            other => Ok(other.try_map_children(|child| replace(child.clone(), param, slots))?),
-        }
+            other => other.try_map_children(|child| replace(child, param, slots, memo))?,
+        };
+        memo.insert(key, mapped.clone());
+        Ok(mapped)
     }
-    replaced = replace(replaced, &result_param, &slot_names)?;
+    replaced = replace(&replaced, &result_param, &slot_indices, &mut HashMap::new())?;
     Ok(Some(Expr::ArrayMap {
         value: Arc::new(bundle),
         parameter: result_param,

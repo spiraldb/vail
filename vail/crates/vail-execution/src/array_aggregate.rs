@@ -5,7 +5,7 @@
 use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{
-    Array, ArrayRef, Int64Array, ListArray, StructArray, UInt32Array, new_empty_array,
+    Array, ArrayRef, BooleanArray, Int64Array, ListArray, StructArray, UInt32Array, new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
@@ -111,8 +111,18 @@ pub fn coordinate_bundle_udaf(
     let input = list_type(packed);
     let identity = reducers
         .iter()
-        .map(|r| r.identity.clone())
-        .collect::<Vec<_>>();
+        .map(|r| {
+            Ok((
+                r.aggregate.clone(),
+                r.value_index,
+                r.filter_index,
+                r.input.clone(),
+                r.aggregate.return_type(std::slice::from_ref(&r.input))?,
+                r.empty.clone(),
+                r.identity.clone(),
+            ))
+        })
+        .collect::<Result<Vec<_>>>()?;
     Ok(crate::kernel_identity::aggregate_named(
         "vail_coordinate_bundle",
         (identity, input.clone(), output.clone(), state_types.clone()),
@@ -216,6 +226,9 @@ impl Accumulator for CoordinateBundle {
         if packed.num_columns() < self.packed_fields {
             return Err(error("coordinate bundle struct is missing slots"));
         }
+        let parent_filter = packed
+            .nulls()
+            .map(|nulls| BooleanArray::new(nulls.inner().clone(), None));
         for (kernel, value_index, filter_index) in &mut self.reducers {
             let filter = filter_index.map(|i| {
                 packed
@@ -224,8 +237,20 @@ impl Accumulator for CoordinateBundle {
                     .downcast_ref::<arrow_array::BooleanArray>()
                     .expect("validated filter type")
             });
+            let combined_filter = match (parent_filter.as_ref(), filter) {
+                (Some(parent), Some(filter)) => {
+                    Some(arrow_arith::boolean::and(parent, filter)?)
+                }
+                (Some(parent), None) => Some(parent.clone()),
+                (None, Some(_)) => None,
+                (None, None) => None,
+            };
             kernel.set_width(width)?;
-            kernel.update_flat(packed.column(*value_index).clone(), filter, width)?;
+            kernel.update_flat(
+                packed.column(*value_index).clone(),
+                combined_filter.as_ref().or(filter),
+                width,
+            )?;
         }
         Ok(())
     }
@@ -709,5 +734,110 @@ impl Accumulator for Coordinates {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arrow_array::{Int64Array};
+    use arrow_buffer::NullBuffer;
+    use arrow_schema::Fields;
+    use datafusion_physical_expr::expressions::Column;
+
+    fn reducer(value_index: usize, aggregate: Arc<AggregateUDF>) -> CoordinateReducer {
+        CoordinateReducer {
+            name: "count_value".into(),
+            aggregate,
+            input: DataType::Int64,
+            value_index,
+            filter_index: None,
+            empty: ScalarValue::Int64(Some(0)),
+            identity: "same-caller-identity".into(),
+        }
+    }
+
+    fn bundle(value_index: usize, aggregate: Arc<AggregateUDF>) -> Arc<AggregateUDF> {
+        coordinate_bundle_udaf(
+            DataType::Struct(Fields::from(vec![
+                Arc::new(Field::new("left", DataType::Int64, true)),
+                Arc::new(Field::new("right", DataType::Int64, true)),
+            ])),
+            vec![reducer(value_index, aggregate)],
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn bundle_identity_uses_semantic_reducer_and_selector() {
+        let first = crate::reducer::configured_udaf(
+            "count",
+            Some(&DataType::Int64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        let second = crate::reducer::configured_udaf(
+            "count",
+            Some(&DataType::Int64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        assert_eq!(bundle(0, first.clone()), bundle(0, second.clone()));
+        assert_ne!(bundle(0, first), bundle(1, second));
+    }
+
+    #[test]
+    fn nullable_packed_struct_masks_every_reducer() {
+        let count = crate::reducer::configured_udaf(
+            "count",
+            Some(&DataType::Int64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        let bundle = bundle(1, count);
+        let packed_type = DataType::Struct(Fields::from(vec![
+            Arc::new(Field::new("left", DataType::Int64, true)),
+            Arc::new(Field::new("right", DataType::Int64, true)),
+        ]));
+        let list_type = list_type(packed_type.clone());
+        let input_schema = Arc::new(Schema::new(vec![Field::new("packed", list_type, true)]));
+        let expression = AggregateExprBuilder::new(
+            bundle,
+            vec![Arc::new(Column::new("packed", 0))],
+        )
+        .schema(input_schema)
+        .alias("counts")
+        .build()
+        .unwrap();
+        let mut accumulator = expression.create_accumulator().unwrap();
+
+        let fields = match packed_type {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        };
+        let left = Int64Array::new(
+            vec![100, 0].into(),
+            Some(NullBuffer::from(vec![true, false])),
+        );
+        let right = Int64Array::from(vec![Some(100), Some(10)]);
+        let packed = Arc::new(StructArray::new(
+            fields,
+            vec![Arc::new(left), Arc::new(right)],
+            Some(NullBuffer::from(vec![false, true])),
+        ));
+        let input = Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(packed.data_type().clone(), true)),
+            OffsetBuffer::from_lengths([2]),
+            packed,
+            None,
+        ));
+        accumulator.update_batch(&[input]).unwrap();
+        let ScalarValue::List(result) = accumulator.evaluate().unwrap() else {
+            panic!("coordinate bundle did not return a list")
+        };
+        let result = result.as_any().downcast_ref::<ListArray>().unwrap();
+        let result = result.values().as_any().downcast_ref::<StructArray>().unwrap();
+        let counts = result.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(counts.values(), &[0, 1]);
     }
 }
