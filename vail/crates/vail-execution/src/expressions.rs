@@ -4611,8 +4611,9 @@ impl PhysicalExpr for HailPhysicalExpr {
             let value = if parent.is_null(0) {
                 new_null_array(&self.dtype, 1)
             } else { child.clone() };
-            return Ok(ColumnarValue::Scalar(scalar_at(&value, 0)
-                .map_err(|error| DataFusionError::Execution(error.to_string()))?));
+            let scalar = ColumnarValue::Scalar(scalar_at(&value, 0)
+                .map_err(|error| DataFusionError::Execution(error.to_string()))?);
+            return crate::logical_expr::restore_arrow_value_type(scalar, &self.dtype);
         }
         // A captured scalar collection must not be expanded once per source
         // row merely to select individual elements. Arrow take copies only
