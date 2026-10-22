@@ -7027,7 +7027,7 @@ mod tests {
             Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(0)) },
             Expr::Literal { dtype: int32.clone(), value: json!(0) },
         ] {
-            let variable = Arc::new(Expr::LambdaVariable { name: "bound".into() });
+            let variable = Arc::new(Expr::LambdaVariable { name: "bound".into(), dtype: None });
             let expression = Expr::ArrayIndex {
                 value: Arc::new(Expr::ArrayMap {
                     value: Arc::new(Expr::Array {
