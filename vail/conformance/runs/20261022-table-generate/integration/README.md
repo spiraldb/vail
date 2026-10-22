@@ -26,5 +26,8 @@ the previously authorized removal of proven structural IR assertions.
 
 Required review thread: `01a14128-21b8-7a53-b399-4ad8f9b31f4f`.
 Source/test clearance for `ff6205f6` against `138f830b` found no new blocker.
-Final main-integration approval is requested for the evidence-only child.
+Final disposition: **FINAL MAIN-INTEGRATION APPROVAL** for exact evidence child
+`5164b849e9397d803f145f40c9b154736c145a22` against main
+`138f830b33cb61816bd5b7c9ce4b4b03126cc8df`; all findings are closed
+(`review.json`). The reviewer inspected source and evidence and ran no builds/tests.
 Unrelated dirty linreg evidence in the existing main checkout is preserved.
