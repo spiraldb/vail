@@ -1,0 +1,54 @@
+{
+  "runner_sha256": "2b9d1bd42cb75c1087f1b90c34a14426fdcd8284a96fdd50580e4cc279bb7044",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 120.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/Users/danielking/projects/vail/vail/local-data/upstream-benchmark-20261015",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_linreg",
+      "id": "benchmark_table::test_table_aggregate_linreg",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.3784772499930114,
+      "telemetry": {
+        "cpu_seconds": 39.8146485,
+        "average_cores": 11.78460749884593,
+        "peak_rss_gib": 4.18560791015625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 878204213,
+          "system_time": 77347351,
+          "instructions": 584124568549,
+          "cycles": 125769040675,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/Users/danielking/projects/vail/.worktrees/main-integration/vail/conformance/runs/20261022-linreg-batched/vail-matched-run-3/vail/benchmark_table--test_table_aggregate_linreg"
+      },
+      "fixture_seconds": 0.096,
+      "elapsed_seconds": 3.544
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

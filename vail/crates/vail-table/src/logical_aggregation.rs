@@ -47,13 +47,18 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
             init,
         } = body.as_ref()
         {
+            let coordinate_options = options.as_object().is_none_or(|options| {
+                options.keys().all(|key| {
+                    key == "__vail_result_type"
+                        || (function == "linreg"
+                            && matches!(key.as_str(), "nested_dim" | "n_predictors"))
+                })
+            });
             if init.is_empty()
-                && options
-                    .as_object()
-                    .is_none_or(|options| options.keys().all(|key| key == "__vail_result_type"))
+                && coordinate_options
                 && matches!(
                     function.as_str(),
-                    "sum" | "min" | "max" | "mean" | "count" | "stddev_pop"
+                    "sum" | "min" | "max" | "mean" | "count" | "stddev_pop" | "linreg"
                 )
             {
                 use vail_execution::expressions::{PrimitiveType, Type};
@@ -143,6 +148,29 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
             "mean" => vail_execution::aggregates::aggregate_udf("mean", Some(input))?,
             "count" => datafusion_functions_aggregate::count::count_udaf(),
             "stddev_pop" => vail_execution::aggregates::aggregate_udf(function, Some(input))?,
+            "linreg" => {
+                let inner = vail_execution::reducer::configured_udaf(
+                    function,
+                    Some(input),
+                    &reducer.options,
+                )?;
+                // Preserve linreg's language-level empty result: its native
+                // accumulator returns n=0 and null fit statistics.
+                let argument = ScalarValue::try_from(input)?;
+                let physical = AggregateExprBuilder::new(
+                    inner.clone(),
+                    vec![Arc::new(Literal::new(argument))],
+                )
+                .schema(Arc::new(Schema::empty()))
+                .alias("coordinate_linreg")
+                .build()?;
+                let empty = physical.create_accumulator()?.evaluate()?;
+                return Ok(vail_execution::array_aggregate::coordinate_udaf(
+                    inner,
+                    input.clone(),
+                    empty,
+                )?);
+            }
             _ => {
                 return Err(TableError::Invalid(
                     "unsupported coordinate aggregate".into(),
@@ -604,8 +632,6 @@ pub(crate) fn scope_plan(
     }
     Ok((result, defaults, presence))
 }
-
-
 /// All grouped aggregate scopes use the logical relational lowering. Runtime
 /// initializer values are evaluated at an explicit logical extension boundary.
 pub(crate) fn lower_logical_grouped(

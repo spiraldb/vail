@@ -36,3 +36,25 @@ vail/conformance/runs/20261022-linreg-batched/run_upstream_linreg.py
 ```
 
 `run_upstream_linreg.py` invokes the exact upstream `test_table_aggregate_linreg` case and existing local `many_ints_ht` fixture; it does not download fixture data.
+
+## Position-based array aggregation candidate
+
+Source revision: `eb048cca5f096fe7dc1363ebe0d7951b031caa0c` (after the direct-workspace QR change above). This extends the existing coordinate-group adapter to direct `agg.array_agg(... agg.linreg(...))` bodies. The plan uses `vail_coordinate_linreg` and has no `Unnest`; it avoids materializing an expanded relation and hash-grouping by position. The callback still builds mapped observation structs, so captured row columns are still broadcast into the per-position arrays. Filtered callbacks keep the prior relational fallback. The `MatrixGroupedTable.result(axis='row')` callback-struct shape also does not match this direct-aggregate fast path.
+
+The exact candidate release wheel was built with Rust 1.98.0, locked release dependencies, and the project CPython 3.12 interpreter. Wheel SHA256: `069cc8672702505885a76cb452823d23a633d4e8e69de4078b9e9a12abc98b8a`. `test_agg_numeric.py` passed all 57 tests, and six focused aggregation/composition/nested-aggregation tests passed. The plan check used `range_table(8)` and two coordinate linregs, and verified `Unnest` was absent.
+
+Three serial runs of upstream `test_table_aggregate_linreg` against the local 7.5M-row `many_ints_ht` fixture passed. Query wall times were 3.663, 3.640, and 4.844 seconds (median 3.663); worker plus live-descendant CPU was 33.967, 35.649, and 36.738 seconds (median 35.649); sampled peak RSS was 2.449, 2.495, and 2.469 GiB (median 2.469). The third wall time is an outlier. Compared with the matching current-main query-scope baseline (median 3.378 seconds wall, 38.540 CPU seconds, and 4.303 GiB peak RSS), the candidate is about 8% slower by median wall time, 7.5% lower in CPU time, and 42.6% lower in sampled peak RSS. This change removes unnest/hash grouping and lowers CPU and memory for this case; it does not improve median wall time.
+
+The baseline is source `31ac0397f4c7b96d86852af826b63cd61569097c`, wheel SHA256 `d678a789e454b3438dc426a3636ad18b3748f18bea93dfd3998f802592051933`; its three query-scope JSONs are copied here as `baseline-vail-matched-run-{1,2,3}.json`. It used the same runner SHA256 `2b9d1bd42cb75c1087f1b90c34a14426fdcd8284a96fdd50580e4cc279bb7044` and same fixture. No known unrelated build or benchmark overlapped the final candidate timing loop; the earlier fixture setup attempt was aborted before it emitted `status=ready` and before starting the query timer. Candidate logs are `coordinate-arrayagg-{1,2,3}.log`; 10 Hz per-run process-tree telemetry appears in each log, with the last sampled summary in `coordinate-telemetry/`.
+
+For repeatability, the exact run command was:
+
+```sh
+VAIL_BENCHMARK_TELEMETRY_DIR=/Users/danielking/.codex/worktrees/linreg-batched/vail/vail/conformance/runs/20261022-linreg-batched/coordinate-telemetry \
+VAIL_BENCHMARK_UPSTREAM=/Users/danielking/projects/vail/hail/hail/python/benchmark/hail \
+PYTHONPATH=/tmp/linreg-coordinate-site:/Users/danielking/.codex/worktrees/linreg-batched/vail/vail/python \
+/usr/bin/time -lp /Users/danielking/projects/vail/vail/.venv/bin/python \
+vail/conformance/runs/20261022-linreg-batched/run_upstream_linreg.py
+```
+
+The worker reused `/Users/danielking/projects/vail/vail/local-data/upstream-benchmark-20261015` via a temporary symlink at `vail/local-data/upstream-benchmark-20261015` in this isolated worktree; fixture preparation is outside the query timing. `coordinate-arrayagg-1.log` has a one-time 513 MB disk-read counter, while runs 2 and 3 report zero disk reads.

@@ -229,9 +229,94 @@ def test_linreg_columnar_predictors_inside_array_aggregation():
         assert fit.n == 5
         assert fit.beta == pytest.approx([1.0 + offset, 2.0])
 
+    nested_fits = table.aggregate(
+        hl.agg.array_agg(
+            lambda offset: hl.agg.linreg(
+                table.y + offset, [1.0, table.x], nested_dim=1, weight=table.w
+            ),
+            hl.range(2),
+        )
+    )
+    for offset, fit in enumerate(nested_fits):
+        assert fit.n == 5
+        assert fit.beta == pytest.approx([1.0 + offset, 2.0])
+
     # A missing predictor excludes the observation even when y is defined.
     table = table.annotate(y=hl.or_else(table.y, 99.0))
     assert table.aggregate(hl.agg.linreg(table.y, [1.0, table.x])).n == 5
+
+
+def test_array_linreg_coordinates_preserve_null_empty_and_length_semantics():
+    table = hl.Table.parallelize(
+        [
+            {"x": 1.0, "ys": [None, 2.0]},
+            {"x": 2.0, "ys": None},
+            {"x": 3.0, "ys": [4.0, 6.0]},
+            {"x": 4.0, "ys": [6.0, 8.0]},
+            {"x": 5.0, "ys": [8.0, 10.0]},
+        ],
+        schema=hl.tstruct(x=hl.tfloat64, ys=hl.tarray(hl.tfloat64)),
+        n_partitions=3,
+    )
+    fits = table.aggregate(
+        hl.agg.array_agg(lambda y: hl.agg.linreg(y, [1.0, table.x]), table.ys)
+    )
+    assert fits[0].n == 3
+    assert fits[0].beta == pytest.approx([-2.0, 2.0])
+    assert fits[1].n == 4
+    assert fits[1].beta == pytest.approx([0.0, 2.0])
+
+    defined_but_empty = hl.Table.parallelize(
+        [
+            {"x": 1.0, "ys": [None, None]},
+            {"x": 2.0, "ys": [None, None]},
+        ],
+        schema=hl.tstruct(x=hl.tfloat64, ys=hl.tarray(hl.tfloat64)),
+    )
+    defined_but_empty_fits = defined_but_empty.aggregate(
+        hl.agg.array_agg(
+            lambda y: hl.agg.linreg(y, [1.0, defined_but_empty.x]), defined_but_empty.ys
+        )
+    )
+    assert [fit.n for fit in defined_but_empty_fits] == [0, 0]
+    assert all(fit.beta is None for fit in defined_but_empty_fits)
+
+    empty_arrays = hl.Table.parallelize(
+        [{"x": 1.0, "ys": []}, {"x": 2.0, "ys": None}],
+        schema=hl.tstruct(x=hl.tfloat64, ys=hl.tarray(hl.tfloat64)),
+    )
+    assert empty_arrays.aggregate(
+        hl.agg.array_agg(lambda y: hl.agg.linreg(y, [1.0, empty_arrays.x]), empty_arrays.ys)
+    ) == []
+    all_missing = hl.Table.parallelize(
+        [{"x": 1.0, "ys": None}, {"x": 2.0, "ys": None}],
+        schema=hl.tstruct(x=hl.tfloat64, ys=hl.tarray(hl.tfloat64)),
+    )
+    assert all_missing.aggregate(
+        hl.agg.array_agg(lambda y: hl.agg.linreg(y, [1.0, all_missing.x]), all_missing.ys)
+    ) is None
+
+    mismatched = hl.Table.parallelize(
+        [{"x": 1.0, "ys": [1.0]}, {"x": 2.0, "ys": [2.0, 3.0]}],
+        schema=hl.tstruct(x=hl.tfloat64, ys=hl.tarray(hl.tfloat64)),
+    )
+    with pytest.raises(hl.utils.FatalError, match=r"array_agg requires equal array lengths"):
+        mismatched.aggregate(
+            hl.agg.array_agg(lambda y: hl.agg.linreg(y, [1.0, mismatched.x]), mismatched.ys)
+        )
+
+    # Filtered callback reducers keep the relational fallback and preserve the
+    # per-position row mask instead of becoming an unfiltered coordinate UDAF.
+    filtered = table.aggregate(
+        hl.agg.array_agg(
+            lambda y: hl.agg.filter(y > 4.0, hl.agg.linreg(y, [1.0, table.x])),
+            table.ys,
+        )
+    )
+    assert filtered[0].n == 2
+    assert filtered[0].beta is None
+    assert filtered[1].n == 3
+    assert filtered[1].beta == pytest.approx([0.0, 2.0])
 
 
 def test_kll_rejects_int64_precision_loss():
