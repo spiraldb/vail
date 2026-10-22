@@ -1,0 +1,218 @@
+[
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_table",
+    "line": 2331,
+    "body": "def test_table_randomness_range_table():\n    t = hl.utils.range_table(10, 3)\n    assert_contains_node(t, ir.TableRange)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_matrix_rows_table",
+    "line": 2337,
+    "body": "def test_table_randomness_range_matrix_rows_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt.rows()\n    assert_contains_node(t, ir.MatrixRowsTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_join",
+    "line": 2344,
+    "body": "def test_table_randomness_join():\n    t1 = hl.utils.range_table(12, 3)\n    t1 = t1.key_by(k=t1.idx // 2 * 2)\n    t2 = hl.utils.range_table(8, 3)\n    t2 = t2.key_by(k=t2.idx // 2 * 3)\n    t = t1.join(t2, how='outer')\n    assert_contains_node(t, ir.TableJoin)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_left_join_right_distinct",
+    "line": 2354,
+    "body": "def test_table_randomness_left_join_right_distinct():\n    t1 = hl.utils.range_table(12, 3)\n    t1 = t1.key_by(k=t1.idx // 2 * 2)\n    t2 = hl.utils.range_table(4, 3)\n    t2 = t2.key_by(k=t2.idx * 3)\n    t = t1.annotate(x=t2[t1.k].idx)\n    assert_contains_node(t, ir.TableLeftJoinRightDistinct)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_interval_join",
+    "line": 2364,
+    "body": "def test_table_randomness_interval_join():\n    t1 = hl.utils.range_table(12, 3)\n    t2 = hl.utils.range_table(4, 3)\n    t2 = t2.key_by(k=hl.interval(t2.idx * 3, (t2.idx + 1) * 3))\n    t = t1.annotate(x=t2[t1.idx].idx)\n    assert_contains_node(t, ir.TableIntervalJoin)\n    assert_unique_uids(t)\n    t = t1.annotate(x=t2.index(t1.idx, all_matches=True).idx)\n    assert_contains_node(t, ir.TableIntervalJoin)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_union",
+    "line": 2376,
+    "body": "def test_table_randomness_union():\n    t1 = hl.utils.range_table(12, 3)\n    t2 = hl.utils.range_table(4, 3)\n    t2 = t2.key_by(idx=t2.idx * 3)\n    t = t1.union(t2)\n    assert_contains_node(t, ir.TableUnion)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_with_body_randomness",
+    "line": 2385,
+    "body": "def test_table_randomness_map_globals_with_body_randomness():\n    rt = hl.utils.range_table(5)\n    t1 = rt.annotate_globals(x=hl.rand_int64())\n    assert_contains_node(t1, ir.TableMapGlobals)\n    t1._force_count()\n    assert_unique_uids(t1)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_without_body_randomness",
+    "line": 2393,
+    "body": "def test_table_randomness_map_globals_without_body_randomness():\n    rt = hl.utils.range_table(5)\n    t2 = rt.annotate_globals(x=1)\n    assert_contains_node(t2, ir.TableMapGlobals)\n    assert_unique_uids(t2)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_explode",
+    "line": 2400,
+    "body": "def test_table_randomness_explode():\n    t = hl.utils.range_table(5)\n    t = t.annotate(s=hl.struct(a=hl.range(t.idx)))\n    t = t.explode(t.s.a)\n    assert_contains_node(t, ir.TableExplode)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by",
+    "line": 2408,
+    "body": "def test_table_randomness_key_by():\n    t = hl.utils.range_table(12, 3)\n    t = t.key_by(k=t.idx // 4)\n    assert_contains_node(t, ir.TableKeyBy)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_body_randomness",
+    "line": 2415,
+    "body": "def test_table_randomness_map_rows_with_body_randomness():\n    rt = hl.utils.range_table(12, 3)\n    t = rt.annotate(x=hl.rand_int64())\n    assert_contains_node(t, ir.TableMapRows)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_scan_randomness",
+    "line": 2423,
+    "body": "def test_table_randomness_map_rows_with_scan_randomness():\n    rt = hl.utils.range_table(12, 3)\n    t = rt.annotate(x=hl.scan.sum(hl.rand_int64()))\n    assert_contains_node(t, ir.TableMapRows)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_without_body_randomness",
+    "line": 2430,
+    "body": "def test_table_randomness_map_rows_without_body_randomness():\n    rt = hl.utils.range_table(12, 3)\n    t = rt.annotate(x=1)\n    assert_contains_node(t, ir.TableMapRows)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_partitions",
+    "line": 2437,
+    "body": "def test_table_randomness_map_partitions():\n    rt = hl.utils.range_table(10, 3)\n    t = rt.annotate(x=hl.rand_int64())\n    t = t._map_partitions(lambda part: part.map(lambda row: row.annotate(x=row.x / 2)))\n    assert_contains_node(t, ir.TableMapPartitions)\n    t._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_read",
+    "line": 2445,
+    "body": "def test_table_randomness_read():\n    rt = hl.utils.range_table(10, 3)\n    path = new_temp_file()\n    rt.write(path)\n    t = hl.read_table(path)\n    assert_contains_node(t, ir.TableRead)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_entries_table",
+    "line": 2454,
+    "body": "def test_table_randomness_matrix_entries_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt.entries()\n    assert_contains_node(t, ir.MatrixEntriesTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_with_cond_randomness",
+    "line": 2461,
+    "body": "def test_table_randomness_filter_with_cond_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.filter(hl.rand_int64() % 2 == 0)\n    assert_contains_node(t, ir.TableFilter)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_without_cond_randomness",
+    "line": 2469,
+    "body": "def test_table_randomness_filter_without_cond_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.filter(rt.idx < 100)\n    assert_contains_node(t, ir.TableFilter)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+    "line": 2476,
+    "body": "def test_table_randomness_key_by_and_aggregate_with_body_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(rt.idx) + hl.rand_int64())\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+    "line": 2484,
+    "body": "def test_table_randomness_key_by_and_aggregate_with_agg_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(hl.rand_int64()))\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+    "line": 2492,
+    "body": "def test_table_randomness_key_by_and_aggregate_without_body_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(rt.idx))\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_aggregate_by_key",
+    "line": 2499,
+    "body": "def test_table_randomness_aggregate_by_key():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.key_by(k=rt.idx % 5)\n    t = t.collect_by_key()\n    assert_contains_node(t, ir.TableAggregateByKey)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_cols_table",
+    "line": 2507,
+    "body": "def test_table_randomness_matrix_cols_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt.cols()\n    assert_contains_node(t, ir.MatrixColsTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_with_body_randomness",
+    "line": 2514,
+    "body": "def test_table_randomness_parallelize_with_body_randomness():\n    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x, r=hl.rand_int64())))\n    assert_contains_node(t, ir.TableParallelize)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_without_body_randomness",
+    "line": 2521,
+    "body": "def test_table_randomness_parallelize_without_body_randomness():\n    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x)))\n    assert_contains_node(t, ir.TableParallelize)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_head",
+    "line": 2527,
+    "body": "def test_table_randomness_head():\n    t = hl.utils.range_table(20, 3)\n    t = t.head(10)\n    assert_contains_node(t, ir.TableHead)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_tail",
+    "line": 2534,
+    "body": "def test_table_randomness_tail():\n    t = hl.utils.range_table(20, 3)\n    t = t.tail(10)\n    assert_contains_node(t, ir.TableTail)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_order_by",
+    "line": 2541,
+    "body": "def test_table_randomness_order_by():\n    t = hl.utils.range_table(10, 3)\n    t = t.order_by(-t.idx)\n    assert_contains_node(t, ir.TableOrderBy)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_distinct",
+    "line": 2548,
+    "body": "def test_table_randomness_distinct():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.key_by(k=rt.idx % 5)\n    t = t.distinct()\n    assert_contains_node(t, ir.TableDistinct)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_repartition",
+    "line": 2556,
+    "body": "def test_table_randomness_repartition():\n    if not hl.current_backend().requires_lowering:\n        rt = hl.utils.range_table(20, 3)\n        t = rt.repartition(5)\n        print(t._tir)\n        assert_contains_node(t, ir.TableRepartition)\n        assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_cast_matrix_to_table",
+    "line": 2565,
+    "body": "def test_table_randomness_cast_matrix_to_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt._localize_entries('entries', 'cols')\n    assert_contains_node(t, ir.CastMatrixToTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_rename",
+    "line": 2572,
+    "body": "def test_table_randomness_rename():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.rename({'idx': 'index'})\n    assert_contains_node(t, ir.TableRename)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_multi_way_zip_join",
+    "line": 2579,
+    "body": "def test_table_randomness_multi_way_zip_join():\n    t1 = hl.utils.range_table(12, 3)\n    t1 = t1.key_by(k=t1.idx // 2 * 2)\n    t2 = hl.utils.range_table(12, 3)\n    t2 = t2.key_by(k=t2.idx // 3 * 3)\n    t3 = hl.utils.range_table(12, 3)\n    t3 = t3.key_by(k=t3.idx // 4 * 4)\n    t = hl.Table.multi_way_zip_join([t1, t2, t3], 'data', 'globals')\n    assert_contains_node(t, ir.TableMultiWayZipJoin)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_intervals",
+    "line": 2591,
+    "body": "def test_table_randomness_filter_intervals():\n    rt = hl.utils.range_table(20, 3)\n    intervals = [hl.interval(0, 5), hl.interval(10, 15)]\n    t = hl.filter_intervals(rt, intervals)\n    assert_contains_node(t, ir.TableFilterIntervals)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_table_gen",
+    "line": 2606,
+    "body": "def test_table_randomness_table_gen():\n    t = hl.Table._generate(contexts=hl.repeat(hl.rand_int64, 2), globals=hl.struct(k=hl.rand_int64()), partitions=2, rowfn=lambda c, g: hl.repeat(hl.struct(a=c * g.k * hl.rand_int64()), 2))\n    assert_contains_node(t, ir.TableGen)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_randomness",
+    "line": 2688,
+    "body": "def test_query_table_randomness(query_table_table):\n    i1 = hl.interval(27, 45)\n    i2 = hl.interval(45, 80, includes_end=True)\n    rows = hl.query_table(query_table_table, i1).extend(hl.query_table(query_table_table, i2))\n    x = hl.eval(rows.aggregate(lambda _: hl.struct(r=hl.agg.collect_as_set(hl.rand_int64()), n=hl.agg.count())))\n    assert len(x.r) == x.n"
+  }
+]
