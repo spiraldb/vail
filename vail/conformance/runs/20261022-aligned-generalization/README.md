@@ -118,7 +118,10 @@ See prototype-tests.log. Production implementation and main are unchanged.
 
 ## Reproduce
 
-From the recorded source revision and matching release native artifact:
+For the original broad study, use benchmark-only revision `e94b761e` (whose
+production routing still matches base138f830b) and the matching release native
+artifact. Later commits contain the narrow production change and should not
+be substituted as that baseline:
 
 ```sh
 python prepare_packages.py --native /absolute/path/_native.abi3.so --package-root /tmp/vail-general-map-packages

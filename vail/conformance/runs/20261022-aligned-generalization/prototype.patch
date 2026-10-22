@@ -1,18 +1,9 @@
 --- a/vail/python/vail/matrixtable.py
 +++ b/vail/python/vail/matrixtable.py
-@@ -874,7 +874,7 @@
-                             or _uses_axis_field(node, "col")
-                             or _uses_axis_field(node, "global")
-                             or _contains_matrix_num_cols(node))
+@@ -877 +877 @@
 -        return has_capture
 +        return True
- 
-     def _row_contexts(
-         self, base, *, filter_present=True, with_position=True,
-@@ -1290,6 +1290,16 @@
-         if expr.dtype != tbool:
-             raise TypeError("filter predicate must be bool")
-         if axis == "entry":
+@@ -1292,0 +1293,10 @@
 +            if self._aligned_map_eligible([("predicate", expr)]):
 +                base = self._mir.core
 +                selected = expr if keep else ~expr
@@ -23,6 +14,3 @@
 +                if self._mir.row_index_keys:
 +                    projected = projected._with_keys(*self._mir.row_index_keys)
 +                return self._copy(rows=projected)
-             def coalesce(value, default):
-                 return if_else(is_defined(value), value, default)
- 
