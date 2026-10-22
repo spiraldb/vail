@@ -32,7 +32,8 @@ def _text(value, size=2):
 
 
 def _bgen(tmp_path, compressed=True, probabilities=None, allele="A"):
-    probabilities = probabilities or [(255, 0, False), (0, 255, False), (0, 0, True)]
+    if probabilities is None:
+        probabilities = [(255, 0, False), (0, 255, False), (0, 0, True)]
     n = len(probabilities)
     sample_block = struct.pack('<II', 8 + sum(2+len(f's{i}') for i in range(n)), n)
     sample_block += b''.join(_text(f's{i}') for i in range(n))
@@ -68,12 +69,34 @@ def test_native_bgen_missing_index_and_no_entry_decode(tmp_path):
     assert mt.locus.collect() == [hl.Locus('1',123)]
 
 
-def test_native_bgen_invalid_probability_sum(tmp_path):
+def test_native_bgen_does_not_revalidate_probability_sums(tmp_path):
     path = _bgen(tmp_path, probabilities=[(255,255,False)])
-    mt = hl.import_bgen(str(path), ['GP'])
-    assert mt.count_rows() == 1
-    with pytest.raises(Exception, match='probability sum exceeds'):
-        mt.GP.collect()
+    mt = hl.import_bgen(str(path), ['GP', 'GT', 'dosage'])
+    assert mt.GP.collect() == [[1., 1., -1.]]
+    assert mt.dosage.collect() == [-1.]
+    assert mt.GT.collect() == [None]
+
+
+def _corrupt_probability_sample_count(path):
+    # Keep the compressed frame structurally sound, but make its sample count
+    # disagree with the enclosing header. Decoding must reject the unsafe shape.
+    data = bytearray(path.read_bytes())
+    offset = _first_variant_offset(path)
+    for _ in range(3):
+        size = int.from_bytes(data[offset:offset + 2], 'little')
+        offset += 2 + size
+    offset += 6  # position and allele count
+    for _ in range(2):
+        size = int.from_bytes(data[offset:offset + 4], 'little')
+        offset += 4 + size
+    size = int.from_bytes(data[offset:offset + 4], 'little')
+    block = bytes(data[offset + 4:offset + 4 + size])
+    payload = bytearray(zlib.decompress(block[4:]))
+    count = int.from_bytes(payload[:4], 'little')
+    payload[:4] = struct.pack('<I', count + 1)
+    replacement = block[:4] + zlib.compress(payload)
+    data[offset:offset + 4 + size] = struct.pack('<I', len(replacement)) + replacement
+    path.write_bytes(data)
 
 
 def test_missing_bit_filters_empty_entries_like_hail(tmp_path):
@@ -99,7 +122,8 @@ def test_indexed_literal_filter_never_decodes_unselected_bad_block(tmp_path):
     path = _bgen(tmp_path)
     valid = path.read_bytes()
     offset = _first_variant_offset(path)
-    path = _bgen(tmp_path, probabilities=[(255,255,False), (0,255,False), (0,0,True)])
+    path = _bgen(tmp_path)
+    _corrupt_probability_sample_count(path)
     bad = path.read_bytes()[offset:]
     second = bytearray(valid[offset:])
     # Identifying strings: 2+7-byte varid, 2+3-byte rsid, 2+1-byte contig.
@@ -111,7 +135,7 @@ def test_indexed_literal_filter_never_decodes_unselected_bad_block(tmp_path):
     selected = hl.import_bgen(str(path), ['GP'], variants=[hl.Locus('1',124)])
     assert selected.locus.collect() == [hl.Locus('1',124)]
     assert selected.GP.collect() == [[1.,0.,0.], [0.,1.,0.]]
-    with pytest.raises(Exception, match='probability sum exceeds'):
+    with pytest.raises(Exception, match='sample/allele count mismatch'):
         hl.import_bgen(str(path), ['GP']).GP.collect()
 
 
@@ -148,7 +172,8 @@ def test_dynamic_variant_filter_never_decodes_unselected_bad_block(tmp_path):
     path = _bgen(tmp_path)
     valid = path.read_bytes()
     offset = _first_variant_offset(path)
-    path = _bgen(tmp_path, probabilities=[(255,255,False), (0,255,False), (0,0,True)])
+    path = _bgen(tmp_path)
+    _corrupt_probability_sample_count(path)
     bad = path.read_bytes()[offset:]
     second = bytearray(valid[offset:]); second[17:21] = struct.pack('<I',124)
     header = bytearray(valid[:offset]); header[8:12] = struct.pack('<I',2)
@@ -212,3 +237,40 @@ def test_unsigned_position_outside_locus_range_is_rejected(tmp_path):
     # The existing index must not permit a native narrowing cast either.
     with pytest.raises(Exception, match='signed 32-bit locus range'):
         hl.import_bgen(str(path), []).locus.collect()
+
+
+@pytest.mark.parametrize('codec', ['zlib', 'zstd'])
+@pytest.mark.parametrize('n_samples', [5, 64, 65])
+def test_bgen_multiple_blocks_preserve_probabilities_calls_and_missingness(tmp_path, codec, n_samples):
+    mt = hl.range_matrix_table(17, n_samples, n_partitions=2)
+    mt = mt.annotate_cols(s=hl.str(mt.col_idx)).key_cols_by('s')
+    mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 1), alleles=['A', 'G'])
+    mt = mt.key_rows_by('locus', 'alleles')
+    options = hl.literal([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+    mt = mt.annotate_entries(GP=hl.or_missing((mt.row_idx % 5 != 0) & ((mt.row_idx + mt.col_idx) % 4 != 0),
+                                             options[(mt.row_idx + mt.col_idx) % 3]))
+    output = str(tmp_path / 'multi')
+    hl.export_bgen(mt, output, compression_codec=codec)
+    hl.index_bgen(output + '.bgen')
+    imported = hl.import_bgen(output + '.bgen', ['GP', 'GT', 'dosage'],
+                              sample_file=output + '.sample', n_partitions=3)
+    indices = [(row + col) % 3 for row in range(17) for col in range(n_samples)
+               if row % 5 != 0 and (row + col) % 4 != 0]
+    assert imported.count() == (17, n_samples)
+    assert imported.GP.collect() == [[float(i == j) for j in range(3)] for i in indices]
+    assert imported.GT.collect() == [hl.Call((0, 0) if i == 0 else (0, 1) if i == 1 else (1, 1), False)
+                                     for i in indices]
+    assert imported.dosage.collect() == [float(i) for i in indices]
+    assert imported.aggregate_entries(hl.agg.count()) == len(indices)
+    empty = hl.import_bgen(output + '.bgen', [], sample_file=output + '.sample', n_partitions=3)
+    assert empty.aggregate_entries(hl.agg.count()) == len(indices)
+    assert empty.entries().count() == len(indices)
+
+
+def test_native_bgen_zero_sample_probability_block(tmp_path):
+    path = _bgen(tmp_path, probabilities=[])
+    mt = hl.import_bgen(str(path), ['GP', 'GT', 'dosage'])
+    assert mt.count() == (1, 0)
+    assert mt.aggregate_entries(hl.agg.count()) == 0
+    assert mt.entries().count() == 0
+    assert mt.localize_entries('entries', 'cols').collect()[0]['entries'] == []
