@@ -710,9 +710,22 @@ impl GroupsAccumulator for ArrayAggGroupsAccumulator {
                 }
             }
 
-            let sources: Vec<&dyn Array> =
-                self.batches.iter().map(|b| b.as_ref()).collect();
-            arrow::compute::interleave(&sources, &interleave_indices)?
+            // Sorted aggregation often emits a contiguous portion of one
+            // input batch. Its child values already have exactly the desired
+            // order, so preserve their buffers rather than recursively copying
+            // nested lists/structs through interleave.
+            let (batch, first) = interleave_indices[0];
+            if interleave_indices
+                .iter()
+                .enumerate()
+                .all(|(offset, &(b, row))| b == batch && row == first + offset)
+            {
+                self.batches[batch].slice(first, total_rows)
+            } else {
+                let sources: Vec<&dyn Array> =
+                    self.batches.iter().map(|b| b.as_ref()).collect();
+                arrow::compute::interleave(&sources, &interleave_indices)?
+            }
         };
 
         // Step 4: Release state for emitted groups.
@@ -2155,6 +2168,65 @@ mod tests {
     ) -> Result<Vec<Option<Vec<Option<i32>>>>> {
         let result = acc.evaluate(emit_to)?;
         Ok(list_array_to_i32_vecs(result.as_list::<i32>()))
+    }
+
+    fn public_groups_accumulator(datatype: DataType) -> Result<Box<dyn GroupsAccumulator>> {
+        let field = Arc::new(Field::new("col", datatype.clone(), true));
+        let schema = Schema::new(vec![field.clone()]);
+        let expr: Arc<dyn PhysicalExpr> = Arc::new(Column::new("col", 0));
+        array_agg_udaf().create_groups_accumulator(AccumulatorArgs {
+            return_field: Arc::new(Field::new(
+                "result", DataType::List(Arc::new(Field::new_list_field(datatype, true))), true,
+            )),
+            schema: &schema,
+            expr_fields: &[field],
+            ignore_nulls: false,
+            order_bys: &[],
+            is_reversed: false,
+            name: "result",
+            is_distinct: false,
+            exprs: &[expr],
+        })
+    }
+
+    #[test]
+    fn groups_accumulator_contiguous_nested_slice() -> Result<()> {
+        let input: ArrayRef = Arc::new(ListArray::from_iter_primitive::<
+            arrow::datatypes::Int32Type, _, _,
+        >([
+            Some(vec![Some(99)]),
+            Some(vec![Some(1), None]),
+            None,
+            Some(vec![]),
+            Some(vec![Some(4)]),
+        ]));
+        let selected = input.slice(1, 4);
+        let mut acc = public_groups_accumulator(input.data_type().clone())?;
+        acc.update_batch(&[selected.clone()], &[0, 0, 1, 2], None, 3)?;
+        let result = acc.evaluate(EmitTo::First(2))?;
+        let lists = result.as_list::<i32>();
+        assert_eq!(lists.offsets().as_ref(), &[0, 2, 3]);
+        assert_eq!(lists.values().as_ref(), selected.slice(0, 3).as_ref());
+        let remaining = acc.evaluate(EmitTo::All)?;
+        assert_eq!(remaining.as_list::<i32>().value(0).as_ref(), input.slice(4, 1).as_ref());
+        Ok(())
+    }
+
+    #[test]
+    fn groups_accumulator_contiguous_empty_structs() -> Result<()> {
+        let input: ArrayRef = Arc::new(StructArray::new_empty_fields(
+            4,
+            Some(NullBuffer::from(vec![true, false, true, true])),
+        ));
+        let mut acc = public_groups_accumulator(input.data_type().clone())?;
+        acc.update_batch(&[input.clone()], &[0, 0, 1, 1], None, 2)?;
+        let state = acc.state(EmitTo::All)?;
+        let mut merged = public_groups_accumulator(input.data_type().clone())?;
+        merged.merge_batch(&state, &[0, 1], 2)?;
+        let result = merged.evaluate(EmitTo::All)?;
+        assert_eq!(result.as_list::<i32>().offsets().as_ref(), &[0, 2, 4]);
+        assert_eq!(result.as_list::<i32>().values().as_ref(), input.as_ref());
+        Ok(())
     }
 
     #[test]

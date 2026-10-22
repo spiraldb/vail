@@ -38,13 +38,18 @@ nested empty struct. Nonempty structs retain the upstream path.
 `datafusion-functions-aggregate` 55.0.0 crate source (Apache-2.0; license and
 NOTICE retained). The published crate archive SHA-256 is
 `2d0f1bb166d3572b6ed40e1afb2faaacade962abc08c2fcf04babee74681c56b`.
-`datafusion-functions-aggregate-vail.patch` records the only source change:
+`datafusion-functions-aggregate-vail.patch` records the local source changes:
 grouped Float16/32/64 minimum accumulators start at positive infinity and
 maximum accumulators start at negative infinity. The published finite identities
 incorrectly returned `f32::MAX` or `f64::MAX` for an all-positive-infinity
 minimum and `f32::MIN` or `f64::MIN` for an all-negative-infinity maximum.
 Integer and other primitive identities retain their upstream behavior. Both
 comparison closures and DataFusion's NaN and signed-zero behavior are unchanged.
+
+Grouped `array_agg` also reuses a contiguous source-array slice when emission
+already has that exact order, rather than recursively copying nested children
+through Arrow interleave. Rearranged or multi-source emissions retain native
+interleave; group offsets, null handling and retained-state compaction are unchanged.
 
 # Vortex empty nested-list streams
 
