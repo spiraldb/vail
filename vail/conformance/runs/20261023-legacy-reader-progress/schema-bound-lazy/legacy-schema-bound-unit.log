@@ -1,0 +1,144 @@
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+   Compiling vail-storage v0.1.0 (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/crates/vail-storage)
+warning: unused import: `builtins::ArrayBuiltins`
+   --> crates/vail-storage/src/legacy/encoded_int.rs:612:39
+    |
+612 |         array::{VortexSessionExecute, builtins::ArrayBuiltins},
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `capture_varints` and `length` are never used
+   --> crates/vail-storage/src/legacy/input.rs:202:19
+    |
+190 | impl Input {
+    | ---------- methods in this implementation
+...
+202 |     pub(super) fn capture_varints(&mut self, count: usize, out: &mut Vec<u8>) -> Result<()> {
+    |                   ^^^^^^^^^^^^^^^
+...
+511 |     pub fn length(&mut self, e: &Encoding) -> Result<usize> {
+    |            ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-storage` (lib test) generated 2 warnings (run `cargo fix --lib -p vail-storage --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 15.11s
+     Running unittests src/lib.rs (target/release/deps/vail_storage-6ce945266553fee8)
+
+running 56 tests
+test legacy::decode::decode_bench::resident_decoder_stages ... ignored, opt-in resident-memory decoder stages; run release --ignored --nocapture
+test legacy::decode::numeric_array_bench::benchmark_required_numeric_arrays_scalar_vs_grouped ... ignored, manual isolated numeric array decoder comparison
+test legacy::decode::tests::bitmap_present_count_ignores_padding_bits ... ok
+test legacy::decode::tests::container_validity_is_lazy_and_resets_between_batches ... ok
+test legacy::decode::tests::compiled_leaf_dispatch_preserves_physical_field_order_and_missingness ... ok
+test legacy::decode::tests::buffered_selected_bindings_preserve_physical_order_and_null_slots ... ok
+test legacy::decode::tests::nested_array_demand_skips_invalid_unselected_string ... ok
+test legacy::decode::tests::buffered_program_cache_is_per_codec_and_resets_after_demand ... ok
+test legacy::decode::tests::buffered_scalars_support_high_missing_bit_and_zero_byte_null_entries ... ok
+test legacy::decode::tests::packed_calls_validate_before_materialization ... ok
+test legacy::decode::tests::packed_call_validation_matches_expansion_at_boundaries ... ok
+test legacy::decode::tests::compact_skip_retains_boolean_overflow_and_truncation_checks ... ok
+test legacy::decode::tests::bound_struct_arrays_match_generic_high_masks_nested_calls_and_reordering ... ok
+test legacy::decode::tests::bound_required_varint_lists_match_generic_all_length_modes_and_nullable_fallback ... ok
+test legacy::decode::tests::skipped_placeholders_reuse_largest_batch ... ok
+test legacy::decode::tests::skipped_children_inherit_parent_length_across_missing_structs_and_batches ... ok
+test legacy::decode::tests::dense_struct_array_matches_missing_aware_loop_with_projection ... ok
+test legacy::input::tests::benchmark_real_entry_part_read_and_decompression ... ignored, manual real-file read/decompression benchmark
+test legacy::decode::tests::adjacent_varint_run_masks_handle_high_and_wide_missingness ... ok
+test legacy::input::tests::bulk_varint_skip_preserves_width_and_position ... ok
+test legacy::input::tests::bulk_varint_word_skip_stops_at_requested_value ... ok
+test legacy::input::tests::indexed_capture_stops_before_following_continuation_bytes ... ok
+test legacy::input::tests::indexed_capture_matches_framing_across_buffers ... ok
+test legacy::decode::tests::typed_call_builder_matches_generic_schema_and_child_validity ... ok
+test legacy::input::tests::projected_skip_crosses_buffer_boundaries ... ok
+test legacy::input::tests::projected_varint_prefix_and_mixed_word_paths_match_scalar_cursor ... ok
+test legacy::input::tests::projected_varint_skip_accepts_long_values_and_stops_at_exact_terminator ... ok
+test legacy::input::tests::short_varint_probe_preserves_fallback_position ... ok
+test legacy::input::tests::short_varint_word_probe_masks_unused_bytes ... ok
+test legacy::input::tests::varint_crosses_buffer_boundary_and_checks_overflow ... ok
+test legacy::encoded_int::tests::framing_is_checked_but_payload_width_is_not ... ok
+test legacy::encoded_int::tests::fused_capture_publishes_and_reuses_batches ... ok
+test legacy::encoded_int::tests::lazy_shape_memory_slices_and_int32_materialization ... ok
+test legacy::decode::numeric_array_bench::grouped_numeric_array_experiment_matches_scalar_output ... ok
+test legacy::decode::tests::packed_calls_nested_vortex_export_matches_arrow_across_batches ... ok
+test legacy::decode::tests::required_varint_i32_lists_match_arrow_and_keep_vortex_export_lazy ... ok
+test legacy::encoded_int::tests::chunks_stay_lazy_and_filter_take_use_canonical_fallback ... ok
+test legacy::layout::tests::rejected_mask_does_not_open_file ... ok
+test legacy::packed_call::tests::datafusion_memory_accounting_preserves_nested_lazy_calls_and_deduplicates ... ok
+test legacy::packed_call::tests::lazy_arrow_shape_stays_packed_until_inspecting_call_children ... ok
+test legacy::packed_call::tests::arrow_concat_slices_and_ipc_observe_standard_call_structs ... ok
+test legacy::tests::hail_compatibility_corpus_decodes_in_native_columns ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test legacy::tests::indexed_row_slices_match_full_reads ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test legacy::matrix_layout::tests::list_length_uses_metadata_without_opening_either_file ... ok
+test legacy::packed_call::tests::packed_chunks_remain_lazy_at_arrow_export ... ok
+test legacy::packed_call::tests::export_preserves_call_metadata_and_defers_materialization ... ok
+test legacy::packed_call::tests::packed_slices_filters_and_takes_keep_the_packed_encoding ... ok
+test legacy::matrix_layout::tests::value_projection_rejects_wrong_entry_array_length ... ok
+test legacy::matrix_layout::tests::entry_projection_keeps_validity_and_never_opens_rows ... ok
+test legacy::decode::tests::primitive_array_specialization_matches_recursive_decoder ... ok
+test legacy::matrix_layout::tests::bounded_sparse_scan_rebases_entries_across_splits ... ok
+test legacy::packed_call::tests::native_matrix_layout_arrow_batch_keeps_nested_calls_lazy ... ok
+test legacy::matrix_layout::tests::entry_partition_count_errors_keep_legacy_diagnostic ... ok
+test legacy::decode::tests::buffered_scalars_match_generic_boundaries_missing_continuations_and_errors ... ok
+test legacy::decode::tests::slice_varint_skip_matches_scalar_at_word_and_buffer_boundaries ... ok
+test legacy::decode::tests::adjacent_varint_runs_match_scalar_fields_with_projection_and_missingness ... ok
+
+test result: ok. 51 passed; 0 failed; 5 ignored; 0 measured; 23 filtered out; finished in 0.08s
+
