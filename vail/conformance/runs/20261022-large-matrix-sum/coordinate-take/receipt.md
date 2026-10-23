@@ -1,0 +1,13 @@
+# Bounded coordinate unordered TAKE
+
+Production material dcc5c00c plus reviewer fixes ba173343 and65c4a9d1. Public native protocol tests4023c0f3 and93af7f91. Exact normal installed native SHA256 e6a0985d715c104a07d944eee0759cde22049be5c67c4cf22c378486b06f5171. Normal Rust1.98.0 release `maturin develop --release --locked`, own target/kache; build44.21s. No native artifact copy.
+
+147 expanded Python tests PASS;15 native tests PASS (3lib+6factory+6state protocol). Includes null/nested values, filterFalse empty identity, sparse selected coordinates, zero/one/three/large limits, partitions1/3, all prior primitive adapter selectors, real native TAKE consuming partial List state, snapshot replay/restore/update, published snapshot immutability. Public accumulator size scaling test merges one newly selected coordinate per batch at widths256/1024 and checks subquadratic retained memory plus actual result cardinality.
+
+Typed TakeIdentity includes exact inputtype,n,ordered; original native scalar/ordered algorithms remain. Only unordered owning layouts use direct adapter. Nested Utf8View/BinaryView/ListView/dictionary storage declines direct adaptation to avoid retaining unrelated variadic/dictionary buffers. Existing fallback remains correct; these layouts still need a separate compact-owned implementation for this optimization.
+
+Arrow extension functions prepared once per incoming batch, only retained selected values copied. Sparse states store selected coordinates only, metadata bounded by retained values+width. Finalization builds per-coordinate source spans once preserving incoming source order, then copies matching ranges; no coordinates×sparse-sources cross product, no per-entry groupIDs or per-coordinate scalar accumulator update. Saturated state ignores future input before invalidating snapshot. Native List partial wire semantics retained.
+
+Postprofile is1kHz samply on exact native:4public100000-row×100-position TAKE3000 actions,32partitions, native result lengths prevent large Python exports, no fixtures. All expected lengths checked. Embedded symbols and actual inclusive caller counts included. This is a proportional diagnostic including process setup/waiting, not a fair paired timing result. Full local paired suite remains parent-coordinated. No speedup ratio claimed from this profile.
+
+Remaining: ordered TAKE native TopK direct layout; set/counter necessary true-value hashing; correlation/covariance native private-group-state API; sketch/regression native adapters. Matrix global collect keeps relational cardinality fallback. These limitations are explicit, not marked complete.
