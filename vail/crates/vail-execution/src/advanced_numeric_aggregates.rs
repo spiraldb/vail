@@ -2597,6 +2597,157 @@ impl GroupsAccumulator for DownsampleGroups {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct LinregIdentity {
+    input: DataType,
+    p: usize,
+    nested: usize,
+    weighted: bool,
+    share_predictors: bool,
+}
+#[derive(Clone, Copy)]
+enum LinregGrouping<'a> {
+    Explicit(&'a [usize]),
+    Aligned { width: usize, len: usize },
+}
+impl LinregGrouping<'_> {
+    fn len(self) -> usize {
+        match self {
+            Self::Explicit(groups) => groups.len(),
+            Self::Aligned { len, .. } => len,
+        }
+    }
+    fn is_empty(self) -> bool {
+        self.len() == 0
+    }
+    fn valid_for(self, groups: usize) -> bool {
+        match self {
+            Self::Explicit(indices) => indices.iter().all(|&group| group < groups),
+            Self::Aligned { width, len } => width == groups && width > 0 && len % width == 0,
+        }
+    }
+    fn is_aligned(self, width: usize) -> bool {
+        match self {
+            Self::Aligned { width: actual, .. } => actual == width,
+            Self::Explicit(groups) => groups
+                .iter()
+                .enumerate()
+                .all(|(row, &group)| group == row % width),
+        }
+    }
+    fn iter(self) -> impl Iterator<Item = usize> {
+        (0..self.len()).map(move |row| match self {
+            Self::Explicit(groups) => groups[row],
+            Self::Aligned { width, .. } => row % width,
+        })
+    }
+}
+
+pub(crate) struct CoordinateLinreg {
+    native: LinregGroupsAccumulator,
+    snapshot: Option<Vec<ArrayRef>>,
+    width: usize,
+    indices: Vec<usize>,
+}
+impl std::fmt::Debug for CoordinateLinreg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CoordinateLinreg")
+            .field("width", &self.width)
+            .finish()
+    }
+}
+pub(crate) fn coordinate_linreg(udf: &AggregateUDF) -> Option<CoordinateLinreg> {
+    let config = crate::kernel_identity::aggregate_key::<LinregIdentity>(udf)?;
+    Some(CoordinateLinreg {
+        native: LinregGroupsAccumulator::new(
+            config.p,
+            config.nested,
+            config.weighted,
+            config.share_predictors,
+        ),
+        snapshot: None,
+        width: 0,
+        indices: Vec::new(),
+    })
+}
+impl CoordinateLinreg {
+    fn set_width(&mut self, width: usize) -> DfResult<()> {
+        if self.width != 0 && self.width != width {
+            return Err(DataFusionError::Execution(
+                "coordinate linreg width mismatch".into(),
+            ));
+        }
+        if self.width != width {
+            self.width = width;
+            self.indices = (0..width).collect();
+        }
+        Ok(())
+    }
+    fn restore(&mut self) -> DfResult<()> {
+        if let Some(snapshot) = self.snapshot.take() {
+            let groups = snapshot.first().map_or(0, |state| state.len());
+            if groups != 0 {
+                if groups != self.width {
+                    return Err(DataFusionError::Execution(
+                        "coordinate linreg snapshot width mismatch".into(),
+                    ));
+                }
+                self.native
+                    .merge_batch(&snapshot, &self.indices, self.width)?;
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn update(
+        &mut self,
+        input: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        self.set_width(width)?;
+        self.restore()?;
+        self.native.update_layout(
+            &[Arc::clone(input)],
+            LinregGrouping::Aligned {
+                width,
+                len: input.len(),
+            },
+            filter,
+            width,
+        )
+    }
+    pub(crate) fn states(&mut self) -> DfResult<Vec<ArrayRef>> {
+        if self.snapshot.is_none() {
+            self.snapshot = Some(self.native.state(EmitTo::All)?);
+        }
+        Ok(self.snapshot.as_ref().unwrap().clone())
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        self.set_width(width)?;
+        self.restore()?;
+        self.native.merge_batch(states, &self.indices, width)
+    }
+    pub(crate) fn array(&mut self) -> DfResult<ArrayRef> {
+        let states = self.states()?;
+        let groups = states.first().map_or(0, |state| state.len());
+        if groups != 0 {
+            self.native
+                .merge_batch(&states, &self.indices, self.width)?;
+        }
+        self.native.evaluate(EmitTo::All)
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.native.size()
+            + self.indices.capacity() * std::mem::size_of::<usize>()
+            + self.snapshot.as_ref().map_or(0, |arrays| {
+                arrays
+                    .iter()
+                    .map(|array| array.get_array_memory_size())
+                    .sum()
+            })
+    }
+}
+
 fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, ExprError> {
     let DataType::Struct(fields) = t else {
         return Err(invalid(
@@ -2663,7 +2814,7 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
     );
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         &udaf_name,
-        (udaf_name.clone(), t.clone(), result.clone()),
+        LinregIdentity { input: t.clone(), p, nested, weighted, share_predictors },
         vec![t.clone()],
         result,
         state,
@@ -3680,7 +3831,7 @@ impl LinregGroupsAccumulator {
     fn update_shared_predictors(
         &mut self,
         batch: &LinregBatchInput<'_>,
-        group_indices: &[usize],
+        group_indices: LinregGrouping<'_>,
         opt_filter: Option<&BooleanArray>,
         total_num_groups: usize,
     ) -> DfResult<bool> {
@@ -3688,10 +3839,7 @@ impl LinregGroupsAccumulator {
         if width < 2
             || group_indices.is_empty()
             || group_indices.len() % width != 0
-            || group_indices
-                .iter()
-                .enumerate()
-                .any(|(index, group)| *group != index % width)
+            || !group_indices.is_aligned(width)
             || batch.rows.null_count() != 0
             || batch.y_have_nulls
             || batch.predictor_array_have_nulls
@@ -4019,11 +4167,11 @@ fn linreg_state_list(
     )))
 }
 
-impl GroupsAccumulator for LinregGroupsAccumulator {
-    fn update_batch(
+impl LinregGroupsAccumulator {
+    fn update_layout(
         &mut self,
         values: &[ArrayRef],
-        group_indices: &[usize],
+        group_indices: LinregGrouping<'_>,
         opt_filter: Option<&BooleanArray>,
         total_num_groups: usize,
     ) -> DfResult<()> {
@@ -4033,8 +4181,8 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
             ));
         };
         if input.len() != group_indices.len()
+            || !group_indices.valid_for(total_num_groups)
             || opt_filter.is_some_and(|filter| filter.len() != input.len())
-            || group_indices.iter().any(|group| *group >= total_num_groups)
         {
             return Err(DataFusionError::Execution(
                 "linreg grouping shape mismatch".into(),
@@ -4050,7 +4198,7 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
         self.batch_group_counts.resize(total_num_groups, 0);
         self.batch_touched_groups.clear();
         self.batch_offsets.clear();
-        for (row, group) in group_indices.iter().copied().enumerate() {
+        for (row, group) in group_indices.iter().enumerate() {
             if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row)) {
                 continue;
             }
@@ -4087,7 +4235,7 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
         // contiguous per-group QR matrices below. Each group matrix is the
         // sole dense copy needed by destructive Householder QR.
         let mut predictor_scratch = vec![0.0; self.p];
-        for (row, group) in group_indices.iter().copied().enumerate() {
+        for (row, group) in group_indices.iter().enumerate() {
             if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row)) {
                 continue;
             }
@@ -4173,6 +4321,19 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
             self.batch_group_counts[group] = 0;
         }
         Ok(())
+    }
+
+ }
+
+impl GroupsAccumulator for LinregGroupsAccumulator {
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        group_indices: &[usize],
+        opt_filter: Option<&BooleanArray>,
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        self.update_layout(values, LinregGrouping::Explicit(group_indices), opt_filter, total_num_groups)
     }
 
     fn evaluate(&mut self, emit_to: EmitTo) -> DfResult<ArrayRef> {
