@@ -3629,7 +3629,7 @@ enum HailKind {
     Random(String),
     RestoreArrowType,
     Die,
-    Numeric(BinaryOperator),
+    Numeric(BinaryOperator, Type),
     ToString(Type),
     GetField(String),
     CallConstruct,
@@ -4663,9 +4663,8 @@ impl PhysicalExpr for HailPhysicalExpr {
                     };
                     Err(DataFusionError::Execution(message).into())
                 }
-                HailKind::Numeric(op) => {
-                    let t = Type::from_arrow(&self.dtype)?;
-                    columnar_numeric(*op, &args[0], &args[1], &t)
+                HailKind::Numeric(op, dtype) => {
+                    columnar_numeric(*op, &args[0], &args[1], dtype)
                 }
                 HailKind::ToString(input_type) => hail_to_string(&args[0], input_type),
                 HailKind::CallConstruct => crate::calls::construct(&args[0], &self.dtype),
@@ -4688,21 +4687,14 @@ impl PhysicalExpr for HailPhysicalExpr {
                         Ok(nullif(child.as_ref(), &mask)?)
                     }
                 }
-                HailKind::Struct(names) => {
-                    let fields = names
-                        .iter()
-                        .zip(args)
-                        .map(|(name, array)| {
-                            (
-                                Arc::new(Field::new(name, array.data_type().clone(), true)),
-                                array,
-                            )
-                        })
-                        .collect::<Vec<_>>();
+                HailKind::Struct(_) => {
+                    let DataType::Struct(fields) = &self.dtype else {
+                        return Err(ExprError::Invalid("struct output descriptor is absent".into()));
+                    };
                     if fields.is_empty() {
                         Ok(Arc::new(StructArray::new_empty_fields(len, None)))
                     } else {
-                        Ok(Arc::new(StructArray::from(fields)))
+                        Ok(Arc::new(StructArray::try_new(fields.clone(), args, None)?))
                     }
                 }
                 HailKind::Interval => {
@@ -6965,7 +6957,7 @@ fn lower_uncached(
                 _ => {
                     l = lower_cast(l, schema, &dtype)?;
                     r = lower_cast(r, schema, &dtype)?;
-                    custom(HailKind::Numeric(*operator), vec![l, r], dtype)
+                    custom(HailKind::Numeric(*operator, Type::from_arrow(&dtype)?), vec![l, r], dtype)
                 }
             }
         }
