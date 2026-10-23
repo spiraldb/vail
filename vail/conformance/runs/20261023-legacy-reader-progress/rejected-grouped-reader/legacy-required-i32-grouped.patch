@@ -1,0 +1,166 @@
+--- a/vail/crates/vail-storage/src/legacy/decode.rs
++++ b/vail/crates/vail-storage/src/legacy/decode.rs
+@@ -817,6 +817,33 @@
+         }
+     }
+ }
++
++#[inline(always)]
++fn append_required_i32_varints<const BITS: u32>(
++    input: &mut Input,
++    builder: &mut Int32Builder,
++    n: usize,
++) -> Result<()> {
++    if n <= 8 {
++        if let Some(bytes) = input.try_small_varints(n)? {
++            let mut values = [0i32; 8];
++            for (out, byte) in values.iter_mut().zip(bytes).take(n) {
++                *out = i32::from(byte);
++            }
++            builder.append_slice(&values[..n]);
++            return Ok(());
++        }
++    }
++    for _ in 0..n {
++        let value = input.varint(BITS)?;
++        if BITS == 64 && value > u32::MAX as u64 {
++            return Err("Hail int32 varint overflow".into());
++        }
++        builder.append_value(value as u32 as i32);
++    }
++    Ok(())
++}
++
+ 
+ /// Compile physical destination mapping once, outside the row loop.
+ struct Node {
+@@ -1432,6 +1459,22 @@
+         Ok(())
+     }
+ 
++    #[inline(never)]
++    fn append_required_i32_elements(
++        &self, input: &mut Input, builder: &mut Int32Builder, n: usize,
++    ) -> Result<()> {
++        match self.wire {
++            Wire::Varint => append_required_i32_varints::<64>(input, builder, n),
++            Wire::Int32 if input.leb => append_required_i32_varints::<32>(input, builder, n),
++            Wire::Int32 => {
++                for _ in 0..n {
++                    builder.append_value(i32::from_le_bytes(input.fixed()?));
++                }
++                Ok(())
++            }
++            _ => unreachable!("required int32 array encoding"),
++        }
++    }
+     fn append_list(&self, input: &mut Input, out: &mut Column) -> Result<()> {
+         let n = self.length(input)?;
+         let c = &self.children[0];
+@@ -1466,7 +1509,11 @@
+         }
+         match c.ty {
+             Type::Primitive(P::Int32) => {
+-                primitive_elements!(child.int32(), c.integer(input, 32)? as i32)
++                if c.e.required {
++                    c.append_required_i32_elements(input, child.int32(), n)?;
++                } else {
++                    primitive_elements!(child.int32(), c.integer(input, 32)? as i32)
++                }
+             }
+             Type::Primitive(P::Int64) => {
+                 primitive_elements!(child.int64(), c.integer(input, 64)?)
+--- a/vail/crates/vail-storage/src/legacy/numeric_array_bench.rs
++++ b/vail/crates/vail-storage/src/legacy/numeric_array_bench.rs
+@@ -4,49 +4,16 @@
+ 
+ type Decoder = fn(&Node, &mut Input, &mut Column) -> Result<()>;
+ 
+-#[inline(always)]
+-fn append_varint_values<const BITS: u32>(
+-    input: &mut Input,
+-    builder: &mut Int32Builder,
+-    n: usize,
+-) -> Result<()> {
+-    if n <= 8 {
+-        if let Some(bytes) = input.try_small_varints(n)? {
+-            let mut values = [0i32; 8];
+-            for (out, byte) in values.iter_mut().zip(bytes).take(n) {
+-                *out = i32::from(byte);
+-            }
+-            builder.append_slice(&values[..n]);
+-            return Ok(());
+-        }
+-    }
+-    for _ in 0..n {
+-        let value = input.varint(BITS)?;
+-        if BITS == 64 && value > u32::MAX as u64 {
+-            return Err("Hail int32 varint overflow".into());
+-        }
+-        builder.append_value(value as u32 as i32);
+-    }
+-    Ok(())
+-}
+-
+ #[inline(never)]
+-fn grouped_required_i32_array(node: &Node, input: &mut Input, out: &mut Column) -> Result<()> {
++fn scalar_required_i32_array(node: &Node, input: &mut Input, out: &mut Column) -> Result<()> {
+     let n = node.length(input)?;
+     let child_node = &node.children[0];
+     let Column::List(_, values, _, _) = out else {
+         unreachable!("benchmark list output")
+     };
+     let builder = values.int32();
+-    match child_node.wire {
+-        Wire::Varint => append_varint_values::<64>(input, builder, n)?,
+-        Wire::Int32 if input.leb => append_varint_values::<32>(input, builder, n)?,
+-        Wire::Int32 => {
+-            for _ in 0..n {
+-                builder.append_value(i32::from_le_bytes(input.fixed()?));
+-            }
+-        }
+-        _ => unreachable!("benchmark required int32 encoding"),
++    for _ in 0..n {
++        builder.append_value(child_node.integer(input, 32)? as i32);
+     }
+     out.end_list()?;
+     Ok(())
+@@ -131,8 +98,8 @@
+         for pattern in 0..3 {
+             for encoding in 0..3 {
+                 let (node, bytes, leb, dtype) = fixture(n, 257, pattern, encoding);
+-                let scalar = decode(&node, bytes.clone(), leb, &dtype, 257, Node::append_list)?;
+-                let grouped = decode(&node, bytes, leb, &dtype, 257, grouped_required_i32_array)?;
++                let scalar = decode(&node, bytes.clone(), leb, &dtype, 257, scalar_required_i32_array)?;
++                let grouped = decode(&node, bytes, leb, &dtype, 257, Node::append_list)?;
+                 assert_eq!(
+                     scalar.as_ref(),
+                     grouped.as_ref(),
+@@ -144,8 +111,8 @@
+     // A larger fixture crosses the real 64 KiB input buffer while probing.
+     for pattern in 0..3 {
+         let (node, bytes, leb, dtype) = fixture(8, 8193, pattern, 0);
+-        let scalar = decode(&node, bytes.clone(), leb, &dtype, 8193, Node::append_list)?;
+-        let grouped = decode(&node, bytes, leb, &dtype, 8193, grouped_required_i32_array)?;
++        let scalar = decode(&node, bytes.clone(), leb, &dtype, 8193, scalar_required_i32_array)?;
++        let grouped = decode(&node, bytes, leb, &dtype, 8193, Node::append_list)?;
+         assert_eq!(scalar.as_ref(), grouped.as_ref());
+     }
+     Ok(())
+@@ -191,14 +158,14 @@
+         for pattern in 0..3 {
+             for encoding in 0..3 {
+                 let (node, bytes, leb, dtype) = fixture(n, arrays, pattern, encoding);
+-                let scalar = measure(&node, bytes.clone(), leb, &dtype, arrays, Node::append_list)?;
++                let scalar = measure(&node, bytes.clone(), leb, &dtype, arrays, scalar_required_i32_array)?;
+                 let grouped = measure(
+                     &node,
+                     bytes.clone(),
+                     leb,
+                     &dtype,
+                     arrays,
+-                    grouped_required_i32_array,
++                    Node::append_list,
+                 )?;
+                 let median = |values: &[f64]| {
+                     let mut sorted = values.to_vec();

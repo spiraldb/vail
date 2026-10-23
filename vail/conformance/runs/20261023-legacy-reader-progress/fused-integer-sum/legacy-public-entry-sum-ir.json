@@ -1,0 +1,34 @@
+{
+  "op": "aggregate",
+  "function": "sum",
+  "value": {
+    "op": "array_reduce",
+    "operation": "sum",
+    "filter_missing": true,
+    "value": {
+      "op": "array_map",
+      "value": {
+        "op": "column",
+        "name": "__vail_matrix_cells"
+      },
+      "parameter": "b191251e8ca44871b4e7e7be1445bb41",
+      "body": {
+        "op": "get_field",
+        "value": {
+          "op": "get_field",
+          "value": {
+            "op": "lambda_variable",
+            "dtype": "NativeType(Struct { struct: [(\"value\", Struct { struct: [(\"AD\", Array { array: Primitive(Int32) }), (\"DP\", Primitive(Int32)), (\"GQ\", Primitive(Int32)), (\"GT\", Primitive(Call)), (\"PL\", Array { array: Primitive(Int32) })] })] })",
+            "name": "b191251e8ca44871b4e7e7be1445bb41"
+          },
+          "name": "value"
+        },
+        "name": "DP"
+      }
+    }
+  },
+  "options": {
+    "__vail_result_type": "NativeType(Primitive(Int64))"
+  },
+  "init": []
+}

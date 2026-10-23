@@ -1,0 +1,41 @@
+{
+  "engine": "vail",
+  "warmup": 1,
+  "runs": 3,
+  "reject_compilers": true,
+  "matrix": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "matrix_sum_dp": {
+      "seconds": [
+        0.5189495410304517,
+        0.5208948330255225,
+        0.5423311670310795
+      ],
+      "median": 0.5208948330255225,
+      "value": 353709503,
+      "attempts": [
+        {
+          "seconds": 0.7092570000095293,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5189495410304517,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5208948330255225,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5423311670310795,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}

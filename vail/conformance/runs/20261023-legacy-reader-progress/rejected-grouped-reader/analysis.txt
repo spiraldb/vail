@@ -1,0 +1,20 @@
+Rejected grouped required Int32 reader prototype.
+
+Patch promoted the isolated numeric-array helper into production: bind wire
+encoding once, outlined single-byte group probe plus append_slice, full scalar
+fallback, unchanged nullable-element path. Thirty-eight storage tests and189
+Python tests passed. NativeSHA256 of candidate is recorded separately if needed
+from /private/tmp/legacy-grouped-numeric-candidate.abi3.so; retained local binary.
+
+A-B-B-A versus bound builder4a7d5328, one warmup/three samples per repetition,
+compiler interference rejected, pooled medians:
+  full decode461.8 ->485.5 ms (0.95x)
+  entries470.3 ->540.3 ms (0.87x)
+All result values match. Synthetic scalar-array wins did not transfer to real
+queries; production promotion reversed. Keep the independent benchmark and
+output differential, not the additional production helper. This experiment is
+distinct from the earlier rejected short-array + inlined-array-skip variant.
+
+The report preserves the exact attempted patch. Current production returns to
+4a7d5328's scalar numeric-array path, with the separately tested map/sum fusion
+under development.
