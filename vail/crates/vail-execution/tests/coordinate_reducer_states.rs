@@ -753,3 +753,115 @@ fn quantile_coordinate_reuses_native_binary_state_and_published_snapshots() {
         native_state.evaluate().unwrap()
     );
 }
+
+#[test]
+fn linreg_coordinate_native_qr_states_preserve_replay_and_update() {
+    let xfield = Arc::new(Field::new_list_field(DataType::Float64, true));
+    let fields = vec![
+        Field::new("y", DataType::Float64, true),
+        Field::new("x", DataType::List(xfield.clone()), true),
+    ];
+    let packed = DataType::Struct(fields.clone().into());
+    let native = configured_udaf(
+        "linreg",
+        Some(&packed),
+        &serde_json::json!({"n_predictors":2,"nested_dim":1,"__vail_share_linreg_predictors":true}),
+    )
+    .unwrap();
+    let native_expr =
+        AggregateExprBuilder::new(native.clone(), vec![Arc::new(Column::new("yx", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "yx",
+                packed.clone(),
+                true,
+            )])))
+            .alias("native_fit")
+            .build()
+            .unwrap();
+    let empty = native_expr
+        .create_accumulator()
+        .unwrap()
+        .evaluate()
+        .unwrap();
+    let udf = coordinate_udaf(native, packed.clone(), empty).unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(Arc::new(Field::new_list_field(packed, true))),
+            true,
+        )])))
+        .alias("fits")
+        .build()
+        .unwrap();
+    let packed_rows: ArrayRef = Arc::new(arrow_array::StructArray::new(
+        fields.into(),
+        vec![
+            Arc::new(Float64Array::from(vec![4., 5., 6.5, 7.5])),
+            Arc::new(ListArray::new(
+                xfield,
+                OffsetBuffer::from_lengths([2, 2, 2, 2]),
+                Arc::new(Float64Array::from(vec![1., 0., 1., 0., 1., 1., 1., 1.])),
+                None,
+            )),
+        ],
+        None,
+    ));
+    let input: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(packed_rows.data_type().clone(), true)),
+        OffsetBuffer::from_lengths([2, 2]),
+        packed_rows,
+        None,
+    ));
+    let mut state = aggregate.create_accumulator().unwrap();
+    state.state().unwrap();
+    state.update_batch(&[input.clone()]).unwrap();
+    let snapshot = state.evaluate().unwrap();
+    assert_eq!(state.evaluate().unwrap(), snapshot);
+    let published = state.state().unwrap();
+    let wire = published[..4]
+        .iter()
+        .map(|s| {
+            let ScalarValue::List(v) = s else {
+                panic!("list")
+            };
+            v.values().clone()
+        })
+        .collect::<Vec<_>>();
+    let mut native_groups = native_expr.create_groups_accumulator().unwrap();
+    native_groups.merge_batch(&wire, &[0, 1], 2).unwrap();
+    let ScalarValue::List(output) = &snapshot else {
+        panic!("list")
+    };
+    assert_eq!(
+        native_groups
+            .evaluate(datafusion_expr::EmitTo::All)
+            .unwrap()
+            .to_data(),
+        output.values().to_data()
+    );
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|s| s.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    state.update_batch(&[input.clone()]).unwrap();
+    restored.update_batch(&[input]).unwrap();
+    assert_eq!(state.evaluate().unwrap(), restored.evaluate().unwrap());
+    let ScalarValue::List(counts) = &published[0] else {
+        panic!("list")
+    };
+    assert_eq!(
+        counts
+            .values()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .values()
+            .as_ref(),
+        &[2, 2]
+    );
+}

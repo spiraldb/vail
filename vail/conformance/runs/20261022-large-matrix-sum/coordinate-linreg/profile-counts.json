@@ -1,0 +1,19 @@
+{
+  "before": {
+    "samples": 657,
+    "inclusive_sample_counts": {
+      "_platform_memmove": 16,
+      "LinregGroupsAccumulator as": 87,
+      "update_shared_predictors": 81
+    }
+  },
+  "after": {
+    "samples": 635,
+    "inclusive_sample_counts": {
+      "_platform_memmove": 6,
+      "LinregGroupsAccumulator as": 4,
+      "CoordinateLinreg": 76,
+      "update_shared_predictors": 75
+    }
+  }
+}
