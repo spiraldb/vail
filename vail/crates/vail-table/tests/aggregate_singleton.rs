@@ -36,6 +36,8 @@ fn reference(globals: &GlobalsRef) -> Expr {
 #[tokio::test]
 async fn aggregate_dependency_can_be_shared_by_selector_and_selected_branch() {
     let total = count(17);
+    // Inspecting a deferred aggregate must not execute it or require binding.
+    total.physical_plan().unwrap();
     let selector = GlobalsIR::empty()
         .map_bound(
             vec![(
