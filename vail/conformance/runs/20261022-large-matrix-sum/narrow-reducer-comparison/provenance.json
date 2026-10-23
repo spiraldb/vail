@@ -1,0 +1,28 @@
+{
+  "source": "56f2ff67",
+  "material_source": "d945bf91",
+  "native_sha256": "b4a61500d7d5ed93684787c745e255eeda295720f8b615ef4e6b8466f4c6e8d5",
+  "hail": "stockPyPI0.2.139 /Spark3.5.9 /Java11 ARM64",
+  "settings": "Vail fixed32workers, Hail local[32],14logicalCPU96GiBhost, explicit2500/250/32partitions forcases",
+  "measurement": "three reps percase engines serial;queryconstruction+action excludesengineinit/imports;10Hz process-treeCPU retains exitedchildren;peakRSS includesretainedheap",
+  "limitations": [
+    "UnrelatedlegacyreviewPython~1core activity; ownagentbuilds/profiles paused.",
+    "Matrix/table composite cases representative fixturefree, notupstreamfixturebenchmarks.",
+    "Matrixcomposite remains slower; profilepending attribution."
+  ],
+  "commands": {
+    "hail": {
+      "JAVA_HOME": "/Library/Java/JavaVirtualMachines/temurin-11.jre/Contents/Home",
+      "argv": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "driver.py",
+        "hail"
+      ]
+    },
+    "vail": [
+      "/private/tmp/large-matrix-sum-env/bin/python",
+      "driver.py",
+      "vail"
+    ]
+  }
+}
