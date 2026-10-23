@@ -1,6 +1,7 @@
 """Paired reads of identical Hail-written legacy files; no format conversion."""
 import argparse
 import json
+import resource
 import statistics
 import subprocess
 import threading
@@ -24,6 +25,16 @@ if a.engine == 'hail':
 else:
     import vail as hl
     read_table, read_matrix = hl.Table.read_legacy, hl.MatrixTable.read_legacy
+# Spark local[14] runs executor threads in this exact gateway JVM.
+# Count both Python and JVM CPU, excluding unrelated Hail processes.
+if a.engine == 'hail':
+    import psutil
+    java_process = psutil.Process(hl.current_backend()._spark.sparkContext._gateway.proc.pid)
+    def engine_cpu_time():
+        cpu = java_process.cpu_times()
+        return time.process_time() + cpu.user + cpu.system
+else:
+    engine_cpu_time = time.process_time
 matrix, table = a.matrix, a.table
 def run(case):
     if case.startswith('table'):
@@ -45,10 +56,12 @@ def compiler_active():
 
 def measure(case):
     if not a.reject_compilers:
+        faults_start = resource.getrusage(resource.RUSAGE_SELF).ru_minflt
+        engine_cpu_start = engine_cpu_time()
         cpu_start = time.process_time()
         start = time.perf_counter()
         value = run(case)
-        return value, time.perf_counter() - start, False, time.process_time() - cpu_start
+        return value, time.perf_counter() - start, False, time.process_time() - cpu_start, engine_cpu_time() - engine_cpu_start, resource.getrusage(resource.RUSAGE_SELF).ru_minflt - faults_start
     waiting = False
     while compiler_active():
         if not waiting:
@@ -63,34 +76,40 @@ def measure(case):
     thread = threading.Thread(target=monitor, daemon=True)
     thread.start()
     try:
+        faults_start = resource.getrusage(resource.RUSAGE_SELF).ru_minflt
+        engine_cpu_start = engine_cpu_time()
         cpu_start = time.process_time()
         start = time.perf_counter()
         value = run(case)
         elapsed = time.perf_counter() - start
         cpu_elapsed = time.process_time() - cpu_start
+        engine_cpu_elapsed = engine_cpu_time() - engine_cpu_start
+        minor_faults = resource.getrusage(resource.RUSAGE_SELF).ru_minflt - faults_start
     finally:
         stop.set()
         thread.join()
-    return value, elapsed, interference.is_set() or compiler_active(), cpu_elapsed
+    return value, elapsed, interference.is_set() or compiler_active(), cpu_elapsed, engine_cpu_elapsed, minor_faults
 
 for case in a.cases:
-    times, cpu_times, values, attempts = [], [], [], []
+    times, cpu_times, engine_cpu_times, minor_faults_values, values, attempts = [], [], [], [], [], []
     try:
         i = 0
         while i < a.warmup + a.runs:
-            value, elapsed, interference, cpu_elapsed = measure(case)
+            value, elapsed, interference, cpu_elapsed, engine_cpu_elapsed, minor_faults = measure(case)
             values.append(value)
             assert all(v == value for v in values)
-            attempts.append(dict(seconds=elapsed, python_process_cpu_seconds=cpu_elapsed, compiler_interference=interference, warmup=i < a.warmup))
+            attempts.append(dict(seconds=elapsed, python_process_cpu_seconds=cpu_elapsed, engine_cpu_seconds=engine_cpu_elapsed, python_process_minor_faults=minor_faults, compiler_interference=interference, warmup=i < a.warmup))
             if interference:
                 print(case, 'retrying measurement overlapping Rust compilation', elapsed, value, flush=True)
                 continue
             if i >= a.warmup:
                 times.append(elapsed)
                 cpu_times.append(cpu_elapsed)
+                engine_cpu_times.append(engine_cpu_elapsed)
+                minor_faults_values.append(minor_faults)
             print(case, i, elapsed, value, flush=True)
             i += 1
-        results[case] = dict(seconds=times, median=statistics.median(times), python_process_cpu_seconds=cpu_times, python_process_cpu_median=statistics.median(cpu_times), value=value, attempts=attempts)
+        results[case] = dict(seconds=times, median=statistics.median(times), python_process_cpu_seconds=cpu_times, python_process_cpu_median=statistics.median(cpu_times), engine_cpu_seconds=engine_cpu_times, engine_cpu_median=statistics.median(engine_cpu_times), python_process_minor_faults=minor_faults_values, python_process_minor_faults_median=statistics.median(minor_faults_values), value=value, attempts=attempts)
     except Exception as e:
         results[case] = dict(error=repr(e))
         print(case, repr(e), flush=True)

@@ -1,5 +1,8 @@
 use super::input::Input;
 use super::*;
+#[cfg(test)]
+#[path = "schema_bench.rs"]
+mod schema_bench;
 use arrow_array::{builder::*, *};
 use arrow_buffer::{BooleanBufferBuilder, NullBufferBuilder, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, FieldRef, Fields};

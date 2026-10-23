@@ -1,5 +1,5 @@
 use super::*;
-use std::io::{self, BufRead, BufReader, Cursor, Read, Seek, SeekFrom};
+use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
 type Stream = Box<dyn Read + Send>;
 fn invalid(e: impl ToString) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, e.to_string())
@@ -18,114 +18,88 @@ pub fn validate(spec: &Value) -> Result<()> {
         name => Err(format!("unsupported Hail buffer {name}").into()),
     }
 }
+trait BlockRead: Send {
+    fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool>;
+}
 struct Blocks {
     source: Stream,
     spec: Value,
-    current: Cursor<Vec<u8>>,
-}
-impl Blocks {
-    fn block(&mut self) -> io::Result<Option<Vec<u8>>> {
-        let name = self.spec["name"].as_str().unwrap_or("");
-        if name == "StreamBlockBufferSpec" || name == "StreamBlockBufferSpec2" {
-            let mut byte = [0];
-            if self.source.read(&mut byte)? == 0 {
-                return Ok(None);
-            }
-            let size = if name.ends_with('2') {
-                let mut value = u64::from(byte[0] & 127);
-                let mut b = byte[0];
-                let mut shift = 7;
-                while b & 128 != 0 {
-                    if shift >= 35 {
-                        return Err(invalid("invalid Hail block varint"));
-                    }
-                    self.source.read_exact(&mut byte)?;
-                    b = byte[0];
-                    value |= u64::from(b & 127) << shift;
-                    shift += 7;
-                }
-                if value > u32::MAX as u64 {
-                    return Err(invalid("Hail block length overflow"));
-                }
-                value as usize
-            } else {
-                let mut rest = [0; 4];
-                rest[0] = byte[0];
-                self.source.read_exact(&mut rest[1..])?;
-                usize::try_from(i32::from_le_bytes(rest)).map_err(invalid)?
-            };
-            // Hail's block buffers are bounded. Reject corrupt framing before allocating.
-            if size > 256 * 1024 * 1024 {
-                return Err(invalid("Hail compressed block exceeds 256 MiB"));
-            }
-            let mut out = vec![0; size];
-            self.source.read_exact(&mut out)?;
-            return Ok(Some(out));
-        }
-        // The child is a framed block stream. Read precisely one child frame,
-        // rather than concatenating the complete decompressed file.
-        Err(invalid("compression layer must wrap a framed block source"))
-    }
-}
-impl Read for Blocks {
-    fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
-        if out.is_empty() {
-            return Ok(0);
-        }
-        loop {
-            let n = self.current.read(out)?;
-            if n != 0 {
-                return Ok(n);
-            }
-            match self.block()? {
-                Some(b) => self.current = Cursor::new(b),
-                None => return Ok(0),
-            }
-        }
-    }
-}
-trait BlockRead: Send {
-    fn next(&mut self) -> io::Result<Option<Vec<u8>>>;
 }
 impl BlockRead for Blocks {
-    fn next(&mut self) -> io::Result<Option<Vec<u8>>> {
-        self.block()
+    fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool> {
+        let name = self.spec["name"].as_str().unwrap_or("");
+        if name != "StreamBlockBufferSpec" && name != "StreamBlockBufferSpec2" {
+            return Err(invalid("compression layer must wrap a framed block source"));
+        }
+        let mut byte = [0];
+        if self.source.read(&mut byte)? == 0 {
+            return Ok(false);
+        }
+        let size = if name.ends_with('2') {
+            let mut value = u64::from(byte[0] & 127);
+            let mut b = byte[0];
+            let mut shift = 7;
+            while b & 128 != 0 {
+                if shift >= 35 {
+                    return Err(invalid("invalid Hail block varint"));
+                }
+                self.source.read_exact(&mut byte)?;
+                b = byte[0];
+                value |= u64::from(b & 127) << shift;
+                shift += 7;
+            }
+            if value > u32::MAX as u64 {
+                return Err(invalid("Hail block length overflow"));
+            }
+            value as usize
+        } else {
+            let mut rest = [0; 4];
+            rest[0] = byte[0];
+            self.source.read_exact(&mut rest[1..])?;
+            usize::try_from(i32::from_le_bytes(rest)).map_err(invalid)?
+        };
+        if size > 256 * 1024 * 1024 {
+            return Err(invalid("Hail compressed block exceeds 256 MiB"));
+        }
+        out.resize(size, 0);
+        self.source.read_exact(out)?;
+        Ok(true)
     }
 }
 struct Compressed {
     child: Box<dyn BlockRead>,
     spec: Value,
     zstd_decoder: Option<zstd::bulk::Decompressor<'static>>,
+    compressed: Vec<u8>,
 }
 impl BlockRead for Compressed {
-    fn next(&mut self) -> io::Result<Option<Vec<u8>>> {
-        let Some(block) = self.child.next()? else {
-            return Ok(None);
-        };
-        let mut c = Cursor::new(block);
-        let mut word = || -> io::Result<i32> {
-            let mut w = [0; 4];
-            c.read_exact(&mut w)?;
-            Ok(i32::from_le_bytes(w))
-        };
+    fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool> {
+        if !self.child.read_block(&mut self.compressed)? {
+            return Ok(false);
+        }
+        let mut c = Cursor::new(self.compressed.as_slice());
         let name = self.spec["name"].as_str().unwrap_or("");
         if name == "LZ4SizeBasedBlockBufferSpec" {
-            match word()? {
+            let mut flag = [0; 4];
+            c.read_exact(&mut flag)?;
+            match i32::from_le_bytes(flag) {
                 0 => {
-                    let p = c.position() as usize;
-                    return Ok(Some(c.into_inner()[p..].to_vec()));
+                    out.clear();
+                    out.extend_from_slice(&self.compressed[c.position() as usize..]);
+                    return Ok(true);
                 }
                 1 => {}
                 _ => return Err(invalid("invalid Hail LZ4 compression flag")),
             }
         }
-        let mut w = [0; 4];
-        c.read_exact(&mut w)?;
-        let mut size = i32::from_le_bytes(w);
+        let mut word = [0; 4];
+        c.read_exact(&mut word)?;
+        let mut size = i32::from_le_bytes(word);
         if name == "ZstdSizedBasedBlockBufferSpec" {
             if size & 1 == 0 {
-                let p = c.position() as usize;
-                return Ok(Some(c.into_inner()[p..].to_vec()));
+                out.clear();
+                out.extend_from_slice(&self.compressed[c.position() as usize..]);
+                return Ok(true);
             }
             size >>= 1;
         }
@@ -135,38 +109,110 @@ impl BlockRead for Compressed {
         if size < 0 || size as u64 > limit || size > 256 * 1024 * 1024 {
             return Err(invalid("invalid Hail decompressed block length"));
         }
-        let payload = &c.get_ref()[c.position() as usize..];
-        let out = if name.starts_with("Zstd") {
-            self.zstd_decoder.as_mut().ok_or_else(|| invalid("missing Zstd decoder"))?
-                .decompress(payload, size as usize).map_err(invalid)?
+        let payload = &self.compressed[c.position() as usize..];
+        let written = if name.starts_with("Zstd") {
+            out.resize(size as usize, 0);
+            self.zstd_decoder
+                .as_mut()
+                .ok_or_else(|| invalid("missing Zstd decoder"))?
+                .decompress_to_buffer(payload, out.as_mut_slice())
+                .map_err(invalid)?
         } else {
-            lz4_flex::block::decompress(payload, size as usize).map_err(invalid)?
+            out.resize(size as usize, 0);
+            lz4_flex::block::decompress_into(payload, out.as_mut_slice()).map_err(invalid)?
         };
-        if out.len() != size as usize {
+        if written != size as usize {
             return Err(invalid("Hail decompressed block size mismatch"));
         }
-        Ok(Some(out))
+        out.truncate(written);
+        Ok(true)
     }
 }
+struct RawBlocks {
+    source: Stream,
+    capacity: usize,
+}
+impl BlockRead for RawBlocks {
+    fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool> {
+        out.resize(self.capacity, 0);
+        let n = self.source.read(out)?;
+        out.truncate(n);
+        Ok(n != 0)
+    }
+}
+// Concrete BufRead keeps virtual dispatch at block refills, never per value.
 struct BlockStream {
     blocks: Box<dyn BlockRead>,
-    current: Cursor<Vec<u8>>,
+    decoded: Vec<u8>,
+    position: usize,
+    eof: bool,
+}
+impl BlockStream {
+    fn new(blocks: Box<dyn BlockRead>) -> Self {
+        Self {
+            blocks,
+            decoded: Vec::new(),
+            position: 0,
+            eof: false,
+        }
+    }
+    #[cfg(test)]
+    fn with_capacity(capacity: usize, source: Stream) -> Self {
+        Self::raw(source, capacity)
+    }
+    fn raw(source: Stream, capacity: usize) -> Self {
+        Self::new(Box::new(RawBlocks {
+            source,
+            capacity: capacity.max(1),
+        }))
+    }
+    fn load_first(&mut self, within: usize) -> Result<()> {
+        if !self.blocks.read_block(&mut self.decoded)? {
+            return Err("Hail virtual offset points past end of file".into());
+        }
+        if within > self.decoded.len() {
+            return Err("Hail virtual offset exceeds decompressed block".into());
+        }
+        self.position = within;
+        Ok(())
+    }
+}
+impl BufRead for BlockStream {
+    #[inline]
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        while self.position == self.decoded.len() && !self.eof {
+            match self.blocks.read_block(&mut self.decoded) {
+                Ok(false) => {
+                    self.decoded.clear();
+                    self.eof = true;
+                }
+                Ok(true) => {}
+                Err(error) => {
+                    // Failed fills never publish a partially overwritten block.
+                    self.position = self.decoded.len();
+                    return Err(error);
+                }
+            }
+            self.position = 0;
+        }
+        Ok(&self.decoded[self.position..])
+    }
+    #[inline]
+    fn consume(&mut self, amount: usize) {
+        debug_assert!(amount <= self.decoded.len() - self.position);
+        self.position += amount;
+    }
 }
 impl Read for BlockStream {
     fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
         if out.is_empty() {
             return Ok(0);
         }
-        loop {
-            let n = self.current.read(out)?;
-            if n != 0 {
-                return Ok(n);
-            }
-            match self.blocks.next()? {
-                Some(b) => self.current = Cursor::new(b),
-                None => return Ok(0),
-            }
-        }
+        let available = self.fill_buf()?;
+        let n = out.len().min(available.len());
+        out[..n].copy_from_slice(&available[..n]);
+        self.consume(n);
+        Ok(n)
     }
 }
 fn blocks(source: Stream, spec: &Value) -> Result<Box<dyn BlockRead>> {
@@ -175,12 +221,12 @@ fn blocks(source: Stream, spec: &Value) -> Result<Box<dyn BlockRead>> {
         Ok(Box::new(Blocks {
             source,
             spec: spec.clone(),
-            current: Cursor::new(vec![]),
         }))
     } else {
         Ok(Box::new(Compressed {
             child: blocks(source, &spec["child"])?,
             spec: spec.clone(),
+            compressed: Vec::new(),
             zstd_decoder: if name.starts_with("Zstd") {
                 Some(zstd::bulk::Decompressor::new()?)
             } else {
@@ -190,7 +236,7 @@ fn blocks(source: Stream, spec: &Value) -> Result<Box<dyn BlockRead>> {
     }
 }
 pub struct Input {
-    source: BufReader<Stream>,
+    source: BlockStream,
     pub leb: bool,
     pub bytes: u64,
 }
@@ -295,7 +341,7 @@ impl Input {
     #[cfg(test)]
     pub(super) fn from_memory(bytes: std::sync::Arc<[u8]>, leb: bool) -> Self {
         Self {
-            source: BufReader::with_capacity(65536, Box::new(Cursor::new(bytes)) as Stream),
+            source: BlockStream::with_capacity(65536, Box::new(Cursor::new(bytes)) as Stream),
             leb,
             bytes: 0,
         }
@@ -314,22 +360,10 @@ impl Input {
             if offset >> 16 != 0 {
                 file.seek(SeekFrom::Start(offset >> 16))?;
             }
-            let source: Stream = Box::new(BufReader::with_capacity(65536, file));
-            let mut blocks = blocks(source, &buffer["child"])?;
-            let first = blocks
-                .next()?
-                .ok_or("Hail virtual offset points past end of file")?;
-            let within = offset & 0xffff;
-            if within > first.len() as u64 {
-                return Err("Hail virtual offset exceeds decompressed block".into());
-            }
-            let mut current = Cursor::new(first);
-            current.set_position(within);
+            let mut source = BlockStream::new(blocks(Box::new(file), &buffer["child"])?);
+            source.load_first((offset & 0xffff) as usize)?;
             Ok(Self {
-                source: BufReader::with_capacity(
-                    65536,
-                    Box::new(BlockStream { blocks, current }) as Stream,
-                ),
+                source,
                 leb: spec["name"] == "LEB128BufferSpec",
                 bytes: 0,
             })
@@ -342,19 +376,16 @@ impl Input {
         if offset != 0 {
             file.seek(SeekFrom::Start(offset))?;
         }
-        let source: Stream = Box::new(BufReader::with_capacity(65536, file));
+        let source: Stream = Box::new(file);
         let leb = spec["name"] == "LEB128BufferSpec";
         let spec = if leb { &spec["child"] } else { spec };
         let source = if spec["name"] == "BlockingBufferSpec" {
-            Box::new(BlockStream {
-                blocks: blocks(source, &spec["child"])?,
-                current: Cursor::new(vec![]),
-            }) as Stream
+            BlockStream::new(blocks(source, &spec["child"])?)
         } else {
-            source
+            BlockStream::raw(source, 65536)
         };
         Ok(Self {
-            source: BufReader::with_capacity(65536, source),
+            source,
             leb,
             bytes: 0,
         })
@@ -562,10 +593,195 @@ impl Input {
 mod tests {
     use super::*;
 
+    fn framed_blocks(codec: &str, framing: &str, chunks: &[Vec<u8>]) -> Result<(Vec<u8>, Value)> {
+        let mut wire = Vec::new();
+        for (i, chunk) in chunks.iter().enumerate() {
+            let raw = i % 2 == 1
+                && matches!(
+                    codec,
+                    "ZstdSizedBasedBlockBufferSpec" | "LZ4SizeBasedBlockBufferSpec"
+                );
+            let mut frame = Vec::new();
+            if codec == "LZ4SizeBasedBlockBufferSpec" {
+                frame.extend_from_slice(&i32::from(!raw).to_le_bytes());
+            }
+            if raw {
+                if codec == "ZstdSizedBasedBlockBufferSpec" {
+                    frame.extend_from_slice(&((chunk.len() as i32) << 1).to_le_bytes());
+                }
+                frame.extend_from_slice(chunk);
+            } else {
+                let size = if codec == "ZstdSizedBasedBlockBufferSpec" {
+                    ((chunk.len() as i32) << 1) | 1
+                } else {
+                    chunk.len() as i32
+                };
+                frame.extend_from_slice(&size.to_le_bytes());
+                frame.extend_from_slice(&if codec.starts_with("Zstd") {
+                    zstd::bulk::compress(chunk, 1)?
+                } else {
+                    lz4_flex::block::compress(chunk)
+                });
+            }
+            if framing.ends_with('2') {
+                let mut n = frame.len();
+                loop {
+                    let byte = (n & 127) as u8;
+                    n >>= 7;
+                    wire.push(byte | if n == 0 { 0 } else { 128 });
+                    if n == 0 {
+                        break;
+                    }
+                }
+            } else {
+                wire.extend_from_slice(&(frame.len() as i32).to_le_bytes());
+            }
+            wire.extend_from_slice(&frame);
+        }
+        Ok((
+            wire,
+            serde_json::json!({"name":codec,"blockSize":1024,"child":{"name":framing}}),
+        ))
+    }
+
+    #[test]
+    fn concrete_block_reader_crosses_empty_and_compressed_frames_without_copying() -> Result<()> {
+        let chunks = vec![
+            vec![7, 128],
+            vec![],
+            vec![1, 42, 1],
+            vec![2, 3, 4, 5, 6, 7, 8, 128],
+            vec![128, 1, 99],
+        ];
+        for codec in [
+            "ZstdBlockBufferSpec",
+            "ZstdSizedBasedBlockBufferSpec",
+            "LZ4BlockBufferSpec",
+            "LZ4SizeBasedBlockBufferSpec",
+        ] {
+            for framing in ["StreamBlockBufferSpec", "StreamBlockBufferSpec2"] {
+                let (wire, spec) = framed_blocks(codec, framing, &chunks)?;
+                let path = std::env::temp_dir().join(format!(
+                    "vail-direct-seek-{codec}-{framing}-{}.bin",
+                    std::process::id()
+                ));
+                std::fs::write(&path, &wire)?;
+                let seek_spec =
+                    serde_json::json!({"name":"BlockingBufferSpec","child":spec.clone()});
+                let seek_result = (|| -> Result<()> {
+                    let mut seek = Input::open_virtual(&path, &seek_spec, 1)?;
+                    assert_eq!(seek.varint(32)?, 128);
+                    assert_eq!(seek.byte()?, 42);
+                    assert_eq!(seek.bytes, 3);
+                    assert!(Input::open_virtual(&path, &seek_spec, 3).is_err());
+                    Ok(())
+                })();
+                let _ = std::fs::remove_file(path);
+                seek_result?;
+                let mut input = Input {
+                    source: BlockStream::new(blocks(Box::new(Cursor::new(wire)), &spec)?),
+                    leb: true,
+                    bytes: 0,
+                };
+                let pointer = input.source.fill_buf()?.as_ptr();
+                assert_eq!(pointer, input.source.decoded.as_ptr());
+                assert_eq!(input.varint(32)?, 7);
+                assert_eq!(input.varint(32)?, 128);
+                assert_eq!(input.varint(32)?, 42);
+                assert_eq!(input.fixed::<8>()?, [1, 2, 3, 4, 5, 6, 7, 8]);
+                input.skip_varints(1, 32)?;
+                assert_eq!(input.byte()?, 99);
+                assert_eq!(
+                    input.bytes as usize,
+                    chunks.iter().map(Vec::len).sum::<usize>()
+                );
+                input.finish()?;
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn reusable_compressed_and_decoded_buffers_keep_their_allocation() -> Result<()> {
+        for codec in ["ZstdBlockBufferSpec", "LZ4BlockBufferSpec"] {
+            let chunks = [vec![1; 128], vec![2; 128], vec![3; 128]];
+            let (wire, spec) = framed_blocks(codec, "StreamBlockBufferSpec", &chunks)?;
+            let mut compressed = Compressed {
+                child: blocks(Box::new(Cursor::new(wire)), &spec["child"])?,
+                spec,
+                zstd_decoder: if codec.starts_with("Zstd") {
+                    Some(zstd::bulk::Decompressor::new()?)
+                } else {
+                    None
+                },
+                compressed: Vec::new(),
+            };
+            let mut decoded = Vec::new();
+            assert!(compressed.read_block(&mut decoded)?);
+            let decoded_pointer = decoded.as_ptr();
+            let compressed_pointer = compressed.compressed.as_ptr();
+            for expected in &chunks[1..] {
+                assert!(compressed.read_block(&mut decoded)?);
+                assert_eq!(decoded, *expected);
+                assert_eq!(decoded.as_ptr(), decoded_pointer);
+                assert_eq!(compressed.compressed.as_ptr(), compressed_pointer);
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn failed_block_fills_never_publish_partial_or_stale_bytes() -> Result<()> {
+        let (mut wire, spec) = framed_blocks(
+            "ZstdBlockBufferSpec",
+            "StreamBlockBufferSpec",
+            &[vec![10, 11, 12]],
+        )?;
+        let mut invalid_frame = 8i32.to_le_bytes().to_vec();
+        invalid_frame.extend_from_slice(&[0, 1, 2]);
+        wire.extend_from_slice(&(invalid_frame.len() as i32).to_le_bytes());
+        wire.extend_from_slice(&invalid_frame);
+        let (last, _) = framed_blocks(
+            "ZstdBlockBufferSpec",
+            "StreamBlockBufferSpec",
+            &[vec![13, 14, 15, 16]],
+        )?;
+        wire.extend(last);
+        let mut input = Input {
+            source: BlockStream::new(blocks(Box::new(Cursor::new(wire)), &spec)?),
+            leb: false,
+            bytes: 0,
+        };
+        assert_eq!(input.bytes(3)?, vec![10, 11, 12]);
+        assert!(input.byte().is_err());
+        assert_eq!(input.bytes, 3);
+        assert_eq!(input.bytes(4)?, vec![13, 14, 15, 16]);
+        input.finish()?;
+        for framing in ["StreamBlockBufferSpec", "StreamBlockBufferSpec2"] {
+            let wire = if framing.ends_with('2') {
+                vec![3, 1]
+            } else {
+                vec![3, 0, 0, 0, 1]
+            };
+            let spec = serde_json::json!({"name":framing});
+            let mut source = BlockStream::new(blocks(Box::new(Cursor::new(wire)), &spec)?);
+            assert_eq!(
+                source.fill_buf().unwrap_err().kind(),
+                io::ErrorKind::UnexpectedEof
+            );
+            assert!(source.fill_buf()?.is_empty());
+        }
+        Ok(())
+    }
+
     #[test]
     fn zstd_decoder_reuses_context_across_blocks_and_virtual_seeks() -> Result<()> {
         for codec in ["ZstdBlockBufferSpec", "ZstdSizedBasedBlockBufferSpec"] {
-            let chunks = [vec![5u8; 17], (0..37u8).collect::<Vec<_>>(), vec![129u8; 99]];
+            let chunks = [
+                vec![5u8; 17],
+                (0..37u8).collect::<Vec<_>>(),
+                vec![129u8; 99],
+            ];
             let mut wire = Vec::new();
             let mut offsets = Vec::new();
             for (i, chunk) in chunks.iter().enumerate() {
@@ -573,19 +789,31 @@ mod tests {
                 let uncompressed = codec == "ZstdSizedBasedBlockBufferSpec" && i == 1;
                 let size = if codec == "ZstdSizedBasedBlockBufferSpec" {
                     ((chunk.len() as i32) << 1) | i32::from(!uncompressed)
-                } else { chunk.len() as i32 };
+                } else {
+                    chunk.len() as i32
+                };
                 let mut block = size.to_le_bytes().to_vec();
-                if uncompressed { block.extend_from_slice(chunk); }
-                else { block.extend_from_slice(&zstd::bulk::compress(chunk, 1)?); }
+                if uncompressed {
+                    block.extend_from_slice(chunk);
+                } else {
+                    block.extend_from_slice(&zstd::bulk::compress(chunk, 1)?);
+                }
                 wire.extend_from_slice(&(block.len() as i32).to_le_bytes());
                 wire.extend_from_slice(&block);
             }
             let compressed = serde_json::json!({"name":codec,"blockSize":1024,"child":{"name":"StreamBlockBufferSpec"}});
             let mut reader = blocks(Box::new(Cursor::new(wire.clone())), &compressed)?;
-            for expected in &chunks { assert_eq!(reader.next()?.unwrap(), *expected); }
-            assert!(reader.next()?.is_none());
+            let mut decoded = Vec::new();
+            for expected in &chunks {
+                assert!(reader.read_block(&mut decoded)?);
+                assert_eq!(decoded, *expected);
+            }
+            assert!(!reader.read_block(&mut decoded)?);
             let spec = serde_json::json!({"name":"BlockingBufferSpec","child":compressed});
-            let path = std::env::temp_dir().join(format!("vail-reused-zstd-{codec}-{}.bin", std::process::id()));
+            let path = std::env::temp_dir().join(format!(
+                "vail-reused-zstd-{codec}-{}.bin",
+                std::process::id()
+            ));
             std::fs::write(&path, wire)?;
             let result = (|| -> Result<()> {
                 let expected = chunks.concat();
@@ -608,7 +836,7 @@ mod tests {
 
     fn buffered(bytes: Vec<u8>) -> Input {
         Input {
-            source: BufReader::with_capacity(2, Box::new(Cursor::new(bytes)) as Stream),
+            source: BlockStream::with_capacity(2, Box::new(Cursor::new(bytes)) as Stream),
             leb: true,
             bytes: 0,
         }
@@ -623,7 +851,7 @@ mod tests {
             wire.extend(std::iter::repeat_n(128, 16));
             wire.push(3);
             let mut input = Input {
-                source: BufReader::with_capacity(64, Box::new(Cursor::new(wire)) as Stream),
+                source: BlockStream::with_capacity(64, Box::new(Cursor::new(wire)) as Stream),
                 leb: true,
                 bytes: 0,
             };
@@ -663,7 +891,7 @@ mod tests {
             let mut wire = bytes.clone();
             wire.push(99);
             let mut input = Input {
-                source: BufReader::with_capacity(capacity, Box::new(Cursor::new(wire)) as Stream),
+                source: BlockStream::with_capacity(capacity, Box::new(Cursor::new(wire)) as Stream),
                 leb: true,
                 bytes: 0,
             };
@@ -700,7 +928,7 @@ mod tests {
     fn short_varint_word_probe_masks_unused_bytes() -> Result<()> {
         for count in 1..=8 {
             let mut input = buffered(vec![]);
-            input.source = BufReader::with_capacity(
+            input.source = BlockStream::with_capacity(
                 32,
                 Box::new(Cursor::new(vec![1u8, 2, 3, 4, 5, 6, 7, 8, 128, 1])) as Stream,
             );
@@ -710,7 +938,7 @@ mod tests {
             assert_eq!(input.bytes, count as u64);
         }
         let mut input = buffered(vec![]);
-        input.source = BufReader::with_capacity(
+        input.source = BlockStream::with_capacity(
             32,
             Box::new(Cursor::new(vec![1u8, 2, 128, 1, 5, 6, 7, 8])) as Stream,
         );
@@ -775,7 +1003,7 @@ mod tests {
         for capacity in [1usize, 2, 7, 8, 32, 65536] {
             for (count, &expected) in offsets.iter().enumerate() {
                 let mut input = Input {
-                    source: BufReader::with_capacity(
+                    source: BlockStream::with_capacity(
                         capacity,
                         Box::new(Cursor::new(bytes.clone())) as Stream,
                     ),
@@ -799,7 +1027,10 @@ mod tests {
             let mut bytes = vec![128u8; 37];
             bytes.extend([255, 127, 1, 128, 0, 42, 43, 44, 45, 46, 47, 48, 49]);
             let mut input = Input {
-                source: BufReader::with_capacity(capacity, Box::new(Cursor::new(bytes)) as Stream),
+                source: BlockStream::with_capacity(
+                    capacity,
+                    Box::new(Cursor::new(bytes)) as Stream,
+                ),
                 leb: true,
                 bytes: 0,
             };
@@ -818,13 +1049,13 @@ mod tests {
         for count in 1..=16 {
             let mut input = buffered(vec![]);
             input.source =
-                BufReader::with_capacity(32, Box::new(Cursor::new(vec![7u8; 24])) as Stream);
+                BlockStream::with_capacity(32, Box::new(Cursor::new(vec![7u8; 24])) as Stream);
             input.skip_varints(count, 32)?;
             assert_eq!(input.bytes, count as u64);
             assert_eq!(input.byte()?, 7);
         }
         let mut input = buffered(vec![]);
-        input.source = BufReader::with_capacity(
+        input.source = BlockStream::with_capacity(
             32,
             Box::new(Cursor::new(vec![1u8, 2, 3, 4, 5, 6, 7, 8, 0xac, 2, 42])) as Stream,
         );
@@ -900,15 +1131,11 @@ mod tests {
                 &entries.buffer
             };
             let source: Stream = Box::new(Cursor::new(compressed.clone()));
-            let source: Stream = if spec["name"] == "BlockingBufferSpec" {
-                Box::new(BlockStream {
-                    blocks: blocks(source, &spec["child"])?,
-                    current: Cursor::new(vec![]),
-                })
+            let mut source = if spec["name"] == "BlockingBufferSpec" {
+                BlockStream::new(blocks(source, &spec["child"])?)
             } else {
-                source
+                BlockStream::raw(source, 65536)
             };
-            let mut source = BufReader::with_capacity(65536, source);
             let start = Instant::now();
             let count = io::copy(&mut source, &mut io::sink())?;
             let elapsed = start.elapsed().as_secs_f64();
