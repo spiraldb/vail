@@ -59,3 +59,9 @@ Budget stages:
 `prepare_cache_links.py` plans all availablealiases withoutcopying and skips missing/incomplete sources; `--apply` is explicit. `prepare_fixture.py` prepares only one explicitfixture, offline fromrawcache, under48GiBRSS/diskreserve/1800stimeout with process-group/JVMcleanup and receipt. It has not been invoked. No fixturegeneration is authorized until root confirms the diskbudget/finalplan.
 
 Owncleanup: removed inactive `/private/tmp/range-join-env`320MiB and ownuntracked compilednative190MiB after paired evidence committed. Logical510MiB removal; dfavailable3.8→4.1GiB (~.3GiB actual dueAPFSsharedblocks). Preserved all committedlogs/profiles, reusablefixtures, otherchats'builds, activeSUMtarget andfullharness. Currentfree4.1GiB remains below8GiBreserve.
+
+## Full inventory run started
+
+Root authorized a real full inventory milestone run. Frozen exact main `1c00d2d6fb8a5b029b3014f57dd3942e904afce8`; normal release rebuild6.62s withkache,26public smoke passes, nativeSHA3f8b5061f4d9fc1b0e8b9ec26e68fb3847d547511fdd87c72ae6ec06182b2201. Receipt logs/provenance in freeze-1c00d2d6/.
+
+Actual output `/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream`, live log `/tmp/full-local-upstream-prep-20261022/full-run.log`. All108inventorycases,3Vail+3eligibleHail attempts, serialfreshworkers. Missingexactfixtures explicitlyunsupported (no representative substitution). Nativeartifact/source remain fixed; otherheavyworkpaused.48GiBRSS,2GiBdisk guard for bounded existing-input querywrites,6hdispatchbudget. Sourceprepared helper/manifest frozen by hashes; exactcachedraw/native aliases only. Currentfree9.2GiB atstart, no missingfixturegeneration inside run. Fixture CPUpreparation will not compete withtimings: planned optional gapfillphase follows initialattempts with explicitreports/sourceprovenance.
