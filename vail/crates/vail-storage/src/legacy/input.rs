@@ -352,7 +352,18 @@ impl Input {
             while available.len() - consumed >= 8 {
                 let word =
                     u64::from_le_bytes(available[consumed..consumed + 8].try_into().unwrap());
-                let mut terminators = !word & 0x8080_8080_8080_8080;
+                // Small arrays commonly consist entirely of one-byte values.
+                // Consume their prefix without popcount/Nth-bit selection.
+                let high_bits = word & 0x8080_8080_8080_8080;
+                if remaining <= 8 {
+                    let prefix_mask = u64::MAX >> ((8 - remaining) * 8);
+                    if high_bits & prefix_mask == 0 {
+                        consumed += remaining;
+                        remaining = 0;
+                        break;
+                    }
+                }
+                let mut terminators = high_bits ^ 0x8080_8080_8080_8080;
                 let count = terminators.count_ones() as usize;
                 if count < remaining {
                     remaining -= count;
@@ -526,6 +537,40 @@ mod tests {
         assert_eq!(wider_than_int32.byte()?, 42);
         assert!(buffered(vec![0x80]).skip_varints(1, 32).is_err());
         assert!(buffered(vec![0x80; 10]).skip_varints(1, 64).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn projected_varint_prefix_and_mixed_word_paths_match_scalar_cursor() -> Result<()> {
+        let mut values = vec![vec![1u8], vec![2], vec![3], vec![4], vec![128, 0]];
+        let mut long = vec![255; 12];
+        long.push(1);
+        values.extend([long, vec![5], vec![6], vec![7], vec![8]]);
+        let mut bytes = Vec::new();
+        let mut offsets = vec![0];
+        for value in values {
+            bytes.extend(value);
+            offsets.push(bytes.len());
+        }
+        bytes.push(42);
+        for capacity in [1usize, 2, 7, 8, 32, 65536] {
+            for (count, &expected) in offsets.iter().enumerate() {
+                let mut input = Input {
+                    source: BufReader::with_capacity(
+                        capacity,
+                        Box::new(Cursor::new(bytes.clone())) as Stream,
+                    ),
+                    leb: true,
+                    bytes: 0,
+                };
+                input.skip_varints(count, 32)?;
+                assert_eq!(
+                    input.bytes, expected as u64,
+                    "capacity={capacity} count={count}"
+                );
+                assert_eq!(input.byte()?, bytes[expected]);
+            }
+        }
         Ok(())
     }
 

@@ -639,6 +639,131 @@ enum StructPostlude {
     EmptyTuple,
 }
 
+// Builder references are bound once per array in physical wire order. Taking
+// each logical destination from disjoint iter_mut references needs no aliasing.
+enum BoundOutput<'a> {
+    Skip,
+    Bool(&'a mut BooleanBuilder),
+    InvertedBool(&'a mut BooleanBuilder),
+    I32(&'a mut Int32Builder),
+    I64(&'a mut Int64Builder),
+    F32(&'a mut Float32Builder),
+    F64(&'a mut Float64Builder),
+    Call(&'a mut CallColumn),
+    Other(&'a mut Column),
+}
+struct BoundField<'n, 'a> {
+    node: &'n Node,
+    missing: usize,
+    output: BoundOutput<'a>,
+}
+impl BoundField<'_, '_> {
+    fn null(&mut self) -> Result<()> {
+        match &mut self.output {
+            BoundOutput::Skip => {}
+            BoundOutput::Bool(b) | BoundOutput::InvertedBool(b) => b.append_null(),
+            BoundOutput::I32(b) => b.append_null(),
+            BoundOutput::I64(b) => b.append_null(),
+            BoundOutput::F32(b) => b.append_null(),
+            BoundOutput::F64(b) => b.append_null(),
+            BoundOutput::Call(b) => b.null(),
+            BoundOutput::Other(b) => b.null()?,
+        }
+        Ok(())
+    }
+    fn append(&mut self, input: &mut Input) -> Result<()> {
+        match &mut self.output {
+            BoundOutput::Skip => self.node.skip(input)?,
+            BoundOutput::Bool(b) => b.append_value(boolean(input)?),
+            BoundOutput::InvertedBool(b) => b.append_value(!boolean(input)?),
+            BoundOutput::I32(b) => b.append_value(self.node.integer(input, 32)? as i32),
+            BoundOutput::I64(b) => b.append_value(self.node.integer(input, 64)?),
+            BoundOutput::F32(b) => b.append_value(f32::from_le_bytes(input.fixed()?)),
+            BoundOutput::F64(b) => b.append_value(f64::from_le_bytes(input.fixed()?)),
+            BoundOutput::Call(b) => {
+                let value = self.node.integer(input, 32)? as u32;
+                validate_packed_call(value)?;
+                b.packed.push(value);
+                b.valid.append_non_null();
+            }
+            BoundOutput::Other(b) => self.node.append(input, b)?,
+        }
+        Ok(())
+    }
+    fn append_small(&mut self, value: u8) -> Result<()> {
+        match &mut self.output {
+            BoundOutput::Skip => {}
+            BoundOutput::I32(b) => b.append_value(value as i32),
+            BoundOutput::I64(b) => b.append_value(value as i64),
+            BoundOutput::Call(b) => {
+                validate_packed_call(value as u32)?;
+                b.packed.push(value as u32);
+                b.valid.append_non_null();
+            }
+            BoundOutput::Other(b) => self.node.append_call_value(value as u32, b)?,
+            _ => unreachable!("bound integer run"),
+        }
+        Ok(())
+    }
+    fn missing(&self, bits: &Bitmap) -> bool {
+        self.missing != usize::MAX && absent(bits, self.missing)
+    }
+}
+enum BoundOp<'n, 'a> {
+    Field(BoundField<'n, 'a>),
+    Run {
+        fields: Vec<BoundField<'n, 'a>>,
+        requires_leb: bool,
+    },
+}
+impl BoundOp<'_, '_> {
+    fn null(&mut self) -> Result<()> {
+        match self {
+            Self::Field(f) => f.null(),
+            Self::Run { fields, .. } => {
+                for field in fields {
+                    field.null()?;
+                }
+                Ok(())
+            }
+        }
+    }
+    fn append(&mut self, input: &mut Input, bits: &Bitmap, all_present: bool) -> Result<()> {
+        match self {
+            Self::Field(field) => {
+                if !all_present && field.missing(bits) {
+                    field.null()
+                } else {
+                    field.append(input)
+                }
+            }
+            Self::Run {
+                fields,
+                requires_leb,
+            } => {
+                if (!*requires_leb || input.leb)
+                    && (all_present || !fields.iter().any(|f| f.missing(bits)))
+                {
+                    if let Some(values) = input.try_small_varints(fields.len())? {
+                        for (field, value) in fields.iter_mut().zip(values) {
+                            field.append_small(value)?;
+                        }
+                        return Ok(());
+                    }
+                }
+                for field in fields {
+                    if !all_present && field.missing(bits) {
+                        field.null()?;
+                    } else {
+                        field.append(input)?;
+                    }
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
 /// Compile physical destination mapping once, outside the row loop.
 struct Node {
     e: Encoding,
@@ -651,6 +776,7 @@ struct Node {
     optional_count: usize,
     all_present_mask: Option<u64>,
     struct_postlude: StructPostlude,
+    distinct_destinations: bool,
     varint_length: bool,
 }
 impl Node {
@@ -771,6 +897,11 @@ impl Node {
                 leb: None,
             }
         };
+        let distinct_destinations = fields.iter().enumerate().all(|(i, field)| {
+            fields[..i]
+                .iter()
+                .all(|previous| previous.dest != field.dest)
+        });
         Self {
             e: e.clone(),
             wire: Wire::new(&e.kind),
@@ -787,6 +918,7 @@ impl Node {
                     (1u64 << optional_count) - 1
                 }
             }),
+            distinct_destinations,
             struct_postlude: match t {
                 Type::Locus { .. } => StructPostlude::Locus,
                 Type::Tuple { tuple } if tuple.is_empty() => StructPostlude::EmptyTuple,
@@ -1147,6 +1279,102 @@ impl Node {
         Ok(())
     }
 
+    fn bind_struct<'n, 'a>(&'n self, outputs: &'a mut [Column]) -> Vec<BoundOp<'n, 'a>> {
+        let mut destinations = outputs.iter_mut().map(Some).collect::<Vec<_>>();
+        let mut fields = self
+            .fields
+            .iter()
+            .zip(&self.children)
+            .map(|(op, node)| {
+                let output = if !op.project {
+                    BoundOutput::Skip
+                } else {
+                    match destinations[op.dest]
+                        .take()
+                        .expect("unique physical field destination")
+                    {
+                        Column::Bool(b) => {
+                            if op.invert_boolean {
+                                BoundOutput::InvertedBool(b)
+                            } else {
+                                BoundOutput::Bool(b)
+                            }
+                        }
+                        Column::Int32(b) => BoundOutput::I32(b),
+                        Column::Int64(b) => BoundOutput::I64(b),
+                        Column::Float32(b) => BoundOutput::F32(b),
+                        Column::Float64(b) => BoundOutput::F64(b),
+                        Column::Call(b) => BoundOutput::Call(b),
+                        other => BoundOutput::Other(other),
+                    }
+                };
+                BoundField {
+                    node,
+                    missing: op.missing_bit,
+                    output,
+                }
+            })
+            .collect::<Vec<_>>()
+            .into_iter();
+        let mut ops = Vec::new();
+        let mut i = 0;
+        while i < self.fields.len() {
+            let op = &self.fields[i];
+            if op.varint_run != 0 {
+                let run = fields.by_ref().take(op.varint_run as usize).collect();
+                ops.push(BoundOp::Run {
+                    fields: run,
+                    requires_leb: op.run_requires_leb,
+                });
+                i += op.varint_run as usize;
+            } else {
+                ops.push(BoundOp::Field(fields.next().unwrap()));
+                i += 1;
+            }
+        }
+        ops
+    }
+    fn append_struct_elements(
+        &self,
+        input: &mut Input,
+        child: &mut Column,
+        n: usize,
+        element_bits: &Bitmap,
+    ) -> Result<()> {
+        if !matches!(self.struct_postlude, StructPostlude::Plain) || !self.distinct_destinations {
+            for i in 0..n {
+                if !self.e.required && absent(element_bits, i) {
+                    child.null()?;
+                } else {
+                    self.append_struct(input, child)?;
+                }
+            }
+            return Ok(());
+        }
+        let Column::Struct(_, outputs, validity) = child else {
+            unreachable!("struct array output")
+        };
+        let mut ops = self.bind_struct(outputs);
+        for i in 0..n {
+            if !self.e.required && absent(element_bits, i) {
+                for op in &mut ops {
+                    op.null()?;
+                }
+                validity.append_null();
+            } else {
+                let bits = bitmap(input, self.optional_count)?;
+                let all_present = self
+                    .all_present_mask
+                    .is_some_and(|mask| bits.low_word() & mask == 0);
+                for op in &mut ops {
+                    op.append(input, &bits, all_present)?;
+                }
+                validity.append_non_null();
+            }
+        }
+        Ok(())
+    }
+
     fn append_list(&self, input: &mut Input, out: &mut Column) -> Result<()> {
         let n = self.length(input)?;
         let c = &self.children[0];
@@ -1199,19 +1427,7 @@ impl Node {
             | Type::Tuple { .. }
             | Type::Locus { .. }
             | Type::Interval { .. } => {
-                if c.e.required {
-                    for _ in 0..n {
-                        c.append_struct(input, child)?;
-                    }
-                } else {
-                    for i in 0..n {
-                        if absent(&bits, i) {
-                            child.null()?;
-                        } else {
-                            c.append_struct(input, child)?;
-                        }
-                    }
-                }
+                c.append_struct_elements(input, child, n, &bits)?;
             }
             _ => {
                 for i in 0..n {
@@ -1474,6 +1690,135 @@ impl PartReader {
 mod tests {
     use super::*;
 
+    fn append_unbound_struct_array(
+        node: &Node,
+        input: &mut Input,
+        output: &mut Column,
+    ) -> Result<()> {
+        let n = node.length(input)?;
+        let element = &node.children[0];
+        let bits = if element.e.required {
+            Bitmap::Inline([0; 8])
+        } else {
+            bitmap(input, n)?
+        };
+        let Column::List(_, child, _, _) = output else {
+            unreachable!()
+        };
+        for i in 0..n {
+            if !element.e.required && absent(&bits, i) {
+                child.null()?;
+            } else {
+                element.append_struct(input, child)?;
+            }
+        }
+        output.end_list()
+    }
+
+    #[test]
+    fn bound_struct_arrays_match_generic_high_masks_nested_calls_and_reordering() -> Result<()> {
+        let path =
+            std::env::temp_dir().join(format!("vail-bound-struct-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            let mut fields = (0..67)
+                .map(|i| (format!("x{i}"), Type::Primitive(P::Int32)))
+                .collect::<Vec<_>>();
+            fields.push(("call".into(), Type::Primitive(P::Call)));
+            fields.push((
+                "array".into(),
+                Type::Array {
+                    array: Box::new(Type::Primitive(P::Int32)),
+                },
+            ));
+            let ty = Type::Array {
+                array: Box::new(Type::Struct {
+                    r#struct: fields.clone(),
+                }),
+            };
+            let scalar = |required| Encoding {
+                kind: "EInt32".into(),
+                required,
+                fields: vec![],
+                rank: 0,
+            };
+            let physical = fields
+                .iter()
+                .rev()
+                .map(|(name, ty)| {
+                    (
+                        name.clone(),
+                        if matches!(ty, Type::Array { .. }) {
+                            Encoding {
+                                kind: "EArray2".into(),
+                                required: false,
+                                fields: vec![("element".into(), scalar(true))],
+                                rank: 0,
+                            }
+                        } else {
+                            scalar(false)
+                        },
+                    )
+                })
+                .collect::<Vec<_>>();
+            let encoding = Encoding {
+                kind: "EArray2".into(),
+                required: true,
+                fields: vec![(
+                    "element".into(),
+                    Encoding {
+                        kind: "EBaseStruct".into(),
+                        required: false,
+                        fields: physical,
+                        rank: 0,
+                    },
+                )],
+                rank: 0,
+            };
+            let mut bytes = vec![4, 8];
+            for row in 0..3 {
+                let mut missing = vec![0u8; 9];
+                missing[8] = 0xe0; // unused bitmap padding
+                if row == 1 {
+                    missing[8] |= 1;
+                } // physical bit64
+                if row == 2 {
+                    missing[0] |= 3;
+                } // absent nested array and Call
+                bytes.extend_from_slice(&missing);
+                for i in 0..69 {
+                    if missing[i / 8] & (1 << (i % 8)) != 0 {
+                        continue;
+                    }
+                    match i {
+                        0 => bytes.extend_from_slice(&[2, 1, 2]),
+                        1 => bytes.push(12),
+                        _ => bytes.push(i as u8 + 1),
+                    }
+                }
+            }
+            std::fs::write(&path, bytes)?;
+            for projection in [
+                None,
+                Some(vec![vec!["x0".into()]]),
+                Some(vec![vec!["call".into()], vec!["array".into()]]),
+            ] {
+                let mut node = Node::new(&encoding, &ty);
+                if let Some(paths) = projection {
+                    node.demand(&paths);
+                }
+                let mut expected = Column::projected(&node, &ty.to_arrow()?);
+                let mut actual = Column::projected(&node, &ty.to_arrow()?);
+                let spec = serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}});
+                append_unbound_struct_array(&node, &mut Input::open(&path, &spec)?, &mut expected)?;
+                node.append(&mut Input::open(&path, &spec)?, &mut actual)?;
+                assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref());
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
     #[test]
     fn dense_struct_array_matches_missing_aware_loop_with_projection() -> Result<()> {
         let path =
@@ -1545,7 +1890,11 @@ mod tests {
                         let spec = serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}});
                         let mut expected = Column::projected(&slow, &ty.to_arrow()?);
                         let mut actual = Column::projected(&fast, &ty.to_arrow()?);
-                        slow.append(&mut Input::open(&path, &spec)?, &mut expected)?;
+                        append_unbound_struct_array(
+                            &slow,
+                            &mut Input::open(&path, &spec)?,
+                            &mut expected,
+                        )?;
                         fast.append(&mut Input::open(&path, &spec)?, &mut actual)?;
                         assert_eq!(
                             expected.finish()?.as_ref(),
