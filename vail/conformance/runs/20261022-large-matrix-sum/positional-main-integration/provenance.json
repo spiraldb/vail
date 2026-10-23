@@ -1,0 +1,22 @@
+{
+  "source": "485b7e57fcbb71cc67fe4af389c79a6ec5c57e18",
+  "native_sha256": "041e67e865745f7c987d8f14b2daedda805c68f7c03e4f41ff3d4152f7797ca8",
+  "build": "VIRTUAL_ENV=/private/tmp/large-matrix-sum-env RUSTUP_TOOLCHAIN=1.98.0 CARGO_TARGET_DIR=/Users/danielking/.codex/worktrees/large-matrix-sum/vail/target /private/tmp/large-matrix-sum-env/bin/maturin develop --release --locked",
+  "tests": [
+    "test_matrix_column_coordinate_callbacks.py",
+    "test_matrix_strict_entry_inputs.py",
+    "test_scalar_external_context.py",
+    "test_array_agg_coordinate_callbacks.py",
+    "test_array_agg_coordinate_dag.py",
+    "test_grouped_aggregate_execution.py",
+    "test_matrix_entry_sum.py",
+    "test_matrix_array_agg.py",
+    "test_globals.py",
+    "test_agg_fold.py",
+    "test_aggregate_initialization_lazy.py",
+    "test_logical_nested_aggregation.py",
+    "test_randomness.py"
+  ],
+  "result": "148 passed in15.95s; normal releasebuild1m01; no sourcechange necessary for positional-cell/composite integration",
+  "excluded": "Unvalidated productWIP5088d6c4 remains separate and is not in source/artifact."
+}
