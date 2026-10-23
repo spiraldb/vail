@@ -5,7 +5,8 @@
 use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int64Array, ListArray, StructArray, UInt32Array, new_empty_array,
+    Array, ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray, StructArray, UInt32Array,
+    new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
@@ -238,9 +239,7 @@ impl Accumulator for CoordinateBundle {
                     .expect("validated filter type")
             });
             let combined_filter = match (parent_filter.as_ref(), filter) {
-                (Some(parent), Some(filter)) => {
-                    Some(arrow_arith::boolean::and(parent, filter)?)
-                }
+                (Some(parent), Some(filter)) => Some(arrow_arith::boolean::and(parent, filter)?),
                 (Some(parent), None) => Some(parent.clone()),
                 (None, Some(_)) => None,
                 (None, None) => None,
@@ -431,13 +430,84 @@ pub fn coordinate_udaf(
     ))
 }
 
+/// SUM has no per-coordinate null state: its language identity is zero.
+#[derive(Debug)]
+struct DenseSum {
+    values: ArrayRef,
+}
+impl DenseSum {
+    fn new(dtype: &DataType) -> Self {
+        Self {
+            values: new_empty_array(dtype),
+        }
+    }
+    fn update(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        if width == 0 {
+            return Ok(());
+        }
+        let mut input = if flat.data_type() == self.values.data_type() {
+            Arc::clone(flat)
+        } else {
+            cast(flat.as_ref(), self.values.data_type())?
+        };
+        if let Some(filter) = filter {
+            let zero = ScalarValue::try_from(self.values.data_type())?.to_scalar()?;
+            input = arrow_select::zip::zip(filter, &input, &zero)?;
+        }
+        if input.null_count() != 0 {
+            let mask = arrow_arith::boolean::is_null(input.as_ref())?;
+            let zero = match input.data_type() {
+                DataType::Int64 => ScalarValue::Int64(Some(0)),
+                DataType::Float64 => ScalarValue::Float64(Some(0.0)),
+                _ => unreachable!(),
+            }
+            .to_scalar()?;
+            input = arrow_select::zip::zip(&mask, &zero, &input)?;
+        }
+        macro_rules! add {
+            ($array:ty, $zero:expr, $op:expr) => {{
+                // Move the sole state owner into Arrow's in-place kernel.
+                let old = std::mem::replace(&mut self.values, new_empty_array(input.data_type()));
+                let mut values = if old.is_empty() {
+                    <$array>::from(vec![$zero; width])
+                } else {
+                    old.as_any().downcast_ref::<$array>().unwrap().clone()
+                };
+                drop(old);
+                let input = input.as_any().downcast_ref::<$array>().unwrap();
+                for offset in (0..input.len()).step_by(width) {
+                    let row = input.slice(offset, width);
+                    values = match arrow_arith::arity::binary_mut(values, &row, $op) {
+                        Ok(result) => result?,
+                        Err(shared) => arrow_arith::arity::binary(&shared, &row, $op)?,
+                    };
+                }
+                self.values = Arc::new(values);
+            }};
+        }
+        match input.data_type() {
+            DataType::Int64 => add!(Int64Array, 0i64, i64::wrapping_add),
+            DataType::Float64 => add!(Float64Array, 0.0f64, |a, b| a + b),
+            _ => unreachable!(),
+        }
+        Ok(())
+    }
+}
+
 enum Kernels {
+    Sum(DenseSum),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
 impl std::fmt::Debug for Kernels {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Sum(sum) => sum.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -463,7 +533,9 @@ impl Coordinates {
         input: DataType,
         aggregate_input: DataType,
     ) -> Result<Self> {
-        let kernels = if aggregate.groups_accumulator_supported() {
+        let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(aggregate.fun()) {
+            Kernels::Sum(DenseSum::new(&dtype))
+        } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
             ))
@@ -500,6 +572,7 @@ impl Coordinates {
     fn states(&mut self) -> Result<Vec<ArrayRef>> {
         let width = self.width.unwrap_or(0);
         match &mut self.kernels {
+            Kernels::Sum(sum) => Ok(vec![Arc::clone(&sum.values)]),
             Kernels::Groups(kernel) => {
                 let kernel = kernel
                     .get_mut()
@@ -539,6 +612,9 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::Sum(sum) = &mut self.kernels {
+            return sum.update(&flat, filter, width);
+        }
         let flat = if self.input == self.aggregate_input {
             flat
         } else {
@@ -584,6 +660,7 @@ impl Coordinates {
             return Ok(new_empty_array(self.aggregate.field().data_type()));
         }
         let mut values = match &mut self.kernels {
+            Kernels::Sum(sum) => Arc::clone(&sum.values),
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -677,6 +754,7 @@ impl Accumulator for Coordinates {
                 indices.values.capacity() * std::mem::size_of::<usize>()
             })
             + match &self.kernels {
+                Kernels::Sum(sum) => sum.values.get_array_memory_size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -718,6 +796,7 @@ impl Accumulator for Coordinates {
                 return Err(error("coordinate state length mismatch"));
             }
             match &mut self.kernels {
+                Kernels::Sum(sum) => sum.update(&values[0], None, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
@@ -740,7 +819,7 @@ impl Accumulator for Coordinates {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arrow_array::{Int64Array};
+    use arrow_array::Int64Array;
     use arrow_buffer::NullBuffer;
     use arrow_schema::Fields;
     use datafusion_physical_expr::expressions::Column;
@@ -806,14 +885,12 @@ mod tests {
             packed_list_type,
             true,
         )]));
-        let expression = AggregateExprBuilder::new(
-            bundle,
-            vec![Arc::new(Column::new("packed", 0))],
-        )
-        .schema(input_schema)
-        .alias("counts")
-        .build()
-        .unwrap();
+        let expression =
+            AggregateExprBuilder::new(bundle, vec![Arc::new(Column::new("packed", 0))])
+                .schema(input_schema)
+                .alias("counts")
+                .build()
+                .unwrap();
         let mut accumulator = expression.create_accumulator().unwrap();
 
         let fields = match packed_type {
@@ -841,8 +918,16 @@ mod tests {
             panic!("coordinate bundle did not return a list")
         };
         let result = result.as_any().downcast_ref::<ListArray>().unwrap();
-        let result = result.values().as_any().downcast_ref::<StructArray>().unwrap();
-        let counts = result.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+        let result = result
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        let counts = result
+            .column(0)
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap();
         assert_eq!(counts.values(), &[0, 1]);
     }
 }

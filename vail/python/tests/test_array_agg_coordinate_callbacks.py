@@ -110,3 +110,18 @@ def test_coordinate_take_and_filtered_empty_struct_collect():
     ))
     assert [r.first for r in result] == [[0, 1], [10, 11]]
     assert [r.empty for r in result] == [[hl.Struct()] * 3, [hl.Struct()] * 3]
+
+
+@pytest.mark.parametrize("partitions", [1, 3])
+@pytest.mark.parametrize("dtype,arrays,expected", [
+    (hl.tint64, [[9223372036854775807, None], [1, 4]], [-9223372036854775808, 4]),
+    (hl.tfloat64, [[1.5, None], [2.25, None]], [3.75, 0.0]),
+    (hl.tbool, [[True, None], [True, False]], [2, 0]),
+])
+def test_coordinate_sum_widening_nulls_and_partial_merges(partitions, dtype, arrays, expected):
+    table = hl.Table.parallelize(
+        [{"xs": xs} for xs in arrays],
+        schema=hl.tstruct(xs=hl.tarray(dtype)), n_partitions=partitions)
+    assert table.aggregate(hl.agg.array_sum(table.xs)) == expected
+    assert table.aggregate(hl.agg.array_agg(
+        lambda x: hl.agg.filter(False, hl.agg.sum(x)), table.xs)) == [0, 0]
