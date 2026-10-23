@@ -1,0 +1,2354 @@
+{
+  "engine": "hail",
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_ints",
+      "id": "benchmark_table::test_table_read_force_count_ints",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.06363925000187,
+      "telemetry": {
+        "cpu_seconds": 7.306745833333333,
+        "average_cores": 3.5406100900832866,
+        "peak_rss_gib": 0.890106201171875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 159945057,
+          "system_time": 15416843,
+          "instructions": 76429558892,
+          "cycles": 25989788242,
+          "diskio_bytesread": 409600,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_table_read_force_count_ints"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.027,
+      "elapsed_seconds": 5.636,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_int_stats",
+      "id": "benchmark_table::test_table_aggregate_int_stats",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.8725937919225544,
+      "telemetry": {
+        "cpu_seconds": 16.827297583333333,
+        "average_cores": 4.345163212411572,
+        "peak_rss_gib": 1.1095733642578125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 376158379,
+          "system_time": 27696763,
+          "instructions": 180905796718,
+          "cycles": 59424199043,
+          "diskio_bytesread": 16384,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_table_aggregate_int_stats"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.064,
+      "elapsed_seconds": 7.483,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_dense",
+      "id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "FatalError: SparkException: Job aborted due to stage failure: Task 1 in stage 0.0 failed 1 times, most recent failure: Lost task 1.0 in stage 0.0 (TID 1) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\nJava stack trace:\norg.apache.spark.SparkException: Job aborted due to stage failure: Task 1 in stage 0.0 failed 1 times, most recent failure: Lost task 1.0 in stage 0.0 (TID 1) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2898)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2834)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2833)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2833)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1$adapted(DAGScheduler.scala:1253)\n\tat scala.Option.foreach(Option.scala:407)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3102)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3036)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3025)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:995)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:2393)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5(SparkBackend.scala:272)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5$adapted(SparkBackend.scala:271)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.mapCollectPartitions(SparkBackend.scala:271)\n\tat is.hail.backend.BackendUtils.runCDA(BackendUtils.scala:93)\n\tat is.hail.backend.BackendUtils.collectDArray(BackendUtils.scala:30)\n\tat __C4Compile.__m6split_Block_region63_65(Emit.scala)\n\tat __C4Compile.__m6split_Block(Emit.scala)\n\tat __C4Compile.apply(Emit.scala)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$5(CompileAndEvaluate.scala:84)\n\tat scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.java:23)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4(CompileAndEvaluate.scala:84)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4$adapted(CompileAndEvaluate.scala:82)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$2(ExecuteContext.scala:147)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$1(ExecuteContext.scala:146)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext.scopedExecution(ExecuteContext.scala:145)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:82)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.expr.ir.CompileAndEvaluate$.evalToIR(CompileAndEvaluate.scala:33)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.evaluate$1(LowerOrInterpretNonCompilable.scala:34)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.rewrite$1(LowerOrInterpretNonCompilable.scala:61)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.apply(LowerOrInterpretNonCompilable.scala:66)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilablePass$.transform(LoweringPass.scala:86)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36)\n\tat scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33)\n\tat scala.collection.mutable.WrappedArray.foreach(WrappedArray.scala:38)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.execute$1(EvalRelationalLets.scala:15)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.lower$1(EvalRelationalLets.scala:22)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.$anonfun$apply$1(EvalRelationalLets.scala:36)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.apply(EvalRelationalLets.scala:13)\n\tat is.hail.expr.ir.lowering.EvalRelationalLetsPass.transform(LoweringPass.scala:183)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:51)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.backend.spark.SparkBackend.$anonfun$execute$1(SparkBackend.scala:363)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.spark.SparkBackend.execute(SparkBackend.scala:348)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$2(BackendRpc.scala:97)\n\tat is.hail.backend.driver.BackendRpc.withRegisterSerializedFns(BackendRpc.scala:170)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:95)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: SparkException: Job aborted due to stage failure: Task 1 in stage 0.0 failed 1 times, most recent failure: Lost task 1.0 in stage 0.0 (TID 1) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-gapfill-20261023/harness/upstream_benchmark_coverage.py\", line 443, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 188, in test_table_aggregate_downsample_dense\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/decorator/__init__.py\", line 247, in fun\n    return caller(func, *(extras + args), **kw)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/typecheck/check.py\", line 584, in wrapper\n    return __original_func(*args_, **kwargs_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/table.py\", line 1911, in aggregate\n    return Env.backend().execute(hl.ir.MakeTuple([agg_ir]))[0]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 274, in execute\n    raise err\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 266, in execute\n    return super().execute(ir)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 231, in execute\n    raise e.maybe_user_error(ir) from None\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 229, in execute\n    result = self._rpc(ActionTag.EXECUTE, payload)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 293, in _rpc\n    raise fatal_error_from_java_error_triplet(\nhail.utils.java.FatalError: SparkException: Job aborted due to stage failure: Task 1 in stage 0.0 failed 1 times, most recent failure: Lost task 1.0 in stage 0.0 (TID 1) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\nJava stack trace:\norg.apache.spark.SparkException: Job aborted due to stage failure: Task 1 in stage 0.0 failed 1 times, most recent failure: Lost task 1.0 in stage 0.0 (TID 1) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2898)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2834)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2833)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2833)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1$adapted(DAGScheduler.scala:1253)\n\tat scala.Option.foreach(Option.scala:407)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3102)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3036)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3025)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:995)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:2393)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5(SparkBackend.scala:272)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5$adapted(SparkBackend.scala:271)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.mapCollectPartitions(SparkBackend.scala:271)\n\tat is.hail.backend.BackendUtils.runCDA(BackendUtils.scala:93)\n\tat is.hail.backend.BackendUtils.collectDArray(BackendUtils.scala:30)\n\tat __C4Compile.__m6split_Block_region63_65(Emit.scala)\n\tat __C4Compile.__m6split_Block(Emit.scala)\n\tat __C4Compile.apply(Emit.scala)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$5(CompileAndEvaluate.scala:84)\n\tat scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.java:23)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4(CompileAndEvaluate.scala:84)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4$adapted(CompileAndEvaluate.scala:82)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$2(ExecuteContext.scala:147)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$1(ExecuteContext.scala:146)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext.scopedExecution(ExecuteContext.scala:145)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:82)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.expr.ir.CompileAndEvaluate$.evalToIR(CompileAndEvaluate.scala:33)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.evaluate$1(LowerOrInterpretNonCompilable.scala:34)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.rewrite$1(LowerOrInterpretNonCompilable.scala:61)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.apply(LowerOrInterpretNonCompilable.scala:66)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilablePass$.transform(LoweringPass.scala:86)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36)\n\tat scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33)\n\tat scala.collection.mutable.WrappedArray.foreach(WrappedArray.scala:38)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.execute$1(EvalRelationalLets.scala:15)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.lower$1(EvalRelationalLets.scala:22)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.$anonfun$apply$1(EvalRelationalLets.scala:36)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.apply(EvalRelationalLets.scala:13)\n\tat is.hail.expr.ir.lowering.EvalRelationalLetsPass.transform(LoweringPass.scala:183)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:51)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.backend.spark.SparkBackend.$anonfun$execute$1(SparkBackend.scala:363)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.spark.SparkBackend.execute(SparkBackend.scala:348)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$2(BackendRpc.scala:97)\n\tat is.hail.backend.driver.BackendRpc.withRegisterSerializedFns(BackendRpc.scala:170)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:95)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: SparkException: Job aborted due to stage failure: Task 1 in stage 0.0 failed 1 times, most recent failure: Lost task 1.0 in stage 0.0 (TID 1) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n",
+      "benchmark_seconds": 20.6655508329859,
+      "telemetry": {
+        "cpu_seconds": 30.792392083333333,
+        "average_cores": 1.4900307476227148,
+        "peak_rss_gib": 3.183502197265625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 608763013,
+          "system_time": 130254397,
+          "instructions": 166795704175,
+          "cycles": 103720305013,
+          "diskio_bytesread": 229376,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_table_aggregate_downsample_dense"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.062,
+      "elapsed_seconds": 24.275,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_linreg",
+      "id": "benchmark_table::test_table_aggregate_linreg",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.65143770899158,
+      "telemetry": {
+        "cpu_seconds": 28.103624041666663,
+        "average_cores": 4.225163828745865,
+        "peak_rss_gib": 0.964996337890625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 641285993,
+          "system_time": 33200984,
+          "instructions": 613448634522,
+          "cycles": 100618071033,
+          "diskio_bytesread": 10063872,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_table_aggregate_linreg"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.09,
+      "elapsed_seconds": 10.29,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[10]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.5473194590304047,
+      "telemetry": {
+        "cpu_seconds": 4.938920666666666,
+        "average_cores": 3.191799288590516,
+        "peak_rss_gib": 0.994903564453125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 105937281,
+          "system_time": 12596815,
+          "instructions": 36299962502,
+          "cycles": 17116919914,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_read_force_count_partitions[10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.085,
+      "elapsed_seconds": 5.175,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[100]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.6983098330674693,
+      "telemetry": {
+        "cpu_seconds": 7.929606625,
+        "average_cores": 4.6689610355148705,
+        "peak_rss_gib": 1.1084442138671875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 174640085,
+          "system_time": 15670474,
+          "instructions": 53175315149,
+          "cycles": 27031143973,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_read_force_count_partitions[100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.069,
+      "elapsed_seconds": 5.328,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.2546509170206264,
+      "telemetry": {
+        "cpu_seconds": 13.898702333333333,
+        "average_cores": 6.164301321465585,
+        "peak_rss_gib": 2.0174407958984375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 305055119,
+          "system_time": 28513737,
+          "instructions": 93654191097,
+          "cycles": 46734435290,
+          "diskio_bytesread": 4096,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_read_force_count_partitions[1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.086,
+      "elapsed_seconds": 5.887,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_with_index",
+      "id": "benchmark_table::test_read_with_index[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {
+        "many_partitions_ht": 1000
+      },
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.7450594160472974,
+      "telemetry": {
+        "cpu_seconds": 19.581497625,
+        "average_cores": 7.133215235533386,
+        "peak_rss_gib": 2.054168701171875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 432551790,
+          "system_time": 37404153,
+          "instructions": 132270204823,
+          "cycles": 65887825980,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_read_with_index[1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.091,
+      "elapsed_seconds": 6.385,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.9473260829690844,
+      "telemetry": {
+        "cpu_seconds": 7.164433458333333,
+        "average_cores": 3.6790175829174268,
+        "peak_rss_gib": 0.8933258056640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 156719617,
+          "system_time": 15226786,
+          "instructions": 55780354988,
+          "cycles": 24881035390,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[10,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.134,
+      "elapsed_seconds": 5.618,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.4959371250588447,
+      "telemetry": {
+        "cpu_seconds": 15.61644075,
+        "average_cores": 6.256606370783991,
+        "peak_rss_gib": 1.0941162109375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 353497296,
+          "system_time": 21297282,
+          "instructions": 129283853798,
+          "cycles": 52430924076,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[10,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.214,
+      "elapsed_seconds": 6.263,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.489036499988288,
+      "telemetry": {
+        "cpu_seconds": 31.01592258333333,
+        "average_cores": 6.909169372609011,
+        "peak_rss_gib": 2.198638916015625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 688183448,
+          "system_time": 56198694,
+          "instructions": 203792285143,
+          "cycles": 104273145313,
+          "diskio_bytesread": 147456,
+          "diskio_byteswritten": 69771264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[10,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.274,
+      "elapsed_seconds": 8.301,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.637680957908742,
+      "telemetry": {
+        "cpu_seconds": 17.408400583333332,
+        "average_cores": 6.599731943441651,
+        "peak_rss_gib": 1.0864105224609375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 394393618,
+          "system_time": 23407996,
+          "instructions": 134277213910,
+          "cycles": 58092610854,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[100,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.145,
+      "elapsed_seconds": 6.32,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.2301330419722944,
+      "telemetry": {
+        "cpu_seconds": 13.079549,
+        "average_cores": 5.864751935739666,
+        "peak_rss_gib": 1.11358642578125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 293777509,
+          "system_time": 20131667,
+          "instructions": 80590619538,
+          "cycles": 43915412696,
+          "diskio_bytesread": 4096,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[100,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.153,
+      "elapsed_seconds": 5.931,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.2175808750325814,
+      "telemetry": {
+        "cpu_seconds": 25.7258605,
+        "average_cores": 7.99526738642719,
+        "peak_rss_gib": 2.0642242431640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 576595450,
+          "system_time": 40825202,
+          "instructions": 182723839502,
+          "cycles": 85685714558,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[100,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.096,
+      "elapsed_seconds": 6.853,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.8636675000889227,
+      "telemetry": {
+        "cpu_seconds": 27.287690916666666,
+        "average_cores": 7.062540770611949,
+        "peak_rss_gib": 2.2229156494140625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 600501760,
+          "system_time": 54402822,
+          "instructions": 199379808342,
+          "cycles": 91773145838,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 69771264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[1000,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.086,
+      "elapsed_seconds": 7.495,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.290235332911834,
+      "telemetry": {
+        "cpu_seconds": 25.313568916666664,
+        "average_cores": 7.6934011387779035,
+        "peak_rss_gib": 2.082489013671875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 566647057,
+          "system_time": 40878597,
+          "instructions": 182518763108,
+          "cycles": 84420297737,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[1000,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.106,
+      "elapsed_seconds": 6.959,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.725645042024553,
+      "telemetry": {
+        "cpu_seconds": 21.00132495833333,
+        "average_cores": 7.704891070005773,
+        "peak_rss_gib": 2.0502471923828125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 468089307,
+          "system_time": 35942492,
+          "instructions": 136352923937,
+          "cycles": 70238820340,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_union_partitions_table[1000,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.113,
+      "elapsed_seconds": 6.389,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.6407104999525473,
+      "telemetry": {
+        "cpu_seconds": 6.002801708333333,
+        "average_cores": 3.6585092915278317,
+        "peak_rss_gib": 0.9011383056640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 129692087,
+          "system_time": 14375154,
+          "instructions": 46086638023,
+          "cycles": 20718082129,
+          "diskio_bytesread": 53248,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[10,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.098,
+      "elapsed_seconds": 5.287,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.5427942080423236,
+      "telemetry": {
+        "cpu_seconds": 15.675781916666667,
+        "average_cores": 6.164634392236728,
+        "peak_rss_gib": 1.1153564453125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 353595423,
+          "system_time": 22623343,
+          "instructions": 121634509258,
+          "cycles": 52501726751,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[10,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.081,
+      "elapsed_seconds": 6.173,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.8018670830642805,
+      "telemetry": {
+        "cpu_seconds": 27.564262083333332,
+        "average_cores": 7.250071541981876,
+        "peak_rss_gib": 2.2082061767578125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 607036462,
+          "system_time": 54505828,
+          "instructions": 203530702954,
+          "cycles": 92763688697,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 69771264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[10,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.109,
+      "elapsed_seconds": 7.479,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.764648749958724,
+      "telemetry": {
+        "cpu_seconds": 19.494502833333332,
+        "average_cores": 7.051230269713573,
+        "peak_rss_gib": 1.0892791748046875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 443648721,
+          "system_time": 24219347,
+          "instructions": 127651924392,
+          "cycles": 64966921720,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[100,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.117,
+      "elapsed_seconds": 6.429,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.290008374955505,
+      "telemetry": {
+        "cpu_seconds": 11.7155665,
+        "average_cores": 5.115817295609337,
+        "peak_rss_gib": 1.0662384033203125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 260567353,
+          "system_time": 20606243,
+          "instructions": 65442132029,
+          "cycles": 39393740138,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[100,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.102,
+      "elapsed_seconds": 5.94,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.1005581250647083,
+      "telemetry": {
+        "cpu_seconds": 23.685348375,
+        "average_cores": 7.638921652335568,
+        "peak_rss_gib": 2.1127777099609375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 528123353,
+          "system_time": 40325008,
+          "instructions": 178514169548,
+          "cycles": 78910877077,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[100,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.116,
+      "elapsed_seconds": 6.78,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.96050283301156,
+      "telemetry": {
+        "cpu_seconds": 28.982599583333332,
+        "average_cores": 7.3178101355351455,
+        "peak_rss_gib": 2.170013427734375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 640172728,
+          "system_time": 55409662,
+          "instructions": 209007313136,
+          "cycles": 97719101135,
+          "diskio_bytesread": 233472,
+          "diskio_byteswritten": 69771264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[1000,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.101,
+      "elapsed_seconds": 7.612,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.0499909999780357,
+      "telemetry": {
+        "cpu_seconds": 23.340858875,
+        "average_cores": 7.652599583616395,
+        "peak_rss_gib": 2.0692138671875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 519709942,
+          "system_time": 40470671,
+          "instructions": 169131222484,
+          "cycles": 77545047745,
+          "diskio_bytesread": 172032,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[1000,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.096,
+      "elapsed_seconds": 6.694,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.283236167044379,
+      "telemetry": {
+        "cpu_seconds": 14.347172291666666,
+        "average_cores": 6.283554662731278,
+        "peak_rss_gib": 2.1384429931640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 311582559,
+          "system_time": 32749576,
+          "instructions": 107571963307,
+          "cycles": 48433784374,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_table--test_join_partitions_table[1000,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.092,
+      "elapsed_seconds": 5.926,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.8255728750955313,
+      "telemetry": {
+        "cpu_seconds": 8.798250958333332,
+        "average_cores": 4.819296001016033,
+        "peak_rss_gib": 0.911376953125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 193814440,
+          "system_time": 17343583,
+          "instructions": 82136707873,
+          "cycles": 29727621657,
+          "diskio_bytesread": 206118912,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_decode_and_count"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.083,
+      "elapsed_seconds": 5.455,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count_just_gt",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.8701998749747872,
+      "telemetry": {
+        "cpu_seconds": 8.275997666666665,
+        "average_cores": 4.4250555025771385,
+        "peak_rss_gib": 0.95318603515625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 181622153,
+          "system_time": 17001791,
+          "instructions": 70340936138,
+          "cycles": 28064888249,
+          "diskio_bytesread": 8192,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_decode_and_count_just_gt"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.081,
+      "elapsed_seconds": 5.5,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_array_arithmetic",
+      "id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.624338624998927,
+      "telemetry": {
+        "cpu_seconds": 13.452721041666665,
+        "average_cores": 5.126045035437918,
+        "peak_rss_gib": 0.977691650390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 301155010,
+          "system_time": 21710295,
+          "instructions": 146962837282,
+          "cycles": 44837467103,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_array_arithmetic"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.096,
+      "elapsed_seconds": 6.263,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.3402015409665182,
+      "telemetry": {
+        "cpu_seconds": 21.233584916666665,
+        "average_cores": 6.3568617036874855,
+        "peak_rss_gib": 1.0044097900390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 483457846,
+          "system_time": 26148192,
+          "instructions": 242245328478,
+          "cycles": 69561394941,
+          "diskio_bytesread": 57344,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_entries_table"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.128,
+      "elapsed_seconds": 7.017,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table_no_key",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table_no_key",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.508832584018819,
+      "telemetry": {
+        "cpu_seconds": 12.555099791666667,
+        "average_cores": 5.004255293778109,
+        "peak_rss_gib": 0.955108642578125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 279978915,
+          "system_time": 21343480,
+          "instructions": 121654914922,
+          "cycles": 42132069454,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_entries_table_no_key"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.072,
+      "elapsed_seconds": 6.144,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_force_count",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.5812769579933956,
+      "telemetry": {
+        "cpu_seconds": 5.4131292916666665,
+        "average_cores": 3.4231157728841977,
+        "peak_rss_gib": 0.87945556640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 115430832,
+          "system_time": 14484271,
+          "instructions": 37621016826,
+          "cycles": 18644859088,
+          "diskio_bytesread": 20480,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_rows_force_count"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.138,
+      "elapsed_seconds": 5.264,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_show",
+      "id": "benchmark_matrix_table::test_matrix_table_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.5745877909939736,
+      "telemetry": {
+        "cpu_seconds": 7.770427083333333,
+        "average_cores": 3.0180632355659527,
+        "peak_rss_gib": 0.9293060302734375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 166889743,
+          "system_time": 19600507,
+          "instructions": 68174655947,
+          "cycles": 27343597650,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_show"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.131,
+      "elapsed_seconds": 6.252,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_show",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.2186150839552283,
+      "telemetry": {
+        "cpu_seconds": 7.559294958333333,
+        "average_cores": 3.407124740970122,
+        "peak_rss_gib": 0.94305419921875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 163076481,
+          "system_time": 18346598,
+          "instructions": 64822984358,
+          "cycles": 26578625540,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_rows_show"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.114,
+      "elapsed_seconds": 5.887,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_cols_show",
+      "id": "benchmark_matrix_table::test_matrix_table_cols_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.3192403750726953,
+      "telemetry": {
+        "cpu_seconds": 7.406348125,
+        "average_cores": 3.1933667644807944,
+        "peak_rss_gib": 0.956298828125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 160273985,
+          "system_time": 17478370,
+          "instructions": 64680124998,
+          "cycles": 26052979342,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_cols_show"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.106,
+      "elapsed_seconds": 5.967,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_entry",
+      "id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.3261762500042096,
+      "telemetry": {
+        "cpu_seconds": 8.001221875,
+        "average_cores": 3.439538264993511,
+        "peak_rss_gib": 0.9532012939453125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 172878816,
+          "system_time": 19150509,
+          "instructions": 71114411536,
+          "cycles": 28155894987,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_take_entry"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.11,
+      "elapsed_seconds": 5.985,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_show",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.539040374918841,
+      "telemetry": {
+        "cpu_seconds": 14.757273416666665,
+        "average_cores": 4.169792611030056,
+        "peak_rss_gib": 1.069732666015625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 328717263,
+          "system_time": 25457299,
+          "instructions": 147492602657,
+          "cycles": 52172326054,
+          "diskio_bytesread": 4096,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_entries_show"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.094,
+      "elapsed_seconds": 7.182,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_row",
+      "id": "benchmark_matrix_table::test_matrix_table_take_row",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.1772589590400457,
+      "telemetry": {
+        "cpu_seconds": 6.7677927916666665,
+        "average_cores": 3.108305662247043,
+        "peak_rss_gib": 0.9188079833984375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 144831823,
+          "system_time": 17595204,
+          "instructions": 60610158156,
+          "cycles": 23776961535,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_take_row"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.102,
+      "elapsed_seconds": 5.827,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_col",
+      "id": "benchmark_matrix_table::test_matrix_table_take_col",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.2254742499208078,
+      "telemetry": {
+        "cpu_seconds": 3.3416697916666664,
+        "average_cores": 2.7266720849357347,
+        "peak_rss_gib": 0.869842529296875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 70523946,
+          "system_time": 9676129,
+          "instructions": 28010327142,
+          "cycles": 11726010794,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_take_col"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.108,
+      "elapsed_seconds": 4.88,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_profile_mt",
+      "id": "benchmark_matrix_table::test_write_profile_mt",
+      "args": [
+        "profile25_mt",
+        "tmp_path"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.230112791992724,
+      "telemetry": {
+        "cpu_seconds": 17.238367125,
+        "average_cores": 5.336681703691146,
+        "peak_rss_gib": 1.114471435546875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 379874588,
+          "system_time": 33846223,
+          "instructions": 169078942927,
+          "cycles": 57900980400,
+          "diskio_bytesread": 679936,
+          "diskio_byteswritten": 207515648
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_write_profile_mt"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.09,
+      "elapsed_seconds": 6.891,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_is_transition",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.192742124898359,
+      "telemetry": {
+        "cpu_seconds": 7.467299166666666,
+        "average_cores": 3.405378735347946,
+        "peak_rss_gib": 0.9446563720703125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 160731729,
+          "system_time": 18483451,
+          "instructions": 59823474518,
+          "cycles": 25857622228,
+          "diskio_bytesread": 45056,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_rows_is_transition"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.097,
+      "elapsed_seconds": 5.832,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.09278770792298,
+      "telemetry": {
+        "cpu_seconds": 10.135081791666666,
+        "average_cores": 4.842715217126584,
+        "peak_rss_gib": 0.8930206298828125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 225015505,
+          "system_time": 18226458,
+          "instructions": 96286597302,
+          "cycles": 34315024925,
+          "diskio_bytesread": 28672,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_filter_entries"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.057,
+      "elapsed_seconds": 5.695,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries_unfilter",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.2883996249875054,
+      "telemetry": {
+        "cpu_seconds": 10.500422416666666,
+        "average_cores": 4.588390884006066,
+        "peak_rss_gib": 0.892333984375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 232116272,
+          "system_time": 19893866,
+          "instructions": 98722571083,
+          "cycles": 35497040742,
+          "diskio_bytesread": 4096,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_filter_entries_unfilter"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.105,
+      "elapsed_seconds": 5.941,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_nested_annotate_rows_annotate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_nested_annotate_rows_annotate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 6.468611625023186,
+      "telemetry": {
+        "cpu_seconds": 49.983565166666665,
+        "average_cores": 7.727017437933459,
+        "peak_rss_gib": 1.187774658203125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1156348727,
+          "system_time": 43256837,
+          "instructions": 534849958274,
+          "cycles": 161553200576,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_nested_annotate_rows_annotate_entries"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.101,
+      "elapsed_seconds": 10.117,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_row_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.7256568330340087,
+      "telemetry": {
+        "cpu_seconds": 19.694592666666665,
+        "average_cores": 5.2861163380082115,
+        "peak_rss_gib": 1.8888702392578125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 440994502,
+          "system_time": 31675722,
+          "instructions": 208046976468,
+          "cycles": 66063970712,
+          "diskio_bytesread": 40960,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_many_aggs_row_wise"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.077,
+      "elapsed_seconds": 7.351,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_col_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.675708915921859,
+      "telemetry": {
+        "cpu_seconds": 36.54224675,
+        "average_cores": 6.438286163651867,
+        "peak_rss_gib": 1.55828857421875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 833273054,
+          "system_time": 43740868,
+          "instructions": 331438211354,
+          "cycles": 121581532590,
+          "diskio_bytesread": 16384,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_many_aggs_col_wise"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.107,
+      "elapsed_seconds": 9.336,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_aggregate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_aggregate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.325948707992211,
+      "telemetry": {
+        "cpu_seconds": 10.870668916666666,
+        "average_cores": 4.6735485738578335,
+        "peak_rss_gib": 0.9814300537109375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 240779461,
+          "system_time": 20116593,
+          "instructions": 97994148899,
+          "cycles": 37057206155,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_aggregate_entries"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.105,
+      "elapsed_seconds": 5.98,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_call_stats_star_star",
+      "id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.301361082936637,
+      "telemetry": {
+        "cpu_seconds": 11.331316291666665,
+        "average_cores": 4.923621954069003,
+        "peak_rss_gib": 0.9266204833984375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 251808142,
+          "system_time": 20143449,
+          "instructions": 100876165166,
+          "cycles": 37882669319,
+          "diskio_bytesread": 65536,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_matrix_table_call_stats_star_star"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.091,
+      "elapsed_seconds": 5.956,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_just_gp",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_just_gp",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.42862395895645,
+      "telemetry": {
+        "cpu_seconds": 103.328125375,
+        "average_cores": 7.694584993019512,
+        "peak_rss_gib": 2.25543212890625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 2413189713,
+          "system_time": 66685296,
+          "instructions": 1068374444834,
+          "cycles": 369599266302,
+          "diskio_bytesread": 152096768,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_import_bgen_force_count_just_gp"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.111,
+      "elapsed_seconds": 17.075,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_all",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_all",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.662064665928483,
+      "telemetry": {
+        "cpu_seconds": 105.12781808333332,
+        "average_cores": 7.6948372719276525,
+        "peak_rss_gib": 2.728424072265625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 2454067401,
+          "system_time": 69000233,
+          "instructions": 1069346876343,
+          "cycles": 372537513169,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_import_bgen_force_count_all"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.14,
+      "elapsed_seconds": 17.354,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_info_score",
+      "id": "benchmark_matrix_table::test_import_bgen_info_score",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            180
+          ]
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 17.325709583004937,
+      "telemetry": {
+        "cpu_seconds": 130.75934045833333,
+        "average_cores": 7.547100017479852,
+        "peak_rss_gib": 2.1478729248046875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 3054194856,
+          "system_time": 84029315,
+          "instructions": 1666136648598,
+          "cycles": 447352693197,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_import_bgen_info_score"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.074,
+      "elapsed_seconds": 20.951,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_filter_count",
+      "id": "benchmark_matrix_table::test_import_bgen_filter_count",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.76539383304771,
+      "telemetry": {
+        "cpu_seconds": 104.134266125,
+        "average_cores": 7.5648967158393265,
+        "peak_rss_gib": 2.5697479248046875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 2430865464,
+          "system_time": 68356923,
+          "instructions": 1019632495507,
+          "cycles": 372314330506,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_import_bgen_filter_count"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.086,
+      "elapsed_seconds": 17.403,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_kyle_sex_specific_qc",
+      "id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.229062999947928,
+      "telemetry": {
+        "cpu_seconds": 16.248210666666665,
+        "average_cores": 5.031789326489862,
+        "peak_rss_gib": 1.139801025390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 362958320,
+          "system_time": 26998736,
+          "instructions": 155596733545,
+          "cycles": 54732389681,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_kyle_sex_specific_qc"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.097,
+      "elapsed_seconds": 6.873,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_localize_and_collect",
+      "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "FatalError: SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\nJava stack trace:\norg.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2898)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2834)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2833)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2833)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1$adapted(DAGScheduler.scala:1253)\n\tat scala.Option.foreach(Option.scala:407)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3102)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3036)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3025)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:995)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:2393)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5(SparkBackend.scala:272)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5$adapted(SparkBackend.scala:271)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.mapCollectPartitions(SparkBackend.scala:271)\n\tat is.hail.backend.BackendUtils.runCDA(BackendUtils.scala:93)\n\tat is.hail.backend.BackendUtils.collectDArray(BackendUtils.scala:30)\n\tat __C69Compile.__m71split_ToArray(Emit.scala)\n\tat __C69Compile.apply(Emit.scala)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$5(CompileAndEvaluate.scala:84)\n\tat scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.java:23)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4(CompileAndEvaluate.scala:84)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4$adapted(CompileAndEvaluate.scala:82)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$2(ExecuteContext.scala:147)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$1(ExecuteContext.scala:146)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext.scopedExecution(ExecuteContext.scala:145)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:82)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.expr.ir.CompileAndEvaluate$.evalToIR(CompileAndEvaluate.scala:33)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.evaluate$1(LowerOrInterpretNonCompilable.scala:34)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.rewrite$1(LowerOrInterpretNonCompilable.scala:61)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.apply(LowerOrInterpretNonCompilable.scala:66)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilablePass$.transform(LoweringPass.scala:86)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36)\n\tat scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33)\n\tat scala.collection.mutable.WrappedArray.foreach(WrappedArray.scala:38)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.execute$1(EvalRelationalLets.scala:15)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.lower$1(EvalRelationalLets.scala:22)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.$anonfun$apply$1(EvalRelationalLets.scala:36)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.apply(EvalRelationalLets.scala:13)\n\tat is.hail.expr.ir.lowering.EvalRelationalLetsPass.transform(LoweringPass.scala:183)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:51)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.backend.spark.SparkBackend.$anonfun$execute$1(SparkBackend.scala:363)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.spark.SparkBackend.execute(SparkBackend.scala:348)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$2(BackendRpc.scala:97)\n\tat is.hail.backend.driver.BackendRpc.withRegisterSerializedFns(BackendRpc.scala:170)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:95)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-gapfill-20261023/harness/upstream_benchmark_coverage.py\", line 443, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 338, in test_mt_localize_and_collect\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/decorator/__init__.py\", line 247, in fun\n    return caller(func, *(extras + args), **kw)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/typecheck/check.py\", line 584, in wrapper\n    return __original_func(*args_, **kwargs_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/table.py\", line 2816, in collect\n    return Env.backend().execute(e._ir)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 274, in execute\n    raise err\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 266, in execute\n    return super().execute(ir)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 231, in execute\n    raise e.maybe_user_error(ir) from None\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 229, in execute\n    result = self._rpc(ActionTag.EXECUTE, payload)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 293, in _rpc\n    raise fatal_error_from_java_error_triplet(\nhail.utils.java.FatalError: SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\nJava stack trace:\norg.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2898)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2834)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2833)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2833)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1$adapted(DAGScheduler.scala:1253)\n\tat scala.Option.foreach(Option.scala:407)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:1253)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3102)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3036)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3025)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49)\n\tat org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:995)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:2393)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5(SparkBackend.scala:272)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5$adapted(SparkBackend.scala:271)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat is.hail.backend.spark.SparkBackend$$anon$2.mapCollectPartitions(SparkBackend.scala:271)\n\tat is.hail.backend.BackendUtils.runCDA(BackendUtils.scala:93)\n\tat is.hail.backend.BackendUtils.collectDArray(BackendUtils.scala:30)\n\tat __C69Compile.__m71split_ToArray(Emit.scala)\n\tat __C69Compile.apply(Emit.scala)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$5(CompileAndEvaluate.scala:84)\n\tat scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.java:23)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4(CompileAndEvaluate.scala:84)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4$adapted(CompileAndEvaluate.scala:82)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$2(ExecuteContext.scala:147)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.ExecuteContext.$anonfun$scopedExecution$1(ExecuteContext.scala:146)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext.scopedExecution(ExecuteContext.scala:145)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:82)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.expr.ir.CompileAndEvaluate$.evalToIR(CompileAndEvaluate.scala:33)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.evaluate$1(LowerOrInterpretNonCompilable.scala:34)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.rewrite$1(LowerOrInterpretNonCompilable.scala:61)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.apply(LowerOrInterpretNonCompilable.scala:66)\n\tat is.hail.expr.ir.lowering.LowerOrInterpretNonCompilablePass$.transform(LoweringPass.scala:86)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36)\n\tat scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33)\n\tat scala.collection.mutable.WrappedArray.foreach(WrappedArray.scala:38)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.execute$1(EvalRelationalLets.scala:15)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.lower$1(EvalRelationalLets.scala:22)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.$anonfun$apply$1(EvalRelationalLets.scala:36)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.EvalRelationalLets$.apply(EvalRelationalLets.scala:13)\n\tat is.hail.expr.ir.lowering.EvalRelationalLetsPass.transform(LoweringPass.scala:183)\n\tat is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19)\n\tat scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)\n\tat scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10)\n\tat is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:51)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50)\n\tat is.hail.backend.spark.SparkBackend.$anonfun$execute$1(SparkBackend.scala:363)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.spark.SparkBackend.execute(SparkBackend.scala:348)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$2(BackendRpc.scala:97)\n\tat is.hail.backend.driver.BackendRpc.withRegisterSerializedFns(BackendRpc.scala:170)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:95)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)\nDriver stacktrace:\n",
+      "benchmark_seconds": 16.829650082974695,
+      "telemetry": {
+        "cpu_seconds": 9.099630458333332,
+        "average_cores": 0.54068857664374,
+        "peak_rss_gib": 0.9509429931640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 115346209,
+          "system_time": 103044922,
+          "instructions": 52991530120,
+          "cycles": 26154199983,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-01/telemetry/hail/benchmark_matrix_table--test_mt_localize_and_collect"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.106,
+      "elapsed_seconds": 20.485,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    }
+  ]
+}

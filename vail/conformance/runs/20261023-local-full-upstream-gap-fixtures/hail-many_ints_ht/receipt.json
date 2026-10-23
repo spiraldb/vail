@@ -1,0 +1,26 @@
+{
+  "engine": "hail",
+  "fixture": "many_ints_ht",
+  "parameters": {},
+  "paths": {
+    "many_ints_ht": "/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht"
+  },
+  "wall_seconds": 11.795285291969776,
+  "telemetry": {
+    "cpu_seconds": 51.89355316666666,
+    "average_cores": 4.399475470463594,
+    "peak_rss_gib": 2.9985809326171875,
+    "sampling_hz": 10,
+    "counter_deltas": {
+      "user_time": 1170113241,
+      "system_time": 75332035,
+      "instructions": 698157207120,
+      "cycles": 185080894072,
+      "diskio_bytesread": 2785280,
+      "diskio_byteswritten": 686804992
+    },
+    "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+    "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+    "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gap-fixtures/hail-many_ints_ht/telemetry"
+  }
+}

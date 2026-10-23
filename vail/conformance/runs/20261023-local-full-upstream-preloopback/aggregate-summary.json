@@ -1,0 +1,114 @@
+{
+  "repetitions": [
+    {
+      "repetition": "rep-01",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 83,
+      "vail_wall_sum_seconds": 178.13809716992546,
+      "hail_wall_sum_seconds": 355.2121829527896,
+      "vail_cpu_sum_seconds": 835.2556288333333,
+      "hail_cpu_sum_seconds": 2005.403084625,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 85,
+        "unsupported": 15,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "failed": 2,
+        "not_run_vail_failed": 23,
+        "passed": 83
+      },
+      "wall_ratio_geomean": 6.1894566792121335,
+      "cpu_ratio_geomean": 6.798551834565998,
+      "wall_sum_ratio": 1.9940270419187964,
+      "cpu_sum_ratio": 2.400945309912012
+    },
+    {
+      "repetition": "rep-02",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 83,
+      "vail_wall_sum_seconds": 176.84235153940972,
+      "hail_wall_sum_seconds": 365.23965991463047,
+      "vail_cpu_sum_seconds": 848.4432063333333,
+      "hail_cpu_sum_seconds": 2095.8348357916666,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 85,
+        "unsupported": 15,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "failed": 2,
+        "not_run_vail_failed": 23,
+        "passed": 83
+      },
+      "wall_ratio_geomean": 6.471285232409713,
+      "cpu_ratio_geomean": 7.146614769037087,
+      "wall_sum_ratio": 2.065340438731024,
+      "cpu_sum_ratio": 2.47021229016508
+    },
+    {
+      "repetition": "rep-03",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 83,
+      "vail_wall_sum_seconds": 176.3005473741796,
+      "hail_wall_sum_seconds": 355.20410425250884,
+      "vail_cpu_sum_seconds": 839.31372025,
+      "hail_cpu_sum_seconds": 1992.9539634166665,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 85,
+        "unsupported": 15,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "failed": 2,
+        "not_run_vail_failed": 23,
+        "passed": 83
+      },
+      "wall_ratio_geomean": 6.342044503791857,
+      "cpu_ratio_geomean": 6.819037532135655,
+      "wall_sum_ratio": 2.0147646138535524,
+      "cpu_sum_ratio": 2.3745042113967116
+    }
+  ],
+  "paired_cases_with_at_least_one_successful_pair": 83,
+  "all_rep_paired_cases": 83,
+  "common_paired_case_count": 83,
+  "variable_paired_case_count": 0,
+  "paired_case_outcomes": {
+    "wall_vail_faster_gt_10pct": 81,
+    "wall_within_10pct": 0,
+    "wall_hail_faster_gt_10pct": 2,
+    "cpu_vail_faster_gt_10pct": 74,
+    "cpu_within_10pct": 6,
+    "cpu_hail_faster_gt_10pct": 3
+  },
+  "case_medians": {
+    "wall_ratio_geomean": 6.311040230788499,
+    "cpu_ratio_geomean": 6.852739583271318,
+    "vail_wall_sum_seconds": 176.7665626188973,
+    "hail_wall_sum_seconds": 355.8760715419194,
+    "vail_cpu_sum_seconds": 841.4193700416666,
+    "hail_cpu_sum_seconds": 2017.4608149166665,
+    "wall_sum_ratio": 2.0132544654906037,
+    "cpu_sum_ratio": 2.397687629673611,
+    "median_repetition_wall_geomean": 6.342044503791857,
+    "median_repetition_cpu_geomean": 6.819037532135655,
+    "median_repetition_wall_sum_ratio": 2.0147646138535524,
+    "median_repetition_cpu_sum_ratio": 2.400945309912012
+  },
+  "metric_definitions": {
+    "wall_seconds": "benchmark_seconds, per fresh worker/query; excludes startup and fixture preparation",
+    "cpu_seconds": "sum of user+system process-tree counters; exited descendants retained by PID+creation time; 10 Hz sample lower-bound for very short children",
+    "ratios": "Hail / Vail; geomean over per-case ratios; sum ratio is sum of per-case times divided by sum of per-case times",
+    "case_medians": "independent per-engine successful samples: three fresh repetitions per engine; observed minimum and maximum are descriptive ranges, not confidence intervals; ratios computed from medians"
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "repetitions": [
+    {
+      "repetition": "rep-01",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 31,
+      "vail_wall_sum_seconds": 23.377184793935157,
+      "hail_wall_sum_seconds": 160.20461308013182,
+      "vail_cpu_sum_seconds": 142.97487729166667,
+      "hail_cpu_sum_seconds": 793.700471375,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 63,
+        "unsupported": 37,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "failed": 4,
+        "not_run_vail_failed": 45,
+        "passed": 31,
+        "unsupported": 28
+      },
+      "wall_ratio_geomean": 11.199867194050684,
+      "cpu_ratio_geomean": 17.367244766044198,
+      "wall_sum_ratio": 6.853032753614301,
+      "cpu_sum_ratio": 5.551328222201321
+    },
+    {
+      "repetition": "rep-02",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 31,
+      "vail_wall_sum_seconds": 23.366913293953985,
+      "hail_wall_sum_seconds": 163.15096791344695,
+      "vail_cpu_sum_seconds": 145.61902387499998,
+      "hail_cpu_sum_seconds": 814.1689487916666,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 63,
+        "unsupported": 37,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "failed": 4,
+        "not_run_vail_failed": 45,
+        "passed": 31,
+        "unsupported": 28
+      },
+      "wall_ratio_geomean": 11.306659330135595,
+      "cpu_ratio_geomean": 17.496942989626273,
+      "wall_sum_ratio": 6.982136059693475,
+      "cpu_sum_ratio": 5.591089180013683
+    },
+    {
+      "repetition": "rep-03",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 31,
+      "vail_wall_sum_seconds": 24.242656708927825,
+      "hail_wall_sum_seconds": 160.61291712836828,
+      "vail_cpu_sum_seconds": 146.52384916666665,
+      "hail_cpu_sum_seconds": 796.4776855833333,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 63,
+        "unsupported": 37,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "failed": 4,
+        "not_run_vail_failed": 45,
+        "passed": 31,
+        "unsupported": 28
+      },
+      "wall_ratio_geomean": 11.201564513871409,
+      "cpu_ratio_geomean": 17.499423222967533,
+      "wall_sum_ratio": 6.625219300705582,
+      "cpu_sum_ratio": 5.435822837805488
+    }
+  ],
+  "paired_cases_with_at_least_one_successful_pair": 31,
+  "all_rep_paired_cases": 31,
+  "common_paired_case_count": 31,
+  "variable_paired_case_count": 0,
+  "paired_case_outcomes": {
+    "wall_vail_faster_gt_10pct": 31,
+    "wall_within_10pct": 0,
+    "wall_hail_faster_gt_10pct": 0,
+    "cpu_vail_faster_gt_10pct": 28,
+    "cpu_within_10pct": 3,
+    "cpu_hail_faster_gt_10pct": 0
+  },
+  "case_medians": {
+    "wall_ratio_geomean": 11.154912760418181,
+    "cpu_ratio_geomean": 17.36860688928556,
+    "vail_wall_sum_seconds": 23.5475790402852,
+    "hail_wall_sum_seconds": 160.57316453859676,
+    "vail_cpu_sum_seconds": 145.60057954166666,
+    "hail_cpu_sum_seconds": 803.069022,
+    "wall_sum_ratio": 6.819094407280178,
+    "cpu_sum_ratio": 5.515561988338,
+    "median_repetition_wall_geomean": 11.201564513871409,
+    "median_repetition_cpu_geomean": 17.496942989626273,
+    "median_repetition_wall_sum_ratio": 6.853032753614301,
+    "median_repetition_cpu_sum_ratio": 5.551328222201321
+  },
+  "metric_definitions": {
+    "wall_seconds": "benchmark_seconds, per fresh worker/query; excludes startup and fixture preparation",
+    "cpu_seconds": "sum of user+system process-tree counters; exited descendants retained by PID+creation time; 10 Hz sample lower-bound for very short children",
+    "ratios": "Hail / Vail; geomean over per-case ratios; sum ratio is sum of per-case times divided by sum of per-case times",
+    "case_medians": "independent per-engine successful samples: three fresh repetitions per engine; observed minimum and maximum are descriptive ranges, not confidence intervals; ratios computed from medians"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_sparse",
+      "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+          "args": []
+        }
+      ],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    }
+  ]
+}

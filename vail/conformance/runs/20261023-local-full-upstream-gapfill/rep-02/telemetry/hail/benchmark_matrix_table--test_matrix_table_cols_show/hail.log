@@ -1,0 +1,1762 @@
+2026-10-23 03:21:56.422 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:21:56.638 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:21:56.846 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:56.899 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:56.899 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:56.901 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:56.901 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:56.917 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.163 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.163 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.163 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.163 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.167 py4jutils$: WARN: cols(): Resulting column table is sorted by 'col_key'.
+    To preserve matrix table column order, first unkey columns with 'key_cols_by()'
+2026-10-23 03:21:57.174 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.319 LoweringPipeline: INFO: initial IR: IR size 23: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!ht = MatrixColsTable(!mt)
+!ht2 = TableOrderBy(!ht) [(As)]
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !1 = SelectFields(%row) [(s)]
+  !2 = SelectFields(!1) [()] 
+  !3 = GetField(%row) [s]
+  InsertFields !2 (s: !3)
+}
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !4 = SelectFields(%row) [(s)]
+  !5 = SelectFields(!4) [()] 
+  !6 = GetField(%row) [s]
+  !7 = ApplySpecial(!6) [1, showStr, (), String]
+  InsertFields !5 (s: !7)
+}
+!ht5 = TableHead(!ht4) [101]
+!8 = TableCollect(!ht5)
+GetField(!8) [rows]
+
+2026-10-23 03:21:57.322 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.322 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.322 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.333 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:21:57.342 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.342 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.342 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.345 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 11: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String]},entry:Struct{}}, False, True, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!ht = MatrixColsTable(!mt)
+!ht2 = TableOrderBy(!ht) [(As)]
+!ht3 = TableHead(!ht2) [101]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [s]
+  !2 = ApplySpecial(!1) [1, showStr, (), String]
+  MakeStruct(s: !2)
+}
+!3 = TableCollect(!ht4)
+GetField(!3) [rows]
+
+2026-10-23 03:21:57.375 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 54: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{}]}}, True, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !c0 = I32 [0]
+  !1 = Cast(!c0) [Int64] 
+  !2 = Str ["/tmp/full-..."]
+  !3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+  !s = ReadPartition(!3) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !4 = ToArray(!s)
+  InsertFields %global (__cols: !4)
+}
+%__norm_1 = TableGetGlobals(!ht2)
+!5 = GetField(%__norm_1) [__cols]
+!s2 = ToStream(!5) [False]
+!s3 = StreamMap(!s2) { (%__norm_2) =>
+  !6 = SelectFields(%__norm_2) [(s)]
+  MakeTuple(!6, %__norm_2) [(0 1)]
+}
+!9 = ArraySort(!s3) { (%__norm_3, %__norm_4) =>
+  !7 = GetTupleElement(%__norm_3) [0] 
+  !8 = GetTupleElement(%__norm_4) [0]
+  %__norm_5 = ApplyComparisonOp(!7, !8) [Compare]
+  !true = True
+  If !true then {
+    !c0_2 = I32 [0]
+    ApplyComparisonOp(%__norm_5, !c0_2) [LT]
+  } else {
+    !c0_3 = I32 [0]
+    ApplyComparisonOp(%__norm_5, !c0_3) [GT]
+  }
+}
+!s4 = ToStream(!9) [False]
+!s5 = StreamMap(!s4) { (%__norm_6) =>
+  GetTupleElement(%__norm_6) [1]
+}
+!10 = ToArray(!s5) 
+!11 = SelectFields(%__norm_1) [()]
+!12 = MakeStruct(rows: !10, global: !11)
+!ht3 = TableParallelize(!12) [None]
+!ht4 = TableKeyBy(!ht3) [(s), False, None]
+!ht5 = TableOrderBy(!ht4) [(As)]
+!ht6 = TableHead(!ht5) [101]
+!ht7 = TableMapRows(!ht6) { (%global, %row) =>
+  !13 = GetField(%row) [s]
+  !14 = ApplySpecial(!13) [1, showStr, (), String]
+  MakeStruct(s: !14)
+}
+!15 = TableCollect(!ht7)
+GetField(!15) [rows]
+
+2026-10-23 03:21:57.383 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.383 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.383 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.384 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.384 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.384 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.385 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.385 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.385 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.412 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.413 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.413 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.413 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.413 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.413 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.413 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.413 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.413 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.417 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.417 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.418 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.423 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 38: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_2) =>
+  MakeTuple(%__norm_2, %__norm_2) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_3, %__norm_4) =>
+  !2 = GetTupleElement(%__norm_3) [0] 
+  !3 = GetTupleElement(%__norm_4) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_6) =>
+  GetTupleElement(%__norm_6) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+!8 = MakeStruct(rows: !6, global: !7)
+!ht = TableParallelize(!8) [None]
+!ht2 = TableKeyByAndAggregate(!ht) [1, 10] {
+(%global, %row) =>
+  !c101 = I32 [101]
+  !9 = ApplyAggOp(!c101, %row, %row) [TakeBy]
+  MakeStruct(__row: !9)
+} { (%global, %row) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableExplode(!ht2) [("__row")]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !10 = GetField(%row) [__row]
+  !11 = GetField(!10) [s]
+  !12 = ApplySpecial(!11) [1, showStr, (), String]
+  MakeStruct(s: !12)
+}
+!13 = TableCollect(!ht4)
+GetField(!13) [rows]
+
+2026-10-23 03:21:57.426 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 40: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+!8 = MakeStruct(rows: !6, global: !7)
+!ht = TableParallelize(!8) [None]
+!ht2 = TableKeyByAndAggregate(!ht) [1, 10] {
+(%global, %row) =>
+  !c101 = I32 [101]
+  !9 = ApplyAggOp(!c101, %row, %row) [TakeBy]
+  MakeStruct(__row: !9)
+} { (%global, %row) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableExplode(!ht2) [("__row")]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !10 = GetField(%row) [__row]
+  !11 = GetField(!10) [s]
+  !12 = ApplySpecial(!11) [1, showStr, (), String]
+  MakeStruct(s: !12)
+}
+%__norm_5 = TableCollect(!ht4)
+GetField(%__norm_5) [rows]
+
+2026-10-23 03:21:57.429 LoweringPipeline: INFO: initial IR: IR size 37: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+!8 = MakeStruct(rows: !6, global: !7)
+!ht = TableParallelize(!8) [None]
+!ht2 = TableKeyByAndAggregate(!ht) [1, 10] {
+(%global, %row) =>
+  !c101 = I32 [101]
+  !9 = ApplyAggOp(!c101, %row, %row) [TakeBy]
+  MakeStruct(__row: !9)
+} { (%global, %row) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableExplode(!ht2) [("__row")]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !10 = GetField(%row) [__row]
+  !11 = GetField(!10) [s]
+  !12 = ApplySpecial(!11) [1, showStr, (), String]
+  MakeStruct(s: !12)
+}
+TableCollect(!ht4)
+
+2026-10-23 03:21:57.558 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 99: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+!8 = MakeStruct(rows: !6, global: !7)
+!ht = TableParallelize(!8) [None]
+!ht2 = TableKeyBy(!ht) [(), False, None]
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  !c101 = I32 [101]
+  !9 = InitOp(!c101) [0, 
+  (TakeBy 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString}))] 
+  !10 = AggStateValue [0, 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString})]
+  !11 = MakeTuple(!10) [(0)]
+  !12 = RunAgg(!9, !11) [(
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString}))]
+  MakeStruct(__old_global: %global, __init_state: !12)
+}
+!ht4 = TableMapPartitions(!ht3) [__norm_5, __norm_6, 0, 0] {
+(%__norm_5, %__norm_6) =>
+  %__norm_7 = GetField(%__norm_5) [__old_global]
+  %__norm_9 = GetField(%__norm_5) [__init_state]
+  !13 = GetTupleElement(%__norm_9) [0]
+  !14 = InitFromSerializedValue(!13) [0, 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString})]
+  StreamBufferedAggregate(%__norm_6, !14) [__norm_8, (
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))), 10] { (%__norm_8) =>
+    Literal [Struct{}, <literal value>]
+  } { (%__norm_8) =>
+    SeqOp(%__norm_8, %__norm_8) [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+  }
+}
+!ht5 = TableKeyBy(!ht4) [(), False, None]
+!ht6 = TableMapPartitions(!ht5) [__norm_10, __norm_11, 0, -1] {
+(%__norm_10, %__norm_11) =>
+  %__norm_12 = GetField(%__norm_10) [__old_global]
+  !s5 = StreamGroupByKey(%__norm_11) [(), True]
+  StreamMap(!s5) { (%__norm_13) =>
+    %__norm_14 = GetField(%__norm_10) [__init_state]
+    !15 = GetTupleElement(%__norm_14) [0]
+    %__norm_15 = InitFromSerializedValue(!15) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1 = I32 [1]
+    %__norm_16 = InitOp(!c1) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !18 = StreamFor(%__norm_13) { (%__norm_17) =>
+      !16 = SelectFields(%__norm_17) [()]
+      %__norm_18 = SeqOp(!16) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      %__norm_19 = GetField(%__norm_17) [agg]
+      !17 = GetTupleElement(%__norm_19) [0]
+      CombOpValue(!17) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !19 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_20 = MakeTuple(!19) [(0)]
+    !20 = GetTupleElement(%__norm_20) [0]
+    %__norm_21 = MakeStruct(__row: !20)
+    %__norm_22 = ResultOp [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !21 = GetField(%__norm_21) [__row]
+    !22 = MakeStruct(__row: !21)
+    RunAgg(!18, !22) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+  }
+}
+!ht7 = TableMapGlobals(!ht6) { (%global) =>
+  GetField(%global) [__old_global]
+}
+!ht8 = TableExplode(!ht7) [("__row")]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  !23 = GetField(%row) [__row]
+  !24 = GetField(!23) [s]
+  !25 = ApplySpecial(!24) [1, showStr, (), String]
+  MakeStruct(s: !25)
+}
+TableCollect(!ht9)
+
+2026-10-23 03:21:57.563 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 99: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+!8 = MakeStruct(rows: !6, global: !7)
+!ht = TableParallelize(!8) [None]
+!ht2 = TableKeyBy(!ht) [(), False, None]
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  !c101 = I32 [101]
+  !9 = InitOp(!c101) [0, 
+  (TakeBy 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString}))] 
+  !10 = AggStateValue [0, 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString})]
+  !11 = MakeTuple(!10) [(0)]
+  !12 = RunAgg(!9, !11) [(
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString}))]
+  MakeStruct(__old_global: %global, __init_state: !12)
+}
+!ht4 = TableMapPartitions(!ht3) [__norm_5, __norm_6, 0, 0] {
+(%__norm_5, %__norm_6) =>
+  %__norm_7 = GetField(%__norm_5) [__old_global]
+  %__norm_9 = GetField(%__norm_5) [__init_state]
+  !13 = GetTupleElement(%__norm_9) [0]
+  !14 = InitFromSerializedValue(!13) [0, 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString})]
+  StreamBufferedAggregate(%__norm_6, !14) [__norm_8, (
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))), 10] { (%__norm_8) =>
+    Literal [Struct{}, <literal value>]
+  } { (%__norm_8) =>
+    SeqOp(%__norm_8, %__norm_8) [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+  }
+}
+!ht5 = TableKeyBy(!ht4) [(), False, None]
+!ht6 = TableMapPartitions(!ht5) [__norm_10, __norm_11, 0, -1] {
+(%__norm_10, %__norm_11) =>
+  %__norm_12 = GetField(%__norm_10) [__old_global]
+  !s5 = StreamGroupByKey(%__norm_11) [(), True]
+  StreamMap(!s5) { (%__norm_13) =>
+    %__norm_14 = GetField(%__norm_10) [__init_state]
+    !15 = GetTupleElement(%__norm_14) [0]
+    %__norm_15 = InitFromSerializedValue(!15) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1 = I32 [1]
+    %__norm_16 = InitOp(!c1) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !18 = StreamFor(%__norm_13) { (%__norm_17) =>
+      !16 = SelectFields(%__norm_17) [()]
+      %__norm_18 = SeqOp(!16) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      %__norm_19 = GetField(%__norm_17) [agg]
+      !17 = GetTupleElement(%__norm_19) [0]
+      CombOpValue(!17) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !19 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_20 = MakeTuple(!19) [(0)]
+    !20 = GetTupleElement(%__norm_20) [0]
+    %__norm_21 = MakeStruct(__row: !20)
+    %__norm_22 = ResultOp [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !21 = GetField(%__norm_21) [__row]
+    !22 = MakeStruct(__row: !21)
+    RunAgg(!18, !22) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+  }
+}
+!ht7 = TableMapGlobals(!ht6) { (%global) =>
+  GetField(%global) [__old_global]
+}
+!ht8 = TableExplode(!ht7) [("__row")]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  !23 = GetField(%row) [__row]
+  !24 = GetField(!23) [s]
+  !25 = ApplySpecial(!24) [1, showStr, (), String]
+  MakeStruct(s: !25)
+}
+TableCollect(!ht9)
+
+2026-10-23 03:21:57.565 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.565 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.565 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.567 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{} = (EVAL) GetField(#__norm_5) [__old_global]
+2026-10-23 03:21:57.567 ForwardLets$: INFO: Eliminating unused binding:
+__norm_12: struct{} = (EVAL) GetField(#__norm_10) [__old_global]
+2026-10-23 03:21:57.568 ForwardLets$: INFO: Eliminating unused binding:
+__norm_22: array<struct{}> = (EVAL) ResultOp [1, (Take (TakeStateSig +PCStruct{}))]
+2026-10-23 03:21:57.604 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.604 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.604 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.614 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 80: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+!8 = MakeStruct(rows: !6, global: !7)
+!ht = TableParallelize(!8) [None]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !c101 = I32 [101]
+  !9 = InitOp(!c101) [0, 
+  (TakeBy 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString}))] 
+  !10 = AggStateValue [0, 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString})]
+  !11 = MakeTuple(!10) [(0)]
+  !12 = RunAgg(!9, !11) [(
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString}))]
+  MakeStruct(__old_global: %global, __init_state: !12)
+}
+!ht3 = TableMapPartitions(!ht2) [__norm_5, __norm_6, 0, 0] {
+(%__norm_5, %__norm_6) =>
+  !13 = GetField(%__norm_5) [__init_state]
+  !14 = GetTupleElement(!13) [0]
+  !15 = InitFromSerializedValue(!14) [0, 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString})]
+  StreamBufferedAggregate(%__norm_6, !15) [__norm_8, (
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))), 10] { (%__norm_8) =>
+    Literal [Struct{}, <literal value>]
+  } { (%__norm_8) =>
+    SeqOp(%__norm_8, %__norm_8) [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+  }
+}
+!ht4 = TableMapPartitions(!ht3) [__norm_10, __norm_11, 0, -1] {
+(%__norm_10, %__norm_11) =>
+  !s5 = StreamGroupByKey(%__norm_11) [(), True]
+  StreamMap(!s5) { (%__norm_13) =>
+    !16 = GetField(%__norm_10) [__init_state]
+    !17 = GetTupleElement(!16) [0]
+    %__norm_15 = InitFromSerializedValue(!17) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1 = I32 [1]
+    %__norm_16 = InitOp(!c1) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !21 = StreamFor(%__norm_13) { (%__norm_17) =>
+      !18 = SelectFields(%__norm_17) [()]
+      %__norm_18 = SeqOp(!18) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !19 = GetField(%__norm_17) [agg]
+      !20 = GetTupleElement(!19) [0]
+      CombOpValue(!20) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !22 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_20 = MakeTuple(!22) [(0)]
+    !23 = GetTupleElement(%__norm_20) [0]
+    !24 = MakeStruct(__row: !23)
+    RunAgg(!21, !24) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+  }
+}
+!ht5 = TableMapGlobals(!ht4) { (%global) =>
+  GetField(%global) [__old_global]
+}
+!ht6 = TableExplode(!ht5) [("__row")]
+!ht7 = TableMapRows(!ht6) { (%global, %row) =>
+  !25 = GetField(%row) [__row]
+  !26 = GetField(!25) [s]
+  !27 = ApplySpecial(!26) [1, showStr, (), String]
+  MakeStruct(s: !27)
+}
+TableCollect(!ht7)
+
+2026-10-23 03:21:57.617 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:21:57.617 LowerOrInterpretNonCompilable$: INFO: lowering result: TableCollect
+2026-10-23 03:21:57.692 RVDPartitioner$: INFO: invalid partitioner: !lteqWithOverlap(-1)([[]-[]].right, [[]-[]].left)
+2026-10-23 03:21:57.695 LowerTableIR$: INFO: repartition cost: 0.0167
+2026-10-23 03:21:57.696 TableStage: INFO: repartitionNoShuffle - fast path, generated 1 partitions from 32 (dropped 0 empty output parts)
+2026-10-23 03:21:57.703 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableCollect
+2026-10-23 03:21:57.719 LoweringPipeline: INFO: initial IR: IR size 189: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+%__norm_5 = MakeStruct(rows: !6, global: !7)
+%__norm_6 = GetField(%__norm_5) [global]
+%__norm_7 = Ref [__norm_6]
+!c101 = I32 [101]
+!8 = InitOp(!c101) [0, 
+(TakeBy 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))] 
+!9 = AggStateValue [0, 
+(TakeByStateSig +PCStruct{s:PCString}
+  +PCStruct{s:PCString})]
+!10 = MakeTuple(!9) [(0)]
+!11 = RunAgg(!8, !10) [(
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))]
+%__norm_8 = MakeStruct(__old_global: %__norm_7, __init_state: !11)
+%__norm_9 = Ref [__norm_8]
+%__norm_10 = GetField(%__norm_9) [__old_global]
+%__norm_11 = GetField(%__norm_5) [rows]
+%__norm_12 = ArrayLen(%__norm_11)
+!c0_2 = I32 [0] 
+!c32 = I32 [32] 
+!c1 = I32 [1]
+!s5 = StreamRange(!c0_2, !c32, !c1) [-1, False]
+!s6 = StreamMap(!s5) { (%__norm_13) =>
+  !12 = ApplyBinaryPrimOp(%__norm_13, %__norm_12) [Multiply] 
+  !c32_2 = I32 [32]
+  ApplyBinaryPrimOp(!12, !c32_2) [RoundToNegInfDivide]
+}
+!13 = ToArray(!s6) 
+!14 = MakeArray(%__norm_12) [Array[Int32]]
+%__norm_14 = ApplyIR(!13, !14) [-1, extend, 
+(), Array[Int32]]
+!c0_3 = I32 [0] 
+!c32_3 = I32 [32] 
+!c1_2 = I32 [1]
+!s7 = StreamRange(!c0_3, !c32_3, !c1_2) [-1, False]
+!s10 = StreamMap(!s7) { (%__norm_15) =>
+  !15 = ArrayRef(%__norm_14, %__norm_15) [-1] 
+  !c1_3 = I32 [1]
+  !16 = ApplyBinaryPrimOp(%__norm_15, !c1_3) [Add]
+  !17 = ArrayRef(%__norm_14, !16) [-1] 
+  !c1_4 = I32 [1]
+  !s8 = StreamRange(!15, !17, !c1_4) [-1, False]
+  !s9 = StreamMap(!s8) { (%__norm_16) =>
+    ArrayRef(%__norm_11, %__norm_16) [-1]
+  }
+  ToArray(!s9)
+}
+%__norm_17 = ToArray(!s10)
+%__norm_18 = Literal [Array[Array[Int32]], <literal value>]
+!s11 = ToStream(%__norm_18) [False]
+!s14 = StreamMap(!s11) { (%__norm_19) =>
+  !s12 = ToStream(%__norm_19) [False]
+  !s13 = StreamMap(!s12) { (%__norm_20) =>
+    ArrayRef(%__norm_17, %__norm_20) [-1]
+  }
+  ToArray(!s13)
+} 
+!18 = MakeStruct(__iruid_28: %__norm_6, __iruid_37: %__norm_8, __iruid_47: %__norm_10) 
+!19 = NA [String]
+%__norm_49 = CollectDistributedArray(!s14, !18, !19) {
+(%__norm_21, %__norm_22) =>
+  %__norm_23 = GetField(%__norm_22) [__iruid_28]
+  %__norm_24 = GetField(%__norm_22) [__iruid_37]
+  %__norm_25 = GetField(%__norm_22) [__iruid_47]
+  !s15 = ToStream(%__norm_21) [True]
+  %__norm_32 = StreamFlatMap(!s15) { (%__norm_26) =>
+    %__norm_27 = Ref [__norm_26]
+    %__norm_28 = ToStream(%__norm_27) [True]
+    %__norm_29 = Ref [__norm_24]
+    %__norm_30 = Ref [__norm_28]
+    !20 = GetField(%__norm_29) [__init_state]
+    !21 = GetTupleElement(!20) [0]
+    !22 = InitFromSerializedValue(!21) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    StreamBufferedAggregate(%__norm_30, !22) [__norm_31, (
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))), 10] { (%__norm_31) =>
+      Literal [Struct{}, <literal value>]
+    } { (%__norm_31) =>
+      SeqOp(%__norm_31, %__norm_31) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    }
+  }
+  %__norm_33 = Ref [__norm_24]
+  %__norm_34 = Ref [__norm_32]
+  !s16 = StreamGroupByKey(%__norm_34) [(), True]
+  %__norm_41 = StreamMap(!s16) { (%__norm_35) =>
+    !23 = GetField(%__norm_33) [__init_state]
+    !24 = GetTupleElement(!23) [0]
+    %__norm_36 = InitFromSerializedValue(!24) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1_5 = I32 [1]
+    %__norm_37 = InitOp(!c1_5) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !28 = StreamFor(%__norm_35) { (%__norm_38) =>
+      !25 = SelectFields(%__norm_38) [()]
+      %__norm_39 = SeqOp(!25) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !26 = GetField(%__norm_38) [agg]
+      !27 = GetTupleElement(!26) [0]
+      CombOpValue(!27) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !29 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_40 = MakeTuple(!29) [(0)]
+    !30 = GetTupleElement(%__norm_40) [0]
+    !31 = MakeStruct(__row: !30)
+    RunAgg(!28, !31) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+  }
+  %__norm_45 = StreamFlatMap(%__norm_41) {
+  (%__norm_42) =>
+    %__norm_43 = GetField(%__norm_42) [__row]
+    !s17 = ToStream(%__norm_43) [True]
+    StreamMap(!s17) { (%__norm_44) =>
+      InsertFields %__norm_42 (__row: %__norm_44)
+    }
+  }
+  %__norm_46 = Ref [__norm_25]
+  %__norm_48 = StreamMap(%__norm_45) {
+  (%__norm_47) =>
+    !32 = GetField(%__norm_47) [__row]
+    !33 = GetField(!32) [s]
+    !34 = ApplySpecial(!33) [1, showStr, (), String]
+    MakeStruct(s: !34)
+  }
+  ToArray(%__norm_48)
+}
+!s18 = ToStream(%__norm_49) [False]
+!s19 = StreamFlatMap(!s18) { (%__norm_50) =>
+  ToStream(%__norm_50) [False]
+}
+!35 = ToArray(!s19)
+!36 = MakeStruct(rows: !35, global: %__norm_10)
+MakeTuple(!36) [(0)]
+
+2026-10-23 03:21:57.744 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.744 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.744 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.751 ForwardLets$: INFO: Eliminating unused binding:
+__norm_23: struct{} = (EVAL) GetField(#__norm_22) [__iruid_28]
+2026-10-23 03:21:57.752 ForwardLets$: INFO: Eliminating unused binding:
+__norm_46: struct{} = (EVAL) Ref [__norm_25]
+2026-10-23 03:21:57.764 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_28'
+2026-10-23 03:21:57.765 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_47'
+2026-10-23 03:21:57.768 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.768 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.768 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.771 ForwardLets$: INFO: Eliminating unused binding:
+__norm_47: struct{__row: array<struct{s: str}>} = (EVAL) Ref [__norm_42]
+2026-10-23 03:21:57.866 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.867 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.867 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.880 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 157: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+%__norm_5 = MakeStruct(rows: !6, global: !7)
+!8 = GetField(%__norm_5) [global] 
+!c101 = I32 [101]
+!9 = InitOp(!c101) [0, 
+(TakeBy 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))] 
+!10 = AggStateValue [0, 
+(TakeByStateSig +PCStruct{s:PCString}
+  +PCStruct{s:PCString})]
+!11 = MakeTuple(!10) [(0)]
+!12 = RunAgg(!9, !11) [(
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))]
+%__norm_8 = MakeStruct(__old_global: !8, __init_state: !12)
+%__norm_11 = GetField(%__norm_5) [rows]
+%__norm_12 = ArrayLen(%__norm_11)
+!c0_2 = I32 [0] 
+!c32 = I32 [32] 
+!c1 = I32 [1]
+!s5 = StreamRange(!c0_2, !c32, !c1) [-1, False]
+!s6 = StreamMap(!s5) { (%__norm_13) =>
+  !13 = ApplyBinaryPrimOp(%__norm_13, %__norm_12) [Multiply] 
+  !c32_2 = I32 [32]
+  ApplyBinaryPrimOp(!13, !c32_2) [RoundToNegInfDivide]
+}
+!14 = ToArray(!s6) 
+!15 = MakeArray(%__norm_12) [Array[Int32]]
+%__norm_14 = ApplyIR(!14, !15) [-1, extend, 
+(), Array[Int32]]
+!c0_3 = I32 [0] 
+!c32_3 = I32 [32] 
+!c1_2 = I32 [1]
+!s7 = StreamRange(!c0_3, !c32_3, !c1_2) [-1, False]
+!s10 = StreamMap(!s7) { (%__norm_15) =>
+  !16 = ArrayRef(%__norm_14, %__norm_15) [-1] 
+  !c1_3 = I32 [1]
+  !17 = ApplyBinaryPrimOp(%__norm_15, !c1_3) [Add]
+  !18 = ArrayRef(%__norm_14, !17) [-1] 
+  !c1_4 = I32 [1]
+  !s8 = StreamRange(!16, !18, !c1_4) [-1, False]
+  !s9 = StreamMap(!s8) { (%__norm_16) =>
+    ArrayRef(%__norm_11, %__norm_16) [-1]
+  }
+  ToArray(!s9)
+}
+%__norm_17 = ToArray(!s10)
+!19 = Literal [Array[Array[Int32]], <literal value>]
+!s11 = ToStream(!19) [False]
+!s14 = StreamMap(!s11) { (%__norm_19) =>
+  !s12 = ToStream(%__norm_19) [False]
+  !s13 = StreamMap(!s12) { (%__norm_20) =>
+    ArrayRef(%__norm_17, %__norm_20) [-1]
+  }
+  ToArray(!s13)
+} 
+%__iruid_60 = MakeStruct(__iruid_37: %__norm_8)
+!20 = IsNA(%__iruid_60)
+!23 = If !20 then {
+  NA [Struct{__iruid_37:Struct{__init_state:Tuple[Binary]}}]
+} else {
+  !21 = GetField(%__iruid_60) [__iruid_37]
+  !22 = SelectFields(!21) [(__init_state)]
+  MakeStruct(__iruid_37: !22)
+} 
+!24 = NA [String]
+%__norm_49 = CollectDistributedArray(!s14, !23, !24) {
+(%__norm_21, %__norm_22) =>
+  %__norm_24 = GetField(%__norm_22) [__iruid_37]
+  !s15 = ToStream(%__norm_21) [True]
+  !s17 = StreamFlatMap(!s15) { (%__norm_26) =>
+    !s16 = ToStream(%__norm_26) [True] 
+    !25 = GetField(%__norm_24) [__init_state]
+    !26 = GetTupleElement(!25) [0]
+    !27 = InitFromSerializedValue(!26) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    StreamBufferedAggregate(!s16, !27) [__norm_31, (
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))), 10] { (%__norm_31) =>
+      Literal [Struct{}, <literal value>]
+    } { (%__norm_31) =>
+      SeqOp(%__norm_31, %__norm_31) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    }
+  }
+  !s18 = StreamGroupByKey(!s17) [(), True]
+  !s20 = StreamFlatMap(!s18) { (%__norm_35) =>
+    !28 = GetField(%__norm_24) [__init_state]
+    !29 = GetTupleElement(!28) [0]
+    %__norm_36 = InitFromSerializedValue(!29) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1_5 = I32 [1]
+    %__norm_37 = InitOp(!c1_5) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !33 = StreamFor(%__norm_35) { (%__norm_38) =>
+      !30 = SelectFields(%__norm_38) [()]
+      %__norm_39 = SeqOp(!30) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !31 = GetField(%__norm_38) [agg]
+      !32 = GetTupleElement(!31) [0]
+      CombOpValue(!32) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !34 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_40 = MakeTuple(!34) [(0)]
+    !35 = GetTupleElement(%__norm_40) [0]
+    !36 = MakeStruct(__row: !35)
+    %__norm_42 = RunAgg(!33, !36) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+    !37 = GetField(%__norm_42) [__row]
+    !s19 = ToStream(!37) [True]
+    StreamMap(!s19) { (%__norm_44) =>
+      !38 = GetField(%__norm_44) [s]
+      !39 = ApplySpecial(!38) [1, showStr, (), String]
+      MakeStruct(s: !39)
+    }
+  }
+  ToArray(!s20)
+}
+!s21 = ToStream(%__norm_49) [False]
+!s22 = StreamFlatMap(!s21) { (%__norm_50) =>
+  ToStream(%__norm_50) [False]
+}
+!40 = ToArray(!s22) 
+!41 = GetField(%__norm_8) [__old_global]
+!42 = MakeStruct(rows: !40, global: !41)
+MakeTuple(!42) [(0)]
+
+2026-10-23 03:21:57.885 LoweringPipeline: INFO: after InlineApplyIR: IR size 173: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+%__norm_5 = MakeStruct(rows: !6, global: !7)
+!8 = GetField(%__norm_5) [global] 
+!c101 = I32 [101]
+!9 = InitOp(!c101) [0, 
+(TakeBy 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))] 
+!10 = AggStateValue [0, 
+(TakeByStateSig +PCStruct{s:PCString}
+  +PCStruct{s:PCString})]
+!11 = MakeTuple(!10) [(0)]
+!12 = RunAgg(!9, !11) [(
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))]
+%__norm_6 = MakeStruct(__old_global: !8, __init_state: !12)
+%__norm_7 = GetField(%__norm_5) [rows]
+%__norm_8 = ArrayLen(%__norm_7)
+!c0_2 = I32 [0] 
+!c32 = I32 [32] 
+!c1 = I32 [1]
+!s5 = StreamRange(!c0_2, !c32, !c1) [-1, False]
+!s6 = StreamMap(!s5) { (%__norm_9) =>
+  !13 = ApplyBinaryPrimOp(%__norm_9, %__norm_8) [Multiply] 
+  !c32_2 = I32 [32]
+  ApplyBinaryPrimOp(!13, !c32_2) [RoundToNegInfDivide]
+}
+%__norm_10 = ToArray(!s6)
+%__norm_11 = MakeArray(%__norm_8) [Array[Int32]]
+!14 = IsNA(%__norm_10)
+!15 = ApplyUnaryPrimOp(!14) [Bang]
+%__norm_13 = If !15 then {
+  !16 = IsNA(%__norm_11)
+  If !16 then {
+    NA [Array[Int32]]
+  } else {
+    !s7 = MakeStream(%__norm_10, %__norm_11) [Stream[Array[Int32]], False]
+    !s8 = StreamFlatMap(!s7) { (%__norm_12) =>
+      ToStream(%__norm_12) [False]
+    }
+    ToArray(!s8)
+  }
+} else {
+  NA [Array[Int32]]
+}
+!c0_3 = I32 [0] 
+!c32_3 = I32 [32] 
+!c1_2 = I32 [1]
+!s9 = StreamRange(!c0_3, !c32_3, !c1_2) [-1, False]
+!s12 = StreamMap(!s9) { (%__norm_14) =>
+  !17 = ArrayRef(%__norm_13, %__norm_14) [-1] 
+  !c1_3 = I32 [1]
+  !18 = ApplyBinaryPrimOp(%__norm_14, !c1_3) [Add]
+  !19 = ArrayRef(%__norm_13, !18) [-1] 
+  !c1_4 = I32 [1]
+  !s10 = StreamRange(!17, !19, !c1_4) [-1, False]
+  !s11 = StreamMap(!s10) { (%__norm_15) =>
+    ArrayRef(%__norm_7, %__norm_15) [-1]
+  }
+  ToArray(!s11)
+}
+%__norm_16 = ToArray(!s12)
+!20 = Literal [Array[Array[Int32]], <literal value>]
+!s13 = ToStream(!20) [False]
+!s16 = StreamMap(!s13) { (%__norm_17) =>
+  !s14 = ToStream(%__norm_17) [False]
+  !s15 = StreamMap(!s14) { (%__norm_18) =>
+    ArrayRef(%__norm_16, %__norm_18) [-1]
+  }
+  ToArray(!s15)
+} 
+%__norm_19 = MakeStruct(__iruid_37: %__norm_6)
+!21 = IsNA(%__norm_19)
+!24 = If !21 then {
+  NA [Struct{__iruid_37:Struct{__init_state:Tuple[Binary]}}]
+} else {
+  !22 = GetField(%__norm_19) [__iruid_37]
+  !23 = SelectFields(!22) [(__init_state)]
+  MakeStruct(__iruid_37: !23)
+} 
+!25 = NA [String]
+%__norm_33 = CollectDistributedArray(!s16, !24, !25) {
+(%__norm_20, %__norm_21) =>
+  %__norm_22 = GetField(%__norm_21) [__iruid_37]
+  !s17 = ToStream(%__norm_20) [True]
+  !s19 = StreamFlatMap(!s17) { (%__norm_23) =>
+    !s18 = ToStream(%__norm_23) [True] 
+    !26 = GetField(%__norm_22) [__init_state]
+    !27 = GetTupleElement(!26) [0]
+    !28 = InitFromSerializedValue(!27) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    StreamBufferedAggregate(!s18, !28) [__norm_24, (
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))), 10] { (%__norm_24) =>
+      Literal [Struct{}, <literal value>]
+    } { (%__norm_24) =>
+      SeqOp(%__norm_24, %__norm_24) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    }
+  }
+  !s20 = StreamGroupByKey(!s19) [(), True]
+  !s22 = StreamFlatMap(!s20) { (%__norm_25) =>
+    !29 = GetField(%__norm_22) [__init_state]
+    !30 = GetTupleElement(!29) [0]
+    %__norm_26 = InitFromSerializedValue(!30) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1_5 = I32 [1]
+    %__norm_27 = InitOp(!c1_5) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !34 = StreamFor(%__norm_25) { (%__norm_28) =>
+      !31 = SelectFields(%__norm_28) [()]
+      %__norm_29 = SeqOp(!31) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !32 = GetField(%__norm_28) [agg]
+      !33 = GetTupleElement(!32) [0]
+      CombOpValue(!33) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !35 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_30 = MakeTuple(!35) [(0)]
+    !36 = GetTupleElement(%__norm_30) [0]
+    !37 = MakeStruct(__row: !36)
+    %__norm_31 = RunAgg(!34, !37) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+    !38 = GetField(%__norm_31) [__row]
+    !s21 = ToStream(!38) [True]
+    StreamMap(!s21) { (%__norm_32) =>
+      !39 = GetField(%__norm_32) [s]
+      !40 = ApplySpecial(!39) [1, showStr, (), String]
+      MakeStruct(s: !40)
+    }
+  }
+  ToArray(!s22)
+}
+!s23 = ToStream(%__norm_33) [False]
+!s24 = StreamFlatMap(!s23) { (%__norm_34) =>
+  ToStream(%__norm_34) [False]
+}
+!41 = ToArray(!s24) 
+!42 = GetField(%__norm_6) [__old_global]
+!43 = MakeStruct(rows: !41, global: !42)
+MakeTuple(!43) [(0)]
+
+2026-10-23 03:21:57.886 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.886 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.887 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.894 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.894 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.895 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.912 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 171: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+%__norm_5 = MakeStruct(rows: !6, global: !7)
+!8 = GetField(%__norm_5) [global] 
+!c101 = I32 [101]
+!9 = InitOp(!c101) [0, 
+(TakeBy 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))] 
+!10 = AggStateValue [0, 
+(TakeByStateSig +PCStruct{s:PCString}
+  +PCStruct{s:PCString})]
+!11 = MakeTuple(!10) [(0)]
+!12 = RunAgg(!9, !11) [(
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))]
+%__norm_6 = MakeStruct(__old_global: !8, __init_state: !12)
+%__norm_7 = GetField(%__norm_5) [rows]
+%__norm_8 = ArrayLen(%__norm_7)
+!c0_2 = I32 [0] 
+!c32 = I32 [32] 
+!c1 = I32 [1]
+!s5 = StreamRange(!c0_2, !c32, !c1) [-1, False]
+!s6 = StreamMap(!s5) { (%__norm_9) =>
+  !13 = ApplyBinaryPrimOp(%__norm_9, %__norm_8) [Multiply] 
+  !c32_2 = I32 [32]
+  ApplyBinaryPrimOp(!13, !c32_2) [RoundToNegInfDivide]
+}
+%__norm_10 = ToArray(!s6)
+%__norm_11 = MakeArray(%__norm_8) [Array[Int32]]
+!14 = IsNA(%__norm_10)
+%__norm_13 = If !14 then {
+  NA [Array[Int32]]
+} else {
+  !15 = IsNA(%__norm_11)
+  If !15 then {
+    NA [Array[Int32]]
+  } else {
+    !s7 = MakeStream(%__norm_10, %__norm_11) [Stream[Array[Int32]], False]
+    !s8 = StreamFlatMap(!s7) { (%__norm_12) =>
+      ToStream(%__norm_12) [False]
+    }
+    ToArray(!s8)
+  }
+}
+!c0_3 = I32 [0] 
+!c32_3 = I32 [32] 
+!c1_2 = I32 [1]
+!s9 = StreamRange(!c0_3, !c32_3, !c1_2) [-1, False]
+!s12 = StreamMap(!s9) { (%__norm_14) =>
+  !16 = ArrayRef(%__norm_13, %__norm_14) [-1] 
+  !c1_3 = I32 [1]
+  !17 = ApplyBinaryPrimOp(%__norm_14, !c1_3) [Add]
+  !18 = ArrayRef(%__norm_13, !17) [-1] 
+  !c1_4 = I32 [1]
+  !s10 = StreamRange(!16, !18, !c1_4) [-1, False]
+  !s11 = StreamMap(!s10) { (%__norm_15) =>
+    ArrayRef(%__norm_7, %__norm_15) [-1]
+  }
+  ToArray(!s11)
+}
+%__norm_16 = ToArray(!s12)
+!19 = Literal [Array[Array[Int32]], <literal value>]
+!s13 = ToStream(!19) [False]
+!s16 = StreamMap(!s13) { (%__norm_17) =>
+  !s14 = ToStream(%__norm_17) [False]
+  !s15 = StreamMap(!s14) { (%__norm_18) =>
+    ArrayRef(%__norm_16, %__norm_18) [-1]
+  }
+  ToArray(!s15)
+} 
+%__norm_19 = MakeStruct(__iruid_37: %__norm_6)
+!20 = IsNA(%__norm_19)
+!23 = If !20 then {
+  NA [Struct{__iruid_37:Struct{__init_state:Tuple[Binary]}}]
+} else {
+  !21 = GetField(%__norm_19) [__iruid_37]
+  !22 = SelectFields(!21) [(__init_state)]
+  MakeStruct(__iruid_37: !22)
+} 
+!24 = NA [String]
+%__norm_33 = CollectDistributedArray(!s16, !23, !24) {
+(%__norm_20, %__norm_21) =>
+  %__norm_22 = GetField(%__norm_21) [__iruid_37]
+  !s17 = ToStream(%__norm_20) [True]
+  !s19 = StreamFlatMap(!s17) { (%__norm_23) =>
+    !s18 = ToStream(%__norm_23) [True] 
+    !25 = GetField(%__norm_22) [__init_state]
+    !26 = GetTupleElement(!25) [0]
+    !27 = InitFromSerializedValue(!26) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    StreamBufferedAggregate(!s18, !27) [__norm_24, (
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))), 10] { (%__norm_24) =>
+      Literal [Struct{}, <literal value>]
+    } { (%__norm_24) =>
+      SeqOp(%__norm_24, %__norm_24) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    }
+  }
+  !s20 = StreamGroupByKey(!s19) [(), True]
+  !s22 = StreamFlatMap(!s20) { (%__norm_25) =>
+    !28 = GetField(%__norm_22) [__init_state]
+    !29 = GetTupleElement(!28) [0]
+    %__norm_26 = InitFromSerializedValue(!29) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1_5 = I32 [1]
+    %__norm_27 = InitOp(!c1_5) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !33 = StreamFor(%__norm_25) { (%__norm_28) =>
+      !30 = SelectFields(%__norm_28) [()]
+      %__norm_29 = SeqOp(!30) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !31 = GetField(%__norm_28) [agg]
+      !32 = GetTupleElement(!31) [0]
+      CombOpValue(!32) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !34 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_30 = MakeTuple(!34) [(0)]
+    !35 = GetTupleElement(%__norm_30) [0]
+    !36 = MakeStruct(__row: !35)
+    %__norm_31 = RunAgg(!33, !36) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+    !37 = GetField(%__norm_31) [__row]
+    !s21 = ToStream(!37) [True]
+    StreamMap(!s21) { (%__norm_32) =>
+      !38 = GetField(%__norm_32) [s]
+      !39 = ApplySpecial(!38) [1, showStr, (), String]
+      MakeStruct(s: !39)
+    }
+  }
+  ToArray(!s22)
+}
+!s23 = ToStream(%__norm_33) [False]
+!s24 = StreamFlatMap(!s23) { (%__norm_34) =>
+  ToStream(%__norm_34) [False]
+}
+!40 = ToArray(!s24) 
+!41 = GetField(%__norm_6) [__old_global]
+!42 = MakeStruct(rows: !40, global: !41)
+MakeTuple(!42) [(0)]
+
+2026-10-23 03:21:57.920 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 171: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+%__norm_5 = MakeStruct(rows: !6, global: !7)
+!8 = GetField(%__norm_5) [global] 
+!c101 = I32 [101]
+!9 = InitOp(!c101) [0, 
+(TakeBy 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))] 
+!10 = AggStateValue [0, 
+(TakeByStateSig +PCStruct{s:PCString}
+  +PCStruct{s:PCString})]
+!11 = MakeTuple(!10) [(0)]
+!12 = RunAgg(!9, !11) [(
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))]
+%__norm_6 = MakeStruct(__old_global: !8, __init_state: !12)
+%__norm_7 = GetField(%__norm_5) [rows]
+%__norm_8 = ArrayLen(%__norm_7)
+!c0_2 = I32 [0] 
+!c32 = I32 [32] 
+!c1 = I32 [1]
+!s5 = StreamRange(!c0_2, !c32, !c1) [-1, False]
+!s6 = StreamMap(!s5) { (%__norm_9) =>
+  !13 = ApplyBinaryPrimOp(%__norm_9, %__norm_8) [Multiply] 
+  !c32_2 = I32 [32]
+  ApplyBinaryPrimOp(!13, !c32_2) [RoundToNegInfDivide]
+}
+%__norm_10 = ToArray(!s6)
+%__norm_11 = MakeArray(%__norm_8) [Array[Int32]]
+!14 = IsNA(%__norm_10)
+%__norm_13 = If !14 then {
+  NA [Array[Int32]]
+} else {
+  !15 = IsNA(%__norm_11)
+  If !15 then {
+    NA [Array[Int32]]
+  } else {
+    !s7 = MakeStream(%__norm_10, %__norm_11) [Stream[Array[Int32]], False]
+    !s8 = StreamFlatMap(!s7) { (%__norm_12) =>
+      ToStream(%__norm_12) [False]
+    }
+    ToArray(!s8)
+  }
+}
+!c0_3 = I32 [0] 
+!c32_3 = I32 [32] 
+!c1_2 = I32 [1]
+!s9 = StreamRange(!c0_3, !c32_3, !c1_2) [-1, False]
+!s12 = StreamMap(!s9) { (%__norm_14) =>
+  !16 = ArrayRef(%__norm_13, %__norm_14) [-1] 
+  !c1_3 = I32 [1]
+  !17 = ApplyBinaryPrimOp(%__norm_14, !c1_3) [Add]
+  !18 = ArrayRef(%__norm_13, !17) [-1] 
+  !c1_4 = I32 [1]
+  !s10 = StreamRange(!16, !18, !c1_4) [-1, False]
+  !s11 = StreamMap(!s10) { (%__norm_15) =>
+    ArrayRef(%__norm_7, %__norm_15) [-1]
+  }
+  ToArray(!s11)
+}
+%__norm_16 = ToArray(!s12)
+!19 = Literal [Array[Array[Int32]], <literal value>]
+!s13 = ToStream(!19) [False]
+!s16 = StreamMap(!s13) { (%__norm_17) =>
+  !s14 = ToStream(%__norm_17) [False]
+  !s15 = StreamMap(!s14) { (%__norm_18) =>
+    ArrayRef(%__norm_16, %__norm_18) [-1]
+  }
+  ToArray(!s15)
+} 
+%__norm_19 = MakeStruct(__iruid_37: %__norm_6)
+!20 = IsNA(%__norm_19)
+!23 = If !20 then {
+  NA [Struct{__iruid_37:Struct{__init_state:Tuple[Binary]}}]
+} else {
+  !21 = GetField(%__norm_19) [__iruid_37]
+  !22 = SelectFields(!21) [(__init_state)]
+  MakeStruct(__iruid_37: !22)
+} 
+!24 = NA [String]
+%__norm_33 = CollectDistributedArray(!s16, !23, !24) {
+(%__norm_20, %__norm_21) =>
+  %__norm_22 = GetField(%__norm_21) [__iruid_37]
+  !s17 = ToStream(%__norm_20) [True]
+  !s19 = StreamFlatMap(!s17) { (%__norm_23) =>
+    !s18 = ToStream(%__norm_23) [True] 
+    !25 = GetField(%__norm_22) [__init_state]
+    !26 = GetTupleElement(!25) [0]
+    !27 = InitFromSerializedValue(!26) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    StreamBufferedAggregate(!s18, !27) [__norm_24, (
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))), 10] { (%__norm_24) =>
+      Literal [Struct{}, <literal value>]
+    } { (%__norm_24) =>
+      SeqOp(%__norm_24, %__norm_24) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    }
+  }
+  !s20 = StreamGroupByKey(!s19) [(), True]
+  !s22 = StreamFlatMap(!s20) { (%__norm_25) =>
+    !28 = GetField(%__norm_22) [__init_state]
+    !29 = GetTupleElement(!28) [0]
+    %__norm_26 = InitFromSerializedValue(!29) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1_5 = I32 [1]
+    %__norm_27 = InitOp(!c1_5) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !33 = StreamFor(%__norm_25) { (%__norm_28) =>
+      !30 = SelectFields(%__norm_28) [()]
+      %__norm_29 = SeqOp(!30) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !31 = GetField(%__norm_28) [agg]
+      !32 = GetTupleElement(!31) [0]
+      CombOpValue(!32) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !34 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_30 = MakeTuple(!34) [(0)]
+    !35 = GetTupleElement(%__norm_30) [0]
+    !36 = MakeStruct(__row: !35)
+    %__norm_31 = RunAgg(!33, !36) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+    !37 = GetField(%__norm_31) [__row]
+    !s21 = ToStream(!37) [True]
+    StreamMap(!s21) { (%__norm_32) =>
+      !38 = GetField(%__norm_32) [s]
+      !39 = ApplySpecial(!38) [1, showStr, (), String]
+      MakeStruct(s: !39)
+    }
+  }
+  ToArray(!s22)
+}
+!s23 = ToStream(%__norm_33) [False]
+!s24 = StreamFlatMap(!s23) { (%__norm_34) =>
+  ToStream(%__norm_34) [False]
+}
+!40 = ToArray(!s24) 
+!41 = GetField(%__norm_6) [__old_global]
+!42 = MakeStruct(rows: !40, global: !41)
+MakeTuple(!42) [(0)]
+
+2026-10-23 03:21:57.921 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.921 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:57.921 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:57.929 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 171: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  MakeTuple(%__norm_1, %__norm_1) [(0 1)]
+}
+!5 = ArraySort(!s2) { (%__norm_2, %__norm_3) =>
+  !2 = GetTupleElement(%__norm_2) [0] 
+  !3 = GetTupleElement(%__norm_3) [0]
+  !4 = ApplyComparisonOp(!2, !3) [Compare] 
+  !c0 = I32 [0]
+  ApplyComparisonOp(!4, !c0) [LT]
+}
+!s3 = ToStream(!5) [False]
+!s4 = StreamMap(!s3) { (%__norm_4) =>
+  GetTupleElement(%__norm_4) [1]
+}
+!6 = ToArray(!s4) 
+!7 = Literal [Struct{}, <literal value>]
+%__norm_5 = MakeStruct(rows: !6, global: !7)
+!8 = GetField(%__norm_5) [global] 
+!c101 = I32 [101]
+!9 = InitOp(!c101) [0, 
+(TakeBy 
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))] 
+!10 = AggStateValue [0, 
+(TakeByStateSig +PCStruct{s:PCString}
+  +PCStruct{s:PCString})]
+!11 = MakeTuple(!10) [(0)]
+!12 = RunAgg(!9, !11) [(
+  (TakeByStateSig +PCStruct{s:PCString}
+    +PCStruct{s:PCString}))]
+%__norm_6 = MakeStruct(__old_global: !8, __init_state: !12)
+%__norm_7 = GetField(%__norm_5) [rows]
+%__norm_8 = ArrayLen(%__norm_7)
+!c0_2 = I32 [0] 
+!c32 = I32 [32] 
+!c1 = I32 [1]
+!s5 = StreamRange(!c0_2, !c32, !c1) [-1, False]
+!s6 = StreamMap(!s5) { (%__norm_9) =>
+  !13 = ApplyBinaryPrimOp(%__norm_9, %__norm_8) [Multiply] 
+  !c32_2 = I32 [32]
+  ApplyBinaryPrimOp(!13, !c32_2) [RoundToNegInfDivide]
+}
+%__norm_10 = ToArray(!s6)
+%__norm_11 = MakeArray(%__norm_8) [Array[Int32]]
+!14 = IsNA(%__norm_10)
+%__norm_13 = If !14 then {
+  NA [Array[Int32]]
+} else {
+  !15 = IsNA(%__norm_11)
+  If !15 then {
+    NA [Array[Int32]]
+  } else {
+    !s7 = MakeStream(%__norm_10, %__norm_11) [Stream[Array[Int32]], False]
+    !s8 = StreamFlatMap(!s7) { (%__norm_12) =>
+      ToStream(%__norm_12) [False]
+    }
+    ToArray(!s8)
+  }
+}
+!c0_3 = I32 [0] 
+!c32_3 = I32 [32] 
+!c1_2 = I32 [1]
+!s9 = StreamRange(!c0_3, !c32_3, !c1_2) [-1, False]
+!s12 = StreamMap(!s9) { (%__norm_14) =>
+  !16 = ArrayRef(%__norm_13, %__norm_14) [-1] 
+  !c1_3 = I32 [1]
+  !17 = ApplyBinaryPrimOp(%__norm_14, !c1_3) [Add]
+  !18 = ArrayRef(%__norm_13, !17) [-1] 
+  !c1_4 = I32 [1]
+  !s10 = StreamRange(!16, !18, !c1_4) [-1, False]
+  !s11 = StreamMap(!s10) { (%__norm_15) =>
+    ArrayRef(%__norm_7, %__norm_15) [-1]
+  }
+  ToArray(!s11)
+}
+%__norm_16 = ToArray(!s12)
+!19 = Literal [Array[Array[Int32]], <literal value>]
+!s13 = ToStream(!19) [False]
+!s16 = StreamMap(!s13) { (%__norm_17) =>
+  !s14 = ToStream(%__norm_17) [False]
+  !s15 = StreamMap(!s14) { (%__norm_18) =>
+    ArrayRef(%__norm_16, %__norm_18) [-1]
+  }
+  ToArray(!s15)
+} 
+%__norm_19 = MakeStruct(__iruid_37: %__norm_6)
+!20 = IsNA(%__norm_19)
+!23 = If !20 then {
+  NA [Struct{__iruid_37:Struct{__init_state:Tuple[Binary]}}]
+} else {
+  !21 = GetField(%__norm_19) [__iruid_37]
+  !22 = SelectFields(!21) [(__init_state)]
+  MakeStruct(__iruid_37: !22)
+} 
+!24 = NA [String]
+%__norm_33 = CollectDistributedArray(!s16, !23, !24) {
+(%__norm_20, %__norm_21) =>
+  %__norm_22 = GetField(%__norm_21) [__iruid_37]
+  !s17 = ToStream(%__norm_20) [True]
+  !s19 = StreamFlatMap(!s17) { (%__norm_23) =>
+    !s18 = ToStream(%__norm_23) [True] 
+    !25 = GetField(%__norm_22) [__init_state]
+    !26 = GetTupleElement(!25) [0]
+    !27 = InitFromSerializedValue(!26) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    StreamBufferedAggregate(!s18, !27) [__norm_24, (
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))), 10] { (%__norm_24) =>
+      Literal [Struct{}, <literal value>]
+    } { (%__norm_24) =>
+      SeqOp(%__norm_24, %__norm_24) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    }
+  }
+  !s20 = StreamGroupByKey(!s19) [(), True]
+  !s22 = StreamFlatMap(!s20) { (%__norm_25) =>
+    !28 = GetField(%__norm_22) [__init_state]
+    !29 = GetTupleElement(!28) [0]
+    %__norm_26 = InitFromSerializedValue(!29) [0, 
+    (TakeByStateSig +PCStruct{s:PCString}
+      +PCStruct{s:PCString})]
+    !c1_5 = I32 [1]
+    %__norm_27 = InitOp(!c1_5) [1, 
+    (Take (TakeStateSig +PCStruct{}))]
+    !33 = StreamFor(%__norm_25) { (%__norm_28) =>
+      !30 = SelectFields(%__norm_28) [()]
+      %__norm_29 = SeqOp(!30) [1, 
+      (Take (TakeStateSig +PCStruct{}))]
+      !31 = GetField(%__norm_28) [agg]
+      !32 = GetTupleElement(!31) [0]
+      CombOpValue(!32) [0, 
+      (TakeBy 
+        (TakeByStateSig +PCStruct{s:PCString}
+          +PCStruct{s:PCString}))]
+    } 
+    !34 = ResultOp [0, 
+    (TakeBy 
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString}))]
+    %__norm_30 = MakeTuple(!34) [(0)]
+    !35 = GetTupleElement(%__norm_30) [0]
+    !36 = MakeStruct(__row: !35)
+    %__norm_31 = RunAgg(!33, !36) [(
+      (TakeByStateSig +PCStruct{s:PCString}
+        +PCStruct{s:PCString})
+      (TakeStateSig +PCStruct{}))]
+    !37 = GetField(%__norm_31) [__row]
+    !s21 = ToStream(!37) [True]
+    StreamMap(!s21) { (%__norm_32) =>
+      !38 = GetField(%__norm_32) [s]
+      !39 = ApplySpecial(!38) [1, showStr, (), String]
+      MakeStruct(s: !39)
+    }
+  }
+  ToArray(!s22)
+}
+!s23 = ToStream(%__norm_33) [False]
+!s24 = StreamFlatMap(!s23) { (%__norm_34) =>
+  ToStream(%__norm_34) [False]
+}
+!40 = ToArray(!s24) 
+!41 = GetField(%__norm_6) [__old_global]
+!42 = MakeStruct(rows: !40, global: !41)
+MakeTuple(!42) [(0)]
+
+2026-10-23 03:21:58.248 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:21:58.740 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:21:58.778 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:58.904 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:21:58.908 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:21:58.908 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 6, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:21:58.921 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=837376, peakBytesReadable=817.75 KiB, chunks requested=163, cache hits=155
+2026-10-23 03:21:58.921 RegionPool: INFO: RegionPool: FREE: 817.8K allocated (781.3K blocks / 36.5K chunks), regions.size = 17, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:21:58.988 BackendUtils: INFO: table_collect: executed 1 tasks in 204.871ms
+2026-10-23 03:21:58.988 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:58.989 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:58.989 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:58.989 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:21:58.993 LowerOrInterpretNonCompilable$: INFO: took 1.377s
+2026-10-23 03:21:58.994 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{s:String}],global:Struct{}}]
+
+2026-10-23 03:21:58.994 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:58.994 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:58.994 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:58.994 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{s:String}],global:Struct{}}]
+
+2026-10-23 03:21:58.995 LoweringPipeline: INFO: after EvalRelationalLets: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{s:String}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:21:58.995 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{s:String}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:21:58.995 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{s:String}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:21:58.995 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 513.0K allocated (321.0K blocks / 192.0K chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:58.996 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:21:59.000 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.000 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.000 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.000 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.000 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.000 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.000 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.000 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.000 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.001 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+Literal [Array[Struct{s:String}], <literal value>]
+
+2026-10-23 03:21:59.001 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Array[Struct{s:String}], <literal value>]
+
+2026-10-23 03:21:59.001 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.001 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.001 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.001 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Array[Struct{s:String}], <literal value>]
+
+2026-10-23 03:21:59.001 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = Literal [Array[Struct{s:String}], <literal value>]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:21:59.002 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.002 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.002 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.002 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Array[Struct{s:String}]], <literal value>]
+
+2026-10-23 03:21:59.002 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Array[Struct{s:String}]], <literal value>]
+
+2026-10-23 03:21:59.002 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.002 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.002 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Array[Struct{s:String}]], <literal value>]
+
+2026-10-23 03:21:59.003 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Array[Struct{s:String}]], <literal value>]
+
+2026-10-23 03:21:59.003 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.003 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.003 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.003 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Array[Struct{s:String}]], <literal value>]
+
+2026-10-23 03:21:59.005 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:21:59.011 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.011 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.011 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.012 EType$: INFO: encoder cache miss (0 hits, 5 misses, 0.000)
+2026-10-23 03:21:59.044 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.044 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:21:59.044 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:21:59.044 RegionPool: INFO: RegionPool: FREE: 513.0K allocated (385.0K blocks / 128.0K chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher

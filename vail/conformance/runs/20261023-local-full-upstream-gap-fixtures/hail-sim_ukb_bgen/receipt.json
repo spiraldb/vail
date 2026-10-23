@@ -1,0 +1,26 @@
+{
+  "engine": "hail",
+  "fixture": "sim_ukb_bgen",
+  "parameters": {},
+  "paths": {
+    "sim_ukb_bgen": "/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen"
+  },
+  "wall_seconds": 2.379325542016886,
+  "telemetry": {
+    "cpu_seconds": 8.459195916666665,
+    "average_cores": 3.5551399209417496,
+    "peak_rss_gib": 1.08489990234375,
+    "sampling_hz": 10,
+    "counter_deltas": {
+      "user_time": 183811032,
+      "system_time": 19209670,
+      "instructions": 76817997069,
+      "cycles": 29762035526,
+      "diskio_bytesread": 229376,
+      "diskio_byteswritten": 4128768
+    },
+    "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+    "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+    "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gap-fixtures/hail-sim_ukb_bgen/telemetry"
+  }
+}

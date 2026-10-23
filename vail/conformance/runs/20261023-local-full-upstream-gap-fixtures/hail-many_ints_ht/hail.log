@@ -1,0 +1,3447 @@
+2026-10-23 03:04:07.691 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:04:07.904 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:04:08.072 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.187 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz returned 1 files: many_ints_table.tsv.bgz
+2026-10-23 03:04:08.261 RelationalFunctions$: INFO: JSON: JObject(List((name,JString(TableFilterPartitions)), (parts,JArray(List(JInt(0)))), (keep,JBool(true))))
+2026-10-23 03:04:08.423 LoweringPipeline: INFO: initial IR: IR size 16: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = SelectFields(%row) [(file text)] 
+  !2 = GetField(%row) [text] 
+  !3 = Str ["\t"] 
+  !4 = MakeArray [Array[String]]
+  !5 = Apply(!2, !3, !4) [1, splitChar, 
+  (), Array[String]]
+  InsertFields !1 (header: !5)
+}
+!6 = TableCollect(!ht4)
+GetField(!6) [rows]
+
+2026-10-23 03:04:08.429 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.429 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.431 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.431 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.431 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.431 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.440 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:04:08.451 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.451 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.451 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.455 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 13: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+!5 = TableCollect(!ht4)
+GetField(!5) [rows]
+
+2026-10-23 03:04:08.460 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 13: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+!5 = TableCollect(!ht4)
+GetField(!5) [rows]
+
+2026-10-23 03:04:08.461 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.461 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.461 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.465 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 13: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+!5 = TableCollect(!ht4)
+GetField(!5) [rows]
+
+2026-10-23 03:04:08.468 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 15: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+%__norm_1 = TableCollect(!ht4)
+GetField(%__norm_1) [rows]
+
+2026-10-23 03:04:08.470 LoweringPipeline: INFO: initial IR: IR size 12: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+TableCollect(!ht4)
+
+2026-10-23 03:04:08.472 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 12: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+TableCollect(!ht4)
+
+2026-10-23 03:04:08.474 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 12: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+TableCollect(!ht4)
+
+2026-10-23 03:04:08.475 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.475 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.475 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.478 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 12: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableToTableApply(!ht) ["{\"name\":\"TableFilterPartitions\",\"parts\":[0],\"keep\":true}"]
+!ht3 = TableHead(!ht2) [1]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !1 = GetField(%row) [text] 
+  !2 = Str ["\t"] 
+  !3 = Literal [Array[String], <literal value>]
+  !4 = Apply(!1, !2, !3) [1, splitChar, 
+  (), Array[String]]
+  InsertFields %row (header: !4)
+}
+TableCollect(!ht4)
+
+2026-10-23 03:04:08.479 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:04:08.479 LowerOrInterpretNonCompilable$: INFO: lowering result: TableCollect
+2026-10-23 03:04:08.613 LoweringPipeline: INFO: initial IR: IR size 140: 
+
+%__norm_1 = MakeStruct()
+%__norm_2 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!c0 = I32 [0] 
+!c1 = I32 [1]
+!s2 = StreamIota(!c0, !c1) [False]
+!s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) =>
+  !2 = ApplyIR(%__norm_2, %__norm_4) [-1, contains, 
+  (), Boolean]
+  If !2 then { %__norm_3 } else {
+    NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+  }
+}
+!s4 = StreamFilter(!s3) { (%__norm_5) =>
+  !3 = IsNA(%__norm_5)
+  ApplyUnaryPrimOp(!3) [Bang]
+}
+%__norm_6 = ToArray(!s4)
+%__norm_7 = ArrayLen(%__norm_6)
+!c0_2 = I32 [0] 
+!4 = I64 [1] 
+!c0_3 = I32 [0] 
+!c1_2 = I32 [1]
+%__norm_28 = TailLoop(!c0_2, !4, !c0_3, !c1_2) {
+(%__norm_8, %__norm_9, %__norm_10, %__norm_11, %__norm_12) =>
+  !s5 = ToStream(%__norm_6) [False]
+  !s6 = StreamDrop(!s5, %__norm_10)
+  %__norm_13 = StreamTake(!s6, %__norm_11)
+  !5 = MakeStruct(__iruid_2: %__norm_1) 
+  !6 = Str ["iteration="] 
+  !7 = Apply(%__norm_8) [-1, str, (), String]
+  !8 = Apply(!6, !7) [-1, concat, (), String] 
+  !9 = Str [",nParts="]
+  !10 = Apply(!8, !9) [-1, concat, (), String] 
+  !11 = Apply(%__norm_11) [-1, str, (), String]
+  !12 = Apply(!10, !11) [-1, concat, (), String]
+  %__norm_18 = CollectDistributedArray(%__norm_13, !5, !12) {
+  (%__norm_14, %__norm_15) =>
+    %__norm_16 = GetField(%__norm_15) [__iruid_2]
+    %__norm_17 = ReadPartition(%__norm_14) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+    StreamLen(%__norm_17)
+  }
+  %__norm_19 = Ref [__norm_18]
+  %__norm_20 = ArrayLen(%__norm_19)
+  %__norm_21 = ApplyBinaryPrimOp(%__norm_10, %__norm_20) [Add]
+  %__norm_22 = ApplyComparisonOp(%__norm_21, %__norm_7) [GTEQ]
+  !c0_4 = I32 [0] 
+  !13 = I64 [0]
+  TailLoop(!c0_4, %__norm_9, !13) {
+  (%__norm_23, %__norm_24, %__norm_25, %__norm_26) =>
+    !14 = I64 [0]
+    !15 = ApplyComparisonOp(%__norm_24, !14) [LTEQ] 
+    !16 = ApplyComparisonOp(%__norm_23, %__norm_20) [GTEQ]
+    !17 = ApplySpecial(!16, %__norm_22) [-1, land, 
+    (), Boolean]
+    !18 = ApplySpecial(!15, !17) [-1, lor, 
+    (), Boolean]
+    If !18 then {
+      !19 = ApplyBinaryPrimOp(%__norm_10, %__norm_23) [Add] 
+      !20 = Cast(%__norm_25) [Int32]
+      MakeTuple(!19, !20) [(0 1)]
+    } else {
+      !21 = ApplyComparisonOp(%__norm_23, %__norm_20) [LT]
+      If !21 then {
+        !22 = ArrayRef(%__norm_19, %__norm_23) [-1]
+        %__norm_27 = Cast(!22) [Int64]
+        !c1_3 = I32 [1]
+        !23 = ApplyBinaryPrimOp(%__norm_23, !c1_3) [Add] 
+        !24 = ApplyBinaryPrimOp(%__norm_24, %__norm_27) [Subtract] 
+        !25 = ApplyComparisonOp(%__norm_27, %__norm_24) [LT]
+        !26 = If !25 then { %__norm_27 } else {
+          %__norm_24
+          }
+        Recur(!23, !24, !26)
+      } else {
+        !c1_4 = I32 [1]
+        !27 = ApplyBinaryPrimOp(%__norm_8, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !28 = ApplyBinaryPrimOp(%__norm_20, !c3) [Multiply]
+        Recur(!27, %__norm_24, %__norm_21, !28)
+      }
+    }
+  }
+}
+%__norm_29 = GetTupleElement(%__norm_28) [0]
+%__norm_30 = GetTupleElement(%__norm_28) [1]
+!c1_5 = I32 [1]
+%__norm_31 = ApplyBinaryPrimOp(%__norm_29, !c1_5) [Subtract]
+!c0_5 = I32 [0] 
+!c1_6 = I32 [1]
+!s7 = StreamRange(!c0_5, %__norm_29, !c1_6) [-1, False]
+!s8 = StreamMap(!s7) { (%__norm_32) =>
+  !29 = ArrayRef(%__norm_6, %__norm_32) [-1] 
+  !30 = ApplyComparisonOp(%__norm_32, %__norm_31) [EQWithNA]
+  !31 = If !30 then { %__norm_30 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!29, !31) [(0 1)]
+}
+!32 = ToArray(!s8)
+MakeTuple(!32) [(0)]
+
+2026-10-23 03:04:08.614 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.614 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.614 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.616 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.616 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.616 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.626 ForwardLets$: INFO: Eliminating unused binding:
+__norm_16: struct{} = (EVAL) GetField(#__norm_15) [__iruid_2]
+2026-10-23 03:04:08.644 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_2'
+2026-10-23 03:04:08.672 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.672 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.672 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.673 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.673 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.673 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.683 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) Literal [Struct{}, <literal value>]
+2026-10-23 03:04:08.690 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.690 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.690 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.707 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 130: 
+
+%__norm_2 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!c0 = I32 [0] 
+!c1 = I32 [1]
+!s2 = StreamIota(!c0, !c1) [False]
+!s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) =>
+  !2 = ApplyIR(%__norm_2, %__norm_4) [-1, contains, 
+  (), Boolean]
+  If !2 then { %__norm_3 } else {
+    NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+  }
+}
+!s4 = StreamFilter(!s3) { (%__norm_5) =>
+  !3 = IsNA(%__norm_5)
+  ApplyUnaryPrimOp(!3) [Bang]
+}
+%__norm_6 = ToArray(!s4)
+%__norm_7 = ArrayLen(%__norm_6)
+!c0_2 = I32 [0] 
+!4 = I64 [1] 
+!c0_3 = I32 [0] 
+!c1_2 = I32 [1]
+%__norm_28 = TailLoop(!c0_2, !4, !c0_3, !c1_2) {
+(%__norm_8, %__norm_9, %__norm_10, %__norm_11, %__norm_12) =>
+  !s5 = ToStream(%__norm_6) [False]
+  !s6 = StreamDrop(!s5, %__norm_10)
+  !s7 = StreamTake(!s6, %__norm_11) 
+  !5 = Literal [Struct{}, <literal value>] 
+  !6 = Str ["iteration="] 
+  !7 = Apply(%__norm_8) [-1, str, (), String]
+  !8 = Apply(!6, !7) [-1, concat, (), String] 
+  !9 = Str [",nParts="]
+  !10 = Apply(!8, !9) [-1, concat, (), String] 
+  !11 = Apply(%__norm_11) [-1, str, (), String]
+  !12 = Apply(!10, !11) [-1, concat, (), String]
+  %__norm_19 = CollectDistributedArray(!s7, !5, !12) {
+  (%__norm_14, %__norm_15) =>
+    !s8 = ReadPartition(%__norm_14) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+    StreamLen(!s8)
+  }
+  %__norm_20 = ArrayLen(%__norm_19)
+  %__norm_21 = ApplyBinaryPrimOp(%__norm_10, %__norm_20) [Add]
+  %__norm_22 = ApplyComparisonOp(%__norm_21, %__norm_7) [GTEQ]
+  !c0_4 = I32 [0] 
+  !13 = I64 [0]
+  TailLoop(!c0_4, %__norm_9, !13) {
+  (%__norm_23, %__norm_24, %__norm_25, %__norm_26) =>
+    !14 = I64 [0]
+    !15 = ApplyComparisonOp(%__norm_24, !14) [LTEQ] 
+    !16 = ApplyComparisonOp(%__norm_23, %__norm_20) [GTEQ]
+    !17 = ApplySpecial(!16, %__norm_22) [-1, land, 
+    (), Boolean]
+    !18 = ApplySpecial(!15, !17) [-1, lor, 
+    (), Boolean]
+    If !18 then {
+      !19 = ApplyBinaryPrimOp(%__norm_10, %__norm_23) [Add] 
+      !20 = Cast(%__norm_25) [Int32]
+      MakeTuple(!19, !20) [(0 1)]
+    } else {
+      !21 = ApplyComparisonOp(%__norm_23, %__norm_20) [LT]
+      If !21 then {
+        !22 = ArrayRef(%__norm_19, %__norm_23) [-1]
+        %__norm_27 = Cast(!22) [Int64]
+        !c1_3 = I32 [1]
+        !23 = ApplyBinaryPrimOp(%__norm_23, !c1_3) [Add] 
+        !24 = ApplyBinaryPrimOp(%__norm_24, %__norm_27) [Subtract] 
+        !25 = ApplyComparisonOp(%__norm_27, %__norm_24) [LT]
+        !26 = If !25 then { %__norm_27 } else {
+          %__norm_24
+          }
+        Recur(!23, !24, !26)
+      } else {
+        !c1_4 = I32 [1]
+        !27 = ApplyBinaryPrimOp(%__norm_8, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !28 = ApplyBinaryPrimOp(%__norm_20, !c3) [Multiply]
+        Recur(!27, %__norm_24, %__norm_21, !28)
+      }
+    }
+  }
+}
+%__norm_29 = GetTupleElement(%__norm_28) [0]
+%__norm_30 = GetTupleElement(%__norm_28) [1]
+!c1_5 = I32 [1]
+%__norm_31 = ApplyBinaryPrimOp(%__norm_29, !c1_5) [Subtract]
+!c0_5 = I32 [0] 
+!c1_6 = I32 [1]
+!s9 = StreamRange(!c0_5, %__norm_29, !c1_6) [-1, False]
+!s10 = StreamMap(!s9) { (%__norm_32) =>
+  !29 = ArrayRef(%__norm_6, %__norm_32) [-1] 
+  !30 = ApplyComparisonOp(%__norm_32, %__norm_31) [EQWithNA]
+  !31 = If !30 then { %__norm_30 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!29, !31) [(0 1)]
+}
+!32 = ToArray(!s10)
+MakeTuple(!32) [(0)]
+
+2026-10-23 03:04:08.713 LoweringPipeline: INFO: after InlineApplyIR: IR size 151: 
+
+%__norm_1 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!c0 = I32 [0] 
+!c1 = I32 [1]
+!s2 = StreamIota(!c0, !c1) [False]
+!s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+(%__norm_2, %__norm_3) =>
+  %__norm_4 = Ref [__norm_1]
+  %__norm_5 = Ref [__norm_3]
+  !2 = IsNA(%__norm_4)
+  !3 = ApplyUnaryPrimOp(!2) [Bang]
+  !8 = If !3 then {
+    %__norm_6 = LowerBoundOnOrderedCollection(%__norm_4, %__norm_5) [False]
+    %__norm_7 = CastToArray(%__norm_4)
+    !4 = ArrayLen(%__norm_7)
+    !5 = ApplyComparisonOp(%__norm_6, !4) [LT] 
+    !6 = ArrayRef(%__norm_7, %__norm_6) [-1]
+    !7 = ApplyComparisonOp(!6, %__norm_5) [EQWithNA]
+    ApplySpecial(!5, !7) [-1, land, (), Boolean]
+  } else {
+    NA [Boolean]
+  }
+  If !8 then { %__norm_2 } else {
+    NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+  }
+}
+!s4 = StreamFilter(!s3) { (%__norm_8) =>
+  !9 = IsNA(%__norm_8)
+  ApplyUnaryPrimOp(!9) [Bang]
+}
+%__norm_9 = ToArray(!s4)
+%__norm_10 = ArrayLen(%__norm_9)
+!c0_2 = I32 [0] 
+!10 = I64 [1] 
+!c0_3 = I32 [0] 
+!c1_2 = I32 [1]
+%__norm_27 = TailLoop(!c0_2, !10, !c0_3, !c1_2) {
+(%__norm_11, %__norm_12, %__norm_13, %__norm_14, %__norm_15) =>
+  !s5 = ToStream(%__norm_9) [False]
+  !s6 = StreamDrop(!s5, %__norm_13)
+  !s7 = StreamTake(!s6, %__norm_14) 
+  !11 = Literal [Struct{}, <literal value>] 
+  !12 = Str ["iteration="] 
+  !13 = Apply(%__norm_11) [-1, str, (), String]
+  !14 = Apply(!12, !13) [-1, concat, (), String] 
+  !15 = Str [",nParts="]
+  !16 = Apply(!14, !15) [-1, concat, (), String] 
+  !17 = Apply(%__norm_14) [-1, str, (), String]
+  !18 = Apply(!16, !17) [-1, concat, (), String]
+  %__norm_18 = CollectDistributedArray(!s7, !11, !18) {
+  (%__norm_16, %__norm_17) =>
+    !s8 = ReadPartition(%__norm_16) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+    StreamLen(!s8)
+  }
+  %__norm_19 = ArrayLen(%__norm_18)
+  %__norm_20 = ApplyBinaryPrimOp(%__norm_13, %__norm_19) [Add]
+  %__norm_21 = ApplyComparisonOp(%__norm_20, %__norm_10) [GTEQ]
+  !c0_4 = I32 [0] 
+  !19 = I64 [0]
+  TailLoop(!c0_4, %__norm_12, !19) {
+  (%__norm_22, %__norm_23, %__norm_24, %__norm_25) =>
+    !20 = I64 [0]
+    !21 = ApplyComparisonOp(%__norm_23, !20) [LTEQ] 
+    !22 = ApplyComparisonOp(%__norm_22, %__norm_19) [GTEQ]
+    !23 = ApplySpecial(!22, %__norm_21) [-1, land, 
+    (), Boolean]
+    !24 = ApplySpecial(!21, !23) [-1, lor, 
+    (), Boolean]
+    If !24 then {
+      !25 = ApplyBinaryPrimOp(%__norm_13, %__norm_22) [Add] 
+      !26 = Cast(%__norm_24) [Int32]
+      MakeTuple(!25, !26) [(0 1)]
+    } else {
+      !27 = ApplyComparisonOp(%__norm_22, %__norm_19) [LT]
+      If !27 then {
+        !28 = ArrayRef(%__norm_18, %__norm_22) [-1]
+        %__norm_26 = Cast(!28) [Int64]
+        !c1_3 = I32 [1]
+        !29 = ApplyBinaryPrimOp(%__norm_22, !c1_3) [Add] 
+        !30 = ApplyBinaryPrimOp(%__norm_23, %__norm_26) [Subtract] 
+        !31 = ApplyComparisonOp(%__norm_26, %__norm_23) [LT]
+        !32 = If !31 then { %__norm_26 } else {
+          %__norm_23
+          }
+        Recur(!29, !30, !32)
+      } else {
+        !c1_4 = I32 [1]
+        !33 = ApplyBinaryPrimOp(%__norm_11, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !34 = ApplyBinaryPrimOp(%__norm_19, !c3) [Multiply]
+        Recur(!33, %__norm_23, %__norm_20, !34)
+      }
+    }
+  }
+}
+%__norm_28 = GetTupleElement(%__norm_27) [0]
+%__norm_29 = GetTupleElement(%__norm_27) [1]
+!c1_5 = I32 [1]
+%__norm_30 = ApplyBinaryPrimOp(%__norm_28, !c1_5) [Subtract]
+!c0_5 = I32 [0] 
+!c1_6 = I32 [1]
+!s9 = StreamRange(!c0_5, %__norm_28, !c1_6) [-1, False]
+!s10 = StreamMap(!s9) { (%__norm_31) =>
+  !35 = ArrayRef(%__norm_9, %__norm_31) [-1] 
+  !36 = ApplyComparisonOp(%__norm_31, %__norm_30) [EQWithNA]
+  !37 = If !36 then { %__norm_29 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!35, !37) [(0 1)]
+}
+!38 = ToArray(!s10)
+MakeTuple(!38) [(0)]
+
+2026-10-23 03:04:08.719 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.719 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.719 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.778 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.778 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.779 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.792 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.793 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.793 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.805 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 147: 
+
+%__norm_1 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!c0 = I32 [0] 
+!c1 = I32 [1]
+!s2 = StreamIota(!c0, !c1) [False]
+!s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+(%__norm_2, %__norm_3) =>
+  !2 = IsNA(%__norm_1)
+  If !2 then {
+    NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+  } else {
+    %__norm_6 = LowerBoundOnOrderedCollection(%__norm_1, %__norm_3) [False]
+    %__norm_7 = CastToArray(%__norm_1)
+    !3 = ArrayLen(%__norm_7)
+    !4 = ApplyComparisonOp(%__norm_6, !3) [LT] 
+    !5 = ArrayRef(%__norm_7, %__norm_6) [-1]
+    !6 = ApplyComparisonOp(!5, %__norm_3) [EQWithNA]
+    !7 = ApplySpecial(!4, !6) [-1, land, (), Boolean]
+    If !7 then { %__norm_2 } else {
+      NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+    }
+  }
+}
+!s4 = StreamFilter(!s3) { (%__norm_8) =>
+  !8 = IsNA(%__norm_8)
+  ApplyUnaryPrimOp(!8) [Bang]
+}
+%__norm_9 = ToArray(!s4)
+%__norm_10 = ArrayLen(%__norm_9)
+!c0_2 = I32 [0] 
+!9 = I64 [1] 
+!c0_3 = I32 [0] 
+!c1_2 = I32 [1]
+%__norm_27 = TailLoop(!c0_2, !9, !c0_3, !c1_2) {
+(%__norm_11, %__norm_12, %__norm_13, %__norm_14, %__norm_15) =>
+  !s5 = ToStream(%__norm_9) [False]
+  !s6 = StreamDrop(!s5, %__norm_13)
+  !s7 = StreamTake(!s6, %__norm_14) 
+  !10 = Literal [Struct{}, <literal value>] 
+  !11 = Str ["iteration="] 
+  !12 = Apply(%__norm_11) [-1, str, (), String]
+  !13 = Apply(!11, !12) [-1, concat, (), String] 
+  !14 = Str [",nParts="]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Apply(%__norm_14) [-1, str, (), String]
+  !17 = Apply(!15, !16) [-1, concat, (), String]
+  %__norm_18 = CollectDistributedArray(!s7, !10, !17) {
+  (%__norm_16, %__norm_17) =>
+    !s8 = ReadPartition(%__norm_16) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+    StreamLen(!s8)
+  }
+  %__norm_19 = ArrayLen(%__norm_18)
+  %__norm_20 = ApplyBinaryPrimOp(%__norm_13, %__norm_19) [Add]
+  %__norm_21 = ApplyComparisonOp(%__norm_20, %__norm_10) [GTEQ]
+  !c0_4 = I32 [0] 
+  !18 = I64 [0]
+  TailLoop(!c0_4, %__norm_12, !18) {
+  (%__norm_22, %__norm_23, %__norm_24, %__norm_25) =>
+    !19 = I64 [0]
+    !20 = ApplyComparisonOp(%__norm_23, !19) [LTEQ] 
+    !21 = ApplyComparisonOp(%__norm_22, %__norm_19) [GTEQ]
+    !22 = ApplySpecial(!21, %__norm_21) [-1, land, 
+    (), Boolean]
+    !23 = ApplySpecial(!20, !22) [-1, lor, 
+    (), Boolean]
+    If !23 then {
+      !24 = ApplyBinaryPrimOp(%__norm_13, %__norm_22) [Add] 
+      !25 = Cast(%__norm_24) [Int32]
+      MakeTuple(!24, !25) [(0 1)]
+    } else {
+      !26 = ApplyComparisonOp(%__norm_22, %__norm_19) [LT]
+      If !26 then {
+        !27 = ArrayRef(%__norm_18, %__norm_22) [-1]
+        %__norm_26 = Cast(!27) [Int64]
+        !c1_3 = I32 [1]
+        !28 = ApplyBinaryPrimOp(%__norm_22, !c1_3) [Add] 
+        !29 = ApplyBinaryPrimOp(%__norm_23, %__norm_26) [Subtract] 
+        !30 = ApplyComparisonOp(%__norm_26, %__norm_23) [LT]
+        !31 = If !30 then { %__norm_26 } else {
+          %__norm_23
+          }
+        Recur(!28, !29, !31)
+      } else {
+        !c1_4 = I32 [1]
+        !32 = ApplyBinaryPrimOp(%__norm_11, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !33 = ApplyBinaryPrimOp(%__norm_19, !c3) [Multiply]
+        Recur(!32, %__norm_23, %__norm_20, !33)
+      }
+    }
+  }
+}
+%__norm_28 = GetTupleElement(%__norm_27) [0]
+%__norm_29 = GetTupleElement(%__norm_27) [1]
+!c1_5 = I32 [1]
+%__norm_30 = ApplyBinaryPrimOp(%__norm_28, !c1_5) [Subtract]
+!c0_5 = I32 [0] 
+!c1_6 = I32 [1]
+!s9 = StreamRange(!c0_5, %__norm_28, !c1_6) [-1, False]
+!s10 = StreamMap(!s9) { (%__norm_31) =>
+  !34 = ArrayRef(%__norm_9, %__norm_31) [-1] 
+  !35 = ApplyComparisonOp(%__norm_31, %__norm_30) [EQWithNA]
+  !36 = If !35 then { %__norm_29 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!34, !36) [(0 1)]
+}
+!37 = ToArray(!s10)
+MakeTuple(!37) [(0)]
+
+2026-10-23 03:04:08.817 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 147: 
+
+%__norm_1 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!c0 = I32 [0] 
+!c1 = I32 [1]
+!s2 = StreamIota(!c0, !c1) [False]
+!s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+(%__norm_2, %__norm_3) =>
+  !2 = IsNA(%__norm_1)
+  If !2 then {
+    NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+  } else {
+    %__norm_6 = LowerBoundOnOrderedCollection(%__norm_1, %__norm_3) [False]
+    %__norm_7 = CastToArray(%__norm_1)
+    !3 = ArrayLen(%__norm_7)
+    !4 = ApplyComparisonOp(%__norm_6, !3) [LT] 
+    !5 = ArrayRef(%__norm_7, %__norm_6) [-1]
+    !6 = ApplyComparisonOp(!5, %__norm_3) [EQWithNA]
+    !7 = ApplySpecial(!4, !6) [-1, land, (), Boolean]
+    If !7 then { %__norm_2 } else {
+      NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+    }
+  }
+}
+!s4 = StreamFilter(!s3) { (%__norm_8) =>
+  !8 = IsNA(%__norm_8)
+  ApplyUnaryPrimOp(!8) [Bang]
+}
+%__norm_9 = ToArray(!s4)
+%__norm_10 = ArrayLen(%__norm_9)
+!c0_2 = I32 [0] 
+!9 = I64 [1] 
+!c0_3 = I32 [0] 
+!c1_2 = I32 [1]
+%__norm_27 = TailLoop(!c0_2, !9, !c0_3, !c1_2) {
+(%__norm_11, %__norm_12, %__norm_13, %__norm_14, %__norm_15) =>
+  !s5 = ToStream(%__norm_9) [False]
+  !s6 = StreamDrop(!s5, %__norm_13)
+  !s7 = StreamTake(!s6, %__norm_14) 
+  !10 = Literal [Struct{}, <literal value>] 
+  !11 = Str ["iteration="] 
+  !12 = Apply(%__norm_11) [-1, str, (), String]
+  !13 = Apply(!11, !12) [-1, concat, (), String] 
+  !14 = Str [",nParts="]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Apply(%__norm_14) [-1, str, (), String]
+  !17 = Apply(!15, !16) [-1, concat, (), String]
+  %__norm_18 = CollectDistributedArray(!s7, !10, !17) {
+  (%__norm_16, %__norm_17) =>
+    !s8 = ReadPartition(%__norm_16) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+    StreamLen(!s8)
+  }
+  %__norm_19 = ArrayLen(%__norm_18)
+  %__norm_20 = ApplyBinaryPrimOp(%__norm_13, %__norm_19) [Add]
+  %__norm_21 = ApplyComparisonOp(%__norm_20, %__norm_10) [GTEQ]
+  !c0_4 = I32 [0] 
+  !18 = I64 [0]
+  TailLoop(!c0_4, %__norm_12, !18) {
+  (%__norm_22, %__norm_23, %__norm_24, %__norm_25) =>
+    !19 = I64 [0]
+    !20 = ApplyComparisonOp(%__norm_23, !19) [LTEQ] 
+    !21 = ApplyComparisonOp(%__norm_22, %__norm_19) [GTEQ]
+    !22 = ApplySpecial(!21, %__norm_21) [-1, land, 
+    (), Boolean]
+    !23 = ApplySpecial(!20, !22) [-1, lor, 
+    (), Boolean]
+    If !23 then {
+      !24 = ApplyBinaryPrimOp(%__norm_13, %__norm_22) [Add] 
+      !25 = Cast(%__norm_24) [Int32]
+      MakeTuple(!24, !25) [(0 1)]
+    } else {
+      !26 = ApplyComparisonOp(%__norm_22, %__norm_19) [LT]
+      If !26 then {
+        !27 = ArrayRef(%__norm_18, %__norm_22) [-1]
+        %__norm_26 = Cast(!27) [Int64]
+        !c1_3 = I32 [1]
+        !28 = ApplyBinaryPrimOp(%__norm_22, !c1_3) [Add] 
+        !29 = ApplyBinaryPrimOp(%__norm_23, %__norm_26) [Subtract] 
+        !30 = ApplyComparisonOp(%__norm_26, %__norm_23) [LT]
+        !31 = If !30 then { %__norm_26 } else {
+          %__norm_23
+          }
+        Recur(!28, !29, !31)
+      } else {
+        !c1_4 = I32 [1]
+        !32 = ApplyBinaryPrimOp(%__norm_11, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !33 = ApplyBinaryPrimOp(%__norm_19, !c3) [Multiply]
+        Recur(!32, %__norm_23, %__norm_20, !33)
+      }
+    }
+  }
+}
+%__norm_28 = GetTupleElement(%__norm_27) [0]
+%__norm_29 = GetTupleElement(%__norm_27) [1]
+!c1_5 = I32 [1]
+%__norm_30 = ApplyBinaryPrimOp(%__norm_28, !c1_5) [Subtract]
+!c0_5 = I32 [0] 
+!c1_6 = I32 [1]
+!s9 = StreamRange(!c0_5, %__norm_28, !c1_6) [-1, False]
+!s10 = StreamMap(!s9) { (%__norm_31) =>
+  !34 = ArrayRef(%__norm_9, %__norm_31) [-1] 
+  !35 = ApplyComparisonOp(%__norm_31, %__norm_30) [EQWithNA]
+  !36 = If !35 then { %__norm_29 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!34, !36) [(0 1)]
+}
+!37 = ToArray(!s10)
+MakeTuple(!37) [(0)]
+
+2026-10-23 03:04:08.818 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.818 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:08.818 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:08.824 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 147: 
+
+%__norm_1 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!c0 = I32 [0] 
+!c1 = I32 [1]
+!s2 = StreamIota(!c0, !c1) [False]
+!s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+(%__norm_2, %__norm_3) =>
+  !2 = IsNA(%__norm_1)
+  If !2 then {
+    NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+  } else {
+    %__norm_6 = LowerBoundOnOrderedCollection(%__norm_1, %__norm_3) [False]
+    %__norm_7 = CastToArray(%__norm_1)
+    !3 = ArrayLen(%__norm_7)
+    !4 = ApplyComparisonOp(%__norm_6, !3) [LT] 
+    !5 = ArrayRef(%__norm_7, %__norm_6) [-1]
+    !6 = ApplyComparisonOp(!5, %__norm_3) [EQWithNA]
+    !7 = ApplySpecial(!4, !6) [-1, land, (), Boolean]
+    If !7 then { %__norm_2 } else {
+      NA [Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}]
+    }
+  }
+}
+!s4 = StreamFilter(!s3) { (%__norm_8) =>
+  !8 = IsNA(%__norm_8)
+  ApplyUnaryPrimOp(!8) [Bang]
+}
+%__norm_9 = ToArray(!s4)
+%__norm_10 = ArrayLen(%__norm_9)
+!c0_2 = I32 [0] 
+!9 = I64 [1] 
+!c0_3 = I32 [0] 
+!c1_2 = I32 [1]
+%__norm_27 = TailLoop(!c0_2, !9, !c0_3, !c1_2) {
+(%__norm_11, %__norm_12, %__norm_13, %__norm_14, %__norm_15) =>
+  !s5 = ToStream(%__norm_9) [False]
+  !s6 = StreamDrop(!s5, %__norm_13)
+  !s7 = StreamTake(!s6, %__norm_14) 
+  !10 = Literal [Struct{}, <literal value>] 
+  !11 = Str ["iteration="] 
+  !12 = Apply(%__norm_11) [-1, str, (), String]
+  !13 = Apply(!11, !12) [-1, concat, (), String] 
+  !14 = Str [",nParts="]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Apply(%__norm_14) [-1, str, (), String]
+  !17 = Apply(!15, !16) [-1, concat, (), String]
+  %__norm_18 = CollectDistributedArray(!s7, !10, !17) {
+  (%__norm_16, %__norm_17) =>
+    !s8 = ReadPartition(%__norm_16) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+    StreamLen(!s8)
+  }
+  %__norm_19 = ArrayLen(%__norm_18)
+  %__norm_20 = ApplyBinaryPrimOp(%__norm_13, %__norm_19) [Add]
+  %__norm_21 = ApplyComparisonOp(%__norm_20, %__norm_10) [GTEQ]
+  !c0_4 = I32 [0] 
+  !18 = I64 [0]
+  TailLoop(!c0_4, %__norm_12, !18) {
+  (%__norm_22, %__norm_23, %__norm_24, %__norm_25) =>
+    !19 = I64 [0]
+    !20 = ApplyComparisonOp(%__norm_23, !19) [LTEQ] 
+    !21 = ApplyComparisonOp(%__norm_22, %__norm_19) [GTEQ]
+    !22 = ApplySpecial(!21, %__norm_21) [-1, land, 
+    (), Boolean]
+    !23 = ApplySpecial(!20, !22) [-1, lor, 
+    (), Boolean]
+    If !23 then {
+      !24 = ApplyBinaryPrimOp(%__norm_13, %__norm_22) [Add] 
+      !25 = Cast(%__norm_24) [Int32]
+      MakeTuple(!24, !25) [(0 1)]
+    } else {
+      !26 = ApplyComparisonOp(%__norm_22, %__norm_19) [LT]
+      If !26 then {
+        !27 = ArrayRef(%__norm_18, %__norm_22) [-1]
+        %__norm_26 = Cast(!27) [Int64]
+        !c1_3 = I32 [1]
+        !28 = ApplyBinaryPrimOp(%__norm_22, !c1_3) [Add] 
+        !29 = ApplyBinaryPrimOp(%__norm_23, %__norm_26) [Subtract] 
+        !30 = ApplyComparisonOp(%__norm_26, %__norm_23) [LT]
+        !31 = If !30 then { %__norm_26 } else {
+          %__norm_23
+          }
+        Recur(!28, !29, !31)
+      } else {
+        !c1_4 = I32 [1]
+        !32 = ApplyBinaryPrimOp(%__norm_11, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !33 = ApplyBinaryPrimOp(%__norm_19, !c3) [Multiply]
+        Recur(!32, %__norm_23, %__norm_20, !33)
+      }
+    }
+  }
+}
+%__norm_28 = GetTupleElement(%__norm_27) [0]
+%__norm_29 = GetTupleElement(%__norm_27) [1]
+!c1_5 = I32 [1]
+%__norm_30 = ApplyBinaryPrimOp(%__norm_28, !c1_5) [Subtract]
+!c0_5 = I32 [0] 
+!c1_6 = I32 [1]
+!s9 = StreamRange(!c0_5, %__norm_28, !c1_6) [-1, False]
+!s10 = StreamMap(!s9) { (%__norm_31) =>
+  !34 = ArrayRef(%__norm_9, %__norm_31) [-1] 
+  !35 = ApplyComparisonOp(%__norm_31, %__norm_30) [EQWithNA]
+  !36 = If !35 then { %__norm_29 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!34, !36) [(0 1)]
+}
+!37 = ToArray(!s10)
+MakeTuple(!37) [(0)]
+
+2026-10-23 03:04:09.042 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:04:09.678 RegionPool: INFO: initialized for thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:04:10.913 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=131072, peakBytesReadable=128.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.913 RegionPool: INFO: RegionPool: FREE: 128.0K allocated (128.0K blocks / 0 chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:04:10.981 BackendUtils: INFO: table_head_or_tail_recursive_count|iteration=0,nParts=1: executed 1 tasks in 1.511s
+2026-10-23 03:04:10.982 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.982 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.982 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.982 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.986 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableCollect
+2026-10-23 03:04:10.990 LoweringPipeline: INFO: initial IR: IR size 47: 
+
+%__norm_1 = MakeStruct()
+%__norm_2 = Literal [Set[Int32], <literal value>]
+!1 = Literal [Array[Tuple[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = MakeStruct(__iruid_2: %__norm_1) 
+!3 = NA [String]
+%__norm_12 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_3, %__norm_4) =>
+  %__norm_5 = GetField(%__norm_4) [__iruid_2]
+  %__norm_6 = GetTupleElement(%__norm_3) [0]
+  %__norm_7 = Ref [__norm_6]
+  !s2 = ReadPartition(%__norm_7) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = GetTupleElement(%__norm_3) [1]
+  %__norm_8 = StreamTake(!s2, !4)
+  %__norm_9 = Ref [__norm_5]
+  %__norm_11 = StreamMap(%__norm_8) {
+  (%__norm_10) =>
+    !5 = GetField(%__norm_10) [text] 
+    !6 = Str ["\t"] 
+    !7 = Literal [Array[String], <literal value>]
+    !8 = Apply(!5, !6, !7) [1, splitChar, 
+    (), Array[String]]
+    InsertFields %__norm_10 (header: !8)
+  }
+  ToArray(%__norm_11)
+}
+!s3 = ToStream(%__norm_12) [False]
+!s4 = StreamFlatMap(!s3) { (%__norm_13) =>
+  ToStream(%__norm_13) [False]
+}
+!9 = ToArray(!s4)
+!10 = MakeStruct(rows: !9, global: %__norm_1)
+MakeTuple(!10) [(0)]
+
+2026-10-23 03:04:10.990 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.990 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.990 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.990 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.990 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.990 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.991 ForwardLets$: INFO: Eliminating unused binding:
+__norm_2: set<int32> = (EVAL) Literal [Set[Int32], <literal value>]
+2026-10-23 03:04:10.991 ForwardLets$: INFO: Eliminating unused binding:
+__norm_9: struct{} = (EVAL) Ref [__norm_5]
+2026-10-23 03:04:10.995 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_2'
+2026-10-23 03:04:10.996 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.996 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.996 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.996 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.996 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.996 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.999 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:10.999 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:10.999 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.001 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 28: 
+
+!1 = Literal [Array[Tuple[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!10 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_3, %__norm_4) =>
+  !4 = GetTupleElement(%__norm_3) [0]
+  !s2 = ReadPartition(!4) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"] 
+  !5 = GetTupleElement(%__norm_3) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_10) =>
+    !6 = GetField(%__norm_10) [text] 
+    !7 = Str ["\t"] 
+    !8 = Literal [Array[String], <literal value>]
+    !9 = Apply(!6, !7, !8) [1, splitChar, 
+    (), Array[String]]
+    InsertFields %__norm_10 (header: !9)
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!10) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_13) =>
+  ToStream(%__norm_13) [False]
+}
+!11 = ToArray(!s6) 
+!12 = Literal [Struct{}, <literal value>]
+!13 = MakeStruct(rows: !11, global: !12)
+MakeTuple(!13) [(0)]
+
+2026-10-23 03:04:11.002 LoweringPipeline: INFO: after InlineApplyIR: IR size 28: 
+
+!1 = Literal [Array[Tuple[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!10 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_3, %__norm_4) =>
+  !4 = GetTupleElement(%__norm_3) [0]
+  !s2 = ReadPartition(!4) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"] 
+  !5 = GetTupleElement(%__norm_3) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_10) =>
+    !6 = GetField(%__norm_10) [text] 
+    !7 = Str ["\t"] 
+    !8 = Literal [Array[String], <literal value>]
+    !9 = Apply(!6, !7, !8) [1, splitChar, 
+    (), Array[String]]
+    InsertFields %__norm_10 (header: !9)
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!10) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_13) =>
+  ToStream(%__norm_13) [False]
+}
+!11 = ToArray(!s6) 
+!12 = Literal [Struct{}, <literal value>]
+!13 = MakeStruct(rows: !11, global: !12)
+MakeTuple(!13) [(0)]
+
+2026-10-23 03:04:11.002 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.002 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.002 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.004 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 28: 
+
+!1 = Literal [Array[Tuple[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!10 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_3, %__norm_4) =>
+  !4 = GetTupleElement(%__norm_3) [0]
+  !s2 = ReadPartition(!4) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"] 
+  !5 = GetTupleElement(%__norm_3) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_10) =>
+    !6 = GetField(%__norm_10) [text] 
+    !7 = Str ["\t"] 
+    !8 = Literal [Array[String], <literal value>]
+    !9 = Apply(!6, !7, !8) [1, splitChar, 
+    (), Array[String]]
+    InsertFields %__norm_10 (header: !9)
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!10) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_13) =>
+  ToStream(%__norm_13) [False]
+}
+!11 = ToArray(!s6) 
+!12 = Literal [Struct{}, <literal value>]
+!13 = MakeStruct(rows: !11, global: !12)
+MakeTuple(!13) [(0)]
+
+2026-10-23 03:04:11.012 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 28: 
+
+!1 = Literal [Array[Tuple[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!10 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_3, %__norm_4) =>
+  !4 = GetTupleElement(%__norm_3) [0]
+  !s2 = ReadPartition(!4) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"] 
+  !5 = GetTupleElement(%__norm_3) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_10) =>
+    !6 = GetField(%__norm_10) [text] 
+    !7 = Str ["\t"] 
+    !8 = Literal [Array[String], <literal value>]
+    !9 = Apply(!6, !7, !8) [1, splitChar, 
+    (), Array[String]]
+    InsertFields %__norm_10 (header: !9)
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!10) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_13) =>
+  ToStream(%__norm_13) [False]
+}
+!11 = ToArray(!s6) 
+!12 = Literal [Struct{}, <literal value>]
+!13 = MakeStruct(rows: !11, global: !12)
+MakeTuple(!13) [(0)]
+
+2026-10-23 03:04:11.013 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.013 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.013 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.014 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 28: 
+
+!1 = Literal [Array[Tuple[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!10 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_3, %__norm_4) =>
+  !4 = GetTupleElement(%__norm_3) [0]
+  !s2 = ReadPartition(!4) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"] 
+  !5 = GetTupleElement(%__norm_3) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_10) =>
+    !6 = GetField(%__norm_10) [text] 
+    !7 = Str ["\t"] 
+    !8 = Literal [Array[String], <literal value>]
+    !9 = Apply(!6, !7, !8) [1, splitChar, 
+    (), Array[String]]
+    InsertFields %__norm_10 (header: !9)
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!10) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_13) =>
+  ToStream(%__norm_13) [False]
+}
+!11 = ToArray(!s6) 
+!12 = Literal [Struct{}, <literal value>]
+!13 = MakeStruct(rows: !11, global: !12)
+MakeTuple(!13) [(0)]
+
+2026-10-23 03:04:11.075 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:04:11.095 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:04:11.113 RegionPool: INFO: initialized for thread 92: Executor task launch worker for task 0.0 in stage 1.0 (TID 1)
+2026-10-23 03:04:11.117 SparkTaskContext: INFO: TaskReport: stage=1, partition=0, attempt=0, peakBytes=131072, peakBytesReadable=128.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.117 RegionPool: INFO: RegionPool: FREE: 128.0K allocated (128.0K blocks / 0 chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 1.0 (TID 1)
+2026-10-23 03:04:11.119 BackendUtils: INFO: table_collect: executed 1 tasks in 15.367ms
+2026-10-23 03:04:11.120 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.120 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.120 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.120 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:04:11.124 LowerOrInterpretNonCompilable$: INFO: took 2.645s
+2026-10-23 03:04:11.124 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{file:String,text:String,header:Array[String]}],global:Struct{}}]
+
+2026-10-23 03:04:11.124 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.124 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.124 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.125 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{file:String,text:String,header:Array[String]}],global:Struct{}}]
+
+2026-10-23 03:04:11.125 LoweringPipeline: INFO: after EvalRelationalLets: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{file:String,text:String,header:Array[String]}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:04:11.125 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{file:String,text:String,header:Array[String]}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:04:11.125 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{file:String,text:String,header:Array[String]}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:04:11.126 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:04:11.130 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.130 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.130 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.130 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.130 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.130 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.130 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.130 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.130 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.131 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+Literal [Array[Struct{file:String,text:String,header:Array[String]}], <literal value>]
+
+2026-10-23 03:04:11.131 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Array[Struct{file:String,text:String,header:Array[String]}], <literal value>]
+
+2026-10-23 03:04:11.131 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.131 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.131 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.131 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Array[Struct{file:String,text:String,header:Array[String]}], <literal value>]
+
+2026-10-23 03:04:11.131 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = Literal [Array[Struct{file:String,text:String,header:Array[String]}], <literal value>]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:04:11.131 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.131 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.131 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.131 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.131 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.132 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.132 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.132 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.132 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.132 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Array[Struct{file:String,text:String,header:Array[String]}]], <literal value>]
+
+2026-10-23 03:04:11.132 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Array[Struct{file:String,text:String,header:Array[String]}]], <literal value>]
+
+2026-10-23 03:04:11.132 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.132 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.132 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.132 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Array[Struct{file:String,text:String,header:Array[String]}]], <literal value>]
+
+2026-10-23 03:04:11.132 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Array[Struct{file:String,text:String,header:Array[String]}]], <literal value>]
+
+2026-10-23 03:04:11.132 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.132 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.132 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.133 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Array[Struct{file:String,text:String,header:Array[String]}]], <literal value>]
+
+2026-10-23 03:04:11.134 EType$: INFO: encoder cache miss (0 hits, 5 misses, 0.000)
+2026-10-23 03:04:11.140 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.140 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.140 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.142 EType$: INFO: encoder cache miss (0 hits, 6 misses, 0.000)
+2026-10-23 03:04:11.176 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.176 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.177 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.177 RegionPool: INFO: RegionPool: FREE: 448.0K allocated (448.0K blocks / 0 chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.194 py4jutils$: INFO: Reading table without type imputation
+  Loading field 'idx' as type int32 (user-supplied)
+  Loading field 'i0' as type int32 (user-supplied)
+  Loading field 'i1' as type int32 (user-supplied)
+  Loading field 'i2' as type int32 (user-supplied)
+  Loading field 'i3' as type int32 (user-supplied)
+  Loading field 'i4' as type int32 (user-supplied)
+  Loading field 'array0' as type array<int32> (user-supplied)
+  Loading field 'array1' as type array<int32> (user-supplied)
+2026-10-23 03:04:11.198 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.208 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz returned 1 files: many_ints_table.tsv.bgz
+2026-10-23 03:04:11.224 LoweringPipeline: INFO: initial IR: IR size 121: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    !3 = ApplyComparisonOp(!1, !2) [EQ]
+    ApplyUnaryPrimOp(!3) [Bang]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !4 = SelectFields(%row) [(file text)] 
+  !5 = GetField(%row) [text]
+  !6 = Apply(!5) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !7 = ApplyComparisonOp(!6, !c0) [GT]
+  !33 = If !7 then {
+    !8 = GetField(%row) [text] 
+    !9 = Str ["\t"] 
+    !10 = EncodedLiteral [Array[String]]
+    !11 = Apply(!8, !9, !10) [3, splitChar, 
+    (), Array[String]]
+    !12 = CastToArray(!11)
+    !13 = ArrayLen(!12) 
+    !c8 = I32 [8]
+    !14 = ApplyComparisonOp(!13, !c8) [EQ]
+    If !14 then {
+      !15 = GetField(%row) [text] 
+      !16 = Str ["\t"] 
+      !17 = EncodedLiteral [Array[String]]
+      Apply(!15, !16, !17) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !18 = Str ["\t"] 
+      !19 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !18, !19) [3, splitChar, 
+      (), Array[String]]
+      !20 = Str ["error in n..."] 
+      !21 = GetField(%row) [file] 
+      !22 = CastToArray(%__norm_3)
+      !23 = ArrayLen(!22) 
+      !24 = CastToArray(%__norm_3)
+      !25 = ArrayLen(!24) 
+      !c1 = I32 [1]
+      !26 = ApplyComparisonOp(!25, !c1) [EQ]
+      !27 = If !26 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !28 = MakeTuple(!21, !23, !27, %__norm_2) [(0 1 2
+      3)]
+      !29 = Apply(!20, !28) [4, format, (), String]
+      Die(!29) [Array[String], 5]
+    }
+  } else {
+    !30 = Str ["Blank line..."] 
+    !31 = GetField(%row) [file]
+    !32 = Apply(!30, !31) [6, concat, (), String]
+    Die(!32) [Array[String], 7]
+  }
+  InsertFields !4 (split_text: !33)
+}
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  !34 = SelectFields(%row) [(file text split_text)]
+  SelectFields(!34) [(file split_text)]
+}
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  %__norm_4 = GetField(%row) [split_text]
+  !35 = SelectFields(%row) [(file split_text)] 
+  !c0_2 = I32 [0]
+  !36 = ApplyIR(%__norm_4, !c0_2) [8, indexArray, 
+  (), String]
+  !37 = Apply(!36) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !38 = ApplyIR(%__norm_4, !c1_2) [10, indexArray, 
+  (), String]
+  !39 = Apply(!38) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !40 = ApplyIR(%__norm_4, !c2) [12, indexArray, 
+  (), String]
+  !41 = Apply(!40) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !42 = ApplyIR(%__norm_4, !c3) [14, indexArray, 
+  (), String]
+  !43 = Apply(!42) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !44 = ApplyIR(%__norm_4, !c4) [16, indexArray, 
+  (), String]
+  !45 = Apply(!44) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !46 = ApplyIR(%__norm_4, !c5) [18, indexArray, 
+  (), String]
+  !47 = Apply(!46) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !48 = ApplyIR(%__norm_4, !c6) [20, indexArray, 
+  (), String]
+  !49 = Apply(!48) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !50 = GetTupleElement(!49) [0] 
+  !c7 = I32 [7]
+  !51 = ApplyIR(%__norm_4, !c7) [22, indexArray, 
+  (), String]
+  !52 = Apply(!51) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !53 = GetTupleElement(!52) [0]
+  InsertFields !35 (idx: !37, i0: !39, i1: !41, i2: !43, i3: !45, i4: !47, array0: !50, array1: !53)
+}
+!ht6 = TableMapRows(!ht5) { (%global, %row) =>
+  !54 = SelectFields(%row) [
+  (file split_text idx i0 i1 i2 i3 i4 array0
+    array1)]
+  SelectFields(!54) [
+  (file idx i0 i1 i2 i3 i4 array0 array1)]
+}
+!ht7 = TableMapRows(!ht6) { (%global, %row) =>
+  !55 = SelectFields(%row) [
+  (file idx i0 i1 i2 i3 i4 array0 array1)]
+  SelectFields(!55) [
+  (idx i0 i1 i2 i3 i4 array0 array1)]
+}
+TableWrite(!ht7) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.225 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.225 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.225 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.239 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:04:11.248 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.248 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.248 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.256 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.256 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.256 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.272 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.273 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.274 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.274 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.274 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.279 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.280 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.281 LoweringPipeline: INFO: after EvalRelationalLets: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.283 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.285 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.285 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.285 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.285 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.289 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 99: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{file:String,text:String}}, False, {\"params\":{\"files\":[\"/tmp/full-local-upstream-cache-20261022/many_ints_table/many_ints_table.tsv.bgz\"],\"forceBGZ\":false,\"forceGZ\":false,\"filePerPartition\":false},\"fileListEntries\":[{}]}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [text] 
+    !2 = Str ["idx\ti0\ti1\t..."]
+    ApplyComparisonOp(!1, !2) [NEQ]
+  } {
+    False
+  }
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !3 = GetField(%row) [text]
+  !4 = Apply(!3) [2, length, (), Int32] 
+  !c0 = I32 [0]
+  !5 = ApplyComparisonOp(!4, !c0) [GT]
+  !28 = If !5 then {
+    !6 = GetField(%row) [text] 
+    !7 = Str ["\t"] 
+    !8 = EncodedLiteral [Array[String]]
+    !9 = Apply(!6, !7, !8) [3, splitChar, 
+    (), Array[String]]
+    !10 = ArrayLen(!9) 
+    !c8 = I32 [8]
+    !11 = ApplyComparisonOp(!10, !c8) [EQ]
+    If !11 then {
+      !12 = GetField(%row) [text] 
+      !13 = Str ["\t"] 
+      !14 = EncodedLiteral [Array[String]]
+      Apply(!12, !13, !14) [3, splitChar, 
+      (), Array[String]]
+    } else {
+      %__norm_2 = GetField(%row) [text]
+      !15 = Str ["\t"] 
+      !16 = EncodedLiteral [Array[String]]
+      %__norm_3 = Apply(%__norm_2, !15, !16) [3, splitChar, 
+      (), Array[String]]
+      !17 = Str ["error in n..."] 
+      !18 = GetField(%row) [file] 
+      !19 = ArrayLen(%__norm_3) 
+      !20 = ArrayLen(%__norm_3) 
+      !c1 = I32 [1]
+      !21 = ApplyComparisonOp(!20, !c1) [EQ]
+      !22 = If !21 then {
+        Str ["field"]
+      } else {
+        Str ["fields"]
+      }
+      !23 = MakeTuple(!18, !19, !22, %__norm_2) [(0 1 2
+      3)]
+      !24 = Apply(!17, !23) [4, format, (), String]
+      Die(!24) [Array[String], 5]
+    }
+  } else {
+    !25 = Str ["Blank line..."] 
+    !26 = GetField(%row) [file]
+    !27 = Apply(!25, !26) [6, concat, (), String]
+    Die(!27) [Array[String], 7]
+  }
+  %__iruid_82 = MakeStruct(split_text: !28)
+  %__norm_4 = GetField(%__iruid_82) [split_text]
+  !29 = SelectFields(%__iruid_82) [()] 
+  !c0_2 = I32 [0]
+  !30 = ArrayRef(%__norm_4, !c0_2) [8]
+  !31 = Apply(!30) [9, toInt32, (), Int32] 
+  !c1_2 = I32 [1]
+  !32 = ArrayRef(%__norm_4, !c1_2) [10]
+  !33 = Apply(!32) [11, toInt32, (), Int32] 
+  !c2 = I32 [2]
+  !34 = ArrayRef(%__norm_4, !c2) [12]
+  !35 = Apply(!34) [13, toInt32, (), Int32] 
+  !c3 = I32 [3]
+  !36 = ArrayRef(%__norm_4, !c3) [14]
+  !37 = Apply(!36) [15, toInt32, (), Int32] 
+  !c4 = I32 [4]
+  !38 = ArrayRef(%__norm_4, !c4) [16]
+  !39 = Apply(!38) [17, toInt32, (), Int32] 
+  !c5 = I32 [5]
+  !40 = ArrayRef(%__norm_4, !c5) [18]
+  !41 = Apply(!40) [19, toInt32, (), Int32] 
+  !c6 = I32 [6]
+  !42 = ArrayRef(%__norm_4, !c6) [20]
+  !43 = Apply(!42) [21, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !44 = GetTupleElement(!43) [0] 
+  !c7 = I32 [7]
+  !45 = ArrayRef(%__norm_4, !c7) [22]
+  !46 = Apply(!45) [23, parse_json, 
+  (Array[Int32]), Tuple[Array[Int32]]]
+  !47 = GetTupleElement(!46) [0]
+  InsertFields !29 (idx: !31, i0: !33, i1: !35, i2: !37, i3: !39, i4: !41, array0: !44, array1: !47)
+}
+TableWrite(!ht3) ["{\"name\":\"TableNativeWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"codecSpecJSONStr\":null}"]
+
+2026-10-23 03:04:11.290 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:04:11.290 LowerOrInterpretNonCompilable$: INFO: lowering result: TableWrite
+2026-10-23 03:04:11.368 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableWrite
+2026-10-23 03:04:11.456 LoweringPipeline: INFO: initial IR: IR size 263: 
+
+%__norm_1 = MakeStruct()
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+%__norm_2 = ToStream(!1) [False]
+!2 = Literal [Array[String], <literal value>]
+!s = ToStream(!2) [False]
+!s2 = StreamZip(%__norm_2, !s) [-1, AssertSameLength] {
+(%__norm_3, %__norm_4) =>
+  MakeStruct(oldCtx: %__norm_3, writeCtx: %__norm_4)
+} 
+!3 = MakeStruct(__iruid_85: %__norm_1) 
+!4 = NA [String]
+%__norm_29 = CollectDistributedArray(!s2, !3, !4) {
+(%__norm_5, %__norm_6) =>
+  %__norm_7 = GetField(%__norm_6) [__iruid_85]
+  %__norm_8 = GetField(%__norm_5) [oldCtx]
+  %__norm_9 = Ref [__norm_8]
+  %__norm_10 = ReadPartition(%__norm_9) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+  %__norm_11 = Ref [__norm_7]
+  %__norm_13 = StreamFilter(%__norm_10) {
+  (%__norm_12) =>
+    Coalesce {
+      !5 = GetField(%__norm_12) [text] 
+      !6 = Str ["idx\ti0\ti1\t..."]
+      ApplyComparisonOp(!5, !6) [NEQ]
+    } {
+      False
+    }
+  }
+  %__norm_14 = Ref [__norm_7]
+  %__norm_20 = StreamMap(%__norm_13) {
+  (%__norm_15) =>
+    !7 = GetField(%__norm_15) [text]
+    !8 = Apply(!7) [2, length, (), Int32] 
+    !c0 = I32 [0]
+    !9 = ApplyComparisonOp(!8, !c0) [GT]
+    !32 = If !9 then {
+      !10 = GetField(%__norm_15) [text] 
+      !11 = Str ["\t"] 
+      !12 = EncodedLiteral [Array[String]]
+      !13 = Apply(!10, !11, !12) [3, splitChar, 
+      (), Array[String]]
+      !14 = ArrayLen(!13) 
+      !c8 = I32 [8]
+      !15 = ApplyComparisonOp(!14, !c8) [EQ]
+      If !15 then {
+        !16 = GetField(%__norm_15) [text] 
+        !17 = Str ["\t"] 
+        !18 = EncodedLiteral [Array[String]]
+        Apply(!16, !17, !18) [3, splitChar, 
+        (), Array[String]]
+      } else {
+        %__norm_16 = GetField(%__norm_15) [text]
+        !19 = Str ["\t"] 
+        !20 = EncodedLiteral [Array[String]]
+        %__norm_17 = Apply(%__norm_16, !19, !20) [3, splitChar, 
+        (), Array[String]]
+        !21 = Str ["error in n..."] 
+        !22 = GetField(%__norm_15) [file] 
+        !23 = ArrayLen(%__norm_17) 
+        !24 = ArrayLen(%__norm_17) 
+        !c1 = I32 [1]
+        !25 = ApplyComparisonOp(!24, !c1) [EQ]
+        !26 = If !25 then {
+          Str ["field"]
+        } else {
+          Str ["fields"]
+        }
+        !27 = MakeTuple(!22, !23, !26, %__norm_16) [(0 1 2
+        3)]
+        !28 = Apply(!21, !27) [4, format, (), String]
+        Die(!28) [Array[String], 5]
+      }
+    } else {
+      !29 = Str ["Blank line..."] 
+      !30 = GetField(%__norm_15) [file]
+      !31 = Apply(!29, !30) [6, concat, (), String]
+      Die(!31) [Array[String], 7]
+    }
+    %__norm_18 = MakeStruct(split_text: !32)
+    %__norm_19 = GetField(%__norm_18) [split_text]
+    !33 = SelectFields(%__norm_18) [()] 
+    !c0_2 = I32 [0]
+    !34 = ArrayRef(%__norm_19, !c0_2) [8]
+    !35 = Apply(!34) [9, toInt32, (), Int32] 
+    !c1_2 = I32 [1]
+    !36 = ArrayRef(%__norm_19, !c1_2) [10]
+    !37 = Apply(!36) [11, toInt32, (), Int32] 
+    !c2 = I32 [2]
+    !38 = ArrayRef(%__norm_19, !c2) [12]
+    !39 = Apply(!38) [13, toInt32, (), Int32] 
+    !c3 = I32 [3]
+    !40 = ArrayRef(%__norm_19, !c3) [14]
+    !41 = Apply(!40) [15, toInt32, (), Int32] 
+    !c4 = I32 [4]
+    !42 = ArrayRef(%__norm_19, !c4) [16]
+    !43 = Apply(!42) [17, toInt32, (), Int32] 
+    !c5 = I32 [5]
+    !44 = ArrayRef(%__norm_19, !c5) [18]
+    !45 = Apply(!44) [19, toInt32, (), Int32] 
+    !c6 = I32 [6]
+    !46 = ArrayRef(%__norm_19, !c6) [20]
+    !47 = Apply(!46) [21, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !48 = GetTupleElement(!47) [0] 
+    !c7 = I32 [7]
+    !49 = ArrayRef(%__norm_19, !c7) [22]
+    !50 = Apply(!49) [23, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !51 = GetTupleElement(!50) [0]
+    InsertFields !33 (idx: !35, i0: !37, i1: !39, i2: !41, i3: !43, i4: !45, array0: !48, array1: !51)
+  }
+  !52 = GetField(%__norm_5) [writeCtx] 
+  !53 = UUID4 [__iruid_96]
+  %__norm_21 = Apply(!52, !53) [-1, concat, 
+  (), String]
+  %__norm_27 = StreamAgg(%__norm_20) {
+  (%__norm_22) =>
+    !54 = Str ["/tmp/full-..."] 
+    !55 = Str ["/tmp/full-..."]
+    !56 = ApplyAggOp(%__norm_21, !54, !55, %__norm_22) [WriteRows] 
+    !57 = ApplyAggOp [Count] 
+    !false = False 
+    !58 = NA [Struct{}] 
+    !59 = NA [Struct{}]
+    !60 = MakeStruct(distinct: !false, firstKey: !58, lastKey: !59)
+    !67 = AggFold(!60) [False] { (%__norm_23) =>
+      %__norm_24 = SelectFields(%__norm_22) [()]
+      %__norm_25 = GetField(%__norm_23) [lastKey]
+      !61 = GetField(%__norm_23) [distinct] 
+      !62 = Coalesce {
+        ApplyComparisonOp(%__norm_25, %__norm_24) [NEQWithNA]
+      } {
+        True
+      }
+      !63 = ApplySpecial(!61, !62) [-1, land, 
+      (), Boolean] 
+      !64 = Coalesce {
+        GetField(%__norm_23) [firstKey]
+      } { %__norm_24 } 
+      !65 = Coalesce { %__norm_24 } { %__norm_25 }
+      MakeStruct(distinct: !63, firstKey: !64, lastKey: !65)
+    } { (%__norm_23, %__norm_26) =>
+      !66 = Str ["unreachabl..."]
+      Die(!66) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+    }
+    MakeStruct(partpath: !56, partitionCounts: !57, keyMeta: !67)
+  }
+  %__norm_28 = GetField(%__norm_27) [keyMeta]
+  !68 = GetField(%__norm_27) [partpath] 
+  !69 = GetField(%__norm_27) [partitionCounts] 
+  !70 = GetField(%__norm_28) [distinct] 
+  !71 = GetField(%__norm_28) [firstKey] 
+  !72 = GetField(%__norm_28) [lastKey]
+  MakeStruct(filePath: !68, partitionCounts: !69, distinctlyKeyed: !70, firstKey: !71, lastKey: !72)
+}
+%__norm_30 = Ref [__norm_29]
+!s3 = MakeStream(%__norm_1) [Stream[Struct{}], False]
+%__norm_36 = StreamAgg(!s3) { (%__norm_31) =>
+  !73 = Str ["part-0"] 
+  !74 = Str ["/tmp/full-..."]
+  !75 = ApplyAggOp(!73, !74, %__norm_31) [WriteRows] 
+  !76 = ApplyAggOp [Count] 
+  !false2 = False 
+  !77 = NA [Struct{}] 
+  !78 = NA [Struct{}]
+  !79 = MakeStruct(distinct: !false2, firstKey: !77, lastKey: !78)
+  !86 = AggFold(!79) [False] { (%__norm_32) =>
+    %__norm_33 = SelectFields(%__norm_31) [()]
+    %__norm_34 = GetField(%__norm_32) [lastKey]
+    !80 = GetField(%__norm_32) [distinct] 
+    !81 = Coalesce {
+      ApplyComparisonOp(%__norm_34, %__norm_33) [NEQWithNA]
+    } {
+      True
+    }
+    !82 = ApplySpecial(!80, !81) [-1, land, 
+    (), Boolean] 
+    !83 = Coalesce {
+      GetField(%__norm_32) [firstKey]
+    } { %__norm_33 } 
+    !84 = Coalesce { %__norm_33 } { %__norm_34 }
+    MakeStruct(distinct: !82, firstKey: !83, lastKey: !84)
+  } { (%__norm_32, %__norm_35) =>
+    !85 = Str ["unreachabl..."]
+    Die(!85) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+  }
+  MakeStruct(partpath: !75, partitionCounts: !76, keyMeta: !86)
+}
+%__norm_37 = GetField(%__norm_36) [keyMeta]
+!87 = GetField(%__norm_36) [partpath] 
+!88 = GetField(%__norm_36) [partitionCounts] 
+!89 = GetField(%__norm_37) [distinct] 
+!90 = GetField(%__norm_37) [firstKey] 
+!91 = GetField(%__norm_37) [lastKey]
+!92 = MakeStruct(filePath: !87, partitionCounts: !88, distinctlyKeyed: !89, firstKey: !90, lastKey: !91)
+!93 = GetField(!92) [filePath]
+!94 = MakeArray(!93) [Array[String]]
+%__norm_38 = WriteMetadata(!94) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/globals\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"indexSpec\":null,\"attrs\":{}}}"]
+!s4 = ToStream(%__norm_30) [False]
+!s5 = StreamMap(!s4) { (%__norm_39) =>
+  GetField(%__norm_39) [filePath]
+}
+!95 = ToArray(!s5)
+%__norm_40 = WriteMetadata(!95) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/rows\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"in..."]
+!s6 = ToStream(%__norm_30) [False]
+!s7 = StreamMap(!s6) { (%__norm_41) =>
+  SelectFields(%__norm_41) [
+  (partitionCounts distinctlyKeyed firstKey
+    lastKey)]
+}
+!96 = ToArray(!s7)
+!97 = WriteMetadata(!96) ["{\"name\":\"TableSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"typ\":{\"rowType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"key\":[],\"globalType\":\"Struct{}\"},\"rowRelPath\":\"rows\",\"globalRelPath\":\"globals\",\"refRelPath\":\"references\",\"log\":true}"]
+WriteMetadata(!97) ["{\"name\":\"RelationalWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"maybeRefs\":{\"references\":[]}}"]
+
+2026-10-23 03:04:11.457 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.457 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.457 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.457 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.457 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.458 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.458 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.458 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.458 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.458 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.459 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.459 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.463 ForwardLets$: INFO: Eliminating unused binding:
+__norm_11: struct{} = (EVAL) Ref [__norm_7]
+2026-10-23 03:04:11.463 ForwardLets$: INFO: Eliminating unused binding:
+__norm_14: struct{} = (EVAL) Ref [__norm_7]
+2026-10-23 03:04:11.480 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field 'partitionCounts'
+2026-10-23 03:04:11.480 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field 'partitionCounts'
+2026-10-23 03:04:11.480 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field 'distinctlyKeyed'
+2026-10-23 03:04:11.480 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field 'firstKey'
+2026-10-23 03:04:11.480 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field 'lastKey'
+2026-10-23 03:04:11.482 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.482 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.482 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.484 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{} = (EVAL) GetField(#__norm_6) [__iruid_85]
+2026-10-23 03:04:11.484 ForwardLets$: INFO: Eliminating unused binding:
+__norm_37: struct{distinct: bool, firstKey: struct{}, lastKey: struct{}} = (EVAL) GetField(#__norm_36) [keyMeta]
+2026-10-23 03:04:11.488 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_85'
+2026-10-23 03:04:11.489 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field 'keyMeta'
+2026-10-23 03:04:11.497 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.497 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.497 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.498 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.498 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.498 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.572 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 187: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Array[String], <literal value>]
+!s2 = ToStream(!2) [False]
+!s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+(%__norm_3, %__norm_4) =>
+  MakeStruct(oldCtx: %__norm_3, writeCtx: %__norm_4)
+} 
+!3 = Literal [Struct{}, <literal value>] 
+!4 = NA [String]
+%__norm_30 = CollectDistributedArray(!s3, !3, !4) {
+(%__norm_5, %__norm_6) =>
+  !5 = GetField(%__norm_5) [oldCtx]
+  !s4 = ReadPartition(!5) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+  !s5 = StreamFilter(!s4) { (%__norm_12) =>
+    Coalesce {
+      !6 = GetField(%__norm_12) [text] 
+      !7 = Str ["idx\ti0\ti1\t..."]
+      ApplyComparisonOp(!6, !7) [NEQ]
+    } {
+      False
+    }
+  }
+  !s6 = StreamMap(!s5) { (%__norm_15) =>
+    !8 = GetField(%__norm_15) [text]
+    !9 = Apply(!8) [2, length, (), Int32] 
+    !c0 = I32 [0]
+    !10 = ApplyComparisonOp(!9, !c0) [GT]
+    !33 = If !10 then {
+      !11 = GetField(%__norm_15) [text] 
+      !12 = Str ["\t"] 
+      !13 = EncodedLiteral [Array[String]]
+      !14 = Apply(!11, !12, !13) [3, splitChar, 
+      (), Array[String]]
+      !15 = ArrayLen(!14) 
+      !c8 = I32 [8]
+      !16 = ApplyComparisonOp(!15, !c8) [EQ]
+      If !16 then {
+        !17 = GetField(%__norm_15) [text] 
+        !18 = Str ["\t"] 
+        !19 = EncodedLiteral [Array[String]]
+        Apply(!17, !18, !19) [3, splitChar, 
+        (), Array[String]]
+      } else {
+        %__norm_16 = GetField(%__norm_15) [text]
+        !20 = Str ["\t"] 
+        !21 = EncodedLiteral [Array[String]]
+        %__norm_17 = Apply(%__norm_16, !20, !21) [3, splitChar, 
+        (), Array[String]]
+        !22 = Str ["error in n..."] 
+        !23 = GetField(%__norm_15) [file] 
+        !24 = ArrayLen(%__norm_17) 
+        !25 = ArrayLen(%__norm_17) 
+        !c1 = I32 [1]
+        !26 = ApplyComparisonOp(!25, !c1) [EQ]
+        !27 = If !26 then {
+          Str ["field"]
+        } else {
+          Str ["fields"]
+        }
+        !28 = MakeTuple(!23, !24, !27, %__norm_16) [(0 1 2
+        3)]
+        !29 = Apply(!22, !28) [4, format, (), String]
+        Die(!29) [Array[String], 5]
+      }
+    } else {
+      !30 = Str ["Blank line..."] 
+      !31 = GetField(%__norm_15) [file]
+      !32 = Apply(!30, !31) [6, concat, (), String]
+      Die(!32) [Array[String], 7]
+    }
+    %__norm_18 = MakeStruct(split_text: !33)
+    %__norm_19 = GetField(%__norm_18) [split_text]
+    !34 = SelectFields(%__norm_18) [()] 
+    !c0_2 = I32 [0]
+    !35 = ArrayRef(%__norm_19, !c0_2) [8]
+    !36 = Apply(!35) [9, toInt32, (), Int32] 
+    !c1_2 = I32 [1]
+    !37 = ArrayRef(%__norm_19, !c1_2) [10]
+    !38 = Apply(!37) [11, toInt32, (), Int32] 
+    !c2 = I32 [2]
+    !39 = ArrayRef(%__norm_19, !c2) [12]
+    !40 = Apply(!39) [13, toInt32, (), Int32] 
+    !c3 = I32 [3]
+    !41 = ArrayRef(%__norm_19, !c3) [14]
+    !42 = Apply(!41) [15, toInt32, (), Int32] 
+    !c4 = I32 [4]
+    !43 = ArrayRef(%__norm_19, !c4) [16]
+    !44 = Apply(!43) [17, toInt32, (), Int32] 
+    !c5 = I32 [5]
+    !45 = ArrayRef(%__norm_19, !c5) [18]
+    !46 = Apply(!45) [19, toInt32, (), Int32] 
+    !c6 = I32 [6]
+    !47 = ArrayRef(%__norm_19, !c6) [20]
+    !48 = Apply(!47) [21, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !49 = GetTupleElement(!48) [0] 
+    !c7 = I32 [7]
+    !50 = ArrayRef(%__norm_19, !c7) [22]
+    !51 = Apply(!50) [23, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !52 = GetTupleElement(!51) [0]
+    InsertFields !34 (idx: !36, i0: !38, i1: !40, i2: !42, i3: !44, i4: !46, array0: !49, array1: !52)
+  }
+  %__norm_27 = StreamAgg(!s6) { (%__norm_22) =>
+    !53 = GetField(%__norm_5) [writeCtx] 
+    !54 = UUID4 [__iruid_96]
+    !55 = Apply(!53, !54) [-1, concat, (), String] 
+    !56 = Str ["/tmp/full-..."] 
+    !57 = Str ["/tmp/full-..."]
+    !58 = ApplyAggOp(!55, !56, !57, %__norm_22) [WriteRows] 
+    !59 = ApplyAggOp [Count] 
+    !60 = Literal [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, <literal value>]
+    !67 = AggFold(!60) [False] { (%__norm_23) =>
+      %__norm_24 = SelectFields(%__norm_22) [()]
+      %__norm_25 = GetField(%__norm_23) [lastKey]
+      !61 = GetField(%__norm_23) [distinct] 
+      !62 = ApplyComparisonOp(%__norm_25, %__norm_24) [NEQWithNA]
+      !63 = ApplySpecial(!61, !62) [-1, land, 
+      (), Boolean] 
+      !64 = Coalesce {
+        GetField(%__norm_23) [firstKey]
+      } { %__norm_24 } 
+      !65 = Coalesce { %__norm_24 } { %__norm_25 }
+      MakeStruct(distinct: !63, firstKey: !64, lastKey: !65)
+    } { (%__norm_23, %__norm_26) =>
+      !66 = Str ["unreachabl..."]
+      Die(!66) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+    }
+    MakeStruct(partpath: !58, partitionCounts: !59, keyMeta: !67)
+  }
+  %__norm_28 = GetField(%__norm_27) [keyMeta]
+  !68 = GetField(%__norm_27) [partpath] 
+  !69 = GetField(%__norm_27) [partitionCounts] 
+  !70 = GetField(%__norm_28) [distinct] 
+  !71 = GetField(%__norm_28) [firstKey] 
+  !72 = GetField(%__norm_28) [lastKey]
+  MakeStruct(filePath: !68, partitionCounts: !69, distinctlyKeyed: !70, firstKey: !71, lastKey: !72)
+}
+!73 = Literal [Struct{}, <literal value>]
+!s7 = MakeStream(!73) [Stream[Struct{}], False]
+!77 = StreamAgg(!s7) { (%__norm_31) =>
+  !74 = Str ["part-0"] 
+  !75 = Str ["/tmp/full-..."]
+  !76 = ApplyAggOp(!74, !75, %__norm_31) [WriteRows]
+  MakeStruct(partpath: !76)
+}
+!78 = CastRename(!77) [Struct{filePath:String}]
+!79 = GetField(!78) [filePath]
+!80 = MakeArray(!79) [Array[String]]
+%__norm_38 = WriteMetadata(!80) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/globals\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"indexSpec\":null,\"attrs\":{}}}"]
+!s8 = ToStream(%__norm_30) [False]
+!s9 = StreamMap(!s8) { (%__norm_39) =>
+  GetField(%__norm_39) [filePath]
+}
+!81 = ToArray(!s9)
+%__norm_40 = WriteMetadata(!81) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/rows\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"in..."]
+!s10 = ToStream(%__norm_30) [False]
+!s11 = StreamMap(!s10) { (%__norm_41) =>
+  SelectFields(%__norm_41) [
+  (partitionCounts distinctlyKeyed firstKey
+    lastKey)]
+}
+!82 = ToArray(!s11)
+!83 = WriteMetadata(!82) ["{\"name\":\"TableSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"typ\":{\"rowType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"key\":[],\"globalType\":\"Struct{}\"},\"rowRelPath\":\"rows\",\"globalRelPath\":\"globals\",\"refRelPath\":\"references\",\"log\":true}"]
+WriteMetadata(!83) ["{\"name\":\"RelationalWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"maybeRefs\":{\"references\":[]}}"]
+
+2026-10-23 03:04:11.580 LoweringPipeline: INFO: after InlineApplyIR: IR size 187: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Array[String], <literal value>]
+!s2 = ToStream(!2) [False]
+!s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+(%__norm_3, %__norm_4) =>
+  MakeStruct(oldCtx: %__norm_3, writeCtx: %__norm_4)
+} 
+!3 = Literal [Struct{}, <literal value>] 
+!4 = NA [String]
+%__norm_30 = CollectDistributedArray(!s3, !3, !4) {
+(%__norm_5, %__norm_6) =>
+  !5 = GetField(%__norm_5) [oldCtx]
+  !s4 = ReadPartition(!5) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+  !s5 = StreamFilter(!s4) { (%__norm_12) =>
+    Coalesce {
+      !6 = GetField(%__norm_12) [text] 
+      !7 = Str ["idx\ti0\ti1\t..."]
+      ApplyComparisonOp(!6, !7) [NEQ]
+    } {
+      False
+    }
+  }
+  !s6 = StreamMap(!s5) { (%__norm_15) =>
+    !8 = GetField(%__norm_15) [text]
+    !9 = Apply(!8) [2, length, (), Int32] 
+    !c0 = I32 [0]
+    !10 = ApplyComparisonOp(!9, !c0) [GT]
+    !33 = If !10 then {
+      !11 = GetField(%__norm_15) [text] 
+      !12 = Str ["\t"] 
+      !13 = EncodedLiteral [Array[String]]
+      !14 = Apply(!11, !12, !13) [3, splitChar, 
+      (), Array[String]]
+      !15 = ArrayLen(!14) 
+      !c8 = I32 [8]
+      !16 = ApplyComparisonOp(!15, !c8) [EQ]
+      If !16 then {
+        !17 = GetField(%__norm_15) [text] 
+        !18 = Str ["\t"] 
+        !19 = EncodedLiteral [Array[String]]
+        Apply(!17, !18, !19) [3, splitChar, 
+        (), Array[String]]
+      } else {
+        %__norm_16 = GetField(%__norm_15) [text]
+        !20 = Str ["\t"] 
+        !21 = EncodedLiteral [Array[String]]
+        %__norm_17 = Apply(%__norm_16, !20, !21) [3, splitChar, 
+        (), Array[String]]
+        !22 = Str ["error in n..."] 
+        !23 = GetField(%__norm_15) [file] 
+        !24 = ArrayLen(%__norm_17) 
+        !25 = ArrayLen(%__norm_17) 
+        !c1 = I32 [1]
+        !26 = ApplyComparisonOp(!25, !c1) [EQ]
+        !27 = If !26 then {
+          Str ["field"]
+        } else {
+          Str ["fields"]
+        }
+        !28 = MakeTuple(!23, !24, !27, %__norm_16) [(0 1 2
+        3)]
+        !29 = Apply(!22, !28) [4, format, (), String]
+        Die(!29) [Array[String], 5]
+      }
+    } else {
+      !30 = Str ["Blank line..."] 
+      !31 = GetField(%__norm_15) [file]
+      !32 = Apply(!30, !31) [6, concat, (), String]
+      Die(!32) [Array[String], 7]
+    }
+    %__norm_18 = MakeStruct(split_text: !33)
+    %__norm_19 = GetField(%__norm_18) [split_text]
+    !34 = SelectFields(%__norm_18) [()] 
+    !c0_2 = I32 [0]
+    !35 = ArrayRef(%__norm_19, !c0_2) [8]
+    !36 = Apply(!35) [9, toInt32, (), Int32] 
+    !c1_2 = I32 [1]
+    !37 = ArrayRef(%__norm_19, !c1_2) [10]
+    !38 = Apply(!37) [11, toInt32, (), Int32] 
+    !c2 = I32 [2]
+    !39 = ArrayRef(%__norm_19, !c2) [12]
+    !40 = Apply(!39) [13, toInt32, (), Int32] 
+    !c3 = I32 [3]
+    !41 = ArrayRef(%__norm_19, !c3) [14]
+    !42 = Apply(!41) [15, toInt32, (), Int32] 
+    !c4 = I32 [4]
+    !43 = ArrayRef(%__norm_19, !c4) [16]
+    !44 = Apply(!43) [17, toInt32, (), Int32] 
+    !c5 = I32 [5]
+    !45 = ArrayRef(%__norm_19, !c5) [18]
+    !46 = Apply(!45) [19, toInt32, (), Int32] 
+    !c6 = I32 [6]
+    !47 = ArrayRef(%__norm_19, !c6) [20]
+    !48 = Apply(!47) [21, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !49 = GetTupleElement(!48) [0] 
+    !c7 = I32 [7]
+    !50 = ArrayRef(%__norm_19, !c7) [22]
+    !51 = Apply(!50) [23, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !52 = GetTupleElement(!51) [0]
+    InsertFields !34 (idx: !36, i0: !38, i1: !40, i2: !42, i3: !44, i4: !46, array0: !49, array1: !52)
+  }
+  %__norm_27 = StreamAgg(!s6) { (%__norm_22) =>
+    !53 = GetField(%__norm_5) [writeCtx] 
+    !54 = UUID4 [__iruid_96]
+    !55 = Apply(!53, !54) [-1, concat, (), String] 
+    !56 = Str ["/tmp/full-..."] 
+    !57 = Str ["/tmp/full-..."]
+    !58 = ApplyAggOp(!55, !56, !57, %__norm_22) [WriteRows] 
+    !59 = ApplyAggOp [Count] 
+    !60 = Literal [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, <literal value>]
+    !67 = AggFold(!60) [False] { (%__norm_23) =>
+      %__norm_24 = SelectFields(%__norm_22) [()]
+      %__norm_25 = GetField(%__norm_23) [lastKey]
+      !61 = GetField(%__norm_23) [distinct] 
+      !62 = ApplyComparisonOp(%__norm_25, %__norm_24) [NEQWithNA]
+      !63 = ApplySpecial(!61, !62) [-1, land, 
+      (), Boolean] 
+      !64 = Coalesce {
+        GetField(%__norm_23) [firstKey]
+      } { %__norm_24 } 
+      !65 = Coalesce { %__norm_24 } { %__norm_25 }
+      MakeStruct(distinct: !63, firstKey: !64, lastKey: !65)
+    } { (%__norm_23, %__norm_26) =>
+      !66 = Str ["unreachabl..."]
+      Die(!66) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+    }
+    MakeStruct(partpath: !58, partitionCounts: !59, keyMeta: !67)
+  }
+  %__norm_28 = GetField(%__norm_27) [keyMeta]
+  !68 = GetField(%__norm_27) [partpath] 
+  !69 = GetField(%__norm_27) [partitionCounts] 
+  !70 = GetField(%__norm_28) [distinct] 
+  !71 = GetField(%__norm_28) [firstKey] 
+  !72 = GetField(%__norm_28) [lastKey]
+  MakeStruct(filePath: !68, partitionCounts: !69, distinctlyKeyed: !70, firstKey: !71, lastKey: !72)
+}
+!73 = Literal [Struct{}, <literal value>]
+!s7 = MakeStream(!73) [Stream[Struct{}], False]
+!77 = StreamAgg(!s7) { (%__norm_31) =>
+  !74 = Str ["part-0"] 
+  !75 = Str ["/tmp/full-..."]
+  !76 = ApplyAggOp(!74, !75, %__norm_31) [WriteRows]
+  MakeStruct(partpath: !76)
+}
+!78 = CastRename(!77) [Struct{filePath:String}]
+!79 = GetField(!78) [filePath]
+!80 = MakeArray(!79) [Array[String]]
+%__norm_38 = WriteMetadata(!80) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/globals\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"indexSpec\":null,\"attrs\":{}}}"]
+!s8 = ToStream(%__norm_30) [False]
+!s9 = StreamMap(!s8) { (%__norm_39) =>
+  GetField(%__norm_39) [filePath]
+}
+!81 = ToArray(!s9)
+%__norm_40 = WriteMetadata(!81) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/rows\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"in..."]
+!s10 = ToStream(%__norm_30) [False]
+!s11 = StreamMap(!s10) { (%__norm_41) =>
+  SelectFields(%__norm_41) [
+  (partitionCounts distinctlyKeyed firstKey
+    lastKey)]
+}
+!82 = ToArray(!s11)
+!83 = WriteMetadata(!82) ["{\"name\":\"TableSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"typ\":{\"rowType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"key\":[],\"globalType\":\"Struct{}\"},\"rowRelPath\":\"rows\",\"globalRelPath\":\"globals\",\"refRelPath\":\"references\",\"log\":true}"]
+WriteMetadata(!83) ["{\"name\":\"RelationalWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"maybeRefs\":{\"references\":[]}}"]
+
+2026-10-23 03:04:11.581 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.581 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.581 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.599 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 187: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Array[String], <literal value>]
+!s2 = ToStream(!2) [False]
+!s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+(%__norm_3, %__norm_4) =>
+  MakeStruct(oldCtx: %__norm_3, writeCtx: %__norm_4)
+} 
+!3 = Literal [Struct{}, <literal value>] 
+!4 = NA [String]
+%__norm_30 = CollectDistributedArray(!s3, !3, !4) {
+(%__norm_5, %__norm_6) =>
+  !5 = GetField(%__norm_5) [oldCtx]
+  !s4 = ReadPartition(!5) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+  !s5 = StreamFilter(!s4) { (%__norm_12) =>
+    Coalesce {
+      !6 = GetField(%__norm_12) [text] 
+      !7 = Str ["idx\ti0\ti1\t..."]
+      ApplyComparisonOp(!6, !7) [NEQ]
+    } {
+      False
+    }
+  }
+  !s6 = StreamMap(!s5) { (%__norm_15) =>
+    !8 = GetField(%__norm_15) [text]
+    !9 = Apply(!8) [2, length, (), Int32] 
+    !c0 = I32 [0]
+    !10 = ApplyComparisonOp(!9, !c0) [GT]
+    !33 = If !10 then {
+      !11 = GetField(%__norm_15) [text] 
+      !12 = Str ["\t"] 
+      !13 = EncodedLiteral [Array[String]]
+      !14 = Apply(!11, !12, !13) [3, splitChar, 
+      (), Array[String]]
+      !15 = ArrayLen(!14) 
+      !c8 = I32 [8]
+      !16 = ApplyComparisonOp(!15, !c8) [EQ]
+      If !16 then {
+        !17 = GetField(%__norm_15) [text] 
+        !18 = Str ["\t"] 
+        !19 = EncodedLiteral [Array[String]]
+        Apply(!17, !18, !19) [3, splitChar, 
+        (), Array[String]]
+      } else {
+        %__norm_16 = GetField(%__norm_15) [text]
+        !20 = Str ["\t"] 
+        !21 = EncodedLiteral [Array[String]]
+        %__norm_17 = Apply(%__norm_16, !20, !21) [3, splitChar, 
+        (), Array[String]]
+        !22 = Str ["error in n..."] 
+        !23 = GetField(%__norm_15) [file] 
+        !24 = ArrayLen(%__norm_17) 
+        !25 = ArrayLen(%__norm_17) 
+        !c1 = I32 [1]
+        !26 = ApplyComparisonOp(!25, !c1) [EQ]
+        !27 = If !26 then {
+          Str ["field"]
+        } else {
+          Str ["fields"]
+        }
+        !28 = MakeTuple(!23, !24, !27, %__norm_16) [(0 1 2
+        3)]
+        !29 = Apply(!22, !28) [4, format, (), String]
+        Die(!29) [Array[String], 5]
+      }
+    } else {
+      !30 = Str ["Blank line..."] 
+      !31 = GetField(%__norm_15) [file]
+      !32 = Apply(!30, !31) [6, concat, (), String]
+      Die(!32) [Array[String], 7]
+    }
+    %__norm_18 = MakeStruct(split_text: !33)
+    %__norm_19 = GetField(%__norm_18) [split_text]
+    !34 = SelectFields(%__norm_18) [()] 
+    !c0_2 = I32 [0]
+    !35 = ArrayRef(%__norm_19, !c0_2) [8]
+    !36 = Apply(!35) [9, toInt32, (), Int32] 
+    !c1_2 = I32 [1]
+    !37 = ArrayRef(%__norm_19, !c1_2) [10]
+    !38 = Apply(!37) [11, toInt32, (), Int32] 
+    !c2 = I32 [2]
+    !39 = ArrayRef(%__norm_19, !c2) [12]
+    !40 = Apply(!39) [13, toInt32, (), Int32] 
+    !c3 = I32 [3]
+    !41 = ArrayRef(%__norm_19, !c3) [14]
+    !42 = Apply(!41) [15, toInt32, (), Int32] 
+    !c4 = I32 [4]
+    !43 = ArrayRef(%__norm_19, !c4) [16]
+    !44 = Apply(!43) [17, toInt32, (), Int32] 
+    !c5 = I32 [5]
+    !45 = ArrayRef(%__norm_19, !c5) [18]
+    !46 = Apply(!45) [19, toInt32, (), Int32] 
+    !c6 = I32 [6]
+    !47 = ArrayRef(%__norm_19, !c6) [20]
+    !48 = Apply(!47) [21, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !49 = GetTupleElement(!48) [0] 
+    !c7 = I32 [7]
+    !50 = ArrayRef(%__norm_19, !c7) [22]
+    !51 = Apply(!50) [23, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !52 = GetTupleElement(!51) [0]
+    InsertFields !34 (idx: !36, i0: !38, i1: !40, i2: !42, i3: !44, i4: !46, array0: !49, array1: !52)
+  }
+  %__norm_27 = StreamAgg(!s6) { (%__norm_22) =>
+    !53 = GetField(%__norm_5) [writeCtx] 
+    !54 = UUID4 [__iruid_96]
+    !55 = Apply(!53, !54) [-1, concat, (), String] 
+    !56 = Str ["/tmp/full-..."] 
+    !57 = Str ["/tmp/full-..."]
+    !58 = ApplyAggOp(!55, !56, !57, %__norm_22) [WriteRows] 
+    !59 = ApplyAggOp [Count] 
+    !60 = Literal [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, <literal value>]
+    !67 = AggFold(!60) [False] { (%__norm_23) =>
+      %__norm_24 = SelectFields(%__norm_22) [()]
+      %__norm_25 = GetField(%__norm_23) [lastKey]
+      !61 = GetField(%__norm_23) [distinct] 
+      !62 = ApplyComparisonOp(%__norm_25, %__norm_24) [NEQWithNA]
+      !63 = ApplySpecial(!61, !62) [-1, land, 
+      (), Boolean] 
+      !64 = Coalesce {
+        GetField(%__norm_23) [firstKey]
+      } { %__norm_24 } 
+      !65 = Coalesce { %__norm_24 } { %__norm_25 }
+      MakeStruct(distinct: !63, firstKey: !64, lastKey: !65)
+    } { (%__norm_23, %__norm_26) =>
+      !66 = Str ["unreachabl..."]
+      Die(!66) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+    }
+    MakeStruct(partpath: !58, partitionCounts: !59, keyMeta: !67)
+  }
+  %__norm_28 = GetField(%__norm_27) [keyMeta]
+  !68 = GetField(%__norm_27) [partpath] 
+  !69 = GetField(%__norm_27) [partitionCounts] 
+  !70 = GetField(%__norm_28) [distinct] 
+  !71 = GetField(%__norm_28) [firstKey] 
+  !72 = GetField(%__norm_28) [lastKey]
+  MakeStruct(filePath: !68, partitionCounts: !69, distinctlyKeyed: !70, firstKey: !71, lastKey: !72)
+}
+!73 = Literal [Struct{}, <literal value>]
+!s7 = MakeStream(!73) [Stream[Struct{}], False]
+!77 = StreamAgg(!s7) { (%__norm_31) =>
+  !74 = Str ["part-0"] 
+  !75 = Str ["/tmp/full-..."]
+  !76 = ApplyAggOp(!74, !75, %__norm_31) [WriteRows]
+  MakeStruct(partpath: !76)
+}
+!78 = CastRename(!77) [Struct{filePath:String}]
+!79 = GetField(!78) [filePath]
+!80 = MakeArray(!79) [Array[String]]
+%__norm_38 = WriteMetadata(!80) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/globals\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"indexSpec\":null,\"attrs\":{}}}"]
+!s8 = ToStream(%__norm_30) [False]
+!s9 = StreamMap(!s8) { (%__norm_39) =>
+  GetField(%__norm_39) [filePath]
+}
+!81 = ToArray(!s9)
+%__norm_40 = WriteMetadata(!81) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/rows\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"in..."]
+!s10 = ToStream(%__norm_30) [False]
+!s11 = StreamMap(!s10) { (%__norm_41) =>
+  SelectFields(%__norm_41) [
+  (partitionCounts distinctlyKeyed firstKey
+    lastKey)]
+}
+!82 = ToArray(!s11)
+!83 = WriteMetadata(!82) ["{\"name\":\"TableSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"typ\":{\"rowType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"key\":[],\"globalType\":\"Struct{}\"},\"rowRelPath\":\"rows\",\"globalRelPath\":\"globals\",\"refRelPath\":\"references\",\"log\":true}"]
+WriteMetadata(!83) ["{\"name\":\"RelationalWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"maybeRefs\":{\"references\":[]}}"]
+
+2026-10-23 03:04:11.654 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 212: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Array[String], <literal value>]
+!s2 = ToStream(!2) [False]
+!s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+(%__norm_1, %__norm_2) =>
+  MakeStruct(oldCtx: %__norm_1, writeCtx: %__norm_2)
+} 
+!3 = Literal [Struct{}, <literal value>] 
+!4 = NA [String]
+%__norm_23 = CollectDistributedArray(!s3, !3, !4) {
+(%__norm_3, %__norm_4) =>
+  !5 = GetField(%__norm_3) [writeCtx] 
+  !6 = UUID4 [__iruid_96]
+  !7 = Apply(!5, !6) [-1, concat, (), String] 
+  !8 = Str ["/tmp/full-..."] 
+  !9 = Str ["/tmp/full-..."]
+  %__norm_5 = InitOp(!7, !8, !9) [0, 
+  (WriteRows 
+    (WriteSig
+      +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]}))]
+  %__norm_6 = InitOp [1, 
+  (Count (TypedStateSig +PInt64))]
+  !10 = Literal [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, <literal value>]
+  %__norm_7 = InitOp(!10) [2, 
+  (Fold 
+    (FoldStateSig
+      +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+      __norm_23 __norm_26
+      
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  !11 = GetField(%__norm_3) [oldCtx]
+  !s4 = ReadPartition(!11) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+  !s5 = StreamFilter(!s4) { (%__norm_8) =>
+    Coalesce {
+      !12 = GetField(%__norm_8) [text] 
+      !13 = Str ["idx\ti0\ti1\t..."]
+      ApplyComparisonOp(!12, !13) [NEQ]
+    } {
+      False
+    }
+  }
+  !s6 = StreamMap(!s5) { (%__norm_9) =>
+    !14 = GetField(%__norm_9) [text]
+    !15 = Apply(!14) [2, length, (), Int32] 
+    !c0 = I32 [0]
+    !16 = ApplyComparisonOp(!15, !c0) [GT]
+    !39 = If !16 then {
+      !17 = GetField(%__norm_9) [text] 
+      !18 = Str ["\t"] 
+      !19 = EncodedLiteral [Array[String]]
+      !20 = Apply(!17, !18, !19) [3, splitChar, 
+      (), Array[String]]
+      !21 = ArrayLen(!20) 
+      !c8 = I32 [8]
+      !22 = ApplyComparisonOp(!21, !c8) [EQ]
+      If !22 then {
+        !23 = GetField(%__norm_9) [text] 
+        !24 = Str ["\t"] 
+        !25 = EncodedLiteral [Array[String]]
+        Apply(!23, !24, !25) [3, splitChar, 
+        (), Array[String]]
+      } else {
+        %__norm_10 = GetField(%__norm_9) [text]
+        !26 = Str ["\t"] 
+        !27 = EncodedLiteral [Array[String]]
+        %__norm_11 = Apply(%__norm_10, !26, !27) [3, splitChar, 
+        (), Array[String]]
+        !28 = Str ["error in n..."] 
+        !29 = GetField(%__norm_9) [file] 
+        !30 = ArrayLen(%__norm_11) 
+        !31 = ArrayLen(%__norm_11) 
+        !c1 = I32 [1]
+        !32 = ApplyComparisonOp(!31, !c1) [EQ]
+        !33 = If !32 then {
+          Str ["field"]
+        } else {
+          Str ["fields"]
+        }
+        !34 = MakeTuple(!29, !30, !33, %__norm_10) [(0 1 2
+        3)]
+        !35 = Apply(!28, !34) [4, format, (), String]
+        Die(!35) [Array[String], 5]
+      }
+    } else {
+      !36 = Str ["Blank line..."] 
+      !37 = GetField(%__norm_9) [file]
+      !38 = Apply(!36, !37) [6, concat, (), String]
+      Die(!38) [Array[String], 7]
+    }
+    %__norm_12 = MakeStruct(split_text: !39)
+    %__norm_13 = GetField(%__norm_12) [split_text]
+    !40 = SelectFields(%__norm_12) [()] 
+    !c0_2 = I32 [0]
+    !41 = ArrayRef(%__norm_13, !c0_2) [8]
+    !42 = Apply(!41) [9, toInt32, (), Int32] 
+    !c1_2 = I32 [1]
+    !43 = ArrayRef(%__norm_13, !c1_2) [10]
+    !44 = Apply(!43) [11, toInt32, (), Int32] 
+    !c2 = I32 [2]
+    !45 = ArrayRef(%__norm_13, !c2) [12]
+    !46 = Apply(!45) [13, toInt32, (), Int32] 
+    !c3 = I32 [3]
+    !47 = ArrayRef(%__norm_13, !c3) [14]
+    !48 = Apply(!47) [15, toInt32, (), Int32] 
+    !c4 = I32 [4]
+    !49 = ArrayRef(%__norm_13, !c4) [16]
+    !50 = Apply(!49) [17, toInt32, (), Int32] 
+    !c5 = I32 [5]
+    !51 = ArrayRef(%__norm_13, !c5) [18]
+    !52 = Apply(!51) [19, toInt32, (), Int32] 
+    !c6 = I32 [6]
+    !53 = ArrayRef(%__norm_13, !c6) [20]
+    !54 = Apply(!53) [21, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !55 = GetTupleElement(!54) [0] 
+    !c7 = I32 [7]
+    !56 = ArrayRef(%__norm_13, !c7) [22]
+    !57 = Apply(!56) [23, parse_json, 
+    (Array[Int32]), Tuple[Array[Int32]]]
+    !58 = GetTupleElement(!57) [0]
+    InsertFields !40 (idx: !42, i0: !44, i1: !46, i2: !48, i3: !50, i4: !52, array0: !55, array1: !58)
+  }
+  !65 = StreamFor(!s6) { (%__norm_14) =>
+    %__norm_15 = SeqOp(%__norm_14) [0, 
+    (WriteRows 
+      (WriteSig
+        +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]}))]
+    %__norm_16 = SeqOp [1, 
+    (Count (TypedStateSig +PInt64))]
+    %__norm_17 = ResultOp [2, 
+    (Fold 
+      (FoldStateSig
+        +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+        __norm_23 __norm_26
+        
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+    %__norm_18 = SelectFields(%__norm_14) [()]
+    %__norm_19 = GetField(%__norm_17) [lastKey]
+    !59 = GetField(%__norm_17) [distinct] 
+    !60 = ApplyComparisonOp(%__norm_19, %__norm_18) [NEQWithNA]
+    !61 = ApplySpecial(!59, !60) [-1, land, 
+    (), Boolean] 
+    !62 = Coalesce {
+      GetField(%__norm_17) [firstKey]
+    } { %__norm_18 } 
+    !63 = Coalesce { %__norm_18 } { %__norm_19 }
+    !64 = MakeStruct(distinct: !61, firstKey: !62, lastKey: !63)
+    SeqOp(!64) [2, 
+    (Fold 
+      (FoldStateSig
+        +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+        __norm_23 __norm_26
+        
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  } 
+  !66 = ResultOp [0, 
+  (WriteRows 
+    (WriteSig
+      +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]}))] 
+  !67 = ResultOp [1, 
+  (Count (TypedStateSig +PInt64))] 
+  !68 = ResultOp [2, 
+  (Fold 
+    (FoldStateSig
+      +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+      __norm_23 __norm_26
+      
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  %__norm_20 = MakeTuple(!66, !67, !68) [(0 1 2)]
+  !69 = GetTupleElement(%__norm_20) [0] 
+  !70 = GetTupleElement(%__norm_20) [1] 
+  !71 = GetTupleElement(%__norm_20) [2]
+  !72 = MakeStruct(partpath: !69, partitionCounts: !70, keyMeta: !71)
+  %__norm_21 = RunAgg(!65, !72) [(
+    (WriteSig
+      +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]})
+    (TypedStateSig +PInt64)
+    
+    (FoldStateSig
+      +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+      __norm_23 __norm_26
+      
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  %__norm_22 = GetField(%__norm_21) [keyMeta]
+  !73 = GetField(%__norm_21) [partpath] 
+  !74 = GetField(%__norm_21) [partitionCounts] 
+  !75 = GetField(%__norm_22) [distinct] 
+  !76 = GetField(%__norm_22) [firstKey] 
+  !77 = GetField(%__norm_22) [lastKey]
+  MakeStruct(filePath: !73, partitionCounts: !74, distinctlyKeyed: !75, firstKey: !76, lastKey: !77)
+}
+!78 = Str ["part-0"] 
+!79 = Str ["/tmp/full-..."]
+%__norm_24 = InitOp(!78, !79) [0, 
+(WriteRows (WriteSig +PCStruct{}))]
+!80 = Literal [Struct{}, <literal value>]
+!s7 = MakeStream(!80) [Stream[Struct{}], False]
+!81 = StreamFor(!s7) { (%__norm_25) =>
+  SeqOp(%__norm_25) [0, 
+  (WriteRows (WriteSig +PCStruct{}))]
+} 
+!82 = ResultOp [0, 
+(WriteRows (WriteSig +PCStruct{}))]
+%__norm_26 = MakeTuple(!82) [(0)]
+!83 = GetTupleElement(%__norm_26) [0]
+!84 = MakeStruct(partpath: !83)
+!85 = RunAgg(!81, !84) [((WriteSig +PCStruct{}))]
+!86 = CastRename(!85) [Struct{filePath:String}]
+!87 = GetField(!86) [filePath]
+!88 = MakeArray(!87) [Array[String]]
+%__norm_27 = WriteMetadata(!88) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/globals\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"indexSpec\":null,\"attrs\":{}}}"]
+!s8 = ToStream(%__norm_23) [False]
+!s9 = StreamMap(!s8) { (%__norm_28) =>
+  GetField(%__norm_28) [filePath]
+}
+!89 = ToArray(!s9)
+%__norm_29 = WriteMetadata(!89) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/rows\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"in..."]
+!s10 = ToStream(%__norm_23) [False]
+!s11 = StreamMap(!s10) { (%__norm_30) =>
+  SelectFields(%__norm_30) [
+  (partitionCounts distinctlyKeyed firstKey
+    lastKey)]
+}
+!90 = ToArray(!s11)
+!91 = WriteMetadata(!90) ["{\"name\":\"TableSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"typ\":{\"rowType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"key\":[],\"globalType\":\"Struct{}\"},\"rowRelPath\":\"rows\",\"globalRelPath\":\"globals\",\"refRelPath\":\"references\",\"log\":true}"]
+WriteMetadata(!91) ["{\"name\":\"RelationalWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"maybeRefs\":{\"references\":[]}}"]
+
+2026-10-23 03:04:11.656 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.656 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.656 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.719 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.719 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:11.719 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:11.736 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 210: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Array[String], <literal value>]
+!s2 = ToStream(!2) [False]
+!s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+(%__norm_1, %__norm_2) =>
+  MakeStruct(oldCtx: %__norm_1, writeCtx: %__norm_2)
+} 
+!3 = Literal [Struct{}, <literal value>] 
+!4 = NA [String]
+%__norm_23 = CollectDistributedArray(!s3, !3, !4) {
+(%__norm_3, %__norm_4) =>
+  !5 = GetField(%__norm_3) [writeCtx] 
+  !6 = UUID4 [__iruid_96]
+  !7 = Apply(!5, !6) [-1, concat, (), String] 
+  !8 = Str ["/tmp/full-..."] 
+  !9 = Str ["/tmp/full-..."]
+  %__norm_5 = InitOp(!7, !8, !9) [0, 
+  (WriteRows 
+    (WriteSig
+      +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]}))]
+  %__norm_6 = InitOp [1, 
+  (Count (TypedStateSig +PInt64))]
+  !10 = Literal [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, <literal value>]
+  %__norm_7 = InitOp(!10) [2, 
+  (Fold 
+    (FoldStateSig
+      +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+      __norm_23 __norm_26
+      
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  !11 = GetField(%__norm_3) [oldCtx]
+  !s4 = ReadPartition(!11) [Struct{file:String,text:String}, "{\"lines\":{\"contextType\":\"Struct{partitionIndex:Int32,fileNum:Int32,file:String,start:Int64,end:Int64,split:Boolean}\",\"contexts\":[{},{},{},{},{}],\"body\":{}},\"uidFieldName\":\"__row_uid\"}"]
+  !66 = StreamFor(!s4) { (%__norm_8) =>
+    !14 = Coalesce {
+      !12 = GetField(%__norm_8) [text] 
+      !13 = Str ["idx\ti0\ti1\t..."]
+      ApplyComparisonOp(!12, !13) [NEQ]
+    } {
+      False
+    }
+    If !14 then {
+      !15 = GetField(%__norm_8) [text]
+      !16 = Apply(!15) [2, length, (), Int32] 
+      !c0 = I32 [0]
+      !17 = ApplyComparisonOp(!16, !c0) [GT]
+      !40 = If !17 then {
+        !18 = GetField(%__norm_8) [text] 
+        !19 = Str ["\t"] 
+        !20 = EncodedLiteral [Array[String]]
+        !21 = Apply(!18, !19, !20) [3, splitChar, 
+        (), Array[String]]
+        !22 = ArrayLen(!21) 
+        !c8 = I32 [8]
+        !23 = ApplyComparisonOp(!22, !c8) [EQ]
+        If !23 then {
+          !24 = GetField(%__norm_8) [text] 
+          !25 = Str ["\t"] 
+          !26 = EncodedLiteral [Array[String]]
+          Apply(!24, !25, !26) [3, splitChar, 
+          (), Array[String]]
+        } else {
+          %__norm_10 = GetField(%__norm_8) [text]
+          !27 = Str ["\t"] 
+          !28 = EncodedLiteral [Array[String]]
+          %__norm_11 = Apply(%__norm_10, !27, !28) [3, splitChar, 
+          (), Array[String]]
+          !29 = Str ["error in n..."] 
+          !30 = GetField(%__norm_8) [file] 
+          !31 = ArrayLen(%__norm_11) 
+          !32 = ArrayLen(%__norm_11) 
+          !c1 = I32 [1]
+          !33 = ApplyComparisonOp(!32, !c1) [EQ]
+          !34 = If !33 then {
+            Str ["field"]
+          } else {
+            Str ["fields"]
+          }
+          !35 = MakeTuple(!30, !31, !34, %__norm_10) [(0 1 2
+          3)]
+          !36 = Apply(!29, !35) [4, format, (), String]
+          Die(!36) [Array[String], 5]
+        }
+      } else {
+        !37 = Str ["Blank line..."] 
+        !38 = GetField(%__norm_8) [file]
+        !39 = Apply(!37, !38) [6, concat, (), String]
+        Die(!39) [Array[String], 7]
+      }
+      %__norm_12 = MakeStruct(split_text: !40)
+      %__norm_13 = GetField(%__norm_12) [split_text]
+      !41 = SelectFields(%__norm_12) [()] 
+      !c0_2 = I32 [0]
+      !42 = ArrayRef(%__norm_13, !c0_2) [8]
+      !43 = Apply(!42) [9, toInt32, (), Int32] 
+      !c1_2 = I32 [1]
+      !44 = ArrayRef(%__norm_13, !c1_2) [10]
+      !45 = Apply(!44) [11, toInt32, (), Int32] 
+      !c2 = I32 [2]
+      !46 = ArrayRef(%__norm_13, !c2) [12]
+      !47 = Apply(!46) [13, toInt32, (), Int32] 
+      !c3 = I32 [3]
+      !48 = ArrayRef(%__norm_13, !c3) [14]
+      !49 = Apply(!48) [15, toInt32, (), Int32] 
+      !c4 = I32 [4]
+      !50 = ArrayRef(%__norm_13, !c4) [16]
+      !51 = Apply(!50) [17, toInt32, (), Int32] 
+      !c5 = I32 [5]
+      !52 = ArrayRef(%__norm_13, !c5) [18]
+      !53 = Apply(!52) [19, toInt32, (), Int32] 
+      !c6 = I32 [6]
+      !54 = ArrayRef(%__norm_13, !c6) [20]
+      !55 = Apply(!54) [21, parse_json, 
+      (Array[Int32]), Tuple[Array[Int32]]]
+      !56 = GetTupleElement(!55) [0] 
+      !c7 = I32 [7]
+      !57 = ArrayRef(%__norm_13, !c7) [22]
+      !58 = Apply(!57) [23, parse_json, 
+      (Array[Int32]), Tuple[Array[Int32]]]
+      !59 = GetTupleElement(!58) [0]
+      %__norm_14 = InsertFields !41 (idx: !43, i0: !45, i1: !47, i2: !49, i3: !51, i4: !53, array0: !56, array1: !59)
+      %__norm_15 = SeqOp(%__norm_14) [0, 
+      (WriteRows 
+        (WriteSig
+          +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]}))]
+      %__norm_16 = SeqOp [1, 
+      (Count (TypedStateSig +PInt64))]
+      %__norm_17 = ResultOp [2, 
+      (Fold 
+        (FoldStateSig
+          +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+          __norm_23 __norm_26
+          
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+      %__norm_18 = SelectFields(%__norm_14) [()]
+      %__norm_19 = GetField(%__norm_17) [lastKey]
+      !60 = GetField(%__norm_17) [distinct] 
+      !61 = ApplyComparisonOp(%__norm_19, %__norm_18) [NEQWithNA]
+      !62 = ApplySpecial(!60, !61) [-1, land, 
+      (), Boolean] 
+      !63 = Coalesce {
+        GetField(%__norm_17) [firstKey]
+      } { %__norm_18 } 
+      !64 = Coalesce { %__norm_18 } { %__norm_19 }
+      !65 = MakeStruct(distinct: !62, firstKey: !63, lastKey: !64)
+      SeqOp(!65) [2, 
+      (Fold 
+        (FoldStateSig
+          +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+          __norm_23 __norm_26
+          
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+    } else {
+      Void
+    }
+  } 
+  !67 = ResultOp [0, 
+  (WriteRows 
+    (WriteSig
+      +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]}))] 
+  !68 = ResultOp [1, 
+  (Count (TypedStateSig +PInt64))] 
+  !69 = ResultOp [2, 
+  (Fold 
+    (FoldStateSig
+      +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+      __norm_23 __norm_26
+      
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  %__norm_20 = MakeTuple(!67, !68, !69) [(0 1 2)]
+  !70 = GetTupleElement(%__norm_20) [0] 
+  !71 = GetTupleElement(%__norm_20) [1] 
+  !72 = GetTupleElement(%__norm_20) [2]
+  !73 = MakeStruct(partpath: !70, partitionCounts: !71, keyMeta: !72)
+  %__norm_21 = RunAgg(!66, !73) [(
+    (WriteSig
+      +PCStruct{idx:PInt32,i0:PInt32,i1:PInt32,i2:PInt32,i3:PInt32,i4:PInt32,array0:PCArray[PInt32],array1:PCArray[PInt32]})
+    (TypedStateSig +PInt64)
+    
+    (FoldStateSig
+      +PCStruct{distinct:+PBoolean,firstKey:PCStruct{},lastKey:PCStruct{}}
+      __norm_23 __norm_26
+      
+!1 = Str ["unreachabl..."]
+Die(!1) [Struct{distinct:Boolean,firstKey:Struct{},lastKey:Struct{}}, -1]
+))]
+  %__norm_22 = GetField(%__norm_21) [keyMeta]
+  !74 = GetField(%__norm_21) [partpath] 
+  !75 = GetField(%__norm_21) [partitionCounts] 
+  !76 = GetField(%__norm_22) [distinct] 
+  !77 = GetField(%__norm_22) [firstKey] 
+  !78 = GetField(%__norm_22) [lastKey]
+  MakeStruct(filePath: !74, partitionCounts: !75, distinctlyKeyed: !76, firstKey: !77, lastKey: !78)
+}
+!79 = Str ["part-0"] 
+!80 = Str ["/tmp/full-..."]
+%__norm_24 = InitOp(!79, !80) [0, 
+(WriteRows (WriteSig +PCStruct{}))]
+!81 = Literal [Struct{}, <literal value>]
+!s5 = MakeStream(!81) [Stream[Struct{}], False]
+!82 = StreamFor(!s5) { (%__norm_25) =>
+  SeqOp(%__norm_25) [0, 
+  (WriteRows (WriteSig +PCStruct{}))]
+} 
+!83 = ResultOp [0, 
+(WriteRows (WriteSig +PCStruct{}))]
+%__norm_26 = MakeTuple(!83) [(0)]
+!84 = GetTupleElement(%__norm_26) [0]
+!85 = MakeStruct(partpath: !84)
+!86 = RunAgg(!82, !85) [((WriteSig +PCStruct{}))]
+!87 = CastRename(!86) [Struct{filePath:String}]
+!88 = GetField(!87) [filePath]
+!89 = MakeArray(!88) [Array[String]]
+%__norm_27 = WriteMetadata(!89) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/globals\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"indexSpec\":null,\"attrs\":{}}}"]
+!s6 = ToStream(%__norm_23) [False]
+!s7 = StreamMap(!s6) { (%__norm_28) =>
+  GetField(%__norm_28) [filePath]
+}
+!90 = ToArray(!s7)
+%__norm_29 = WriteMetadata(!90) ["{\"name\":\"RVDSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht/rows\",\"spec\":{\"name\":\"RVDSpecMaker\",\"codecSpec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"key\":[],\"bounds\":[{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true},{\"start\":{},\"end\":{},\"includeStart\":true,\"includeEnd\":true}],\"in..."]
+!s8 = ToStream(%__norm_23) [False]
+!s9 = StreamMap(!s8) { (%__norm_30) =>
+  SelectFields(%__norm_30) [
+  (partitionCounts distinctlyKeyed firstKey
+    lastKey)]
+}
+!91 = ToArray(!s9)
+!92 = WriteMetadata(!91) ["{\"name\":\"TableSpecWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"typ\":{\"rowType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"key\":[],\"globalType\":\"Struct{}\"},\"rowRelPath\":\"rows\",\"globalRelPath\":\"globals\",\"refRelPath\":\"references\",\"log\":true}"]
+WriteMetadata(!92) ["{\"name\":\"RelationalWriter\",\"path\":\"/tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht\",\"overwrite\":true,\"maybeRefs\":{\"references\":[]}}"]
+
+2026-10-23 03:04:11.834 EType$: INFO: encoder cache miss (0 hits, 7 misses, 0.000)
+2026-10-23 03:04:11.931 EType$: INFO: encoder cache miss (0 hits, 8 misses, 0.000)
+2026-10-23 03:04:12.000 RegionPool: INFO: initialized for thread 129: Executor task launch worker for task 2.0 in stage 2.0 (TID 4)
+2026-10-23 03:04:12.001 RegionPool: INFO: initialized for thread 92: Executor task launch worker for task 0.0 in stage 2.0 (TID 2)
+2026-10-23 03:04:12.001 RegionPool: INFO: initialized for thread 131: Executor task launch worker for task 4.0 in stage 2.0 (TID 6)
+2026-10-23 03:04:12.001 RegionPool: INFO: initialized for thread 128: Executor task launch worker for task 1.0 in stage 2.0 (TID 3)
+2026-10-23 03:04:12.001 RegionPool: INFO: initialized for thread 130: Executor task launch worker for task 3.0 in stage 2.0 (TID 5)
+2026-10-23 03:04:12.019 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.3K allocated (192.3K blocks / 64.0K chunks), regions.size = 4, 0 current java objects, thread 128: Executor task launch worker for task 1.0 in stage 2.0 (TID 3)
+2026-10-23 03:04:12.019 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.3K allocated (192.3K blocks / 64.0K chunks), regions.size = 4, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 2.0 (TID 2)
+2026-10-23 03:04:12.019 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.3K allocated (192.3K blocks / 64.0K chunks), regions.size = 4, 0 current java objects, thread 129: Executor task launch worker for task 2.0 in stage 2.0 (TID 4)
+2026-10-23 03:04:12.019 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.3K allocated (192.3K blocks / 64.0K chunks), regions.size = 4, 0 current java objects, thread 131: Executor task launch worker for task 4.0 in stage 2.0 (TID 6)
+2026-10-23 03:04:12.021 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.3K allocated (192.3K blocks / 64.0K chunks), regions.size = 4, 0 current java objects, thread 130: Executor task launch worker for task 3.0 in stage 2.0 (TID 5)
+2026-10-23 03:04:19.646 SparkTaskContext: INFO: TaskReport: stage=2, partition=4, attempt=0, peakBytes=459008, peakBytesReadable=448.25 KiB, chunks requested=2, cache hits=1
+2026-10-23 03:04:19.646 RegionPool: INFO: RegionPool: FREE: 448.3K allocated (320.3K blocks / 128.0K chunks), regions.size = 6, 0 current java objects, thread 131: Executor task launch worker for task 4.0 in stage 2.0 (TID 6)
+2026-10-23 03:04:19.654 SparkTaskContext: INFO: TaskReport: stage=2, partition=3, attempt=0, peakBytes=459008, peakBytesReadable=448.25 KiB, chunks requested=2, cache hits=1
+2026-10-23 03:04:19.654 RegionPool: INFO: RegionPool: FREE: 448.3K allocated (320.3K blocks / 128.0K chunks), regions.size = 6, 0 current java objects, thread 130: Executor task launch worker for task 3.0 in stage 2.0 (TID 5)
+2026-10-23 03:04:19.677 SparkTaskContext: INFO: TaskReport: stage=2, partition=0, attempt=0, peakBytes=459008, peakBytesReadable=448.25 KiB, chunks requested=2, cache hits=1
+2026-10-23 03:04:19.677 RegionPool: INFO: RegionPool: FREE: 448.3K allocated (320.3K blocks / 128.0K chunks), regions.size = 6, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 2.0 (TID 2)
+2026-10-23 03:04:19.695 SparkTaskContext: INFO: TaskReport: stage=2, partition=2, attempt=0, peakBytes=459008, peakBytesReadable=448.25 KiB, chunks requested=2, cache hits=1
+2026-10-23 03:04:19.696 RegionPool: INFO: RegionPool: FREE: 448.3K allocated (320.3K blocks / 128.0K chunks), regions.size = 6, 0 current java objects, thread 129: Executor task launch worker for task 2.0 in stage 2.0 (TID 4)
+2026-10-23 03:04:19.717 SparkTaskContext: INFO: TaskReport: stage=2, partition=1, attempt=0, peakBytes=459008, peakBytesReadable=448.25 KiB, chunks requested=2, cache hits=1
+2026-10-23 03:04:19.717 RegionPool: INFO: RegionPool: FREE: 448.3K allocated (320.3K blocks / 128.0K chunks), regions.size = 6, 0 current java objects, thread 128: Executor task launch worker for task 1.0 in stage 2.0 (TID 3)
+2026-10-23 03:04:19.719 BackendUtils: INFO: table_native_writer: executed 5 tasks in 7.757s
+2026-10-23 03:04:19.785 TableSpecHelper: INFO: wrote table with 7500000 rows in 5 partitions to /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht
+2026-10-23 03:04:19.801 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.801 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.801 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LowerOrInterpretNonCompilable$: INFO: took 8.512s
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.802 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.802 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: initial IR: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.802 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.802 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.802 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.802 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.802 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.803 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.803 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.803 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.803 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Void
+
+2026-10-23 03:04:19.804 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.804 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.804 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.804 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.804 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:04:19.804 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:04:19.804 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher

@@ -1,0 +1,51 @@
+{
+  "runner_sha256": "62498d53c70e3dd3c23b0acfdd878b7e617c3c212d061224ee42ccf0f4dcf6d7",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/tmp/full-local-upstream-cache-20261022",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_inner_join_region_memory",
+      "id": "benchmark_table::test_test_inner_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.12149345793295652,
+      "telemetry": {
+        "cpu_seconds": 0.14489066666666667,
+        "average_cores": 1.1919328855177602,
+        "peak_rss_gib": 0.8169708251953125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1678797,
+          "system_time": 1798579,
+          "instructions": 1698463269,
+          "cycles": 543791157,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_table--test_test_inner_join_region_memory"
+      },
+      "fixture_seconds": 0.11,
+      "elapsed_seconds": 0.284
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

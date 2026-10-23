@@ -1,0 +1,5 @@
+2026-10-23 02:36:40.135 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-10-23 02:36:40.429 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+[Stage 0:>                                                          (0 + 8) / 8][Stage 0:====================================>                      (5 + 3) / 8][Stage 0:===================================================>       (7 + 1) / 8]                                                                                [1/1] benchmark_table::test_table_aggregate_downsample_worst_case: passed

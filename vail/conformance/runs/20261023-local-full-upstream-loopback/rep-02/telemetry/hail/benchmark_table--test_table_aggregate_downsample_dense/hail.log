@@ -1,0 +1,1335 @@
+2026-10-23 03:33:41.272 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:33:41.485 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:33:41.694 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.742 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.742 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:41.744 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.744 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.764 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.964 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.964 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:41.964 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.964 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:41.973 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.131 LoweringPipeline: INFO: initial IR: IR size 42: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!19 = TableAggregate(!ht) { (%global, %row) =>
+  %__norm_2 =(agg) GetField(%row) [i3]
+  %__norm_3 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_2) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_3) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_2) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_3) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_2) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_3) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+MakeTuple(!19) [(0)]
+
+2026-10-23 03:33:42.134 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.135 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.135 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.144 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:33:42.158 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.158 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.158 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.164 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 39: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!19 = TableAggregate(!ht) { (%global, %row) =>
+  %__norm_2 =(agg) GetField(%row) [i3]
+  %__norm_3 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_2) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_3) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_2) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_3) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_2) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_3) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+MakeTuple(!19) [(0)]
+
+2026-10-23 03:33:42.171 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 39: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!19 = TableAggregate(!ht) { (%global, %row) =>
+  %__norm_2 =(agg) GetField(%row) [i3]
+  %__norm_3 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_2) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_3) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_2) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_3) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_2) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_3) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+MakeTuple(!19) [(0)]
+
+2026-10-23 03:33:42.172 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.172 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.172 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.177 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 39: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!19 = TableAggregate(!ht) { (%global, %row) =>
+  %__norm_2 =(agg) GetField(%row) [i3]
+  %__norm_3 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_2) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_3) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_2) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_3) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_2) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_3) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+MakeTuple(!19) [(0)]
+
+2026-10-23 03:33:42.232 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 41: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+%__norm_3 = TableAggregate(!ht) {
+(%global, %row) =>
+  %__norm_1 =(agg) GetField(%row) [i3]
+  %__norm_2 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_1) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_2) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_1) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_2) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_1) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_2) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+MakeTuple(%__norm_3) [(0)]
+
+2026-10-23 03:33:42.238 LoweringPipeline: INFO: initial IR: IR size 38: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  %__norm_1 =(agg) GetField(%row) [i3]
+  %__norm_2 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_1) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_2) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_1) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_2) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_1) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_2) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+
+2026-10-23 03:33:42.241 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 38: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  %__norm_1 =(agg) GetField(%row) [i3]
+  %__norm_2 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_1) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_2) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_1) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_2) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_1) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_2) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+
+2026-10-23 03:33:42.243 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 38: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  %__norm_1 =(agg) GetField(%row) [i3]
+  %__norm_2 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_1) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_2) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_1) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_2) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_1) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_2) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+
+2026-10-23 03:33:42.244 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.244 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.244 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.249 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 38: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  %__norm_1 =(agg) GetField(%row) [i3]
+  %__norm_2 =(agg) GetField(%row) [i4]
+  !c500 = I32 [500] 
+  !1 = GetField(%row) [i0]
+  !2 = ApplyIR(!1) [2, toFloat64, (), Float64] 
+  !3 = ApplyIR(%__norm_1) [3, toFloat64, 
+  (), Float64] 
+  !4 = Apply(%__norm_2) [1, str, (), String]
+  !5 = MakeArray(!4) [Array[String]]
+  !6 = ApplyAggOp(!c500, !2, !3, !5) [Downsample] 
+  !c500_2 = I32 [500] 
+  !7 = GetField(%row) [i1]
+  !8 = ApplyIR(!7) [5, toFloat64, (), Float64] 
+  !9 = ApplyIR(%__norm_1) [6, toFloat64, 
+  (), Float64] 
+  !10 = Apply(%__norm_2) [4, str, (), String]
+  !11 = MakeArray(!10) [Array[String]]
+  !12 = ApplyAggOp(!c500_2, !8, !9, !11) [Downsample] 
+  !c500_3 = I32 [500] 
+  !13 = GetField(%row) [i2]
+  !14 = ApplyIR(!13) [8, toFloat64, (), Float64] 
+  !15 = ApplyIR(%__norm_1) [9, toFloat64, 
+  (), Float64] 
+  !16 = Apply(%__norm_2) [7, str, (), String]
+  !17 = MakeArray(!16) [Array[String]]
+  !18 = ApplyAggOp(!c500_3, !14, !15, !17) [Downsample]
+  MakeTuple(!6, !12, !18) [(0 1 2)]
+}
+
+2026-10-23 03:33:42.252 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:33:42.252 LowerOrInterpretNonCompilable$: INFO: lowering result: TableAggregate
+2026-10-23 03:33:42.335 LowerTableIR$: INFO: Aggregate: useTreeAggregate=false
+2026-10-23 03:33:42.335 LowerTableIR$: INFO: Aggregate: commutative=true
+2026-10-23 03:33:42.339 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableAggregate
+2026-10-23 03:33:42.371 LoweringPipeline: INFO: initial IR: IR size 130: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = Ref [__norm_1]
+!c500 = I32 [500]
+%__norm_3 = InitOp(!c500) [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_2 = I32 [500]
+%__norm_4 = InitOp(!c500_2) [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_3 = I32 [500]
+!5 = InitOp(!c500_3) [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!6 = AggStateValue [0, 
+(DownsampleStateSig +PCArray[PCString])] 
+!7 = AggStateValue [1, 
+(DownsampleStateSig +PCArray[PCString])] 
+!8 = AggStateValue [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!9 = MakeTuple(!6, !7, !8) [(0 1 2)]
+%__norm_5 = RunAgg(!5, !9) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+!10 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s2 = ToStream(!10) [False] 
+!11 = MakeStruct(__iruid_40: %__norm_1, __iruid_42: %__norm_5) 
+!12 = NA [String]
+%__norm_20 = CollectDistributedArray(!s2, !11, !12) {
+(%__norm_6, %__norm_7) =>
+  %__norm_8 = GetField(%__norm_7) [__iruid_40]
+  %__norm_9 = GetField(%__norm_7) [__iruid_42]
+  %__norm_10 = ReadPartition(%__norm_6) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  %__norm_11 = Ref [__norm_8]
+  !13 = GetTupleElement(%__norm_9) [0]
+  %__norm_12 = InitFromSerializedValue(!13) [0, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !14 = GetTupleElement(%__norm_9) [1]
+  %__norm_13 = InitFromSerializedValue(!14) [1, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !15 = GetTupleElement(%__norm_9) [2]
+  %__norm_14 = InitFromSerializedValue(!15) [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !31 = StreamFor(%__norm_10) { (%__norm_15) =>
+    %__norm_16 = GetField(%__norm_15) [i3]
+    %__norm_17 = GetField(%__norm_15) [i4]
+    !16 = GetField(%__norm_15) [i0]
+    !17 = ApplyIR(!16) [2, toFloat64, (), Float64] 
+    !18 = ApplyIR(%__norm_16) [3, toFloat64, 
+    (), Float64] 
+    !19 = Apply(%__norm_17) [1, str, (), String]
+    !20 = MakeArray(!19) [Array[String]]
+    %__norm_18 = SeqOp(!17, !18, !20) [0, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !21 = GetField(%__norm_15) [i1]
+    !22 = ApplyIR(!21) [5, toFloat64, (), Float64] 
+    !23 = ApplyIR(%__norm_16) [6, toFloat64, 
+    (), Float64] 
+    !24 = Apply(%__norm_17) [4, str, (), String]
+    !25 = MakeArray(!24) [Array[String]]
+    %__norm_19 = SeqOp(!22, !23, !25) [1, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !26 = GetField(%__norm_15) [i2]
+    !27 = ApplyIR(!26) [8, toFloat64, (), Float64] 
+    !28 = ApplyIR(%__norm_16) [9, toFloat64, 
+    (), Float64] 
+    !29 = Apply(%__norm_17) [7, str, (), String]
+    !30 = MakeArray(!29) [Array[String]]
+    SeqOp(!27, !28, !30) [2, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+  } 
+  !32 = AggStateValue [0, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !33 = AggStateValue [1, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !34 = AggStateValue [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !35 = MakeTuple(!32, !33, !34) [(0 1 2)]
+  RunAgg(!31, !35) [(
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString]))]
+}
+%__norm_21 = Ref [__norm_1]
+!36 = GetTupleElement(%__norm_5) [0]
+%__norm_22 = InitFromSerializedValue(!36) [0, 
+(DownsampleStateSig +PCArray[PCString])]
+!37 = GetTupleElement(%__norm_5) [1]
+%__norm_23 = InitFromSerializedValue(!37) [1, 
+(DownsampleStateSig +PCArray[PCString])]
+!38 = GetTupleElement(%__norm_5) [2]
+%__norm_24 = InitFromSerializedValue(!38) [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!s3 = ToStream(%__norm_20) [True]
+!42 = StreamFor(!s3) { (%__norm_25) =>
+  !39 = GetTupleElement(%__norm_25) [0]
+  %__norm_26 = CombOpValue(!39) [0, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !40 = GetTupleElement(%__norm_25) [1]
+  %__norm_27 = CombOpValue(!40) [1, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !41 = GetTupleElement(%__norm_25) [2]
+  CombOpValue(!41) [2, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+} 
+!43 = ResultOp [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!44 = ResultOp [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!45 = ResultOp [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+%__norm_28 = MakeTuple(!43, !44, !45) [(0 1 2)]
+!46 = GetTupleElement(%__norm_28) [0] 
+!47 = GetTupleElement(%__norm_28) [1] 
+!48 = GetTupleElement(%__norm_28) [2]
+!49 = MakeTuple(!46, !47, !48) [(0 1 2)]
+!50 = RunAgg(!42, !49) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+MakeTuple(!50) [(0)]
+
+2026-10-23 03:33:42.416 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.416 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.416 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.417 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.417 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.417 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.425 ForwardLets$: INFO: Eliminating unused binding:
+__norm_2: struct{} = (EVAL) Ref [__norm_1]
+2026-10-23 03:33:42.426 ForwardLets$: INFO: Eliminating unused binding:
+__norm_11: struct{} = (EVAL) Ref [__norm_8]
+2026-10-23 03:33:42.427 ForwardLets$: INFO: Eliminating unused binding:
+__norm_21: struct{} = (EVAL) Ref [__norm_1]
+2026-10-23 03:33:42.466 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_40'
+2026-10-23 03:33:42.470 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.470 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.471 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.473 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+ArrayRef(!2, !c0) [-1]
+2026-10-23 03:33:42.486 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.486 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.486 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.499 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 109: 
+
+!c500 = I32 [500]
+%__norm_3 = InitOp(!c500) [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_2 = I32 [500]
+%__norm_4 = InitOp(!c500_2) [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_3 = I32 [500]
+!1 = InitOp(!c500_3) [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!2 = AggStateValue [0, 
+(DownsampleStateSig +PCArray[PCString])] 
+!3 = AggStateValue [1, 
+(DownsampleStateSig +PCArray[PCString])] 
+!4 = AggStateValue [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!5 = MakeTuple(!2, !3, !4) [(0 1 2)]
+%__norm_5 = RunAgg(!1, !5) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+!6 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!6) [False] 
+!7 = MakeStruct(__iruid_42: %__norm_5) 
+!8 = NA [String]
+%__norm_20 = CollectDistributedArray(!s, !7, !8) {
+(%__norm_6, %__norm_7) =>
+  %__norm_9 = GetField(%__norm_7) [__iruid_42]
+  !9 = GetTupleElement(%__norm_9) [0]
+  %__norm_12 = InitFromSerializedValue(!9) [0, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !10 = GetTupleElement(%__norm_9) [1]
+  %__norm_13 = InitFromSerializedValue(!10) [1, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !11 = GetTupleElement(%__norm_9) [2]
+  %__norm_14 = InitFromSerializedValue(!11) [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !s2 = ReadPartition(%__norm_6) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !27 = StreamFor(!s2) { (%__norm_15) =>
+    %__norm_16 = GetField(%__norm_15) [i3]
+    %__norm_17 = GetField(%__norm_15) [i4]
+    !12 = GetField(%__norm_15) [i0]
+    !13 = ApplyIR(!12) [2, toFloat64, (), Float64] 
+    !14 = ApplyIR(%__norm_16) [3, toFloat64, 
+    (), Float64] 
+    !15 = Apply(%__norm_17) [1, str, (), String]
+    !16 = MakeArray(!15) [Array[String]]
+    %__norm_18 = SeqOp(!13, !14, !16) [0, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !17 = GetField(%__norm_15) [i1]
+    !18 = ApplyIR(!17) [5, toFloat64, (), Float64] 
+    !19 = ApplyIR(%__norm_16) [6, toFloat64, 
+    (), Float64] 
+    !20 = Apply(%__norm_17) [4, str, (), String]
+    !21 = MakeArray(!20) [Array[String]]
+    %__norm_19 = SeqOp(!18, !19, !21) [1, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !22 = GetField(%__norm_15) [i2]
+    !23 = ApplyIR(!22) [8, toFloat64, (), Float64] 
+    !24 = ApplyIR(%__norm_16) [9, toFloat64, 
+    (), Float64] 
+    !25 = Apply(%__norm_17) [7, str, (), String]
+    !26 = MakeArray(!25) [Array[String]]
+    SeqOp(!23, !24, !26) [2, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+  } 
+  !28 = AggStateValue [0, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !29 = AggStateValue [1, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !30 = AggStateValue [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !31 = MakeTuple(!28, !29, !30) [(0 1 2)]
+  RunAgg(!27, !31) [(
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString]))]
+}
+!32 = GetTupleElement(%__norm_5) [0]
+%__norm_22 = InitFromSerializedValue(!32) [0, 
+(DownsampleStateSig +PCArray[PCString])]
+!33 = GetTupleElement(%__norm_5) [1]
+%__norm_23 = InitFromSerializedValue(!33) [1, 
+(DownsampleStateSig +PCArray[PCString])]
+!34 = GetTupleElement(%__norm_5) [2]
+%__norm_24 = InitFromSerializedValue(!34) [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!s3 = ToStream(%__norm_20) [True]
+!38 = StreamFor(!s3) { (%__norm_25) =>
+  !35 = GetTupleElement(%__norm_25) [0]
+  %__norm_26 = CombOpValue(!35) [0, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !36 = GetTupleElement(%__norm_25) [1]
+  %__norm_27 = CombOpValue(!36) [1, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !37 = GetTupleElement(%__norm_25) [2]
+  CombOpValue(!37) [2, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+} 
+!39 = ResultOp [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!40 = ResultOp [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!41 = ResultOp [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+%__norm_28 = MakeTuple(!39, !40, !41) [(0 1 2)]
+!42 = GetTupleElement(%__norm_28) [0] 
+!43 = GetTupleElement(%__norm_28) [1] 
+!44 = GetTupleElement(%__norm_28) [2]
+!45 = MakeTuple(!42, !43, !44) [(0 1 2)]
+!46 = RunAgg(!38, !45) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+MakeTuple(!46) [(0)]
+
+2026-10-23 03:33:42.504 LoweringPipeline: INFO: after InlineApplyIR: IR size 121: 
+
+!c500 = I32 [500]
+%__norm_1 = InitOp(!c500) [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_2 = I32 [500]
+%__norm_2 = InitOp(!c500_2) [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_3 = I32 [500]
+!1 = InitOp(!c500_3) [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!2 = AggStateValue [0, 
+(DownsampleStateSig +PCArray[PCString])] 
+!3 = AggStateValue [1, 
+(DownsampleStateSig +PCArray[PCString])] 
+!4 = AggStateValue [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!5 = MakeTuple(!2, !3, !4) [(0 1 2)]
+%__norm_3 = RunAgg(!1, !5) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+!6 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!6) [False] 
+!7 = MakeStruct(__iruid_42: %__norm_3) 
+!8 = NA [String]
+%__norm_21 = CollectDistributedArray(!s, !7, !8) {
+(%__norm_4, %__norm_5) =>
+  %__norm_6 = GetField(%__norm_5) [__iruid_42]
+  !9 = GetTupleElement(%__norm_6) [0]
+  %__norm_7 = InitFromSerializedValue(!9) [0, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !10 = GetTupleElement(%__norm_6) [1]
+  %__norm_8 = InitFromSerializedValue(!10) [1, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !11 = GetTupleElement(%__norm_6) [2]
+  %__norm_9 = InitFromSerializedValue(!11) [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !24 = StreamFor(!s2) { (%__norm_10) =>
+    %__norm_11 = GetField(%__norm_10) [i3]
+    %__norm_12 = GetField(%__norm_10) [i4]
+    %__norm_13 = GetField(%__norm_10) [i0]
+    !12 = Cast(%__norm_13) [Float64] 
+    %__norm_14 = Ref [__norm_11]
+    !13 = Cast(%__norm_14) [Float64] 
+    !14 = Apply(%__norm_12) [1, str, (), String]
+    !15 = MakeArray(!14) [Array[String]]
+    %__norm_15 = SeqOp(!12, !13, !15) [0, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    %__norm_16 = GetField(%__norm_10) [i1]
+    !16 = Cast(%__norm_16) [Float64] 
+    %__norm_17 = Ref [__norm_11]
+    !17 = Cast(%__norm_17) [Float64] 
+    !18 = Apply(%__norm_12) [4, str, (), String]
+    !19 = MakeArray(!18) [Array[String]]
+    %__norm_18 = SeqOp(!16, !17, !19) [1, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    %__norm_19 = GetField(%__norm_10) [i2]
+    !20 = Cast(%__norm_19) [Float64] 
+    %__norm_20 = Ref [__norm_11]
+    !21 = Cast(%__norm_20) [Float64] 
+    !22 = Apply(%__norm_12) [7, str, (), String]
+    !23 = MakeArray(!22) [Array[String]]
+    SeqOp(!20, !21, !23) [2, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+  } 
+  !25 = AggStateValue [0, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !26 = AggStateValue [1, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !27 = AggStateValue [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !28 = MakeTuple(!25, !26, !27) [(0 1 2)]
+  RunAgg(!24, !28) [(
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString]))]
+}
+!29 = GetTupleElement(%__norm_3) [0]
+%__norm_22 = InitFromSerializedValue(!29) [0, 
+(DownsampleStateSig +PCArray[PCString])]
+!30 = GetTupleElement(%__norm_3) [1]
+%__norm_23 = InitFromSerializedValue(!30) [1, 
+(DownsampleStateSig +PCArray[PCString])]
+!31 = GetTupleElement(%__norm_3) [2]
+%__norm_24 = InitFromSerializedValue(!31) [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!s3 = ToStream(%__norm_21) [True]
+!35 = StreamFor(!s3) { (%__norm_25) =>
+  !32 = GetTupleElement(%__norm_25) [0]
+  %__norm_26 = CombOpValue(!32) [0, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !33 = GetTupleElement(%__norm_25) [1]
+  %__norm_27 = CombOpValue(!33) [1, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !34 = GetTupleElement(%__norm_25) [2]
+  CombOpValue(!34) [2, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+} 
+!36 = ResultOp [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!37 = ResultOp [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!38 = ResultOp [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+%__norm_28 = MakeTuple(!36, !37, !38) [(0 1 2)]
+!39 = GetTupleElement(%__norm_28) [0] 
+!40 = GetTupleElement(%__norm_28) [1] 
+!41 = GetTupleElement(%__norm_28) [2]
+!42 = MakeTuple(!39, !40, !41) [(0 1 2)]
+!43 = RunAgg(!35, !42) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+MakeTuple(!43) [(0)]
+
+2026-10-23 03:33:42.566 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.566 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.567 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.578 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.578 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.578 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.587 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 109: 
+
+!c500 = I32 [500]
+%__norm_1 = InitOp(!c500) [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_2 = I32 [500]
+%__norm_2 = InitOp(!c500_2) [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_3 = I32 [500]
+!1 = InitOp(!c500_3) [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!2 = AggStateValue [0, 
+(DownsampleStateSig +PCArray[PCString])] 
+!3 = AggStateValue [1, 
+(DownsampleStateSig +PCArray[PCString])] 
+!4 = AggStateValue [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!5 = MakeTuple(!2, !3, !4) [(0 1 2)]
+%__norm_3 = RunAgg(!1, !5) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+!6 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!6) [False] 
+!7 = MakeStruct(__iruid_42: %__norm_3) 
+!8 = NA [String]
+%__norm_21 = CollectDistributedArray(!s, !7, !8) {
+(%__norm_4, %__norm_5) =>
+  %__norm_6 = GetField(%__norm_5) [__iruid_42]
+  !9 = GetTupleElement(%__norm_6) [0]
+  %__norm_7 = InitFromSerializedValue(!9) [0, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !10 = GetTupleElement(%__norm_6) [1]
+  %__norm_8 = InitFromSerializedValue(!10) [1, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !11 = GetTupleElement(%__norm_6) [2]
+  %__norm_9 = InitFromSerializedValue(!11) [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !27 = StreamFor(!s2) { (%__norm_10) =>
+    %__norm_11 = GetField(%__norm_10) [i3]
+    %__norm_12 = GetField(%__norm_10) [i4]
+    !12 = GetField(%__norm_10) [i0]
+    !13 = Cast(!12) [Float64] 
+    !14 = Cast(%__norm_11) [Float64] 
+    !15 = Apply(%__norm_12) [1, str, (), String]
+    !16 = MakeArray(!15) [Array[String]]
+    %__norm_15 = SeqOp(!13, !14, !16) [0, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !17 = GetField(%__norm_10) [i1]
+    !18 = Cast(!17) [Float64] 
+    !19 = Cast(%__norm_11) [Float64] 
+    !20 = Apply(%__norm_12) [4, str, (), String]
+    !21 = MakeArray(!20) [Array[String]]
+    %__norm_18 = SeqOp(!18, !19, !21) [1, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !22 = GetField(%__norm_10) [i2]
+    !23 = Cast(!22) [Float64] 
+    !24 = Cast(%__norm_11) [Float64] 
+    !25 = Apply(%__norm_12) [7, str, (), String]
+    !26 = MakeArray(!25) [Array[String]]
+    SeqOp(!23, !24, !26) [2, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+  } 
+  !28 = AggStateValue [0, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !29 = AggStateValue [1, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !30 = AggStateValue [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !31 = MakeTuple(!28, !29, !30) [(0 1 2)]
+  RunAgg(!27, !31) [(
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString]))]
+}
+!32 = GetTupleElement(%__norm_3) [0]
+%__norm_22 = InitFromSerializedValue(!32) [0, 
+(DownsampleStateSig +PCArray[PCString])]
+!33 = GetTupleElement(%__norm_3) [1]
+%__norm_23 = InitFromSerializedValue(!33) [1, 
+(DownsampleStateSig +PCArray[PCString])]
+!34 = GetTupleElement(%__norm_3) [2]
+%__norm_24 = InitFromSerializedValue(!34) [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!s3 = ToStream(%__norm_21) [True]
+!38 = StreamFor(!s3) { (%__norm_25) =>
+  !35 = GetTupleElement(%__norm_25) [0]
+  %__norm_26 = CombOpValue(!35) [0, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !36 = GetTupleElement(%__norm_25) [1]
+  %__norm_27 = CombOpValue(!36) [1, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !37 = GetTupleElement(%__norm_25) [2]
+  CombOpValue(!37) [2, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+} 
+!39 = ResultOp [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!40 = ResultOp [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!41 = ResultOp [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+%__norm_28 = MakeTuple(!39, !40, !41) [(0 1 2)]
+!42 = GetTupleElement(%__norm_28) [0] 
+!43 = GetTupleElement(%__norm_28) [1] 
+!44 = GetTupleElement(%__norm_28) [2]
+!45 = MakeTuple(!42, !43, !44) [(0 1 2)]
+!46 = RunAgg(!38, !45) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+MakeTuple(!46) [(0)]
+
+2026-10-23 03:33:42.595 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 109: 
+
+!c500 = I32 [500]
+%__norm_1 = InitOp(!c500) [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_2 = I32 [500]
+%__norm_2 = InitOp(!c500_2) [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_3 = I32 [500]
+!1 = InitOp(!c500_3) [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!2 = AggStateValue [0, 
+(DownsampleStateSig +PCArray[PCString])] 
+!3 = AggStateValue [1, 
+(DownsampleStateSig +PCArray[PCString])] 
+!4 = AggStateValue [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!5 = MakeTuple(!2, !3, !4) [(0 1 2)]
+%__norm_3 = RunAgg(!1, !5) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+!6 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!6) [False] 
+!7 = MakeStruct(__iruid_42: %__norm_3) 
+!8 = NA [String]
+%__norm_21 = CollectDistributedArray(!s, !7, !8) {
+(%__norm_4, %__norm_5) =>
+  %__norm_6 = GetField(%__norm_5) [__iruid_42]
+  !9 = GetTupleElement(%__norm_6) [0]
+  %__norm_7 = InitFromSerializedValue(!9) [0, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !10 = GetTupleElement(%__norm_6) [1]
+  %__norm_8 = InitFromSerializedValue(!10) [1, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !11 = GetTupleElement(%__norm_6) [2]
+  %__norm_9 = InitFromSerializedValue(!11) [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !27 = StreamFor(!s2) { (%__norm_10) =>
+    %__norm_11 = GetField(%__norm_10) [i3]
+    %__norm_12 = GetField(%__norm_10) [i4]
+    !12 = GetField(%__norm_10) [i0]
+    !13 = Cast(!12) [Float64] 
+    !14 = Cast(%__norm_11) [Float64] 
+    !15 = Apply(%__norm_12) [1, str, (), String]
+    !16 = MakeArray(!15) [Array[String]]
+    %__norm_15 = SeqOp(!13, !14, !16) [0, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !17 = GetField(%__norm_10) [i1]
+    !18 = Cast(!17) [Float64] 
+    !19 = Cast(%__norm_11) [Float64] 
+    !20 = Apply(%__norm_12) [4, str, (), String]
+    !21 = MakeArray(!20) [Array[String]]
+    %__norm_18 = SeqOp(!18, !19, !21) [1, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !22 = GetField(%__norm_10) [i2]
+    !23 = Cast(!22) [Float64] 
+    !24 = Cast(%__norm_11) [Float64] 
+    !25 = Apply(%__norm_12) [7, str, (), String]
+    !26 = MakeArray(!25) [Array[String]]
+    SeqOp(!23, !24, !26) [2, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+  } 
+  !28 = AggStateValue [0, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !29 = AggStateValue [1, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !30 = AggStateValue [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !31 = MakeTuple(!28, !29, !30) [(0 1 2)]
+  RunAgg(!27, !31) [(
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString]))]
+}
+!32 = GetTupleElement(%__norm_3) [0]
+%__norm_22 = InitFromSerializedValue(!32) [0, 
+(DownsampleStateSig +PCArray[PCString])]
+!33 = GetTupleElement(%__norm_3) [1]
+%__norm_23 = InitFromSerializedValue(!33) [1, 
+(DownsampleStateSig +PCArray[PCString])]
+!34 = GetTupleElement(%__norm_3) [2]
+%__norm_24 = InitFromSerializedValue(!34) [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!s3 = ToStream(%__norm_21) [True]
+!38 = StreamFor(!s3) { (%__norm_25) =>
+  !35 = GetTupleElement(%__norm_25) [0]
+  %__norm_26 = CombOpValue(!35) [0, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !36 = GetTupleElement(%__norm_25) [1]
+  %__norm_27 = CombOpValue(!36) [1, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !37 = GetTupleElement(%__norm_25) [2]
+  CombOpValue(!37) [2, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+} 
+!39 = ResultOp [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!40 = ResultOp [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!41 = ResultOp [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+%__norm_28 = MakeTuple(!39, !40, !41) [(0 1 2)]
+!42 = GetTupleElement(%__norm_28) [0] 
+!43 = GetTupleElement(%__norm_28) [1] 
+!44 = GetTupleElement(%__norm_28) [2]
+!45 = MakeTuple(!42, !43, !44) [(0 1 2)]
+!46 = RunAgg(!38, !45) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+MakeTuple(!46) [(0)]
+
+2026-10-23 03:33:42.596 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.596 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:42.596 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:42.604 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 109: 
+
+!c500 = I32 [500]
+%__norm_1 = InitOp(!c500) [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_2 = I32 [500]
+%__norm_2 = InitOp(!c500_2) [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+!c500_3 = I32 [500]
+!1 = InitOp(!c500_3) [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!2 = AggStateValue [0, 
+(DownsampleStateSig +PCArray[PCString])] 
+!3 = AggStateValue [1, 
+(DownsampleStateSig +PCArray[PCString])] 
+!4 = AggStateValue [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!5 = MakeTuple(!2, !3, !4) [(0 1 2)]
+%__norm_3 = RunAgg(!1, !5) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+!6 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!6) [False] 
+!7 = MakeStruct(__iruid_42: %__norm_3) 
+!8 = NA [String]
+%__norm_21 = CollectDistributedArray(!s, !7, !8) {
+(%__norm_4, %__norm_5) =>
+  %__norm_6 = GetField(%__norm_5) [__iruid_42]
+  !9 = GetTupleElement(%__norm_6) [0]
+  %__norm_7 = InitFromSerializedValue(!9) [0, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !10 = GetTupleElement(%__norm_6) [1]
+  %__norm_8 = InitFromSerializedValue(!10) [1, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !11 = GetTupleElement(%__norm_6) [2]
+  %__norm_9 = InitFromSerializedValue(!11) [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !27 = StreamFor(!s2) { (%__norm_10) =>
+    %__norm_11 = GetField(%__norm_10) [i3]
+    %__norm_12 = GetField(%__norm_10) [i4]
+    !12 = GetField(%__norm_10) [i0]
+    !13 = Cast(!12) [Float64] 
+    !14 = Cast(%__norm_11) [Float64] 
+    !15 = Apply(%__norm_12) [1, str, (), String]
+    !16 = MakeArray(!15) [Array[String]]
+    %__norm_15 = SeqOp(!13, !14, !16) [0, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !17 = GetField(%__norm_10) [i1]
+    !18 = Cast(!17) [Float64] 
+    !19 = Cast(%__norm_11) [Float64] 
+    !20 = Apply(%__norm_12) [4, str, (), String]
+    !21 = MakeArray(!20) [Array[String]]
+    %__norm_18 = SeqOp(!18, !19, !21) [1, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+    !22 = GetField(%__norm_10) [i2]
+    !23 = Cast(!22) [Float64] 
+    !24 = Cast(%__norm_11) [Float64] 
+    !25 = Apply(%__norm_12) [7, str, (), String]
+    !26 = MakeArray(!25) [Array[String]]
+    SeqOp(!23, !24, !26) [2, 
+    (Downsample 
+      (DownsampleStateSig +PCArray[PCString]))]
+  } 
+  !28 = AggStateValue [0, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !29 = AggStateValue [1, 
+  (DownsampleStateSig +PCArray[PCString])] 
+  !30 = AggStateValue [2, 
+  (DownsampleStateSig +PCArray[PCString])]
+  !31 = MakeTuple(!28, !29, !30) [(0 1 2)]
+  RunAgg(!27, !31) [(
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString])
+    (DownsampleStateSig +PCArray[PCString]))]
+}
+!32 = GetTupleElement(%__norm_3) [0]
+%__norm_22 = InitFromSerializedValue(!32) [0, 
+(DownsampleStateSig +PCArray[PCString])]
+!33 = GetTupleElement(%__norm_3) [1]
+%__norm_23 = InitFromSerializedValue(!33) [1, 
+(DownsampleStateSig +PCArray[PCString])]
+!34 = GetTupleElement(%__norm_3) [2]
+%__norm_24 = InitFromSerializedValue(!34) [2, 
+(DownsampleStateSig +PCArray[PCString])]
+!s3 = ToStream(%__norm_21) [True]
+!38 = StreamFor(!s3) { (%__norm_25) =>
+  !35 = GetTupleElement(%__norm_25) [0]
+  %__norm_26 = CombOpValue(!35) [0, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !36 = GetTupleElement(%__norm_25) [1]
+  %__norm_27 = CombOpValue(!36) [1, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+  !37 = GetTupleElement(%__norm_25) [2]
+  CombOpValue(!37) [2, 
+  (Downsample 
+    (DownsampleStateSig +PCArray[PCString]))]
+} 
+!39 = ResultOp [0, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!40 = ResultOp [1, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))] 
+!41 = ResultOp [2, 
+(Downsample 
+  (DownsampleStateSig +PCArray[PCString]))]
+%__norm_28 = MakeTuple(!39, !40, !41) [(0 1 2)]
+!42 = GetTupleElement(%__norm_28) [0] 
+!43 = GetTupleElement(%__norm_28) [1] 
+!44 = GetTupleElement(%__norm_28) [2]
+!45 = MakeTuple(!42, !43, !44) [(0 1 2)]
+!46 = RunAgg(!38, !45) [(
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString])
+  (DownsampleStateSig +PCArray[PCString]))]
+MakeTuple(!46) [(0)]
+
+2026-10-23 03:33:42.944 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:33:43.484 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.484 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.484 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.484 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.484 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.497 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (248.0K blocks / 8.0K chunks), regions.size = 6, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.497 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (248.0K blocks / 8.0K chunks), regions.size = 6, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.497 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (248.0K blocks / 8.0K chunks), regions.size = 6, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.497 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (248.0K blocks / 8.0K chunks), regions.size = 6, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.497 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (248.0K blocks / 8.0K chunks), regions.size = 6, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.523 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (488.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.526 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (488.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.527 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (488.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.527 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (488.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.527 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (488.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.550 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (1000.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.550 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (1000.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.551 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (1000.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.551 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (1000.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.551 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (1000.0K blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.559 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (2.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.560 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (2.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.560 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (2.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.560 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (2.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.561 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (2.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.573 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (4.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.573 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (4.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.574 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (4.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.574 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (4.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.574 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (4.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.597 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (8.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.598 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (8.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.599 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (8.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.599 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (8.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.599 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (8.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.636 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (16.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.638 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (16.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.639 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (16.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:43.640 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (16.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.643 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (16.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.733 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.0M allocated (32.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:43.734 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.0M allocated (32.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:43.737 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.0M allocated (32.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:43.738 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.0M allocated (32.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:43.738 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.0M allocated (32.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:44.001 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 64.0M allocated (64.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:44.005 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 64.0M allocated (64.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:44.009 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 64.0M allocated (64.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:44.014 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 64.0M allocated (64.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:44.018 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 64.0M allocated (64.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:44.829 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 128.0M allocated (128.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:44.838 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 128.0M allocated (128.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:44.844 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 128.0M allocated (128.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:44.851 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 128.0M allocated (128.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:44.854 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 128.0M allocated (128.0M blocks / 24.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:47.049 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 258.3M allocated (242.3M blocks / 16.0M chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:47.053 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.9M allocated (240.9M blocks / 16.0M chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:47.054 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 257.0M allocated (241.0M blocks / 16.0M chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:47.054 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 257.2M allocated (241.2M blocks / 16.0M chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:47.057 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 257.9M allocated (241.9M blocks / 16.0M chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:47.095 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=279281664, peakBytesReadable=266.34 MiB, chunks requested=8, cache hits=2
+2026-10-23 03:33:47.095 RegionPool: INFO: RegionPool: FREE: 266.3M allocated (242.3M blocks / 24.0M chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:33:47.095 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=278822912, peakBytesReadable=265.91 MiB, chunks requested=8, cache hits=2
+2026-10-23 03:33:47.095 RegionPool: INFO: RegionPool: FREE: 265.9M allocated (241.9M blocks / 24.0M chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:33:47.097 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=277782528, peakBytesReadable=264.91 MiB, chunks requested=8, cache hits=2
+2026-10-23 03:33:47.097 RegionPool: INFO: RegionPool: FREE: 264.9M allocated (240.9M blocks / 24.0M chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:33:47.099 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=278118400, peakBytesReadable=265.23 MiB, chunks requested=8, cache hits=2
+2026-10-23 03:33:47.099 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=277880832, peakBytesReadable=265.01 MiB, chunks requested=8, cache hits=2
+2026-10-23 03:33:47.099 RegionPool: INFO: RegionPool: FREE: 265.2M allocated (241.2M blocks / 24.0M chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:33:47.099 RegionPool: INFO: RegionPool: FREE: 265.0M allocated (241.0M blocks / 24.0M chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:33:47.325 BackendUtils: INFO: table_aggregate_singlestage: executed 5 tasks in 3.991s
+2026-10-23 03:33:47.325 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.2M allocated (216.0K blocks / 8.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.326 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.2M allocated (216.0K blocks / 16.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.327 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 24.2M allocated (216.0K blocks / 24.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.327 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.2M allocated (216.0K blocks / 32.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.328 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 40.2M allocated (216.0K blocks / 40.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.329 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 48.2M allocated (216.0K blocks / 48.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.329 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 56.2M allocated (216.0K blocks / 56.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.330 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 64.2M allocated (216.0K blocks / 64.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.331 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 72.2M allocated (216.0K blocks / 72.0M chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.346 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 128.0M allocated (8.0M blocks / 120.0M chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:47.572 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0M allocated (136.0M blocks / 120.0M chunks), regions.size = 9, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.168 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.168 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.168 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.168 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:33:48.277 LowerOrInterpretNonCompilable$: INFO: took 6.026s
+2026-10-23 03:33:48.278 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]
+
+2026-10-23 03:33:48.278 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.278 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.278 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.279 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]
+
+2026-10-23 03:33:48.279 LoweringPipeline: INFO: after EvalRelationalLets: IR size 2: 
+
+!1 = EncodedLiteral [Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:33:48.279 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 2: 
+
+!1 = EncodedLiteral [Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:33:48.279 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 2: 
+
+!1 = EncodedLiteral [Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:33:48.280 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:33:48.477 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.478 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.478 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.478 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.478 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.478 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.478 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.478 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.479 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.479 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]], <literal value>]
+
+2026-10-23 03:33:48.479 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]], <literal value>]
+
+2026-10-23 03:33:48.479 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.479 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.479 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.479 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]], <literal value>]
+
+2026-10-23 03:33:48.503 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = Literal [Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]], <literal value>]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:33:48.503 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.503 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.503 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.503 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.503 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.503 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.503 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.504 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.504 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.504 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]], <literal value>]
+
+2026-10-23 03:33:48.504 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]], <literal value>]
+
+2026-10-23 03:33:48.504 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.504 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.504 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.504 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]], <literal value>]
+
+2026-10-23 03:33:48.558 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]], <literal value>]
+
+2026-10-23 03:33:48.558 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.558 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.558 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.558 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Tuple[Tuple[Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]],Array[Tuple[Float64,Float64,Array[String]]]]]], <literal value>]
+
+2026-10-23 03:33:48.623 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:33:48.861 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.861 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.861 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.862 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:33:48.937 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.937 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:33:48.937 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:33:48.937 RegionPool: INFO: RegionPool: FREE: 427.1M allocated (259.1M blocks / 168.0M chunks), regions.size = 10, 0 current java objects, thread 90: HTTP-Dispatcher

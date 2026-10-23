@@ -1,0 +1,55 @@
+{
+  "runner_sha256": "62498d53c70e3dd3c23b0acfdd878b7e617c3c212d061224ee42ccf0f4dcf6d7",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/tmp/full-local-upstream-cache-20261022",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries_unfilter",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.4252040419960395,
+      "telemetry": {
+        "cpu_seconds": 17.850301583333334,
+        "average_cores": 12.523979056430939,
+        "peak_rss_gib": 1.5068359375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 411532901,
+          "system_time": 16874337,
+          "instructions": 228095875581,
+          "cycles": 58890650998,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_matrix_table--test_matrix_table_filter_entries_unfilter"
+      },
+      "fixture_seconds": 0.122,
+      "elapsed_seconds": 1.603
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_dense",
+    "id": "benchmark_table::test_table_aggregate_downsample_dense",
+    "args": [
+      "many_ints_ht"
+    ],
+    "fixtures": [
+      "many_ints_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_localize_and_collect",
+    "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  }
+]

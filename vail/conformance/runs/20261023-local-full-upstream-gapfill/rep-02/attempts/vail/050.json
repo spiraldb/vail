@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_info_score",
+      "id": "benchmark_matrix_table::test_import_bgen_info_score",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            180
+          ]
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 79.8399661249714,
+      "telemetry": {
+        "cpu_seconds": 117.70119920833332,
+        "average_cores": 1.4742130076519013,
+        "peak_rss_gib": 3.1125335693359375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 2428289196,
+          "system_time": 396539585,
+          "instructions": 1681058504059,
+          "cycles": 420735610972,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/vail/benchmark_matrix_table--test_import_bgen_info_score"
+      },
+      "fixture_seconds": 0.114,
+      "elapsed_seconds": 80.042,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+      "reused_from": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/vail.json"
+    }
+  ]
+}
