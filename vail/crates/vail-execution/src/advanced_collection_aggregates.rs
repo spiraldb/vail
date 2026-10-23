@@ -176,6 +176,11 @@ pub(crate) fn coordinate_take(udf: &AggregateUDF) -> Option<crate::coordinate_co
     (!identity.ordered && bounded_take_owns_values(&identity.input)).then(|| crate::coordinate_collect::CoordinateCollect::bounded(identity.input.clone(), identity.n))
 }
 
+pub(crate) fn coordinate_ordered_take(udf: &AggregateUDF) -> Option<crate::coordinate_take::CoordinateOrderedTake> {
+    let identity = crate::kernel_identity::aggregate_key::<TakeIdentity>(udf)?;
+    (identity.ordered && bounded_take_owns_values(&identity.input)).then(|| crate::coordinate_take::CoordinateOrderedTake::new(identity.input.clone(), identity.n))
+}
+
 // Arrow MutableArrayData retains all variadic buffers for view storage. Keep
 // these layouts on the native fallback until retained view buffers are compacted.
 fn bounded_take_owns_values(dtype: &DataType) -> bool {
