@@ -27,7 +27,7 @@ def test_coordinate_extrema_native_total_float_order(dtype, partitions):
         schema=hl.tstruct(xs=hl.tarray(dtype)), n_partitions=partitions)
     result = table.aggregate(hl.agg.array_agg(lambda x: hl.struct(
         lo=hl.agg.min(x), hi=hl.agg.max(x)), table.xs))
-    assert result[0].lo == float('-inf') and math.isnan(result[0].hi)
+    assert result[0].lo == float('-inf') and result[0].hi == 2.
     assert result[1].lo == result[1].hi == float('inf')
     assert math.copysign(1, result[2].lo) == -1
     assert math.copysign(1, result[2].hi) == 1

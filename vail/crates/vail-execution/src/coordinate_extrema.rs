@@ -38,12 +38,11 @@ impl<T: ArrowPrimitiveType> Default for PrimitiveState<T> {
     }
 }
 impl<T: ArrowPrimitiveType> PrimitiveState<T> {
-    fn update(
+    fn update<const MINIMUM: bool>(
         &mut self,
         input: &ArrayRef,
         filter: Option<&BooleanArray>,
         width: usize,
-        minimum: bool,
     ) -> Result<()> {
         let input = input
             .as_any()
@@ -68,7 +67,7 @@ impl<T: ArrowPrimitiveType> PrimitiveState<T> {
                 }
                 let order = value.compare(self.values[column]);
                 if !self.present[column]
-                    || if minimum {
+                    || if MINIMUM {
                         order.is_lt()
                     } else {
                         order.is_gt()
@@ -120,10 +119,34 @@ impl DenseExtrema {
         width: usize,
     ) -> Result<()> {
         match self {
-            Self::Int32(s, m) => s.update(input, filter, width, *m),
-            Self::Int64(s, m) => s.update(input, filter, width, *m),
-            Self::Float32(s, m) => s.update(input, filter, width, *m),
-            Self::Float64(s, m) => s.update(input, filter, width, *m),
+            Self::Int32(s, m) => {
+                if *m {
+                    s.update::<true>(input, filter, width)
+                } else {
+                    s.update::<false>(input, filter, width)
+                }
+            }
+            Self::Int64(s, m) => {
+                if *m {
+                    s.update::<true>(input, filter, width)
+                } else {
+                    s.update::<false>(input, filter, width)
+                }
+            }
+            Self::Float32(s, m) => {
+                if *m {
+                    s.update::<true>(input, filter, width)
+                } else {
+                    s.update::<false>(input, filter, width)
+                }
+            }
+            Self::Float64(s, m) => {
+                if *m {
+                    s.update::<true>(input, filter, width)
+                } else {
+                    s.update::<false>(input, filter, width)
+                }
+            }
         }
     }
     pub(crate) fn array(&self) -> ArrayRef {
