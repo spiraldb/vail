@@ -105,7 +105,7 @@ fn lower_uncached(
                 input.clone(),
                 context,
             )? {
-                return Ok(plan);
+                return Ok(crate::aggregate_singleton::wrap(plan, globals));
             }
             Err(crate::TableError::Invalid(
                 "missing logical aggregate plan".into(),

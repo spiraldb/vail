@@ -98,6 +98,20 @@ fn resolve_changed<'a>(
             if let Some(node) = extension
                 .node
                 .as_any()
+                .downcast_ref::<crate::aggregate_singleton::AggregateSingleton>()
+            {
+                let batch = singleton((3, node.id), node.input.clone(), bindings).await?;
+                let literal = crate::globals::GlobalsIR::arrow_literal(batch)?;
+                let resolved = Some(Arc::new(crate::logical_globals::lower_in_context(
+                    &literal,
+                    &mut bindings.lowering,
+                )?));
+                memo.insert(key, resolved.clone());
+                return Ok(resolved);
+            }
+            if let Some(node) = extension
+                .node
+                .as_any()
                 .downcast_ref::<crate::conditional_globals::ConditionalNode>()
             {
                 use arrow_array::{Array, BooleanArray};
@@ -174,6 +188,51 @@ fn resolve_changed<'a>(
                 return Ok(resolved);
             }
         }
+        // Scalar subqueries are expression-owned plans, not logical inputs.
+        // Resolve them in this same action so repeated aggregate dependencies
+        // share the identity cache with conditional and initialization inputs.
+        use datafusion_common::tree_node::{Transformed, TreeNode, TreeNodeRecursion};
+        let expressions = logical.expressions();
+        let mut subqueries = HashMap::new();
+        for expression in &expressions {
+            expression.apply(|expr| {
+                if let datafusion_expr::Expr::ScalarSubquery(query) = expr {
+                    subqueries.insert(
+                        Arc::as_ptr(&query.subquery) as usize,
+                        query.subquery.clone(),
+                    );
+                }
+                Ok(TreeNodeRecursion::Continue)
+            })?;
+        }
+        let mut replacements = HashMap::new();
+        for (id, subquery) in subqueries {
+            if let Some(replacement) = resolve_changed(&subquery, bindings, memo).await? {
+                replacements.insert(id, replacement);
+            }
+        }
+        let expressions = expressions
+            .into_iter()
+            .map(|expr| {
+                expr.transform_up(|expr| {
+                    if let datafusion_expr::Expr::ScalarSubquery(mut query) = expr {
+                        if let Some(replacement) =
+                            replacements.get(&(Arc::as_ptr(&query.subquery) as usize))
+                        {
+                            query.subquery = replacement.clone();
+                            return Ok(Transformed::yes(datafusion_expr::Expr::ScalarSubquery(
+                                query,
+                            )));
+                        }
+                        return Ok(Transformed::no(datafusion_expr::Expr::ScalarSubquery(
+                            query,
+                        )));
+                    }
+                    Ok(Transformed::no(expr))
+                })
+                .map(|result| result.data)
+            })
+            .collect::<datafusion_common::Result<Vec<_>>>()?;
         let mut children = Vec::new();
         let mut changed = false;
         for input in logical.inputs() {
@@ -181,7 +240,19 @@ fn resolve_changed<'a>(
             changed |= replacement.is_some();
             children.push(replacement);
         }
-        let resolved = if changed {
+        let resolved = if !replacements.is_empty() {
+            let inputs = logical
+                .inputs()
+                .into_iter()
+                .zip(children)
+                .map(|(input, replacement)| {
+                    replacement
+                        .map(Arc::unwrap_or_clone)
+                        .unwrap_or_else(|| input.clone())
+                })
+                .collect();
+            Some(Arc::new(logical.with_new_exprs(expressions, inputs)?))
+        } else if changed {
             Some(Arc::new(replace_changed_inputs(logical, children)?))
         } else {
             None
