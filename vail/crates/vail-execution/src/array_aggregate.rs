@@ -441,6 +441,53 @@ impl DenseNumeric {
             values: new_empty_array(dtype),
         }
     }
+    /// Increment coordinate counters directly from intersected packed masks.
+    /// Missing masks mean all ones. No Boolean/UInt8/filter output is built.
+    fn update_masks(
+        &mut self,
+        len: usize,
+        width: usize,
+        masks: [Option<&BooleanBuffer>; 4],
+    ) -> Result<()> {
+        if width == 0 { return Ok(()); }
+        let mut inputs = [crate::packed_count::BitSlice { data: &[], offset: 0 }; 4];
+        let mut count = 0;
+        for mask in masks.into_iter().flatten() {
+            if mask.len() != len { return Err(error("coordinate bitmap length mismatch")); }
+            inputs[count] = crate::packed_count::BitSlice { data: mask.values(), offset: mask.offset() };
+            count += 1;
+        }
+        let empty = new_empty_array(self.values.data_type());
+        let old = std::mem::replace(&mut self.values, empty);
+        macro_rules! update {
+            ($array:ty, $zero:expr) => {{
+                let values = if old.is_empty() { <$array>::from(vec![$zero; width]) }
+                    else { old.as_any().downcast_ref::<$array>().unwrap().clone() };
+                drop(old);
+                let mut builder = values.into_builder().unwrap_or_else(|shared|
+                    <$array>::from(shared.values().to_vec()).into_builder().unwrap());
+                crate::packed_count::accumulate(&inputs[..count], len / width, builder.values_slice_mut());
+                self.values = Arc::new(builder.finish());
+            }};
+        }
+        match old.data_type() {
+            DataType::Int64 => update!(Int64Array, 0_i64),
+            DataType::UInt64 => update!(UInt64Array, 0_u64),
+            _ => return Err(error("packed counts require64-bit integer state")),
+        }
+        Ok(())
+    }
+    fn count_valid(&mut self, flat: &ArrayRef, filter: Option<&BooleanArray>, width: usize) -> Result<()> {
+        self.update_masks(flat.len(), width, [
+            flat.nulls().map(|n| n.inner()),
+            filter.map(|f| f.values()),
+            filter.and_then(|f| f.nulls()).map(|n| n.inner()), None,
+        ])
+    }
+    fn count_rows(&mut self, len: usize, filter: Option<&BooleanArray>, width: usize) -> Result<()> {
+        self.update_masks(len, width, [filter.map(|f| f.values()),
+            filter.and_then(|f| f.nulls()).map(|n| n.inner()), None, None])
+    }
     fn update(
         &mut self,
         flat: &ArrayRef,
@@ -465,6 +512,13 @@ impl DenseNumeric {
     ) -> Result<()> {
         if width == 0 {
             return Ok(());
+        }
+        if !PRODUCT && matches!(self.values.data_type(), DataType::Int64 | DataType::UInt64) {
+            if let Some(values) = flat.as_any().downcast_ref::<BooleanArray>() {
+                return self.update_masks(values.len(), width, [Some(values.values()),
+                    values.nulls().map(|n| n.inner()), filter.map(|f| f.values()),
+                    filter.and_then(|f| f.nulls()).map(|n| n.inner())]);
+            }
         }
         // Arrow's mixed primitive kernel reads narrow values directly. Boolean
         // storage is bit-packed, so use its native one-byte cast, not Int64.
@@ -668,12 +722,7 @@ impl DenseProduct {
         filter: Option<&BooleanArray>,
         width: usize,
     ) -> Result<()> {
-        let mut present = arrow_arith::boolean::is_not_null(flat.as_ref())?;
-        if let Some(filter) = filter {
-            present = arrow_arith::boolean::and(&present, filter)?;
-        }
-        let present: ArrayRef = Arc::new(present);
-        self.count.update(&present, None, width)?;
+        self.count.count_valid(flat, filter, width)?;
         self.values.product(flat, filter, width)
     }
     fn merge(&mut self, states: &[ArrayRef], width: usize) -> Result<()> {
@@ -711,16 +760,12 @@ impl DenseRatio {
         filter: Option<&BooleanArray>,
         width: usize,
     ) -> Result<()> {
-        let mut present = if self.fraction {
-            BooleanArray::from(vec![true; flat.len()])
+        if self.fraction {
+            // Missing predicates still contribute to fraction's denominator.
+            self.count.count_rows(flat.len(), filter, width)?;
         } else {
-            arrow_arith::boolean::is_not_null(flat.as_ref())?
-        };
-        if let Some(filter) = filter {
-            present = arrow_arith::boolean::and(&present, filter)?;
+            self.count.count_valid(flat, filter, width)?;
         }
-        let present: ArrayRef = Arc::new(present);
-        self.count.update(&present, None, width)?;
         self.sum.update(flat, filter, width)
     }
     fn states(&self) -> Result<Vec<ArrayRef>> {
@@ -1035,14 +1080,7 @@ impl Coordinates {
             return ratio.update(&flat, filter, width);
         }
         if let Kernels::Count(count) = &mut self.kernels {
-            // Count consumes validity, never values. Native Boolean AND combines
-            // callback filtering with presence before the vector update.
-            let mut present = arrow_arith::boolean::is_not_null(flat.as_ref())?;
-            if let Some(filter) = filter {
-                present = arrow_arith::boolean::and(&present, filter)?;
-            }
-            let present: ArrayRef = Arc::new(present);
-            return count.update(&present, None, width);
+            return count.count_valid(&flat, filter, width);
         }
         let flat = if self.input == self.aggregate_input {
             flat

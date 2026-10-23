@@ -38,6 +38,7 @@ mod expression_identity;
 pub mod expressions;
 mod kernel_identity;
 mod local_cse;
+mod packed_count;
 pub mod logical_expr;
 mod matrix_arrays;
 mod native_bool;
