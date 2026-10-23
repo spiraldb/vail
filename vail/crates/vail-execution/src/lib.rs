@@ -29,6 +29,7 @@ pub mod aggregates;
 mod aligned_matrix_map;
 pub mod array_aggregate_scan;
 mod array_fold;
+pub mod array_length;
 pub mod array_length_aggregate;
 pub mod calls;
 mod conditionals;

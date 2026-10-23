@@ -6531,13 +6531,10 @@ fn lower_uncached(
         }
         Expr::ArrayLength { value } => {
             let child = lower_cached(value, schema, globals, scope, memo, context)?;
-            let udf = Arc::new(ScalarFunctionExpr::try_new(
-                datafusion_functions_nested::length::array_length_udf(),
-                vec![child],
-                schema,
+            Arc::new(ScalarFunctionExpr::try_new(
+                crate::array_length::udf(), vec![child], schema,
                 Arc::new(ConfigOptions::default()),
-            )?);
-            cast(udf, schema, dtype.clone())?
+            )?)
         }
         Expr::ArrayIndex { value, index } => {
             // Python bind uses map([argument], parameter => body)[0]. There
