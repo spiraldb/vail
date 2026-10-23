@@ -1,0 +1,39 @@
+samples 601
+32.28 194 __psynch_cvwait
+4.49 27 _PyEval_EvalFrameDefault
+4.16 25 datasketches::kll_helper::merge_sorted_arrays<double, std::__1::less<double> >(double*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)
+3.99 24 datasketches::kll_sketch<double, std::__1::less<double>, std::__1::allocator<double> >::update<double&>(double&)
+3.0 18 __open
+2.5 15 _platform_memmove
+1.83 11 mach_o::GenericTrie::find(CString, bool) const
+1.66 10 stat
+1.16 7 type_new
+1.0 6 _PyCode_Quicken
+1.0 6 intern_string_constants.llvm.15261601513331597411
+1.0 6 deduce_unreachable
+1.0 6 lsl::Allocator::AllocationMetadata::pool(bool) const
+1.0 6 gc_collect_main.llvm.6325940347975832991
+0.83 5 datasketches::kll_helper::randomly_halve_up<double>(double*, unsigned int, unsigned int)
+0.83 5 kll_double_sketch_update
+0.67 4 PyDict_SetItem
+0.67 4 _PyObject_Malloc
+0.67 4 r_object.llvm.9845490566179339274
+0.67 4 visit_reachable
+0.67 4 tupledealloc
+0.67 4 lsl::Allocator::AllocationMetadata::firstAddress() const
+inclusive
+51.58 310 start
+51.58 310 Py_BytesMain
+51.58 310 pymain_main
+50.92 306 Py_RunMain
+47.75 287 PyEval_EvalCode
+47.75 287 _PyEval_EvalFrameDefault
+47.75 287 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+47.75 287 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+47.75 287 _pthread_start
+47.75 287 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+47.75 287 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+47.75 287 tokio::runtime::scheduler::multi_thread::worker::run
+47.75 287 <tokio::runtime::blocking::pool::Inner>::run
+47.75 287 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+47.75 287 <std::sys::thread::unix::Thread>::new::thread_start

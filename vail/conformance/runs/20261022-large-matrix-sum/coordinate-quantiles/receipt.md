@@ -1,0 +1,11 @@
+# Native KLL implicit-coordinate adapter
+
+Materialc9636500, public native protocol teste8dac2b3. Normal Rust1.98.0 release worktree-local target/kache `maturin develop --release --locked`,43.33s. Installed native SHA2569f71191cf35492714b7ed2051c7ec4783b59135e5cca5d6977d0b66f8114b8ea. No manual native copying.2GiB hard disk guard recorded10,721,271,808 minimumfree bytes.
+
+162 expanded Python tests PASS;17 native tests PASS (3lib+6factory+8state protocol). Numeric types Int32/Int64/Float32/Float64,1/3partitions, small exact quantile oracles, missing/NaN/filter/querymask/empty identities, Int64±2^53 boundary policy, actual public native KLL serialized-binary state consumption, repeat output/restore/update and published-byte immutability. Prior primitive/collect/take/histogram/correlation tests retained.
+
+Typed QuantileIdentity includes inputdtype,effectivek, exact floating query bits, scalar/list and missing-query flags. Existing native sketch.update, serialized merge, evaluate_value and native wire reused; no KLL algorithm fork. Inputdtype dispatch/conversion prepared once per batch, persistent sketches allocated once per coordinate, direct typed buffers traversed with implicit position. No per-coordinate Arrow index vector/take gather and no entry group-ID vector. NaN skip and Int64 precision guard shared with native scalar path.
+
+Before source is reviewed correlation artifacteb0d06f; after exactnative above.1kHz profiles each four public100000-row×100-position actions,32partitions,approxquantiles[0,.5,1],k128. Workload asserts broad rank/error bounds (not exact endpoints; native randomized sketch approximates them) and returns100lists. Embedded symbols/actual inclusive counts recorded. Before scalar KLL update146samples, Arrowtake19; post direct CoordinateQuantiles path replaces scalar/gather route. Native DataSketches compaction remains the genuine algorithm cost. No fair paired timing/speedup claim; profiles include cold startup/waiting and may have compilation contention.
+
+Remaining explicit queue: ordered TAKE/TopK, necessary true-value hashing set/counter, linear-regression/genomic state adapters. Existing Matrix global-collect cardinality and borrowed-view TAKE fallbacks preserved. Full local suite parent coordinated.
