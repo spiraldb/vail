@@ -1,0 +1,1070 @@
+{
+  "config": {
+    "warmup": 2,
+    "runs": 3,
+    "hail_threads": 14,
+    "reject_compilers": true,
+    "runner_sha256": "ae7f129708a1832ac5fd4b346170e02ff36180b0b2e3f3e1085817533f9673b2",
+    "orchestrator_sha256": "11e85b4a56d4a1e5b209836a5cf8955e6c6be65af62f7491320ffcd1b9ec46f5",
+    "environment": {
+      "JAVA_HOME": "/Library/Java/JavaVirtualMachines/temurin-11.jre/Contents/Home",
+      "PYTHONPATH": "python",
+      "SPARK_LOCAL_IP": "127.0.0.1"
+    }
+  },
+  "engines": {
+    "vail": {
+      "python": "/private/tmp/vail-legacy-review-env/bin/python",
+      "python_version": "3.12.12",
+      "version": null,
+      "native_path": "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/python/vail/_native.abi3.so",
+      "native_sha256": "6b1f5dfde507b889bca76e7a066eca9ba5f2281e0e5aa424e440de84393fb1bf",
+      "python_sources_sha256": "91e41e659566f04237545346fcd9a756fcc37c1e35f89615f2a0f4a817460d8d"
+    },
+    "hail": {
+      "python": "/private/tmp/linreg-hail-pypi-latest/bin/python",
+      "python_version": "3.12.12",
+      "version": "0.2.139-5e5eedb87ff8"
+    }
+  },
+  "fixtures": {
+    "table_1000000": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "table_1000000",
+        "kind": "table",
+        "rows": 1000000,
+        "columns": null,
+        "cells": null
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/table_1000000.ht",
+      "schemas": {
+        "row": "struct{idx: int32, x: int64, s: str, a: array<int32>}",
+        "key": "struct{idx: int32}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 17222263,
+      "file_count": 76,
+      "build_seconds": 2.341347499983385,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:19:51.685827+00:00",
+      "compressed_part_file_bytes": 11655055
+    },
+    "table_10000000": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "table_10000000",
+        "kind": "table",
+        "rows": 10000000,
+        "columns": null,
+        "cells": null
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/table_10000000.ht",
+      "schemas": {
+        "row": "struct{idx: int32, x: int64, s: str, a: array<int32>}",
+        "key": "struct{idx: int32}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 163871694,
+      "file_count": 76,
+      "build_seconds": 1.05774870805908,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:19:52.746294+00:00",
+      "compressed_part_file_bytes": 121002617
+    },
+    "table_100000000": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "table_100000000",
+        "kind": "table",
+        "rows": 100000000,
+        "columns": null,
+        "cells": null
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/table_100000000.ht",
+      "schemas": {
+        "row": "struct{idx: int32, x: int64, s: str, a: array<int32>}",
+        "key": "struct{idx: int32}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 1669365982,
+      "file_count": 76,
+      "build_seconds": 5.220989166991785,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:19:57.969518+00:00",
+      "compressed_part_file_bytes": 1244861367
+    },
+    "matrix_25000x2500": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "matrix_25000x2500",
+        "kind": "matrix",
+        "rows": 25000,
+        "columns": 2500,
+        "cells": 62500000
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/matrix_25000x2500.mt",
+      "schemas": {
+        "row": "struct{row_idx: int32}",
+        "row_key": "struct{row_idx: int32}",
+        "column": "struct{col_idx: int32}",
+        "column_key": "struct{col_idx: int32}",
+        "entry": "struct{GT: call, AD: array<int32>, DP: int32, GQ: int32, PL: array<int32>}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 535514888,
+      "file_count": 142,
+      "build_seconds": 2.247639791923575,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:20:00.219396+00:00",
+      "compressed_part_file_bytes": 531097542
+    },
+    "matrix_100000x2500": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "matrix_100000x2500",
+        "kind": "matrix",
+        "rows": 100000,
+        "columns": 2500,
+        "cells": 250000000
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/matrix_100000x2500.mt",
+      "schemas": {
+        "row": "struct{row_idx: int32}",
+        "row_key": "struct{row_idx: int32}",
+        "column": "struct{col_idx: int32}",
+        "column_key": "struct{col_idx: int32}",
+        "entry": "struct{GT: call, AD: array<int32>, DP: int32, GQ: int32, PL: array<int32>}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 2142134182,
+      "file_count": 142,
+      "build_seconds": 5.345534082967788,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:20:05.567162+00:00",
+      "compressed_part_file_bytes": 2124427590
+    },
+    "matrix_25000x10000": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "matrix_25000x10000",
+        "kind": "matrix",
+        "rows": 25000,
+        "columns": 10000,
+        "cells": 250000000
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/matrix_25000x10000.mt",
+      "schemas": {
+        "row": "struct{row_idx: int32}",
+        "row_key": "struct{row_idx: int32}",
+        "column": "struct{col_idx: int32}",
+        "column_key": "struct{col_idx: int32}",
+        "entry": "struct{GT: call, AD: array<int32>, DP: int32, GQ: int32, PL: array<int32>}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 2140851473,
+      "file_count": 142,
+      "build_seconds": 5.29080795799382,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:20:10.860246+00:00",
+      "compressed_part_file_bytes": 2123981295
+    },
+    "matrix_100000x10000": {
+      "identity": {
+        "generator_version": 1,
+        "partitions": 16,
+        "id": "matrix_100000x10000",
+        "kind": "matrix",
+        "rows": 100000,
+        "columns": 10000,
+        "cells": 1000000000
+      },
+      "path": "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+      "schemas": {
+        "row": "struct{row_idx: int32}",
+        "row_key": "struct{row_idx: int32}",
+        "column": "struct{col_idx: int32}",
+        "column_key": "struct{col_idx: int32}",
+        "entry": "struct{GT: call, AD: array<int32>, DP: int32, GQ: int32, PL: array<int32>}",
+        "globals": "struct{}"
+      },
+      "file_bytes": 8563458386,
+      "file_count": 142,
+      "build_seconds": 20.414617625065148,
+      "versions": {
+        "hail": "0.2.139-5e5eedb87ff8",
+        "python": "3.12.12",
+        "spark": "3.5.9",
+        "java": "11.0.25"
+      },
+      "completed_at": "2026-10-23T17:20:31.278170+00:00",
+      "compressed_part_file_bytes": 8495937866
+    }
+  },
+  "records": {
+    "table_1000000/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/table_1000000-hail-bf051430.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/table_1000000-hail-bf051430.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/table_1000000-hail-bf051430.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/table_1000000.ht",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/table_1000000.ht",
+        "--cases",
+        "table_force_count",
+        "table_scalar_sum",
+        "--reject-compilers"
+      ],
+      "output_sha256": "429578a89e5a67051894e94ff620f7ef46f3ff96f0a7cd427861a29b77acb9fd"
+    },
+    "table_1000000/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/table_1000000-vail-f0cba19b.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/table_1000000-vail-f0cba19b.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/table_1000000-vail-f0cba19b.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/table_1000000.ht",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/table_1000000.ht",
+        "--cases",
+        "table_force_count",
+        "table_scalar_sum",
+        "--reject-compilers"
+      ],
+      "output_sha256": "0a9712dfcc8daa2a49cfe6aadac60a05c158c60d093382117ac251282f88b7d7"
+    },
+    "table_10000000/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/table_10000000-vail-75156b7e.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/table_10000000-vail-75156b7e.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/table_10000000-vail-75156b7e.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/table_10000000.ht",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/table_10000000.ht",
+        "--cases",
+        "table_force_count",
+        "table_scalar_sum",
+        "--reject-compilers"
+      ],
+      "output_sha256": "186e9864170f859cd7d8ecdb6e111540c3fd7c971778156c9cdc996f15b2173c"
+    },
+    "table_10000000/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/table_10000000-hail-2085fb60.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/table_10000000-hail-2085fb60.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/table_10000000-hail-2085fb60.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/table_10000000.ht",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/table_10000000.ht",
+        "--cases",
+        "table_force_count",
+        "table_scalar_sum",
+        "--reject-compilers"
+      ],
+      "output_sha256": "60136e8853b17b7d0d23b4f21739e80b58dbb3d4b69bf9ffb307af95ae70eedd"
+    },
+    "table_100000000/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/table_100000000-hail-8e0c6992.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/table_100000000-hail-8e0c6992.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/table_100000000-hail-8e0c6992.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/table_100000000.ht",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/table_100000000.ht",
+        "--cases",
+        "table_force_count",
+        "table_scalar_sum",
+        "--reject-compilers"
+      ],
+      "output_sha256": "18a781dd00ceb9252bafd9e80fac3db19ff96d132332356855bd4a3711890451"
+    },
+    "table_100000000/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/table_100000000-vail-d596e599.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/table_100000000-vail-d596e599.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/table_100000000-vail-d596e599.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/table_100000000.ht",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/table_100000000.ht",
+        "--cases",
+        "table_force_count",
+        "table_scalar_sum",
+        "--reject-compilers"
+      ],
+      "output_sha256": "d6776758ff71a13171d43ff0b1fab5fbac943f262c8e79e2a774fb63893ddbdb"
+    },
+    "matrix_25000x2500/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x2500-vail-da23cc4f.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x2500-vail-da23cc4f.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x2500-vail-da23cc4f.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x2500.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x2500.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "8bc8f11c4ddc4a44b304a31a79e8a6d2757f7b7be9cb0ddc8fb2fb689b1b5ad4"
+    },
+    "matrix_25000x2500/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x2500-hail-07a5186d.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x2500-hail-07a5186d.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x2500-hail-07a5186d.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x2500.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x2500.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "3d7b2d76e747c923f4c5d285456cb86d3bb99ec6c67ac80c769dbcabd9c22ad4"
+    },
+    "matrix_100000x2500/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x2500-hail-6aaabad6.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x2500-hail-6aaabad6.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x2500-hail-6aaabad6.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x2500.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x2500.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "959576aa6e89b8780d51fa2cee8cf1be6582c9adb5fbf6e8b8c7c4a93be28612"
+    },
+    "matrix_100000x2500/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x2500-vail-1c8fd0bd.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x2500-vail-1c8fd0bd.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x2500-vail-1c8fd0bd.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x2500.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x2500.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "ce98e6296b5c5f8374ec40350cb743b6652e080c780a36bb4dd6c57d64f4cd50"
+    },
+    "matrix_25000x10000/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x10000-vail-98f04d8e.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x10000-vail-98f04d8e.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x10000-vail-98f04d8e.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x10000.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x10000.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "b7d6ea138b8076349128306d8378ba9197f4154438a0e85c3aca59bc33a247c8"
+    },
+    "matrix_25000x10000/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x10000-hail-cf931456.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x10000-hail-cf931456.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_25000x10000-hail-cf931456.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x10000.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_25000x10000.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "6637cc075949c46d057d46cf0b80d2ab16db320c3972053ac9549d7377a378eb"
+    },
+    "matrix_100000x10000/hail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x10000-hail-e7bd374d.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x10000-hail-e7bd374d.log",
+      "command": [
+        "/private/tmp/linreg-hail-pypi-latest/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "hail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x10000-hail-e7bd374d.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "ccc3663f5373f460788cb4ff3a88ead2d92cb221ae089ede7db5412f1e0d3679"
+    },
+    "matrix_100000x10000/vail": {
+      "status": "complete",
+      "output": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x10000-vail-1229e576.json",
+      "log": "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x10000-vail-1229e576.log",
+      "command": [
+        "/private/tmp/vail-legacy-review-env/bin/python",
+        "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/benchmarks/legacy_paired.py",
+        "vail",
+        "--output",
+        "/private/tmp/vail-legacy-scale-results-20261023/matrix_100000x10000-vail-1229e576.json",
+        "--warmup",
+        "2",
+        "--runs",
+        "3",
+        "--hail-threads",
+        "14",
+        "--table",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+        "--matrix",
+        "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+        "--cases",
+        "matrix_decode_count",
+        "matrix_decode_count_gt",
+        "matrix_sum_dp",
+        "--reject-compilers"
+      ],
+      "output_sha256": "1b13b7b7f95d89cda0aa2034528005c7ea93987ca4b4a8d1b21bfb498d6122f3"
+    }
+  },
+  "summary": [
+    {
+      "fixture": "table_1000000",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "table_1000000",
+      "kind": "table",
+      "rows": 1000000,
+      "columns": null,
+      "cells": null,
+      "file_bytes": 17222263,
+      "compressed_part_file_bytes": 11655055,
+      "cases": {
+        "table_force_count": {
+          "value": 1000000,
+          "hail": {
+            "wall_seconds": 0.18897929100785404,
+            "engine_cpu_seconds": 1.261518903999999,
+            "average_cores": 6.675434632398795,
+            "rows_per_second": 5291585.097323916,
+            "entries_per_second": null
+          },
+          "vail": {
+            "wall_seconds": 0.05188208306208253,
+            "engine_cpu_seconds": 0.297218,
+            "average_cores": 5.72872140936104,
+            "rows_per_second": 19274476.678266596,
+            "entries_per_second": null
+          },
+          "wall_speedup_hail_over_vail": 3.6424769372062387,
+          "cpu_speedup_hail_over_vail": 4.244422962270115
+        },
+        "table_scalar_sum": {
+          "value": 1499998500000,
+          "hail": {
+            "wall_seconds": 0.19966508296784014,
+            "engine_cpu_seconds": 1.8171942960000003,
+            "average_cores": 9.101212234953941,
+            "rows_per_second": 5008386.970500341,
+            "entries_per_second": null
+          },
+          "vail": {
+            "wall_seconds": 0.0282267500879243,
+            "engine_cpu_seconds": 0.1597059999999999,
+            "average_cores": 5.657966273216973,
+            "rows_per_second": 35427387.03127607,
+            "entries_per_second": null
+          },
+          "wall_speedup_hail_over_vail": 7.07361217093352,
+          "cpu_speedup_hail_over_vail": 11.378372108749836
+        }
+      }
+    },
+    {
+      "fixture": "table_10000000",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "table_10000000",
+      "kind": "table",
+      "rows": 10000000,
+      "columns": null,
+      "cells": null,
+      "file_bytes": 163871694,
+      "compressed_part_file_bytes": 121002617,
+      "cases": {
+        "table_force_count": {
+          "value": 10000000,
+          "hail": {
+            "wall_seconds": 0.35840633406769484,
+            "engine_cpu_seconds": 2.7606786959999976,
+            "average_cores": 7.702650409851763,
+            "rows_per_second": 27901292.609720524,
+            "entries_per_second": null
+          },
+          "vail": {
+            "wall_seconds": 0.2176977499620989,
+            "engine_cpu_seconds": 2.558465000000001,
+            "average_cores": 11.752372270477894,
+            "rows_per_second": 45935247.38653016,
+            "entries_per_second": null
+          },
+          "wall_speedup_hail_over_vail": 1.6463483620298935,
+          "cpu_speedup_hail_over_vail": 1.0790371163959627
+        },
+        "table_scalar_sum": {
+          "value": 149999985000000,
+          "hail": {
+            "wall_seconds": 0.3036625839304179,
+            "engine_cpu_seconds": 2.449126592000006,
+            "average_cores": 8.06528930993094,
+            "rows_per_second": 32931287.979461536,
+            "entries_per_second": null
+          },
+          "vail": {
+            "wall_seconds": 0.09094487491529435,
+            "engine_cpu_seconds": 1.084623999999998,
+            "average_cores": 11.926169572614311,
+            "rows_per_second": 109956718.38917758,
+            "entries_per_second": null
+          },
+          "wall_speedup_hail_over_vail": 3.338974122656696,
+          "cpu_speedup_hail_over_vail": 2.2580420422192486
+        }
+      }
+    },
+    {
+      "fixture": "table_100000000",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "table_100000000",
+      "kind": "table",
+      "rows": 100000000,
+      "columns": null,
+      "cells": null,
+      "file_bytes": 1669365982,
+      "compressed_part_file_bytes": 1244861367,
+      "cases": {
+        "table_force_count": {
+          "value": 100000000,
+          "hail": {
+            "wall_seconds": 1.99543862498831,
+            "engine_cpu_seconds": 15.848958215999986,
+            "average_cores": 7.942593682174932,
+            "rows_per_second": 50114295.046576954,
+            "entries_per_second": null
+          },
+          "vail": {
+            "wall_seconds": 2.907750708051026,
+            "engine_cpu_seconds": 35.945307000000014,
+            "average_cores": 12.361894333126317,
+            "rows_per_second": 34390843.65902428,
+            "entries_per_second": null
+          },
+          "wall_speedup_hail_over_vail": 0.6862481778315136,
+          "cpu_speedup_hail_over_vail": 0.4409187050760195
+        },
+        "table_scalar_sum": {
+          "value": 14999999850000000,
+          "hail": {
+            "wall_seconds": 1.8306719999527559,
+            "engine_cpu_seconds": 14.718217080000016,
+            "average_cores": 8.039789257922692,
+            "rows_per_second": 54624749.82005553,
+            "entries_per_second": null
+          },
+          "vail": {
+            "wall_seconds": 0.9182511660037562,
+            "engine_cpu_seconds": 11.539647000000002,
+            "average_cores": 12.566983225538095,
+            "rows_per_second": 108902665.96142927,
+            "entries_per_second": null
+          },
+          "wall_speedup_hail_over_vail": 1.9936506129579663,
+          "cpu_speedup_hail_over_vail": 1.2754477740956907
+        }
+      }
+    },
+    {
+      "fixture": "matrix_25000x2500",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "matrix_25000x2500",
+      "kind": "matrix",
+      "rows": 25000,
+      "columns": 2500,
+      "cells": 62500000,
+      "file_bytes": 535514888,
+      "compressed_part_file_bytes": 531097542,
+      "cases": {
+        "matrix_decode_count": {
+          "value": 25000,
+          "hail": {
+            "wall_seconds": 0.6282046670094132,
+            "engine_cpu_seconds": 5.056001767999991,
+            "average_cores": 8.048335253651068,
+            "rows_per_second": 39795.94758347345,
+            "entries_per_second": 99489868.95868361
+          },
+          "vail": {
+            "wall_seconds": 0.5489230840466917,
+            "engine_cpu_seconds": 6.220011999999999,
+            "average_cores": 11.331299740841144,
+            "rows_per_second": 45543.72138205339,
+            "entries_per_second": 113859303.45513347
+          },
+          "wall_speedup_hail_over_vail": 1.1444311330072936,
+          "cpu_speedup_hail_over_vail": 0.8128604523592546
+        },
+        "matrix_decode_count_gt": {
+          "value": 25000,
+          "hail": {
+            "wall_seconds": 0.49783720809500664,
+            "engine_cpu_seconds": 4.1022352720000015,
+            "average_cores": 8.240113847049246,
+            "rows_per_second": 50217.21878857442,
+            "entries_per_second": 125543046.97143604
+          },
+          "vail": {
+            "wall_seconds": 0.4474583750125021,
+            "engine_cpu_seconds": 4.902872000000002,
+            "average_cores": 10.95715774648986,
+            "rows_per_second": 55871.11873657856,
+            "entries_per_second": 139677796.8414464
+          },
+          "wall_speedup_hail_over_vail": 1.1125888705985154,
+          "cpu_speedup_hail_over_vail": 0.8367004629123501
+        },
+        "matrix_sum_dp": {
+          "value": 6220474860,
+          "hail": {
+            "wall_seconds": 0.7004876249702647,
+            "engine_cpu_seconds": 6.035115400000009,
+            "average_cores": 8.615591746187087,
+            "rows_per_second": 35689.42420797403,
+            "entries_per_second": 89223560.51993507
+          },
+          "vail": {
+            "wall_seconds": 0.46017870807554573,
+            "engine_cpu_seconds": 4.571359000000001,
+            "average_cores": 9.93387768659983,
+            "rows_per_second": 54326.72038336864,
+            "entries_per_second": 135816800.95842162
+          },
+          "wall_speedup_hail_over_vail": 1.5222078133507828,
+          "cpu_speedup_hail_over_vail": 1.3202015855678821
+        }
+      }
+    },
+    {
+      "fixture": "matrix_100000x2500",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "matrix_100000x2500",
+      "kind": "matrix",
+      "rows": 100000,
+      "columns": 2500,
+      "cells": 250000000,
+      "file_bytes": 2142134182,
+      "compressed_part_file_bytes": 2124427590,
+      "cases": {
+        "matrix_decode_count": {
+          "value": 100000,
+          "hail": {
+            "wall_seconds": 2.96003770804964,
+            "engine_cpu_seconds": 16.29032931999999,
+            "average_cores": 5.50341952594031,
+            "rows_per_second": 33783.35341068669,
+            "entries_per_second": 84458383.52671671
+          },
+          "vail": {
+            "wall_seconds": 2.4232388749951497,
+            "engine_cpu_seconds": 22.319834,
+            "average_cores": 9.210744442206373,
+            "rows_per_second": 41267.0830894458,
+            "entries_per_second": 103167707.7236145
+          },
+          "wall_speedup_hail_over_vail": 1.221521220459772,
+          "cpu_speedup_hail_over_vail": 0.7298588923197185
+        },
+        "matrix_decode_count_gt": {
+          "value": 100000,
+          "hail": {
+            "wall_seconds": 1.6254642501007766,
+            "engine_cpu_seconds": 13.387231776000007,
+            "average_cores": 8.235943531314218,
+            "rows_per_second": 61520.88549089907,
+            "entries_per_second": 153802213.7272477
+          },
+          "vail": {
+            "wall_seconds": 1.7198906249832362,
+            "engine_cpu_seconds": 18.999808,
+            "average_cores": 11.047102486639343,
+            "rows_per_second": 58143.23221918527,
+            "entries_per_second": 145358080.5479632
+          },
+          "wall_speedup_hail_over_vail": 0.945097453575933,
+          "cpu_speedup_hail_over_vail": 0.7045982662561646
+        },
+        "matrix_sum_dp": {
+          "value": 24881757412,
+          "hail": {
+            "wall_seconds": 1.74976166698616,
+            "engine_cpu_seconds": 14.617396152000026,
+            "average_cores": 8.353935526075075,
+            "rows_per_second": 57150.640505368305,
+            "entries_per_second": 142876601.26342076
+          },
+          "vail": {
+            "wall_seconds": 1.6775616669328883,
+            "engine_cpu_seconds": 18.132653999999974,
+            "average_cores": 10.808934394138955,
+            "rows_per_second": 59610.32728104209,
+            "entries_per_second": 149025818.20260522
+          },
+          "wall_speedup_hail_over_vail": 1.0430386563286678,
+          "cpu_speedup_hail_over_vail": 0.8061366059265261
+        }
+      }
+    },
+    {
+      "fixture": "matrix_25000x10000",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "matrix_25000x10000",
+      "kind": "matrix",
+      "rows": 25000,
+      "columns": 10000,
+      "cells": 250000000,
+      "file_bytes": 2140851473,
+      "compressed_part_file_bytes": 2123981295,
+      "cases": {
+        "matrix_decode_count": {
+          "value": 25000,
+          "hail": {
+            "wall_seconds": 1.9896153330337256,
+            "engine_cpu_seconds": 15.744765512,
+            "average_cores": 7.913472142372716,
+            "rows_per_second": 12565.242931597486,
+            "entries_per_second": 125652429.31597486
+          },
+          "vail": {
+            "wall_seconds": 1.9765858330065385,
+            "engine_cpu_seconds": 22.65190700000001,
+            "average_cores": 11.460118058999099,
+            "rows_per_second": 12648.072035390987,
+            "entries_per_second": 126480720.35390988
+          },
+          "wall_speedup_hail_over_vail": 1.0065919221971598,
+          "cpu_speedup_hail_over_vail": 0.6950746138945385
+        },
+        "matrix_decode_count_gt": {
+          "value": 25000,
+          "hail": {
+            "wall_seconds": 1.6991562499897555,
+            "engine_cpu_seconds": 13.450851303999968,
+            "average_cores": 7.916194466566019,
+            "rows_per_second": 14713.184852864902,
+            "entries_per_second": 147131848.52864903
+          },
+          "vail": {
+            "wall_seconds": 1.628266750019975,
+            "engine_cpu_seconds": 19.440652999999998,
+            "average_cores": 11.939476747137105,
+            "rows_per_second": 15353.749623452857,
+            "entries_per_second": 153537496.23452857
+          },
+          "wall_speedup_hail_over_vail": 1.0435367853387112,
+          "cpu_speedup_hail_over_vail": 0.691892978286273
+        },
+        "matrix_sum_dp": {
+          "value": 24882492904,
+          "hail": {
+            "wall_seconds": 1.8492593329865485,
+            "engine_cpu_seconds": 14.661841328000008,
+            "average_cores": 7.92849389291505,
+            "rows_per_second": 13518.92595811593,
+            "entries_per_second": 135189259.5811593
+          },
+          "vail": {
+            "wall_seconds": 1.5853973340708762,
+            "engine_cpu_seconds": 18.136015999999984,
+            "average_cores": 11.439413710524885,
+            "rows_per_second": 15768.917647796648,
+            "entries_per_second": 157689176.4779665
+          },
+          "wall_speedup_hail_over_vail": 1.1664327252513698,
+          "cpu_speedup_hail_over_vail": 0.8084378249335478
+        }
+      }
+    },
+    {
+      "fixture": "matrix_100000x10000",
+      "generator_version": 1,
+      "partitions": 16,
+      "id": "matrix_100000x10000",
+      "kind": "matrix",
+      "rows": 100000,
+      "columns": 10000,
+      "cells": 1000000000,
+      "file_bytes": 8563458386,
+      "compressed_part_file_bytes": 8495937866,
+      "cases": {
+        "matrix_decode_count": {
+          "value": 100000,
+          "hail": {
+            "wall_seconds": 7.082377417013049,
+            "engine_cpu_seconds": 58.42464139200001,
+            "average_cores": 8.249297933721282,
+            "rows_per_second": 14119.55253327553,
+            "entries_per_second": 141195525.3327553
+          },
+          "vail": {
+            "wall_seconds": 8.097617459017783,
+            "engine_cpu_seconds": 93.095279,
+            "average_cores": 11.496625948454248,
+            "rows_per_second": 12349.311449460554,
+            "entries_per_second": 123493114.49460556
+          },
+          "wall_speedup_hail_over_vail": 0.8746248452532012,
+          "cpu_speedup_hail_over_vail": 0.6275789923998187
+        },
+        "matrix_decode_count_gt": {
+          "value": 100000,
+          "hail": {
+            "wall_seconds": 6.183745416929014,
+            "engine_cpu_seconds": 50.10655613599994,
+            "average_cores": 8.102946152800056,
+            "rows_per_second": 16171.42900583094,
+            "entries_per_second": 161714290.0583094
+          },
+          "vail": {
+            "wall_seconds": 7.8989666670095176,
+            "engine_cpu_seconds": 82.36060099999997,
+            "average_cores": 10.42675636852396,
+            "rows_per_second": 12659.883781717383,
+            "entries_per_second": 126598837.81717382
+          },
+          "wall_speedup_hail_over_vail": 0.7828549831404882,
+          "cpu_speedup_hail_over_vail": 0.6083801663370566
+        },
+        "matrix_sum_dp": {
+          "value": 99526426397,
+          "hail": {
+            "wall_seconds": 6.707080791937187,
+            "engine_cpu_seconds": 54.34178054400013,
+            "average_cores": 8.102150880503222,
+            "rows_per_second": 14909.616135862481,
+            "entries_per_second": 149096161.35862482
+          },
+          "vail": {
+            "wall_seconds": 6.983175790985115,
+            "engine_cpu_seconds": 83.035529,
+            "average_cores": 11.89079746598878,
+            "rows_per_second": 14320.13212800605,
+            "entries_per_second": 143201321.2800605
+          },
+          "wall_speedup_hail_over_vail": 0.9604628313375198,
+          "cpu_speedup_hail_over_vail": 0.6544401077278634
+        }
+      }
+    }
+  ]
+}

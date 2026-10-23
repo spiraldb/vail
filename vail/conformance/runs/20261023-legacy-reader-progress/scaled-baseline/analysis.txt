@@ -1,0 +1,20 @@
+Legacy scaling baseline — 2026-10-23
+
+Binary source bba0d826 (partition-preserving aggregation); exact native/Python fingerprints in results.json. Generator and paired harness source07f44328. No experimental scalar/list/string decoder modifications are included.
+
+All fixtures written by Hail0.2.139, Zstd64KiB blocking codec,16partitions. HTschema matches original legacy_read.py:idx:Int32,x:Int64=3*idx,s:String(idx),a:Array[Int32]of8 values. MTgrid is newly generated synthetic data, not replicated originalprofile25.mt. Nonlinear row/column hash produces independently mixed values, perfield missingness, ADlen2/PLlen3, GT/AD/DP/GQ/PL fields. DP1..200 and variable-width PL/AD intentionally exercise multibyte varints. All entry structs defined, so cells=rows*columns. This data has higher entropy and a different fieldorder from originalVCF-import fixture; compare within this controlledgrid, not absolute times withprofile25.mt.
+
+Warmup2/measured3 actions perengine/query; engine order alternates byfixture. Both engines read identical files directly. Rustcompilation overlap samples rejected; early phases waited for unrelatedhostnightlybuild. Ordinaryhostnoise andclockvariation remain. CPU includesnative threads forVail andJava+Python forHail. These are initial throughput baselines, not tightABBA optimization attribution. Queries:HTfullforcecount andscalar sum; MTfullforcecount,GT-onlyforcecount,DPsum. Entrycount expansion is not included inthisgrid. Allcrossengine resultsagreeexactly androwcounts/HTsumformula checked.
+
+Fullread medians, Vailwall/Hailwall seconds; VailCPU/HailCPU; Vailmillionrows-or-entries/sec /Hail:
+table_1000000 (0.017GBfiles): 0.051882/0.188979; 0.297218/1.261519; 19.274/5.292
+table_10000000 (0.164GBfiles): 0.217698/0.358406; 2.558465/2.760679; 45.935/27.901
+table_100000000 (1.669GBfiles): 2.907751/1.995439; 35.945307/15.848958; 34.391/50.114
+matrix_25000x2500 (0.536GBfiles): 0.548923/0.628205; 6.220012/5.056002; 113.859/99.490
+matrix_100000x2500 (2.142GBfiles): 2.423239/2.960038; 22.319834/16.290329; 103.168/84.458
+matrix_25000x10000 (2.141GBfiles): 1.976586/1.989615; 22.651907/15.744766; 126.481/125.652
+matrix_100000x10000 (8.563GBfiles): 8.097617/7.082377; 93.095279/58.424641; 123.493/141.196
+
+The100MHTfullread is2.91sVail/2.00sHail,35.95/15.85CPU-seconds. Small-inputspeedups overstatedfullreadthroughput. HTscalar100M remains0.918s/1.831s,11.54/14.72CPU-seconds.
+
+At1Bcells fullread is8.10sVail/7.08sHail,93.10/58.42CPU-seconds. GT-only7.90s/6.18s,82.36/50.11CPU-seconds; DPsum6.98s/6.71s,83.04/54.34CPU-seconds. Remaining nativecorecost is substantial onthismorevariedfixture. Candidatefixes arecontiguousstringborrows(removingperstringtemporaryallocation),borrowedrequiredintegerarraydecoding(removingperintegerInputbookkeeping),andgeneralwide-scalarbufferedprojection(removingonebyte-onlyfallbacks). Thosechangesareunderseparatevalidation, notclaimedasbenefits here.
