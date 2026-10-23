@@ -323,3 +323,9 @@ def test_join_partition_bounds_cover_whole_and_partial_cells():
     assert _row_tuples(left.join(right)) == [
         (i, str(i), str(i)) for i in (2, 4, 6, 8)
     ]
+
+
+def test_large_range_join_split_endpoints_are_included_once():
+    left = hl.range_table(8_388_611, n_partitions=1)
+    right = hl.range_table(8_388_609, n_partitions=1)
+    assert left.join(right).count() == 8_388_609
