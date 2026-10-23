@@ -95,6 +95,7 @@ impl BlockRead for Blocks {
 struct Compressed {
     child: Box<dyn BlockRead>,
     spec: Value,
+    zstd_decoder: Option<zstd::bulk::Decompressor<'static>>,
 }
 impl BlockRead for Compressed {
     fn next(&mut self) -> io::Result<Option<Vec<u8>>> {
@@ -136,7 +137,8 @@ impl BlockRead for Compressed {
         }
         let payload = &c.get_ref()[c.position() as usize..];
         let out = if name.starts_with("Zstd") {
-            zstd::bulk::decompress(payload, size as usize).map_err(invalid)?
+            self.zstd_decoder.as_mut().ok_or_else(|| invalid("missing Zstd decoder"))?
+                .decompress(payload, size as usize).map_err(invalid)?
         } else {
             lz4_flex::block::decompress(payload, size as usize).map_err(invalid)?
         };
@@ -179,6 +181,11 @@ fn blocks(source: Stream, spec: &Value) -> Result<Box<dyn BlockRead>> {
         Ok(Box::new(Compressed {
             child: blocks(source, &spec["child"])?,
             spec: spec.clone(),
+            zstd_decoder: if name.starts_with("Zstd") {
+                Some(zstd::bulk::Decompressor::new()?)
+            } else {
+                None
+            },
         }))
     }
 }
@@ -554,6 +561,50 @@ impl Input {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn zstd_decoder_reuses_context_across_blocks_and_virtual_seeks() -> Result<()> {
+        for codec in ["ZstdBlockBufferSpec", "ZstdSizedBasedBlockBufferSpec"] {
+            let chunks = [vec![5u8; 17], (0..37u8).collect::<Vec<_>>(), vec![129u8; 99]];
+            let mut wire = Vec::new();
+            let mut offsets = Vec::new();
+            for (i, chunk) in chunks.iter().enumerate() {
+                offsets.push(wire.len() as u64);
+                let uncompressed = codec == "ZstdSizedBasedBlockBufferSpec" && i == 1;
+                let size = if codec == "ZstdSizedBasedBlockBufferSpec" {
+                    ((chunk.len() as i32) << 1) | i32::from(!uncompressed)
+                } else { chunk.len() as i32 };
+                let mut block = size.to_le_bytes().to_vec();
+                if uncompressed { block.extend_from_slice(chunk); }
+                else { block.extend_from_slice(&zstd::bulk::compress(chunk, 1)?); }
+                wire.extend_from_slice(&(block.len() as i32).to_le_bytes());
+                wire.extend_from_slice(&block);
+            }
+            let compressed = serde_json::json!({"name":codec,"blockSize":1024,"child":{"name":"StreamBlockBufferSpec"}});
+            let mut reader = blocks(Box::new(Cursor::new(wire.clone())), &compressed)?;
+            for expected in &chunks { assert_eq!(reader.next()?.unwrap(), *expected); }
+            assert!(reader.next()?.is_none());
+            let spec = serde_json::json!({"name":"BlockingBufferSpec","child":compressed});
+            let path = std::env::temp_dir().join(format!("vail-reused-zstd-{codec}-{}.bin", std::process::id()));
+            std::fs::write(&path, wire)?;
+            let result = (|| -> Result<()> {
+                let expected = chunks.concat();
+                let mut input = Input::open(&path, &spec)?;
+                assert_eq!(input.bytes(expected.len())?, expected);
+                input.finish()?;
+                let mut input = Input::open_virtual(&path, &spec, (offsets[1] << 16) | 5)?;
+                let expected = [&chunks[1][5..], &chunks[2]].concat();
+                assert_eq!(input.bytes(expected.len())?, expected);
+                assert_eq!(input.bytes, expected.len() as u64);
+                input.finish()?;
+                assert!(Input::open_virtual(&path, &spec, (offsets[2] << 16) | 100).is_err());
+                Ok(())
+            })();
+            let _ = std::fs::remove_file(path);
+            result?;
+        }
+        Ok(())
+    }
 
     fn buffered(bytes: Vec<u8>) -> Input {
         Input {
