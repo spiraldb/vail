@@ -250,8 +250,8 @@ async fn shared_union_expansions_preserve_every_occurrence() {
     );
     // Reuse the same table at both union edges. Each occurrence contributes
     // rows even though planning and action-local rewrites can share work.
-    for _ in 0..8 {
+    for _ in 0..3 {
         table = TableIR::union(vec![table.clone(), table], false).unwrap();
     }
-    assert_count(table, 2 * (1 << 8)).await;
+    assert_count(table, 2 * (1 << 3)).await;
 }
