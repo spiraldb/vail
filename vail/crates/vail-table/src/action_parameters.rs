@@ -84,7 +84,7 @@ pub(crate) fn resolve<'a>(
         let mut aggregate = false;
         let mut seen = std::collections::HashSet::new();
         logical.apply_with_subqueries(|plan| {
-            if !seen.insert(plan as *const LogicalPlan) {
+            if !seen.insert(plan as *const LogicalPlan as usize) {
                 return Ok(TreeNodeRecursion::Jump);
             }
             aggregate |= matches!(plan, LogicalPlan::Extension(node) if node.node.as_any().is::<crate::aggregate_singleton::AggregateSingleton>());
