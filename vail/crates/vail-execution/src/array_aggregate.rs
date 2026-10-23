@@ -1008,7 +1008,12 @@ mod tests {
 
     #[test]
     fn public_coordinate_mean_merge_preserves_full_uint64_count_domain() {
-        let mean = crate::native_mean::udf(Some(&DataType::Float64)).unwrap();
+        let mean = crate::reducer::configured_udaf(
+            "mean",
+            Some(&DataType::Float64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
         let aggregate = coordinate_udaf(
             mean,
             DataType::Float64,
@@ -1017,7 +1022,7 @@ mod tests {
         .unwrap();
         let schema = Arc::new(Schema::new(vec![Field::new(
             "xs",
-            list_type(DataType::Float64),
+            DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
             true,
         )]));
         let expression = AggregateExprBuilder::new(aggregate, vec![Arc::new(Column::new("xs", 0))])
