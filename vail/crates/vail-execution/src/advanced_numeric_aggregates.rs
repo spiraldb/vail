@@ -1378,6 +1378,166 @@ impl GroupsAccumulator for CorrGroupsAccumulator {
     }
 }
 
+// Implicit-coordinate producer of DataFusion's existing correlation partial
+// state. Final correlation/null/nonfinite math remains in the native wrapper.
+#[derive(Clone, Default, Debug)]
+struct CorrPartial {
+    count: u64,
+    sums: [f64; 5],
+}
+impl CorrPartial {
+    fn add(&mut self, x: f64, y: f64) -> DfResult<()> {
+        self.count = self
+            .count
+            .checked_add(1)
+            .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))?;
+        self.sums[0] += x;
+        self.sums[1] += y;
+        self.sums[2] += x * y;
+        self.sums[3] += x * x;
+        self.sums[4] += y * y;
+        Ok(())
+    }
+}
+
+pub(crate) struct CoordinateCorrelation {
+    partials: Vec<CorrPartial>,
+    // Only one native-state row per coordinate is merged at finalization;
+    // these identity indices are O(width), never O(input entries).
+    indices: Vec<usize>,
+    native: std::sync::Mutex<CorrGroupsAccumulator>,
+}
+impl std::fmt::Debug for CoordinateCorrelation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CoordinateCorrelation")
+            .field("width", &self.partials.len())
+            .finish()
+    }
+}
+pub(crate) fn coordinate_correlation(udf: &AggregateUDF) -> Option<CoordinateCorrelation> {
+    udf.inner().downcast_ref::<CorrelationUdf>()?;
+    Some(CoordinateCorrelation {
+        partials: Vec::new(),
+        indices: Vec::new(),
+        native: std::sync::Mutex::new(CorrGroupsAccumulator {
+            inner: Box::new(
+                datafusion_functions_aggregate::correlation::CorrelationGroupsAccumulator::new(),
+            ),
+            pair_counts: Vec::new(),
+        }),
+    })
+}
+impl CoordinateCorrelation {
+    fn ensure_width(&mut self, width: usize) -> DfResult<()> {
+        if !self.partials.is_empty() && self.partials.len() != width {
+            return Err(DataFusionError::Execution(
+                "coordinate corr width mismatch".into(),
+            ));
+        }
+        if self.partials.len() != width {
+            self.partials.resize_with(width, CorrPartial::default);
+            self.indices = (0..width).collect();
+        }
+        Ok(())
+    }
+    pub(crate) fn update(
+        &mut self,
+        values: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        if width == 0
+            || values.len() % width != 0
+            || filter.is_some_and(|f| f.len() != values.len())
+        {
+            return Err(DataFusionError::Execution(
+                "coordinate corr input shape mismatch".into(),
+            ));
+        }
+        let pairs = corr_pair(&[Arc::clone(values)])?;
+        let x = pairs[0].as_any().downcast_ref::<Float64Array>().unwrap();
+        let y = pairs[1].as_any().downcast_ref::<Float64Array>().unwrap();
+        self.ensure_width(width)?;
+        for (row, (xs, ys)) in x
+            .values()
+            .chunks_exact(width)
+            .zip(y.values().chunks_exact(width))
+            .enumerate()
+        {
+            for (column, ((partial, &xv), &yv)) in
+                self.partials.iter_mut().zip(xs).zip(ys).enumerate()
+            {
+                let index = row * width + column;
+                if x.is_valid(index)
+                    && y.is_valid(index)
+                    && filter.is_none_or(|f| f.is_valid(index) && f.value(index))
+                {
+                    partial.add(xv, yv)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn states(&self) -> Vec<ArrayRef> {
+        let mut states: Vec<ArrayRef> = vec![Arc::new(arrow_array::UInt64Array::from_iter_values(
+            self.partials.iter().map(|p| p.count),
+        ))];
+        for column in 0..5 {
+            states.push(Arc::new(Float64Array::from_iter_values(
+                self.partials.iter().map(|p| p.sums[column]),
+            )));
+        }
+        states
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        if states.len() != 6
+            || states
+                .iter()
+                .any(|s| s.len() != width || s.null_count() != 0)
+        {
+            return Err(DataFusionError::Execution(
+                "coordinate corr native state shape mismatch".into(),
+            ));
+        }
+        let count = states[0]
+            .as_any()
+            .downcast_ref::<arrow_array::UInt64Array>()
+            .ok_or_else(|| DataFusionError::Execution("corr count state must be uint64".into()))?;
+        let sums = states[1..]
+            .iter()
+            .map(|s| {
+                s.as_any().downcast_ref::<Float64Array>().ok_or_else(|| {
+                    DataFusionError::Execution("corr sum state must be float64".into())
+                })
+            })
+            .collect::<DfResult<Vec<_>>>()?;
+        self.ensure_width(width)?;
+        for (column, partial) in self.partials.iter_mut().enumerate() {
+            partial.count = partial
+                .count
+                .checked_add(count.value(column))
+                .ok_or_else(|| {
+                    DataFusionError::Execution("corr pair count exceeds uint64".into())
+                })?;
+            for (value, sum) in partial.sums.iter_mut().zip(&sums) {
+                *value += sum.value(column);
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn array(&mut self) -> DfResult<ArrayRef> {
+        let states = self.states();
+        let native = self.native.get_mut().map_err(|_| DataFusionError::Execution("coordinate corr native state poisoned".into()))?;
+        native.merge_batch(&states, &self.indices, self.partials.len())?;
+        native.evaluate(EmitTo::All)
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.partials.capacity() * std::mem::size_of::<CorrPartial>()
+            + self.indices.capacity() * std::mem::size_of::<usize>()
+            + self.native.lock().map_or(0, |native| native.size())
+    }
+}
+
 // Hail's downsample aggregate retains at most one point in each cell of a
 // dynamically bounded n_divisions by n_divisions grid. Rebinning the retained
 // cell representatives when the bounds expand preserves bounded O(d^2) state.
