@@ -30,3 +30,14 @@ def test_coordinate_ordered_take_native_float_ordering_and_struct_keys():
     assert actual[0]==t.aggregate(hl.agg.take(t.xs[0].value,4,ordering=t.xs[0].key))
     actual=t.aggregate(hl.agg.array_agg(lambda x:hl.agg.take(x.value,3,ordering=hl.struct(first=x.key,second=-x.value)),t.xs))
     assert actual[0]==t.aggregate(hl.agg.take(t.xs[0].value,3,ordering=hl.struct(first=t.xs[0].key,second=-t.xs[0].value)))
+
+
+def test_coordinate_ordered_take_tied_and_missing_orderings_keep_valid_members():
+    t=hl.utils.range_table(12,n_partitions=3)
+    result=t.aggregate(hl.agg.array_agg(lambda i:hl.struct(
+        tied=hl.agg.take(t.idx+i,3,ordering=0),
+        missing=hl.agg.take(t.idx+i,3,ordering=hl.missing(hl.tint32))),hl.range(2)))
+    for i,selected in enumerate(result):
+        assert len(selected.tied)==len(selected.missing)==3
+        assert len(set(selected.tied))==len(set(selected.missing))==3
+        assert all(i<=value<12+i for value in selected.tied+selected.missing)
