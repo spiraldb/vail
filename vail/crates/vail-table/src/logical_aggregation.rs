@@ -1385,14 +1385,13 @@ pub(crate) fn lower_logical_total(
         let (bound_child, indices) =
             crate::logical_globals::bind_external(child, bindings, context)?;
         child = bound_child;
-        // Fan out only this total aggregate's input. Preserve visible table
-        // partitioning and avoid changing order-sensitive reducers.
+        // Only split underparallelized input; retain each existing partition
+        // and its Arrow buffers rather than coalescing raw nested arrays.
+        let target = crate::logical::total_aggregate_target(table, expression);
         if crate::logical::should_fan_out_total(table, expression)
-            && !table
-                .known_n_partitions()
-                .is_some_and(|partitions| partitions >= crate::EXECUTION_CONCURRENCY)
+            && !table.known_n_partitions().is_some_and(|partitions| partitions >= target)
         {
-            child = crate::logical::protect_round_robin(child, crate::EXECUTION_CONCURRENCY);
+            child = crate::logical::split_partitions(child, target);
         }
         let empty_globals = Schema::empty();
         let input_globals = if needs_globals { table.globals().schema().as_ref() } else { &empty_globals };

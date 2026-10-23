@@ -30,7 +30,11 @@ use datafusion_physical_plan::{
     stream::{RecordBatchReceiverStreamBuilder, RecordBatchStreamAdapter},
 };
 use futures::{FutureExt, StreamExt, TryStreamExt, future::BoxFuture};
-use std::{collections::{HashSet, VecDeque}, fmt, sync::Arc};
+use std::{
+    collections::{HashSet, VecDeque},
+    fmt,
+    sync::Arc,
+};
 use tokio::sync::{OnceCell, Semaphore};
 
 pub(crate) fn limited_input(
@@ -571,43 +575,52 @@ impl ExecutionPlan for ProtectedRangeRepartitionExec {
     }
 }
 
-/// Preserve a requested round-robin partition count across DataFusion's
-/// physical optimizer. The child remains visible to tree rewrites; execution
-/// delegates to the ordinary DataFusion repartition operator.
+/// Split each input into independent lanes without ever combining source
+/// partitions or concatenating Arrow buffers. Bounded queues move whole batches;
+/// oversized batches are sliced into shared-buffer views.
 #[derive(Debug)]
-pub(crate) struct ProtectedRoundRobinRepartitionExec {
+pub(crate) struct SplitPartitionsExec {
     input: PhysicalPlan,
     partitions: usize,
-    inner: PhysicalPlan,
+    groups: Vec<std::sync::OnceLock<Arc<SplitGroup>>>,
+    lanes: Vec<usize>,
     cache: Arc<PlanProperties>,
 }
-impl ProtectedRoundRobinRepartitionExec {
-    pub(crate) fn new(
-        input: PhysicalPlan,
-        partitions: usize,
-    ) -> datafusion_common::Result<Self> {
-        let partitions = partitions.max(1);
-        let inner: PhysicalPlan = Arc::new(RepartitionExec::try_new(
-            input.clone(),
-            Partitioning::RoundRobinBatch(partitions),
-        )?);
-        let cache = inner.properties().clone();
+impl SplitPartitionsExec {
+    pub(crate) fn new(input: PhysicalPlan, partitions: usize) -> datafusion_common::Result<Self> {
+        let inputs = input.output_partitioning().partition_count();
+        if inputs == 0 {
+            return Err(DataFusionError::Plan(
+                "cannot split an input with no partitions".into(),
+            ));
+        }
+        let partitions = partitions.max(inputs);
+        let lanes = (0..inputs)
+            .map(|i| partitions / inputs + usize::from(i < partitions % inputs))
+            .collect::<Vec<_>>();
+        let cache = Arc::new(PlanProperties::new(
+            input.equivalence_properties().clone(),
+            Partitioning::UnknownPartitioning(partitions),
+            input.properties().emission_type,
+            input.properties().boundedness,
+        ));
         Ok(Self {
             input,
             partitions,
-            inner,
+            groups: (0..inputs).map(|_| std::sync::OnceLock::new()).collect(),
+            lanes,
             cache,
         })
     }
 }
-impl DisplayAs for ProtectedRoundRobinRepartitionExec {
+impl DisplayAs for SplitPartitionsExec {
     fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "VailProtectedRoundRobinRepartitionExec: {}", self.partitions)
+        write!(f, "VailSplitPartitionsExec: {}", self.partitions)
     }
 }
-impl ExecutionPlan for ProtectedRoundRobinRepartitionExec {
+impl ExecutionPlan for SplitPartitionsExec {
     fn name(&self) -> &'static str {
-        "VailProtectedRoundRobinRepartitionExec"
+        "VailSplitPartitionsExec"
     }
     fn properties(&self) -> &Arc<PlanProperties> {
         &self.cache
@@ -622,7 +635,7 @@ impl ExecutionPlan for ProtectedRoundRobinRepartitionExec {
         vec![None]
     }
     fn maintains_input_order(&self) -> Vec<bool> {
-        vec![false]
+        vec![true]
     }
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
         vec![false]
@@ -639,26 +652,141 @@ impl ExecutionPlan for ProtectedRoundRobinRepartitionExec {
     ) -> datafusion_common::Result<PhysicalPlan> {
         if children.len() != 1 {
             return Err(DataFusionError::Plan(
-                "round-robin repartition needs one child".into(),
+                "partition splitting needs one child".into(),
             ));
         }
-        Ok(Arc::new(Self::new(
-            children[0].clone(),
-            self.partitions,
-        )?))
+        Ok(Arc::new(Self::new(children[0].clone(), self.partitions)?))
     }
     fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
-        Ok(Arc::new(Self::new(
-            self.input.clone(),
-            self.partitions,
-        )?))
+        Ok(Arc::new(Self::new(self.input.clone(), self.partitions)?))
     }
     fn execute(
         &self,
         partition: usize,
         context: Arc<TaskContext>,
     ) -> datafusion_common::Result<SendableRecordBatchStream> {
-        self.inner.execute(partition, context)
+        let mut offset = 0;
+        for (source, &lanes) in self.lanes.iter().enumerate() {
+            if partition < offset + lanes {
+                if lanes == 1 {
+                    return self.input.execute(source, context);
+                }
+                let group = self.groups[source].get_or_init(|| {
+                    Arc::new(SplitGroup::start(
+                        self.input.clone(),
+                        source,
+                        lanes,
+                        context,
+                    ))
+                });
+                let receiver = group.receivers.lock().unwrap()[partition - offset]
+                    .take()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution(format!(
+                            "split partition {partition} was already executed"
+                        ))
+                    })?;
+                let completion = group.completion.clone();
+                let group = group.clone();
+                let cancel = SplitProducerGuard(group.abort.clone());
+                return Ok(Box::pin(RecordBatchStreamAdapter::new(
+                    self.schema(),
+                    async_stream::try_stream! {
+                        let _group = group;
+                        let _cancel = cancel;
+                        let mut receiver = receiver;
+                        while let Some(batch) = receiver.recv().await { yield batch; }
+                        completion.await.map_err(|error| DataFusionError::Shared(error))?;
+                    },
+                )));
+            }
+            offset += lanes;
+        }
+        Err(DataFusionError::Execution(format!(
+            "invalid split partition {partition}"
+        )))
+    }
+}
+
+/// The completion future is shared by all lanes, so every consumer sees upstream
+/// errors and task panics after its buffered batches have drained.
+struct SplitGroup {
+    abort: tokio::task::AbortHandle,
+    receivers: std::sync::Mutex<Vec<Option<tokio::sync::mpsc::Receiver<RecordBatch>>>>,
+    completion:
+        futures::future::Shared<BoxFuture<'static, std::result::Result<(), Arc<DataFusionError>>>>,
+}
+// A canceled output means its assigned rows cannot be delivered. Cancel the
+// producer and fail sibling lanes rather than silently returning partial data.
+struct SplitProducerGuard(tokio::task::AbortHandle);
+impl Drop for SplitProducerGuard {
+    fn drop(&mut self) {
+        self.0.abort();
+    }
+}
+impl Drop for SplitGroup {
+    fn drop(&mut self) {
+        self.abort.abort();
+    }
+}
+impl fmt::Debug for SplitGroup {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SplitGroup").finish_non_exhaustive()
+    }
+}
+impl SplitGroup {
+    fn start(input: PhysicalPlan, source: usize, lanes: usize, context: Arc<TaskContext>) -> Self {
+        let (senders, receivers): (Vec<_>, Vec<_>) = (0..lanes)
+            .map(|_| {
+                let (tx, rx) = tokio::sync::mpsc::channel(2);
+                (tx, Some(rx))
+            })
+            .unzip();
+        let batch_size = context.session_config().batch_size().max(1);
+        let task = tokio::spawn(async move {
+            let closed = futures::future::join_all(senders.iter().map(|tx| tx.closed()));
+            let produce = async {
+                let mut stream = input.execute(source, context)?;
+                let mut lane = 0;
+                while let Some(batch) = stream.try_next().await? {
+                    let mut start = 0;
+                    while start < batch.num_rows() {
+                        let len = batch_size.min(batch.num_rows() - start);
+                        let piece = if start == 0 && len == batch.num_rows() {
+                            batch.clone()
+                        } else {
+                            batch.slice(start, len)
+                        };
+                        senders[lane].send(piece).await.map_err(|_| {
+                            DataFusionError::Execution(
+                                "partition split consumer was canceled".into(),
+                            )
+                        })?;
+                        lane = (lane + 1) % lanes;
+                        start += len;
+                    }
+                }
+                Ok::<_, DataFusionError>(())
+            };
+            tokio::select! { result = produce => result, _ = closed => Ok(()) }
+        });
+        let abort = task.abort_handle();
+        let completion = async move {
+            task.await
+                .map_err(|error| {
+                    Arc::new(DataFusionError::Execution(format!(
+                        "partition split producer failed: {error}"
+                    )))
+                })?
+                .map_err(Arc::new)
+        }
+        .boxed()
+        .shared();
+        Self {
+            abort,
+            receivers: std::sync::Mutex::new(receivers),
+            completion,
+        }
     }
 }
 
@@ -850,7 +978,10 @@ impl PartitionSetExec {
         let mut cache = (*properties(schema.clone(), EmissionType::Incremental)).clone();
         cache.partitioning = match tag_index {
             Some(index) => crate::provider::partition_id_properties(
-                &schema, &mut cache.eq_properties, parts.len(), index,
+                &schema,
+                &mut cache.eq_properties,
+                parts.len(),
+                index,
             ),
             None => Partitioning::UnknownPartitioning(parts.len().max(1)),
         };
@@ -1606,8 +1737,9 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
         let singleton_view = node
             .as_ref()
             .downcast_ref::<PartitionViewExec>()
-            .is_some_and(|view| view.index == 0
-                && view.input.output_partitioning().partition_count() == 1);
+            .is_some_and(|view| {
+                view.index == 0 && view.input.output_partitioning().partition_count() == 1
+            });
         if crate::action_parameters::repeatable_node(&node)
             || node.as_ref().is::<crate::rng_context::ConsumerScopeExec>()
             || singleton_view
@@ -2210,5 +2342,81 @@ mod expression_source_tests {
         let second = super::reset_plan_states(dag).unwrap();
         assert_eq!(resets.load(Ordering::SeqCst), 2);
         assert!(!Arc::ptr_eq(first.children()[0], second.children()[0]));
+    }
+}
+
+#[cfg(test)]
+mod split_partition_tests {
+    use super::*;
+    use arrow_array::Int32Array;
+    use arrow_schema::{DataType, Field, Schema};
+    use datafusion_datasource::memory::MemorySourceConfig;
+
+    #[tokio::test]
+    async fn split_preserves_sources_and_shares_buffers() {
+        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
+        let arrays = [
+            Arc::new(Int32Array::from_iter_values(0..20)),
+            Arc::new(Int32Array::from_iter_values(100..120)),
+        ];
+        let batches = arrays
+            .iter()
+            .map(|values| vec![RecordBatch::try_new(schema.clone(), vec![values.clone()]).unwrap()])
+            .collect::<Vec<_>>();
+        let input = MemorySourceConfig::try_new_exec(&batches, schema, None).unwrap();
+        let split = Arc::new(SplitPartitionsExec::new(input, 4).unwrap());
+        let context = Arc::new(TaskContext::default().with_session_config(
+            datafusion_execution::config::SessionConfig::new().with_batch_size(3),
+        ));
+        let streams = (0..4).map(|partition| split.execute(partition, context.clone()).unwrap());
+        let outputs =
+            futures::future::try_join_all(streams.map(|stream| stream.try_collect::<Vec<_>>()))
+                .await
+                .unwrap();
+        for source in 0..2 {
+            let mut values = Vec::new();
+            for batches in &outputs[source * 2..source * 2 + 2] {
+                for batch in batches {
+                    assert!(batch.num_rows() <= 3);
+                    let array = batch
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap();
+                    let original = arrays[source].values().as_ptr() as usize;
+                    let address = array.values().as_ptr() as usize;
+                    assert!(address >= original);
+                    assert!(
+                        address + array.len() * std::mem::size_of::<i32>()
+                            <= original + arrays[source].len() * std::mem::size_of::<i32>()
+                    );
+                    values.extend(array.values().iter().copied());
+                }
+            }
+            values.sort_unstable();
+            assert_eq!(values, arrays[source].values().to_vec());
+        }
+        let reset = split.reset_state().unwrap();
+        let again = datafusion_physical_plan::execution_plan::collect(reset, context)
+            .await
+            .unwrap();
+        assert_eq!(again.iter().map(RecordBatch::num_rows).sum::<usize>(), 40);
+    }
+
+    #[tokio::test]
+    async fn dropping_a_lane_cancels_even_unclaimed_lanes() {
+        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
+        let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(Int32Array::from(vec![1]))])
+            .unwrap();
+        let input = MemorySourceConfig::try_new_exec(&[vec![batch; 100]], schema, None).unwrap();
+        let split = SplitPartitionsExec::new(input, 3).unwrap();
+        let stream = split.execute(0, Arc::new(TaskContext::default())).unwrap();
+        drop(stream);
+        let group = split.groups[0].get().unwrap();
+        let result =
+            tokio::time::timeout(std::time::Duration::from_secs(2), group.completion.clone())
+                .await
+                .expect("split producer leaked after cancellation");
+        assert!(result.is_err());
     }
 }

@@ -464,7 +464,8 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
     };
     assert!(Arc::ptr_eq(&bindings["other"], &captured));
     let plan = plan::physical(&table).await.unwrap();
-    assert!(find(plan.as_ref(), "CrossJoinExec").is_some());
+    // External singleton globals are now scalar subqueries; correctness does
+    // not require a row cross join. Check the source lifetime and values below.
     assert!(find(plan.as_ref(), "ParallelizeExec").is_none());
     let output = table.collect_partitions().await.unwrap();
     let results = output
@@ -665,4 +666,66 @@ async fn configured_histogram_repeated_actions_and_empty_validation_use_real_sou
             .to_string()
             .contains("finite start < end")
     );
+}
+
+#[tokio::test]
+async fn total_aggregation_splits_only_underparallel_sources_and_repeats_safely() {
+    use arrow_array::Int64Array;
+    use vail_table::globals::GlobalsIR;
+
+    let workers = std::thread::available_parallelism()
+        .map(usize::from)
+        .unwrap_or(1)
+        .min(32);
+    let rows = 1_000_000;
+    for partitions in [1, workers] {
+        let source = TableIR::range(rows, partitions).unwrap();
+        let total = GlobalsIR::aggregate(
+            source,
+            ScalarIR::Aggregate {
+                function: "sum".into(),
+                value: Some(Arc::new(ScalarIR::Column { name: "idx".into() })),
+                options: json!({}),
+                result_type: None,
+                init: vec![],
+            },
+            Default::default(),
+        )
+        .unwrap();
+        let physical = total.physical_plan().unwrap();
+        assert!(
+            !physical.contains("RoundRobin"),
+            "a total sum must not combine input partitions: {physical}"
+        );
+        assert_eq!(
+            physical.contains("VailSplitPartitionsExec"),
+            partitions < workers,
+            "split only when more execution parallelism is available: {physical}"
+        );
+        // Repeated actions must get fresh channels and aggregate state.
+        for _ in 0..2 {
+            let batch = total.evaluate().await.unwrap();
+            let sums = batch.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+            assert_eq!(sums.value(0), 499_999_500_000);
+        }
+    }
+}
+
+#[test]
+fn total_collect_keeps_source_order_without_split_or_exchange() {
+    let total = vail_table::globals::GlobalsIR::aggregate(
+        TableIR::range(65_536, 1).unwrap(),
+        ScalarIR::Aggregate {
+            function: "collect".into(),
+            value: Some(Arc::new(ScalarIR::Column { name: "idx".into() })),
+            options: json!({}),
+            result_type: None,
+            init: vec![],
+        },
+        Default::default(),
+    )
+    .unwrap();
+    let physical = total.physical_plan().unwrap();
+    assert!(!physical.contains("VailSplitPartitionsExec"), "{physical}");
+    assert!(!physical.contains("RoundRobin"), "{physical}");
 }

@@ -146,35 +146,34 @@ fn frozen_rng_context(input: LogicalPlan) -> LogicalPlan {
     })
 }
 
-/// Keep a requested round-robin output partition count visible to DataFusion's
-/// physical optimizer while leaving the input relation available for logical
-/// projection pushdown.
+/// Split aggregate input streams without merging existing source partitions.
+/// Keep the input visible for projection pushdown.
 #[derive(Clone, Debug)]
-struct ProtectedRoundRobinNode {
+struct SplitPartitionsNode {
     id: u64,
     input: LogicalPlan,
     schema: DFSchemaRef,
     partitions: usize,
 }
-impl PartialEq for ProtectedRoundRobinNode {
+impl PartialEq for SplitPartitionsNode {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
-impl Eq for ProtectedRoundRobinNode {}
-impl PartialOrd for ProtectedRoundRobinNode {
+impl Eq for SplitPartitionsNode {}
+impl PartialOrd for SplitPartitionsNode {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.id.cmp(&other.id))
     }
 }
-impl Hash for ProtectedRoundRobinNode {
+impl Hash for SplitPartitionsNode {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.id.hash(state)
     }
 }
-impl UserDefinedLogicalNodeCore for ProtectedRoundRobinNode {
+impl UserDefinedLogicalNodeCore for SplitPartitionsNode {
     fn name(&self) -> &str {
-        "VailProtectedRoundRobin"
+        "VailSplitPartitions"
     }
     fn inputs(&self) -> Vec<&LogicalPlan> {
         vec![&self.input]
@@ -189,7 +188,7 @@ impl UserDefinedLogicalNodeCore for ProtectedRoundRobinNode {
         Some(vec![output_columns.to_vec()])
     }
     fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "VailProtectedRoundRobin: {}", self.partitions)
+        write!(f, "VailSplitPartitions: {}", self.partitions)
     }
     fn with_exprs_and_inputs(
         &self,
@@ -198,7 +197,7 @@ impl UserDefinedLogicalNodeCore for ProtectedRoundRobinNode {
     ) -> datafusion_common::Result<Self> {
         if !exprs.is_empty() || inputs.len() != 1 {
             return Err(DataFusionError::Plan(
-                "invalid protected round-robin rewrite".into(),
+                "invalid partition split rewrite".into(),
             ));
         }
         let input = inputs.remove(0);
@@ -210,9 +209,9 @@ impl UserDefinedLogicalNodeCore for ProtectedRoundRobinNode {
     }
 }
 
-pub(crate) fn protect_round_robin(input: LogicalPlan, partitions: usize) -> LogicalPlan {
+pub(crate) fn split_partitions(input: LogicalPlan, partitions: usize) -> LogicalPlan {
     LogicalPlan::Extension(Extension {
-        node: Arc::new(ProtectedRoundRobinNode {
+        node: Arc::new(SplitPartitionsNode {
             id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
             schema: input.schema().clone(),
             input,
@@ -1301,12 +1300,19 @@ pub(crate) fn total_aggregate_target(
     table: &TableRef,
     expression: &vail_execution::expressions::Expr,
 ) -> usize {
-    let partitions = max_partitions(table);
-    if should_fan_out_total(table, expression) {
-        partitions.max(crate::EXECUTION_CONCURRENCY)
-    } else {
-        partitions
+    let partitions = table.known_n_partitions().unwrap_or_else(|| max_partitions(table));
+    if !should_fan_out_total(table, expression) {
+        return partitions;
     }
+    let workers = std::thread::available_parallelism()
+        .map_or(1, std::num::NonZeroUsize::get)
+        .min(crate::EXECUTION_CONCURRENCY);
+    // Do not create more lanes than there are batches of known work. Existing
+    // partitions are retained even when there are more of them than workers.
+    let useful_lanes = table.known_count().map_or(workers, |rows| {
+        rows.div_ceil(SessionConfig::new().batch_size()).max(1).min(workers)
+    });
+    partitions.max(useful_lanes)
 }
 
 /// Scalar subqueries are resolved once per action, before optimizing and
@@ -1685,12 +1691,15 @@ impl ExtensionPlanner for VailExtensionPlanner {
         if let Some(node) = node.as_any().downcast_ref::<crate::group_ranges::GroupRanges>() {
             return Ok(Some(node.physical(physical_inputs[0].clone())?));
         }
-        if let Some(node) = node.as_any().downcast_ref::<ProtectedRoundRobinNode>() {
+        if let Some(node) = node.as_any().downcast_ref::<SplitPartitionsNode>() {
             let input = physical_inputs.first().ok_or_else(|| {
-                DataFusionError::Plan("protected round-robin needs one input".into())
+                DataFusionError::Plan("partition split needs one input".into())
             })?;
+            if input.properties().output_partitioning().partition_count() >= node.partitions {
+                return Ok(Some(input.clone()));
+            }
             return Ok(Some(Arc::new(
-                crate::partitioned::ProtectedRoundRobinRepartitionExec::new(
+                crate::partitioned::SplitPartitionsExec::new(
                     input.clone(),
                     node.partitions,
                 )?,
