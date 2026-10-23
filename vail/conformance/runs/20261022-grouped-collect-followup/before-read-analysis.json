@@ -1,0 +1,67 @@
+{
+  "total_cpu_delta_us": 525427,
+  "leaf": [
+    [
+      "arrow_select::interleave::interleave_primitive::<arrow_array::types::Int32Type>",
+      14.572528629095954
+    ],
+    [
+      "__psynch_cvwait",
+      11.110582440567386
+    ],
+    [
+      "arrow_select::interleave::interleave_list::<i32>",
+      8.45445704160616
+    ],
+    [
+      "_platform_memmove",
+      8.139094488863345
+    ],
+    [
+      "arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>",
+      3.030297262988008
+    ],
+    [
+      "__open",
+      3.0080296596863123
+    ],
+    [
+      "0x3bfe8",
+      2.6791542878458854
+    ],
+    [
+      "_PyEval_EvalFrameDefault",
+      2.6572673273356715
+    ],
+    [
+      "core::ptr::drop_glue::<hashbrown::raw::RawTable<(vortex_session::registry::Id, alloc::sync::Arc<dyn vortex_array::scalar_fn::plugin::ScalarFnPlugin>)>>",
+      2.6174901556258052
+    ],
+    [
+      "0x3bed8",
+      2.1009578875847645
+    ],
+    [
+      "0x3bf84",
+      1.9045462071800652
+    ],
+    [
+      "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u32>>::from_iter::<core::ops::range::Range<u32>>",
+      1.7859759776334294
+    ],
+    [
+      "__bzero",
+      1.3004660970981696
+    ],
+    [
+      "func_traverse",
+      1.1653379061220683
+    ],
+    [
+      "<vortex_array::stats::stats_set::StatsSet as core::convert::From<vortex_array::stats::array::ArrayStats>>::from",
+      1.1516347656287171
+    ]
+  ],
+  "lookup_inclusive_pct": 0.0,
+  "grouping_ancestor": []
+}

@@ -1141,7 +1141,27 @@ pub(crate) fn lower_grouped_fields(
     } else {
         child
     };
-    let child = crate::logical_globals::bind_globals(child, table, context)?;
+    // A grouped reduction that does not read globals must retain the row
+    // stream's partitioning. Joining an unused singleton first can collapse
+    // the stream and copy nested metadata before projection pruning.
+    // Fold packing retains its positional globals contract.
+    let mut needs_globals = false;
+    for (_, expression) in keys.iter().chain(fields.iter()) {
+        expression.visit_unique(&mut |node| {
+            needs_globals |= matches!(node, Expr::Global { .. } | Expr::AggregateFold { .. });
+        });
+    }
+    let child = if needs_globals {
+        crate::logical_globals::bind_globals(child, table, context)?
+    } else {
+        child
+    };
+    let empty_input_globals = Schema::empty();
+    let input_globals = if needs_globals {
+        table.globals().schema().as_ref()
+    } else {
+        &empty_input_globals
+    };
     let (child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
     let mut used: HashSet<String> = child
         .schema()
@@ -1179,7 +1199,7 @@ pub(crate) fn lower_grouped_fields(
     for (_, expr) in &grouping {
         let name = unique(&mut used, "__vail_logical_group_value");
         projections.push(
-            lower_logical_with_bindings(expr, child.schema(), table.globals().schema(), &indices)?
+            lower_logical_with_bindings(expr, child.schema(), input_globals, &indices)?
                 .alias(&name),
         );
         key_names.push(name);
@@ -1191,7 +1211,7 @@ pub(crate) fn lower_grouped_fields(
     for ((_, expr), name) in grouping.iter().zip(&key_names) {
         let group_key = unique(&mut used, "__vail_logical_group_key");
         let dtype =
-            expr.dtype_with_globals(projected.schema().as_arrow(), table.globals().schema())?;
+            expr.dtype_with_globals(projected.schema().as_arrow(), input_globals)?;
         dtype.ensure_keyable()?;
         if !dtype.native_key() {
             return Err(TableError::Invalid(
@@ -1210,7 +1230,7 @@ pub(crate) fn lower_grouped_fields(
     let (mut result, _, _) = scope_plan(
         projected.clone(),
         table,
-        table.globals().schema(),
+        input_globals,
         &anchor,
         &key_names,
         &group_names,
@@ -1224,7 +1244,7 @@ pub(crate) fn lower_grouped_fields(
         let (right, defaults, presence) = scope_plan(
             projected.clone(),
             table,
-        table.globals().schema(),
+            input_globals,
             &group,
             &key_names,
             &group_names,

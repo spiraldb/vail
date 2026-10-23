@@ -1,0 +1,67 @@
+{
+  "total_cpu_delta_us": 336630,
+  "leaf": [
+    [
+      "__psynch_cvwait",
+      47.92383328877403
+    ],
+    [
+      "_PyEval_EvalFrameDefault",
+      6.390993078454089
+    ],
+    [
+      "_PyCode_Quicken",
+      4.628523898642426
+    ],
+    [
+      "arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>",
+      3.446216914713484
+    ],
+    [
+      "__open",
+      3.2097555179276953
+    ],
+    [
+      "__bzero",
+      3.128063452455218
+    ],
+    [
+      "_PyObject_Malloc",
+      2.390161304696551
+    ],
+    [
+      "read",
+      1.826040459852063
+    ],
+    [
+      "stat",
+      1.526007783025874
+    ],
+    [
+      "type_new",
+      1.313905474853697
+    ],
+    [
+      "r_object.llvm.9845490566179339274",
+      1.0114963015773994
+    ],
+    [
+      "gc_collect_main.llvm.6325940347975832991",
+      0.9728782342631377
+    ],
+    [
+      "deduce_unreachable",
+      0.9571339452811692
+    ],
+    [
+      "long_hash",
+      0.9407955321866737
+    ],
+    [
+      "<vortex_array::array::typed::ArrayData<vortex_array::arrays::scalar_fn::vtable::ScalarFn> as vortex_array::array::DynArrayData>::validity",
+      0.9205953123607521
+    ]
+  ],
+  "lookup_inclusive_pct": 0.0,
+  "grouping_ancestor": []
+}
