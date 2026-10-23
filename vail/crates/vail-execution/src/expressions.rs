@@ -5987,6 +5987,17 @@ fn lower_uncached(
                     false,
                 ),
             ];
+            // Only kernels audited to prepare outside evaluate may run once per
+            // matrix row. Collection/grouping callbacks keep the batch route.
+            let mut scalar_rows = true;
+            body.visit_unique(&mut |node| {
+                scalar_rows &= matches!(node,
+                    Expr::AlignedMapInput { .. } | Expr::RuntimeLiteral { .. }
+                    | Expr::Literal { .. } | Expr::Column { .. }
+                    | Expr::Binary { .. } | Expr::IntegerBinary { .. }
+                    | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
+                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. });
+            });
             let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let body_dtype = body_type.to_arrow()?;
             // Declare batch captures before lowering so nested fold/lambda/
@@ -6069,6 +6080,7 @@ fn lower_uncached(
                 dtype.to_arrow()?,
                 body_dtype,
                 *preserve_cell,
+                scalar_rows,
             ))
         }
         Expr::MatrixScope { .. }
