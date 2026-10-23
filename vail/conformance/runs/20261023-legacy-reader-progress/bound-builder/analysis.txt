@@ -1,0 +1,24 @@
+Source4a7d5328, nativeSHA256
+c4516c3e59745d109ae8dfe602ade9e886494cd8d75332e3af1c026d8785de6d.
+
+Safe bound builders and short one-byte skip prefixes: 37 Rust tests,
+2 Hail corpus/index tests, 189 Python tests passed.
+
+A-B-B-A controlled comparison, previous79fd29d6 versus4a7d5328:
+one warmup/three measured runs per case per repetition. Compiler overlap
+rejection enabled. Pooled medians (old/new ms):
+  full matrix decode 480.3/426.6 (1.13x)
+  GT decode339.2/306.0 (1.11x)
+  entries468.9/442.6 (1.06x)
+  DP540.9/490.1 (1.10x)
+No result values changed. This compares both source changes together.
+
+Fresh paired two-warmup/five-sample comparison of the same Hail-written files
+(Vail/Hail ms):
+  table count27.2/153.3 (5.63x)
+  table scalar sum20.7/135.3 (6.55x)
+  full matrix decode410.7/403.4 (0.98x; roughly tied)
+  GT decode305.5/356.1 (1.17x)
+  entries459.6/1310.2 (2.85x)
+  DP512.7/392.2 (0.76x; Vail1.31x slower)
+All values match. Goal of all benchmarks substantially faster is not met.

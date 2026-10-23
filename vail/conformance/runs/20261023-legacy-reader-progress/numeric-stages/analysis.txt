@@ -1,0 +1,24 @@
+Numeric array isolation and rejected skip specialization.
+
+At sourcecef893d8, the required-integer-array skip function was selected once
+per entry array, replacing generic Node.skip/skip_array decisions. Forty Rust
+tests passed, including codec/missingness/every-prefix truncation differential
+checks and numeric-array helper differentials.
+
+Controlled A-B-B-A versus4a7d5328, one warmup/three samples each repetition:
+  GT count305.4 ->302.4 ms (1.01x)
+  DP sum501.0 ->491.5 ms (1.02x)
+This did not justify an additional production path; reverted in51377322.
+The numeric stage benchmark and its output differentials were retained.
+
+Benchmark-only grouped required Int32 array decoding, same framing/builders:
+  EVarint two small values9.5 ->8.9 ns/array
+  EVarint three small values10.7 ->9.3 ns/array
+  EVarint eight small values22.0 ->9.5 ns/array
+  Continued two/three values16.2/22.3 ->15.7/21.1 ns/array
+  Negative two values18.5 ->18.6 ns/array (roughly tied)
+See full JSON lines for raw/LEB controls and other sizes. These are synthetic,
+not query speedups. The actual matrix encodes AD and PL as EArray2[+EVarint].
+The grouped helper is outlined, selects wire decoding once, and handles its
+own fallback. It avoids the earlier rejected inline short-array variant's
+large append_list stack frame. Production promotion is a separate experiment.
