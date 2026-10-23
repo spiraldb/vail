@@ -942,7 +942,7 @@ class MatrixTable:
         node = expr.to_ir()
         if expr._lookup_refs or node.contains_random() or node.matrix_dependencies()[2]:
             return None
-        supported = {"sum", "count", "count_where", "mean", "fraction", "product", "all", "any", "collect",
+        supported = {"sum", "count", "count_where", "mean", "fraction", "product", "all", "any",
                      "min", "max", "stddev_pop"}
         pending, seen, retained = [(node, False)], set(), {}
         found = False
