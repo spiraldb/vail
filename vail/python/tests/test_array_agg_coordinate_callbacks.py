@@ -126,3 +126,21 @@ def test_coordinate_sum_widening_nulls_and_partial_merges(partitions, dtype, arr
     assert table.aggregate(hl.agg.array_sum(table.xs)) == expected
     assert table.aggregate(hl.agg.array_agg(
         lambda x: hl.agg.filter(False, hl.agg.sum(x)), table.xs)) == [0, 0]
+
+
+@pytest.mark.parametrize("partitions", [1, 4])
+def test_coordinate_counts_preserve_positions_and_empty_filters(partitions):
+    table = hl.Table.parallelize(
+        [{"xs": [None, 2, 3]}, {"xs": [1, None, 4]}, {"xs": None}],
+        schema=hl.tstruct(xs=hl.tarray(hl.tint32)),
+        n_partitions=partitions,
+    )
+    result = table.aggregate(hl.agg.array_agg(
+        lambda x: hl.struct(
+            rows=hl.agg.count(),
+            defined=hl.agg.count_where(hl.is_defined(x)),
+            positive=hl.agg.filter(x > 2, hl.agg.count()),
+            none=hl.agg.filter(False, hl.agg.count()),
+        ), table.xs))
+    assert [(x.rows, x.defined, x.positive, x.none) for x in result] == [
+        (2, 1, 0, 0), (2, 1, 0, 0), (2, 2, 2, 0)]

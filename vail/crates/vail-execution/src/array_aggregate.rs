@@ -513,13 +513,14 @@ impl DenseSum {
 
 enum Kernels {
     Sum(DenseSum),
+    Count(DenseSum),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
 impl std::fmt::Debug for Kernels {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Sum(sum) => sum.fmt(f),
+            Self::Sum(sum) | Self::Count(sum) => sum.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -547,6 +548,8 @@ impl Coordinates {
     ) -> Result<Self> {
         let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(aggregate.fun()) {
             Kernels::Sum(DenseSum::new(&dtype))
+        } else if crate::aggregates::coordinate_count(aggregate.fun()) {
+            Kernels::Count(DenseSum::new(&DataType::Int64))
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
@@ -584,7 +587,7 @@ impl Coordinates {
     fn states(&mut self) -> Result<Vec<ArrayRef>> {
         let width = self.width.unwrap_or(0);
         match &mut self.kernels {
-            Kernels::Sum(sum) => Ok(vec![Arc::clone(&sum.values)]),
+            Kernels::Sum(sum) | Kernels::Count(sum) => Ok(vec![Arc::clone(&sum.values)]),
             Kernels::Groups(kernel) => {
                 let kernel = kernel
                     .get_mut()
@@ -626,6 +629,16 @@ impl Coordinates {
     ) -> Result<()> {
         if let Kernels::Sum(sum) = &mut self.kernels {
             return sum.update(&flat, filter, width);
+        }
+        if let Kernels::Count(count) = &mut self.kernels {
+            // Count consumes validity, never values. Native Boolean AND combines
+            // callback filtering with presence before the vector update.
+            let mut present = arrow_arith::boolean::is_not_null(flat.as_ref())?;
+            if let Some(filter) = filter {
+                present = arrow_arith::boolean::and(&present, filter)?;
+            }
+            let present: ArrayRef = Arc::new(present);
+            return count.update(&present, None, width);
         }
         let flat = if self.input == self.aggregate_input {
             flat
@@ -672,7 +685,7 @@ impl Coordinates {
             return Ok(new_empty_array(self.aggregate.field().data_type()));
         }
         let mut values = match &mut self.kernels {
-            Kernels::Sum(sum) => Arc::clone(&sum.values),
+            Kernels::Sum(sum) | Kernels::Count(sum) => Arc::clone(&sum.values),
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -732,6 +745,9 @@ impl Accumulator for Coordinates {
             }
             concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
         };
+        if matches!(self.kernels, Kernels::Count(_)) {
+            return self.update_flat(flat, None, width);
+        }
         let flat = if self.input == self.aggregate_input {
             flat
         } else {
@@ -766,7 +782,7 @@ impl Accumulator for Coordinates {
                 indices.values.capacity() * std::mem::size_of::<usize>()
             })
             + match &self.kernels {
-                Kernels::Sum(sum) => sum.values.get_array_memory_size(),
+                Kernels::Sum(sum) | Kernels::Count(sum) => sum.values.get_array_memory_size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -808,7 +824,7 @@ impl Accumulator for Coordinates {
                 return Err(error("coordinate state length mismatch"));
             }
             match &mut self.kernels {
-                Kernels::Sum(sum) => sum.update(&values[0], None, width)?,
+                Kernels::Sum(sum) | Kernels::Count(sum) => sum.update(&values[0], None, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
