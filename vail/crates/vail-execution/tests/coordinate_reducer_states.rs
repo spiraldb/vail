@@ -106,3 +106,94 @@ fn stddev_coordinate_accepts_native_uint64_state_and_published_snapshots() {
         DataType::List(Arc::new(Field::new_list_field(DataType::UInt64, true)))
     );
 }
+
+#[test]
+fn collect_coordinate_reuses_repeatable_native_state_then_restores_on_update() {
+    let native = configured_udaf(
+        "collect",
+        Some(&DataType::Int32),
+        &serde_json::json!({"ordered":true}),
+    )
+    .unwrap();
+    let empty = ScalarValue::List(Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Int32, true)),
+        OffsetBuffer::from_lengths([0]),
+        Arc::new(arrow_array::Int32Array::from(Vec::<i32>::new())),
+        None,
+    )));
+    let udf = coordinate_udaf(native, DataType::Int32, empty).unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "xs",
+        DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(schema)
+        .alias("collected")
+        .build()
+        .unwrap();
+    let mut accumulator = aggregate.create_accumulator().unwrap();
+    // Native snapshots may be requested before the first input establishes width.
+    let _empty_snapshot = accumulator.state().unwrap();
+    let input: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Int32, true)),
+        OffsetBuffer::from_lengths([2, 2]),
+        Arc::new(arrow_array::Int32Array::from(vec![
+            Some(1),
+            None,
+            Some(3),
+            Some(4),
+        ])),
+        None,
+    ));
+    accumulator.update_batch(&[input]).unwrap();
+    let snapshot = accumulator.evaluate().unwrap();
+    assert_eq!(accumulator.evaluate().unwrap(), snapshot);
+    let published = accumulator.state().unwrap();
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|state| state.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    let new_input = list(Arc::new(arrow_array::Int32Array::from(vec![5, 6])));
+    accumulator.update_batch(&[new_input.clone()]).unwrap();
+    restored.update_batch(&[new_input]).unwrap();
+    let result = accumulator.evaluate().unwrap();
+    assert_eq!(restored.evaluate().unwrap(), result);
+    fn values(result: ScalarValue) -> Vec<Vec<Option<i32>>> {
+        let ScalarValue::List(result) = result else {
+            panic!("coordinate output must be list")
+        };
+        let columns = result
+            .values()
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        (0..columns.len())
+            .map(|column| {
+                columns
+                    .value(column)
+                    .as_any()
+                    .downcast_ref::<arrow_array::Int32Array>()
+                    .unwrap()
+                    .iter()
+                    .collect()
+            })
+            .collect()
+    }
+    assert_eq!(
+        values(snapshot),
+        vec![vec![Some(1), Some(3)], vec![None, Some(4)]]
+    );
+    assert_eq!(
+        values(result),
+        vec![
+            vec![Some(1), Some(3), Some(5)],
+            vec![None, Some(4), Some(6)]
+        ]
+    );
+}
