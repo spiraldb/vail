@@ -279,6 +279,13 @@ impl ExecutionPlan for SourceOrdinalExec {
     fn children(&self) -> Vec<&PhysicalPlan> {
         vec![&self.input]
     }
+    fn required_input_ordering(&self) -> Vec<Option<datafusion_physical_expr::OrderingRequirements>> {
+        // Sequence determines computed values (prefix state / source ordinal),
+        // even when an outer aggregate does not observe output ordering.
+        // Preserve an established input ordering; do not manufacture one when
+        // the source has no explicit certificate.
+        vec![self.input.properties().output_ordering().cloned().map(Into::into)]
+    }
     fn maintains_input_order(&self) -> Vec<bool> {
         vec![true]
     }

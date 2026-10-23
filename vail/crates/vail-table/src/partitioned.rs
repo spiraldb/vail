@@ -1715,7 +1715,9 @@ pub async fn force_count(table: TableRef) -> Result<usize> {
         return count_parts(partition_views(plan, count), Arc::new(TaskContext::default())).await;
     }
     let physical = crate::logical::physical(&table).await?;
+    let physical = crate::ordering_requirements::unordered(physical)?;
     let physical = crate::count_explode::optimize(physical.clone())?.unwrap_or(physical);
+    let physical = crate::ordering_requirements::unordered(physical)?;
     let parts = if table.known_n_partitions() == Some(0) {
         vec![]
     } else {
@@ -2349,4 +2351,13 @@ mod expression_source_tests {
         assert_eq!(resets.load(Ordering::SeqCst), 2);
         assert!(!Arc::ptr_eq(first.children()[0], second.children()[0]));
     }
+}
+
+/// Partition containers preserve their children's sequences but do not themselves
+/// inspect row ordering. Their ordinary contracts pin available order for ordered
+/// actions; an explicitly unordered action may weaken that requirement.
+pub(crate) fn ordering_transparent_container(plan: &PhysicalPlan) -> bool {
+    plan.is::<PartitionViewExec>()
+        || plan.is::<PartitionSetExec>()
+        || plan.is::<OrderedConcatExec>()
 }

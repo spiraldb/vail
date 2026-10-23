@@ -1506,6 +1506,30 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin
     }
 }
 
+/// Count is insensitive to output order, even when its input happens to carry
+/// an ordering certificate. Do not infer this for arbitrary user aggregates.
+#[derive(Debug)]
+struct CountOrderingDemand;
+impl datafusion::physical_optimizer::PhysicalOptimizerRule for CountOrderingDemand {
+    fn name(&self) -> &str { "vail_count_ordering_demand" }
+    fn schema_check(&self) -> bool { true }
+    fn optimize(&self, plan: PhysicalPlan, _: &datafusion_common::config::ConfigOptions)
+        -> datafusion_common::Result<PhysicalPlan>
+    {
+        rewrite_physical_dag(plan, &mut |plan| {
+            if crate::ordering_requirements::count_has_unordered_input(&plan) {
+                let children = plan.children().into_iter()
+                    .map(|child| crate::ordering_requirements::unordered(child.clone()))
+                    .collect::<datafusion_common::Result<Vec<_>>>()?;
+                return plan.replace_children(children,
+                    datafusion_physical_plan::ReplaceChildrenOptions::new(
+                        datafusion_physical_plan::ChildrenPropertiesMode::Recompute));
+            }
+            Ok(plan)
+        })
+    }
+}
+
 #[derive(Debug)]
 struct EliminateIdentityRanges;
 impl datafusion::physical_optimizer::PhysicalOptimizerRule for EliminateIdentityRanges {
@@ -1546,8 +1570,9 @@ fn with_metadata_optimizer(
 ) -> datafusion::execution::SessionState {
     let mut rules: Vec<
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
-    > = vec![Arc::new(MetadataCrossJoin)];
+    > = vec![Arc::new(MetadataCrossJoin), Arc::new(CountOrderingDemand)];
     rules.extend(state.physical_optimizers().iter().cloned());
+    rules.push(Arc::new(CountOrderingDemand));
     rules.push(Arc::new(EliminateIdentityRanges));
     datafusion::execution::session_state::SessionStateBuilder::new_from_existing(state)
         .with_physical_optimizer_rules(rules)

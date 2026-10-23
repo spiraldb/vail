@@ -1,0 +1,295 @@
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-table v0.1.0 (/Users/danielking/.codex/worktrees/ordering-requirements/vail/vail/crates/vail-table)
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:722:20
+    |
+722 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+722 -                 if (!shape || !tail.is_empty()) {
+722 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:751:20
+    |
+751 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+751 -                 if (!shape || !tail.is_empty()) {
+751 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:761:20
+    |
+761 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+761 -                 if (!shape || !tail.is_empty()) {
+761 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:11:23
+   |
+11 |     coalesce_batches::CoalesceBatchesExec,
+   |                       ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:65:26
+   |
+65 |             || plan.is::<CoalesceBatchesExec>()
+   |                          ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:351:32
+    |
+351 |         || input.as_ref().is::<CoalesceBatchesExec>()
+    |                                ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:325:27
+    |
+325 |         coalesce_batches::CoalesceBatchesExec,
+    |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:66:31
+   |
+66 |         || plan.as_ref().is::<CoalesceBatchesExec>()
+   |                               ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:38:27
+   |
+38 |         coalesce_batches::CoalesceBatchesExec,
+   |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+    --> crates/vail-table/src/partitioned.rs:2059:37
+     |
+2059 |             let rewritten = adapter.with_new_children(vec![parallel.clone()]).unwrap();
+     |                                     ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:457:31
+    |
+457 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/projection_broadcast.rs:374:26
+    |
+374 |             plan.clone().with_new_children(children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+    --> crates/vail-table/src/provider.rs:1300:44
+     |
+1300 |             let rebuilt = selected.clone().with_new_children(
+     |                                            ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/wide_batch.rs:291:26
+    |
+291 |             plan.clone().with_new_children(rewritten_children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:313:9
+    |
+313 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `kind`
+   --> crates/vail-table/src/logical_scan.rs:630:26
+    |
+630 |     for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_kind`
+
+warning: fields `varid` and `rsid` are never read
+  --> crates/vail-table/src/bgen_source.rs:41:5
+   |
+30 | struct BgenOptions {
+   |        ----------- fields in this struct
+...
+41 |     varid: bool,
+   |     ^^^^^
+42 |     rsid: bool,
+   |     ^^^^
+   |
+   = note: `BgenOptions` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `owners` is never read
+  --> crates/vail-table/src/conditional_globals.rs:14:5
+   |
+ 9 | pub(crate) struct ConditionalNode {
+   |                   --------------- field in this struct
+...
+14 |     owners: [GlobalsRef; 3],
+   |     ^^^^^^
+   |
+   = note: `ConditionalNode` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `evaluate` is never used
+   --> crates/vail-table/src/count_explode.rs:243:8
+    |
+225 | impl ZipProgram {
+    | --------------- method in this implementation
+...
+243 |     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+    |        ^^^^^^^^
+
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `vail-table` (lib test) generated 20 warnings (run `cargo fix --lib -p vail-table --tests` to apply 5 suggestions)
+warning: associated function `new` is never used
+   --> crates/vail-table/src/partitioned.rs:974:8
+    |
+973 | impl PartitionSetExec {
+    | --------------------- associated function in this implementation
+974 |     fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
+    |        ^^^
+
+warning: associated function `new` is never used
+    --> crates/vail-table/src/partitioned.rs:1108:19
+     |
+1107 | impl OrderedConcatExec {
+     | ---------------------- associated function in this implementation
+1108 |     pub(crate) fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
+     |                   ^^^
+
+warning: `vail-table` (lib) generated 19 warnings (17 duplicates)
+warning: `vail-table` (test "consumer_actions") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.99s
+     Running unittests src/lib.rs (/private/tmp/vail-ordering-check-target/debug/deps/vail_table-d0aad624ae153655)
+
+running 42 tests
+test comparison::tests::hail_relative_tolerance_and_ieee_rules ... ok
+test nested_projection::tests::map_paths_union_across_outputs_and_keep_field_names_atomic ... ok
+test nested_projection::tests::captured_columns_are_full_while_lambda_fields_are_narrow ... ok
+test nested_projection::tests::bare_container_use_disables_its_nested_hints ... ok
+test nested_projection::tests::nested_array_map_falls_back_to_full_source_column ... ok
+test nested_projection::tests::nested_lambda_shadowing_keeps_the_correct_source_root ... ok
+test nested_projection::tests::returning_whole_lambda_element_disables_nested_hints ... ok
+test legacy::tests::positional_slots_preserve_missing_and_all_null_entries ... ok
+test line_source::tests::trailing_lf_does_not_create_an_extra_row ... ok
+test line_source::tests::splits_hail_universal_newlines_even_across_chunks ... ok
+test line_source::tests::preserves_quotes_blank_lines_crlf_and_unicode_across_chunks ... ok
+test diagnostics::tests::unbound_diagnostics_cannot_be_mistaken_for_executable_actions ... ok
+test line_source::tests::opener_streams_object_store_file_and_rejects_invalid_utf8 ... ok
+test partitioned::concurrent_partition_tests::canceling_ordered_output_aborts_prefetched_producers ... ok
+test partitioned::expression_source_tests::exposed_children_are_reset_once_through_nested_ordering_wrappers ... ok
+test partitioned::expression_source_tests::replay_preserves_shared_physical_inputs_without_sharing_across_actions ... ok
+test interval_read::prefix_partition_index_tests::indexed_prefix_candidates_match_brute_force_with_overlaps_and_open_bounds ... ok
+test provider::interval_intersection_tests::interval_union_normalization_preserves_open_shared_endpoints ... ok
+test provider::interval_intersection_tests::intersection_sweep_handles_overlaps_and_unbounded_endpoints ... ok
+test provider::interval_intersection_tests::valid_disjoint_intersection_is_empty ... ok
+test ordering_requirements::tests::unordered_global_sort_retains_all_partitions_and_multiplicity ... ok
+test provider::interval_intersection_tests::malformed_key_comparison_is_an_error_not_an_empty_intersection ... ok
+test ordering_requirements::tests::unordered_local_sort_retains_partition_count ... ok
+test partitioned::expression_source_tests::array_expression_evaluates_once_per_action_across_partitions ... ok
+test ordering_requirements::tests::count_is_unordered_but_collection_is_not ... ok
+test provider::projected_provider_tests::source_partition_range_matches_emitted_ids ... ok
+test provider::projected_provider_tests::selected_source_view_keeps_only_one_partition_and_original_id ... ok
+test provider::interval_intersection_tests::intersection_sweep_matches_cartesian_oracle_for_generated_bounds ... ok
+test text_schema::tests::schema_inference_rejects_unbounded_json_array_mode ... ok
+test text_schema::tests::unknown_options_and_empty_paths_are_rejected ... ok
+test text_schema::tests::json_inference_handles_nested_values_and_merges_files ... ok
+test ordering_requirements::tests::head_and_topk_retain_selection_order ... ok
+test interval_read::prefix_partition_index_tests::prefix_interval_predicate_growth_is_linear ... ok
+test partitioned::concurrent_partition_tests::singleton_adapters_keep_all_rows_after_a_parallel_child_rewrite ... ok
+test legacy_source::tests::legacy_file_splits_execute_sequentially_in_row_order ... ok
+test text_schema::tests::csv_inference_merges_typed_columns_across_files ... ok
+test text_schema::tests::csv_inference_rejects_different_column_names_or_order ... ok
+test partitioned::concurrent_partition_tests::native_partition_consumers_are_limited_and_propagate_errors ... ok
+test partitioned::concurrent_partition_tests::force_count_drains_later_partitions_while_first_is_gated ... ok
+test partitioned::concurrent_partition_tests::ordered_producers_are_concurrent_bounded_and_keep_row_order ... ok
+test provider::projected_provider_tests::read_projection_reaches_storage_and_returns_only_selected_field ... ok
+test provider::projected_provider_tests::map_rows_nested_array_projection_reads_selected_struct_child ... ok
+
+test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/consumer_actions.rs (/private/tmp/vail-ordering-check-target/debug/deps/consumer_actions-2823269760d87df2)
+
+running 6 tests
+test force_count_evaluates_projected_fields_in_every_partition ... ok
+test dropping_a_partial_public_action_does_not_poison_the_next_action ... ok
+test independent_prepared_actions_accept_interleaved_partition_requests ... ok
+test force_count_handles_grouped_output_with_row_payload ... ok
+test an_exchange_requires_an_independent_action_for_replay ... ok
+test force_count_preserves_ordered_rows_and_limit_semantics ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
