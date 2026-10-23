@@ -224,7 +224,9 @@ class Call:
 
     def __init__(self, alleles, phased=False):
         alleles = tuple(alleles)
-        if len(alleles) > 2 or any(type(a) is not int or a < 0 for a in alleles):
+        if len(alleles) > 2:
+            raise NotImplementedError("Calls with greater than 2 alleles are not supported.")
+        if any(type(a) is not int or a < 0 for a in alleles):
             raise ValueError("calls require zero, one, or two nonnegative integer alleles")
         if type(phased) is not bool:
             raise TypeError("phased must be bool")
@@ -246,6 +248,60 @@ class Call:
 
     def __getitem__(self, i):
         return self.alleles[i]
+
+    def __str__(self):
+        if not self._alleles:
+            return "|-" if self.phased else "-"
+        if self.ploidy == 1:
+            return ("|" if self.phased else "") + str(self._alleles[0])
+        return ("|" if self.phased else "/").join(map(str, self._alleles))
+
+    def is_haploid(self):
+        return self.ploidy == 1
+
+    def is_diploid(self):
+        return self.ploidy == 2
+
+    def is_hom_ref(self):
+        return bool(self._alleles) and all(a == 0 for a in self._alleles)
+
+    def is_het(self):
+        return self.ploidy == 2 and self._alleles[0] != self._alleles[1]
+
+    def is_hom_var(self):
+        return bool(self._alleles) and self._alleles[0] > 0 and all(a == self._alleles[0] for a in self._alleles)
+
+    def is_non_ref(self):
+        return any(a > 0 for a in self._alleles)
+
+    def is_het_non_ref(self):
+        return self.is_het() and all(a > 0 for a in self._alleles)
+
+    def is_het_ref(self):
+        return self.is_het() and 0 in self._alleles
+
+    def n_alt_alleles(self):
+        return sum(a > 0 for a in self._alleles)
+
+    def one_hot_alleles(self, n_alleles):
+        if type(n_alleles) is not int:
+            raise TypeError("n_alleles must be an int")
+        result = [0] * n_alleles
+        for allele in self._alleles:
+            result[allele] += 1
+        return result
+
+    def unphased_diploid_gt_index(self):
+        """Return a Python integer index, without the expression Int32 limit.
+
+        Like Hail Python Call values, localized calls use unbounded arithmetic;
+        this value API does not wrap large indices to the native Int32 type.
+        """
+        if self.ploidy != 2 or self.phased:
+            from .utils import FatalError
+            raise FatalError("'unphased_diploid_gt_index' is only valid for unphased, diploid calls. Found " + repr(self))
+        a, b = self._alleles
+        return b * (b + 1) // 2 + a
 
 
 tint32 = _PrimitiveType("int32")

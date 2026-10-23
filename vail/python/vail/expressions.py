@@ -933,6 +933,38 @@ class Expression:
             raise TypeError("only struct expressions have items")
         return ((name, self[name]) for name in self.dtype)
 
+    def values(self):
+        """Return struct field expressions, or the values of a dictionary."""
+        if isinstance(self.dtype, tdict):
+            from .collections import values
+            return values(self)
+        if not isinstance(self.dtype, tstruct):
+            raise TypeError("only struct or dictionary expressions have values")
+        return Mapping.values(self)
+
+    def rename(self, mapping):
+        """Rename struct fields, retaining unchanged fields before renamed ones."""
+        if not isinstance(self.dtype, tstruct):
+            raise TypeError("rename requires a struct expression")
+        if not isinstance(mapping, Mapping) or any(
+            not isinstance(old, str) or not isinstance(new, str)
+            for old, new in mapping.items()
+        ):
+            raise TypeError("rename expects a mapping of strings to strings")
+        new_to_old = {}
+        for old, new in mapping.items():
+            if old not in self.dtype:
+                raise ValueError(f"{old} is not a field of this struct: {self.dtype}.")
+            if new in self.dtype and new not in mapping:
+                raise ValueError(f"{old} is renamed to {new} but {new} is already in the struct: {self.dtype}.")
+            if new in new_to_old:
+                raise ValueError(f"{new} is the new name of both {old} and {new_to_old[new]}.")
+            new_to_old[new] = old
+        return self.select(
+            *[field for field in self.dtype if field not in mapping],
+            **{new: self[old] for old, new in mapping.items()},
+        )
+
     def _collect_expression(self, n=None):
         if hasattr(type(self.source), "_axis_type"):
             return self.source._collect_expression(self, n)

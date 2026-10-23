@@ -32,3 +32,6 @@ class BlockMatrix:
             entry=float64(self.value),
         )
         return result._with_keys('i', 'j')
+
+
+from . import utils

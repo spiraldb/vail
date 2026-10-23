@@ -66,6 +66,9 @@ def run_command(command, *args, **kwargs):
 
 
 __all__ = [
-    'range_table', 'Struct', 'Interval', 'Env', 'HailUserError', 'FatalError',
+    'frozendict', 'range_table', 'Struct', 'Interval', 'Env', 'HailUserError', 'FatalError',
     'new_temp_file', 'new_local_temp_file', 'uri_path', 'run_command',
 ]
+
+
+from .frozendict import frozendict
