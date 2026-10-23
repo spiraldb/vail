@@ -74,3 +74,11 @@ def test_shared_row_reducers_preserve_unselected_result_branch():
     result = hl.if_else(m.row_idx == 0, total, total + total)
     m = m.annotate_rows(result=result)
     assert [x.result for x in m.rows().collect()] == [6, 20, 28]
+
+
+def test_repeated_failing_row_aggregate_stays_in_unselected_branch():
+    m = hl.utils.range_matrix_table(3, 4, n_partitions=1)
+    bad = hl.agg.sum(hl.case().when(m.col_idx < 0, 1).or_error('unselected reducer'))
+    good = hl.agg.sum(m.col_idx)
+    m = m.annotate_rows(result=hl.if_else(m.row_idx < 0, bad + bad, good + good))
+    assert [x.result for x in m.rows().collect()] == [12, 12, 12]
