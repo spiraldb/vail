@@ -1,0 +1,905 @@
+{
+  "engine": "vail",
+  "hail_threads": null,
+  "warmup": 6,
+  "runs": 7,
+  "reject_compilers": true,
+  "matrix": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "table_force_count": {
+      "seconds": [
+        0.028139333007857203,
+        0.02954595792107284,
+        0.02727716602385044,
+        0.03151870798319578,
+        0.0290673749987036,
+        0.027974999975413084,
+        0.027652500080876052
+      ],
+      "median": 0.028139333007857203,
+      "python_process_cpu_seconds": [
+        0.2970570000000001,
+        0.30199599999999993,
+        0.29833,
+        0.2906469999999999,
+        0.3009430000000002,
+        0.29536300000000004,
+        0.29901500000000025
+      ],
+      "python_process_cpu_median": 0.29833,
+      "engine_cpu_seconds": [
+        0.29706500000000013,
+        0.30200899999999997,
+        0.29833599999999993,
+        0.29065399999999997,
+        0.3009529999999998,
+        0.29537199999999997,
+        0.29903000000000013
+      ],
+      "engine_cpu_median": 0.29833599999999993,
+      "python_process_minor_faults": [
+        2069,
+        1996,
+        2068,
+        2050,
+        2066,
+        1973,
+        2011
+      ],
+      "python_process_minor_faults_median": 2050,
+      "value": 1000000,
+      "attempts": [
+        {
+          "seconds": 0.03221812495030463,
+          "python_process_cpu_seconds": 0.316671,
+          "engine_cpu_seconds": 0.316681,
+          "python_process_minor_faults": 3695,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.02924491697922349,
+          "python_process_cpu_seconds": 0.304372,
+          "engine_cpu_seconds": 0.304388,
+          "python_process_minor_faults": 2030,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.02887945796828717,
+          "python_process_cpu_seconds": 0.3122459999999999,
+          "engine_cpu_seconds": 0.312256,
+          "python_process_minor_faults": 2088,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.02733475004788488,
+          "python_process_cpu_seconds": 0.2817749999999999,
+          "engine_cpu_seconds": 0.28178099999999995,
+          "python_process_minor_faults": 2070,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.027289416058920324,
+          "python_process_cpu_seconds": 0.28456499999999996,
+          "engine_cpu_seconds": 0.28457,
+          "python_process_minor_faults": 2028,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.028899042052216828,
+          "python_process_cpu_seconds": 0.294624,
+          "engine_cpu_seconds": 0.2946310000000001,
+          "python_process_minor_faults": 2015,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.028139333007857203,
+          "python_process_cpu_seconds": 0.2970570000000001,
+          "engine_cpu_seconds": 0.29706500000000013,
+          "python_process_minor_faults": 2069,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.02954595792107284,
+          "python_process_cpu_seconds": 0.30199599999999993,
+          "engine_cpu_seconds": 0.30200899999999997,
+          "python_process_minor_faults": 1996,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.02727716602385044,
+          "python_process_cpu_seconds": 0.29833,
+          "engine_cpu_seconds": 0.29833599999999993,
+          "python_process_minor_faults": 2068,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.03151870798319578,
+          "python_process_cpu_seconds": 0.2906469999999999,
+          "engine_cpu_seconds": 0.29065399999999997,
+          "python_process_minor_faults": 2050,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.0290673749987036,
+          "python_process_cpu_seconds": 0.3009430000000002,
+          "engine_cpu_seconds": 0.3009529999999998,
+          "python_process_minor_faults": 2066,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.027974999975413084,
+          "python_process_cpu_seconds": 0.29536300000000004,
+          "engine_cpu_seconds": 0.29537199999999997,
+          "python_process_minor_faults": 1973,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.027652500080876052,
+          "python_process_cpu_seconds": 0.29901500000000025,
+          "engine_cpu_seconds": 0.29903000000000013,
+          "python_process_minor_faults": 2011,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "table_scalar_sum": {
+      "seconds": [
+        0.018980458029545844,
+        0.01929041591938585,
+        0.018314416985958815,
+        0.01793824997730553,
+        0.017999208997935057,
+        0.018030042061582208,
+        0.01852825004607439
+      ],
+      "median": 0.018314416985958815,
+      "python_process_cpu_seconds": [
+        0.1639299999999997,
+        0.16271699999999978,
+        0.1620929999999996,
+        0.1618240000000002,
+        0.1623859999999997,
+        0.16090099999999996,
+        0.1625540000000001
+      ],
+      "python_process_cpu_median": 0.1623859999999997,
+      "engine_cpu_seconds": [
+        0.16394100000000034,
+        0.16273099999999996,
+        0.16210399999999936,
+        0.1618360000000001,
+        0.1623960000000002,
+        0.16091299999999986,
+        0.16256100000000018
+      ],
+      "engine_cpu_median": 0.1623960000000002,
+      "python_process_minor_faults": [
+        1331,
+        1320,
+        1319,
+        1306,
+        1335,
+        1339,
+        1313
+      ],
+      "python_process_minor_faults_median": 1320,
+      "value": 1499998500000,
+      "attempts": [
+        {
+          "seconds": 0.23126379190944135,
+          "python_process_cpu_seconds": 0.3714599999999999,
+          "engine_cpu_seconds": 0.3714789999999999,
+          "python_process_minor_faults": 10536,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.019259207998402417,
+          "python_process_cpu_seconds": 0.1581160000000006,
+          "engine_cpu_seconds": 0.15812200000000054,
+          "python_process_minor_faults": 1328,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.018566958024166524,
+          "python_process_cpu_seconds": 0.16283899999999996,
+          "engine_cpu_seconds": 0.16284600000000005,
+          "python_process_minor_faults": 1270,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.018153290962800384,
+          "python_process_cpu_seconds": 0.1633420000000001,
+          "engine_cpu_seconds": 0.16335299999999986,
+          "python_process_minor_faults": 1326,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.018453790922649205,
+          "python_process_cpu_seconds": 0.15968599999999977,
+          "engine_cpu_seconds": 0.1597010000000001,
+          "python_process_minor_faults": 1278,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.019123625010252,
+          "python_process_cpu_seconds": 0.1633230000000001,
+          "engine_cpu_seconds": 0.163335,
+          "python_process_minor_faults": 1325,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.018980458029545844,
+          "python_process_cpu_seconds": 0.1639299999999997,
+          "engine_cpu_seconds": 0.16394100000000034,
+          "python_process_minor_faults": 1331,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.01929041591938585,
+          "python_process_cpu_seconds": 0.16271699999999978,
+          "engine_cpu_seconds": 0.16273099999999996,
+          "python_process_minor_faults": 1320,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.018314416985958815,
+          "python_process_cpu_seconds": 0.1620929999999996,
+          "engine_cpu_seconds": 0.16210399999999936,
+          "python_process_minor_faults": 1319,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.01793824997730553,
+          "python_process_cpu_seconds": 0.1618240000000002,
+          "engine_cpu_seconds": 0.1618360000000001,
+          "python_process_minor_faults": 1306,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.017999208997935057,
+          "python_process_cpu_seconds": 0.1623859999999997,
+          "engine_cpu_seconds": 0.1623960000000002,
+          "python_process_minor_faults": 1335,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.018030042061582208,
+          "python_process_cpu_seconds": 0.16090099999999996,
+          "engine_cpu_seconds": 0.16091299999999986,
+          "python_process_minor_faults": 1339,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.01852825004607439,
+          "python_process_cpu_seconds": 0.1625540000000001,
+          "engine_cpu_seconds": 0.16256100000000018,
+          "python_process_minor_faults": 1313,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_decode_count": {
+      "seconds": [
+        0.39441974996589124,
+        0.41030570899602026,
+        0.39489724999293685,
+        0.3941891249269247,
+        0.39075045799836516,
+        0.41013095900416374,
+        0.39703204203397036
+      ],
+      "median": 0.39489724999293685,
+      "python_process_cpu_seconds": [
+        4.268516000000002,
+        4.201616000000001,
+        4.184224,
+        4.198666000000003,
+        4.148675999999995,
+        4.181861000000005,
+        4.132154
+      ],
+      "python_process_cpu_median": 4.184224,
+      "engine_cpu_seconds": [
+        4.2685290000000045,
+        4.201630999999999,
+        4.184238999999998,
+        4.198681999999998,
+        4.1486909999999995,
+        4.181874999999998,
+        4.132170000000002
+      ],
+      "engine_cpu_median": 4.184238999999998,
+      "python_process_minor_faults": [
+        47546,
+        45992,
+        46114,
+        47212,
+        48007,
+        45332,
+        44209
+      ],
+      "python_process_minor_faults_median": 46114,
+      "value": 24885,
+      "attempts": [
+        {
+          "seconds": 0.42057791701518,
+          "python_process_cpu_seconds": 4.135015999999999,
+          "engine_cpu_seconds": 4.135031,
+          "python_process_minor_faults": 45864,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.45581037492956966,
+          "python_process_cpu_seconds": 4.204188,
+          "engine_cpu_seconds": 4.204199000000001,
+          "python_process_minor_faults": 47615,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.45627558301202953,
+          "python_process_cpu_seconds": 4.267892,
+          "engine_cpu_seconds": 4.267911,
+          "python_process_minor_faults": 48342,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.4253046659287065,
+          "python_process_cpu_seconds": 4.164368,
+          "engine_cpu_seconds": 4.164386,
+          "python_process_minor_faults": 49036,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.42665433301590383,
+          "python_process_cpu_seconds": 4.178320999999997,
+          "engine_cpu_seconds": 4.178335999999998,
+          "python_process_minor_faults": 46169,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.4035678750369698,
+          "python_process_cpu_seconds": 4.247992,
+          "engine_cpu_seconds": 4.248009,
+          "python_process_minor_faults": 46298,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.39441974996589124,
+          "python_process_cpu_seconds": 4.268516000000002,
+          "engine_cpu_seconds": 4.2685290000000045,
+          "python_process_minor_faults": 47546,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.41030570899602026,
+          "python_process_cpu_seconds": 4.201616000000001,
+          "engine_cpu_seconds": 4.201630999999999,
+          "python_process_minor_faults": 45992,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.39489724999293685,
+          "python_process_cpu_seconds": 4.184224,
+          "engine_cpu_seconds": 4.184238999999998,
+          "python_process_minor_faults": 46114,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3941891249269247,
+          "python_process_cpu_seconds": 4.198666000000003,
+          "engine_cpu_seconds": 4.198681999999998,
+          "python_process_minor_faults": 47212,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.39075045799836516,
+          "python_process_cpu_seconds": 4.148675999999995,
+          "engine_cpu_seconds": 4.1486909999999995,
+          "python_process_minor_faults": 48007,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.41013095900416374,
+          "python_process_cpu_seconds": 4.181861000000005,
+          "engine_cpu_seconds": 4.181874999999998,
+          "python_process_minor_faults": 45332,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.39703204203397036,
+          "python_process_cpu_seconds": 4.132154,
+          "engine_cpu_seconds": 4.132170000000002,
+          "python_process_minor_faults": 44209,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_decode_count_gt": {
+      "seconds": [
+        0.2465594579698518,
+        0.2852772499900311,
+        0.2724368330091238,
+        0.25174674997106194,
+        0.25418599997647107,
+        0.26170370797626674,
+        0.26432266691699624
+      ],
+      "median": 0.26170370797626674,
+      "python_process_cpu_seconds": [
+        2.600998000000004,
+        2.6272260000000074,
+        2.592888000000002,
+        2.5919640000000044,
+        2.590814000000009,
+        2.564403999999996,
+        2.59827700000001
+      ],
+      "python_process_cpu_median": 2.592888000000002,
+      "engine_cpu_seconds": [
+        2.601009000000005,
+        2.6272440000000046,
+        2.5929029999999926,
+        2.59198099999999,
+        2.590829999999997,
+        2.5644139999999993,
+        2.5982910000000032
+      ],
+      "engine_cpu_median": 2.5929029999999926,
+      "python_process_minor_faults": [
+        19266,
+        21261,
+        18942,
+        19702,
+        19423,
+        19411,
+        19104
+      ],
+      "python_process_minor_faults_median": 19411,
+      "value": 24885,
+      "attempts": [
+        {
+          "seconds": 0.24412658298388124,
+          "python_process_cpu_seconds": 2.6181059999999974,
+          "engine_cpu_seconds": 2.6181139999999985,
+          "python_process_minor_faults": 19563,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.27618754201103,
+          "python_process_cpu_seconds": 2.573516000000005,
+          "engine_cpu_seconds": 2.573529999999998,
+          "python_process_minor_faults": 20463,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.25840112508740276,
+          "python_process_cpu_seconds": 2.6044179999999955,
+          "engine_cpu_seconds": 2.6044320000000027,
+          "python_process_minor_faults": 19256,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.25024274992756546,
+          "python_process_cpu_seconds": 2.585728000000003,
+          "engine_cpu_seconds": 2.585741999999996,
+          "python_process_minor_faults": 18974,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.24306970892939717,
+          "python_process_cpu_seconds": 2.5508669999999967,
+          "engine_cpu_seconds": 2.5508809999999897,
+          "python_process_minor_faults": 19809,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.2555928339716047,
+          "python_process_cpu_seconds": 2.6100699999999932,
+          "engine_cpu_seconds": 2.6100799999999964,
+          "python_process_minor_faults": 19780,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.2465594579698518,
+          "python_process_cpu_seconds": 2.600998000000004,
+          "engine_cpu_seconds": 2.601009000000005,
+          "python_process_minor_faults": 19266,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.2852772499900311,
+          "python_process_cpu_seconds": 2.6272260000000074,
+          "engine_cpu_seconds": 2.6272440000000046,
+          "python_process_minor_faults": 21261,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.2724368330091238,
+          "python_process_cpu_seconds": 2.592888000000002,
+          "engine_cpu_seconds": 2.5929029999999926,
+          "python_process_minor_faults": 18942,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.25174674997106194,
+          "python_process_cpu_seconds": 2.5919640000000044,
+          "engine_cpu_seconds": 2.59198099999999,
+          "python_process_minor_faults": 19702,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.25418599997647107,
+          "python_process_cpu_seconds": 2.590814000000009,
+          "engine_cpu_seconds": 2.590829999999997,
+          "python_process_minor_faults": 19423,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.26170370797626674,
+          "python_process_cpu_seconds": 2.564403999999996,
+          "engine_cpu_seconds": 2.5644139999999993,
+          "python_process_minor_faults": 19411,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.26432266691699624,
+          "python_process_cpu_seconds": 2.59827700000001,
+          "engine_cpu_seconds": 2.5982910000000032,
+          "python_process_minor_faults": 19104,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_entries_count": {
+      "seconds": [
+        0.40938104200176895,
+        0.42682470893487334,
+        0.4198742920998484,
+        0.4175381670938805,
+        0.44851324998307973,
+        0.4584316670661792,
+        0.47956162493210286
+      ],
+      "median": 0.42682470893487334,
+      "python_process_cpu_seconds": [
+        4.2115069999999974,
+        4.254671000000002,
+        4.30693500000001,
+        4.194665000000015,
+        4.185953000000012,
+        4.346159,
+        4.2045459999999935
+      ],
+      "python_process_cpu_median": 4.2115069999999974,
+      "engine_cpu_seconds": [
+        4.211523999999997,
+        4.25468699999999,
+        4.306949000000003,
+        4.194680000000005,
+        4.185971000000023,
+        4.346178000000009,
+        4.20456200000001
+      ],
+      "engine_cpu_median": 4.211523999999997,
+      "python_process_minor_faults": [
+        47421,
+        46169,
+        46970,
+        46986,
+        48103,
+        44886,
+        49896
+      ],
+      "python_process_minor_faults_median": 46986,
+      "value": 63083475,
+      "attempts": [
+        {
+          "seconds": 0.45095837500412017,
+          "python_process_cpu_seconds": 4.228532999999999,
+          "engine_cpu_seconds": 4.228545999999994,
+          "python_process_minor_faults": 51007,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.43985829199664295,
+          "python_process_cpu_seconds": 4.30907400000001,
+          "engine_cpu_seconds": 4.309092000000007,
+          "python_process_minor_faults": 47624,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.4200535829877481,
+          "python_process_cpu_seconds": 4.197241999999989,
+          "engine_cpu_seconds": 4.197258000000005,
+          "python_process_minor_faults": 47643,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.40641320892609656,
+          "python_process_cpu_seconds": 4.200566999999992,
+          "engine_cpu_seconds": 4.200581,
+          "python_process_minor_faults": 48657,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5034790839999914,
+          "python_process_cpu_seconds": 4.329513000000006,
+          "engine_cpu_seconds": 4.329526999999999,
+          "python_process_minor_faults": 51443,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.4094978750217706,
+          "python_process_cpu_seconds": 4.196644000000006,
+          "engine_cpu_seconds": 4.1966620000000034,
+          "python_process_minor_faults": 47944,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.40938104200176895,
+          "python_process_cpu_seconds": 4.2115069999999974,
+          "engine_cpu_seconds": 4.211523999999997,
+          "python_process_minor_faults": 47421,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.42682470893487334,
+          "python_process_cpu_seconds": 4.254671000000002,
+          "engine_cpu_seconds": 4.25468699999999,
+          "python_process_minor_faults": 46169,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.4198742920998484,
+          "python_process_cpu_seconds": 4.30693500000001,
+          "engine_cpu_seconds": 4.306949000000003,
+          "python_process_minor_faults": 46970,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.4175381670938805,
+          "python_process_cpu_seconds": 4.194665000000015,
+          "engine_cpu_seconds": 4.194680000000005,
+          "python_process_minor_faults": 46986,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.44851324998307973,
+          "python_process_cpu_seconds": 4.185953000000012,
+          "engine_cpu_seconds": 4.185971000000023,
+          "python_process_minor_faults": 48103,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.4584316670661792,
+          "python_process_cpu_seconds": 4.346159,
+          "engine_cpu_seconds": 4.346178000000009,
+          "python_process_minor_faults": 44886,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.47956162493210286,
+          "python_process_cpu_seconds": 4.2045459999999935,
+          "engine_cpu_seconds": 4.20456200000001,
+          "python_process_minor_faults": 49896,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_sum_dp": {
+      "seconds": [
+        0.2586552919819951,
+        0.27678404189646244,
+        0.26136379200033844,
+        0.25246104097459465,
+        0.26490862504579127,
+        0.3108801250346005,
+        0.2835715829860419
+      ],
+      "median": 0.26490862504579127,
+      "python_process_cpu_seconds": [
+        2.5998030000000085,
+        2.595655000000022,
+        2.581908999999996,
+        2.6035380000000146,
+        2.6245019999999784,
+        2.6014729999999986,
+        2.637917999999985
+      ],
+      "python_process_cpu_median": 2.6014729999999986,
+      "engine_cpu_seconds": [
+        2.599819999999994,
+        2.5956790000000183,
+        2.58193,
+        2.603555,
+        2.6245239999999797,
+        2.601493000000005,
+        2.637943000000007
+      ],
+      "engine_cpu_median": 2.601493000000005,
+      "python_process_minor_faults": [
+        24823,
+        23754,
+        24272,
+        24232,
+        24872,
+        25656,
+        24552
+      ],
+      "python_process_minor_faults_median": 24552,
+      "value": 353709503,
+      "attempts": [
+        {
+          "seconds": 0.27181570802349597,
+          "python_process_cpu_seconds": 2.5897539999999992,
+          "engine_cpu_seconds": 2.5897729999999797,
+          "python_process_minor_faults": 23929,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.2605860420735553,
+          "python_process_cpu_seconds": 2.6052779999999984,
+          "engine_cpu_seconds": 2.6052980000000048,
+          "python_process_minor_faults": 23750,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.250705000013113,
+          "python_process_cpu_seconds": 2.626755000000003,
+          "engine_cpu_seconds": 2.626777000000004,
+          "python_process_minor_faults": 24179,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.2474754590075463,
+          "python_process_cpu_seconds": 2.5825969999999927,
+          "engine_cpu_seconds": 2.5826140000000066,
+          "python_process_minor_faults": 24526,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.28708650008775294,
+          "python_process_cpu_seconds": 2.5848769999999774,
+          "engine_cpu_seconds": 2.5848849999999857,
+          "python_process_minor_faults": 25247,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.24847049999516457,
+          "python_process_cpu_seconds": 2.594729000000001,
+          "engine_cpu_seconds": 2.59474800000001,
+          "python_process_minor_faults": 23508,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.2586552919819951,
+          "python_process_cpu_seconds": 2.5998030000000085,
+          "engine_cpu_seconds": 2.599819999999994,
+          "python_process_minor_faults": 24823,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.27678404189646244,
+          "python_process_cpu_seconds": 2.595655000000022,
+          "engine_cpu_seconds": 2.5956790000000183,
+          "python_process_minor_faults": 23754,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.26136379200033844,
+          "python_process_cpu_seconds": 2.581908999999996,
+          "engine_cpu_seconds": 2.58193,
+          "python_process_minor_faults": 24272,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.25246104097459465,
+          "python_process_cpu_seconds": 2.6035380000000146,
+          "engine_cpu_seconds": 2.603555,
+          "python_process_minor_faults": 24232,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.26490862504579127,
+          "python_process_cpu_seconds": 2.6245019999999784,
+          "engine_cpu_seconds": 2.6245239999999797,
+          "python_process_minor_faults": 24872,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3108801250346005,
+          "python_process_cpu_seconds": 2.6014729999999986,
+          "engine_cpu_seconds": 2.601493000000005,
+          "python_process_minor_faults": 25656,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.2835715829860419,
+          "python_process_cpu_seconds": 2.637917999999985,
+          "engine_cpu_seconds": 2.637943000000007,
+          "python_process_minor_faults": 24552,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}

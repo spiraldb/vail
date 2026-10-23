@@ -1,0 +1,86 @@
+{
+  "table_force_count": {
+    "vail": {
+      "seconds_median": 0.028175645507872105,
+      "engine_cpu_seconds_median": 0.29801350000000015,
+      "samples": 14
+    },
+    "hail": {
+      "seconds_median": 0.16111660399474204,
+      "engine_cpu_seconds_median": 1.4915576279999971,
+      "samples": 14
+    },
+    "value": 1000000,
+    "wall_speedup": 5.718293266776338
+  },
+  "table_scalar_sum": {
+    "vail": {
+      "seconds_median": 0.018934687483124435,
+      "engine_cpu_seconds_median": 0.16196999999999973,
+      "samples": 14
+    },
+    "hail": {
+      "seconds_median": 0.15155181247973815,
+      "engine_cpu_seconds_median": 1.380898651999999,
+      "samples": 14
+    },
+    "value": 1499998500000,
+    "wall_speedup": 8.003924681345223
+  },
+  "matrix_decode_count": {
+    "vail": {
+      "seconds_median": 0.4012061459943652,
+      "engine_cpu_seconds_median": 4.2001564999999985,
+      "samples": 14
+    },
+    "hail": {
+      "seconds_median": 0.4342217505327426,
+      "engine_cpu_seconds_median": 3.6446206159999974,
+      "samples": 14
+    },
+    "value": 24885,
+    "wall_speedup": 1.082290874324844
+  },
+  "matrix_decode_count_gt": {
+    "vail": {
+      "seconds_median": 0.27885704149957746,
+      "engine_cpu_seconds_median": 2.640084999999999,
+      "samples": 14
+    },
+    "hail": {
+      "seconds_median": 0.3981710415100679,
+      "engine_cpu_seconds_median": 3.310789996000018,
+      "samples": 14
+    },
+    "value": 24885,
+    "wall_speedup": 1.427867983425734
+  },
+  "matrix_entries_count": {
+    "vail": {
+      "seconds_median": 0.46163458353839815,
+      "engine_cpu_seconds_median": 4.341876000000013,
+      "samples": 14
+    },
+    "hail": {
+      "seconds_median": 1.4707713749958202,
+      "engine_cpu_seconds_median": 13.726978763999966,
+      "samples": 14
+    },
+    "value": 63083475,
+    "wall_speedup": 3.186007780704938
+  },
+  "matrix_sum_dp": {
+    "vail": {
+      "seconds_median": 0.2724651459720917,
+      "engine_cpu_seconds_median": 2.644909999999996,
+      "samples": 14
+    },
+    "hail": {
+      "seconds_median": 0.4476586250239052,
+      "engine_cpu_seconds_median": 3.8397356080000122,
+      "samples": 14
+    },
+    "value": 353709503,
+    "wall_speedup": 1.6429940916911199
+  }
+}

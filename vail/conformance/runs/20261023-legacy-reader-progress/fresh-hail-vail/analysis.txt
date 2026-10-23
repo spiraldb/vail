@@ -1,0 +1,21 @@
+Fresh Hail / Vail legacy-format comparison — 2026-10-23
+
+Vail binary: source bba0d826 (partition-preserving aggregate splitting, persistent decompressor and direct buffers). Pending source-only decoder experiments were not built or included. Hail0.2.139-5e5eedb87ff8, Spark3.5.9, TemurinJava11, Spark local[14]. Apple M3Max14cores(10P+4E), sharedhost. Both engines read the identical Hail-written .ht and .mt directly; no format conversion.
+
+ABBA order Vail/Hail/Hail/Vail. Six warmups and seven accepted measured actions percase perprocess; pooled medians over14 samples perengine. Rust-compilation overlaps rejected. Warm OS cache; engine startup excluded. Each action constructs/reads the legacy table or matrix and executes the query. VailCPU includes Python plus allnative worker threads. HailCPU includes Python plus its exact Java gateway process (all executor threads, JIT and GC occurring within the measured window). Otherhost workloads are not rejected.
+
+Fixture HT:1million rows,16partitions. MT:24885rows×2535columns=63083475entries,16row partitions. Exact fixture paths are in raw JSON.
+
+Wall seconds Vail/Hail; speedup; CPU-seconds Vail/Hail:
+table_force_count: 0.028176 / 0.161117; 5.718x; 0.298014 / 1.491558
+table_scalar_sum: 0.018935 / 0.151552; 8.004x; 0.161970 / 1.380899
+matrix_decode_count: 0.401206 / 0.434222; 1.082x; 4.200156 / 3.644621
+matrix_decode_count_gt: 0.278857 / 0.398171; 1.428x; 2.640085 / 3.310790
+matrix_entries_count: 0.461635 / 1.470771; 3.186x; 4.341876 / 13.726979
+matrix_sum_dp: 0.272465 / 0.447659; 1.643x; 2.644910 / 3.839736
+
+All six query results agree exactly in all four phases. Force-count actions consume decoded data; the table scalar and DP aggregates permit projection/skipping. Entrycount is entries()._force_count(), not a metadata count.
+
+The full matrix read remains the weakest result:8% faster wall time but15% moreCPU than Hail. GT-only1.43x, entrycount3.19x, DPsum1.64x wall speedup. DP uses31% lessCPU. This does not establish all legacy workloads substantially faster or codegeneration as the sole remaining difference.
+
+These are local warm timings, not scale-out or cold-disk throughput. Raw phases retain process and engine CPU, minorfaults, values, and rejected-overlap attempts.
