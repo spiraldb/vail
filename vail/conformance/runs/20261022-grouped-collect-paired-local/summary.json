@@ -1,0 +1,113 @@
+{
+  "hail": {
+    "repetitions": [
+      {
+        "event": "done",
+        "engine": "hail",
+        "case": "representative_group_by_collect_per_row_20k_1000",
+        "rep": 1,
+        "status": "pass",
+        "result": 20000,
+        "wall": 0.6637453329749405,
+        "self_core": 0.10809499999999983,
+        "self_maxrss": 282869760,
+        "tree_core": 5.202917824000004,
+        "tree_peak_rss": 1315569664,
+        "telemetry": "/tmp/local-grouped-collect-paired-20261022/hail-representative_group_by_collect_per_row_20k_1000-1-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "hail",
+        "case": "representative_group_by_collect_per_row_20k_1000",
+        "rep": 2,
+        "status": "pass",
+        "result": 20000,
+        "wall": 0.5541313339490443,
+        "self_core": 0.10987499999999983,
+        "self_maxrss": 282869760,
+        "tree_core": 5.760393983999997,
+        "tree_peak_rss": 1345830912,
+        "telemetry": "/tmp/local-grouped-collect-paired-20261022/hail-representative_group_by_collect_per_row_20k_1000-2-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "hail",
+        "case": "representative_group_by_collect_per_row_20k_1000",
+        "rep": 3,
+        "status": "pass",
+        "result": 20000,
+        "wall": 0.3706656669965014,
+        "self_core": 0.06040299999999965,
+        "self_maxrss": 282869760,
+        "tree_core": 3.9115907839999977,
+        "tree_peak_rss": 1373454336,
+        "telemetry": "/tmp/local-grouped-collect-paired-20261022/hail-representative_group_by_collect_per_row_20k_1000-3-telemetry.jsonl"
+      }
+    ],
+    "wall_median": 0.5541313339490443,
+    "core_median": 5.202917824000004,
+    "peak_rss_bytes": 1373454336
+  },
+  "vail": {
+    "repetitions": [
+      {
+        "event": "done",
+        "engine": "vail",
+        "case": "representative_group_by_collect_per_row_20k_1000",
+        "rep": 1,
+        "status": "pass",
+        "result": 20000,
+        "wall": 0.05220091692171991,
+        "self_core": 0.27989899999999995,
+        "self_maxrss": 247382016,
+        "tree_core": 0.296102868,
+        "tree_peak_rss": 247382016,
+        "telemetry": "/tmp/local-grouped-collect-paired-20261022/vail-representative_group_by_collect_per_row_20k_1000-1-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "vail",
+        "case": "representative_group_by_collect_per_row_20k_1000",
+        "rep": 2,
+        "status": "pass",
+        "result": 20000,
+        "wall": 0.020525458035990596,
+        "self_core": 0.17972900000000003,
+        "self_maxrss": 248168448,
+        "tree_core": 0.19633220799999995,
+        "tree_peak_rss": 248152064,
+        "telemetry": "/tmp/local-grouped-collect-paired-20261022/vail-representative_group_by_collect_per_row_20k_1000-2-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "vail",
+        "case": "representative_group_by_collect_per_row_20k_1000",
+        "rep": 3,
+        "status": "pass",
+        "result": 20000,
+        "wall": 0.01957587501965463,
+        "self_core": 0.17603999999999992,
+        "self_maxrss": 248266752,
+        "tree_core": 0.19197335999999998,
+        "tree_peak_rss": 248233984,
+        "telemetry": "/tmp/local-grouped-collect-paired-20261022/vail-representative_group_by_collect_per_row_20k_1000-3-telemetry.jsonl"
+      }
+    ],
+    "wall_median": 0.020525458035990596,
+    "core_median": 0.19633220799999995,
+    "peak_rss_bytes": 248233984
+  },
+  "ratio_hail_over_vail": {
+    "wall_median": 26.9972700719953,
+    "core_median": 26.50058223763268
+  },
+  "provenance": {
+    "vail_source": "3373d094 (reviewed grouped-collect source, merged main)",
+    "native_sha256": "f32664067c0761f1982884d4a95fc6dc092be46942bea22815abb81ec6aafd14",
+    "hail": "stock PyPI0.2.139",
+    "cores": 32,
+    "hail_heap": "24g",
+    "scope": "Representative20k\u00d71000 deterministic persisted matrix, NOT full250k\u00d71000 upstream randomgnomadfixture",
+    "note": "Hailmatchingfixturebuiltonceoutsidequerytimings;Vailpreexisting41MBfixture. Unrelatedlegacycompiler~onecore/Gitactivity; engine timingserial. VeryshortVailcases10Hzhasfew/nointervalsamples; terminalprocessCPUstillrecorded."
+  }
+}
