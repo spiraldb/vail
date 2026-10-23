@@ -146,7 +146,9 @@ fn visit_take(
     let mut length = 0usize;
     for row in 0..values.rows {
         let source = values.span(row);
-        for index in positions.span(row) {
+        let owner = positions.span(row);
+        let width = owner.len();
+        for index in owner {
             if indices.is_null(index) {
                 return exec_err!("matrix positions must not be missing");
             }
@@ -158,10 +160,10 @@ fn visit_take(
                 );
             }
             selected(source.start + position as usize);
-            length = length.checked_add(1).ok_or_else(|| {
-                datafusion_common::exec_datafusion_err!("matrix gather exceeds Arrow list capacity")
-            })?;
         }
+        length = length.checked_add(width).ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("matrix gather exceeds Arrow list capacity")
+        })?;
         offsets.push(take_offset(length)?);
     }
     Ok(offsets)

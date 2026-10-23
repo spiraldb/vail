@@ -697,8 +697,56 @@ impl Node {
             }
             Wire::Float32 => input.skip(4)?,
             Wire::Float64 => input.skip(8)?,
+            Wire::Array => return self.skip_array(input),
             _ => return self.skip_container(input),
         }
+        Ok(())
+    }
+    // Keep array framing out of the inlined per-field dispatch. Arrays have
+    // their own compact frame rather than sharing recursive struct machinery.
+    #[inline(never)]
+    fn skip_array(&self, input: &mut Input) -> Result<()> {
+        let n = self.length(input)?;
+        let c = &self.children[0];
+        let bits = if c.e.required {
+            Bitmap::Inline([0; 8])
+        } else {
+            bitmap(input, n)?
+        };
+        let (varint_bits, fixed_width) = match self.array_skip {
+            ArraySkip::Int32 if input.leb => (Some(32), None),
+            ArraySkip::Int32 => (None, Some(4)),
+            ArraySkip::Int64 if input.leb => (Some(64), None),
+            ArraySkip::Int64 => (None, Some(8)),
+            ArraySkip::Varint => (Some(64), None),
+            ArraySkip::Fixed { raw, leb } => (None, if input.leb { leb } else { raw }),
+        };
+        if let Some(bits_per_value) = varint_bits {
+            let count = if c.e.required {
+                n
+            } else {
+                bits.present_count(n)
+            };
+            input.skip_varints(count, bits_per_value)?;
+        } else if let Some(width) = fixed_width {
+            let count = if c.e.required {
+                n
+            } else {
+                bits.present_count(n)
+            };
+            input.skip(
+                count
+                    .checked_mul(width)
+                    .ok_or("Hail array byte length overflow")?,
+            )?
+        } else {
+            for i in 0..n {
+                if c.e.required || !absent(&bits, i) {
+                    c.skip(input)?
+                }
+            }
+        }
+
         Ok(())
     }
     fn skip_container(&self, input: &mut Input) -> Result<()> {
@@ -717,48 +765,7 @@ impl Node {
                     }
                 }
             }
-            Wire::Array => {
-                let n = self.length(input)?;
-                let c = &self.children[0];
-                let bits = if c.e.required {
-                    Bitmap::Inline([0; 8])
-                } else {
-                    bitmap(input, n)?
-                };
-                let (varint_bits, fixed_width) = match self.array_skip {
-                    ArraySkip::Int32 if input.leb => (Some(32), None),
-                    ArraySkip::Int32 => (None, Some(4)),
-                    ArraySkip::Int64 if input.leb => (Some(64), None),
-                    ArraySkip::Int64 => (None, Some(8)),
-                    ArraySkip::Varint => (Some(64), None),
-                    ArraySkip::Fixed { raw, leb } => (None, if input.leb { leb } else { raw }),
-                };
-                if let Some(bits_per_value) = varint_bits {
-                    let count = if c.e.required {
-                        n
-                    } else {
-                        bits.present_count(n)
-                    };
-                    input.skip_varints(count, bits_per_value)?;
-                } else if let Some(width) = fixed_width {
-                    let count = if c.e.required {
-                        n
-                    } else {
-                        bits.present_count(n)
-                    };
-                    input.skip(
-                        count
-                            .checked_mul(width)
-                            .ok_or("Hail array byte length overflow")?,
-                    )?
-                } else {
-                    for i in 0..n {
-                        if c.e.required || !absent(&bits, i) {
-                            c.skip(input)?
-                        }
-                    }
-                }
-            }
+
             Wire::Ndarray => {
                 let mut n = 1usize;
                 for _ in 0..self.e.rank {
