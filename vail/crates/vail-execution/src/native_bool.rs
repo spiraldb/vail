@@ -48,6 +48,12 @@ struct TotalBoolUdf {
     signature: Signature,
 }
 
+pub(crate) fn coordinate_bool(udf: &AggregateUDF) -> Option<bool> {
+    udf.inner()
+        .downcast_ref::<TotalBoolUdf>()
+        .map(|operation| operation.operation.identity())
+}
+
 pub(crate) fn total_bool_udaf(name: &str) -> Arc<AggregateUDF> {
     let operation = match name {
         "any" => Operation::Any,
