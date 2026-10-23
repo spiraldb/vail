@@ -13,6 +13,7 @@ pub mod bgen_export;
 pub mod comparison;
 mod compressed_text;
 mod conditional_globals;
+mod count_explode;
 mod aggregate_singleton;
 pub mod globals;
 mod group_ranges;

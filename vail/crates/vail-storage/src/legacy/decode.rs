@@ -1,9 +1,53 @@
 use super::input::Input;
 use super::*;
 use arrow_array::{builder::*, *};
-use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
+use arrow_buffer::{NullBufferBuilder, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, FieldRef, Fields};
 use vail_execution::expressions::PrimitiveType as P;
+
+// Calls retain their public Arrow struct and all child null semantics, while
+// their hot append path binds the four physical builders without enum lookups.
+struct CallColumn {
+    fields: Fields,
+    first: UInt16Builder,
+    second: UInt16Builder,
+    ploidy: UInt8Builder,
+    phased: BooleanBuilder,
+    valid: NullBufferBuilder,
+}
+impl CallColumn {
+    fn new(fields: Fields) -> Self {
+        Self {
+            fields,
+            first: UInt16Builder::with_capacity(8192),
+            second: UInt16Builder::with_capacity(8192),
+            ploidy: UInt8Builder::with_capacity(8192),
+            phased: BooleanBuilder::with_capacity(8192),
+            valid: NullBufferBuilder::new(8192),
+        }
+    }
+    fn null(&mut self) {
+        self.first.append_null();
+        self.second.append_null();
+        self.ploidy.append_null();
+        self.phased.append_null();
+        self.valid.append_null();
+    }
+    fn finish(&mut self) -> Result<ArrayRef> {
+        let len = self.valid.len();
+        Ok(Arc::new(StructArray::try_new_with_length(
+            self.fields.clone(),
+            vec![
+                Arc::new(self.first.finish()),
+                Arc::new(self.second.finish()),
+                Arc::new(self.ploidy.finish()),
+                Arc::new(self.phased.finish()),
+            ],
+            self.valid.finish(),
+            len,
+        )?))
+    }
+}
 
 // Column builders own values directly. No intermediate row maps, JSON values,
 // Python objects, or per-cell foreign-language calls are used by the decoder.
@@ -17,8 +61,9 @@ enum Column {
     String(StringBuilder),
     UInt16(UInt16Builder),
     UInt8(UInt8Builder),
-    Struct(Fields, Vec<Column>, Vec<bool>),
-    List(FieldRef, Box<Column>, Vec<i32>, Vec<bool>),
+    Call(Box<CallColumn>),
+    Struct(Fields, Vec<Column>, NullBufferBuilder),
+    List(FieldRef, Box<Column>, Vec<i32>, NullBufferBuilder),
 }
 impl Column {
     fn new(t: &DataType) -> Self {
@@ -26,13 +71,13 @@ impl Column {
             DataType::Struct(fs) => Self::Struct(
                 fs.clone(),
                 fs.iter().map(|f| Self::new(f.data_type())).collect(),
-                vec![],
+                NullBufferBuilder::new(8192),
             ),
             DataType::List(f) => Self::List(
                 f.clone(),
                 Box::new(Self::new(f.data_type())),
                 vec![0],
-                vec![],
+                NullBufferBuilder::new(8192),
             ),
             DataType::Boolean => Self::Bool(BooleanBuilder::with_capacity(8192)),
             DataType::Int32 => Self::Int32(Int32Builder::with_capacity(8192)),
@@ -47,6 +92,9 @@ impl Column {
     }
     fn projected(node: &Node, ty: &DataType) -> Self {
         match ty {
+            DataType::Struct(fields) if matches!(node.ty, Type::Primitive(P::Call)) => {
+                Self::Call(Box::new(CallColumn::new(fields.clone())))
+            }
             DataType::Struct(fields) if node.e.kind == "EBaseStruct" => {
                 let children = fields
                     .iter()
@@ -59,13 +107,13 @@ impl Column {
                         None => Self::new(f.data_type()),
                     })
                     .collect();
-                Self::Struct(fields.clone(), children, vec![])
+                Self::Struct(fields.clone(), children, NullBufferBuilder::new(8192))
             }
             DataType::List(field) if node.e.kind.starts_with("EArray") => Self::List(
                 field.clone(),
                 Box::new(Self::projected(&node.children[0], field.data_type())),
                 vec![0],
-                vec![],
+                NullBufferBuilder::new(8192),
             ),
             _ => Self::new(ty),
         }
@@ -126,21 +174,25 @@ impl Column {
         };
         builder
     }
+    #[inline(always)]
     fn children(&mut self) -> &mut Vec<Column> {
         let Self::Struct(_, c, _) = self else {
             unreachable!()
         };
         c
     }
+    #[inline(always)]
     fn valid(&mut self, v: bool) {
         let Self::Struct(_, _, valid) = self else {
             unreachable!()
         };
-        valid.push(v)
+        valid.append(v)
     }
+    #[inline(always)]
     fn len(&self) -> usize {
         match self {
             Self::Skipped(_, n, _) => *n,
+            Self::Call(c) => c.valid.len(),
             Self::Bool(b) => b.len(),
             Self::Int32(b) => b.len(),
             Self::Int64(b) => b.len(),
@@ -155,15 +207,20 @@ impl Column {
     fn null(&mut self) -> Result<()> {
         match self {
             Self::Skipped(_, n, _) => *n += 1,
+            Self::Call(c) => c.null(),
             Self::Struct(_, c, v) => {
                 for c in c {
-                    c.null()?
+                    // A skipped child takes its full length from this owning
+                    // struct at finish, including missing parent positions.
+                    if !matches!(c, Self::Skipped(..)) {
+                        c.null()?;
+                    }
                 }
-                v.push(false)
+                v.append_null()
             }
             Self::List(_, _, o, v) => {
                 o.push(*o.last().unwrap());
-                v.push(false)
+                v.append_null()
             }
             Self::Bool(b) => b.append_null(),
             Self::Int32(b) => b.append_null(),
@@ -176,16 +233,18 @@ impl Column {
         }
         Ok(())
     }
+    #[inline(always)]
     fn end_list(&mut self) -> Result<()> {
         let Self::List(_, c, o, v) = self else {
             unreachable!()
         };
         o.push(i32::try_from(c.len())?);
-        v.push(true);
+        v.append_non_null();
         Ok(())
     }
     fn finish(&mut self) -> Result<ArrayRef> {
         Ok(match self {
+            Self::Call(c) => c.finish()?,
             Self::Skipped(ty, n, cached) => {
                 let length = std::mem::take(n);
                 if cached.as_ref().is_none_or(|array| array.len() < length) {
@@ -203,11 +262,19 @@ impl Column {
             Self::UInt8(b) => Arc::new(b.finish()),
             Self::Struct(fs, c, v) => {
                 let n = v.len();
-                let arrays = c.iter_mut().map(Self::finish).collect::<Result<_>>()?;
+                let arrays = c
+                    .iter_mut()
+                    .map(|child| {
+                        if let Self::Skipped(_, len, _) = child {
+                            *len = n;
+                        }
+                        child.finish()
+                    })
+                    .collect::<Result<_>>()?;
                 Arc::new(StructArray::try_new_with_length(
                     fs.clone(),
                     arrays,
-                    Some(NullBuffer::from(std::mem::take(v))),
+                    v.finish(),
                     n,
                 )?)
             }
@@ -218,7 +285,7 @@ impl Column {
                     f.clone(),
                     OffsetBuffer::new(ScalarBuffer::from(offsets)),
                     child,
-                    Some(NullBuffer::from(std::mem::take(v))),
+                    v.finish(),
                 )?)
             }
         })
@@ -306,25 +373,15 @@ fn boolean(input: &mut Input) -> Result<bool> {
         _ => Err("invalid Hail Boolean".into()),
     }
 }
-fn integer(input: &mut Input, e: &Encoding, bits: u32) -> Result<i64> {
-    if e.kind == "EVarint" {
-        let v = input.varint(64)?;
-        Ok(if bits == 32 {
-            if v > u32::MAX as u64 {
-                return Err("Hail int32 varint overflow".into());
-            }
-            v as u32 as i32 as i64
-        } else {
-            v as i64
-        })
-    } else {
-        input.int(bits)
-    }
-}
 enum Bitmap {
     Inline([u8; 8]),
     Heap(Vec<u8>),
 }
+#[inline(never)]
+fn heap_bitmap(input: &mut Input, bytes: usize) -> Result<Bitmap> {
+    Ok(Bitmap::Heap(input.bytes(bytes)?))
+}
+#[inline(always)]
 fn bitmap(input: &mut Input, n: usize) -> Result<Bitmap> {
     let bytes = n.div_ceil(8);
     if bytes <= 8 {
@@ -334,7 +391,7 @@ fn bitmap(input: &mut Input, n: usize) -> Result<Bitmap> {
         }
         Ok(Bitmap::Inline(bits))
     } else {
-        Ok(Bitmap::Heap(input.bytes(bytes)?))
+        heap_bitmap(input, bytes)
     }
 }
 impl Bitmap {
@@ -355,6 +412,7 @@ impl Bitmap {
         len - missing
     }
 }
+#[inline(always)]
 fn absent(bitmap: &Bitmap, i: usize) -> bool {
     let bits: &[u8] = match bitmap {
         Bitmap::Inline(b) => b,
@@ -394,15 +452,52 @@ impl Wire {
     }
 }
 
+#[derive(Clone, Copy)]
+enum AppendKind {
+    Bool,
+    Int32,
+    Int64,
+    Float32,
+    Float64,
+    String,
+    Call,
+    Struct,
+    List,
+    Ndarray,
+}
+impl AppendKind {
+    fn new(ty: &Type) -> Self {
+        match ty {
+            Type::Primitive(P::Bool) => Self::Bool,
+            Type::Primitive(P::Int32) => Self::Int32,
+            Type::Primitive(P::Int64) => Self::Int64,
+            Type::Primitive(P::Float32) => Self::Float32,
+            Type::Primitive(P::Float64) => Self::Float64,
+            Type::Primitive(P::Str) => Self::String,
+            Type::Primitive(P::Call) => Self::Call,
+            Type::Struct { .. }
+            | Type::Tuple { .. }
+            | Type::Interval { .. }
+            | Type::Locus { .. } => Self::Struct,
+            Type::Array { .. } | Type::Set { .. } | Type::Dict { .. } => Self::List,
+            Type::Ndarray { .. } => Self::Ndarray,
+        }
+    }
+}
+
 /// Compile physical destination mapping once, outside the row loop.
 struct Node {
     e: Encoding,
     wire: Wire,
+    append_kind: AppendKind,
+    missing_bits: Vec<usize>,
+    invert_boolean: Vec<bool>,
     ty: Type,
     children: Vec<Node>,
     dest: Vec<usize>,
     project: Vec<bool>,
     optional_count: usize,
+    varint_length: bool,
 }
 impl Node {
     fn new(e: &Encoding, t: &Type) -> Self {
@@ -438,16 +533,62 @@ impl Node {
             children.push(Self::new(&e.fields[0].1, &ndarray.0));
         }
         let project = vec![true; children.len()];
-        let optional_count = children.iter().filter(|c| !c.e.required).count();
+        let mut optional_count = 0;
+        let missing_bits = children
+            .iter()
+            .map(|child| {
+                if child.e.required {
+                    usize::MAX
+                } else {
+                    let bit = optional_count;
+                    optional_count += 1;
+                    bit
+                }
+            })
+            .collect();
+        let invert_boolean = e
+            .fields
+            .iter()
+            .map(|(name, _)| matches!(t, Type::Interval { .. }) && name == "includesStart")
+            .collect();
         Self {
             e: e.clone(),
             wire: Wire::new(&e.kind),
+            append_kind: AppendKind::new(t),
+            missing_bits,
+            invert_boolean,
             ty: t.clone(),
             children,
             dest,
             project,
             optional_count,
+            varint_length: e.kind.ends_with('2'),
         }
+    }
+    #[inline(always)]
+    fn integer(&self, input: &mut Input, bits: u32) -> Result<i64> {
+        if matches!(self.wire, Wire::Varint) {
+            let value = input.varint(64)?;
+            if bits == 32 {
+                if value > u32::MAX as u64 {
+                    return Err("Hail int32 varint overflow".into());
+                }
+                Ok(value as u32 as i32 as i64)
+            } else {
+                Ok(value as i64)
+            }
+        } else {
+            input.int(bits)
+        }
+    }
+    #[inline(always)]
+    fn length(&self, input: &mut Input) -> Result<usize> {
+        let value = if self.varint_length {
+            input.varint(32)? as i64
+        } else {
+            input.int(32)?
+        };
+        Ok(usize::try_from(value).map_err(|_| "negative Hail collection length")?)
     }
     // Compile child demand once, like Vortex struct layouts. Lists propagate
     // demand to their elements without materializing unrelated children.
@@ -491,6 +632,7 @@ impl Node {
             _ => None,
         }
     }
+    #[inline(always)]
     fn skip(&self, input: &mut Input) -> Result<()> {
         match self.wire {
             Wire::Bool => {
@@ -507,28 +649,28 @@ impl Node {
             }
             Wire::Float32 => input.skip(4)?,
             Wire::Float64 => input.skip(8)?,
+            _ => return self.skip_container(input),
+        }
+        Ok(())
+    }
+    fn skip_container(&self, input: &mut Input) -> Result<()> {
+        match self.wire {
             Wire::Binary => {
-                let n = input.length(&self.e)?;
+                let n = self.length(input)?;
                 input.skip(n)?
             }
             Wire::Struct => {
                 let bits = bitmap(input, self.optional_count)?;
-                let mut optional = 0;
-                for c in &self.children {
-                    let missing = if c.e.required {
-                        false
-                    } else {
-                        let b = absent(&bits, optional);
-                        optional += 1;
-                        b
-                    };
+                for (i, c) in self.children.iter().enumerate() {
+                    let bit = self.missing_bits[i];
+                    let missing = bit != usize::MAX && absent(&bits, bit);
                     if !missing {
                         c.skip(input)?
                     }
                 }
             }
             Wire::Array => {
-                let n = input.length(&self.e)?;
+                let n = self.length(input)?;
                 let c = &self.children[0];
                 let bits = if c.e.required {
                     Bitmap::Inline([0; 8])
@@ -578,168 +720,230 @@ impl Node {
                     self.children[0].skip(input)?
                 }
             }
+            _ => unreachable!("primitive leaves use compact skip dispatch"),
         }
         Ok(())
     }
+    #[inline(always)]
     fn append(&self, input: &mut Input, out: &mut Column) -> Result<()> {
-        match &self.ty {
-            Type::Primitive(P::Bool) => out.bool_builder().append_value(boolean(input)?),
-            Type::Primitive(P::Int32) => out
-                .int32()
-                .append_value(integer(input, &self.e, 32)? as i32),
-            Type::Primitive(P::Int64) => out.int64().append_value(integer(input, &self.e, 64)?),
-            Type::Primitive(P::Float32) => out
+        // The recursive container loop sees only this compact leaf dispatch;
+        // large struct/list/ndarray decoding stays outside its instruction path.
+        match self.append_kind {
+            AppendKind::Bool => out.bool_builder().append_value(boolean(input)?),
+            AppendKind::Int32 => out.int32().append_value(self.integer(input, 32)? as i32),
+            AppendKind::Int64 => out.int64().append_value(self.integer(input, 64)?),
+            AppendKind::Float32 => out
                 .float32()
                 .append_value(f32::from_le_bytes(input.fixed()?)),
-            Type::Primitive(P::Float64) => out
+            AppendKind::Float64 => out
                 .float64()
                 .append_value(f64::from_le_bytes(input.fixed()?)),
-            Type::Primitive(P::Str) => {
-                let n = input.length(&self.e)?;
-                let bytes = input.bytes(n)?;
-                out.string().append_value(std::str::from_utf8(&bytes)?);
+            AppendKind::String => return self.append_string(input, out),
+            AppendKind::Call => return self.append_call(input, out),
+            AppendKind::Struct => return self.append_struct(input, out),
+            AppendKind::List => return self.append_list(input, out),
+            AppendKind::Ndarray => return self.append_ndarray(input, out),
+        }
+        Ok(())
+    }
+    fn append_string(&self, input: &mut Input, out: &mut Column) -> Result<()> {
+        let n = self.length(input)?;
+        let bytes = input.bytes(n)?;
+        out.string().append_value(std::str::from_utf8(&bytes)?);
+        Ok(())
+    }
+    fn append_call(&self, input: &mut Input, out: &mut Column) -> Result<()> {
+        let v = self.integer(input, 32)? as u32;
+        let ploidy = ((v >> 1) & 3) as u8;
+        let phased = v & 1 != 0;
+        let allele = (v >> 3) as u64;
+        let (a, b) = match ploidy {
+            0 => (0, 0),
+            1 => (allele, 0),
+            // Common unphased biallelic calls avoid integer square root
+            // for every GT in dense genotype datasets.
+            2 if !phased && allele <= 2 => match allele {
+                0 => (0, 0),
+                1 => (0, 1),
+                _ => (1, 1),
+            },
+            2 => {
+                let k = ((8 * allele + 1).isqrt() - 1) / 2;
+                let j = allele - k * (k + 1) / 2;
+                (j, if phased { k - j } else { k })
             }
-            Type::Primitive(P::Call) => {
-                let v = integer(input, &self.e, 32)? as u32;
-                let ploidy = ((v >> 1) & 3) as u8;
-                let phased = v & 1 != 0;
-                let allele = (v >> 3) as u64;
-                let (a, b) = match ploidy {
-                    0 => (0, 0),
-                    1 => (allele, 0),
-                    // Common unphased biallelic calls avoid integer square root
-                    // for every GT in dense genotype datasets.
-                    2 if !phased && allele <= 2 => match allele {
-                        0 => (0, 0),
-                        1 => (0, 1),
-                        _ => (1, 1),
-                    },
-                    2 => {
-                        let k = ((8 * allele + 1).isqrt() - 1) / 2;
-                        let j = allele - k * (k + 1) / 2;
-                        (j, if phased { k - j } else { k })
-                    }
-                    _ => return Err("invalid Hail call ploidy".into()),
-                };
-                let c = out.children();
-                c[0].uint16().append_value(u16::try_from(a)?);
-                c[1].uint16().append_value(u16::try_from(b)?);
-                c[2].uint8().append_value(ploidy);
-                c[3].bool_builder().append_value(phased);
-                out.valid(true)
+            _ => return Err("invalid Hail call ploidy".into()),
+        };
+        let first = u16::try_from(a)?;
+        let second = u16::try_from(b)?;
+        if let Column::Call(c) = out {
+            c.first.append_value(first);
+            c.second.append_value(second);
+            c.ploidy.append_value(ploidy);
+            c.phased.append_value(phased);
+            c.valid.append_non_null();
+        } else {
+            // Generic Arrow builders are retained for record helpers and
+            // differential tests, without guessing Call identity from names.
+            let c = out.children();
+            c[0].uint16().append_value(first);
+            c[1].uint16().append_value(second);
+            c[2].uint8().append_value(ploidy);
+            c[3].bool_builder().append_value(phased);
+            out.valid(true);
+        }
+        Ok(())
+    }
+    fn append_struct(&self, input: &mut Input, out: &mut Column) -> Result<()> {
+        let bits = bitmap(input, self.optional_count)?;
+        for (i, c) in self.children.iter().enumerate() {
+            let bit = self.missing_bits[i];
+            let missing = bit != usize::MAX && absent(&bits, bit);
+            if !self.project[i] {
+                if !missing {
+                    c.skip(input)?
+                }
+                // The owning struct supplies skipped child length at
+                // finish; no work per omitted field per entry.
+                continue;
             }
-            Type::Struct { .. }
-            | Type::Tuple { .. }
-            | Type::Interval { .. }
-            | Type::Locus { .. } => {
-                let bits = bitmap(input, self.optional_count)?;
-                let mut optional = 0;
-                for (i, c) in self.children.iter().enumerate() {
-                    let missing = if c.e.required {
-                        false
-                    } else {
-                        let b = absent(&bits, optional);
-                        optional += 1;
-                        b
-                    };
-                    if !self.project[i] {
-                        if !missing {
-                            c.skip(input)?
-                        }
-                        out.children()[self.dest[i]].null()?;
-                        continue;
-                    }
-                    let target = &mut out.children()[self.dest[i]];
-                    if missing {
-                        target.null()?
-                    } else if matches!(self.ty, Type::Interval { .. })
-                        && self.e.fields[i].0 == "includesStart"
-                    {
-                        target.bool_builder().append_value(!boolean(input)?)
-                    } else {
-                        c.append(input, target)?
-                    }
-                }
-                if let Type::Locus { locus } = &self.ty {
-                    let c = out.children();
-                    let builder = c[1].string();
-                    let bytes = builder.values_slice();
-                    let offsets = builder.offsets_slice();
-                    let n = offsets.len();
-                    let contig = std::str::from_utf8(
-                        &bytes[offsets[n - 2] as usize..offsets[n - 1] as usize],
-                    )?;
-                    let ordinal = locus.ordinal(contig).ok_or("invalid Hail locus contig")?;
-                    c[0].int32().append_value(ordinal);
-                }
-                if matches!(&self.ty,Type::Tuple{tuple}if tuple.is_empty()) {
-                    out.children()[0].bool_builder().append_value(true)
-                }
-                out.valid(true);
-            }
-            Type::Array { .. } | Type::Set { .. } | Type::Dict { .. } => {
-                let n = input.length(&self.e)?;
-                let c = &self.children[0];
-                let bits = if c.e.required {
-                    Bitmap::Inline([0; 8])
-                } else {
-                    bitmap(input, n)?
-                };
-                let Column::List(_, child, _, _) = out else {
-                    unreachable!()
-                };
-                for i in 0..n {
-                    if !c.e.required && absent(&bits, i) {
-                        child.null()?
-                    } else {
-                        c.append(input, child)?
-                    }
-                }
-                out.end_list()?
-            }
-            Type::Ndarray { ndarray } => {
-                let shape = (0..ndarray.1)
-                    .map(|_| Ok(usize::try_from(input.int(64)?)?))
-                    .collect::<Result<Vec<_>>>()?;
-                let n = shape.iter().try_fold(1usize, |n, x| {
-                    n.checked_mul(*x).ok_or("Hail ndarray shape overflow")
-                })?;
-                // Arrow data is C order; Hail encodes Fortran order. Decode straight
-                // into a typed temporary column, then permute this one ndarray.
-                let mut values = Column::new(&ndarray.0.to_arrow()?);
-                for _ in 0..n {
-                    self.children[0].append(input, &mut values)?
-                }
-                let array = values.finish()?;
-                let c = out.children();
-                let Column::List(_, data, _, _) = &mut c[0] else {
-                    unreachable!()
-                };
-                for row in 0..n {
-                    let mut rest = row;
-                    let mut source = 0;
-                    let mut stride = n;
-                    let mut fstride = 1;
-                    for &dim in &shape {
-                        stride /= dim;
-                        let coord = rest / stride;
-                        rest %= stride;
-                        source += coord * fstride;
-                        fstride *= dim;
-                    }
-                    append_array(data, &array, source)?;
-                }
-                c[0].end_list()?;
-                let Column::List(_, dims, _, _) = &mut c[1] else {
-                    unreachable!()
-                };
-                for d in shape {
-                    dims.int64().append_value(d as i64)
-                }
-                c[1].end_list()?;
-                out.valid(true);
+            let target = &mut out.children()[self.dest[i]];
+            if missing {
+                target.null()?
+            } else if self.invert_boolean[i] {
+                target.bool_builder().append_value(!boolean(input)?)
+            } else {
+                c.append(input, target)?
             }
         }
+        if let Type::Locus { locus } = &self.ty {
+            let c = out.children();
+            let builder = c[1].string();
+            let bytes = builder.values_slice();
+            let offsets = builder.offsets_slice();
+            let n = offsets.len();
+            let contig =
+                std::str::from_utf8(&bytes[offsets[n - 2] as usize..offsets[n - 1] as usize])?;
+            let ordinal = locus.ordinal(contig).ok_or("invalid Hail locus contig")?;
+            c[0].int32().append_value(ordinal);
+        }
+        if matches!(&self.ty,Type::Tuple{tuple}if tuple.is_empty()) {
+            out.children()[0].bool_builder().append_value(true)
+        }
+        out.valid(true);
+
+        Ok(())
+    }
+
+    fn append_list(&self, input: &mut Input, out: &mut Column) -> Result<()> {
+        let n = self.length(input)?;
+        let c = &self.children[0];
+        let bits = if c.e.required {
+            Bitmap::Inline([0; 8])
+        } else {
+            bitmap(input, n)?
+        };
+        let Column::List(_, child, _, _) = out else {
+            unreachable!()
+        };
+        // Bind primitive builders once per array. AD/PL-style integer
+        // arrays avoid recursive Node dispatch and builder selection
+        // for every value while retaining element missingness.
+        macro_rules! primitive_elements {
+            ($builder:expr, $value:expr) => {{
+                let builder = $builder;
+                if c.e.required {
+                    for _ in 0..n {
+                        builder.append_value($value);
+                    }
+                } else {
+                    for i in 0..n {
+                        if absent(&bits, i) {
+                            builder.append_null();
+                        } else {
+                            builder.append_value($value);
+                        }
+                    }
+                }
+            }};
+        }
+        match c.ty {
+            Type::Primitive(P::Int32) => {
+                primitive_elements!(child.int32(), c.integer(input, 32)? as i32)
+            }
+            Type::Primitive(P::Int64) => {
+                primitive_elements!(child.int64(), c.integer(input, 64)?)
+            }
+            Type::Primitive(P::Float32) => {
+                primitive_elements!(child.float32(), f32::from_le_bytes(input.fixed()?))
+            }
+            Type::Primitive(P::Float64) => {
+                primitive_elements!(child.float64(), f64::from_le_bytes(input.fixed()?))
+            }
+            Type::Primitive(P::Bool) => {
+                primitive_elements!(child.bool_builder(), boolean(input)?)
+            }
+            _ => {
+                for i in 0..n {
+                    if !c.e.required && absent(&bits, i) {
+                        child.null()?;
+                    } else {
+                        c.append(input, child)?;
+                    }
+                }
+            }
+        }
+        out.end_list()?;
+
+        Ok(())
+    }
+
+    fn append_ndarray(&self, input: &mut Input, out: &mut Column) -> Result<()> {
+        let Type::Ndarray { ndarray } = &self.ty else {
+            unreachable!("compiled ndarray operation")
+        };
+
+        let shape = (0..ndarray.1)
+            .map(|_| Ok(usize::try_from(input.int(64)?)?))
+            .collect::<Result<Vec<_>>>()?;
+        let n = shape.iter().try_fold(1usize, |n, x| {
+            n.checked_mul(*x).ok_or("Hail ndarray shape overflow")
+        })?;
+        // Arrow data is C order; Hail encodes Fortran order. Decode straight
+        // into a typed temporary column, then permute this one ndarray.
+        let mut values = Column::new(&ndarray.0.to_arrow()?);
+        for _ in 0..n {
+            self.children[0].append(input, &mut values)?
+        }
+        let array = values.finish()?;
+        let c = out.children();
+        let Column::List(_, data, _, _) = &mut c[0] else {
+            unreachable!()
+        };
+        for row in 0..n {
+            let mut rest = row;
+            let mut source = 0;
+            let mut stride = n;
+            let mut fstride = 1;
+            for &dim in &shape {
+                stride /= dim;
+                let coord = rest / stride;
+                rest %= stride;
+                source += coord * fstride;
+                fstride *= dim;
+            }
+            append_array(data, &array, source)?;
+        }
+        c[0].end_list()?;
+        let Column::List(_, dims, _, _) = &mut c[1] else {
+            unreachable!()
+        };
+        for d in shape {
+            dims.int64().append_value(d as i64)
+        }
+        c[1].end_list()?;
+        out.valid(true);
+
         Ok(())
     }
 }
@@ -750,7 +954,7 @@ fn append_array(out: &mut Column, array: &ArrayRef, i: usize) -> Result<()> {
 }
 pub(super) fn record(input: &mut Input, e: &Encoding, ty: &Type) -> Result<ArrayRef> {
     let node = Node::new(e, ty);
-    let mut column = Column::new(&ty.to_arrow()?);
+    let mut column = Column::projected(&node, &ty.to_arrow()?);
     node.append(input, &mut column)?;
     column.finish()
 }
@@ -904,6 +1108,380 @@ impl PartReader {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn typed_call_builder_matches_generic_schema_and_child_validity() -> Result<()> {
+        let ty = Type::Primitive(P::Call);
+        let encoding = Encoding {
+            kind: "EInt32".into(),
+            required: false,
+            fields: vec![],
+            rank: 0,
+        };
+        let node = Node::new(&encoding, &ty);
+        let path =
+            std::env::temp_dir().join(format!("vail-typed-calls-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            let mut typed = Column::projected(&node, &ty.to_arrow()?);
+            let mut generic = Column::new(&ty.to_arrow()?);
+            for values in [
+                vec![0i32, 1, 2, 3, 4, 5, 12, 13, 20, 21, 44, 45],
+                vec![12, 4],
+            ] {
+                for value in values {
+                    std::fs::write(&path, value.to_le_bytes())?;
+                    let spec = serde_json::json!({"name":"StreamBufferSpec"});
+                    node.append(&mut Input::open(&path, &spec)?, &mut typed)?;
+                    node.append(&mut Input::open(&path, &spec)?, &mut generic)?;
+                    typed.null()?;
+                    generic.null()?;
+                }
+                let typed_array = typed.finish()?;
+                let generic_array = generic.finish()?;
+                assert_eq!(typed_array.as_ref(), generic_array.as_ref());
+                let calls = typed_array.as_any().downcast_ref::<StructArray>().unwrap();
+                for child in calls.columns() {
+                    assert_eq!(child.null_count(), calls.null_count());
+                    for i in 0..calls.len() {
+                        assert_eq!(child.is_null(i), calls.is_null(i));
+                    }
+                }
+            }
+            // Invalid ploidy still follows the validated generic decoder path.
+            std::fs::write(&path, 6i32.to_le_bytes())?;
+            assert!(
+                node.append(
+                    &mut Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?,
+                    &mut typed
+                )
+                .is_err()
+            );
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
+    #[test]
+    fn compact_skip_retains_boolean_overflow_and_truncation_checks() -> Result<()> {
+        let path =
+            std::env::temp_dir().join(format!("vail-compact-skip-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            for (kind, ty, bytes, leb) in [
+                ("EBoolean", P::Bool, vec![2], false),
+                ("EInt32", P::Int32, vec![255, 255, 255, 255, 16], true),
+                (
+                    "EVarint",
+                    P::Int64,
+                    vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2],
+                    false,
+                ),
+                ("EFloat64", P::Float64, vec![0; 7], false),
+            ] {
+                std::fs::write(&path, bytes)?;
+                let encoding = Encoding {
+                    kind: kind.into(),
+                    required: true,
+                    fields: vec![],
+                    rank: 0,
+                };
+                let node = Node::new(&encoding, &Type::Primitive(ty));
+                let spec = if leb {
+                    serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
+                } else {
+                    serde_json::json!({"name":"StreamBufferSpec"})
+                };
+                assert!(
+                    node.skip(&mut Input::open(&path, &spec)?).is_err(),
+                    "{kind}"
+                );
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
+    #[test]
+    fn skipped_children_inherit_parent_length_across_missing_structs_and_batches() -> Result<()> {
+        let ty = Type::Struct {
+            r#struct: vec![
+                ("selected".into(), Type::Primitive(P::Int32)),
+                (
+                    "unused".into(),
+                    Type::Array {
+                        array: Box::new(Type::Primitive(P::Int32)),
+                    },
+                ),
+            ],
+        };
+        let integer = Encoding {
+            kind: "EInt32".into(),
+            required: true,
+            fields: vec![],
+            rank: 0,
+        };
+        let encoding = Encoding {
+            kind: "EBaseStruct".into(),
+            required: true,
+            fields: vec![
+                ("selected".into(), integer.clone()),
+                (
+                    "unused".into(),
+                    Encoding {
+                        kind: "EArray".into(),
+                        required: true,
+                        fields: vec![("element".into(), integer)],
+                        rank: 0,
+                    },
+                ),
+            ],
+            rank: 0,
+        };
+        let mut node = Node::new(&encoding, &ty);
+        node.demand(&[vec!["selected".into()]]);
+        let mut column = Column::projected(&node, &ty.to_arrow()?);
+        let path =
+            std::env::temp_dir().join(format!("vail-deferred-lengths-{}.bin", std::process::id()));
+        let bytes = [4i32, 2, 8, 9, 5, 1, 6]
+            .into_iter()
+            .flat_map(i32::to_le_bytes)
+            .collect::<Vec<_>>();
+        std::fs::write(&path, bytes)?;
+        let result = (|| -> Result<()> {
+            for leading_nulls in [1usize, 3, 0] {
+                let mut input =
+                    Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
+                for _ in 0..leading_nulls {
+                    column.null()?;
+                }
+                node.append(&mut input, &mut column)?;
+                column.null()?;
+                node.append(&mut input, &mut column)?;
+                let array = column.finish()?;
+                let structs = array.as_any().downcast_ref::<StructArray>().unwrap();
+                assert_eq!(structs.len(), leading_nulls + 3);
+                assert_eq!(structs.column(1).len(), structs.len());
+                assert_eq!(structs.column(1).null_count(), structs.len());
+                let values = structs
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap();
+                assert_eq!(values.value(leading_nulls), 4);
+                assert_eq!(values.value(leading_nulls + 2), 5);
+                assert_eq!(structs.null_count(), leading_nulls + 1);
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
+    #[test]
+    fn compiled_leaf_dispatch_preserves_physical_field_order_and_missingness() -> Result<()> {
+        let ty = Type::Struct {
+            r#struct: vec![
+                ("a".into(), Type::Primitive(P::Int32)),
+                ("b".into(), Type::Primitive(P::Bool)),
+                ("c".into(), Type::Primitive(P::Float64)),
+            ],
+        };
+        let field = |kind: &str| Encoding {
+            kind: kind.into(),
+            required: false,
+            fields: vec![],
+            rank: 0,
+        };
+        let encoding = Encoding {
+            kind: "EBaseStruct".into(),
+            required: true,
+            fields: vec![
+                ("b".into(), field("EBoolean")),
+                ("c".into(), field("EFloat64")),
+                ("a".into(), field("EInt32")),
+            ],
+            rank: 0,
+        };
+        let node = Node::new(&encoding, &ty);
+        let mut bytes = vec![0b1111_1001]; // b absent; trailing bits are padding.
+        bytes.extend(1.5f64.to_le_bytes());
+        bytes.extend((-3i32).to_le_bytes());
+        let path =
+            std::env::temp_dir().join(format!("vail-compiled-leaves-{}.bin", std::process::id()));
+        std::fs::write(&path, bytes)?;
+        let result = (|| -> Result<()> {
+            let mut input = Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
+            let mut column = Column::new(&ty.to_arrow()?);
+            node.append(&mut input, &mut column)?;
+            column.null()?;
+            let output = column.finish()?;
+            let output = output.as_any().downcast_ref::<StructArray>().unwrap();
+            assert_eq!(
+                output
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .value(0),
+                -3
+            );
+            assert!(output.column(1).is_null(0));
+            assert_eq!(
+                output
+                    .column(2)
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .unwrap()
+                    .value(0),
+                1.5
+            );
+            assert!(output.is_null(1));
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
+    #[test]
+    fn container_validity_is_lazy_and_resets_between_batches() -> Result<()> {
+        let mut column = Column::new(&DataType::Struct(Default::default()));
+        column.valid(true);
+        column.valid(true);
+        assert_eq!(column.len(), 2);
+        let first = column.finish()?;
+        assert_eq!(first.len(), 2);
+        assert!(first.nulls().is_none());
+        assert_eq!(column.len(), 0);
+        column.null()?;
+        column.valid(true);
+        let second = column.finish()?;
+        assert!(second.is_null(0));
+        assert!(!second.is_null(1));
+        column.valid(true);
+        assert!(column.finish()?.nulls().is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn primitive_array_specialization_matches_recursive_decoder() -> Result<()> {
+        fn leb(mut value: u64, bytes: &mut Vec<u8>) {
+            loop {
+                let byte = (value & 127) as u8;
+                value >>= 7;
+                bytes.push(byte | if value != 0 { 128 } else { 0 });
+                if value == 0 {
+                    break;
+                }
+            }
+        }
+        let path =
+            std::env::temp_dir().join(format!("vail-primitive-arrays-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            for required in [false, true] {
+                for compressed_int in [false, true] {
+                    for explicit_varint in [false, true] {
+                        for modern_length in [false, true] {
+                            for width in [32, 64] {
+                                let child_encoding = Encoding {
+                                    kind: if explicit_varint {
+                                        "EVarint"
+                                    } else if width == 32 {
+                                        "EInt32"
+                                    } else {
+                                        "EInt64"
+                                    }
+                                    .into(),
+                                    required,
+                                    fields: vec![],
+                                    rank: 0,
+                                };
+                                let encoding = Encoding {
+                                    kind: if modern_length { "EArray2" } else { "EArray" }.into(),
+                                    required: false,
+                                    fields: vec![("element".into(), child_encoding)],
+                                    rank: 0,
+                                };
+                                let ty = Type::Array {
+                                    array: Box::new(Type::Primitive(if width == 32 {
+                                        P::Int32
+                                    } else {
+                                        P::Int64
+                                    })),
+                                };
+                                let node = Node::new(&encoding, &ty);
+                                let mut bytes = vec![];
+                                if modern_length || compressed_int {
+                                    leb(4, &mut bytes);
+                                } else {
+                                    bytes.extend(4i32.to_le_bytes());
+                                }
+                                if !required {
+                                    bytes.push(0b1111_0010);
+                                }
+                                for (i, value) in [-1i64, 2, 127, 128].into_iter().enumerate() {
+                                    if !required && i == 1 {
+                                        continue;
+                                    }
+                                    if explicit_varint || compressed_int {
+                                        leb(
+                                            if width == 32 {
+                                                value as u32 as u64
+                                            } else {
+                                                value as u64
+                                            },
+                                            &mut bytes,
+                                        );
+                                    } else if width == 32 {
+                                        bytes.extend((value as i32).to_le_bytes());
+                                    } else {
+                                        bytes.extend(value.to_le_bytes());
+                                    }
+                                }
+                                std::fs::write(&path, &bytes)?;
+                                let spec = if compressed_int {
+                                    serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
+                                } else {
+                                    serde_json::json!({"name":"StreamBufferSpec"})
+                                };
+                                let mut specialized = Column::new(&ty.to_arrow()?);
+                                node.append(&mut Input::open(&path, &spec)?, &mut specialized)?;
+                                specialized.null()?; // A missing owning array retains its own null slot.
+                                let mut generic = Column::new(&ty.to_arrow()?);
+                                let mut input = Input::open(&path, &spec)?;
+                                let len = node.length(&mut input)?;
+                                let bitmap = if required {
+                                    Bitmap::Inline([0; 8])
+                                } else {
+                                    bitmap(&mut input, len)?
+                                };
+                                let Column::List(_, values, _, _) = &mut generic else {
+                                    unreachable!()
+                                };
+                                for i in 0..len {
+                                    if !required && absent(&bitmap, i) {
+                                        values.null()?;
+                                    } else {
+                                        node.children[0].append(&mut input, values)?;
+                                    }
+                                }
+                                generic.end_list()?;
+                                generic.null()?;
+                                assert_eq!(
+                                    specialized.finish()?.as_ref(),
+                                    generic.finish()?.as_ref(),
+                                    "required={required} leb={compressed_int} varint={explicit_varint} length2={modern_length} width={width}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
 
     #[test]
     fn bitmap_present_count_ignores_padding_bits() {

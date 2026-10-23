@@ -1578,6 +1578,7 @@ pub async fn count(table: TableRef) -> Result<usize> {
 /// waits for an earlier partition before it can drain a later one.
 pub async fn force_count(table: TableRef) -> Result<usize> {
     let physical = crate::logical::physical(&table).await?;
+    let physical = crate::count_explode::optimize(physical.clone())?.unwrap_or(physical);
     let parts = if table.known_n_partitions() == Some(0) {
         vec![]
     } else {

@@ -254,7 +254,7 @@ impl Input {
         self.bytes += N as u64;
         Ok(out)
     }
-    #[inline]
+    #[inline(always)]
     pub fn byte(&mut self) -> Result<u8> {
         let available = self.source.fill_buf()?;
         let value = *available.first().ok_or("truncated Hail data")?;
@@ -262,8 +262,28 @@ impl Input {
         self.bytes += 1;
         Ok(value)
     }
-    #[inline]
+    #[inline(always)]
     pub fn varint(&mut self, bits: u32) -> Result<u64> {
+        if bits == 0 {
+            return Err("invalid Hail variable length integer".into());
+        }
+        // Small integers dominate genotype arrays. Consume the common single
+        // byte encoding directly and keep continuation handling out of line.
+        let available = self.source.fill_buf()?;
+        if let Some(&byte) = available.first()
+            && byte < 128
+        {
+            if bits < 7 && u64::from(byte) >= 1u64 << bits {
+                return Err("overflow in Hail variable length integer".into());
+            }
+            self.source.consume(1);
+            self.bytes += 1;
+            return Ok(u64::from(byte));
+        }
+        self.varint_long(bits)
+    }
+    #[inline(never)]
+    fn varint_long(&mut self, bits: u32) -> Result<u64> {
         let mut value = 0u64;
         for shift in (0..bits).step_by(7) {
             let b = self.byte()?;
@@ -286,6 +306,21 @@ impl Input {
             let available = self.source.fill_buf()?;
             if available.is_empty() {
                 return Err("truncated Hail data".into());
+            }
+            // Most small numeric arrays have one-byte values. Check eight
+            // terminators at a time, or a short prefix, without decoding any
+            // values. Continuations and narrow integer widths retain the fully
+            // validated path below.
+            if shift == 0 && bits >= 7 && available.len() >= 8 {
+                let count = remaining.min(8);
+                let mask = u64::MAX >> ((8 - count) * 8);
+                let word = u64::from_le_bytes(available[..8].try_into().unwrap());
+                if word & mask & 0x8080_8080_8080_8080 == 0 {
+                    self.source.consume(count);
+                    self.bytes += count as u64;
+                    remaining -= count;
+                    continue;
+                }
             }
             let mut consumed = 0;
             for &byte in available {
@@ -406,6 +441,27 @@ mod tests {
         );
         assert!(buffered(vec![0x80]).skip_varints(1, 32).is_err());
         assert!(buffered(vec![0x80; 10]).skip_varints(1, 64).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn bulk_varint_word_skip_stops_at_requested_value() -> Result<()> {
+        for count in 1..=16 {
+            let mut input = buffered(vec![]);
+            input.source =
+                BufReader::with_capacity(32, Box::new(Cursor::new(vec![7u8; 24])) as Stream);
+            input.skip_varints(count, 32)?;
+            assert_eq!(input.bytes, count as u64);
+            assert_eq!(input.byte()?, 7);
+        }
+        let mut input = buffered(vec![]);
+        input.source = BufReader::with_capacity(
+            32,
+            Box::new(Cursor::new(vec![1u8, 2, 3, 4, 5, 6, 7, 8, 0xac, 2, 42])) as Stream,
+        );
+        input.skip_varints(9, 32)?;
+        assert_eq!(input.bytes, 10);
+        assert_eq!(input.byte()?, 42);
         Ok(())
     }
 

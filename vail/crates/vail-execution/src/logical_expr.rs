@@ -63,6 +63,24 @@ pub fn is_cacheable_closed_semantic_kernel(function: &datafusion_expr::ScalarUDF
         && effects(identity.expression()) != Effects::RandomContext
 }
 
+/// Inspect only Vail's exact typed semantic kernel identity. Consumers must
+/// still prove any optimization against the returned expression's semantics.
+pub fn semantic_kernel(function: &datafusion_expr::ScalarUDF) -> Option<(&Expr, &Schema)> {
+    let kernel = function.inner().downcast_ref::<crate::kernel_identity::Scalar<(
+        crate::expression_identity::Identity, Arc<Schema>
+    )>>()?;
+    let (identity, schema) = kernel.key();
+    Some((identity.expression(), schema.as_ref()))
+}
+
+/// Splitting a deterministic semantic program retains value/error semantics;
+/// random programs require their original shared evaluation context.
+pub fn semantic_kernel_can_split(function: &datafusion_expr::ScalarUDF) -> bool {
+    semantic_kernel(function).is_some_and(|(expression, _)| {
+        crate::expression_effects::effects(expression) != crate::expression_effects::Effects::RandomContext
+    })
+}
+
 fn contains_global_reference(expression: &Expr) -> bool {
     let mut found = false;
     expression.visit_unique(&mut |node| {

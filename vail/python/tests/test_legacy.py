@@ -601,3 +601,25 @@ def test_native_matrix_uses_hail_distinct_row_property(tmp_path, distinct):
     matrix = hl.MatrixTable.read_legacy(path)
     assert matrix._mir.row_key_unique is (distinct is True)
     assert len(matrix.entries().collect()) == 2
+
+
+@pytest.mark.parametrize('query', [
+    'decode_count', 'decode_count_gt', 'entries_count',
+    'sum_dp', 'present_count', 'defined_gt_count',
+])
+def test_native_matrix_composed_layout_public_queries(tmp_path, query):
+    matrix = hl.MatrixTable.read_legacy(_projection_matrix(tmp_path))
+    if query == 'decode_count':
+        actual, expected = matrix._force_count_rows(), 2
+    elif query == 'decode_count_gt':
+        actual, expected = matrix.select_entries('GT')._force_count_rows(), 2
+    elif query == 'entries_count':
+        actual, expected = matrix.entries()._force_count(), 2
+    elif query == 'sum_dp':
+        actual, expected = matrix.aggregate_entries(hl.agg.sum(matrix.DP)), 25
+    elif query == 'present_count':
+        actual, expected = matrix.aggregate_entries(hl.agg.count()), 2
+    else:
+        actual = matrix.aggregate_entries(hl.agg.count_where(hl.is_defined(matrix.GT)))
+        expected = 1
+    assert actual == expected

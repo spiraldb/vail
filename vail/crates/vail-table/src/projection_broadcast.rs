@@ -386,3 +386,14 @@ pub(crate) fn cache_nested_projection_broadcasts(plan: PhysicalPlan) -> TableRes
 
     rewrite(plan, &mut std::collections::HashMap::new()).map_err(Into::into)
 }
+
+/// Remove only transparent projection wrappers for action-local analysis.
+pub(crate) fn count_inner(expr: &Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
+    if let Some(label) = expr.downcast_ref::<ProjectionLabelExpr>() {
+        return count_inner(&label.inner);
+    }
+    if let Some(broadcast) = expr.downcast_ref::<ProjectionBroadcastExpr>() {
+        return count_inner(&broadcast.inner);
+    }
+    expr.clone()
+}

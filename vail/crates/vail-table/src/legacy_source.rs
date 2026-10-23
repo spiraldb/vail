@@ -271,6 +271,16 @@ impl FileOpener for LegacyOpener {
                 None => (0..source.output_schema.fields().len()).collect::<Vec<_>>(),
             };
             if source.matrix.is_some() {
+                if let Some(rows) = source
+                    .counts
+                    .as_ref()
+                    .as_ref()
+                    .and_then(|counts| counts.get(part))
+                    .copied()
+                    .filter(|rows| *rows > 0)
+                {
+                    return matrix_layout_stream(source, part, projection, rows);
+                }
                 return matrix_stream(source, part, projection);
             }
             let requested = projection.clone();
@@ -369,12 +379,12 @@ impl FileOpener for LegacyOpener {
                     if let Some(range) = indexed_range {
                         builder = builder.with_row_range(range);
                     }
-                    let scan = builder
-                        .with_projection(projection_expr)
-                        .with_some_filter(filter)
-                        .with_concurrency(1)
-                        .into_array_stream()
-                        .map_err(external)?;
+                    let scan = sequential_legacy_scan(
+                        builder
+                            .with_projection(projection_expr)
+                            .with_some_filter(filter),
+                    )
+                    .map_err(external)?;
                     Box::pin(scan.map_err(external).and_then(move |array| {
                         let result = vail_storage::legacy::layout::arrow_batch(
                             array,
@@ -453,6 +463,86 @@ fn shape_marker(schema: &arrow_schema::Schema) -> String {
 }
 fn external(error: impl std::fmt::Display) -> DataFusionError {
     DataFusionError::Execution(error.to_string())
+}
+
+/// Vortex's stream concurrency is per runtime worker, so even a value of one
+/// schedules several ranges of the same file concurrently. Native row codecs
+/// share one sequential cursor: poll the public split tasks strictly in order.
+/// DataFusion still executes independent file sources concurrently.
+fn sequential_legacy_scan(
+    builder: vortex::layout::scan::scan_builder::ScanBuilder<vortex::array::ArrayRef>,
+) -> vortex::error::VortexResult<
+    futures::stream::BoxStream<'static, vortex::error::VortexResult<vortex::array::ArrayRef>>,
+> {
+    use futures::StreamExt;
+    let tasks = builder.build()?;
+    Ok(futures::stream::iter(tasks)
+        .then(|task| task)
+        .filter_map(|result| futures::future::ready(result.transpose()))
+        .boxed())
+}
+
+/// Vortex partitions row/entry demands through its struct and list readers.
+/// Old exports without cardinality metadata retain the bounded streaming path.
+fn matrix_layout_stream(
+    source: LegacySource,
+    part: usize,
+    projection: Vec<usize>,
+    rows: u64,
+) -> Result<futures::stream::BoxStream<'static, Result<RecordBatch>>> {
+    use futures::TryStreamExt;
+    use vortex::{
+        VortexSessionDefault, layout::scan::scan_builder::ScanBuilder, session::VortexSession,
+    };
+    let session = VortexSession::default();
+    let matrix = source.matrix.as_ref().unwrap();
+    let schema = Arc::new(source.output_schema.project(&projection)?);
+    let reader = vail_storage::legacy::matrix_layout::reader(
+        source.component.clone(),
+        matrix.entries.clone(),
+        part,
+        rows,
+        matrix.ncols,
+        source.output_schema.clone(),
+        source.batch_size,
+        source.decode_paths,
+        session.clone(),
+    )
+    .map_err(external)?;
+    // DataFusion may retain both physical root columns while nested demand
+    // proves one is unused. Make that placeholder explicit in the Vortex
+    // expression so its struct layout never requests the unused file child.
+    let fields = projection
+        .iter()
+        .map(|&index| {
+            let field = source.output_schema.field(index);
+            let expression = if source
+                .decode_columns
+                .as_ref()
+                .is_some_and(|columns| !columns.contains(&index))
+            {
+                use vortex::arrow::ArrowSessionExt;
+                let dtype = session.arrow().from_arrow_field(field)?;
+                vortex::expr::lit(vortex::scalar::Scalar::null(dtype))
+            } else {
+                vortex::expr::get_item(field.name().as_str(), vortex::expr::root())
+            };
+            Ok((field.name().clone(), expression))
+        })
+        .collect::<vortex::error::VortexResult<Vec<_>>>()
+        .map_err(external)?;
+    let expression = vortex::expr::pack(fields, vortex::dtype::Nullability::NonNullable)
+        .bind(reader.dtype())
+        .map_err(external)?;
+    let scan = sequential_legacy_scan(
+        ScanBuilder::new(session.clone(), reader).with_projection(expression),
+    )
+    .map_err(external)?;
+    Ok(Box::pin(scan.map_err(external).and_then(move |array| {
+        let result = vail_storage::legacy::layout::arrow_batch(array, schema.clone(), &session)
+            .map_err(external);
+        futures::future::ready(result)
+    })))
 }
 
 fn matrix_stream(
@@ -850,4 +940,123 @@ fn narrow_integer_filter(
         min: min as i64,
         max: max as i64,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use futures::{FutureExt, TryStreamExt};
+    use std::{
+        any::Any,
+        ops::Range,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
+    use vortex::{
+        VortexSessionDefault,
+        array::{ArrayRef, IntoArray, MaskFuture, VortexSessionExecute, arrays::ConstantArray},
+        dtype::{DType, FieldMask, Nullability, PType},
+        error::VortexResult,
+        expr::BoundExpression,
+        layout::{LayoutReader, RowSplits, SplitRange, scan::scan_builder::ScanBuilder},
+        mask::Mask,
+        session::VortexSession,
+    };
+
+    struct SequentialReader {
+        name: Arc<str>,
+        dtype: DType,
+        active: Arc<AtomicUsize>,
+    }
+    impl LayoutReader for SequentialReader {
+        fn name(&self) -> &Arc<str> {
+            &self.name
+        }
+        fn dtype(&self) -> &DType {
+            &self.dtype
+        }
+        fn row_count(&self) -> u64 {
+            4
+        }
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+        fn register_splits(
+            &self,
+            _: &[FieldMask],
+            range: &SplitRange,
+            splits: &mut RowSplits,
+        ) -> VortexResult<()> {
+            for row in range.row_range().start + 1..=range.row_range().end {
+                splits.push(row + range.row_offset());
+            }
+            Ok(())
+        }
+        fn pruning_evaluation(
+            &self,
+            _: &Range<u64>,
+            _: &BoundExpression,
+            mask: Mask,
+        ) -> VortexResult<MaskFuture> {
+            Ok(MaskFuture::ready(mask))
+        }
+        fn filter_evaluation(
+            &self,
+            _: &Range<u64>,
+            _: &BoundExpression,
+            mask: MaskFuture,
+        ) -> VortexResult<MaskFuture> {
+            Ok(mask)
+        }
+        fn projection_evaluation(
+            &self,
+            range: &Range<u64>,
+            expr: &BoundExpression,
+            mask: MaskFuture,
+        ) -> VortexResult<futures::future::BoxFuture<'static, VortexResult<ArrayRef>>> {
+            let active = self.active.clone();
+            let range = range.clone();
+            let expr = expr.clone();
+            Ok(async move {
+                let mask = mask.await?;
+                assert_eq!(
+                    active.fetch_add(1, Ordering::SeqCst),
+                    0,
+                    "only one range of a native file may execute at once"
+                );
+                tokio::task::yield_now().await;
+                let result = ConstantArray::new(range.start as i64, mask.true_count())
+                    .into_array()
+                    .apply_bound(&expr);
+                active.fetch_sub(1, Ordering::SeqCst);
+                result
+            }
+            .boxed())
+        }
+    }
+
+    #[tokio::test]
+    async fn legacy_file_splits_execute_sequentially_in_row_order() -> VortexResult<()> {
+        let session = VortexSession::default();
+        let reader = Arc::new(SequentialReader {
+            name: "sequential legacy file".into(),
+            dtype: DType::Primitive(PType::I64, Nullability::NonNullable),
+            active: Arc::new(AtomicUsize::new(0)),
+        });
+        let chunks = sequential_legacy_scan(ScanBuilder::new(session.clone(), reader))?
+            .try_collect::<Vec<_>>()
+            .await?;
+        let mut ctx = session.create_execution_ctx();
+        let values = chunks
+            .iter()
+            .map(|array| {
+                Ok(array
+                    .execute_scalar(0, &mut ctx)?
+                    .as_primitive()
+                    .as_::<i64>()
+                    .unwrap())
+            })
+            .collect::<VortexResult<Vec<_>>>()?;
+        assert_eq!(values, vec![0, 1, 2, 3]);
+        Ok(())
+    }
 }
