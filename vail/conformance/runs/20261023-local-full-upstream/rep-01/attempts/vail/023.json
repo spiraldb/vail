@@ -1,0 +1,53 @@
+{
+  "runner_sha256": "62498d53c70e3dd3c23b0acfdd878b7e617c3c212d061224ee42ccf0f4dcf6d7",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/tmp/full-local-upstream-cache-20261022",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_array_range_force_count",
+      "id": "benchmark_table::test_table_range_array_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 164, in test_table_range_array_range_force_count\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/__init__.py\", line 1375, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nvail.utils.FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"\n",
+      "benchmark_seconds": 0.5838970410404727,
+      "telemetry": {
+        "cpu_seconds": 0.6771402083333332,
+        "average_cores": 1.1595903223028767,
+        "peak_rss_gib": 8.532546997070312,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 5416047,
+          "system_time": 10835318,
+          "instructions": 7185047796,
+          "cycles": 2537599090,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_table--test_table_range_array_range_force_count"
+      },
+      "fixture_seconds": 0.11,
+      "elapsed_seconds": 0.737
+    }
+  ],
+  "totals": {
+    "failed": 1
+  }
+}

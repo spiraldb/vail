@@ -1,0 +1,11 @@
+Confirmed source audit, base3dfd7318:
+- MatrixTable annotate_cols/select_cols/transmute_cols all funnel through _project_axis. Each field invokes _axis_aggregates, then _coordinate_column_aggregate, which creates its own core.aggregate/global action; confirmed33 scans in many-aggs. Stage1 shares compatible named fields and retains original output schema.
+- MatrixTable annotate_rows/select_rows/transmute_rows: same per-field _axis_aggregates boundary, but emits list-reduction expressions inside one native projection/source scan. reduce_list.walk maps/reduces each aggregate leaf independently. The fix shares compatible named fields and preserves DAG identity, then binds repeated demanded list results with existing lexical bind. Distinct reducers still execute separate list kernels; this is not one-pass fusion. Native initializers and sparse contexts retain fallback behavior.
+- MatrixTable annotate_entries/select_entries/transmute_entries: whole field struct is already built before _aligned_matrix_map, one preparedbody. No per-field source aggregate splitting there.
+- Matrix globals: one select_globals call with all lowered fields, no per-field action introduction by _project_axis.
+- Table annotate/select/transmute: _project takes whole projection list, resolves lookups jointly and native.project once. Already common input scope, not33 independent aggregate plans introduced by API.
+- Table globals: _project_globals sends one projection list/native.project_globals call.
+- Table aggregate accepts a whole result expression, one aggregate_globals action. Distinct user-created aggregate result actions remain independent; cannot blindly merge distinct action identities/RNG lifetimes.
+- GroupedTable.aggregate(**fields): resolves all fields jointly, one native.grouped_aggregate. Source scope already shared.
+- GroupedMatrixTable row grouping: cell_result builds struct of all entry reducers inside one agg.array_agg; native grouped_aggregate receives all row fields jointly. Column grouping prepares one grouped column relation; row list reductions still per-leaf (distinct reducer kernels remain).
+- Separate nested aggregate source refs in a Table projection may represent user-created distinct source/actions, not necessarily same scope. Requires identity/demand-preserving analysis; do not join just based on schemas.

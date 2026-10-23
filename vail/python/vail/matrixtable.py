@@ -680,7 +680,22 @@ class MatrixTable:
         glob = self.index_globals()
         refs = dict(expr._global_refs) | dict(glob._global_refs)
 
+        rewritten, retained = {}, {}
+
         def rewrite(node):
+            if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
+                return rewrite_uncached(node)
+            identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+            if identity in rewritten:
+                return rewritten[identity]
+            retained[identity] = node
+            result = rewrite_uncached(node)
+            if isinstance(result, dict) and "op" in result:
+                result = NativeExpr(result)
+            rewritten[identity] = result
+            return result
+
+        def rewrite_uncached(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
@@ -733,7 +748,22 @@ class MatrixTable:
         }
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)
 
+        rewritten, retained = {}, {}
+
         def rewrite(node):
+            if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
+                return rewrite_uncached(node)
+            identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+            if identity in rewritten:
+                return rewritten[identity]
+            retained[identity] = node
+            result = rewrite_uncached(node)
+            if isinstance(result, dict) and "op" in result:
+                result = NativeExpr(result)
+            rewritten[identity] = result
+            return result
+
+        def rewrite_uncached(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
@@ -937,6 +967,83 @@ class MatrixTable:
                 entry=entry(cell), present=is_defined(cell[_VALUE]), bindings=struct()))
         return contexts.filter(lambda ctx: ctx.present)
 
+    @staticmethod
+    def _coordinate_column_aggregate_eligible(expr):
+        """Whether an expression can share the aligned column reducer bundle."""
+        node = expr.to_ir()
+        if expr._lookup_refs or node.contains_random() or node.matrix_dependencies()[2]:
+            return False
+        supported = {"sum", "count", "count_where", "mean", "fraction", "product", "all", "any",
+                     "min", "max", "stddev_pop"}
+        pending, seen, retained = [(node, False)], set(), {}
+        found = False
+        while pending:
+            current, inside = pending.pop()
+            if isinstance(current, list):
+                pending.extend((value, inside) for value in current)
+                continue
+            if not isinstance(current, IR_NODE_TYPES) or current.get("op") == "literal":
+                continue
+            identity = getattr(current, "node_identity", None)
+            identity = identity() if identity is not None else id(current)
+            key = (identity, inside)
+            if key in seen:
+                continue
+            seen.add(key)
+            retained[identity] = current
+            op = current.get("op")
+            if op in ("matrix_field", "matrix_scope") and not inside and current["axis"] != "global":
+                # Indexed result callbacks keep the existing relational path.
+                return False
+            if op == "aggregate":
+                if (current.get("function") not in supported or current.get("init")
+                        or set(current.get("options", {})) - {"__vail_result_type"}):
+                    return False
+                found = True
+                pending.extend((value, True) for value in current.values())
+            elif op == "agg_filter":
+                pending.append((current["predicate"], True))
+                pending.append((current["body"], inside))
+            elif op in _AGG_OPS:
+                # Grouping, explode, nested array scopes and fold retain their
+                # general implementation; this is positional reduction only.
+                return False
+            else:
+                pending.extend((value, inside) for value in current.values())
+        return found
+
+    def _coordinate_column_aggregate(self, expr, base):
+        """Reduce aligned entry positions without an entry relation or CID groups."""
+        if not self._coordinate_column_aggregate_eligible(expr):
+            return None
+        node = expr.to_ir()
+        from . import agg, is_missing, len as length, repeat
+        core = self._mir.core
+        uses_columns = bool(node.matrix_dependencies()[1])
+        values = (_zip_arrays(core[_CELLS], self._mir.column_records)
+                  if uses_columns else core[_CELLS])
+
+        def reduce_position(item):
+            cell = item["1"] if uses_columns else item
+            column = item["2"][_COL] if uses_columns else struct()
+            lowered = self._lower_cell(expr, core, cell, column)
+            return agg.filter(is_defined(cell[_VALUE]), lowered)
+
+        totals = core.aggregate(agg.array_agg(reduce_position, values), _localize=False)
+        # Empty input has no observed coordinate width. Evaluate the existing
+        # native aggregate empty identity once, then attach it to each column.
+        context = self._context("entry")
+        lowered = self._lower(expr, context)
+        empty_table = Table.parallelize([], schema=context._schema)
+        empty = empty_table.aggregate(
+            _expression(expr.dtype, empty_table, lowered.to_ir(), lowered), _localize=False)
+        totals = if_else(is_missing(totals) | (length(totals) == 0),
+                         repeat(empty, length(self._mir.column_records)), totals)
+        records = _zip_arrays(self._mir.column_records, totals).map(
+            lambda pair: struct(**{_CID: pair["1"][_CID], "value": pair["2"]}))
+        results = Table.parallelize(records).key_by(_CID)
+        return results.index(base[_CID]).value
+
     def _axis_aggregates(self, expr, axis, base):
         if axis == "row":
             from .matrix_list_aggregates import (
@@ -951,7 +1058,9 @@ class MatrixTable:
             direct = reduce_row_predicate(self, expr, base)
             if direct is not None:
                 return direct
-            return reduce_list(self, expr, base, self._row_aggregate_contexts(expr, base))
+            reduced = reduce_list(self, expr, base, self._row_aggregate_contexts(expr, base))
+            from .shared_expressions import bind_shared_list_results
+            return bind_shared_list_results(reduced, base)
         node = expr.to_ir()
         if (axis == "col" and node.get("op") == "aggregate"
                 and node.get("function") == "sum"
@@ -993,6 +1102,9 @@ class MatrixTable:
             )
             results = Table.parallelize(records).key_by(_CID)
             return results.index(base[_CID]).value
+        direct = self._coordinate_column_aggregate(expr, base)
+        if direct is not None:
+            return direct
         context = self._context("entry")
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)
 
@@ -1113,12 +1225,29 @@ class MatrixTable:
                     **lowered, **{_COLUMNS: self._mir.column_records}
                 )
             )
+        # Preserve the common aggregation scope across compatible named fields.
+        # Columns otherwise rescan/decode the source for each field; rows lose
+        # shared reducer DAGs and rebuild the same list contexts separately.
+        shared = {}
+        if axis in ("row", "col"):
+            compatible = [(name, value) for name, value in fields
+                          if self._coordinate_column_aggregate_eligible(value)
+                          # The plain row fraction route has a distinct empty
+                          # identity (NaN); keep that existing route intact.
+                          and not (axis == "row" and value.to_ir().get("op") == "aggregate"
+                                   and value.to_ir().get("function") == "fraction")]
+            if len(compatible) > 1:
+                reduced = self._axis_aggregates(
+                    struct(**dict(compatible)), axis, base
+                )
+                shared = {name: reduced[name] for name, _ in compatible}
         prepared = [
             (
                 n,
-                self._axis_aggregates(v, axis, base)
-                if _has_aggregate(v.to_ir())
-                else v,
+                shared[n] if n in shared else (
+                    self._axis_aggregates(v, axis, base)
+                    if _has_aggregate(v.to_ir()) else v
+                ),
             )
             for n, v in fields
         ]
@@ -1139,12 +1268,26 @@ class MatrixTable:
             return self._replace_column_metadata(_project(base, [(_CID, base[_CID]), (_COL, value)]))
 
     @staticmethod
+    def _with_ordered_row_keys(rows, keys):
+        """Expose a reader/sort's established row order to axis projections.
+
+        This does not sort or prove uniqueness. The caller must establish that
+        the complete nested row key is already in encounter order.
+        """
+        if not keys or any(name in (_ROW, _CELLS) for name in keys):
+            return rows.key_by()
+        indexed = _project(rows, [(_ROW, rows[_ROW]), (_CELLS, rows[_CELLS])]
+                           + [(name, rows[_ROW][name]) for name in keys])
+        return indexed._with_keys(*keys)
+
+    @staticmethod
     def _sort_rows(rows, keys):
         if not keys:
             return rows.key_by()
         from . import asc
 
-        return rows.order_by(*(asc(rows[_ROW][name]) for name in keys)).key_by()
+        ordered = rows.order_by(*(asc(rows[_ROW][name]) for name in keys)).key_by()
+        return MatrixTable._with_ordered_row_keys(ordered, keys)
 
     def _annotate(self, axis, named):
         schema = self._axis_type(axis)
@@ -2082,7 +2225,24 @@ class MatrixTable:
 
             visit(expr.to_ir())
 
+        if not replacements:
+            return base, expressions
+        rewritten, retained = {}, {}
+
         def rewrite(node):
+            if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
+                return rewrite_uncached(node)
+            identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+            if identity in rewritten:
+                return rewritten[identity]
+            retained[identity] = node
+            result = rewrite_uncached(node)
+            if isinstance(result, dict) and "op" in result:
+                result = NativeExpr(result)
+            rewritten[identity] = result
+            return result
+
+        def rewrite_uncached(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":

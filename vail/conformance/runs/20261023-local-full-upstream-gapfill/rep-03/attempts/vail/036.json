@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_show",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.5961865000426769,
+      "telemetry": {
+        "cpu_seconds": 3.271070375,
+        "average_cores": 5.486100660904931,
+        "peak_rss_gib": 2.08673095703125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 64528816,
+          "system_time": 13976873,
+          "instructions": 36012917478,
+          "cycles": 10993713576,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-03/telemetry/vail/benchmark_matrix_table--test_matrix_table_entries_show"
+      },
+      "fixture_seconds": 0.113,
+      "elapsed_seconds": 0.792,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+      "reused_from": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-03/vail.json"
+    }
+  ]
+}

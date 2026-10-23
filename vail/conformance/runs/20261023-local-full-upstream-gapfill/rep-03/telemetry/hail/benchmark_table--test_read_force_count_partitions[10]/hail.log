@@ -1,0 +1,375 @@
+2026-10-23 03:25:59.816 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:26:00.075 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:26:00.310 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.359 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.359 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.361 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.361 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.380 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.580 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.580 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.580 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.580 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.586 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.604 RelationalFunctions$: INFO: JSON: JObject(List((name,JString(ForceCountTable))))
+2026-10-23 03:26:00.641 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.644 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.644 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.644 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.655 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:26:00.661 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.661 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.661 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.662 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.666 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.666 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.667 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.667 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.667 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.669 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+%__norm_1 = TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+RelationalRef [Int64]
+
+2026-10-23 03:26:00.670 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.672 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.673 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.673 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.673 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.673 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.674 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 2: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )]
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:26:00.675 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:26:00.675 LowerOrInterpretNonCompilable$: INFO: lowering result: TableToValueApply
+2026-10-23 03:26:00.803 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableToValueApply
+2026-10-23 03:26:00.825 LoweringPipeline: INFO: initial IR: IR size 33: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s2 = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_2: %__norm_1) 
+!7 = NA [String]
+%__norm_9 = CollectDistributedArray(!s2, !6, !7) {
+(%__norm_2, %__norm_3) =>
+  %__norm_4 = GetField(%__norm_3) [__iruid_2]
+  %__norm_5 = ReadPartition(%__norm_2) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !s3 = StreamMap(%__norm_5) { (%__norm_6) =>
+    Consume(%__norm_6)
+  } 
+  !8 = I64 [0]
+  StreamFold(!s3, !8) { (%__norm_7, %__norm_8) =>
+    ApplyBinaryPrimOp(%__norm_7, %__norm_8) [Add]
+  }
+}
+!9 = Ref [__norm_9]
+!10 = ApplyIR(!9) [-1, sum, (), Int64]
+MakeTuple(!10) [(0)]
+
+2026-10-23 03:26:00.829 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.829 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.829 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.831 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.831 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.831 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.834 ForwardLets$: INFO: Eliminating unused binding:
+__norm_4: struct{} = (EVAL) GetField(#__norm_3) [__iruid_2]
+2026-10-23 03:26:00.838 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_2'
+2026-10-23 03:26:00.839 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.839 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.839 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.840 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.840 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.840 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.841 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.841 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.841 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.845 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 15: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_2, %__norm_3) =>
+  !s2 = ReadPartition(%__norm_2) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_7, %__norm_6) =>
+    !5 = Consume(%__norm_6)
+    ApplyBinaryPrimOp(%__norm_7, !5) [Add]
+  }
+}
+!7 = ApplyIR(!6) [-1, sum, (), Int64]
+MakeTuple(!7) [(0)]
+
+2026-10-23 03:26:00.847 LoweringPipeline: INFO: after InlineApplyIR: IR size 23: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+%__norm_5 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !5 = Consume(%__norm_4)
+    ApplyBinaryPrimOp(%__norm_3, !5) [Add]
+  }
+}
+!s3 = ToStream(%__norm_5) [False] 
+!6 = I64 [0]
+!7 = Cast(!6) [Int64]
+!8 = StreamFold(!s3, !7) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!8) [(0)]
+
+2026-10-23 03:26:00.851 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.851 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.851 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.852 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.852 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.852 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.854 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.854 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.854 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.857 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 20: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !5 = Consume(%__norm_4)
+    ApplyBinaryPrimOp(%__norm_3, !5) [Add]
+  }
+}
+!s3 = ToStream(!6) [False] 
+!7 = I64 [0]
+!8 = StreamFold(!s3, !7) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!8) [(0)]
+
+2026-10-23 03:26:00.863 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 20: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !5 = Consume(%__norm_4)
+    ApplyBinaryPrimOp(%__norm_3, !5) [Add]
+  }
+}
+!s3 = ToStream(!6) [False] 
+!7 = I64 [0]
+!8 = StreamFold(!s3, !7) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!8) [(0)]
+
+2026-10-23 03:26:00.863 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.863 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:00.864 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:00.867 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 20: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !5 = Consume(%__norm_4)
+    ApplyBinaryPrimOp(%__norm_3, !5) [Add]
+  }
+}
+!s3 = ToStream(!6) [False] 
+!7 = I64 [0]
+!8 = StreamFold(!s3, !7) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!8) [(0)]
+
+2026-10-23 03:26:01.067 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:26:01.520 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:26:01.595 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.595 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:26:01.596 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.596 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:26:01.596 SparkTaskContext: INFO: TaskReport: stage=0, partition=8, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.596 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:26:01.597 SparkTaskContext: INFO: TaskReport: stage=0, partition=5, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.597 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:26:01.597 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.597 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:26:01.597 SparkTaskContext: INFO: TaskReport: stage=0, partition=6, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.597 SparkTaskContext: INFO: TaskReport: stage=0, partition=7, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.597 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:26:01.598 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:26:01.598 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.598 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:26:01.599 SparkTaskContext: INFO: TaskReport: stage=0, partition=9, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.599 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:26:01.602 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.602 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:26:01.684 BackendUtils: INFO: table_force_count: executed 10 tasks in 325.052ms
+2026-10-23 03:26:01.685 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.685 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.685 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.686 LowerOrInterpretNonCompilable$: INFO: took 1.011s
+2026-10-23 03:26:01.686 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.686 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.686 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.686 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.686 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.686 LoweringPipeline: INFO: after EvalRelationalLets: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.687 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.687 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.687 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.687 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.687 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.687 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.687 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.687 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.687 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.687 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.688 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:26:01.688 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = I64 [10000000]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:26:01.688 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.688 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.688 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.688 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.688 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.689 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.689 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.689 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.689 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.689 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:26:01.690 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:26:01.690 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.690 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.690 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.691 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:26:01.691 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:26:01.691 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.691 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.691 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.691 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:26:01.694 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:26:01.699 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.699 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.699 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.700 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:26:01.730 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.730 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:26:01.731 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:26:01.731 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher

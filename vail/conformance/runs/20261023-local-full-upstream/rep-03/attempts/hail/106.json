@@ -1,0 +1,37 @@
+{
+  "runner_sha256": "62498d53c70e3dd3c23b0acfdd878b7e617c3c212d061224ee42ccf0f4dcf6d7",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "hail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/tmp/full-local-upstream-cache-20261022",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_localize_and_collect",
+      "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.11
+    }
+  ],
+  "totals": {
+    "unsupported": 1
+  }
+}

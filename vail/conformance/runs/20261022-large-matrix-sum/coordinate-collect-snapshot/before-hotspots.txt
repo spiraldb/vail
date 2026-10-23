@@ -1,0 +1,39 @@
+samples 1349
+24.24 327 <datafusion_functions_aggregate::array_agg::ArrayAggGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::evaluate
+20.76 280 __psynch_cvwait
+8.15 110 <datafusion_functions_aggregate::array_agg::ArrayAggGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::merge_batch
+4.89 66 <core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<arrow_select::interleave::Interleave<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>>::new::{closure#1}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<arrow_select::interleave::Interleave<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>>::new::{closure#1}>::{closure#0}>>::{closure#0}>::{closure#0}>
+4.37 59 arrow_select::interleave::interleave_primitive::<arrow_array::types::Int32Type>
+3.93 53 _platform_memmove
+1.93 26 _PyEval_EvalFrameDefault
+1.33 18 __open
+1.26 17 <datafusion_functions_aggregate::array_agg::ArrayAggGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::update_batch
+0.82 11 mach_o::GenericTrie::find(CString, bool) const
+0.82 11 arrow_buffer::util::bit_mask::set_bits
+0.74 10 _PyObject_Malloc
+0.67 9 __bzero
+0.59 8 _PyCode_Quicken
+0.59 8 r_object.llvm.9845490566179339274
+0.59 8 lsl::Allocator::AllocationMetadata::pool(bool) const
+0.59 8 __psynch_mutexwait
+0.52 7 invocation function for block in mach_o::RebaseOpcodes::forEachRebaseLocation(std::__1::span<mach_o::MappedSegment const, (unsigned long)18446744073709551615>, unsigned long long, void (mach_o::Fixup const&, bool&) block_pointer) const
+0.52 7 arrow_data::transform::build_extend_null_bits::{closure#1}
+0.44 6 func_traverse
+0.44 6 (anonymous namespace)::quickSort<lsl::Vector<PropertyList::String*>::CheckedIterator<PropertyList::String*> >(lsl::Vector<PropertyList::String*>::CheckedIterator<PropertyList::String*>, lsl::Vector<PropertyList::String*>::CheckedIterator<PropertyList::String*>)
+0.44 6 arrow_data::transform::primitive::build_extend::<i32>::{closure#0}
+inclusive
+62.86 848 Py_BytesMain
+62.86 848 pymain_main
+62.86 848 start
+62.49 843 Py_RunMain
+61.16 825 PyEval_EvalCode
+61.16 825 _PyEval_EvalFrameDefault
+60.86 821 _PyRun_AnyFileObject
+60.86 821 pymain_run_file
+60.86 821 run_mod.llvm.8217961648363706888
+60.86 821 _PyRun_SimpleFileObject
+60.86 821 pyrun_file
+60.86 821 pymain_run_file_obj
+52.63 710 <futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}> as futures_core::stream::Stream>::poll_next
+52.63 710 <futures_util::stream::stream::fuse::Fuse<futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}>> as futures_core::stream::Stream>::poll_next
+43.88 592 <datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next

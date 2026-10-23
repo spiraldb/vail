@@ -712,14 +712,7 @@ fn lower(
                     .to_arrow()?,
             )
         }
-        Expr::ArrayLength { value } => datafusion_functions_nested::length::array_length_udf()
-            .call(vec![recurse(value)?])
-            .cast_to(
-                &expr
-                    .dtype_with_globals(&schema.as_arrow(), globals)?
-                    .to_arrow()?,
-                schema,
-            )?,
+        Expr::ArrayLength { value } => crate::array_length::udf().call(vec![recurse(value)?]),
         Expr::ArrayFlatten { value } => {
             datafusion_functions_nested::flatten::flatten_udf().call(vec![recurse(value)?])
         }

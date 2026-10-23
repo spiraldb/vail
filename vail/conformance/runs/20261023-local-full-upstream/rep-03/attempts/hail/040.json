@@ -1,0 +1,27 @@
+{
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_with_index",
+      "id": "benchmark_table::test_read_with_index[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {
+        "many_partitions_ht": 1000
+      },
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    }
+  ]
+}

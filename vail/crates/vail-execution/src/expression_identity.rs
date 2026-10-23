@@ -179,6 +179,40 @@ fn fingerprint(expr: &Expr, memo: &mut HashMap<usize, u64>) -> u64 {
     memo.insert(address, value);
     value
 }
+
+/// Collision-safe structural classes within one strict region. Opaque
+/// non-leaf nodes retain distinct identities without examining their bodies.
+/// Intern shallow properties plus child classes, never whole descendant trees.
+pub(crate) fn canonical_nodes(root: &Expr, descend: impl Fn(&Expr) -> bool) -> HashMap<usize, usize> {
+    fn visit<'a>(
+        node: &'a Expr,
+        seen: &mut HashMap<usize, usize>,
+        classes: &mut HashMap<(Discriminant<Expr>, Properties<'a>, Vec<usize>), usize>,
+        descend: &impl Fn(&Expr) -> bool,
+    ) -> usize {
+        let address = node as *const Expr as usize;
+        if let Some(&id) = seen.get(&address) {
+            return id;
+        }
+        let mut has_children = false;
+        node.for_each_child(&mut |_| has_children = true);
+        if has_children && !descend(node) {
+            let id = seen.len();
+            seen.insert(address, id);
+            return id;
+        }
+        let mut children = Vec::new();
+        node.for_each_child(&mut |child| children.push(visit(child, seen, classes, descend)));
+        let (kind, properties) = properties(node);
+        let next = seen.len();
+        let id = *classes.entry((kind, properties, children)).or_insert(next);
+        seen.insert(address, id);
+        id
+    }
+    let mut seen = HashMap::new();
+    visit(root, &mut seen, &mut HashMap::new(), &descend);
+    seen
+}
 fn equal(left: &Expr, right: &Expr, memo: &mut HashSet<(usize, usize)>) -> bool {
     if std::ptr::eq(left, right) {
         return true;

@@ -16,6 +16,10 @@ struct NativeStddevPop {
     signature: Signature,
 }
 
+pub(crate) fn coordinate_stddev(udf: &AggregateUDF) -> bool {
+    udf.inner().downcast_ref::<NativeStddevPop>().is_some()
+}
+
 fn native() -> Arc<AggregateUDF> {
     datafusion_functions_aggregate::stddev::stddev_pop_udaf()
 }

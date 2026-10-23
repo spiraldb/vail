@@ -74,7 +74,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                 && coordinate_options
                 && matches!(
                     function.as_str(),
-                    "sum" | "min" | "max" | "mean" | "count" | "stddev_pop" | "linreg"
+                    "sum" | "min" | "max" | "mean" | "count" | "count_where" | "product" | "all" | "any" | "fraction" | "stddev_pop" | "linreg"
                 )
             {
                 use vail_execution::expressions::{PrimitiveType, Type};
@@ -84,7 +84,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                     .unwrap_or(Expr::RuntimeLiteral {
                         value: ScalarValue::Int64(Some(1)),
                     });
-                if matches!(function.as_str(), "mean" | "stddev_pop") {
+                if function == "stddev_pop" {
                     element = Expr::Cast {
                         value: Arc::new(element),
                         dtype: Type::Primitive(PrimitiveType::Float64),
@@ -129,6 +129,15 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                     result_type: result_type.clone(),
                     init: vec![],
                 });
+            }
+        }
+        // A configured or structured reducer has the same coordinate semantics
+        // whether returned directly or wrapped in a result struct. Preserve the
+        // simple specialized paths above, then apply the existing bundle's
+        // scope/initializer checks to bare reducers too.
+        if matches!(body.as_ref(), Expr::Aggregate { .. }) {
+            if let Some(lifted) = coordinate_bundle(value, parameter, body)? {
+                return Ok(lifted);
             }
         }
     }
@@ -600,7 +609,8 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
             "sum" => vail_execution::aggregates::aggregate_udf("sum", Some(input))?,
             "min" => datafusion_functions_aggregate::min_max::min_udaf(),
             "max" => datafusion_functions_aggregate::min_max::max_udaf(),
-            "mean" => vail_execution::aggregates::aggregate_udf("mean", Some(input))?,
+            "mean" | "product" | "all" | "any" | "fraction" | "count_where" =>
+                vail_execution::aggregates::aggregate_udf(function, Some(input))?,
             "count" => datafusion_functions_aggregate::count::count_udaf(),
             "stddev_pop" => vail_execution::aggregates::aggregate_udf(function, Some(input))?,
             "linreg" => {
@@ -632,20 +642,13 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
                 ));
             }
         };
-        let empty = match function {
-            "sum" => match inner.return_type(std::slice::from_ref(input))? {
-                DataType::Int64 => ScalarValue::Int64(Some(0)),
-                DataType::Float64 => ScalarValue::Float64(Some(0.0)),
-                other => {
-                    return Err(TableError::Invalid(format!(
-                        "unsupported SUM output {other}"
-                    )));
-                }
-            },
-            "count" => ScalarValue::Int64(Some(0)),
-            "mean" | "stddev_pop" => ScalarValue::Float64(Some(f64::NAN)),
-            _ => ScalarValue::try_from(input)?,
-        };
+        // Ask the existing native accumulator for its language-level empty
+        // value once during planning, including widened product and Boolean
+        // identities, rather than maintaining a separate identity table.
+        let argument = ScalarValue::try_from(input)?;
+        let physical = AggregateExprBuilder::new(inner.clone(), vec![Arc::new(Literal::new(argument))])
+            .schema(Arc::new(Schema::empty())).alias("coordinate_empty").build()?;
+        let empty = physical.create_accumulator()?.evaluate()?;
         return Ok(vail_execution::array_aggregate::coordinate_udaf(
             inner,
             input.clone(),

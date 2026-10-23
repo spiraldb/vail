@@ -1,0 +1,2917 @@
+{
+  "engine": "hail",
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_key_by_shuffle",
+      "id": "benchmark_table::test_table_key_by_shuffle",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.8408601249102503,
+      "telemetry": {
+        "cpu_seconds": 34.04887670833333,
+        "average_cores": 8.864773047261927,
+        "peak_rss_gib": 2.280426025390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 771268237,
+          "system_time": 45904804,
+          "instructions": 169185255457,
+          "cycles": 113107972682,
+          "diskio_bytesread": 524288,
+          "diskio_byteswritten": 26107904
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_key_by_shuffle"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.082,
+      "elapsed_seconds": 7.47,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_group_by_aggregate_sorted",
+      "id": "benchmark_table::test_table_group_by_aggregate_sorted",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.1351737909717485,
+      "telemetry": {
+        "cpu_seconds": 23.546472,
+        "average_cores": 7.510305731189965,
+        "peak_rss_gib": 1.33709716796875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 537205806,
+          "system_time": 27909522,
+          "instructions": 111548356393,
+          "cycles": 78769254630,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_group_by_aggregate_sorted"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.091,
+      "elapsed_seconds": 6.773,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_group_by_aggregate_unsorted",
+      "id": "benchmark_table::test_table_group_by_aggregate_unsorted",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.529395667021163,
+      "telemetry": {
+        "cpu_seconds": 25.679880541666662,
+        "average_cores": 7.275893515801956,
+        "peak_rss_gib": 1.612152099609375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 581046197,
+          "system_time": 35270936,
+          "instructions": 135889557331,
+          "cycles": 86109824660,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 1617920
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_group_by_aggregate_unsorted"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.093,
+      "elapsed_seconds": 7.162,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_force_count",
+      "id": "benchmark_table::test_table_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.5594274998875335,
+      "telemetry": {
+        "cpu_seconds": 6.957099041666666,
+        "average_cores": 4.461120872991585,
+        "peak_rss_gib": 0.9654998779296875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 153933675,
+          "system_time": 13036702,
+          "instructions": 55333656940,
+          "cycles": 23703843411,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_range_force_count"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.065,
+      "elapsed_seconds": 5.174,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_join",
+      "id": "benchmark_table::test_table_range_join[1000000000,1000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000000,
+        1000
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.483378625009209,
+      "telemetry": {
+        "cpu_seconds": 5.25062625,
+        "average_cores": 3.539506631401656,
+        "peak_rss_gib": 0.9105682373046875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 113029599,
+          "system_time": 12985431,
+          "instructions": 41689340108,
+          "cycles": 18232012139,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_range_join[1000000000,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.075,
+      "elapsed_seconds": 5.108,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_join",
+      "id": "benchmark_table::test_table_range_join[1000000000,1000000000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000000,
+        1000000000
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000000000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.038074624957517,
+      "telemetry": {
+        "cpu_seconds": 27.173318166666665,
+        "average_cores": 8.944112676468885,
+        "peak_rss_gib": 0.9691925048828125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 630765304,
+          "system_time": 21394332,
+          "instructions": 397245878149,
+          "cycles": 88737907166,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_range_join[1000000000,1000000000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.108,
+      "elapsed_seconds": 6.693,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_python_construction",
+      "id": "benchmark_table::test_table_python_construction",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.4855437079677358,
+      "telemetry": {
+        "cpu_seconds": 0.504708625,
+        "average_cores": 1.0393544689801104,
+        "peak_rss_gib": 0.6618804931640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 10079264,
+          "system_time": 2033743,
+          "instructions": 8278650512,
+          "cycles": 1898921164,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_python_construction"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.084,
+      "elapsed_seconds": 4.115,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_big_aggregate_compilation",
+      "id": "benchmark_table::test_table_big_aggregate_compilation",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 27.946676083025523,
+      "telemetry": {
+        "cpu_seconds": 64.29613191666667,
+        "average_cores": 2.3006671881498013,
+        "peak_rss_gib": 4.5751190185546875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1413192648,
+          "system_time": 129914518,
+          "instructions": 709622714499,
+          "cycles": 230452628217,
+          "diskio_bytesread": 8192,
+          "diskio_byteswritten": 9355264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_big_aggregate_compilation"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.088,
+      "elapsed_seconds": 31.58,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_big_aggregate_compile_and_execute",
+      "id": "benchmark_table::test_table_big_aggregate_compile_and_execute",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 28.5489231669344,
+      "telemetry": {
+        "cpu_seconds": 70.16106620833332,
+        "average_cores": 2.4575682214179837,
+        "peak_rss_gib": 4.7826080322265625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1550610984,
+          "system_time": 133254605,
+          "instructions": 749892386014,
+          "cycles": 250038219037,
+          "diskio_bytesread": 229376,
+          "diskio_byteswritten": 9355264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_big_aggregate_compile_and_execute"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.074,
+      "elapsed_seconds": 32.171,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_foreign_key_join",
+      "id": "benchmark_table::test_table_foreign_key_join[1000000,1000000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000,
+        1000000
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.64382104203105,
+      "telemetry": {
+        "cpu_seconds": 55.30575629166666,
+        "average_cores": 9.799253671984161,
+        "peak_rss_gib": 2.456939697265625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1264631751,
+          "system_time": 62706400,
+          "instructions": 276094454967,
+          "cycles": 183311279175,
+          "diskio_bytesread": 409600,
+          "diskio_byteswritten": 45260800
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_foreign_key_join[1000000,1000000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.087,
+      "elapsed_seconds": 9.279,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_foreign_key_join",
+      "id": "benchmark_table::test_table_foreign_key_join[1000000,1000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000,
+        1000
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.826497750007547,
+      "telemetry": {
+        "cpu_seconds": 55.626134458333325,
+        "average_cores": 9.547009482459604,
+        "peak_rss_gib": 3.092742919921875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1236888276,
+          "system_time": 98138951,
+          "instructions": 293511923229,
+          "cycles": 184780629583,
+          "diskio_bytesread": 290816,
+          "diskio_byteswritten": 39661568
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_foreign_key_join[1000000,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.058,
+      "elapsed_seconds": 9.433,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_array_sum",
+      "id": "benchmark_table::test_table_aggregate_array_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.1289501250721514,
+      "telemetry": {
+        "cpu_seconds": 11.444655541666666,
+        "average_cores": 5.375588219740964,
+        "peak_rss_gib": 0.9276885986328125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 256056096,
+          "system_time": 18615637,
+          "instructions": 117175432953,
+          "cycles": 38226382030,
+          "diskio_bytesread": 4096,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_aggregate_array_sum"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.102,
+      "elapsed_seconds": 5.777,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_flat",
+      "id": "benchmark_table::test_table_annotate_many_flat",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.071725041954778,
+      "telemetry": {
+        "cpu_seconds": 7.665336541666666,
+        "average_cores": 3.699880113733919,
+        "peak_rss_gib": 1.07965087890625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 167751611,
+          "system_time": 16216466,
+          "instructions": 55802916580,
+          "cycles": 26578047537,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_annotate_many_flat"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.139,
+      "elapsed_seconds": 5.755,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_no_dependence",
+      "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_dependence_constants",
+      "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_dependence",
+      "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_ints",
+      "id": "benchmark_table::test_table_read_force_count_ints",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: many_ints_ht",
+      "elapsed_seconds": 4.088,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_strings",
+      "id": "benchmark_table::test_table_read_force_count_strings",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_ints",
+      "id": "benchmark_table::test_table_import_ints",
+      "args": [
+        "many_ints_tsv"
+      ],
+      "fixtures": [
+        "many_ints_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 9.802322790957987,
+      "telemetry": {
+        "cpu_seconds": 42.44463679166667,
+        "average_cores": 4.330032022223915,
+        "peak_rss_gib": 3.1493377685546875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 963314704,
+          "system_time": 55356579,
+          "instructions": 604403563039,
+          "cycles": 150935386227,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_import_ints"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.099,
+      "elapsed_seconds": 13.464,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_ints_impute",
+      "id": "benchmark_table::test_table_import_ints_impute",
+      "args": [
+        "many_ints_tsv"
+      ],
+      "fixtures": [
+        "many_ints_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 10.433948415913619,
+      "telemetry": {
+        "cpu_seconds": 45.229440375,
+        "average_cores": 4.3348116234661465,
+        "peak_rss_gib": 3.029266357421875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1025443877,
+          "system_time": 60062692,
+          "instructions": 530681308461,
+          "cycles": 160424447253,
+          "diskio_bytesread": 8192,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_import_ints_impute"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.143,
+      "elapsed_seconds": 14.127,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_strings",
+      "id": "benchmark_table::test_table_import_strings",
+      "args": [
+        "many_strings_tsv"
+      ],
+      "fixtures": [
+        "many_strings_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_int_stats",
+      "id": "benchmark_table::test_table_aggregate_int_stats",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: many_ints_ht",
+      "elapsed_seconds": 4.11,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_means",
+      "id": "benchmark_table::test_table_range_means",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.8542726669693366,
+      "telemetry": {
+        "cpu_seconds": 7.786984291666666,
+        "average_cores": 4.199326846099255,
+        "peak_rss_gib": 0.903900146484375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 173153962,
+          "system_time": 13733661,
+          "instructions": 60010299067,
+          "cycles": 26198957784,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_range_means"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.137,
+      "elapsed_seconds": 5.529,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_array_range_force_count",
+      "id": "benchmark_table::test_table_range_array_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_approx_cdf",
+      "id": "benchmark_table::test_table_aggregate_approx_cdf",
+      "args": [
+        "random_doubles_mt"
+      ],
+      "fixtures": [
+        "random_doubles_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_counter",
+      "id": "benchmark_table::test_table_aggregate_counter",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_take_by_strings",
+      "id": "benchmark_table::test_table_aggregate_take_by_strings",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_dense",
+      "id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: many_ints_ht",
+      "elapsed_seconds": 4.11,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_worst_case",
+      "id": "benchmark_table::test_table_aggregate_downsample_worst_case",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.7266274170251563,
+      "telemetry": {
+        "cpu_seconds": 12.215254041666666,
+        "average_cores": 4.4799016875513376,
+        "peak_rss_gib": 0.93414306640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 275255844,
+          "system_time": 17910253,
+          "instructions": 202570632340,
+          "cycles": 42062748561,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_aggregate_downsample_worst_case"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.085,
+      "elapsed_seconds": 6.358,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_sparse",
+      "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+          "args": []
+        }
+      ],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_linreg",
+      "id": "benchmark_table::test_table_aggregate_linreg",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: many_ints_ht",
+      "elapsed_seconds": 4.064,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_take",
+      "id": "benchmark_table::test_table_take",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_show",
+      "id": "benchmark_table::test_table_show",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_expr_take",
+      "id": "benchmark_table::test_table_expr_take",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[10]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[100]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,1000]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        1000
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.652338083018549,
+      "telemetry": {
+        "cpu_seconds": 25.39976108333333,
+        "average_cores": 5.459505305382612,
+        "peak_rss_gib": 2.0707244873046875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 495258731,
+          "system_time": 114335535,
+          "instructions": 165479856308,
+          "cycles": 86588785458,
+          "diskio_bytesread": 487424,
+          "diskio_byteswritten": 6021120
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_write_range_table[10000000,1000]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.068,
+      "elapsed_seconds": 8.483,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,100]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        100
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 100
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.749463125015609,
+      "telemetry": {
+        "cpu_seconds": 15.406630791666666,
+        "average_cores": 5.603392045277259,
+        "peak_rss_gib": 1.2109222412109375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 335767904,
+          "system_time": 33991235,
+          "instructions": 96666252822,
+          "cycles": 52141893981,
+          "diskio_bytesread": 28672,
+          "diskio_byteswritten": 40001536
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_write_range_table[10000000,100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.061,
+      "elapsed_seconds": 6.381,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,10]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        10
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 10
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.0874133330071345,
+      "telemetry": {
+        "cpu_seconds": 9.046279333333333,
+        "average_cores": 4.333607621242987,
+        "peak_rss_gib": 0.9360504150390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 195197010,
+          "system_time": 21913694,
+          "instructions": 73169924668,
+          "cycles": 31145693045,
+          "diskio_bytesread": 4096,
+          "diskio_byteswritten": 69771264
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_write_range_table[10000000,10]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.062,
+      "elapsed_seconds": 5.696,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_with_index",
+      "id": "benchmark_table::test_read_with_index[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {
+        "many_partitions_ht": 1000
+      },
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_group_by_collect_per_row",
+      "id": "benchmark_table::test_group_by_collect_per_row",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_group_by_take_rekey",
+      "id": "benchmark_table::test_group_by_take_rekey",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_scan_sum_1k_partitions",
+      "id": "benchmark_table::test_table_scan_sum_1k_partitions",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.1705900829983875,
+      "telemetry": {
+        "cpu_seconds": 25.296279375,
+        "average_cores": 7.978242910489306,
+        "peak_rss_gib": 2.0327301025390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 574405816,
+          "system_time": 32704889,
+          "instructions": 131516313331,
+          "cycles": 84397329442,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_scan_sum_1k_partitions"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.093,
+      "elapsed_seconds": 6.813,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_scan_prev_non_null",
+      "id": "benchmark_table::test_table_scan_prev_non_null",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.6269874999998137,
+      "telemetry": {
+        "cpu_seconds": 14.976105333333333,
+        "average_cores": 5.700746717324388,
+        "peak_rss_gib": 0.9273834228515625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 339705386,
+          "system_time": 19721142,
+          "instructions": 226492685098,
+          "cycles": 49477751302,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_table_scan_prev_non_null"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.075,
+      "elapsed_seconds": 6.251,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_map_filter_region_memory",
+      "id": "benchmark_table::test_test_map_filter_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.7948707499308512,
+      "telemetry": {
+        "cpu_seconds": 3.6992496666666663,
+        "average_cores": 2.0609578089173692,
+        "peak_rss_gib": 1.23455810546875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 77407890,
+          "system_time": 11374102,
+          "instructions": 33639260534,
+          "cycles": 13258918283,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_test_map_filter_region_memory"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.082,
+      "elapsed_seconds": 5.438,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_head_and_tail_region_memory",
+      "id": "benchmark_table::test_test_head_and_tail_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.4291457909857854,
+      "telemetry": {
+        "cpu_seconds": 4.569893458333333,
+        "average_cores": 3.1975174857772224,
+        "peak_rss_gib": 4.2428436279296875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 90037443,
+          "system_time": 19640000,
+          "instructions": 34759906547,
+          "cycles": 15935916691,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_test_head_and_tail_region_memory"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.089,
+      "elapsed_seconds": 5.067,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_inner_join_region_memory",
+      "id": "benchmark_table::test_test_inner_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.7822165000252426,
+      "telemetry": {
+        "cpu_seconds": 3.960091958333333,
+        "average_cores": 2.221926260599434,
+        "peak_rss_gib": 1.235931396484375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 83631511,
+          "system_time": 11410696,
+          "instructions": 36042120549,
+          "cycles": 14118816247,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_test_inner_join_region_memory"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.083,
+      "elapsed_seconds": 5.408,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_left_join_region_memory",
+      "id": "benchmark_table::test_test_left_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.8008638339815661,
+      "telemetry": {
+        "cpu_seconds": 3.99982925,
+        "average_cores": 2.220983811095415,
+        "peak_rss_gib": 1.2481231689453125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 83759278,
+          "system_time": 12236624,
+          "instructions": 35708220780,
+          "cycles": 14205053882,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_table--test_test_left_join_region_memory"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.077,
+      "elapsed_seconds": 5.442,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.076,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count_just_gt",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.095,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_array_arithmetic",
+      "id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.101,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.094,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table_no_key",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table_no_key",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.106,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_force_count",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.094,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_show",
+      "id": "benchmark_matrix_table::test_matrix_table_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.093,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_show",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.1,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_cols_show",
+      "id": "benchmark_matrix_table::test_matrix_table_cols_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.09,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_entry",
+      "id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.083,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_show",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.101,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_row",
+      "id": "benchmark_matrix_table::test_matrix_table_take_row",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.087,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_col",
+      "id": "benchmark_matrix_table::test_matrix_table_take_col",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.08,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_range_matrix_table_p100",
+      "id": "benchmark_matrix_table::test_write_range_matrix_table_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.891829999978654,
+      "telemetry": {
+        "cpu_seconds": 13.008292708333332,
+        "average_cores": 4.498203839409068,
+        "peak_rss_gib": 1.1976470947265625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 274437261,
+          "system_time": 37761764,
+          "instructions": 92962860249,
+          "cycles": 44683896304,
+          "diskio_bytesread": 32768,
+          "diskio_byteswritten": 7790592
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_write_range_matrix_table_p100"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.087,
+      "elapsed_seconds": 6.553,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_profile_mt",
+      "id": "benchmark_matrix_table::test_write_profile_mt",
+      "args": [
+        "profile25_mt",
+        "tmp_path"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.076,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_is_transition",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.093,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.092,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries_unfilter",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.086,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_nested_annotate_rows_annotate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_nested_annotate_rows_annotate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.078,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_row_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.108,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_col_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.107,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_aggregate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_aggregate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.095,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_call_stats_star_star",
+      "id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.101,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_gnomad_coverage_stats",
+      "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_gnomad_coverage_stats_optimized",
+      "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_per_row_stats_star_star",
+      "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_read_decode_gnomad_coverage",
+      "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_just_gp",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_just_gp",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 229, in test_import_bgen_force_count_just_gp\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/decorator/__init__.py\", line 247, in fun\n    return caller(func, *(extras + args), **kw)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/typecheck/check.py\", line 584, in wrapper\n    return __original_func(*args_, **kwargs_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/methods/impex.py\", line 1337, in import_bgen\n    mt = MatrixTable(ir.MatrixRead(reader)).drop(\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/matrixtable.py\", line 754, in __init__\n    self._type = self._mir.typ\n                 ^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 494, in typ\n    self.compute_type(deep_typecheck=False)\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 485, in compute_type\n    computed = self._compute_type(deep_typecheck)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/matrix_ir.py\", line 196, in _compute_type\n    return Env.backend().matrix_type(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 255, in matrix_type\n    type_bytes = self._rpc(ActionTag.MATRIX_TABLE_TYPE, payload)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 293, in _rpc\n    raise fatal_error_from_java_error_triplet(\nhail.utils.java.FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147\n",
+      "benchmark_seconds": 0.12589387490879744,
+      "telemetry": {
+        "cpu_seconds": 0.2990962916666666,
+        "average_cores": 2.3746996479141904,
+        "peak_rss_gib": 0.6123504638671875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 5603147,
+          "system_time": 1575164,
+          "instructions": 2291124221,
+          "cycles": 1055154254,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_import_bgen_force_count_just_gp"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.082,
+      "elapsed_seconds": 3.756,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_all",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_all",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 234, in test_import_bgen_force_count_all\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/decorator/__init__.py\", line 247, in fun\n    return caller(func, *(extras + args), **kw)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/typecheck/check.py\", line 584, in wrapper\n    return __original_func(*args_, **kwargs_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/methods/impex.py\", line 1337, in import_bgen\n    mt = MatrixTable(ir.MatrixRead(reader)).drop(\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/matrixtable.py\", line 754, in __init__\n    self._type = self._mir.typ\n                 ^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 494, in typ\n    self.compute_type(deep_typecheck=False)\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 485, in compute_type\n    computed = self._compute_type(deep_typecheck)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/matrix_ir.py\", line 196, in _compute_type\n    return Env.backend().matrix_type(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 255, in matrix_type\n    type_bytes = self._rpc(ActionTag.MATRIX_TABLE_TYPE, payload)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 293, in _rpc\n    raise fatal_error_from_java_error_triplet(\nhail.utils.java.FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147\n",
+      "benchmark_seconds": 0.126111707999371,
+      "telemetry": {
+        "cpu_seconds": 0.3930672083333333,
+        "average_cores": 3.1154672418331217,
+        "peak_rss_gib": 0.6074371337890625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 7835831,
+          "system_time": 1597782,
+          "instructions": 3187299720,
+          "cycles": 1385122824,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_import_bgen_force_count_all"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.087,
+      "elapsed_seconds": 3.762,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_info_score",
+      "id": "benchmark_matrix_table::test_import_bgen_info_score",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            180
+          ]
+        }
+      ],
+      "status": "failed",
+      "error": "FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 242, in test_import_bgen_info_score\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/decorator/__init__.py\", line 247, in fun\n    return caller(func, *(extras + args), **kw)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/typecheck/check.py\", line 584, in wrapper\n    return __original_func(*args_, **kwargs_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/methods/impex.py\", line 1337, in import_bgen\n    mt = MatrixTable(ir.MatrixRead(reader)).drop(\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/matrixtable.py\", line 754, in __init__\n    self._type = self._mir.typ\n                 ^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 494, in typ\n    self.compute_type(deep_typecheck=False)\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 485, in compute_type\n    computed = self._compute_type(deep_typecheck)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/matrix_ir.py\", line 196, in _compute_type\n    return Env.backend().matrix_type(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 255, in matrix_type\n    type_bytes = self._rpc(ActionTag.MATRIX_TABLE_TYPE, payload)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 293, in _rpc\n    raise fatal_error_from_java_error_triplet(\nhail.utils.java.FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147\n",
+      "benchmark_seconds": 0.12478716601617634,
+      "telemetry": {
+        "cpu_seconds": 0.3151257916666666,
+        "average_cores": 2.5240562413557877,
+        "peak_rss_gib": 0.6811370849609375,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 5985404,
+          "system_time": 1577615,
+          "instructions": 2496900703,
+          "cycles": 1116170933,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_import_bgen_info_score"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.088,
+      "elapsed_seconds": 3.763,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_filter_count",
+      "id": "benchmark_matrix_table::test_import_bgen_filter_count",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147",
+      "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 248, in test_import_bgen_filter_count\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/decorator/__init__.py\", line 247, in fun\n    return caller(func, *(extras + args), **kw)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/typecheck/check.py\", line 584, in wrapper\n    return __original_func(*args_, **kwargs_)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/methods/impex.py\", line 1337, in import_bgen\n    mt = MatrixTable(ir.MatrixRead(reader)).drop(\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/matrixtable.py\", line 754, in __init__\n    self._type = self._mir.typ\n                 ^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 494, in typ\n    self.compute_type(deep_typecheck=False)\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/base_ir.py\", line 485, in compute_type\n    computed = self._compute_type(deep_typecheck)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/ir/matrix_ir.py\", line 196, in _compute_type\n    return Env.backend().matrix_type(self)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/backend.py\", line 255, in matrix_type\n    type_bytes = self._rpc(ActionTag.MATRIX_TABLE_TYPE, payload)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py\", line 293, in _rpc\n    raise fatal_error_from_java_error_triplet(\nhail.utils.java.FatalError: NegativeArraySizeException: -564630147\n\nJava stack trace:\njava.lang.NegativeArraySizeException: -564630147\n\tat is.hail.io.index.IndexReader$.readInlineMetadataRaw(IndexReader.scala:93)\n\tat is.hail.io.index.IndexReader$.$anonfun$readMetadataRaw$1(IndexReader.scala:83)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.io.index.IndexReader$.readMetadataRaw(IndexReader.scala:83)\n\tat is.hail.io.index.IndexReader$.readTypes(IndexReader.scala:74)\n\tat is.hail.io.bgen.LoadBgen$.$anonfun$getBgenFileMetadata$2(LoadBgen.scala:211)\n\tat scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)\n\tat scala.collection.Iterator.foreach(Iterator.scala:943)\n\tat scala.collection.Iterator.foreach$(Iterator.scala:943)\n\tat scala.collection.AbstractIterator.foreach(Iterator.scala:1431)\n\tat scala.collection.IterableLike.foreach(IterableLike.scala:74)\n\tat scala.collection.IterableLike.foreach$(IterableLike.scala:73)\n\tat scala.collection.AbstractIterable.foreach(Iterable.scala:56)\n\tat scala.collection.TraversableLike.map(TraversableLike.scala:286)\n\tat scala.collection.TraversableLike.map$(TraversableLike.scala:279)\n\tat scala.collection.AbstractTraversable.map(Traversable.scala:108)\n\tat is.hail.io.bgen.LoadBgen$.getBgenFileMetadata(LoadBgen.scala:210)\n\tat is.hail.io.bgen.MatrixBGENReader$.apply(LoadBgen.scala:389)\n\tat is.hail.io.bgen.MatrixBGENReader$.fromJValue(LoadBgen.scala:367)\n\tat is.hail.expr.ir.MatrixReader$.fromJson(MatrixIR.scala:107)\n\tat is.hail.expr.ir.IRParser$.matrix_ir_1(Parser.scala:1806)\n\tat is.hail.expr.ir.IRParser$.$anonfun$matrix_ir$1(Parser.scala:1729)\n\tat is.hail.utils.StackSafe$More.advance(StackSafe.scala:66)\n\tat is.hail.utils.StackSafe$.run(StackSafe.scala:18)\n\tat is.hail.utils.StackSafe$StackFrame.run(StackSafe.scala:34)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$2(Parser.scala:2129)\n\tat is.hail.expr.ir.IRParser$.parse(Parser.scala:2107)\n\tat is.hail.expr.ir.IRParser$.$anonfun$parse_matrix_ir$1(Parser.scala:2129)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.expr.ir.IRParser$.parse_matrix_ir(Parser.scala:2128)\n\tat is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:88)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169)\n\tat is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76)\n\tat is.hail.utils.package$.using(package.scala:492)\n\tat is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16)\n\tat is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75)\n\tat is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18)\n\tat is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14)\n\tat is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435)\n\tat is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81)\n\tat is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391)\n\tat is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.AuthFilter.doFilter(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source)\n\tat jdk.httpserver/com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source)\n\tat jdk.httpserver/sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source)\n\tat java.base/java.lang.Thread.run(Unknown Source)\n\n\n\nHail version: 0.2.139-5e5eedb87ff8\nError summary: NegativeArraySizeException: -564630147\n",
+      "benchmark_seconds": 0.12620062509085983,
+      "telemetry": {
+        "cpu_seconds": 0.31055104166666664,
+        "average_cores": 2.459571579523307,
+        "peak_rss_gib": 0.6108551025390625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 5890535,
+          "system_time": 1562690,
+          "instructions": 2390717299,
+          "cycles": 1099491166,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_import_bgen_filter_count"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.076,
+      "elapsed_seconds": 3.754,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_entry_field_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_entry_field_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.9275927499402314,
+      "telemetry": {
+        "cpu_seconds": 15.7132215,
+        "average_cores": 5.367172320461919,
+        "peak_rss_gib": 1.9979248046875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 342629650,
+          "system_time": 34487666,
+          "instructions": 96715690215,
+          "cycles": 53229106984,
+          "diskio_bytesread": 24576,
+          "diskio_byteswritten": 122191872
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_export_range_matrix_table_entry_field_p100"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.074,
+      "elapsed_seconds": 6.55,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_row_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_col_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_large_range_matrix_table_sum",
+      "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            250
+          ]
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 17.477392332977615,
+      "telemetry": {
+        "cpu_seconds": 167.7899779583333,
+        "average_cores": 9.600375132652557,
+        "peak_rss_gib": 7.81134033203125,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 3736082775,
+          "system_time": 290876696,
+          "instructions": 1910101538199,
+          "cycles": 538666079170,
+          "diskio_bytesread": 806912,
+          "diskio_byteswritten": 175923200
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_large_range_matrix_table_sum"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.094,
+      "elapsed_seconds": 21.118,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_kyle_sex_specific_qc",
+      "id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.109,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_scan_count_rows_2",
+      "id": "benchmark_matrix_table::test_matrix_table_scan_count_rows_2",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.161928916000761,
+      "telemetry": {
+        "cpu_seconds": 11.2032345,
+        "average_cores": 5.181923246305433,
+        "peak_rss_gib": 0.9102020263671875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 251092216,
+          "system_time": 17785412,
+          "instructions": 136415840465,
+          "cycles": 36539653429,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_matrix_table_scan_count_rows_2"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.117,
+      "elapsed_seconds": 5.827,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_scan_count_cols_2",
+      "id": "benchmark_matrix_table::test_matrix_table_scan_count_cols_2",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.5427163749700412,
+      "telemetry": {
+        "cpu_seconds": 4.763724083333333,
+        "average_cores": 3.0877620868124183,
+        "peak_rss_gib": 0.90093994140625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 101410458,
+          "system_time": 12918920,
+          "instructions": 35619588841,
+          "cycles": 16556108654,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/hail/benchmark_matrix_table--test_matrix_table_scan_count_cols_2"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.145,
+      "elapsed_seconds": 5.234,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_multi_write_nothing",
+      "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_localize_and_collect",
+      "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "exact local fixture unavailable: profile25_mt",
+      "elapsed_seconds": 4.128,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_group_by_memory_usage",
+      "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+      "args": [
+        "random_doubles_mt"
+      ],
+      "fixtures": [
+        "random_doubles_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    }
+  ]
+}

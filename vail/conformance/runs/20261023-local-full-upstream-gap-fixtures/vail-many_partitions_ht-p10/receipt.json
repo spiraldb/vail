@@ -1,0 +1,29 @@
+{
+  "engine": "vail",
+  "fixture": "many_partitions_ht",
+  "parameters": {
+    "many_partitions_ht": 10
+  },
+  "paths": {
+    "many_partitions_ht": "/tmp/full-local-upstream-cache-20261022/vail/many_partitions_ht-p10.ht"
+  },
+  "wall_seconds": 0.09150924999266863,
+  "telemetry": {
+    "cpu_seconds": 0.23931541666666667,
+    "average_cores": 2.6120885637955875,
+    "peak_rss_gib": 0.1314697265625,
+    "sampling_hz": 10,
+    "counter_deltas": {
+      "user_time": 4340396,
+      "system_time": 1403174,
+      "instructions": 2254249698,
+      "cycles": 813961920,
+      "diskio_bytesread": 4096,
+      "diskio_byteswritten": 94208
+    },
+    "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+    "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+    "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gap-fixtures/vail-many_partitions_ht-p10/telemetry"
+  },
+  "native_sha256": "3f8b5061f4d9fc1b0e8b9ec26e68fb3847d547511fdd87c72ae6ec06182b2201"
+}

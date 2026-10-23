@@ -150,17 +150,49 @@ pub fn make_udaf(
                     },
                 }))
             });
-            Ok(Some(Arc::new(create_udaf(
+            Ok(Some(crate::kernel_identity::aggregate_named(
                 &udaf_name,
+                TakeIdentity { input: input_type.clone(), n: n as usize, ordered },
                 vec![argument_type],
-                Arc::new(output),
-                Volatility::Immutable,
+                output,
+                vec![state_type],
                 factory,
-                Arc::new(vec![state_type]),
-            ))))
+            )))
         }
         "counter" => Ok(None),
         _ => Ok(None),
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct TakeIdentity {
+    input: DataType,
+    n: usize,
+    ordered: bool,
+}
+
+pub(crate) fn coordinate_take(udf: &AggregateUDF) -> Option<crate::coordinate_collect::CoordinateCollect> {
+    let identity = crate::kernel_identity::aggregate_key::<TakeIdentity>(udf)?;
+    (!identity.ordered && bounded_take_owns_values(&identity.input)).then(|| crate::coordinate_collect::CoordinateCollect::bounded(identity.input.clone(), identity.n))
+}
+
+pub(crate) fn coordinate_ordered_take(udf: &AggregateUDF) -> Option<crate::coordinate_take::CoordinateOrderedTake> {
+    let identity = crate::kernel_identity::aggregate_key::<TakeIdentity>(udf)?;
+    (identity.ordered && bounded_take_owns_values(&identity.input)).then(|| crate::coordinate_take::CoordinateOrderedTake::new(identity.input.clone(), identity.n))
+}
+
+// Arrow MutableArrayData retains all variadic buffers for view storage. Keep
+// these layouts on the native fallback until retained view buffers are compacted.
+fn bounded_take_owns_values(dtype: &DataType) -> bool {
+    match dtype {
+        DataType::Utf8View | DataType::BinaryView | DataType::Dictionary(_, _) => false,
+        DataType::List(f) | DataType::LargeList(f) | DataType::FixedSizeList(f, _)
+        | DataType::Map(f, _) => bounded_take_owns_values(f.data_type()),
+        DataType::ListView(_) | DataType::LargeListView(_) => false,
+        DataType::Struct(fields) => fields.iter().all(|f| bounded_take_owns_values(f.data_type())),
+        DataType::Union(fields, _) => fields.iter().all(|(_,f)| bounded_take_owns_values(f.data_type())),
+        DataType::RunEndEncoded(_, values) => bounded_take_owns_values(values.data_type()),
+        _ => true,
     }
 }
 

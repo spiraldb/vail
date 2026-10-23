@@ -1,0 +1,39 @@
+samples 4114
+42.46 1747 __psynch_cvwait
+4.18 172 <datafusion_physical_plan::aggregates::group_values::single_group_by::primitive::GroupValuesPrimitive<arrow_array::types::Int64Type> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern
+4.08 168 <arrow_buffer::buffer::mutable::MutableBuffer as core::iter::traits::collect::FromIterator<bool>>::from_iter::<core::iter::adapters::map::Map<arrow_array::iterator::ArrayIter<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>, arrow_select::take::take_impl<arrow_array::types::UInt64Type>::{closure#1}>>
+2.24 92 swtch_pri
+1.63 67 __ulock_wait2
+1.41 58 _platform_memmove
+1.12 46 <alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter
+1.02 42 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+1.0 41 arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>
+0.92 38 __ulock_wait
+0.88 36 _PyEval_EvalFrameDefault
+0.78 32 datafusion_physical_plan::unnest::unnest_list_array
+0.78 32 <datafusion_physical_plan::unnest::UnnestStream as futures_core::stream::Stream>::poll_next
+0.75 31 <alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i64, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter
+0.66 27 <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write
+0.61 25 mach_absolute_time
+0.58 24 <core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt64Type>::{closure#2}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt64Type>::{closure#2}>::{closure#0}>>::{closure#0}>::{closure#0}>
+0.56 23 0x3c168
+0.53 22 0x33be0
+0.53 22 kevent
+0.53 22 __psynch_mutexwait
+0.51 21 datafusion_functions_aggregate_common::aggregate::groups_accumulator::accumulate::accumulate::<arrow_array::types::Float64Type, <datafusion_functions_aggregate::variance::VarianceGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::update_batch::{closure#0}>
+inclusive
+76.64 3153 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+76.64 3153 tokio::runtime::scheduler::multi_thread::worker::run
+76.64 3153 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+76.64 3153 <std::sys::thread::unix::Thread>::new::thread_start
+76.64 3153 _pthread_start
+76.64 3153 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+76.64 3153 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+76.64 3153 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+76.64 3153 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+76.64 3153 <tokio::runtime::blocking::pool::Inner>::run
+76.64 3153 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+76.64 3153 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+42.46 1747 _pthread_cond_wait
+42.46 1747 __psynch_cvwait
+42.29 1740 <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal

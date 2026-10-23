@@ -1,0 +1,1496 @@
+2026-10-23 03:24:50.858 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:24:51.080 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:24:51.289 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.339 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.339 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.341 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.341 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.360 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.601 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.601 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.601 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.601 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.614 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.670 LoweringPipeline: INFO: initial IR: IR size 12: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!ht = CastMatrixToTable(!mt) ["ent", "__uid_3"]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = SelectFields(%global) [(__uid_3)]
+  SelectFields(!1) [()]
+}
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableOrderBy(!ht3) [(Alocus Aalleles)]
+!2 = TableCollect(!ht4)
+GetField(!2) [rows]
+
+2026-10-23 03:24:51.673 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.673 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.673 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.684 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:24:51.699 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.699 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.699 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.700 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.700 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.700 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.702 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.703 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.703 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.706 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 8: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!ht = CastMatrixToTable(!mt) ["ent", "__uid_3"]
+!ht2 = TableHead(!ht) [150]
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht4 = TableOrderBy(!ht3) [(Alocus Aalleles)]
+!1 = TableCollect(!ht4)
+GetField(!1) [rows]
+
+2026-10-23 03:24:51.734 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 23: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !c0 = I32 [0]
+  !1 = Cast(!c0) [Int64] 
+  !2 = Str ["/tmp/full-..."]
+  !3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+  !s = ReadPartition(!3) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !4 = ToArray(!s)
+  InsertFields %global (__cols: !4)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  SelectFields(%row) [
+  (locus alleles rsid qual filters info
+    `the entries! [877f12a8827e18f61222c6c8c5fb04a8]`)]
+}
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  SelectFields(%global) [(__cols)]
+}
+!ht5 = TableRename(!ht4) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), ("__cols"), ("__uid_3")]
+!ht6 = TableHead(!ht5) [150]
+!ht7 = TableMapGlobals(!ht6) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht8 = TableOrderBy(!ht7) [(Alocus Aalleles)]
+!5 = TableCollect(!ht8)
+GetField(!5) [rows]
+
+2026-10-23 03:24:51.738 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.738 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.738 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.739 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.739 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.739 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.740 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.740 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.740 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.745 PruneDeadFields$: INFO: Prune: InsertFields: eliminating field '__cols'
+2026-10-23 03:24:51.748 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.748 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.748 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.750 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.750 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.750 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.753 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableRename(!ht) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), (), ()]
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht5 = TableOrderBy(!ht4) [(Alocus Aalleles)]
+!1 = TableCollect(!ht5)
+GetField(!1) [rows]
+
+2026-10-23 03:24:51.755 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 10: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableRename(!ht) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), (), ()]
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht5 = TableOrderBy(!ht4) [(Alocus Aalleles)]
+%__norm_1 = TableCollect(!ht5)
+GetField(%__norm_1) [rows]
+
+2026-10-23 03:24:51.756 LoweringPipeline: INFO: initial IR: IR size 7: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableRename(!ht) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), (), ()]
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht5 = TableOrderBy(!ht4) [(Alocus Aalleles)]
+TableCollect(!ht5)
+
+2026-10-23 03:24:51.758 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 7: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableRename(!ht) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), (), ()]
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht5 = TableOrderBy(!ht4) [(Alocus Aalleles)]
+TableCollect(!ht5)
+
+2026-10-23 03:24:51.759 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 7: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableRename(!ht) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), (), ()]
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht5 = TableOrderBy(!ht4) [(Alocus Aalleles)]
+TableCollect(!ht5)
+
+2026-10-23 03:24:51.759 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.759 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.759 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.761 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 7: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableRename(!ht) [
+(
+  "the entries! [877f12a8827e18f61222c6c8c5fb04a8]"), 
+("ent"), (), ()]
+!ht3 = TableHead(!ht2) [150]
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht5 = TableOrderBy(!ht4) [(Alocus Aalleles)]
+TableCollect(!ht5)
+
+2026-10-23 03:24:51.763 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:24:51.763 LowerOrInterpretNonCompilable$: INFO: lowering result: TableCollect
+2026-10-23 03:24:51.801 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:24:51.801 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.801 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.801 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.802 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:24:51.803 LoweringPipeline: INFO: after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:24:51.803 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.803 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.803 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.804 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:24:51.807 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:24:51.807 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.807 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.807 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.808 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:24:51.910 LoweringPipeline: INFO: initial IR: IR size 42: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = CastRename(%__norm_1) [Struct{}]
+!5 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s2 = ToStream(!5) [False]
+%__norm_3 = ToArray(!s2)
+%__norm_4 = ArrayLen(%__norm_3)
+!c1 = I32 [1] 
+!c150 = I32 [150]
+%__norm_5 = MakeTuple(!c1, !c150) [(0 1)]
+%__norm_6 = GetTupleElement(%__norm_5) [0]
+%__norm_7 = GetTupleElement(%__norm_5) [1]
+!c1_2 = I32 [1]
+%__norm_8 = ApplyBinaryPrimOp(%__norm_6, !c1_2) [Subtract]
+!c0_2 = I32 [0] 
+!c1_3 = I32 [1]
+!s3 = StreamRange(!c0_2, %__norm_6, !c1_3) [-1, False]
+!s4 = StreamMap(!s3) { (%__norm_9) =>
+  !6 = ArrayRef(%__norm_3, %__norm_9) [-1] 
+  !7 = ApplyComparisonOp(%__norm_9, %__norm_8) [EQWithNA]
+  !8 = If !7 then { %__norm_7 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!6, !8) [(0 1)]
+}
+!9 = ToArray(!s4)
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:24:51.911 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.911 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.911 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.911 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.911 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.912 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.912 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.912 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.912 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.914 ForwardLets$: INFO: Eliminating unused binding:
+__norm_2: struct{} = (EVAL) Ref [__norm_1]
+2026-10-23 03:24:51.914 ForwardLets$: INFO: Eliminating unused binding:
+__norm_4: int32 = (EVAL) ArrayLen(#__norm_3)
+2026-10-23 03:24:51.919 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.919 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.919 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.922 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 27: 
+
+%__norm_3 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_5 = Literal [Tuple[Int32,Int32], <literal value>]
+%__norm_6 = GetTupleElement(%__norm_5) [0]
+%__norm_7 = GetTupleElement(%__norm_5) [1]
+!c1 = I32 [1]
+%__norm_8 = ApplyBinaryPrimOp(%__norm_6, !c1) [Subtract]
+!c0 = I32 [0] 
+!c1_2 = I32 [1]
+!s = StreamRange(!c0, %__norm_6, !c1_2) [-1, False]
+!s2 = StreamMap(!s) { (%__norm_9) =>
+  !1 = ArrayRef(%__norm_3, %__norm_9) [-1] 
+  !2 = ApplyComparisonOp(%__norm_9, %__norm_8) [EQWithNA]
+  !3 = If !2 then { %__norm_7 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!1, !3) [(0 1)]
+}
+!4 = ToArray(!s2)
+MakeTuple(!4) [(0)]
+
+2026-10-23 03:24:51.923 LoweringPipeline: INFO: after InlineApplyIR: IR size 27: 
+
+%__norm_3 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_5 = Literal [Tuple[Int32,Int32], <literal value>]
+%__norm_6 = GetTupleElement(%__norm_5) [0]
+%__norm_7 = GetTupleElement(%__norm_5) [1]
+!c1 = I32 [1]
+%__norm_8 = ApplyBinaryPrimOp(%__norm_6, !c1) [Subtract]
+!c0 = I32 [0] 
+!c1_2 = I32 [1]
+!s = StreamRange(!c0, %__norm_6, !c1_2) [-1, False]
+!s2 = StreamMap(!s) { (%__norm_9) =>
+  !1 = ArrayRef(%__norm_3, %__norm_9) [-1] 
+  !2 = ApplyComparisonOp(%__norm_9, %__norm_8) [EQWithNA]
+  !3 = If !2 then { %__norm_7 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!1, !3) [(0 1)]
+}
+!4 = ToArray(!s2)
+MakeTuple(!4) [(0)]
+
+2026-10-23 03:24:51.976 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.976 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.976 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.979 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 27: 
+
+%__norm_3 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_5 = Literal [Tuple[Int32,Int32], <literal value>]
+%__norm_6 = GetTupleElement(%__norm_5) [0]
+%__norm_7 = GetTupleElement(%__norm_5) [1]
+!c1 = I32 [1]
+%__norm_8 = ApplyBinaryPrimOp(%__norm_6, !c1) [Subtract]
+!c0 = I32 [0] 
+!c1_2 = I32 [1]
+!s = StreamRange(!c0, %__norm_6, !c1_2) [-1, False]
+!s2 = StreamMap(!s) { (%__norm_9) =>
+  !1 = ArrayRef(%__norm_3, %__norm_9) [-1] 
+  !2 = ApplyComparisonOp(%__norm_9, %__norm_8) [EQWithNA]
+  !3 = If !2 then { %__norm_7 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!1, !3) [(0 1)]
+}
+!4 = ToArray(!s2)
+MakeTuple(!4) [(0)]
+
+2026-10-23 03:24:51.983 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 27: 
+
+%__norm_3 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_5 = Literal [Tuple[Int32,Int32], <literal value>]
+%__norm_6 = GetTupleElement(%__norm_5) [0]
+%__norm_7 = GetTupleElement(%__norm_5) [1]
+!c1 = I32 [1]
+%__norm_8 = ApplyBinaryPrimOp(%__norm_6, !c1) [Subtract]
+!c0 = I32 [0] 
+!c1_2 = I32 [1]
+!s = StreamRange(!c0, %__norm_6, !c1_2) [-1, False]
+!s2 = StreamMap(!s) { (%__norm_9) =>
+  !1 = ArrayRef(%__norm_3, %__norm_9) [-1] 
+  !2 = ApplyComparisonOp(%__norm_9, %__norm_8) [EQWithNA]
+  !3 = If !2 then { %__norm_7 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!1, !3) [(0 1)]
+}
+!4 = ToArray(!s2)
+MakeTuple(!4) [(0)]
+
+2026-10-23 03:24:51.984 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.984 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:51.984 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:51.986 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 27: 
+
+%__norm_3 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_5 = Literal [Tuple[Int32,Int32], <literal value>]
+%__norm_6 = GetTupleElement(%__norm_5) [0]
+%__norm_7 = GetTupleElement(%__norm_5) [1]
+!c1 = I32 [1]
+%__norm_8 = ApplyBinaryPrimOp(%__norm_6, !c1) [Subtract]
+!c0 = I32 [0] 
+!c1_2 = I32 [1]
+!s = StreamRange(!c0, %__norm_6, !c1_2) [-1, False]
+!s2 = StreamMap(!s) { (%__norm_9) =>
+  !1 = ArrayRef(%__norm_3, %__norm_9) [-1] 
+  !2 = ApplyComparisonOp(%__norm_9, %__norm_8) [EQWithNA]
+  !3 = If !2 then { %__norm_7 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!1, !3) [(0 1)]
+}
+!4 = ToArray(!s2)
+MakeTuple(!4) [(0)]
+
+2026-10-23 03:24:52.028 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:24:52.364 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.364 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.364 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.370 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableCollect
+2026-10-23 03:24:52.375 LoweringPipeline: INFO: initial IR: IR size 56: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = CastRename(%__norm_1) [Struct{}]
+%__norm_3 = Ref [__norm_2]
+%__norm_4 = Literal [Struct{}, <literal value>]
+!5 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s2 = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_4: %__norm_1, __iruid_6: %__norm_2, __iruid_19: %__norm_4) 
+!7 = NA [String]
+%__norm_15 = CollectDistributedArray(!s2, !6, !7) {
+(%__norm_5, %__norm_6) =>
+  %__norm_7 = GetField(%__norm_6) [__iruid_4]
+  %__norm_8 = GetField(%__norm_6) [__iruid_6]
+  %__norm_9 = GetField(%__norm_6) [__iruid_19]
+  %__norm_10 = GetTupleElement(%__norm_5) [0]
+  %__norm_11 = Ref [__norm_10]
+  %__norm_12 = Ref [__norm_11]
+  !s3 = ReadPartition(%__norm_12) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !s4 = StreamMap(!s3) { (%__norm_13) =>
+    CastRename(%__norm_13) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},ent:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}]
+  } 
+  !8 = GetTupleElement(%__norm_5) [1]
+  %__norm_14 = StreamTake(!s4, !8)
+  ToArray(%__norm_14)
+}
+!s5 = ToStream(%__norm_15) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_16) =>
+  ToStream(%__norm_16) [False]
+}
+!9 = ToArray(!s6)
+!10 = MakeStruct(rows: !9, global: %__norm_4)
+MakeTuple(!10) [(0)]
+
+2026-10-23 03:24:52.375 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.375 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.375 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.375 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.375 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.375 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.378 ForwardLets$: INFO: Eliminating unused binding:
+__norm_3: struct{} = (EVAL) Ref [__norm_2]
+2026-10-23 03:24:52.379 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{} = (EVAL) GetField(#__norm_6) [__iruid_4]
+2026-10-23 03:24:52.379 ForwardLets$: INFO: Eliminating unused binding:
+__norm_8: struct{} = (EVAL) GetField(#__norm_6) [__iruid_6]
+2026-10-23 03:24:52.379 ForwardLets$: INFO: Eliminating unused binding:
+__norm_9: struct{} = (EVAL) GetField(#__norm_6) [__iruid_19]
+2026-10-23 03:24:52.384 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_4'
+2026-10-23 03:24:52.385 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_6'
+2026-10-23 03:24:52.385 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_19'
+2026-10-23 03:24:52.385 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.385 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.385 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.386 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.386 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.386 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.388 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+ArrayRef(!2, !c0) [-1]
+2026-10-23 03:24:52.390 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.390 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.390 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.417 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 23: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_5, %__norm_6) =>
+  !4 = GetTupleElement(%__norm_5) [0]
+  !s2 = ReadPartition(!4) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !5 = GetTupleElement(%__norm_5) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_13) =>
+    CastRename(%__norm_13) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},ent:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}]
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!6) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_16) =>
+  ToStream(%__norm_16) [False]
+}
+!7 = ToArray(!s6) 
+!8 = Literal [Struct{}, <literal value>]
+!9 = MakeStruct(rows: !7, global: !8)
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:24:52.419 LoweringPipeline: INFO: after InlineApplyIR: IR size 23: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_5, %__norm_6) =>
+  !4 = GetTupleElement(%__norm_5) [0]
+  !s2 = ReadPartition(!4) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !5 = GetTupleElement(%__norm_5) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_13) =>
+    CastRename(%__norm_13) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},ent:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}]
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!6) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_16) =>
+  ToStream(%__norm_16) [False]
+}
+!7 = ToArray(!s6) 
+!8 = Literal [Struct{}, <literal value>]
+!9 = MakeStruct(rows: !7, global: !8)
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:24:52.420 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.420 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.420 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.424 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 23: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_5, %__norm_6) =>
+  !4 = GetTupleElement(%__norm_5) [0]
+  !s2 = ReadPartition(!4) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !5 = GetTupleElement(%__norm_5) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_13) =>
+    CastRename(%__norm_13) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},ent:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}]
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!6) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_16) =>
+  ToStream(%__norm_16) [False]
+}
+!7 = ToArray(!s6) 
+!8 = Literal [Struct{}, <literal value>]
+!9 = MakeStruct(rows: !7, global: !8)
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:24:52.429 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 23: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_5, %__norm_6) =>
+  !4 = GetTupleElement(%__norm_5) [0]
+  !s2 = ReadPartition(!4) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !5 = GetTupleElement(%__norm_5) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_13) =>
+    CastRename(%__norm_13) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},ent:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}]
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!6) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_16) =>
+  ToStream(%__norm_16) [False]
+}
+!7 = ToArray(!s6) 
+!8 = Literal [Struct{}, <literal value>]
+!9 = MakeStruct(rows: !7, global: !8)
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:24:52.429 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.429 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:24:52.429 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:24:52.432 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 23: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!6 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_5, %__norm_6) =>
+  !4 = GetTupleElement(%__norm_5) [0]
+  !s2 = ReadPartition(!4) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !5 = GetTupleElement(%__norm_5) [1]
+  !s3 = StreamTake(!s2, !5)
+  !s4 = StreamMap(!s3) { (%__norm_13) =>
+    CastRename(%__norm_13) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},ent:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}]
+  }
+  ToArray(!s4)
+}
+!s5 = ToStream(!6) [False]
+!s6 = StreamFlatMap(!s5) { (%__norm_16) =>
+  ToStream(%__norm_16) [False]
+}
+!7 = ToArray(!s6) 
+!8 = Literal [Struct{}, <literal value>]
+!9 = MakeStruct(rows: !7, global: !8)
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:24:52.587 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:24:52.747 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.750 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (128.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.754 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (128.0K blocks / 384.0K chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.756 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (320.0K blocks / 704.0K chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.760 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (704.0K blocks / 1.3M chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.767 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.6M blocks / 2.4M chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.774 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.4M blocks / 4.6M chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.798 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (6.7M blocks / 9.3M chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.809 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 32.1M allocated (13.6M blocks / 18.5M chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.824 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=34275328, peakBytesReadable=32.69 MiB, chunks requested=301, cache hits=149
+2026-10-23 03:24:52.825 RegionPool: INFO: RegionPool: FREE: 32.6M allocated (13.8M blocks / 18.8M chunks), regions.size = 2, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:24:52.866 TransportClient: ERROR: Failed to send RPC RPC 5296596800507307073 to <unknown remote>: io.netty.channel.StacklessClosedChannelException
+io.netty.channel.StacklessClosedChannelException: null
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.write(Object, ChannelPromise)(Unknown Source) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+2026-10-23 03:24:52.864 TransportChannelHandler: WARN: Exception in connection from /0.0.0.0:0
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:52.866 TransportClient: ERROR: Failed to send RPC RPC 5296596800507307073 to <unknown remote>: io.netty.channel.StacklessClosedChannelException
+io.netty.channel.StacklessClosedChannelException: null
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.write(Object, ChannelPromise)(Unknown Source) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+2026-10-23 03:24:52.864 TransportChannelHandler: WARN: Exception in connection from /0.0.0.0:0
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:52.869 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Failed to send RPC RPC 5296596800507307073 to <unknown remote>: io.netty.channel.StacklessClosedChannelException
+	at org.apache.spark.network.client.TransportClient$RpcChannelListener.handleFailure(TransportClient.java:395) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.client.TransportClient$StdChannelListener.operationComplete(TransportClient.java:372) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.util.concurrent.DefaultPromise.notifyListener0(DefaultPromise.java:590) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.notifyListenersNow(DefaultPromise.java:557) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.notifyListeners(DefaultPromise.java:492) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.setValue0(DefaultPromise.java:636) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.setFailure0(DefaultPromise.java:629) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.tryFailure(DefaultPromise.java:118) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.safeSetFailure(AbstractChannel.java:999) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.write(AbstractChannel.java:860) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.write(DefaultChannelPipeline.java:1367) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite0(AbstractChannelHandlerContext.java:877) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite(AbstractChannelHandlerContext.java:863) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:968) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:856) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.codec.MessageToMessageEncoder.write(MessageToMessageEncoder.java:113) [netty-codec-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite0(AbstractChannelHandlerContext.java:881) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite(AbstractChannelHandlerContext.java:863) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:968) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:856) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.write(IdleStateHandler.java:302) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite0(AbstractChannelHandlerContext.java:879) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWriteAndFlush(AbstractChannelHandlerContext.java:940) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext$WriteTask.run(AbstractChannelHandlerContext.java:1247) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+Caused by: io.netty.channel.StacklessClosedChannelException
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.write(Object, ChannelPromise)(Unknown Source) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+2026-10-23 03:24:52.869 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Failed to send RPC RPC 5296596800507307073 to <unknown remote>: io.netty.channel.StacklessClosedChannelException
+	at org.apache.spark.network.client.TransportClient$RpcChannelListener.handleFailure(TransportClient.java:395) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.client.TransportClient$StdChannelListener.operationComplete(TransportClient.java:372) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.util.concurrent.DefaultPromise.notifyListener0(DefaultPromise.java:590) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.notifyListenersNow(DefaultPromise.java:557) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.notifyListeners(DefaultPromise.java:492) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.setValue0(DefaultPromise.java:636) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.setFailure0(DefaultPromise.java:629) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.DefaultPromise.tryFailure(DefaultPromise.java:118) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.safeSetFailure(AbstractChannel.java:999) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.write(AbstractChannel.java:860) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.write(DefaultChannelPipeline.java:1367) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite0(AbstractChannelHandlerContext.java:877) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite(AbstractChannelHandlerContext.java:863) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:968) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:856) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.codec.MessageToMessageEncoder.write(MessageToMessageEncoder.java:113) [netty-codec-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite0(AbstractChannelHandlerContext.java:881) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite(AbstractChannelHandlerContext.java:863) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:968) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.write(AbstractChannelHandlerContext.java:856) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.write(IdleStateHandler.java:302) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWrite0(AbstractChannelHandlerContext.java:879) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeWriteAndFlush(AbstractChannelHandlerContext.java:940) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext$WriteTask.run(AbstractChannelHandlerContext.java:1247) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+Caused by: io.netty.channel.StacklessClosedChannelException
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.write(Object, ChannelPromise)(Unknown Source) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+2026-10-23 03:24:57.882 TransportChannelHandler: WARN: Exception in connection from daniels-macbook-pro-2.tail306708.ts.net/100.75.18.114:55315
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:57.882 TransportChannelHandler: WARN: Exception in connection from daniels-macbook-pro-2.tail306708.ts.net/100.75.18.114:55315
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:57.883 TransportChannelHandler: WARN: Exception in connection from /124.0.0.0:14554
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:57.883 TransportChannelHandler: WARN: Exception in connection from /124.0.0.0:14554
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:57.886 TransportResponseHandler: ERROR: Still have 1 requests outstanding when connection from daniels-macbook-pro-2.tail306708.ts.net/100.75.18.114:55315 is closed
+2026-10-23 03:24:57.886 TransportResponseHandler: ERROR: Still have 1 requests outstanding when connection from daniels-macbook-pro-2.tail306708.ts.net/100.75.18.114:55315 is closed
+2026-10-23 03:24:57.886 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:24:57.886 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Connection reset by peer
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:02.901 TransportResponseHandler: ERROR: Still have 1 requests outstanding when connection from <unknown remote> is closed
+2026-10-23 03:25:02.901 TransportResponseHandler: ERROR: Still have 1 requests outstanding when connection from <unknown remote> is closed
+2026-10-23 03:25:02.901 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:02.901 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:02.902 TransportChannelHandler: WARN: Exception in connection from /1.0.0.0:16396
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:02.902 TransportChannelHandler: WARN: Exception in connection from /1.0.0.0:16396
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.917 TransportResponseHandler: ERROR: Still have 1 requests outstanding when connection from <unknown remote> is closed
+2026-10-23 03:25:07.917 TransportResponseHandler: ERROR: Still have 1 requests outstanding when connection from <unknown remote> is closed
+2026-10-23 03:25:07.918 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.918 OneForOneBlockFetcher: ERROR: Failed while starting block fetches
+java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.918 RetryingBlockTransferor: ERROR: Failed to fetch block taskresult_0, and will not retry (3 retries)
+java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.918 RetryingBlockTransferor: ERROR: Failed to fetch block taskresult_0, and will not retry (3 retries)
+java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) [netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) [spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.919 TransportChannelHandler: WARN: Exception in connection from /1.0.0.0:16147
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.919 TransportChannelHandler: WARN: Exception in connection from /1.0.0.0:16147
+java.io.IOException: Socket is not connected
+	at sun.nio.ch.FileDispatcherImpl.read0(Native Method) ~[?:?]
+	at sun.nio.ch.SocketDispatcher.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.readIntoNativeBuffer(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.IOUtil.read(Unknown Source) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.read(Unknown Source) ~[?:?]
+	at io.netty.buffer.PooledByteBuf.setBytes(PooledByteBuf.java:254) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.buffer.AbstractByteBuf.writeBytes(AbstractByteBuf.java:1132) ~[netty-buffer-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.socket.nio.NioSocketChannel.doReadBytes(NioSocketChannel.java:357) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:151) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562) [netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) [netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.921 BlockManager: WARN: Failed to fetch remote block taskresult_0 from [BlockManagerId(driver, daniels-macbook-pro-2.tail306708.ts.net, 55315, None)] after 1 fetch failures. Most recent failure cause:
+org.apache.spark.SparkException: Exception thrown in awaitResult: 
+	at org.apache.spark.util.SparkThreadUtils$.awaitResult(SparkThreadUtils.scala:56) ~[spark-common-utils_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.util.ThreadUtils$.awaitResult(ThreadUtils.scala:310) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.BlockTransferService.fetchBlockSync(BlockTransferService.scala:103) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.storage.BlockManager.fetchRemoteManagedBuffer(BlockManager.scala:1172) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.storage.BlockManager.$anonfun$getRemoteBlock$8(BlockManager.scala:1116) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.Option.orElse(Option.scala:447) ~[scala-library-2.12.18.jar:?]
+	at org.apache.spark.storage.BlockManager.getRemoteBlock(BlockManager.scala:1116) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.storage.BlockManager.getRemoteBytes(BlockManager.scala:1256) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.TaskResultGetter$$anon$3.$anonfun$run$1(TaskResultGetter.scala:88) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23) [scala-library-2.12.18.jar:?]
+	at org.apache.spark.util.Utils$.logUncaughtExceptions(Utils.scala:1928) [spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.TaskResultGetter$$anon$3.run(TaskResultGetter.scala:63) [spark-core_2.12-3.5.9.jar:3.5.9]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) [?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) [?:?]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+Caused by: java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) ~[spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) ~[spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) ~[netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) ~[spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	... 1 more
+2026-10-23 03:25:07.921 BlockManager: WARN: Failed to fetch remote block taskresult_0 from [BlockManagerId(driver, daniels-macbook-pro-2.tail306708.ts.net, 55315, None)] after 1 fetch failures. Most recent failure cause:
+org.apache.spark.SparkException: Exception thrown in awaitResult: 
+	at org.apache.spark.util.SparkThreadUtils$.awaitResult(SparkThreadUtils.scala:56) ~[spark-common-utils_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.util.ThreadUtils$.awaitResult(ThreadUtils.scala:310) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.BlockTransferService.fetchBlockSync(BlockTransferService.scala:103) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.storage.BlockManager.fetchRemoteManagedBuffer(BlockManager.scala:1172) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.storage.BlockManager.$anonfun$getRemoteBlock$8(BlockManager.scala:1116) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.Option.orElse(Option.scala:447) ~[scala-library-2.12.18.jar:?]
+	at org.apache.spark.storage.BlockManager.getRemoteBlock(BlockManager.scala:1116) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.storage.BlockManager.getRemoteBytes(BlockManager.scala:1256) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.TaskResultGetter$$anon$3.$anonfun$run$1(TaskResultGetter.scala:88) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23) [scala-library-2.12.18.jar:?]
+	at org.apache.spark.util.Utils$.logUncaughtExceptions(Utils.scala:1928) [spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.TaskResultGetter$$anon$3.run(TaskResultGetter.scala:63) [spark-core_2.12-3.5.9.jar:3.5.9]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) [?:?]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) [?:?]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+Caused by: java.io.IOException: Connection from <unknown remote> closed
+	at org.apache.spark.network.client.TransportResponseHandler.channelInactive(TransportResponseHandler.java:147) ~[spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.network.server.TransportChannelHandler.channelInactive(TransportChannelHandler.java:117) ~[spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.handler.timeout.IdleStateHandler.channelInactive(IdleStateHandler.java:277) ~[netty-handler-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at org.apache.spark.network.util.TransportFrameDecoder.channelInactive(TransportFrameDecoder.java:225) ~[spark-network-common_2.12-3.5.9.jar:3.5.9]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:305) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1405) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:901) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:813) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:174) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:167) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:470) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:566) ~[netty-transport-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.96.Final.jar:4.1.96.Final]
+	... 1 more
+2026-10-23 03:25:07.924 TaskSetManager: WARN: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)
+2026-10-23 03:25:07.924 TaskSetManager: WARN: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)
+2026-10-23 03:25:07.925 TaskSetManager: ERROR: Task 0 in stage 0.0 failed 1 times; aborting job
+2026-10-23 03:25:07.925 TaskSetManager: ERROR: Task 0 in stage 0.0 failed 1 times; aborting job
+2026-10-23 03:25:07.936 BackendUtils: INFO: table_collect: executed 1 tasks in 15.333s
+2026-10-23 03:25:07.937 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:07.937 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:07.937 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:07.937 LoweringPipeline: ERROR: error while applying lowering 'LowerOrInterpretNonCompilable'
+org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)
+Driver stacktrace:
+	at org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2898) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2834) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2833) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49) ~[scala-library-2.12.18.jar:?]
+	at org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2833) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1(DAGScheduler.scala:1253) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1$adapted(DAGScheduler.scala:1253) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.Option.foreach(Option.scala:407) ~[scala-library-2.12.18.jar:?]
+	at org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:1253) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3102) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3036) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3025) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:995) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.SparkContext.runJob(SparkContext.scala:2393) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5(SparkBackend.scala:272) ~[hail-all-spark.jar:?]
+	at is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5$adapted(SparkBackend.scala:271) ~[hail-all-spark.jar:?]
+	at scala.collection.Iterator.foreach(Iterator.scala:943) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.Iterator.foreach$(Iterator.scala:943) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431) ~[scala-library-2.12.18.jar:?]
+	at is.hail.backend.spark.SparkBackend$$anon$2.mapCollectPartitions(SparkBackend.scala:271) ~[hail-all-spark.jar:?]
+	at is.hail.backend.BackendUtils.runCDA(BackendUtils.scala:93) ~[hail-all-spark.jar:?]
+	at is.hail.backend.BackendUtils.collectDArray(BackendUtils.scala:30) ~[hail-all-spark.jar:?]
+	at __C69Compile.__m71split_ToArray(Emit.scala) ~[?:?]
+	at __C69Compile.apply(Emit.scala) ~[?:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$5(CompileAndEvaluate.scala:84) ~[hail-all-spark.jar:?]
+	at scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.java:23) ~[scala-library-2.12.18.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4(CompileAndEvaluate.scala:84) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4$adapted(CompileAndEvaluate.scala:82) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext.$anonfun$scopedExecution$2(ExecuteContext.scala:147) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext.$anonfun$scopedExecution$1(ExecuteContext.scala:146) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext.scopedExecution(ExecuteContext.scala:145) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:82) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.evalToIR(CompileAndEvaluate.scala:33) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.evaluate$1(LowerOrInterpretNonCompilable.scala:34) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.rewrite$1(LowerOrInterpretNonCompilable.scala:61) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.apply(LowerOrInterpretNonCompilable.scala:66) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilablePass$.transform(LoweringPass.scala:86) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.WrappedArray.foreach(WrappedArray.scala:38) ~[scala-library-2.12.18.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.execute$1(EvalRelationalLets.scala:15) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.lower$1(EvalRelationalLets.scala:22) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.$anonfun$apply$1(EvalRelationalLets.scala:36) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.apply(EvalRelationalLets.scala:13) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLetsPass.transform(LoweringPass.scala:183) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49) ~[scala-library-2.12.18.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:51) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50) ~[hail-all-spark.jar:?]
+	at is.hail.backend.spark.SparkBackend.$anonfun$execute$1(SparkBackend.scala:363) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.backend.spark.SparkBackend.execute(SparkBackend.scala:348) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.$anonfun$runRpc$2(BackendRpc.scala:97) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.withRegisterSerializedFns(BackendRpc.scala:170) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:95) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445) ~[hail-all-spark.jar:?]
+	at com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.AuthFilter.doFilter(Unknown Source) [jdk.httpserver:?]
+	at com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source) [jdk.httpserver:?]
+	at com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source) [jdk.httpserver:?]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.938 LoweringPipeline: ERROR: error while applying lowering 'EvalRelationalLets'
+org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 0.0 failed 1 times, most recent failure: Lost task 0.0 in stage 0.0 (TID 0) (daniels-macbook-pro-2.tail306708.ts.net executor driver): TaskResultLost (result lost from block manager)
+Driver stacktrace:
+	at org.apache.spark.scheduler.DAGScheduler.failJobAndIndependentStages(DAGScheduler.scala:2898) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2(DAGScheduler.scala:2834) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$abortStage$2$adapted(DAGScheduler.scala:2833) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49) ~[scala-library-2.12.18.jar:?]
+	at org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:2833) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1(DAGScheduler.scala:1253) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.$anonfun$handleTaskSetFailed$1$adapted(DAGScheduler.scala:1253) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at scala.Option.foreach(Option.scala:407) ~[scala-library-2.12.18.jar:?]
+	at org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:1253) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:3102) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3036) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:3025) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:49) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:995) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at org.apache.spark.SparkContext.runJob(SparkContext.scala:2393) ~[spark-core_2.12-3.5.9.jar:3.5.9]
+	at is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5(SparkBackend.scala:272) ~[hail-all-spark.jar:?]
+	at is.hail.backend.spark.SparkBackend$$anon$2.$anonfun$mapCollectPartitions$5$adapted(SparkBackend.scala:271) ~[hail-all-spark.jar:?]
+	at scala.collection.Iterator.foreach(Iterator.scala:943) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.Iterator.foreach$(Iterator.scala:943) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431) ~[scala-library-2.12.18.jar:?]
+	at is.hail.backend.spark.SparkBackend$$anon$2.mapCollectPartitions(SparkBackend.scala:271) ~[hail-all-spark.jar:?]
+	at is.hail.backend.BackendUtils.runCDA(BackendUtils.scala:93) ~[hail-all-spark.jar:?]
+	at is.hail.backend.BackendUtils.collectDArray(BackendUtils.scala:30) ~[hail-all-spark.jar:?]
+	at __C69Compile.__m71split_ToArray(Emit.scala) ~[?:?]
+	at __C69Compile.apply(Emit.scala) ~[?:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$5(CompileAndEvaluate.scala:84) ~[hail-all-spark.jar:?]
+	at scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.java:23) ~[scala-library-2.12.18.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4(CompileAndEvaluate.scala:84) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$4$adapted(CompileAndEvaluate.scala:82) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext.$anonfun$scopedExecution$2(ExecuteContext.scala:147) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext.$anonfun$scopedExecution$1(ExecuteContext.scala:146) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext.scopedExecution(ExecuteContext.scala:145) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:82) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.evalToIR(CompileAndEvaluate.scala:33) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.evaluate$1(LowerOrInterpretNonCompilable.scala:34) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.rewrite$1(LowerOrInterpretNonCompilable.scala:61) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilable$.apply(LowerOrInterpretNonCompilable.scala:66) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LowerOrInterpretNonCompilablePass$.transform(LoweringPass.scala:86) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.WrappedArray.foreach(WrappedArray.scala:38) ~[scala-library-2.12.18.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.execute$1(EvalRelationalLets.scala:15) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.lower$1(EvalRelationalLets.scala:22) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.$anonfun$apply$1(EvalRelationalLets.scala:36) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLets$.apply(EvalRelationalLets.scala:13) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.EvalRelationalLetsPass.transform(LoweringPass.scala:183) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.$anonfun$apply$1(LoweringPass.scala:37) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPass.apply(LoweringPass.scala:35) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.liftedTree1$1(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2(LoweringPipeline.scala:21) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$2$adapted(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55) ~[scala-library-2.12.18.jar:?]
+	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49) ~[scala-library-2.12.18.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.$anonfun$apply$1(LoweringPipeline.scala:19) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.lowering.LoweringPipeline.apply(LoweringPipeline.scala:10) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$.$anonfun$_apply$1(CompileAndEvaluate.scala:51) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.expr.ir.CompileAndEvaluate$._apply(CompileAndEvaluate.scala:50) ~[hail-all-spark.jar:?]
+	at is.hail.backend.spark.SparkBackend.$anonfun$execute$1(SparkBackend.scala:363) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.backend.spark.SparkBackend.execute(SparkBackend.scala:348) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.$anonfun$runRpc$2(BackendRpc.scala:97) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.withRegisterSerializedFns(BackendRpc.scala:170) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.$anonfun$runRpc$1(BackendRpc.scala:95) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.$anonfun$scoped$3(ExecuteContext.scala:92) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.$anonfun$scoped$2(ExecuteContext.scala:92) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.annotations.RegionPool.scopedRegion(RegionPool.scala:169) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.$anonfun$scoped$1(ExecuteContext.scala:76) ~[hail-all-spark.jar:?]
+	at is.hail.utils.package$.using(package.scala:492) ~[hail-all-spark.jar:?]
+	at is.hail.annotations.RegionPool$.scoped(RegionPool.scala:16) ~[hail-all-spark.jar:?]
+	at is.hail.backend.ExecuteContext$.scoped(ExecuteContext.scala:75) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver.$anonfun$withExecuteContext$1(Py4JQueryDriver.scala:352) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:18) ~[hail-all-spark.jar:?]
+	at is.hail.utils.TimedBlock$.enter(TimedBlock.scala:14) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver.is$hail$backend$driver$Py4JQueryDriver$$withExecuteContext(Py4JQueryDriver.scala:335) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:437) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1$Context$.scoped(Py4JQueryDriver.scala:435) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.runRpc(BackendRpc.scala:81) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.BackendRpc.runRpc$(BackendRpc.scala:77) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1.runRpc(Py4JQueryDriver.scala:391) ~[hail-all-spark.jar:?]
+	at is.hail.backend.driver.Py4JQueryDriver$$anon$1.$anonfun$new$1(Py4JQueryDriver.scala:445) ~[hail-all-spark.jar:?]
+	at com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.AuthFilter.doFilter(Unknown Source) [jdk.httpserver:?]
+	at com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(Unknown Source) [jdk.httpserver:?]
+	at com.sun.net.httpserver.Filter$Chain.doFilter(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Exchange.run(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$DefaultExecutor.execute(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Dispatcher.handle(Unknown Source) [jdk.httpserver:?]
+	at sun.net.httpserver.ServerImpl$Dispatcher.run(Unknown Source) [jdk.httpserver:?]
+	at java.lang.Thread.run(Unknown Source) [?:?]
+2026-10-23 03:25:07.977 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:07.977 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:07.977 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:07.977 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher

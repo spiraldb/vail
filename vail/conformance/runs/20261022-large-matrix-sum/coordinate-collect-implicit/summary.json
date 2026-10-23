@@ -1,0 +1,229 @@
+{
+  "case": "representative_coordinate_collect_100000x100",
+  "input_rows": 100000,
+  "coordinates": 100,
+  "partitions": 32,
+  "concurrency": 32,
+  "repetitions": 3,
+  "engines_serial": true,
+  "hail_version": "0.2.139",
+  "spark_version": "3.5.9",
+  "java": "Temurin11",
+  "query_scope": "construction+action; excludes engine initialization; first query cold included",
+  "measurements": {
+    "snapshot": {
+      "N": 3,
+      "metrics": {
+        "wall": {
+          "median": 0.08925729105249047,
+          "min": 0.08589679095894098,
+          "max": 0.3312024170299992
+        },
+        "tree_core": {
+          "median": 0.3366555200000001,
+          "min": 0.32276627199999974,
+          "max": 0.8943660120000001
+        },
+        "tree_peak_rss": {
+          "median": 671596544,
+          "min": 669401088,
+          "max": 672153600
+        }
+      },
+      "attempts": [
+        {
+          "label": "snapshot",
+          "engine": "vail",
+          "rep": 1,
+          "status": "pass",
+          "wall": 0.3312024170299992,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 0.8943660120000001,
+          "tree_peak_rss": 669401088,
+          "telemetry": "/tmp/coordinate-collect-comparison/snapshot-coordinate_collect-1-telemetry.jsonl"
+        },
+        {
+          "label": "snapshot",
+          "engine": "vail",
+          "rep": 2,
+          "status": "pass",
+          "wall": 0.08925729105249047,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 0.32276627199999974,
+          "tree_peak_rss": 671596544,
+          "telemetry": "/tmp/coordinate-collect-comparison/snapshot-coordinate_collect-2-telemetry.jsonl"
+        },
+        {
+          "label": "snapshot",
+          "engine": "vail",
+          "rep": 3,
+          "status": "pass",
+          "wall": 0.08589679095894098,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 0.3366555200000001,
+          "tree_peak_rss": 672153600,
+          "telemetry": "/tmp/coordinate-collect-comparison/snapshot-coordinate_collect-3-telemetry.jsonl"
+        }
+      ]
+    },
+    "implicit-final": {
+      "N": 3,
+      "metrics": {
+        "wall": {
+          "median": 0.028227083035744727,
+          "min": 0.026212792028672993,
+          "max": 0.2190332500031218
+        },
+        "tree_core": {
+          "median": 0.274021168,
+          "min": 0.235781264,
+          "max": 0.471613614
+        },
+        "tree_peak_rss": {
+          "median": 390397952,
+          "min": 371933184,
+          "max": 394100736
+        }
+      },
+      "attempts": [
+        {
+          "label": "implicit-final",
+          "engine": "vail",
+          "rep": 1,
+          "status": "pass",
+          "wall": 0.2190332500031218,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 0.471613614,
+          "tree_peak_rss": 371933184,
+          "telemetry": "/tmp/coordinate-collect-comparison/implicit-final-coordinate_collect-1-telemetry.jsonl"
+        },
+        {
+          "label": "implicit-final",
+          "engine": "vail",
+          "rep": 2,
+          "status": "pass",
+          "wall": 0.026212792028672993,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 0.274021168,
+          "tree_peak_rss": 390397952,
+          "telemetry": "/tmp/coordinate-collect-comparison/implicit-final-coordinate_collect-2-telemetry.jsonl"
+        },
+        {
+          "label": "implicit-final",
+          "engine": "vail",
+          "rep": 3,
+          "status": "pass",
+          "wall": 0.028227083035744727,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 0.235781264,
+          "tree_peak_rss": 394100736,
+          "telemetry": "/tmp/coordinate-collect-comparison/implicit-final-coordinate_collect-3-telemetry.jsonl"
+        }
+      ]
+    },
+    "hail": {
+      "N": 3,
+      "metrics": {
+        "wall": {
+          "median": 0.6679969169199467,
+          "min": 0.47353387507610023,
+          "max": 1.9308140000794083
+        },
+        "tree_core": {
+          "median": 5.490577216,
+          "min": 3.9768892799999946,
+          "max": 8.53054096
+        },
+        "tree_peak_rss": {
+          "median": 1754497024,
+          "min": 1388167168,
+          "max": 1905672192
+        }
+      },
+      "attempts": [
+        {
+          "label": "hail",
+          "engine": "hail",
+          "rep": 1,
+          "status": "pass",
+          "wall": 1.9308140000794083,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 8.53054096,
+          "tree_peak_rss": 1388167168,
+          "telemetry": "/tmp/coordinate-collect-comparison/hail-coordinate_collect-1-telemetry.jsonl"
+        },
+        {
+          "label": "hail",
+          "engine": "hail",
+          "rep": 2,
+          "status": "pass",
+          "wall": 0.6679969169199467,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 5.490577216,
+          "tree_peak_rss": 1754497024,
+          "telemetry": "/tmp/coordinate-collect-comparison/hail-coordinate_collect-2-telemetry.jsonl"
+        },
+        {
+          "label": "hail",
+          "engine": "hail",
+          "rep": 3,
+          "status": "pass",
+          "wall": 0.47353387507610023,
+          "result": {
+            "width": 100,
+            "length": 100000
+          },
+          "tree_core": 3.9768892799999946,
+          "tree_peak_rss": 1905672192,
+          "telemetry": "/tmp/coordinate-collect-comparison/hail-coordinate_collect-3-telemetry.jsonl"
+        }
+      ]
+    }
+  },
+  "ratios": {
+    "snapshot": {
+      "wall": 3.162115296839618,
+      "tree_core": 1.2285748668876564
+    },
+    "hail": {
+      "wall": 23.66510617034158,
+      "tree_core": 20.03705500591108
+    }
+  },
+  "source": {
+    "snapshot": "c1231d3c",
+    "snapshot_native": "d1f1a8731e28e6c72a75045e3db118f1e9489663d169ab4bfab23eb5819cf63a",
+    "implicit_material": "e0129fb7",
+    "implicit_test_child": "97d7a29d",
+    "implicit_native": "cda61f064f57a60fa12dba03d8b6a11b895af5598136b79b00d7b264fe39622c"
+  },
+  "hardware": {
+    "hw.logicalcpu": "14",
+    "hw.physicalcpu": "14",
+    "hw.memsize": "103079215104"
+  }
+}

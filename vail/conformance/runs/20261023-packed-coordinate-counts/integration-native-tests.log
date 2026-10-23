@@ -1,0 +1,36 @@
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/shared-annotation-aggregates/vail/vail/crates/vail-execution)
+    Finished `release` profile [optimized] target(s) in 2.72s
+     Running tests/coordinate_reducer_states.rs (target/release/deps/coordinate_reducer_states-3c5a0d344fa2dba7)
+
+running 10 tests
+test stddev_coordinate_accepts_native_uint64_state_and_published_snapshots ... ok
+test collect_coordinate_preserves_view_and_nested_physical_descriptors ... ok
+test correlation_coordinate_uses_native_wire_full_uint64_domain_and_snapshots ... ok
+test collect_coordinate_reuses_repeatable_native_state_then_restores_on_update ... ok
+test histogram_coordinate_matches_native_groups_and_partial_state_protocol ... ok
+test quantile_coordinate_reuses_native_binary_state_and_published_snapshots ... ok
+test take_coordinate_bounded_snapshots_and_native_partial_state ... ok
+test ordered_take_coordinate_native_wire_and_preinput_snapshot_replay ... ok
+test linreg_coordinate_native_qr_states_preserve_replay_and_update ... ok
+test take_coordinate_sparse_partial_states_have_linear_retained_memory ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/packed_coordinate_counts.rs (target/release/deps/packed_coordinate_counts-8198345770b04653)
+
+running 3 tests
+test coordinate_count_respects_logical_nulls_of_encoded_arrays ... ok
+test packed_counts_keep_signed64_partial_state_wrapping ... ok
+test sliced_predicate_validity_filter_and_parent_masks_keep_column_positions ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

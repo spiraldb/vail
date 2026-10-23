@@ -322,6 +322,10 @@ def import_bgen(path, entry_fields, sample_file=None, n_partitions=None, block_s
                  {'partition_options': partition_options})
     if selector is not None:
         core = Table(core._native.bgen_select(selector._native), schema, ())
+    # Indexed offsets above are traversed in stable canonical key order, even
+    # when the physical file is unordered. Retain that proof on the owning
+    # relation so rows() need not restore the same order with another sort.
+    core = MatrixTable._with_ordered_row_keys(core, ('locus', 'alleles'))
     if samples is None:
         from . import range_table, int64, str as text, struct as record
         columns = range_table(n).key_by()

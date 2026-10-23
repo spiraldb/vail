@@ -1,0 +1,51 @@
+{
+  "native": {
+    "path": "/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/_native.abi3.so",
+    "sha256": "041e67e865745f7c987d8f14b2daedda805c68f7c03e4f41ff3d4152f7797ca8"
+  },
+  "settings": {
+    "vail_python": "/private/tmp/large-matrix-sum-env/bin/python",
+    "hail_python": "/private/tmp/linreg-hail-pypi-latest/bin/python",
+    "output": "/tmp/full-local-upstream-prep-20261022/dry-final",
+    "commit": "485b7e57",
+    "upstream": "/Users/danielking/projects/vail/hail/hail/python/benchmark/hail",
+    "data_dir": "/tmp/full-local-upstream-prep-20261022/data",
+    "fixture_manifest": "/private/tmp/full-local-upstream-prep-20261022/fixture-manifest.json",
+    "repetitions": 1,
+    "cores": 32,
+    "heap": "24g",
+    "rss_gib": 48,
+    "timeout": 250,
+    "fixture_timeout": 1800,
+    "allow_fixture_generation": false,
+    "minimum_free_gib": 1,
+    "case": [
+      "benchmark_table::test_table_python_construction",
+      "benchmark_table::test_group_by_collect_per_row"
+    ],
+    "validation_only": true,
+    "deadline_hours": 6
+  },
+  "background_builds": [],
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "logical_cpus": 14,
+  "memory": 103079215104,
+  "versions": {
+    "vail": "0.1.0a1",
+    "hail": "0.2.139"
+  },
+  "hashes": {
+    "/tmp/full-local-upstream-prep-20261022/run_local_upstream.py": "439d8dc25e915d5c320a54994897061cc787e4da39a8b489d105e59f76ca0acc",
+    "/private/tmp/full-local-upstream-prep-20261022/harness/benchmark_telemetry.py": "3293bccd6acf70d6249c818f02a9bc76e99f5ff3c39d268ae8bc1bd8d24d520e",
+    "/private/tmp/full-local-upstream-prep-20261022/harness/hail_gate.py": "bf9dda467802a17f226b736663d51a19139d32af8fda48a38aeb70539923dc57",
+    "/private/tmp/full-local-upstream-prep-20261022/harness/profile_annotate.py": "2ff556a30fa1104d04acadc45c2ac770da040613cb42f222eea590870a6d99aa",
+    "/private/tmp/full-local-upstream-prep-20261022/harness/render_affected_benchmarks.py": "f26a0fadc10113c20afd8619d15ad823bba7ca57bec21e76fc0c6edd7916f7c1",
+    "/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py": "3ff82511b43448af328d19493cefc97cdfed4ffe24190c1fde7f4da2da786cf6",
+    "/private/tmp/full-local-upstream-prep-20261022/fixture-manifest.json": "a820765af80601d9c5ba086ef6046e83293f8922affa5702981206f11e9ee37b"
+  },
+  "source_hashes": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  }
+}

@@ -143,3 +143,30 @@ def test_localized_struct_hash_matches_equality():
     assert len({a, b}) == 1
     with pytest.raises(TypeError):
         hash(hl.Struct(xs=[]))
+
+
+def test_grouped_reducers_with_unused_and_referenced_global_arrays():
+    table = hl.utils.range_table(12, n_partitions=3)
+    table = table.annotate_globals(payload=hl.range(1024), shift=7)
+    unused = table.group_by(k=table.idx % 3).aggregate(
+        n=hl.agg.count(), total=hl.agg.sum(table.idx))
+    assert [(x.k, x.n, x.total) for x in unused.collect()] == [
+        (0, 4, 18), (1, 4, 22), (2, 4, 26)]
+    referenced = table.group_by(k=(table.idx + table.shift) % 3).aggregate(
+        total=hl.agg.sum(table.idx + table.shift),
+        picked=hl.agg.take(table.payload[table.idx], 1))
+    assert [(x.k, x.total) for x in referenced.collect()] == [(0, 54), (1, 46), (2, 50)]
+
+
+def test_composite_column_reducers_preserve_filtered_entry_positions():
+    matrix = hl.utils.range_matrix_table(12, 4, n_partitions=3)
+    matrix = matrix.annotate_entries(x=hl.or_missing(matrix.row_idx % 3 != 0,
+        matrix.row_idx + matrix.col_idx))
+    matrix = matrix.annotate_cols(result=hl.struct(
+        n=hl.agg.count(), total=hl.agg.sum(matrix.x), mean=hl.agg.mean(matrix.x),
+        fraction=hl.agg.fraction(matrix.x > 6)))
+    rows = matrix.result.collect()
+    assert [x.n for x in rows] == [12] * 4
+    assert [x.total for x in rows] == [48, 56, 64, 72]
+    assert [x.mean for x in rows] == [6.0, 7.0, 8.0, 9.0]
+    assert [x.fraction for x in rows] == [4 / 12, 4 / 12, 5 / 12, 6 / 12]

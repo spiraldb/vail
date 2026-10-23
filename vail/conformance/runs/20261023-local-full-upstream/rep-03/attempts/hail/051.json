@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    }
+  ]
+}

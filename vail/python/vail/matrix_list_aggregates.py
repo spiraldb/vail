@@ -364,7 +364,27 @@ def reduce_list(
             is_defined(left), is_defined(right) & (left == right), ~is_defined(right)
         )
 
+    # Preserve shared aggregate/expression nodes while changing their scope.
+    # Rebuilding a shared leaf separately for each reference turns one reducer
+    # into multiple physical UDFs (notably composed genomic summaries).
+    rewritten_nodes, retained_nodes = {}, {}
+
     def walk(node, items, fixed):
+        if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
+            return walk_uncached(node, items, fixed)
+        item_node, fixed_node = items.to_ir(), fixed.to_ir()
+        identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+        key = (identity, item_node.node_identity(), fixed_node.node_identity())
+        if key in rewritten_nodes:
+            return rewritten_nodes[key]
+        retained_nodes[key] = (node, item_node, fixed_node)
+        result = walk_uncached(node, items, fixed)
+        if isinstance(result, dict) and "op" in result:
+            result = NativeExpr(result)
+        rewritten_nodes[key] = result
+        return result
+
+    def walk_uncached(node, items, fixed):
         if isinstance(node, list):
             return [walk(v, items, fixed) for v in node]
         if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":

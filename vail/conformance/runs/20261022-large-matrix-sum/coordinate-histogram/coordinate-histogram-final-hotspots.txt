@@ -1,0 +1,39 @@
+samples 595
+34.79 207 __psynch_cvwait
+9.75 58 vail_execution::advanced_numeric_aggregates::histogram_bin
+3.03 18 <vail_execution::advanced_numeric_aggregates::CoordinateHistogram>::update
+2.86 17 _PyEval_EvalFrameDefault
+2.52 15 _platform_memmove
+1.68 10 _PyCode_Quicken
+1.51 9 mach_o::GenericTrie::find(CString, bool) const
+1.18 7 type_new
+1.18 7 gc_collect_main.llvm.6325940347975832991
+1.18 7 _PyObject_Malloc
+1.01 6 PyDict_SetDefault
+1.01 6 deduce_unreachable
+1.01 6 __open
+1.01 6 stat
+0.84 5 mach_msg2_trap
+0.84 5 _Py_hashtable_get_entry_generic
+0.84 5 r_object.llvm.9845490566179339274
+0.84 5 visit_decref
+0.67 4 tupletraverse
+0.67 4 _PyObject_Free
+0.67 4 PyDict_SetItem
+0.67 4 visit_reachable
+inclusive
+50.42 300 start
+50.25 299 Py_BytesMain
+50.25 299 pymain_main
+49.58 295 Py_RunMain
+48.74 290 _pthread_start
+48.74 290 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+48.74 290 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+48.74 290 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+48.74 290 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+48.74 290 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+48.74 290 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+48.74 290 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+48.74 290 tokio::runtime::scheduler::multi_thread::worker::run
+48.74 290 <std::sys::thread::unix::Thread>::new::thread_start
+48.74 290 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll

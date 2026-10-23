@@ -1,0 +1,79 @@
+TOTALCPU 69.29080100000124
+SELF
+23.70% 16.424 __psynch_cvwait
+8.74% 6.055 read
+5.90% 4.089 <vail_table::bgen_source::Batch>::cells
+5.04% 3.492 <arrow_buffer::buffer::boolean::BooleanBuffer>::collect_bool::<<vail_table::bgen_source::Batch>::cells::{closure#0}>
+3.89% 2.692 __lseek
+1.63% 1.129 __sysctl
+1.62% 1.125 0x33be0
+1.47% 1.022 mach_absolute_time
+1.43% 0.990 _platform_memcmp
+1.41% 0.979 zlib_rs::adler32::neon::adler32_neon
+1.13% 0.780 0x3c168
+1.11% 0.772 zlib_rs::inflate::inflate_fast_help
+1.02% 0.709 vail_execution::expressions::array_index_rows
+0.89% 0.619 <arrow_buffer::util::bit_iterator::BitSliceIterator as core::iter::traits::iterator::Iterator>::next
+0.89% 0.617 <zlib_rs::inflate::writer::Writer>::copy_match_runtime_dispatch
+0.79% 0.545 0x3bf74
+0.76% 0.529 <arrow_data::data::ArrayDataBuilder>::nulls
+0.71% 0.489 <alloc::raw_vec::RawVecInner>::finish_grow
+0.67% 0.464 _platform_memset
+0.66% 0.459 _platform_memmove
+0.57% 0.398 <arrow_data::transform::MutableArrayData>::try_extend
+0.57% 0.393 <core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write
+0.51% 0.353 <arrow_data::data::ArrayDataBuilder>::build
+0.49% 0.342 core::ptr::drop_glue::<arrow_schema::datatype::DataType>
+0.49% 0.340 <arrow_schema::datatype::DataType as core::clone::Clone>::clone
+0.47% 0.328 arrow_buffer::util::bit_mask::set_bits
+0.47% 0.323 arrow_data::transform::build_extend_null_bits::{closure#1}
+0.46% 0.322 0x33d14
+0.45% 0.311 __psynch_cvsignal
+0.40% 0.280 <arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq
+0.40% 0.279 <core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<i32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<i32>>>::from_iter<core::slice::iter::Iter<core::option::Option<i32>>>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<i32, <alloc::vec::Vec<i32>>::extend_trusted<core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<i32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<i32>>>::from_iter<core::slice::iter::Iter<core::option::Option<i32>>>::{closure#0}>>::{closure#0}>::{closure#0}>
+0.38% 0.260 <arrow_select::filter::FilterBuilder>::optimize
+0.35% 0.242 arrow_data::transform::utils::try_extend_offsets::<i32>
+0.34% 0.239 <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+0.33% 0.231 <std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq
+INCLUSIVE
+97.16% 67.325 _pthread_start
+95.39% 66.100 <tokio::runtime::blocking::pool::Inner>::run
+95.39% 66.100 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+95.39% 66.100 <std::sys::thread::unix::Thread>::new::thread_start
+95.39% 66.100 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+53.38% 36.987 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+53.38% 36.987 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+53.38% 36.987 tokio::runtime::scheduler::multi_thread::worker::run
+53.38% 36.987 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+53.38% 36.987 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+53.38% 36.987 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+53.38% 36.987 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+42.01% 29.108 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<vail_table::bgen_source::BgenOpener as datafusion_datasource::file_stream::FileOpener>::open::{closure#0}::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+42.01% 29.108 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<vail_table::bgen_source::BgenOpener as datafusion_datasource::file_stream::FileOpener>::open::{closure#0}::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+42.01% 29.108 <tokio::runtime::blocking::task::BlockingTask<<vail_table::bgen_source::BgenOpener as datafusion_datasource::file_stream::FileOpener>::open::{closure#0}::{closure#0}> as core::future::future::Future>::poll
+42.00% 29.100 vail_table::bgen_source::scan
+41.89% 29.023 <tokio::runtime::scheduler::multi_thread::worker::Context>::run_task
+41.71% 28.899 <tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll
+41.71% 28.898 <tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll
+41.70% 28.896 vail_table::partitioned::count_parts::{closure#0}::{closure#0}
+41.16% 28.518 <datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next
+34.91% 24.190 <datafusion_physical_expr::projection::Projector>::project_batch
+34.63% 23.996 core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>
+34.63% 23.995 <alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter
+34.52% 23.920 <core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>
+33.90% 23.490 <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+32.62% 22.606 <datafusion_expr::udf::ScalarUDF>::invoke_with_args
+32.22% 22.325 <vail_execution::kernel_identity::Scalar<(vail_execution::expression_identity::Identity, alloc::sync::Arc<arrow_schema::schema::Schema>)> as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args
+32.21% 22.317 vail_execution::logical_expr::logical_kernel::{closure#2}
+31.60% 21.893 core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>
+31.59% 21.886 <alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter
+30.38% 21.048 <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+29.00% 20.095 <vail_execution::conditionals::ScopedSwitch as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+23.75% 16.456 <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+23.72% 16.433 _pthread_cond_wait
+THREADS
+95.39% 66.100 tokio-rt-worker
+2.84% 1.966 python
+1.77% 1.225 Thread <19091799>
+0.00% 0.000 Thread <19091786>
+0.00% 0.000 Thread <19091787>

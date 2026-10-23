@@ -1,0 +1,2041 @@
+2026-10-23 03:25:49.345 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:25:49.565 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:25:49.774 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:49.824 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:49.824 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:49.826 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:49.826 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:49.844 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.046 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.046 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.046 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.046 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.051 py4jutils$: WARN: linreg: model appears to have no intercept covariate.
+    To include an intercept, add 1.0 to the list of covariates.
+2026-10-23 03:25:50.062 RegionPool: INFO: initialized for thread 27: Thread-3
+2026-10-23 03:25:50.186 RegionPool: INFO: initialized for thread 27: Thread-3
+2026-10-23 03:25:50.186 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.186 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 27: Thread-3
+2026-10-23 03:25:50.186 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 27: Thread-3
+2026-10-23 03:25:50.192 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.292 LoweringPipeline: INFO: initial IR: IR size 64: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!24 = TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_2 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_3, %__norm_4) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_3) [Add]
+    %__norm_5 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_2) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_6, %__norm_7) =>
+      !12 = IsNA(%__norm_7)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_6, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_8 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_5)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_5, %__norm_5) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_5, %__norm_2) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_8) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_8) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+MakeTuple(!24) [(0)]
+
+2026-10-23 03:25:50.328 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.328 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.328 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.340 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:25:50.398 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.398 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.398 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.411 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 61: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!24 = TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_2 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_3, %__norm_4) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_3) [Add]
+    %__norm_5 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_2) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_6, %__norm_7) =>
+      !12 = IsNA(%__norm_7)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_6, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_8 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_5)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_5, %__norm_5) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_5, %__norm_2) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_8) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_8) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+MakeTuple(!24) [(0)]
+
+2026-10-23 03:25:50.417 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 61: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!24 = TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_2 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_3, %__norm_4) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_3) [Add]
+    %__norm_5 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_2) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_6, %__norm_7) =>
+      !12 = IsNA(%__norm_7)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_6, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_8 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_5)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_5, %__norm_5) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_5, %__norm_2) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_8) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_8) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+MakeTuple(!24) [(0)]
+
+2026-10-23 03:25:50.421 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.421 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.421 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.427 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 61: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+!24 = TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_2 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_3, %__norm_4) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_3) [Add]
+    %__norm_5 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_2) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_6, %__norm_7) =>
+      !12 = IsNA(%__norm_7)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_6, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_8 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_5)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_5, %__norm_5) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_5, %__norm_2) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_8) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_8) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+MakeTuple(!24) [(0)]
+
+2026-10-23 03:25:50.443 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 63: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+%__norm_8 = TableAggregate(!ht) {
+(%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_1 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_2, %__norm_3) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_2) [Add]
+    %__norm_4 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_1) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_5, %__norm_6) =>
+      !12 = IsNA(%__norm_6)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_5, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_7 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_4)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_4, %__norm_4) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_4, %__norm_1) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_7) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_7) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+MakeTuple(%__norm_8) [(0)]
+
+2026-10-23 03:25:50.446 LoweringPipeline: INFO: initial IR: IR size 60: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_1 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_2, %__norm_3) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_2) [Add]
+    %__norm_4 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_1) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_5, %__norm_6) =>
+      !12 = IsNA(%__norm_6)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_5, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_7 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_4)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_4, %__norm_4) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_4, %__norm_1) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_7) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_7) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+
+2026-10-23 03:25:50.448 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 60: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_1 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_2, %__norm_3) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_2) [Add]
+    %__norm_4 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_1) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_5, %__norm_6) =>
+      !12 = IsNA(%__norm_6)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_5, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_7 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_4)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_4, %__norm_4) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_4, %__norm_1) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_7) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_7) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+
+2026-10-23 03:25:50.456 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 60: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_1 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_2, %__norm_3) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_2) [Add]
+    %__norm_4 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_1) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_5, %__norm_6) =>
+      !12 = IsNA(%__norm_6)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_5, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_7 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_4)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_4, %__norm_4) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_4, %__norm_1) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_7) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_7) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+
+2026-10-23 03:25:50.463 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.463 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.463 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.470 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 60: 
+
+!ht = TableRead [Table{global:Struct{},key:[],row:Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_ints_ht.ht )]
+TableAggregate(!ht) { (%global, %row) =>
+  !1 = GetField(%row) [i1]
+  !2 = ApplyIR(!1) [3, toFloat64, (), Float64] 
+  !3 = GetField(%row) [i2]
+  !4 = ApplyIR(!3) [4, toFloat64, (), Float64] 
+  !5 = GetField(%row) [i3]
+  !6 = ApplyIR(!5) [5, toFloat64, (), Float64] 
+  !7 = GetField(%row) [i4]
+  !8 = ApplyIR(!7) [6, toFloat64, (), Float64]
+  %__norm_1 =(agg) MakeArray(!2, !4, !6, !8) [Array[Float64]]
+  !c0 = I32 [0] 
+  !c75 = I32 [75] 
+  !c1 = I32 [1]
+  !s = StreamRange(!c0, !c75, !c1) [1, False]
+  !9 = ToArray(!s)
+  AggArrayPerElement(!9) [False, False] {
+  (%__norm_2, %__norm_3) =>
+    !10 = GetField(%row) [i0]
+    !11 = ApplyBinaryPrimOp(!10, %__norm_2) [Add]
+    %__norm_4 =(agg) ApplyIR(!11) [2, toFloat64, 
+    (), Float64]
+    !s2 = ToStream(%__norm_1) [False] 
+    !true = True
+    !14 = StreamFold(!s2, !true) {
+    (%__norm_5, %__norm_6) =>
+      !12 = IsNA(%__norm_6)
+      !13 = ApplyUnaryPrimOp(!12) [Bang]
+      ApplySpecial(%__norm_5, !13) [7, land, 
+      (), Boolean]
+    }
+    %__norm_7 = AggFilter(!14) [False] {
+      !15 = IsNA(%__norm_4)
+      !16 = ApplyUnaryPrimOp(!15) [Bang]
+      !17 = Apply(!16) [8, toInt64, (), Int64]
+      !18 = ApplyAggOp(!17) [Sum] 
+      !19 = ApplyBinaryPrimOp(%__norm_4, %__norm_4) [Multiply]
+      !20 = ApplyAggOp(!19) [Sum]
+      MakeTuple(!18, !20) [(0 1)]
+    }
+    !c4 = I32 [4] 
+    !c1_2 = I32 [1]
+    !21 = ApplyAggOp(!c4, !c1_2, %__norm_4, %__norm_1) [LinearRegression] 
+    !22 = GetTupleElement(%__norm_7) [0] 
+    !c4_2 = I32 [4] 
+    !c1_3 = I32 [1] 
+    !23 = GetTupleElement(%__norm_7) [1]
+    ApplyIR(!21, !22, !c4_2, !c1_3, !23) [35, linregResFromAgg, 
+    (
+      ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+  }
+}
+
+2026-10-23 03:25:50.472 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:25:50.472 LowerOrInterpretNonCompilable$: INFO: lowering result: TableAggregate
+2026-10-23 03:25:50.625 LowerTableIR$: INFO: Aggregate: useTreeAggregate=false
+2026-10-23 03:25:50.625 LowerTableIR$: INFO: Aggregate: commutative=true
+2026-10-23 03:25:50.630 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableAggregate
+2026-10-23 03:25:50.666 LoweringPipeline: INFO: initial IR: IR size 156: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = Ref [__norm_1]
+%__norm_3 = InitOp [0, 
+(Sum (TypedStateSig +PInt64))]
+%__norm_4 = InitOp [1, 
+(Sum (TypedStateSig +PFloat64))]
+!c4 = I32 [4] 
+!c1 = I32 [1]
+!5 = InitOp(!c4, !c1) [2, 
+(LinearRegression (LinearRegressionStateSig))]
+!6 = InitOp(!5) [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))] 
+!7 = AggStateValue [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!8 = MakeTuple(!7) [(0)]
+%__norm_5 = RunAgg(!6, !8) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+!9 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s2 = ToStream(!9) [False] 
+!10 = MakeStruct(__iruid_262: %__norm_1, __iruid_264: %__norm_5) 
+!11 = NA [String]
+%__norm_25 = CollectDistributedArray(!s2, !10, !11) {
+(%__norm_6, %__norm_7) =>
+  %__norm_8 = GetField(%__norm_7) [__iruid_262]
+  %__norm_9 = GetField(%__norm_7) [__iruid_264]
+  %__norm_10 = ReadPartition(%__norm_6) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  %__norm_11 = Ref [__norm_8]
+  !12 = GetTupleElement(%__norm_9) [0]
+  %__norm_12 = InitFromSerializedValue(!12) [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !31 = StreamFor(%__norm_10) { (%__norm_13) =>
+    !13 = GetField(%__norm_13) [i1]
+    !14 = ApplyIR(!13) [3, toFloat64, (), Float64] 
+    !15 = GetField(%__norm_13) [i2]
+    !16 = ApplyIR(!15) [4, toFloat64, (), Float64] 
+    !17 = GetField(%__norm_13) [i3]
+    !18 = ApplyIR(!17) [5, toFloat64, (), Float64] 
+    !19 = GetField(%__norm_13) [i4]
+    !20 = ApplyIR(!19) [6, toFloat64, (), Float64]
+    %__norm_14 = MakeArray(!14, !16, !18, !20) [Array[Float64]]
+    !c0_2 = I32 [0] 
+    !c75 = I32 [75] 
+    !c1_2 = I32 [1]
+    !s3 = StreamRange(!c0_2, !c75, !c1_2) [1, False]
+    %__norm_15 = ToArray(!s3)
+    %__norm_16 = ArrayLen(%__norm_15)
+    %__norm_17 = SeqOp(%__norm_16) [0, 
+    (ArrayLen False ((Sum (TypedStateSig +PInt64))
+        (Sum (TypedStateSig +PFloat64))
+        (LinearRegression (LinearRegressionStateSig))))]
+    !c0_3 = I32 [0] 
+    !c1_3 = I32 [1]
+    !s4 = StreamRange(!c0_3, %__norm_16, !c1_3) [-1, False]
+    StreamFor(!s4) { (%__norm_18) =>
+      %__norm_19 = ArrayRef(%__norm_15, %__norm_18) [-1]
+      !21 = GetField(%__norm_13) [i0]
+      !22 = ApplyBinaryPrimOp(!21, %__norm_19) [Add]
+      %__norm_20 = ApplyIR(!22) [2, toFloat64, 
+      (), Float64]
+      !s5 = ToStream(%__norm_14) [False] 
+      !true = True
+      !25 = StreamFold(!s5, !true) {
+      (%__norm_21, %__norm_22) =>
+        !23 = IsNA(%__norm_22)
+        !24 = ApplyUnaryPrimOp(!23) [Bang]
+        ApplySpecial(%__norm_21, !24) [7, land, 
+        (), Boolean]
+      }
+      %__norm_24 = If !25 then {
+        !26 = IsNA(%__norm_20)
+        !27 = ApplyUnaryPrimOp(!26) [Bang]
+        !28 = Apply(!27) [8, toInt64, (), Int64]
+        %__norm_23 = SeqOp(!28) [0, 
+        (Sum (TypedStateSig +PInt64))]
+        !29 = ApplyBinaryPrimOp(%__norm_20, %__norm_20) [Multiply]
+        SeqOp(!29) [1, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+      !30 = SeqOp(%__norm_20, %__norm_14) [2, 
+      (LinearRegression (LinearRegressionStateSig))]
+      SeqOp(%__norm_18, !30) [0, 
+      (AggElements ((Sum (TypedStateSig +PInt64))
+          (Sum (TypedStateSig +PFloat64))
+          (LinearRegression (LinearRegressionStateSig))))]
+    }
+  } 
+  !32 = AggStateValue [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !33 = MakeTuple(!32) [(0)]
+  RunAgg(!31, !33) [(
+    (ArrayAggStateSig ((TypedStateSig +PInt64)
+        (TypedStateSig +PFloat64)
+        (LinearRegressionStateSig))))]
+}
+%__norm_26 = Ref [__norm_1]
+!34 = GetTupleElement(%__norm_5) [0]
+%__norm_27 = InitFromSerializedValue(!34) [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!s6 = ToStream(%__norm_25) [True]
+!36 = StreamFor(!s6) { (%__norm_28) =>
+  !35 = GetTupleElement(%__norm_28) [0]
+  CombOpValue(!35) [0, 
+  (ArrayLen False ((Sum (TypedStateSig +PInt64))
+      (Sum (TypedStateSig +PFloat64))
+      (LinearRegression (LinearRegressionStateSig))))]
+} 
+!37 = ResultOp [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))]
+%__norm_29 = MakeTuple(!37) [(0)]
+%__norm_30 = GetTupleElement(%__norm_29) [0]
+!c0_4 = I32 [0] 
+!38 = ArrayLen(%__norm_30) 
+!c1_4 = I32 [1]
+!s7 = StreamRange(!c0_4, !38, !c1_4) [-1, False]
+!s8 = StreamMap(!s7) { (%__norm_31) =>
+  %__norm_32 = ArrayRef(%__norm_30, %__norm_31) [-1]
+  !39 = GetTupleElement(%__norm_32) [0] 
+  !40 = GetTupleElement(%__norm_32) [1]
+  %__norm_33 = MakeTuple(!39, !40) [(0 1)]
+  !41 = GetTupleElement(%__norm_32) [2] 
+  !42 = GetTupleElement(%__norm_33) [0] 
+  !c4_2 = I32 [4] 
+  !c1_5 = I32 [1] 
+  !43 = GetTupleElement(%__norm_33) [1]
+  ApplyIR(!41, !42, !c4_2, !c1_5, !43) [35, linregResFromAgg, 
+  (
+    ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+}
+!44 = ToArray(!s8)
+!45 = RunAgg(!36, !44) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+MakeTuple(!45) [(0)]
+
+2026-10-23 03:25:50.670 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.670 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.670 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.677 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.677 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.677 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.682 ForwardLets$: INFO: Eliminating unused binding:
+__norm_2: struct{} = (EVAL) Ref [__norm_1]
+2026-10-23 03:25:50.683 ForwardLets$: INFO: Eliminating unused binding:
+__norm_11: struct{} = (EVAL) Ref [__norm_8]
+2026-10-23 03:25:50.684 ForwardLets$: INFO: Eliminating unused binding:
+__norm_26: struct{} = (EVAL) Ref [__norm_1]
+2026-10-23 03:25:50.690 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_262'
+2026-10-23 03:25:50.693 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.693 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.693 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.695 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+ArrayRef(!2, !c0) [-1]
+2026-10-23 03:25:50.710 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.710 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.710 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.723 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 132: 
+
+%__norm_3 = InitOp [0, 
+(Sum (TypedStateSig +PInt64))]
+%__norm_4 = InitOp [1, 
+(Sum (TypedStateSig +PFloat64))]
+!c4 = I32 [4] 
+!c1 = I32 [1]
+!1 = InitOp(!c4, !c1) [2, 
+(LinearRegression (LinearRegressionStateSig))]
+!2 = InitOp(!1) [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))] 
+!3 = AggStateValue [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!4 = MakeTuple(!3) [(0)]
+%__norm_5 = RunAgg(!2, !4) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_264: %__norm_5) 
+!7 = NA [String]
+%__norm_25 = CollectDistributedArray(!s, !6, !7) {
+(%__norm_6, %__norm_7) =>
+  !8 = GetField(%__norm_7) [__iruid_264]
+  !9 = GetTupleElement(!8) [0]
+  %__norm_12 = InitFromSerializedValue(!9) [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !s2 = ReadPartition(%__norm_6) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !29 = StreamFor(!s2) { (%__norm_13) =>
+    !10 = GetField(%__norm_13) [i1]
+    !11 = ApplyIR(!10) [3, toFloat64, (), Float64] 
+    !12 = GetField(%__norm_13) [i2]
+    !13 = ApplyIR(!12) [4, toFloat64, (), Float64] 
+    !14 = GetField(%__norm_13) [i3]
+    !15 = ApplyIR(!14) [5, toFloat64, (), Float64] 
+    !16 = GetField(%__norm_13) [i4]
+    !17 = ApplyIR(!16) [6, toFloat64, (), Float64]
+    %__norm_14 = MakeArray(!11, !13, !15, !17) [Array[Float64]]
+    !c0 = I32 [0] 
+    !c75 = I32 [75] 
+    !c1_2 = I32 [1]
+    !s3 = StreamRange(!c0, !c75, !c1_2) [1, False]
+    %__norm_15 = ToArray(!s3)
+    %__norm_16 = ArrayLen(%__norm_15)
+    %__norm_17 = SeqOp(%__norm_16) [0, 
+    (ArrayLen False ((Sum (TypedStateSig +PInt64))
+        (Sum (TypedStateSig +PFloat64))
+        (LinearRegression (LinearRegressionStateSig))))]
+    !c0_2 = I32 [0] 
+    !c1_3 = I32 [1]
+    !s4 = StreamRange(!c0_2, %__norm_16, !c1_3) [-1, False]
+    StreamFor(!s4) { (%__norm_18) =>
+      !18 = GetField(%__norm_13) [i0] 
+      !19 = ArrayRef(%__norm_15, %__norm_18) [-1]
+      !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+      %__norm_20 = ApplyIR(!20) [2, toFloat64, 
+      (), Float64]
+      !s5 = ToStream(%__norm_14) [False] 
+      !true = True
+      !23 = StreamFold(!s5, !true) {
+      (%__norm_21, %__norm_22) =>
+        !21 = IsNA(%__norm_22)
+        !22 = ApplyUnaryPrimOp(!21) [Bang]
+        ApplySpecial(%__norm_21, !22) [7, land, 
+        (), Boolean]
+      }
+      %__norm_24 = If !23 then {
+        !24 = IsNA(%__norm_20)
+        !25 = ApplyUnaryPrimOp(!24) [Bang]
+        !26 = Apply(!25) [8, toInt64, (), Int64]
+        %__norm_23 = SeqOp(!26) [0, 
+        (Sum (TypedStateSig +PInt64))]
+        !27 = ApplyBinaryPrimOp(%__norm_20, %__norm_20) [Multiply]
+        SeqOp(!27) [1, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+      !28 = SeqOp(%__norm_20, %__norm_14) [2, 
+      (LinearRegression (LinearRegressionStateSig))]
+      SeqOp(%__norm_18, !28) [0, 
+      (AggElements ((Sum (TypedStateSig +PInt64))
+          (Sum (TypedStateSig +PFloat64))
+          (LinearRegression (LinearRegressionStateSig))))]
+    }
+  } 
+  !30 = AggStateValue [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !31 = MakeTuple(!30) [(0)]
+  RunAgg(!29, !31) [(
+    (ArrayAggStateSig ((TypedStateSig +PInt64)
+        (TypedStateSig +PFloat64)
+        (LinearRegressionStateSig))))]
+}
+!32 = GetTupleElement(%__norm_5) [0]
+%__norm_27 = InitFromSerializedValue(!32) [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!s6 = ToStream(%__norm_25) [True]
+!34 = StreamFor(!s6) { (%__norm_28) =>
+  !33 = GetTupleElement(%__norm_28) [0]
+  CombOpValue(!33) [0, 
+  (ArrayLen False ((Sum (TypedStateSig +PInt64))
+      (Sum (TypedStateSig +PFloat64))
+      (LinearRegression (LinearRegressionStateSig))))]
+} 
+!35 = ResultOp [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))]
+%__norm_29 = MakeTuple(!35) [(0)]
+%__norm_30 = GetTupleElement(%__norm_29) [0]
+!c0_3 = I32 [0] 
+!36 = ArrayLen(%__norm_30) 
+!c1_4 = I32 [1]
+!s7 = StreamRange(!c0_3, !36, !c1_4) [-1, False]
+!s8 = StreamMap(!s7) { (%__norm_31) =>
+  %__norm_32 = ArrayRef(%__norm_30, %__norm_31) [-1]
+  !37 = GetTupleElement(%__norm_32) [0] 
+  !38 = GetTupleElement(%__norm_32) [1]
+  %__norm_33 = MakeTuple(!37, !38) [(0 1)]
+  !39 = GetTupleElement(%__norm_32) [2] 
+  !40 = GetTupleElement(%__norm_33) [0] 
+  !c4_2 = I32 [4] 
+  !c1_5 = I32 [1] 
+  !41 = GetTupleElement(%__norm_33) [1]
+  ApplyIR(!39, !40, !c4_2, !c1_5, !41) [35, linregResFromAgg, 
+  (
+    ), Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]
+}
+!42 = ToArray(!s8)
+!43 = RunAgg(!34, !42) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+MakeTuple(!43) [(0)]
+
+2026-10-23 03:25:50.790 LoweringPipeline: INFO: after InlineApplyIR: IR size 363: 
+
+%__norm_1 = InitOp [0, 
+(Sum (TypedStateSig +PInt64))]
+%__norm_2 = InitOp [1, 
+(Sum (TypedStateSig +PFloat64))]
+!c4 = I32 [4] 
+!c1 = I32 [1]
+!1 = InitOp(!c4, !c1) [2, 
+(LinearRegression (LinearRegressionStateSig))]
+!2 = InitOp(!1) [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))] 
+!3 = AggStateValue [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!4 = MakeTuple(!3) [(0)]
+%__norm_3 = RunAgg(!2, !4) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_264: %__norm_3) 
+!7 = NA [String]
+%__norm_23 = CollectDistributedArray(!s, !6, !7) {
+(%__norm_4, %__norm_5) =>
+  !8 = GetField(%__norm_5) [__iruid_264]
+  !9 = GetTupleElement(!8) [0]
+  %__norm_6 = InitFromSerializedValue(!9) [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !24 = StreamFor(!s2) { (%__norm_7) =>
+    %__norm_8 = GetField(%__norm_7) [i1]
+    !10 = Cast(%__norm_8) [Float64] 
+    %__norm_9 = GetField(%__norm_7) [i2]
+    !11 = Cast(%__norm_9) [Float64] 
+    %__norm_10 = GetField(%__norm_7) [i3]
+    !12 = Cast(%__norm_10) [Float64] 
+    %__norm_11 = GetField(%__norm_7) [i4]
+    !13 = Cast(%__norm_11) [Float64]
+    %__norm_12 = MakeArray(!10, !11, !12, !13) [Array[Float64]]
+    !c0 = I32 [0] 
+    !c75 = I32 [75] 
+    !c1_2 = I32 [1]
+    !s3 = StreamRange(!c0, !c75, !c1_2) [1, False]
+    %__norm_13 = ToArray(!s3)
+    %__norm_14 = ArrayLen(%__norm_13)
+    %__norm_15 = SeqOp(%__norm_14) [0, 
+    (ArrayLen False ((Sum (TypedStateSig +PInt64))
+        (Sum (TypedStateSig +PFloat64))
+        (LinearRegression (LinearRegressionStateSig))))]
+    !c0_2 = I32 [0] 
+    !c1_3 = I32 [1]
+    !s4 = StreamRange(!c0_2, %__norm_14, !c1_3) [-1, False]
+    StreamFor(!s4) { (%__norm_16) =>
+      !14 = GetField(%__norm_7) [i0] 
+      !15 = ArrayRef(%__norm_13, %__norm_16) [-1]
+      %__norm_17 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_18 = Cast(%__norm_17) [Float64]
+      !s5 = ToStream(%__norm_12) [False] 
+      !true = True
+      !18 = StreamFold(!s5, !true) {
+      (%__norm_19, %__norm_20) =>
+        !16 = IsNA(%__norm_20)
+        !17 = ApplyUnaryPrimOp(!16) [Bang]
+        ApplySpecial(%__norm_19, !17) [7, land, 
+        (), Boolean]
+      }
+      %__norm_22 = If !18 then {
+        !19 = IsNA(%__norm_18)
+        !20 = ApplyUnaryPrimOp(!19) [Bang]
+        !21 = Apply(!20) [8, toInt64, (), Int64]
+        %__norm_21 = SeqOp(!21) [0, 
+        (Sum (TypedStateSig +PInt64))]
+        !22 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+        SeqOp(!22) [1, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+      !23 = SeqOp(%__norm_18, %__norm_12) [2, 
+      (LinearRegression (LinearRegressionStateSig))]
+      SeqOp(%__norm_16, !23) [0, 
+      (AggElements ((Sum (TypedStateSig +PInt64))
+          (Sum (TypedStateSig +PFloat64))
+          (LinearRegression (LinearRegressionStateSig))))]
+    }
+  } 
+  !25 = AggStateValue [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !26 = MakeTuple(!25) [(0)]
+  RunAgg(!24, !26) [(
+    (ArrayAggStateSig ((TypedStateSig +PInt64)
+        (TypedStateSig +PFloat64)
+        (LinearRegressionStateSig))))]
+}
+!27 = GetTupleElement(%__norm_3) [0]
+%__norm_24 = InitFromSerializedValue(!27) [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!s6 = ToStream(%__norm_23) [True]
+!29 = StreamFor(!s6) { (%__norm_25) =>
+  !28 = GetTupleElement(%__norm_25) [0]
+  CombOpValue(!28) [0, 
+  (ArrayLen False ((Sum (TypedStateSig +PInt64))
+      (Sum (TypedStateSig +PFloat64))
+      (LinearRegression (LinearRegressionStateSig))))]
+} 
+!30 = ResultOp [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))]
+%__norm_26 = MakeTuple(!30) [(0)]
+%__norm_27 = GetTupleElement(%__norm_26) [0]
+!c0_3 = I32 [0] 
+!31 = ArrayLen(%__norm_27) 
+!c1_4 = I32 [1]
+!s7 = StreamRange(!c0_3, !31, !c1_4) [-1, False]
+!s29 = StreamMap(!s7) { (%__norm_28) =>
+  %__norm_29 = ArrayRef(%__norm_27, %__norm_28) [-1]
+  !32 = GetTupleElement(%__norm_29) [0] 
+  !33 = GetTupleElement(%__norm_29) [1]
+  %__norm_30 = MakeTuple(!32, !33) [(0 1)]
+  %__norm_31 = GetTupleElement(%__norm_29) [2]
+  %__norm_32 = GetTupleElement(%__norm_30) [0]
+  %__norm_33 = I32 [4]
+  %__norm_34 = I32 [1]
+  %__norm_35 = GetTupleElement(%__norm_30) [1]
+  %__norm_36 = GetField(%__norm_31) [beta]
+  %__norm_37 = GetField(%__norm_31) [xty]
+  %__norm_38 = Ref [__norm_37]
+  %__norm_39 = Ref [__norm_36]
+  !s8 = ToStream(%__norm_38) [False] 
+  !s9 = ToStream(%__norm_39) [False]
+  !s10 = StreamZip(!s8, !s9) [-1, AssertSameLength] {
+  (%__norm_40, %__norm_41) =>
+    ApplyBinaryPrimOp(%__norm_40, %__norm_41) [Multiply]
+  }
+  !34 = ToArray(!s10)
+  !s11 = ToStream(!34) [False]
+  !s12 = StreamFilter(!s11) { (%__norm_42) =>
+    !35 = IsNA(%__norm_42)
+    ApplyUnaryPrimOp(!35) [Bang]
+  }
+  %__norm_43 = ToArray(!s12)
+  !s13 = ToStream(%__norm_43) [False] 
+  !36 = I64 [0]
+  !37 = Cast(!36) [Float64]
+  !38 = StreamFold(!s13, !37) {
+  (%__norm_44, %__norm_45) =>
+    ApplyBinaryPrimOp(%__norm_44, %__norm_45) [Add]
+  }
+  %__norm_46 = ApplyBinaryPrimOp(%__norm_35, !38) [Subtract]
+  %__norm_47 = Ref [__norm_33]
+  !39 = Cast(%__norm_47) [Int64]
+  %__norm_48 = ApplyBinaryPrimOp(%__norm_32, !39) [Subtract]
+  %__norm_49 = Ref [__norm_48]
+  !40 = Cast(%__norm_49) [Float64]
+  %__norm_50 = ApplyBinaryPrimOp(%__norm_46, !40) [FloatingPointDivide]
+  %__norm_51 = Ref [__norm_50]
+  %__norm_52 = GetField(%__norm_31) [diag_inv]
+  !s14 = ToStream(%__norm_52) [False]
+  !s15 = StreamMap(!s14) { (%__norm_53) =>
+    ApplyBinaryPrimOp(%__norm_51, %__norm_53) [Multiply]
+  }
+  %__norm_54 = ToArray(!s15)
+  %__norm_55 = F64 [0.5]
+  !s16 = ToStream(%__norm_54) [False]
+  !s17 = StreamMap(!s16) { (%__norm_56) =>
+    Apply(%__norm_56, %__norm_55) [14, pow, 
+    (), Float64]
+  }
+  %__norm_57 = ToArray(!s17)
+  %__norm_58 = Ref [__norm_36]
+  %__norm_59 = Ref [__norm_57]
+  !s18 = ToStream(%__norm_58) [False] 
+  !s19 = ToStream(%__norm_59) [False]
+  !s20 = StreamZip(!s18, !s19) [-1, AssertSameLength] {
+  (%__norm_60, %__norm_61) =>
+    ApplyBinaryPrimOp(%__norm_60, %__norm_61) [FloatingPointDivide]
+  }
+  %__norm_62 = ToArray(!s20)
+  %__norm_63 = I32 [1]
+  !c0_4 = I32 [0]
+  !41 = ApplyComparisonOp(%__norm_63, !c0_4) [GTEQ]
+  !42 = If !41 then {
+    I32 [0]
+  } else {
+    I32 [-1]
+  }
+  %__norm_64 = ArraySlice(%__norm_37, !42, %__norm_34, %__norm_63)
+  %__norm_65 = GetField(%__norm_31) [beta0]
+  !s21 = ToStream(%__norm_64) [False] 
+  !s22 = ToStream(%__norm_65) [False]
+  !s23 = StreamZip(!s21, !s22) [-1, AssertSameLength] {
+  (%__norm_66, %__norm_67) =>
+    ApplyBinaryPrimOp(%__norm_66, %__norm_67) [Multiply]
+  }
+  !43 = ToArray(!s23)
+  !s24 = ToStream(!43) [False]
+  !s25 = StreamFilter(!s24) { (%__norm_68) =>
+    !44 = IsNA(%__norm_68)
+    ApplyUnaryPrimOp(!44) [Bang]
+  }
+  %__norm_69 = ToArray(!s25)
+  !s26 = ToStream(%__norm_69) [False] 
+  !45 = I64 [0]
+  !46 = Cast(!45) [Float64]
+  !47 = StreamFold(!s26, !46) {
+  (%__norm_70, %__norm_71) =>
+    ApplyBinaryPrimOp(%__norm_70, %__norm_71) [Add]
+  }
+  %__norm_72 = ApplyBinaryPrimOp(%__norm_35, !47) [Subtract]
+  %__norm_73 = I32 [1]
+  !48 = Cast(%__norm_73) [Float64] 
+  !49 = ApplyBinaryPrimOp(%__norm_46, %__norm_72) [FloatingPointDivide]
+  %__norm_74 = ApplyBinaryPrimOp(!48, !49) [Subtract]
+  %__norm_75 = ApplyBinaryPrimOp(%__norm_33, %__norm_34) [Subtract]
+  !50 = ApplyBinaryPrimOp(%__norm_72, %__norm_46) [Subtract] 
+  %__norm_76 = Ref [__norm_48]
+  !51 = Cast(%__norm_76) [Float64]
+  !52 = ApplyBinaryPrimOp(!50, !51) [Multiply] 
+  %__norm_77 = Ref [__norm_75]
+  !53 = Cast(%__norm_77) [Float64]
+  !54 = ApplyBinaryPrimOp(%__norm_46, !53) [Multiply]
+  %__norm_78 = ApplyBinaryPrimOp(!52, !54) [FloatingPointDivide]
+  !s27 = ToStream(%__norm_62) [False]
+  !s28 = StreamMap(!s27) { (%__norm_79) =>
+    %__norm_80 = I32 [2]
+    !55 = Cast(%__norm_80) [Float64] 
+    !56 = Apply(%__norm_79) [16, abs, (), Float64]
+    !57 = ApplyUnaryPrimOp(!56) [Negate] 
+    %__norm_81 = Ref [__norm_48]
+    !58 = Cast(%__norm_81) [Float64] 
+    !true2 = True 
+    !false = False
+    !59 = Apply(!57, !58, !true2, !false) [18, pT, 
+    (), Float64]
+    ApplyBinaryPrimOp(!55, !59) [Multiply]
+  }
+  !60 = ToArray(!s28) 
+  !61 = Apply(%__norm_50) [20, sqrt, (), Float64] 
+  %__norm_82 = I32 [1]
+  !62 = Cast(%__norm_82) [Float64] 
+  %__norm_83 = I32 [1]
+  !63 = Cast(%__norm_83) [Float64]
+  !64 = ApplyBinaryPrimOp(!63, %__norm_74) [Subtract] 
+  %__norm_84 = Ref [__norm_34]
+  !65 = Cast(%__norm_84) [Int64]
+  %__norm_85 = ApplyBinaryPrimOp(%__norm_32, !65) [Subtract]
+  !66 = Cast(%__norm_85) [Float64]
+  !67 = ApplyBinaryPrimOp(!64, !66) [Multiply] 
+  %__norm_86 = Ref [__norm_48]
+  !68 = Cast(%__norm_86) [Float64]
+  !69 = ApplyBinaryPrimOp(!67, !68) [FloatingPointDivide]
+  !70 = ApplyBinaryPrimOp(!62, !69) [Subtract] 
+  %__norm_87 = Ref [__norm_75]
+  !71 = Cast(%__norm_87) [Float64] 
+  %__norm_88 = Ref [__norm_48]
+  !72 = Cast(%__norm_88) [Float64] 
+  !false2 = False 
+  !false3 = False
+  !73 = Apply(%__norm_78, !71, !72, !false2, !false3) [34, pF, 
+  (), Float64]
+  MakeStruct(beta: %__norm_36, standard_error: %__norm_57, t_stat: %__norm_62, p_value: !60, multiple_standard_error: !61, multiple_r_squared: %__norm_74, adjusted_r_squared: !70, f_stat: %__norm_78, multiple_p_value: !73, n: %__norm_32)
+}
+!74 = ToArray(!s29)
+!75 = RunAgg(!29, !74) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+MakeTuple(!75) [(0)]
+
+2026-10-23 03:25:50.795 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.795 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.795 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.795 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.795 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.796 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.796 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.796 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.796 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.841 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.841 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.841 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.844 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.844 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.844 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.844 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.844 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.844 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.844 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.844 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.844 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.844 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.845 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.845 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.845 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.845 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.845 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.845 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.845 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.845 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.845 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.862 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.862 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.862 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.863 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.863 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.863 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.863 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.863 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.863 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.929 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 260: 
+
+%__norm_1 = InitOp [0, 
+(Sum (TypedStateSig +PInt64))]
+%__norm_2 = InitOp [1, 
+(Sum (TypedStateSig +PFloat64))]
+!c4 = I32 [4] 
+!c1 = I32 [1]
+!1 = InitOp(!c4, !c1) [2, 
+(LinearRegression (LinearRegressionStateSig))]
+!2 = InitOp(!1) [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))] 
+!3 = AggStateValue [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!4 = MakeTuple(!3) [(0)]
+%__norm_3 = RunAgg(!2, !4) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_264: %__norm_3) 
+!7 = NA [String]
+%__norm_23 = CollectDistributedArray(!s, !6, !7) {
+(%__norm_4, %__norm_5) =>
+  !8 = GetField(%__norm_5) [__iruid_264]
+  !9 = GetTupleElement(!8) [0]
+  %__norm_6 = InitFromSerializedValue(!9) [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !29 = StreamFor(!s2) { (%__norm_7) =>
+    !10 = GetField(%__norm_7) [i1]
+    !11 = Cast(!10) [Float64] 
+    !12 = GetField(%__norm_7) [i2]
+    !13 = Cast(!12) [Float64] 
+    !14 = GetField(%__norm_7) [i3]
+    !15 = Cast(!14) [Float64] 
+    !16 = GetField(%__norm_7) [i4]
+    !17 = Cast(!16) [Float64]
+    %__norm_12 = MakeArray(!11, !13, !15, !17) [Array[Float64]]
+    !c0 = I32 [0] 
+    !c75 = I32 [75] 
+    !c1_2 = I32 [1]
+    !s3 = StreamRange(!c0, !c75, !c1_2) [1, False]
+    %__norm_13 = ToArray(!s3)
+    %__norm_14 = ArrayLen(%__norm_13)
+    %__norm_15 = SeqOp(%__norm_14) [0, 
+    (ArrayLen False ((Sum (TypedStateSig +PInt64))
+        (Sum (TypedStateSig +PFloat64))
+        (LinearRegression (LinearRegressionStateSig))))]
+    !c0_2 = I32 [0] 
+    !c1_3 = I32 [1]
+    !s4 = StreamRange(!c0_2, %__norm_14, !c1_3) [-1, False]
+    StreamFor(!s4) { (%__norm_16) =>
+      !18 = GetField(%__norm_7) [i0] 
+      !19 = ArrayRef(%__norm_13, %__norm_16) [-1]
+      !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+      %__norm_18 = Cast(!20) [Float64]
+      !s5 = ToStream(%__norm_12) [False] 
+      !true = True
+      !23 = StreamFold(!s5, !true) {
+      (%__norm_19, %__norm_20) =>
+        !21 = IsNA(%__norm_20)
+        !22 = ApplyUnaryPrimOp(!21) [Bang]
+        ApplySpecial(%__norm_19, !22) [7, land, 
+        (), Boolean]
+      }
+      %__norm_22 = If !23 then {
+        !24 = IsNA(%__norm_18)
+        !25 = ApplyUnaryPrimOp(!24) [Bang]
+        !26 = Apply(!25) [8, toInt64, (), Int64]
+        %__norm_21 = SeqOp(!26) [0, 
+        (Sum (TypedStateSig +PInt64))]
+        !27 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+        SeqOp(!27) [1, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+      !28 = SeqOp(%__norm_18, %__norm_12) [2, 
+      (LinearRegression (LinearRegressionStateSig))]
+      SeqOp(%__norm_16, !28) [0, 
+      (AggElements ((Sum (TypedStateSig +PInt64))
+          (Sum (TypedStateSig +PFloat64))
+          (LinearRegression (LinearRegressionStateSig))))]
+    }
+  } 
+  !30 = AggStateValue [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !31 = MakeTuple(!30) [(0)]
+  RunAgg(!29, !31) [(
+    (ArrayAggStateSig ((TypedStateSig +PInt64)
+        (TypedStateSig +PFloat64)
+        (LinearRegressionStateSig))))]
+}
+!32 = GetTupleElement(%__norm_3) [0]
+%__norm_24 = InitFromSerializedValue(!32) [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!s6 = ToStream(%__norm_23) [True]
+!34 = StreamFor(!s6) { (%__norm_25) =>
+  !33 = GetTupleElement(%__norm_25) [0]
+  CombOpValue(!33) [0, 
+  (ArrayLen False ((Sum (TypedStateSig +PInt64))
+      (Sum (TypedStateSig +PFloat64))
+      (LinearRegression (LinearRegressionStateSig))))]
+} 
+!35 = ResultOp [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))]
+%__norm_26 = MakeTuple(!35) [(0)]
+%__norm_27 = GetTupleElement(%__norm_26) [0]
+!c0_3 = I32 [0] 
+!36 = ArrayLen(%__norm_27) 
+!c1_4 = I32 [1]
+!s7 = StreamRange(!c0_3, !36, !c1_4) [-1, False]
+!s21 = StreamMap(!s7) { (%__norm_28) =>
+  %__norm_29 = ArrayRef(%__norm_27, %__norm_28) [-1]
+  !37 = GetTupleElement(%__norm_29) [0] 
+  !38 = GetTupleElement(%__norm_29) [1]
+  %__norm_30 = MakeTuple(!37, !38) [(0 1)]
+  %__norm_31 = GetTupleElement(%__norm_29) [2]
+  %__norm_32 = GetTupleElement(%__norm_30) [0]
+  %__norm_35 = GetTupleElement(%__norm_30) [1]
+  %__norm_36 = GetField(%__norm_31) [beta]
+  %__norm_37 = GetField(%__norm_31) [xty]
+  !s8 = ToStream(%__norm_37) [False] 
+  !s9 = ToStream(%__norm_36) [False]
+  !s10 = StreamZip(!s8, !s9) [-1, AssertSameLength] {
+  (%__norm_40, %__norm_41) =>
+    ApplyBinaryPrimOp(%__norm_40, %__norm_41) [Multiply]
+  } 
+  !39 = F64 [0.0]
+  !41 = StreamFold(!s10, !39) {
+  (%__norm_44, %__norm_42) =>
+    !40 = IsNA(%__norm_42)
+    If !40 then { %__norm_44 } else {
+      ApplyBinaryPrimOp(%__norm_44, %__norm_42) [Add]
+    }
+  }
+  %__norm_46 = ApplyBinaryPrimOp(%__norm_35, !41) [Subtract]
+  !42 = I64 [4]
+  %__norm_48 = ApplyBinaryPrimOp(%__norm_32, !42) [Subtract]
+  !43 = Cast(%__norm_48) [Float64]
+  %__norm_50 = ApplyBinaryPrimOp(%__norm_46, !43) [FloatingPointDivide]
+  !44 = GetField(%__norm_31) [diag_inv]
+  !s11 = ToStream(!44) [False]
+  !s12 = StreamMap(!s11) { (%__norm_53) =>
+    !45 = ApplyBinaryPrimOp(%__norm_50, %__norm_53) [Multiply] 
+    !46 = F64 [0.5]
+    Apply(!45, !46) [14, pow, (), Float64]
+  }
+  %__norm_57 = ToArray(!s12)
+  !s13 = ToStream(%__norm_36) [False] 
+  !s14 = ToStream(%__norm_57) [False]
+  !s15 = StreamZip(!s13, !s14) [-1, AssertSameLength] {
+  (%__norm_60, %__norm_61) =>
+    ApplyBinaryPrimOp(%__norm_60, %__norm_61) [FloatingPointDivide]
+  }
+  %__norm_62 = ToArray(!s15)
+  !c0_4 = I32 [0] 
+  !c1_5 = I32 [1] 
+  !c1_6 = I32 [1]
+  !47 = ArraySlice(%__norm_37, !c0_4, !c1_5, !c1_6)
+  !s16 = ToStream(!47) [False] 
+  !48 = GetField(%__norm_31) [beta0]
+  !s17 = ToStream(!48) [False]
+  !s18 = StreamZip(!s16, !s17) [-1, AssertSameLength] {
+  (%__norm_66, %__norm_67) =>
+    ApplyBinaryPrimOp(%__norm_66, %__norm_67) [Multiply]
+  } 
+  !49 = F64 [0.0]
+  !51 = StreamFold(!s18, !49) {
+  (%__norm_70, %__norm_68) =>
+    !50 = IsNA(%__norm_68)
+    If !50 then { %__norm_70 } else {
+      ApplyBinaryPrimOp(%__norm_70, %__norm_68) [Add]
+    }
+  }
+  %__norm_72 = ApplyBinaryPrimOp(%__norm_35, !51) [Subtract]
+  !52 = F64 [1.0] 
+  !53 = ApplyBinaryPrimOp(%__norm_46, %__norm_72) [FloatingPointDivide]
+  %__norm_74 = ApplyBinaryPrimOp(!52, !53) [Subtract]
+  !54 = ApplyBinaryPrimOp(%__norm_72, %__norm_46) [Subtract] 
+  !55 = Cast(%__norm_48) [Float64]
+  !56 = ApplyBinaryPrimOp(!54, !55) [Multiply] 
+  !57 = F64 [3.0]
+  !58 = ApplyBinaryPrimOp(%__norm_46, !57) [Multiply]
+  %__norm_78 = ApplyBinaryPrimOp(!56, !58) [FloatingPointDivide]
+  !s19 = ToStream(%__norm_62) [False]
+  !s20 = StreamMap(!s19) { (%__norm_79) =>
+    !59 = F64 [2.0] 
+    !60 = Apply(%__norm_79) [16, abs, (), Float64]
+    !61 = ApplyUnaryPrimOp(!60) [Negate] 
+    !62 = Cast(%__norm_48) [Float64] 
+    !true2 = True 
+    !false = False
+    !63 = Apply(!61, !62, !true2, !false) [18, pT, 
+    (), Float64]
+    ApplyBinaryPrimOp(!59, !63) [Multiply]
+  }
+  !64 = ToArray(!s20) 
+  !65 = Apply(%__norm_50) [20, sqrt, (), Float64] 
+  !66 = F64 [1.0] 
+  !67 = F64 [1.0]
+  !68 = ApplyBinaryPrimOp(!67, %__norm_74) [Subtract] 
+  !69 = I64 [1]
+  !70 = ApplyBinaryPrimOp(%__norm_32, !69) [Subtract]
+  !71 = Cast(!70) [Float64]
+  !72 = ApplyBinaryPrimOp(!68, !71) [Multiply] 
+  !73 = Cast(%__norm_48) [Float64]
+  !74 = ApplyBinaryPrimOp(!72, !73) [FloatingPointDivide]
+  !75 = ApplyBinaryPrimOp(!66, !74) [Subtract] 
+  !76 = F64 [3.0] 
+  !77 = Cast(%__norm_48) [Float64] 
+  !false2 = False 
+  !false3 = False
+  !78 = Apply(%__norm_78, !76, !77, !false2, !false3) [34, pF, 
+  (), Float64]
+  MakeStruct(beta: %__norm_36, standard_error: %__norm_57, t_stat: %__norm_62, p_value: !64, multiple_standard_error: !65, multiple_r_squared: %__norm_74, adjusted_r_squared: !75, f_stat: %__norm_78, multiple_p_value: !78, n: %__norm_32)
+}
+!79 = ToArray(!s21)
+!80 = RunAgg(!34, !79) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+MakeTuple(!80) [(0)]
+
+2026-10-23 03:25:50.954 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 260: 
+
+%__norm_1 = InitOp [0, 
+(Sum (TypedStateSig +PInt64))]
+%__norm_2 = InitOp [1, 
+(Sum (TypedStateSig +PFloat64))]
+!c4 = I32 [4] 
+!c1 = I32 [1]
+!1 = InitOp(!c4, !c1) [2, 
+(LinearRegression (LinearRegressionStateSig))]
+!2 = InitOp(!1) [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))] 
+!3 = AggStateValue [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!4 = MakeTuple(!3) [(0)]
+%__norm_3 = RunAgg(!2, !4) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_264: %__norm_3) 
+!7 = NA [String]
+%__norm_23 = CollectDistributedArray(!s, !6, !7) {
+(%__norm_4, %__norm_5) =>
+  !8 = GetField(%__norm_5) [__iruid_264]
+  !9 = GetTupleElement(!8) [0]
+  %__norm_6 = InitFromSerializedValue(!9) [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !29 = StreamFor(!s2) { (%__norm_7) =>
+    !10 = GetField(%__norm_7) [i1]
+    !11 = Cast(!10) [Float64] 
+    !12 = GetField(%__norm_7) [i2]
+    !13 = Cast(!12) [Float64] 
+    !14 = GetField(%__norm_7) [i3]
+    !15 = Cast(!14) [Float64] 
+    !16 = GetField(%__norm_7) [i4]
+    !17 = Cast(!16) [Float64]
+    %__norm_12 = MakeArray(!11, !13, !15, !17) [Array[Float64]]
+    !c0 = I32 [0] 
+    !c75 = I32 [75] 
+    !c1_2 = I32 [1]
+    !s3 = StreamRange(!c0, !c75, !c1_2) [1, False]
+    %__norm_13 = ToArray(!s3)
+    %__norm_14 = ArrayLen(%__norm_13)
+    %__norm_15 = SeqOp(%__norm_14) [0, 
+    (ArrayLen False ((Sum (TypedStateSig +PInt64))
+        (Sum (TypedStateSig +PFloat64))
+        (LinearRegression (LinearRegressionStateSig))))]
+    !c0_2 = I32 [0] 
+    !c1_3 = I32 [1]
+    !s4 = StreamRange(!c0_2, %__norm_14, !c1_3) [-1, False]
+    StreamFor(!s4) { (%__norm_16) =>
+      !18 = GetField(%__norm_7) [i0] 
+      !19 = ArrayRef(%__norm_13, %__norm_16) [-1]
+      !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+      %__norm_18 = Cast(!20) [Float64]
+      !s5 = ToStream(%__norm_12) [False] 
+      !true = True
+      !23 = StreamFold(!s5, !true) {
+      (%__norm_19, %__norm_20) =>
+        !21 = IsNA(%__norm_20)
+        !22 = ApplyUnaryPrimOp(!21) [Bang]
+        ApplySpecial(%__norm_19, !22) [7, land, 
+        (), Boolean]
+      }
+      %__norm_22 = If !23 then {
+        !24 = IsNA(%__norm_18)
+        !25 = ApplyUnaryPrimOp(!24) [Bang]
+        !26 = Apply(!25) [8, toInt64, (), Int64]
+        %__norm_21 = SeqOp(!26) [0, 
+        (Sum (TypedStateSig +PInt64))]
+        !27 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+        SeqOp(!27) [1, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+      !28 = SeqOp(%__norm_18, %__norm_12) [2, 
+      (LinearRegression (LinearRegressionStateSig))]
+      SeqOp(%__norm_16, !28) [0, 
+      (AggElements ((Sum (TypedStateSig +PInt64))
+          (Sum (TypedStateSig +PFloat64))
+          (LinearRegression (LinearRegressionStateSig))))]
+    }
+  } 
+  !30 = AggStateValue [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !31 = MakeTuple(!30) [(0)]
+  RunAgg(!29, !31) [(
+    (ArrayAggStateSig ((TypedStateSig +PInt64)
+        (TypedStateSig +PFloat64)
+        (LinearRegressionStateSig))))]
+}
+!32 = GetTupleElement(%__norm_3) [0]
+%__norm_24 = InitFromSerializedValue(!32) [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!s6 = ToStream(%__norm_23) [True]
+!34 = StreamFor(!s6) { (%__norm_25) =>
+  !33 = GetTupleElement(%__norm_25) [0]
+  CombOpValue(!33) [0, 
+  (ArrayLen False ((Sum (TypedStateSig +PInt64))
+      (Sum (TypedStateSig +PFloat64))
+      (LinearRegression (LinearRegressionStateSig))))]
+} 
+!35 = ResultOp [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))]
+%__norm_26 = MakeTuple(!35) [(0)]
+%__norm_27 = GetTupleElement(%__norm_26) [0]
+!c0_3 = I32 [0] 
+!36 = ArrayLen(%__norm_27) 
+!c1_4 = I32 [1]
+!s7 = StreamRange(!c0_3, !36, !c1_4) [-1, False]
+!s21 = StreamMap(!s7) { (%__norm_28) =>
+  %__norm_29 = ArrayRef(%__norm_27, %__norm_28) [-1]
+  !37 = GetTupleElement(%__norm_29) [0] 
+  !38 = GetTupleElement(%__norm_29) [1]
+  %__norm_30 = MakeTuple(!37, !38) [(0 1)]
+  %__norm_31 = GetTupleElement(%__norm_29) [2]
+  %__norm_32 = GetTupleElement(%__norm_30) [0]
+  %__norm_35 = GetTupleElement(%__norm_30) [1]
+  %__norm_36 = GetField(%__norm_31) [beta]
+  %__norm_37 = GetField(%__norm_31) [xty]
+  !s8 = ToStream(%__norm_37) [False] 
+  !s9 = ToStream(%__norm_36) [False]
+  !s10 = StreamZip(!s8, !s9) [-1, AssertSameLength] {
+  (%__norm_40, %__norm_41) =>
+    ApplyBinaryPrimOp(%__norm_40, %__norm_41) [Multiply]
+  } 
+  !39 = F64 [0.0]
+  !41 = StreamFold(!s10, !39) {
+  (%__norm_44, %__norm_42) =>
+    !40 = IsNA(%__norm_42)
+    If !40 then { %__norm_44 } else {
+      ApplyBinaryPrimOp(%__norm_44, %__norm_42) [Add]
+    }
+  }
+  %__norm_46 = ApplyBinaryPrimOp(%__norm_35, !41) [Subtract]
+  !42 = I64 [4]
+  %__norm_48 = ApplyBinaryPrimOp(%__norm_32, !42) [Subtract]
+  !43 = Cast(%__norm_48) [Float64]
+  %__norm_50 = ApplyBinaryPrimOp(%__norm_46, !43) [FloatingPointDivide]
+  !44 = GetField(%__norm_31) [diag_inv]
+  !s11 = ToStream(!44) [False]
+  !s12 = StreamMap(!s11) { (%__norm_53) =>
+    !45 = ApplyBinaryPrimOp(%__norm_50, %__norm_53) [Multiply] 
+    !46 = F64 [0.5]
+    Apply(!45, !46) [14, pow, (), Float64]
+  }
+  %__norm_57 = ToArray(!s12)
+  !s13 = ToStream(%__norm_36) [False] 
+  !s14 = ToStream(%__norm_57) [False]
+  !s15 = StreamZip(!s13, !s14) [-1, AssertSameLength] {
+  (%__norm_60, %__norm_61) =>
+    ApplyBinaryPrimOp(%__norm_60, %__norm_61) [FloatingPointDivide]
+  }
+  %__norm_62 = ToArray(!s15)
+  !c0_4 = I32 [0] 
+  !c1_5 = I32 [1] 
+  !c1_6 = I32 [1]
+  !47 = ArraySlice(%__norm_37, !c0_4, !c1_5, !c1_6)
+  !s16 = ToStream(!47) [False] 
+  !48 = GetField(%__norm_31) [beta0]
+  !s17 = ToStream(!48) [False]
+  !s18 = StreamZip(!s16, !s17) [-1, AssertSameLength] {
+  (%__norm_66, %__norm_67) =>
+    ApplyBinaryPrimOp(%__norm_66, %__norm_67) [Multiply]
+  } 
+  !49 = F64 [0.0]
+  !51 = StreamFold(!s18, !49) {
+  (%__norm_70, %__norm_68) =>
+    !50 = IsNA(%__norm_68)
+    If !50 then { %__norm_70 } else {
+      ApplyBinaryPrimOp(%__norm_70, %__norm_68) [Add]
+    }
+  }
+  %__norm_72 = ApplyBinaryPrimOp(%__norm_35, !51) [Subtract]
+  !52 = F64 [1.0] 
+  !53 = ApplyBinaryPrimOp(%__norm_46, %__norm_72) [FloatingPointDivide]
+  %__norm_74 = ApplyBinaryPrimOp(!52, !53) [Subtract]
+  !54 = ApplyBinaryPrimOp(%__norm_72, %__norm_46) [Subtract] 
+  !55 = Cast(%__norm_48) [Float64]
+  !56 = ApplyBinaryPrimOp(!54, !55) [Multiply] 
+  !57 = F64 [3.0]
+  !58 = ApplyBinaryPrimOp(%__norm_46, !57) [Multiply]
+  %__norm_78 = ApplyBinaryPrimOp(!56, !58) [FloatingPointDivide]
+  !s19 = ToStream(%__norm_62) [False]
+  !s20 = StreamMap(!s19) { (%__norm_79) =>
+    !59 = F64 [2.0] 
+    !60 = Apply(%__norm_79) [16, abs, (), Float64]
+    !61 = ApplyUnaryPrimOp(!60) [Negate] 
+    !62 = Cast(%__norm_48) [Float64] 
+    !true2 = True 
+    !false = False
+    !63 = Apply(!61, !62, !true2, !false) [18, pT, 
+    (), Float64]
+    ApplyBinaryPrimOp(!59, !63) [Multiply]
+  }
+  !64 = ToArray(!s20) 
+  !65 = Apply(%__norm_50) [20, sqrt, (), Float64] 
+  !66 = F64 [1.0] 
+  !67 = F64 [1.0]
+  !68 = ApplyBinaryPrimOp(!67, %__norm_74) [Subtract] 
+  !69 = I64 [1]
+  !70 = ApplyBinaryPrimOp(%__norm_32, !69) [Subtract]
+  !71 = Cast(!70) [Float64]
+  !72 = ApplyBinaryPrimOp(!68, !71) [Multiply] 
+  !73 = Cast(%__norm_48) [Float64]
+  !74 = ApplyBinaryPrimOp(!72, !73) [FloatingPointDivide]
+  !75 = ApplyBinaryPrimOp(!66, !74) [Subtract] 
+  !76 = F64 [3.0] 
+  !77 = Cast(%__norm_48) [Float64] 
+  !false2 = False 
+  !false3 = False
+  !78 = Apply(%__norm_78, !76, !77, !false2, !false3) [34, pF, 
+  (), Float64]
+  MakeStruct(beta: %__norm_36, standard_error: %__norm_57, t_stat: %__norm_62, p_value: !64, multiple_standard_error: !65, multiple_r_squared: %__norm_74, adjusted_r_squared: !75, f_stat: %__norm_78, multiple_p_value: !78, n: %__norm_32)
+}
+!79 = ToArray(!s21)
+!80 = RunAgg(!34, !79) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+MakeTuple(!80) [(0)]
+
+2026-10-23 03:25:50.956 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.956 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:50.956 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:50.973 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 260: 
+
+%__norm_1 = InitOp [0, 
+(Sum (TypedStateSig +PInt64))]
+%__norm_2 = InitOp [1, 
+(Sum (TypedStateSig +PFloat64))]
+!c4 = I32 [4] 
+!c1 = I32 [1]
+!1 = InitOp(!c4, !c1) [2, 
+(LinearRegression (LinearRegressionStateSig))]
+!2 = InitOp(!1) [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))] 
+!3 = AggStateValue [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!4 = MakeTuple(!3) [(0)]
+%__norm_3 = RunAgg(!2, !4) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_264: %__norm_3) 
+!7 = NA [String]
+%__norm_23 = CollectDistributedArray(!s, !6, !7) {
+(%__norm_4, %__norm_5) =>
+  !8 = GetField(%__norm_5) [__iruid_264]
+  !9 = GetTupleElement(!8) [0]
+  %__norm_6 = InitFromSerializedValue(!9) [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !s2 = ReadPartition(%__norm_4) [Struct{i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:EVarint,i0:EVarint,i1:EVarint,i2:EVarint,i3:EVarint,i4:EVarint,array0:EArray2[EVarint],array1:EArray2[EVarint]}\",\"_vType\":\"Struct{idx:Int32,i0:Int32,i1:Int32,i2:Int32,i3:Int32,i4:Int32,array0:Array[Int32],array1:Array[Int32]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !29 = StreamFor(!s2) { (%__norm_7) =>
+    !10 = GetField(%__norm_7) [i1]
+    !11 = Cast(!10) [Float64] 
+    !12 = GetField(%__norm_7) [i2]
+    !13 = Cast(!12) [Float64] 
+    !14 = GetField(%__norm_7) [i3]
+    !15 = Cast(!14) [Float64] 
+    !16 = GetField(%__norm_7) [i4]
+    !17 = Cast(!16) [Float64]
+    %__norm_12 = MakeArray(!11, !13, !15, !17) [Array[Float64]]
+    !c0 = I32 [0] 
+    !c75 = I32 [75] 
+    !c1_2 = I32 [1]
+    !s3 = StreamRange(!c0, !c75, !c1_2) [1, False]
+    %__norm_13 = ToArray(!s3)
+    %__norm_14 = ArrayLen(%__norm_13)
+    %__norm_15 = SeqOp(%__norm_14) [0, 
+    (ArrayLen False ((Sum (TypedStateSig +PInt64))
+        (Sum (TypedStateSig +PFloat64))
+        (LinearRegression (LinearRegressionStateSig))))]
+    !c0_2 = I32 [0] 
+    !c1_3 = I32 [1]
+    !s4 = StreamRange(!c0_2, %__norm_14, !c1_3) [-1, False]
+    StreamFor(!s4) { (%__norm_16) =>
+      !18 = GetField(%__norm_7) [i0] 
+      !19 = ArrayRef(%__norm_13, %__norm_16) [-1]
+      !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+      %__norm_18 = Cast(!20) [Float64]
+      !s5 = ToStream(%__norm_12) [False] 
+      !true = True
+      !23 = StreamFold(!s5, !true) {
+      (%__norm_19, %__norm_20) =>
+        !21 = IsNA(%__norm_20)
+        !22 = ApplyUnaryPrimOp(!21) [Bang]
+        ApplySpecial(%__norm_19, !22) [7, land, 
+        (), Boolean]
+      }
+      %__norm_22 = If !23 then {
+        !24 = IsNA(%__norm_18)
+        !25 = ApplyUnaryPrimOp(!24) [Bang]
+        !26 = Apply(!25) [8, toInt64, (), Int64]
+        %__norm_21 = SeqOp(!26) [0, 
+        (Sum (TypedStateSig +PInt64))]
+        !27 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+        SeqOp(!27) [1, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+      !28 = SeqOp(%__norm_18, %__norm_12) [2, 
+      (LinearRegression (LinearRegressionStateSig))]
+      SeqOp(%__norm_16, !28) [0, 
+      (AggElements ((Sum (TypedStateSig +PInt64))
+          (Sum (TypedStateSig +PFloat64))
+          (LinearRegression (LinearRegressionStateSig))))]
+    }
+  } 
+  !30 = AggStateValue [0, 
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig)))]
+  !31 = MakeTuple(!30) [(0)]
+  RunAgg(!29, !31) [(
+    (ArrayAggStateSig ((TypedStateSig +PInt64)
+        (TypedStateSig +PFloat64)
+        (LinearRegressionStateSig))))]
+}
+!32 = GetTupleElement(%__norm_3) [0]
+%__norm_24 = InitFromSerializedValue(!32) [0, 
+(ArrayAggStateSig ((TypedStateSig +PInt64)
+    (TypedStateSig +PFloat64)
+    (LinearRegressionStateSig)))]
+!s6 = ToStream(%__norm_23) [True]
+!34 = StreamFor(!s6) { (%__norm_25) =>
+  !33 = GetTupleElement(%__norm_25) [0]
+  CombOpValue(!33) [0, 
+  (ArrayLen False ((Sum (TypedStateSig +PInt64))
+      (Sum (TypedStateSig +PFloat64))
+      (LinearRegression (LinearRegressionStateSig))))]
+} 
+!35 = ResultOp [0, 
+(ArrayLen False ((Sum (TypedStateSig +PInt64))
+    (Sum (TypedStateSig +PFloat64))
+    (LinearRegression (LinearRegressionStateSig))))]
+%__norm_26 = MakeTuple(!35) [(0)]
+%__norm_27 = GetTupleElement(%__norm_26) [0]
+!c0_3 = I32 [0] 
+!36 = ArrayLen(%__norm_27) 
+!c1_4 = I32 [1]
+!s7 = StreamRange(!c0_3, !36, !c1_4) [-1, False]
+!s21 = StreamMap(!s7) { (%__norm_28) =>
+  %__norm_29 = ArrayRef(%__norm_27, %__norm_28) [-1]
+  !37 = GetTupleElement(%__norm_29) [0] 
+  !38 = GetTupleElement(%__norm_29) [1]
+  %__norm_30 = MakeTuple(!37, !38) [(0 1)]
+  %__norm_31 = GetTupleElement(%__norm_29) [2]
+  %__norm_32 = GetTupleElement(%__norm_30) [0]
+  %__norm_35 = GetTupleElement(%__norm_30) [1]
+  %__norm_36 = GetField(%__norm_31) [beta]
+  %__norm_37 = GetField(%__norm_31) [xty]
+  !s8 = ToStream(%__norm_37) [False] 
+  !s9 = ToStream(%__norm_36) [False]
+  !s10 = StreamZip(!s8, !s9) [-1, AssertSameLength] {
+  (%__norm_40, %__norm_41) =>
+    ApplyBinaryPrimOp(%__norm_40, %__norm_41) [Multiply]
+  } 
+  !39 = F64 [0.0]
+  !41 = StreamFold(!s10, !39) {
+  (%__norm_44, %__norm_42) =>
+    !40 = IsNA(%__norm_42)
+    If !40 then { %__norm_44 } else {
+      ApplyBinaryPrimOp(%__norm_44, %__norm_42) [Add]
+    }
+  }
+  %__norm_46 = ApplyBinaryPrimOp(%__norm_35, !41) [Subtract]
+  !42 = I64 [4]
+  %__norm_48 = ApplyBinaryPrimOp(%__norm_32, !42) [Subtract]
+  !43 = Cast(%__norm_48) [Float64]
+  %__norm_50 = ApplyBinaryPrimOp(%__norm_46, !43) [FloatingPointDivide]
+  !44 = GetField(%__norm_31) [diag_inv]
+  !s11 = ToStream(!44) [False]
+  !s12 = StreamMap(!s11) { (%__norm_53) =>
+    !45 = ApplyBinaryPrimOp(%__norm_50, %__norm_53) [Multiply] 
+    !46 = F64 [0.5]
+    Apply(!45, !46) [14, pow, (), Float64]
+  }
+  %__norm_57 = ToArray(!s12)
+  !s13 = ToStream(%__norm_36) [False] 
+  !s14 = ToStream(%__norm_57) [False]
+  !s15 = StreamZip(!s13, !s14) [-1, AssertSameLength] {
+  (%__norm_60, %__norm_61) =>
+    ApplyBinaryPrimOp(%__norm_60, %__norm_61) [FloatingPointDivide]
+  }
+  %__norm_62 = ToArray(!s15)
+  !c0_4 = I32 [0] 
+  !c1_5 = I32 [1] 
+  !c1_6 = I32 [1]
+  !47 = ArraySlice(%__norm_37, !c0_4, !c1_5, !c1_6)
+  !s16 = ToStream(!47) [False] 
+  !48 = GetField(%__norm_31) [beta0]
+  !s17 = ToStream(!48) [False]
+  !s18 = StreamZip(!s16, !s17) [-1, AssertSameLength] {
+  (%__norm_66, %__norm_67) =>
+    ApplyBinaryPrimOp(%__norm_66, %__norm_67) [Multiply]
+  } 
+  !49 = F64 [0.0]
+  !51 = StreamFold(!s18, !49) {
+  (%__norm_70, %__norm_68) =>
+    !50 = IsNA(%__norm_68)
+    If !50 then { %__norm_70 } else {
+      ApplyBinaryPrimOp(%__norm_70, %__norm_68) [Add]
+    }
+  }
+  %__norm_72 = ApplyBinaryPrimOp(%__norm_35, !51) [Subtract]
+  !52 = F64 [1.0] 
+  !53 = ApplyBinaryPrimOp(%__norm_46, %__norm_72) [FloatingPointDivide]
+  %__norm_74 = ApplyBinaryPrimOp(!52, !53) [Subtract]
+  !54 = ApplyBinaryPrimOp(%__norm_72, %__norm_46) [Subtract] 
+  !55 = Cast(%__norm_48) [Float64]
+  !56 = ApplyBinaryPrimOp(!54, !55) [Multiply] 
+  !57 = F64 [3.0]
+  !58 = ApplyBinaryPrimOp(%__norm_46, !57) [Multiply]
+  %__norm_78 = ApplyBinaryPrimOp(!56, !58) [FloatingPointDivide]
+  !s19 = ToStream(%__norm_62) [False]
+  !s20 = StreamMap(!s19) { (%__norm_79) =>
+    !59 = F64 [2.0] 
+    !60 = Apply(%__norm_79) [16, abs, (), Float64]
+    !61 = ApplyUnaryPrimOp(!60) [Negate] 
+    !62 = Cast(%__norm_48) [Float64] 
+    !true2 = True 
+    !false = False
+    !63 = Apply(!61, !62, !true2, !false) [18, pT, 
+    (), Float64]
+    ApplyBinaryPrimOp(!59, !63) [Multiply]
+  }
+  !64 = ToArray(!s20) 
+  !65 = Apply(%__norm_50) [20, sqrt, (), Float64] 
+  !66 = F64 [1.0] 
+  !67 = F64 [1.0]
+  !68 = ApplyBinaryPrimOp(!67, %__norm_74) [Subtract] 
+  !69 = I64 [1]
+  !70 = ApplyBinaryPrimOp(%__norm_32, !69) [Subtract]
+  !71 = Cast(!70) [Float64]
+  !72 = ApplyBinaryPrimOp(!68, !71) [Multiply] 
+  !73 = Cast(%__norm_48) [Float64]
+  !74 = ApplyBinaryPrimOp(!72, !73) [FloatingPointDivide]
+  !75 = ApplyBinaryPrimOp(!66, !74) [Subtract] 
+  !76 = F64 [3.0] 
+  !77 = Cast(%__norm_48) [Float64] 
+  !false2 = False 
+  !false3 = False
+  !78 = Apply(%__norm_78, !76, !77, !false2, !false3) [34, pF, 
+  (), Float64]
+  MakeStruct(beta: %__norm_36, standard_error: %__norm_57, t_stat: %__norm_62, p_value: !64, multiple_standard_error: !65, multiple_r_squared: %__norm_74, adjusted_r_squared: !75, f_stat: %__norm_78, multiple_p_value: !78, n: %__norm_32)
+}
+!79 = ToArray(!s21)
+!80 = RunAgg(!34, !79) [(
+  (ArrayAggStateSig ((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (LinearRegressionStateSig))))]
+MakeTuple(!80) [(0)]
+
+2026-10-23 03:25:51.208 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:25:51.755 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:25:51.755 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:25:51.755 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:25:51.755 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:25:51.755 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:25:55.899 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=224256, peakBytesReadable=219.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:25:55.899 RegionPool: INFO: RegionPool: FREE: 219.0K allocated (219.0K blocks / 0 chunks), regions.size = 80, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:25:55.902 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=224256, peakBytesReadable=219.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:25:55.902 RegionPool: INFO: RegionPool: FREE: 219.0K allocated (219.0K blocks / 0 chunks), regions.size = 80, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:25:55.907 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=224256, peakBytesReadable=219.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:25:55.907 RegionPool: INFO: RegionPool: FREE: 219.0K allocated (219.0K blocks / 0 chunks), regions.size = 80, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:25:55.932 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=224256, peakBytesReadable=219.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:25:55.932 RegionPool: INFO: RegionPool: FREE: 219.0K allocated (219.0K blocks / 0 chunks), regions.size = 80, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:25:55.952 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=224256, peakBytesReadable=219.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:25:55.952 RegionPool: INFO: RegionPool: FREE: 219.0K allocated (219.0K blocks / 0 chunks), regions.size = 80, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:25:56.012 BackendUtils: INFO: table_aggregate_singlestage: executed 5 tasks in 4.409s
+2026-10-23 03:25:56.014 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (239.8K blocks / 16.3K chunks), regions.size = 132, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.122 JniNamer: WARN: unrecognised architecture: aarch64
+2026-10-23 03:25:56.123 LAPACK: WARN: Failed to load implementation from: com.github.fommil.netlib.NativeSystemLAPACK
+2026-10-23 03:25:56.129 JniNamer: WARN: unrecognised architecture: aarch64
+2026-10-23 03:25:56.130 LAPACK: WARN: Failed to load implementation from: com.github.fommil.netlib.NativeRefLAPACK
+2026-10-23 03:25:56.150 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.150 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.150 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.151 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:25:56.159 LowerOrInterpretNonCompilable$: INFO: took 5.687s
+2026-10-23 03:25:56.159 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]
+
+2026-10-23 03:25:56.159 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.159 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.160 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.160 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]
+
+2026-10-23 03:25:56.160 LoweringPipeline: INFO: after EvalRelationalLets: IR size 2: 
+
+!1 = EncodedLiteral [Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:25:56.160 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 2: 
+
+!1 = EncodedLiteral [Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:25:56.160 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 2: 
+
+!1 = EncodedLiteral [Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:25:56.161 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:25:56.171 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.171 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.171 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.171 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.171 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.171 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.171 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.171 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.171 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.171 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+Literal [Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]], <literal value>]
+
+2026-10-23 03:25:56.171 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]], <literal value>]
+
+2026-10-23 03:25:56.172 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.172 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.172 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.172 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]], <literal value>]
+
+2026-10-23 03:25:56.172 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = Literal [Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]], <literal value>]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:25:56.173 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.173 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.173 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.173 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]], <literal value>]
+
+2026-10-23 03:25:56.173 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]], <literal value>]
+
+2026-10-23 03:25:56.173 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.173 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.173 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]], <literal value>]
+
+2026-10-23 03:25:56.174 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]], <literal value>]
+
+2026-10-23 03:25:56.174 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.175 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.175 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.175 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Tuple[Array[Struct{beta:Array[Float64],standard_error:Array[Float64],t_stat:Array[Float64],p_value:Array[Float64],multiple_standard_error:Float64,multiple_r_squared:Float64,adjusted_r_squared:Float64,f_stat:Float64,multiple_p_value:Float64,n:Int64}]]], <literal value>]
+
+2026-10-23 03:25:56.177 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:25:56.184 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.184 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.184 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.186 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:25:56.220 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.220 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:25:56.220 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:25:56.220 RegionPool: INFO: RegionPool: FREE: 326.0K allocated (310.0K blocks / 16.0K chunks), regions.size = 157, 0 current java objects, thread 90: HTTP-Dispatcher

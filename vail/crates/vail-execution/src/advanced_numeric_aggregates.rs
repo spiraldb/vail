@@ -124,6 +124,41 @@ struct HistogramConfig {
     bins: usize,
     edges: Arc<Float64Array>,
 }
+/// Semantic identity retains the existing prepared histogram configuration;
+/// coordinate layout adapters inspect this typed key, never UDAF names.
+#[derive(Debug, Clone)]
+struct HistogramIdentity {
+    input: DataType,
+    config: Arc<HistogramConfig>,
+}
+impl PartialEq for HistogramIdentity {
+    fn eq(&self, other: &Self) -> bool {
+        self.input == other.input
+            && self.config.bins == other.config.bins
+            && self.config.range.start.to_bits() == other.config.range.start.to_bits()
+            && self.config.range.end.to_bits() == other.config.range.end.to_bits()
+    }
+}
+impl Eq for HistogramIdentity {}
+impl Hash for HistogramIdentity {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.input.hash(state);
+        self.config.bins.hash(state);
+        self.config.range.start.to_bits().hash(state);
+        self.config.range.end.to_bits().hash(state);
+    }
+}
+pub(crate) fn coordinate_histogram(udf: &AggregateUDF) -> Option<CoordinateHistogram> {
+    crate::kernel_identity::aggregate_key::<HistogramIdentity>(udf).map(|identity| {
+        CoordinateHistogram {
+            inner: HistGroupsAccumulator {
+                config: Arc::clone(&identity.config),
+                counts: Vec::new(),
+            },
+        }
+    })
+}
+
 fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, ExprError> {
     if !numeric(t) {
         return Err(invalid(format!("hist requires numeric input, got {t:?}")));
@@ -187,7 +222,7 @@ fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, E
     });
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         &udf_name,
-        (udf_name.clone(), t.clone(), output.clone()),
+        HistogramIdentity { input: t.clone(), config: Arc::clone(&config) },
         vec![t.clone()],
         output,
         vec![state],
@@ -436,11 +471,121 @@ impl HistGroupsAccumulator {
         Ok(input)
     }
 
+    fn merge_row(&mut self, row: usize, group: usize, lists: &ListArray, values: &Int64Array) -> DfResult<()> {
+            if lists.is_null(row) { return Ok(()); }
+            let start = lists.value_offsets()[row] as usize;
+            if lists.value_length(row) as usize != self.width() {
+                return Err(DataFusionError::Execution(
+                    "hist grouped state width mismatch".into(),
+                ));
+            }
+            for offset in 0..self.width() {
+                if values.is_null(start + offset) {
+                    return Err(DataFusionError::Execution(
+                        "hist grouped counts must be defined".into(),
+                    ));
+                }
+                let dst = group * self.width() + offset;
+                self.counts[dst] = self.counts[dst].wrapping_add(values.value(start + offset));
+            }
+        Ok(())
+    }
     fn add_row(&mut self, group: usize, value: f64) {
         if let Some(index) = histogram_bin(&self.config, value) {
             let offset = group * self.width() + index;
             self.counts[offset] = self.counts[offset].wrapping_add(1);
         }
+    }
+}
+
+/// The same histogram engine with implicit aligned coordinates rather than
+/// DataFusion's general per-entry group IDs. No histogram math is duplicated.
+#[derive(Debug)]
+pub(crate) struct CoordinateHistogram {
+    inner: HistGroupsAccumulator,
+}
+impl CoordinateHistogram {
+    pub(crate) fn update(
+        &mut self,
+        input: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        if width == 0
+            || input.len() % width != 0
+            || filter.is_some_and(|filter| filter.len() != input.len())
+        {
+            return Err(DataFusionError::Execution(
+                "hist coordinate input shape mismatch".into(),
+            ));
+        }
+        self.inner.ensure_groups(width)?;
+        macro_rules! update {
+            ($array:ty) => {{
+                let values = input.as_any().downcast_ref::<$array>().unwrap();
+                for (row, chunk) in values.values().chunks_exact(width).enumerate() {
+                    for (column, value) in chunk.iter().copied().enumerate() {
+                        let index = row * width + column;
+                        if values.is_valid(index)
+                            && filter
+                                .is_none_or(|filter| filter.is_valid(index) && filter.value(index))
+                        {
+                            self.inner.add_row(column, value as f64);
+                        }
+                    }
+                }
+            }};
+        }
+        match input.data_type() {
+            DataType::Int32 => update!(arrow_array::Int32Array),
+            DataType::Int64 => update!(Int64Array),
+            DataType::Float32 => update!(arrow_array::Float32Array),
+            DataType::Float64 => update!(Float64Array),
+            _ => {
+                return Err(DataFusionError::Execution(
+                    "hist requires numeric coordinate input".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn states(&self) -> DfResult<Vec<ArrayRef>> {
+        Ok(vec![list_array(
+            Arc::new(Int64Array::from(self.inner.counts.clone())),
+            self.inner.width(),
+        )?])
+    }
+    pub(crate) fn array(&self) -> DfResult<ArrayRef> {
+        histogram_groups_output(&self.inner.config, self.inner.counts.clone())
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.inner.size()
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        let [state] = states else {
+            return Err(DataFusionError::Execution(
+                "hist state shape mismatch".into(),
+            ));
+        };
+        let lists = state
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("hist state must be int64 list".into()))?;
+        let values = lists
+            .values()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| DataFusionError::Execution("hist counts must be int64".into()))?;
+        if lists.len() != width {
+            return Err(DataFusionError::Execution(
+                "hist coordinate state width mismatch".into(),
+            ));
+        }
+        self.inner.ensure_groups(width)?;
+        for column in 0..width {
+            self.inner.merge_row(column, column, lists, values)?;
+        }
+        Ok(())
     }
 }
 
@@ -521,24 +666,7 @@ impl GroupsAccumulator for HistGroupsAccumulator {
         }
         self.ensure_groups(total_num_groups)?;
         for (row, group) in group_indices.iter().copied().enumerate() {
-            if lists.is_null(row) {
-                continue;
-            }
-            let start = lists.value_offsets()[row] as usize;
-            if lists.value_length(row) as usize != self.width() {
-                return Err(DataFusionError::Execution(
-                    "hist grouped state width mismatch".into(),
-                ));
-            }
-            for offset in 0..self.width() {
-                if values.is_null(start + offset) {
-                    return Err(DataFusionError::Execution(
-                        "hist grouped counts must be defined".into(),
-                    ));
-                }
-                let dst = group * self.width() + offset;
-                self.counts[dst] = self.counts[dst].wrapping_add(values.value(start + offset));
-            }
+            self.merge_row(row, group, lists, values)?;
         }
         Ok(())
     }
@@ -639,6 +767,7 @@ fn quantiles(
     let ret = result_type.clone();
     let input = t.clone();
     let scalar = o["scalar"].as_bool().unwrap_or(false);
+    let identity = QuantileIdentity { input: t.clone(), k, qs: qs.iter().map(|q| q.map(f64::to_bits)).collect(), scalar, missing_quantiles };
     let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
         Ok(Box::new(KllAccumulator::new(
             input.clone(),
@@ -649,14 +778,24 @@ fn quantiles(
         )))
     });
     let udaf_name = configured_udaf_name(name, t, o);
-    Ok(Arc::new(create_udaf(
-        &udaf_name,
-        vec![t.clone()],
-        Arc::new(ret),
-        Volatility::Immutable,
-        factory,
-        Arc::new(vec![state_type]),
-    )))
+    Ok(crate::kernel_identity::aggregate_named(
+        &udaf_name, identity, vec![t.clone()], ret, vec![state_type], factory,
+    ))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct QuantileIdentity {
+    input: DataType,
+    k: u16,
+    qs: Vec<Option<u64>>,
+    scalar: bool,
+    missing_quantiles: bool,
+}
+fn kll_int64(value: i64) -> DfResult<f64> {
+    if !(-9_007_199_254_740_992..=9_007_199_254_740_992).contains(&value) {
+        return Err(DataFusionError::Execution("approximate quantiles for int64 inputs outside ±2^53 cannot be represented exactly by the f64 sketch".into()));
+    }
+    Ok(value as f64)
 }
 
 #[derive(Debug)]
@@ -683,6 +822,12 @@ impl KllAccumulator {
             missing_quantiles,
             sketch: KllDoubleSketch::new_with_k(k).expect("validated k"),
             empty: true,
+        }
+    }
+    fn add_value(&mut self, value: f64) {
+        if !value.is_nan() {
+            self.sketch.update(value);
+            self.empty = false;
         }
     }
     fn merge_serialized(&mut self, bytes: &[u8]) -> DfResult<()> {
@@ -770,17 +915,10 @@ impl Accumulator for KllAccumulator {
             if a.is_null(i) {
                 continue;
             }
-            if let Some(ints) = a.as_any().downcast_ref::<Int64Array>() {
-                let value = ints.value(i);
-                if !(-9_007_199_254_740_992..=9_007_199_254_740_992).contains(&value) {
-                    return Err(DataFusionError::Execution("approximate quantiles for int64 inputs outside ±2^53 cannot be represented exactly by the f64 sketch".into()));
-                }
-            }
-            let x = read_f64(a.as_ref(), i)?;
-            if !x.is_nan() {
-                self.sketch.update(x);
-                self.empty = false;
-            }
+            let x = if let Some(ints) = a.as_any().downcast_ref::<Int64Array>() {
+                kll_int64(ints.value(i))?
+            } else { read_f64(a.as_ref(), i)? };
+            self.add_value(x);
         }
         Ok(())
     }
@@ -813,6 +951,156 @@ impl Accumulator for KllAccumulator {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct CoordinateQuantiles {
+    config: QuantileIdentity,
+    queries: Vec<Option<f64>>,
+    output: DataType,
+    kernels: Vec<KllAccumulator>,
+}
+pub(crate) fn coordinate_quantiles(udf: &AggregateUDF) -> Option<CoordinateQuantiles> {
+    let config = crate::kernel_identity::aggregate_key::<QuantileIdentity>(udf)?.clone();
+    let queries = config.qs.iter().map(|q| q.map(f64::from_bits)).collect();
+    let output = if config.scalar {
+        config.input.clone()
+    } else {
+        DataType::List(Arc::new(Field::new_list_field(config.input.clone(), true)))
+    };
+    Some(CoordinateQuantiles {
+        config,
+        queries,
+        output,
+        kernels: Vec::new(),
+    })
+}
+impl CoordinateQuantiles {
+    fn ensure_width(&mut self, width: usize) -> DfResult<()> {
+        if !self.kernels.is_empty() && self.kernels.len() != width {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile width mismatch".into(),
+            ));
+        }
+        if self.kernels.len() != width {
+            self.kernels = (0..width)
+                .map(|_| {
+                    KllAccumulator::new(
+                        self.config.input.clone(),
+                        self.config.k,
+                        self.queries.clone(),
+                        self.config.scalar,
+                        self.config.missing_quantiles,
+                    )
+                })
+                .collect();
+        }
+        Ok(())
+    }
+    pub(crate) fn update(
+        &mut self,
+        values: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        if width == 0
+            || values.len() % width != 0
+            || filter.is_some_and(|f| f.len() != values.len())
+            || values.data_type() != &self.config.input
+        {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile input type/shape mismatch".into(),
+            ));
+        }
+        self.ensure_width(width)?;
+        macro_rules! update {
+            ($array:ty, $convert:expr) => {{
+                let input = values.as_any().downcast_ref::<$array>().unwrap();
+                let convert = $convert;
+                for (row, chunk) in input.values().chunks_exact(width).enumerate() {
+                    for (column, (kernel, &value)) in self.kernels.iter_mut().zip(chunk).enumerate()
+                    {
+                        let index = row * width + column;
+                        if input.is_valid(index)
+                            && filter.is_none_or(|f| f.is_valid(index) && f.value(index))
+                        {
+                            kernel.add_value(convert(value)?);
+                        }
+                    }
+                }
+            }};
+        }
+        match &self.config.input {
+            DataType::Int32 => update!(arrow_array::Int32Array, |v: i32| -> DfResult<f64> {
+                Ok(v as f64)
+            }),
+            DataType::Int64 => update!(Int64Array, kll_int64),
+            DataType::Float32 => update!(arrow_array::Float32Array, |v: f32| -> DfResult<f64> {
+                Ok(v as f64)
+            }),
+            DataType::Float64 => update!(Float64Array, |v: f64| -> DfResult<f64> { Ok(v) }),
+            _ => {
+                return Err(DataFusionError::Execution(
+                    "coordinate quantile requires numeric input".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn states(&mut self) -> DfResult<Vec<ArrayRef>> {
+        let serialized = self
+            .kernels
+            .iter()
+            .map(|k| {
+                k.sketch
+                    .serialize()
+                    .map_err(|e| DataFusionError::Execution(e.to_string()))
+            })
+            .collect::<DfResult<Vec<_>>>()?;
+        Ok(vec![Arc::new(arrow_array::BinaryArray::from_iter_values(
+            serialized.iter().map(|bytes| bytes.as_slice()),
+        ))])
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        let [state] = states else {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile requires one native binary state".into(),
+            ));
+        };
+        let state = state
+            .as_any()
+            .downcast_ref::<arrow_array::BinaryArray>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("coordinate quantile state must be binary".into())
+            })?;
+        if state.len() != width {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile state width mismatch".into(),
+            ));
+        }
+        self.ensure_width(width)?;
+        for (column, kernel) in self.kernels.iter_mut().enumerate() {
+            if state.is_valid(column) {
+                kernel.merge_serialized(state.value(column))?;
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn array(&self) -> DfResult<ArrayRef> {
+        if self.kernels.is_empty() {
+            return Ok(new_empty_array(&self.output));
+        }
+        ScalarValue::iter_to_array(
+            self.kernels
+                .iter()
+                .map(|k| k.evaluate_value())
+                .collect::<DfResult<Vec<_>>>()?,
+        )
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.kernels.iter().map(Accumulator::size).sum::<usize>()
+            + self.queries.capacity() * std::mem::size_of::<Option<f64>>()
     }
 }
 
@@ -1247,6 +1535,166 @@ impl GroupsAccumulator for CorrGroupsAccumulator {
 
     fn size(&self) -> usize {
         self.inner.size() + self.pair_counts.capacity() * std::mem::size_of::<u64>()
+    }
+}
+
+// Implicit-coordinate producer of DataFusion's existing correlation partial
+// state. Final correlation/null/nonfinite math remains in the native wrapper.
+#[derive(Clone, Default, Debug)]
+struct CorrPartial {
+    count: u64,
+    sums: [f64; 5],
+}
+impl CorrPartial {
+    fn add(&mut self, x: f64, y: f64) -> DfResult<()> {
+        self.count = self
+            .count
+            .checked_add(1)
+            .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))?;
+        self.sums[0] += x;
+        self.sums[1] += y;
+        self.sums[2] += x * y;
+        self.sums[3] += x * x;
+        self.sums[4] += y * y;
+        Ok(())
+    }
+}
+
+pub(crate) struct CoordinateCorrelation {
+    partials: Vec<CorrPartial>,
+    // Only one native-state row per coordinate is merged at finalization;
+    // these identity indices are O(width), never O(input entries).
+    indices: Vec<usize>,
+    native: std::sync::Mutex<CorrGroupsAccumulator>,
+}
+impl std::fmt::Debug for CoordinateCorrelation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CoordinateCorrelation")
+            .field("width", &self.partials.len())
+            .finish()
+    }
+}
+pub(crate) fn coordinate_correlation(udf: &AggregateUDF) -> Option<CoordinateCorrelation> {
+    udf.inner().downcast_ref::<CorrelationUdf>()?;
+    Some(CoordinateCorrelation {
+        partials: Vec::new(),
+        indices: Vec::new(),
+        native: std::sync::Mutex::new(CorrGroupsAccumulator {
+            inner: Box::new(
+                datafusion_functions_aggregate::correlation::CorrelationGroupsAccumulator::new(),
+            ),
+            pair_counts: Vec::new(),
+        }),
+    })
+}
+impl CoordinateCorrelation {
+    fn ensure_width(&mut self, width: usize) -> DfResult<()> {
+        if !self.partials.is_empty() && self.partials.len() != width {
+            return Err(DataFusionError::Execution(
+                "coordinate corr width mismatch".into(),
+            ));
+        }
+        if self.partials.len() != width {
+            self.partials.resize_with(width, CorrPartial::default);
+            self.indices = (0..width).collect();
+        }
+        Ok(())
+    }
+    pub(crate) fn update(
+        &mut self,
+        values: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        if width == 0
+            || values.len() % width != 0
+            || filter.is_some_and(|f| f.len() != values.len())
+        {
+            return Err(DataFusionError::Execution(
+                "coordinate corr input shape mismatch".into(),
+            ));
+        }
+        let pairs = corr_pair(&[Arc::clone(values)])?;
+        let x = pairs[0].as_any().downcast_ref::<Float64Array>().unwrap();
+        let y = pairs[1].as_any().downcast_ref::<Float64Array>().unwrap();
+        self.ensure_width(width)?;
+        for (row, (xs, ys)) in x
+            .values()
+            .chunks_exact(width)
+            .zip(y.values().chunks_exact(width))
+            .enumerate()
+        {
+            for (column, ((partial, &xv), &yv)) in
+                self.partials.iter_mut().zip(xs).zip(ys).enumerate()
+            {
+                let index = row * width + column;
+                if x.is_valid(index)
+                    && y.is_valid(index)
+                    && filter.is_none_or(|f| f.is_valid(index) && f.value(index))
+                {
+                    partial.add(xv, yv)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn states(&self) -> Vec<ArrayRef> {
+        let mut states: Vec<ArrayRef> = vec![Arc::new(arrow_array::UInt64Array::from_iter_values(
+            self.partials.iter().map(|p| p.count),
+        ))];
+        for column in 0..5 {
+            states.push(Arc::new(Float64Array::from_iter_values(
+                self.partials.iter().map(|p| p.sums[column]),
+            )));
+        }
+        states
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        if states.len() != 6
+            || states
+                .iter()
+                .any(|s| s.len() != width || s.null_count() != 0)
+        {
+            return Err(DataFusionError::Execution(
+                "coordinate corr native state shape mismatch".into(),
+            ));
+        }
+        let count = states[0]
+            .as_any()
+            .downcast_ref::<arrow_array::UInt64Array>()
+            .ok_or_else(|| DataFusionError::Execution("corr count state must be uint64".into()))?;
+        let sums = states[1..]
+            .iter()
+            .map(|s| {
+                s.as_any().downcast_ref::<Float64Array>().ok_or_else(|| {
+                    DataFusionError::Execution("corr sum state must be float64".into())
+                })
+            })
+            .collect::<DfResult<Vec<_>>>()?;
+        self.ensure_width(width)?;
+        for (column, partial) in self.partials.iter_mut().enumerate() {
+            partial.count = partial
+                .count
+                .checked_add(count.value(column))
+                .ok_or_else(|| {
+                    DataFusionError::Execution("corr pair count exceeds uint64".into())
+                })?;
+            for (value, sum) in partial.sums.iter_mut().zip(&sums) {
+                *value += sum.value(column);
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn array(&mut self) -> DfResult<ArrayRef> {
+        let states = self.states();
+        let native = self.native.get_mut().map_err(|_| DataFusionError::Execution("coordinate corr native state poisoned".into()))?;
+        native.merge_batch(&states, &self.indices, self.partials.len())?;
+        native.evaluate(EmitTo::All)
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.partials.capacity() * std::mem::size_of::<CorrPartial>()
+            + self.indices.capacity() * std::mem::size_of::<usize>()
+            + self.native.lock().map_or(0, |native| native.size())
     }
 }
 
@@ -2149,6 +2597,157 @@ impl GroupsAccumulator for DownsampleGroups {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct LinregIdentity {
+    input: DataType,
+    p: usize,
+    nested: usize,
+    weighted: bool,
+    share_predictors: bool,
+}
+#[derive(Clone, Copy)]
+enum LinregGrouping<'a> {
+    Explicit(&'a [usize]),
+    Aligned { width: usize, len: usize },
+}
+impl LinregGrouping<'_> {
+    fn len(self) -> usize {
+        match self {
+            Self::Explicit(groups) => groups.len(),
+            Self::Aligned { len, .. } => len,
+        }
+    }
+    fn is_empty(self) -> bool {
+        self.len() == 0
+    }
+    fn valid_for(self, groups: usize) -> bool {
+        match self {
+            Self::Explicit(indices) => indices.iter().all(|&group| group < groups),
+            Self::Aligned { width, len } => width == groups && width > 0 && len % width == 0,
+        }
+    }
+    fn is_aligned(self, width: usize) -> bool {
+        match self {
+            Self::Aligned { width: actual, .. } => actual == width,
+            Self::Explicit(groups) => groups
+                .iter()
+                .enumerate()
+                .all(|(row, &group)| group == row % width),
+        }
+    }
+    fn iter(self) -> impl Iterator<Item = usize> {
+        (0..self.len()).map(move |row| match self {
+            Self::Explicit(groups) => groups[row],
+            Self::Aligned { width, .. } => row % width,
+        })
+    }
+}
+
+pub(crate) struct CoordinateLinreg {
+    native: LinregGroupsAccumulator,
+    snapshot: Option<Vec<ArrayRef>>,
+    width: usize,
+    indices: Vec<usize>,
+}
+impl std::fmt::Debug for CoordinateLinreg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CoordinateLinreg")
+            .field("width", &self.width)
+            .finish()
+    }
+}
+pub(crate) fn coordinate_linreg(udf: &AggregateUDF) -> Option<CoordinateLinreg> {
+    let config = crate::kernel_identity::aggregate_key::<LinregIdentity>(udf)?;
+    Some(CoordinateLinreg {
+        native: LinregGroupsAccumulator::new(
+            config.p,
+            config.nested,
+            config.weighted,
+            config.share_predictors,
+        ),
+        snapshot: None,
+        width: 0,
+        indices: Vec::new(),
+    })
+}
+impl CoordinateLinreg {
+    fn set_width(&mut self, width: usize) -> DfResult<()> {
+        if self.width != 0 && self.width != width {
+            return Err(DataFusionError::Execution(
+                "coordinate linreg width mismatch".into(),
+            ));
+        }
+        if self.width != width {
+            self.width = width;
+            self.indices = (0..width).collect();
+        }
+        Ok(())
+    }
+    fn restore(&mut self) -> DfResult<()> {
+        if let Some(snapshot) = self.snapshot.take() {
+            let groups = snapshot.first().map_or(0, |state| state.len());
+            if groups != 0 {
+                if groups != self.width {
+                    return Err(DataFusionError::Execution(
+                        "coordinate linreg snapshot width mismatch".into(),
+                    ));
+                }
+                self.native
+                    .merge_batch(&snapshot, &self.indices, self.width)?;
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn update(
+        &mut self,
+        input: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        self.set_width(width)?;
+        self.restore()?;
+        self.native.update_layout(
+            &[Arc::clone(input)],
+            LinregGrouping::Aligned {
+                width,
+                len: input.len(),
+            },
+            filter,
+            width,
+        )
+    }
+    pub(crate) fn states(&mut self) -> DfResult<Vec<ArrayRef>> {
+        if self.snapshot.is_none() {
+            self.snapshot = Some(self.native.state(EmitTo::All)?);
+        }
+        Ok(self.snapshot.as_ref().unwrap().clone())
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        self.set_width(width)?;
+        self.restore()?;
+        self.native.merge_batch(states, &self.indices, width)
+    }
+    pub(crate) fn array(&mut self) -> DfResult<ArrayRef> {
+        let states = self.states()?;
+        let groups = states.first().map_or(0, |state| state.len());
+        if groups != 0 {
+            self.native
+                .merge_batch(&states, &self.indices, self.width)?;
+        }
+        self.native.evaluate(EmitTo::All)
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.native.size()
+            + self.indices.capacity() * std::mem::size_of::<usize>()
+            + self.snapshot.as_ref().map_or(0, |arrays| {
+                arrays
+                    .iter()
+                    .map(|array| array.get_array_memory_size())
+                    .sum()
+            })
+    }
+}
+
 fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, ExprError> {
     let DataType::Struct(fields) = t else {
         return Err(invalid(
@@ -2215,7 +2814,7 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
     );
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         &udaf_name,
-        (udaf_name.clone(), t.clone(), result.clone()),
+        LinregIdentity { input: t.clone(), p, nested, weighted, share_predictors },
         vec![t.clone()],
         result,
         state,
@@ -3232,7 +3831,7 @@ impl LinregGroupsAccumulator {
     fn update_shared_predictors(
         &mut self,
         batch: &LinregBatchInput<'_>,
-        group_indices: &[usize],
+        group_indices: LinregGrouping<'_>,
         opt_filter: Option<&BooleanArray>,
         total_num_groups: usize,
     ) -> DfResult<bool> {
@@ -3240,10 +3839,7 @@ impl LinregGroupsAccumulator {
         if width < 2
             || group_indices.is_empty()
             || group_indices.len() % width != 0
-            || group_indices
-                .iter()
-                .enumerate()
-                .any(|(index, group)| *group != index % width)
+            || !group_indices.is_aligned(width)
             || batch.rows.null_count() != 0
             || batch.y_have_nulls
             || batch.predictor_array_have_nulls
@@ -3571,11 +4167,11 @@ fn linreg_state_list(
     )))
 }
 
-impl GroupsAccumulator for LinregGroupsAccumulator {
-    fn update_batch(
+impl LinregGroupsAccumulator {
+    fn update_layout(
         &mut self,
         values: &[ArrayRef],
-        group_indices: &[usize],
+        group_indices: LinregGrouping<'_>,
         opt_filter: Option<&BooleanArray>,
         total_num_groups: usize,
     ) -> DfResult<()> {
@@ -3585,8 +4181,8 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
             ));
         };
         if input.len() != group_indices.len()
+            || !group_indices.valid_for(total_num_groups)
             || opt_filter.is_some_and(|filter| filter.len() != input.len())
-            || group_indices.iter().any(|group| *group >= total_num_groups)
         {
             return Err(DataFusionError::Execution(
                 "linreg grouping shape mismatch".into(),
@@ -3602,7 +4198,7 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
         self.batch_group_counts.resize(total_num_groups, 0);
         self.batch_touched_groups.clear();
         self.batch_offsets.clear();
-        for (row, group) in group_indices.iter().copied().enumerate() {
+        for (row, group) in group_indices.iter().enumerate() {
             if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row)) {
                 continue;
             }
@@ -3639,7 +4235,7 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
         // contiguous per-group QR matrices below. Each group matrix is the
         // sole dense copy needed by destructive Householder QR.
         let mut predictor_scratch = vec![0.0; self.p];
-        for (row, group) in group_indices.iter().copied().enumerate() {
+        for (row, group) in group_indices.iter().enumerate() {
             if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row)) {
                 continue;
             }
@@ -3725,6 +4321,19 @@ impl GroupsAccumulator for LinregGroupsAccumulator {
             self.batch_group_counts[group] = 0;
         }
         Ok(())
+    }
+
+ }
+
+impl GroupsAccumulator for LinregGroupsAccumulator {
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        group_indices: &[usize],
+        opt_filter: Option<&BooleanArray>,
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        self.update_layout(values, LinregGrouping::Explicit(group_indices), opt_filter, total_num_groups)
     }
 
     fn evaluate(&mut self, emit_to: EmitTo) -> DfResult<ArrayRef> {

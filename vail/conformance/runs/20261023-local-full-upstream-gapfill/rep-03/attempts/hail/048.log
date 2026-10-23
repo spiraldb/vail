@@ -1,0 +1,10 @@
+2026-10-23 03:31:07.682 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-10-23 03:31:07.948 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.util.SizeEstimator$ (file:/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/pyspark/jars/spark-core_2.12-3.5.9.jar) to field java.nio.charset.Charset.name
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.util.SizeEstimator$
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+[Stage 0:>                                                          (0 + 8) / 8]                                                                                [1/1] benchmark_matrix_table::test_import_bgen_force_count_just_gp: passed

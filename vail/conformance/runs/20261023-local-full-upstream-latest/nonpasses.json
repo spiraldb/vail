@@ -1,0 +1,3290 @@
+[
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_no_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence_constants",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_strings",
+    "id": "benchmark_table::test_table_read_force_count_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.12,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_import_strings",
+    "id": "benchmark_table::test_table_import_strings",
+    "args": [
+      "many_strings_tsv"
+    ],
+    "fixtures": [
+      "many_strings_tsv"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_tsv",
+    "elapsed_seconds": 0.133,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_range_array_range_force_count",
+    "id": "benchmark_table::test_table_range_array_range_force_count",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 164, in test_table_range_array_range_force_count\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/__init__.py\", line 1375, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nvail.utils.FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"\n",
+    "benchmark_seconds": 0.5838970410404727,
+    "telemetry": {
+      "cpu_seconds": 0.6771402083333332,
+      "average_cores": 1.1595903223028767,
+      "peak_rss_gib": 8.532546997070312,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 5416047,
+        "system_time": 10835318,
+        "instructions": 7185047796,
+        "cycles": 2537599090,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_table--test_table_range_array_range_force_count"
+    },
+    "fixture_seconds": 0.11,
+    "elapsed_seconds": 0.737,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_approx_cdf",
+    "id": "benchmark_table::test_table_aggregate_approx_cdf",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: random_doubles_mt",
+    "elapsed_seconds": 0.103,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_counter",
+    "id": "benchmark_table::test_table_aggregate_counter",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.116,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_take_by_strings",
+    "id": "benchmark_table::test_table_aggregate_take_by_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.116,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_sparse",
+    "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_take",
+    "id": "benchmark_table::test_table_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_show",
+    "id": "benchmark_table::test_table_show",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.102,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_expr_take",
+    "id": "benchmark_table::test_table_expr_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.102,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_take_rekey",
+    "id": "benchmark_table::test_group_by_take_rekey",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.109,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats_optimized",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.129,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_per_row_stats_star_star",
+    "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.103,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_read_decode_gnomad_coverage",
+    "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.119,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_row_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "NotImplementedError: expression export currently requires a matrix entry expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 261, in test_export_range_matrix_table_row_p100\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/expressions.py\", line 958, in export\n    return export_expression(self, output, delimiter, missing, header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/matrix_import.py\", line 119, in export_expression\n    raise NotImplementedError('expression export currently requires a matrix entry expression')\nNotImplementedError: expression export currently requires a matrix entry expression\n",
+    "benchmark_seconds": 0.03571820899378508,
+    "telemetry": {
+      "cpu_seconds": 0.05126533333333333,
+      "average_cores": 1.4326778754734864,
+      "peak_rss_gib": 0.04229736328125,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 462434,
+        "system_time": 767934,
+        "instructions": 373455712,
+        "cycles": 191926772,
+        "diskio_bytesread": 4096,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_matrix_table--test_export_range_matrix_table_row_p100"
+    },
+    "fixture_seconds": 0.111,
+    "elapsed_seconds": 0.188,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_col_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "NotImplementedError: expression export currently requires a matrix entry expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 266, in test_export_range_matrix_table_col_p100\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/expressions.py\", line 958, in export\n    return export_expression(self, output, delimiter, missing, header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/matrix_import.py\", line 119, in export_expression\n    raise NotImplementedError('expression export currently requires a matrix entry expression')\nNotImplementedError: expression export currently requires a matrix entry expression\n",
+    "benchmark_seconds": 0.03606762504205108,
+    "telemetry": {
+      "cpu_seconds": 0.05518070833333333,
+      "average_cores": 1.527685732371758,
+      "peak_rss_gib": 0.0421905517578125,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 475176,
+        "system_time": 849161,
+        "instructions": 373798909,
+        "cycles": 206986459,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_matrix_table--test_export_range_matrix_table_col_p100"
+    },
+    "fixture_seconds": 0.109,
+    "elapsed_seconds": 0.192,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_multi_write_nothing",
+    "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ],
+    "status": "failed",
+    "error": "AttributeError: module 'vail' has no attribute 'experimental'",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 332, in test_matrix_multi_write_nothing\nAttributeError: module 'vail' has no attribute 'experimental'\n",
+    "benchmark_seconds": 0.03628829098306596,
+    "telemetry": {
+      "cpu_seconds": 0.051688958333333326,
+      "average_cores": 1.4225551932631595,
+      "peak_rss_gib": 0.042266845703125,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 476306,
+        "system_time": 764229,
+        "instructions": 373222742,
+        "cycles": 193707798,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-01/telemetry/vail/benchmark_matrix_table--test_matrix_multi_write_nothing"
+    },
+    "fixture_seconds": 0.112,
+    "elapsed_seconds": 0.191,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_group_by_memory_usage",
+    "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: random_doubles_mt",
+    "elapsed_seconds": 0.104,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/vail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_no_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence_constants",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_strings",
+    "id": "benchmark_table::test_table_read_force_count_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_import_strings",
+    "id": "benchmark_table::test_table_import_strings",
+    "args": [
+      "many_strings_tsv"
+    ],
+    "fixtures": [
+      "many_strings_tsv"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_range_array_range_force_count",
+    "id": "benchmark_table::test_table_range_array_range_force_count",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_approx_cdf",
+    "id": "benchmark_table::test_table_aggregate_approx_cdf",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_counter",
+    "id": "benchmark_table::test_table_aggregate_counter",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_take_by_strings",
+    "id": "benchmark_table::test_table_aggregate_take_by_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_sparse",
+    "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_take",
+    "id": "benchmark_table::test_table_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_show",
+    "id": "benchmark_table::test_table_show",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_expr_take",
+    "id": "benchmark_table::test_table_expr_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_take_rekey",
+    "id": "benchmark_table::test_group_by_take_rekey",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats_optimized",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_per_row_stats_star_star",
+    "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_read_decode_gnomad_coverage",
+    "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_row_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_col_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_multi_write_nothing",
+    "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-01",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_group_by_memory_usage",
+    "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-01/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_no_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence_constants",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_strings",
+    "id": "benchmark_table::test_table_read_force_count_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.119,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_import_strings",
+    "id": "benchmark_table::test_table_import_strings",
+    "args": [
+      "many_strings_tsv"
+    ],
+    "fixtures": [
+      "many_strings_tsv"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_tsv",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_range_array_range_force_count",
+    "id": "benchmark_table::test_table_range_array_range_force_count",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 164, in test_table_range_array_range_force_count\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/__init__.py\", line 1375, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nvail.utils.FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"\n",
+    "benchmark_seconds": 0.5870865420438349,
+    "telemetry": {
+      "cpu_seconds": 0.6842385416666666,
+      "average_cores": 1.1653428658119676,
+      "peak_rss_gib": 8.510787963867188,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 5515023,
+        "system_time": 10906702,
+        "instructions": 7088432634,
+        "cycles": 2519680116,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/vail/benchmark_table--test_table_range_array_range_force_count"
+    },
+    "fixture_seconds": 0.097,
+    "elapsed_seconds": 0.729,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_approx_cdf",
+    "id": "benchmark_table::test_table_aggregate_approx_cdf",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: random_doubles_mt",
+    "elapsed_seconds": 0.105,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_counter",
+    "id": "benchmark_table::test_table_aggregate_counter",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.119,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_take_by_strings",
+    "id": "benchmark_table::test_table_aggregate_take_by_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.105,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_sparse",
+    "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_take",
+    "id": "benchmark_table::test_table_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_show",
+    "id": "benchmark_table::test_table_show",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_expr_take",
+    "id": "benchmark_table::test_table_expr_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_take_rekey",
+    "id": "benchmark_table::test_group_by_take_rekey",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.119,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats_optimized",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.119,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_per_row_stats_star_star",
+    "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_read_decode_gnomad_coverage",
+    "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_row_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "NotImplementedError: expression export currently requires a matrix entry expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 261, in test_export_range_matrix_table_row_p100\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/expressions.py\", line 958, in export\n    return export_expression(self, output, delimiter, missing, header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/matrix_import.py\", line 119, in export_expression\n    raise NotImplementedError('expression export currently requires a matrix entry expression')\nNotImplementedError: expression export currently requires a matrix entry expression\n",
+    "benchmark_seconds": 0.035425249952822924,
+    "telemetry": {
+      "cpu_seconds": 0.05052966666666667,
+      "average_cores": 1.4239558370320593,
+      "peak_rss_gib": 0.042144775390625,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 461261,
+        "system_time": 751451,
+        "instructions": 373073292,
+        "cycles": 190184251,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/vail/benchmark_matrix_table--test_export_range_matrix_table_row_p100"
+    },
+    "fixture_seconds": 0.095,
+    "elapsed_seconds": 0.171,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_col_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "NotImplementedError: expression export currently requires a matrix entry expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 266, in test_export_range_matrix_table_col_p100\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/expressions.py\", line 958, in export\n    return export_expression(self, output, delimiter, missing, header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/matrix_import.py\", line 119, in export_expression\n    raise NotImplementedError('expression export currently requires a matrix entry expression')\nNotImplementedError: expression export currently requires a matrix entry expression\n",
+    "benchmark_seconds": 0.035998625098727643,
+    "telemetry": {
+      "cpu_seconds": 0.05165933333333333,
+      "average_cores": 1.432949837241408,
+      "peak_rss_gib": 0.04229736328125,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 466328,
+        "system_time": 773496,
+        "instructions": 373271524,
+        "cycles": 193291113,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/vail/benchmark_matrix_table--test_export_range_matrix_table_col_p100"
+    },
+    "fixture_seconds": 0.11,
+    "elapsed_seconds": 0.188,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_multi_write_nothing",
+    "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ],
+    "status": "failed",
+    "error": "AttributeError: module 'vail' has no attribute 'experimental'",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 332, in test_matrix_multi_write_nothing\nAttributeError: module 'vail' has no attribute 'experimental'\n",
+    "benchmark_seconds": 0.03537050005979836,
+    "telemetry": {
+      "cpu_seconds": 0.05071266666666666,
+      "average_cores": 1.4314694065731408,
+      "peak_rss_gib": 0.0421905517578125,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 460557,
+        "system_time": 756547,
+        "instructions": 372659888,
+        "cycles": 190277756,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-02/telemetry/vail/benchmark_matrix_table--test_matrix_multi_write_nothing"
+    },
+    "fixture_seconds": 0.11,
+    "elapsed_seconds": 0.188,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_group_by_memory_usage",
+    "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: random_doubles_mt",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/vail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_no_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence_constants",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_strings",
+    "id": "benchmark_table::test_table_read_force_count_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_import_strings",
+    "id": "benchmark_table::test_table_import_strings",
+    "args": [
+      "many_strings_tsv"
+    ],
+    "fixtures": [
+      "many_strings_tsv"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_range_array_range_force_count",
+    "id": "benchmark_table::test_table_range_array_range_force_count",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_approx_cdf",
+    "id": "benchmark_table::test_table_aggregate_approx_cdf",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_counter",
+    "id": "benchmark_table::test_table_aggregate_counter",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_take_by_strings",
+    "id": "benchmark_table::test_table_aggregate_take_by_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_sparse",
+    "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_take",
+    "id": "benchmark_table::test_table_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_show",
+    "id": "benchmark_table::test_table_show",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_expr_take",
+    "id": "benchmark_table::test_table_expr_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_take_rekey",
+    "id": "benchmark_table::test_group_by_take_rekey",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats_optimized",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_per_row_stats_star_star",
+    "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_read_decode_gnomad_coverage",
+    "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_row_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_col_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_multi_write_nothing",
+    "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-02",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_group_by_memory_usage",
+    "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-02/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_no_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence_constants",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "never finishes",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_strings",
+    "id": "benchmark_table::test_table_read_force_count_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_import_strings",
+    "id": "benchmark_table::test_table_import_strings",
+    "args": [
+      "many_strings_tsv"
+    ],
+    "fixtures": [
+      "many_strings_tsv"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_tsv",
+    "elapsed_seconds": 0.107,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_range_array_range_force_count",
+    "id": "benchmark_table::test_table_range_array_range_force_count",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 164, in test_table_range_array_range_force_count\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/__init__.py\", line 1375, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nvail.utils.FatalError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"\n",
+    "benchmark_seconds": 0.5922537499573082,
+    "telemetry": {
+      "cpu_seconds": 0.6897822083333333,
+      "average_cores": 1.1645452956778237,
+      "peak_rss_gib": 8.377212524414062,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 5568139,
+        "system_time": 10986634,
+        "instructions": 7034644101,
+        "cycles": 2533528873,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-03/telemetry/vail/benchmark_table--test_table_range_array_range_force_count"
+    },
+    "fixture_seconds": 0.114,
+    "elapsed_seconds": 0.752,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_approx_cdf",
+    "id": "benchmark_table::test_table_aggregate_approx_cdf",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: random_doubles_mt",
+    "elapsed_seconds": 0.105,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_counter",
+    "id": "benchmark_table::test_table_aggregate_counter",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.124,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_take_by_strings",
+    "id": "benchmark_table::test_table_aggregate_take_by_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.12,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_sparse",
+    "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+        "args": []
+      }
+    ],
+    "status": "upstream_skipped",
+    "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_take",
+    "id": "benchmark_table::test_table_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_show",
+    "id": "benchmark_table::test_table_show",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.117,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_table_expr_take",
+    "id": "benchmark_table::test_table_expr_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: many_strings_ht",
+    "elapsed_seconds": 0.102,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.102,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_take_rekey",
+    "id": "benchmark_table::test_group_by_take_rekey",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.102,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.12,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats_optimized",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.125,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_per_row_stats_star_star",
+    "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.118,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_read_decode_gnomad_coverage",
+    "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: gnomad_dp_sim",
+    "elapsed_seconds": 0.103,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_row_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "NotImplementedError: expression export currently requires a matrix entry expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 261, in test_export_range_matrix_table_row_p100\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/expressions.py\", line 958, in export\n    return export_expression(self, output, delimiter, missing, header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/matrix_import.py\", line 119, in export_expression\n    raise NotImplementedError('expression export currently requires a matrix entry expression')\nNotImplementedError: expression export currently requires a matrix entry expression\n",
+    "benchmark_seconds": 0.03605625010095537,
+    "telemetry": {
+      "cpu_seconds": 0.05188625,
+      "average_cores": 1.436914108475609,
+      "peak_rss_gib": 0.042266845703125,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 469732,
+        "system_time": 775538,
+        "instructions": 374939384,
+        "cycles": 193874794,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-03/telemetry/vail/benchmark_matrix_table--test_export_range_matrix_table_row_p100"
+    },
+    "fixture_seconds": 0.114,
+    "elapsed_seconds": 0.191,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_col_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "failed",
+    "error": "NotImplementedError: expression export currently requires a matrix entry expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 266, in test_export_range_matrix_table_col_p100\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/expressions.py\", line 958, in export\n    return export_expression(self, output, delimiter, missing, header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/matrix_import.py\", line 119, in export_expression\n    raise NotImplementedError('expression export currently requires a matrix entry expression')\nNotImplementedError: expression export currently requires a matrix entry expression\n",
+    "benchmark_seconds": 0.03612029098439962,
+    "telemetry": {
+      "cpu_seconds": 0.051925875,
+      "average_cores": 1.4355664759061126,
+      "peak_rss_gib": 0.042144775390625,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 466604,
+        "system_time": 779617,
+        "instructions": 375539273,
+        "cycles": 194665249,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-03/telemetry/vail/benchmark_matrix_table--test_export_range_matrix_table_col_p100"
+    },
+    "fixture_seconds": 0.096,
+    "elapsed_seconds": 0.174,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_multi_write_nothing",
+    "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ],
+    "status": "failed",
+    "error": "AttributeError: module 'vail' has no attribute 'experimental'",
+    "traceback": "Traceback (most recent call last):\n  File \"/private/tmp/full-local-upstream-prep-20261022/harness/upstream_benchmark_coverage.py\", line 434, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 332, in test_matrix_multi_write_nothing\nAttributeError: module 'vail' has no attribute 'experimental'\n",
+    "benchmark_seconds": 0.03719941701274365,
+    "telemetry": {
+      "cpu_seconds": 0.05279408333333333,
+      "average_cores": 1.4172638902147399,
+      "peak_rss_gib": 0.0420989990234375,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 481889,
+        "system_time": 785169,
+        "instructions": 374157490,
+        "cycles": 196596357,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 0
+      },
+      "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+      "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+      "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream/rep-03/telemetry/vail/benchmark_matrix_table--test_matrix_multi_write_nothing"
+    },
+    "fixture_seconds": 0.111,
+    "elapsed_seconds": 0.192,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "vail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_group_by_memory_usage",
+    "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "unsupported",
+    "reason": "exact local fixture unavailable: random_doubles_mt",
+    "elapsed_seconds": 0.119,
+    "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "comparable": true,
+    "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity",
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/vail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_no_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence_constants",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_annotate_many_nested_dependence",
+    "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "never finishes",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_strings",
+    "id": "benchmark_table::test_table_read_force_count_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_import_strings",
+    "id": "benchmark_table::test_table_import_strings",
+    "args": [
+      "many_strings_tsv"
+    ],
+    "fixtures": [
+      "many_strings_tsv"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_range_array_range_force_count",
+    "id": "benchmark_table::test_table_range_array_range_force_count",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_approx_cdf",
+    "id": "benchmark_table::test_table_aggregate_approx_cdf",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_counter",
+    "id": "benchmark_table::test_table_aggregate_counter",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_take_by_strings",
+    "id": "benchmark_table::test_table_aggregate_take_by_strings",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_sparse",
+    "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "skip",
+        "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_take",
+    "id": "benchmark_table::test_table_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_show",
+    "id": "benchmark_table::test_table_show",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_table_expr_take",
+    "id": "benchmark_table::test_table_expr_take",
+    "args": [
+      "many_strings_ht"
+    ],
+    "fixtures": [
+      "many_strings_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_table.py",
+    "name": "test_group_by_take_rekey",
+    "id": "benchmark_table::test_group_by_take_rekey",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_gnomad_coverage_stats_optimized",
+    "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_per_row_stats_star_star",
+    "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_read_decode_gnomad_coverage",
+    "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_row_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_export_range_matrix_table_col_p100",
+    "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_multi_write_nothing",
+    "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+    "args": [
+      "tmp_path"
+    ],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  },
+  {
+    "repetition": "rep-03",
+    "engine": "hail",
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_group_by_memory_usage",
+    "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "args": [
+      "random_doubles_mt"
+    ],
+    "fixtures": [
+      "random_doubles_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "not_run_vail_failed",
+    "comparable": false,
+    "report_source": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-preloopback/rep-03/hail.json"
+  }
+]
