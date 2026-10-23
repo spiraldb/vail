@@ -1,0 +1,121 @@
+{
+  "total": 23,
+  "passed": 0,
+  "cases": [
+    {
+      "name": "test_annotations_actions_globals_and_native_plan",
+      "baseline_pass": false,
+      "baseline_failure": "different number of rows"
+    },
+    {
+      "name": "test_entries_orders_duplicate_multikey_runs_across_partitions",
+      "baseline_pass": false,
+      "baseline_failure": "ScalarSubqueryExpr evaluated before"
+    },
+    {
+      "name": "test_collection_aggregate_matrix_scope_and_lookup_context",
+      "baseline_pass": false,
+      "baseline_failure": "different number of rows"
+    },
+    {
+      "name": "test_table_and_matrix_lookups_and_semi_anti_joins",
+      "baseline_pass": false,
+      "baseline_failure": "ScalarSubqueryExpr evaluated before"
+    },
+    {
+      "name": "test_union_rows_columns_distinct_and_outer_missing_cells",
+      "baseline_pass": false,
+      "baseline_failure": "ScalarSubqueryExpr evaluated before"
+    },
+    {
+      "name": "test_make_table_filter_stats_and_explicit_blockers",
+      "baseline_pass": false,
+      "baseline_failure": "DID NOT RAISE"
+    },
+    {
+      "name": "test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[1]",
+      "baseline_pass": false,
+      "baseline_failure": "ScalarSubqueryExpr evaluated before"
+    },
+    {
+      "name": "test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[2]",
+      "baseline_pass": false,
+      "baseline_failure": "ScalarSubqueryExpr evaluated before"
+    },
+    {
+      "name": "test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[5]",
+      "baseline_pass": false,
+      "baseline_failure": "ScalarSubqueryExpr evaluated before"
+    },
+    {
+      "name": "test_row_aligned_views_and_transformations_do_not_index_rows",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_entry_aggregations_skip_unreferenced_column_context",
+      "baseline_pass": false,
+      "baseline_failure": "different number of rows"
+    },
+    {
+      "name": "test_dense[False]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback",
+      "baseline_pass": false,
+      "baseline_failure": "different number of rows"
+    },
+    {
+      "name": "test_dense[True]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_sparse_roundtrip",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_combine",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_fresh_hail_dense_golden",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_expression_export_roundtrip[entry_type0-True]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_expression_export_roundtrip[entry_type0-False]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_expression_export_roundtrip[entry_type1-True]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_expression_export_roundtrip[entry_type1-False]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_expression_export_roundtrip[entry_type2-True]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    },
+    {
+      "name": "test_expression_export_roundtrip[entry_type2-False]",
+      "baseline_pass": false,
+      "baseline_failure": "No installed planner"
+    }
+  ]
+}

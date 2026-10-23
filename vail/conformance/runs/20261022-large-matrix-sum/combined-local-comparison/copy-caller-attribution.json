@@ -1,0 +1,89 @@
+{
+  "scalar": {
+    "samples": 9180,
+    "memmove_samples": 2078,
+    "callers": [
+      {
+        "caller": "aligned_map_concat",
+        "samples": 2053,
+        "percent_all_samples": 22.363834422657952
+      },
+      {
+        "caller": "projection_broadcast",
+        "samples": 17,
+        "percent_all_samples": 0.18518518518518517
+      },
+      {
+        "caller": "other: _platform_memmove <- _PyCode_New <- r_object.llvm.9845490566179339274 <- r_object.llvm.9845490566179339274 <- r_object.llvm.9845490566179339274",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- <alloc::string::String as pyo3::conversion::FromPyObject>::extract <- pyo3::conversions::std::vec::extract_sequence::<alloc::string::String> <- <_native::native_ir::NativeType>::__pymethod_construct__ <- pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::fastcall_cfunction_with_keywords::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- _PyUnicode_FromASCII <- split.llvm.1428982360729044229 <- unicode_split <- _PyEval_EvalFrameDefault",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- <alloc::string::String as core::fmt::Write>::write_str <- core::fmt::write <- <vail_table::projection_broadcast::ProjectionLabelExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::fmt_sql <- <core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::ProjectionExprs>::create_expression_metrics::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<alloc::string::String, <alloc::vec::Vec<alloc::string::String>>::extend_trusted<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::ProjectionExprs>::create_expression_metrics::{closure#0}>>::{closure#0}>::{closure#0}>",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- <alloc::string::String as core::fmt::Write>::write_str <- core::fmt::write <- alloc::fmt::format::format_inner <- <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#0} <- <futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll <- <tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll <- <tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- <alloc::string::String as core::fmt::Write>::write_str <- <u64 as core::fmt::Display>::fmt <- core::fmt::write <- alloc::fmt::format::format_inner",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      },
+      {
+        "caller": "other: _platform_memmove <- <arrow_schema::field::Field>::new::<&str> <- vail_execution::array_aggregate::list_scalar <- <alloc::vec::Vec<datafusion_common::scalar::ScalarValue> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<datafusion_common::scalar::ScalarValue, core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<alloc::sync::Arc<dyn arrow_array::array::Array>>, vail_execution::array_aggregate::list_scalar>>>::from_iter <- <vail_execution::array_aggregate::Coordinates as datafusion_expr_common::accumulator::Accumulator>::state",
+        "samples": 1,
+        "percent_all_samples": 0.010893246187363835
+      }
+    ]
+  },
+  "batch": {
+    "samples": 12852,
+    "memmove_samples": 1040,
+    "callers": [
+      {
+        "caller": "aligned_map_concat",
+        "samples": 1024,
+        "percent_all_samples": 7.967631497043262
+      },
+      {
+        "caller": "projection_broadcast",
+        "samples": 13,
+        "percent_all_samples": 0.10115157173980703
+      },
+      {
+        "caller": "other: _platform_memmove <- _PyUnicode_JoinArray <- unicode_join <- _PyEval_EvalFrameDefault <- PyEval_EvalCode",
+        "samples": 1,
+        "percent_all_samples": 0.00778089013383131
+      },
+      {
+        "caller": "cross_join",
+        "samples": 1,
+        "percent_all_samples": 0.00778089013383131
+      },
+      {
+        "caller": "other: _platform_memmove <- 0x303f3 <- 0x3fb2b <- 0x40357 <- <alloc::raw_vec::RawVecInner>::finish_grow",
+        "samples": 1,
+        "percent_all_samples": 0.00778089013383131
+      }
+    ]
+  }
+}

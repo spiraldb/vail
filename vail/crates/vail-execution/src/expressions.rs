@@ -3629,7 +3629,7 @@ enum HailKind {
     Random(String),
     RestoreArrowType,
     Die,
-    Numeric(BinaryOperator),
+    Numeric(BinaryOperator, Type),
     ToString(Type),
     GetField(String),
     CallConstruct,
@@ -4663,9 +4663,8 @@ impl PhysicalExpr for HailPhysicalExpr {
                     };
                     Err(DataFusionError::Execution(message).into())
                 }
-                HailKind::Numeric(op) => {
-                    let t = Type::from_arrow(&self.dtype)?;
-                    columnar_numeric(*op, &args[0], &args[1], &t)
+                HailKind::Numeric(op, dtype) => {
+                    columnar_numeric(*op, &args[0], &args[1], dtype)
                 }
                 HailKind::ToString(input_type) => hail_to_string(&args[0], input_type),
                 HailKind::CallConstruct => crate::calls::construct(&args[0], &self.dtype),
@@ -4688,21 +4687,14 @@ impl PhysicalExpr for HailPhysicalExpr {
                         Ok(nullif(child.as_ref(), &mask)?)
                     }
                 }
-                HailKind::Struct(names) => {
-                    let fields = names
-                        .iter()
-                        .zip(args)
-                        .map(|(name, array)| {
-                            (
-                                Arc::new(Field::new(name, array.data_type().clone(), true)),
-                                array,
-                            )
-                        })
-                        .collect::<Vec<_>>();
+                HailKind::Struct(_) => {
+                    let DataType::Struct(fields) = &self.dtype else {
+                        return Err(ExprError::Invalid("struct output descriptor is absent".into()));
+                    };
                     if fields.is_empty() {
                         Ok(Arc::new(StructArray::new_empty_fields(len, None)))
                     } else {
-                        Ok(Arc::new(StructArray::from(fields)))
+                        Ok(Arc::new(StructArray::try_new(fields.clone(), args, None)?))
                     }
                 }
                 HailKind::Interval => {
@@ -5987,6 +5979,22 @@ fn lower_uncached(
                     false,
                 ),
             ];
+            // Only kernels audited to prepare outside evaluate may run once per
+            // matrix row. Collection/grouping callbacks keep the batch route.
+            let mut scalar_rows = true;
+            body.visit_unique(&mut |node| {
+                scalar_rows &= matches!(node,
+                    Expr::AlignedMapInput { .. } | Expr::RuntimeLiteral { .. }
+                    | Expr::Literal { .. } | Expr::Column { .. }
+                    | Expr::Binary { .. } | Expr::IntegerBinary { .. }
+                    | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
+                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. })
+                    // This native Unicode kernel is fully prepared at lowering
+                    // and borrows its input. Keep wide shared column strings
+                    // on the row path rather than taking their bytes per entry.
+                    || matches!(node, Expr::StringFunction { function, .. }
+                        if function == "character_length");
+            });
             let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let body_dtype = body_type.to_arrow()?;
             // Declare batch captures before lowering so nested fold/lambda/
@@ -6050,6 +6058,7 @@ fn lower_uncached(
                 rewrite_batch_inputs(value, &names, &mut Default::default())
             ).transpose()?;
             let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
+            let capture_types = body_fields[3..].iter().map(|f| f.data_type().clone()).collect();
             let body_schema = Schema::new(body_fields);
             let body_context = memo.context(&body_schema, globals.schema(), scope);
             let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
@@ -6065,10 +6074,12 @@ fn lower_uncached(
                 body,
                 all_present_body,
                 capture_keys,
+                capture_types,
                 column_dtype,
                 dtype.to_arrow()?,
                 body_dtype,
                 *preserve_cell,
+                scalar_rows,
             ))
         }
         Expr::MatrixScope { .. }
@@ -6822,14 +6833,18 @@ fn lower_uncached(
             let second = binary(second_lt, Operator::Or, second_touch, schema)?;
             interval_boundary_sequence(second, first)?
         }
-        Expr::Struct { fields } => custom(
-            HailKind::Struct(fields.iter().map(|(n, _)| n.clone()).collect()),
-            fields
-                .iter()
-                .map(|(_, e)| lower_cached(e, schema, globals, scope, memo, context))
-                .collect::<Result<Vec<_>, _>>()?,
-            dtype,
-        ),
+        Expr::Struct { fields } => {
+            let DataType::Struct(output_fields) = &dtype else {
+                return Err(ExprError::Invalid("struct output descriptor is absent".into()));
+            };
+            let args = fields.iter().zip(output_fields).map(|((_, value), field)| {
+                let child = lower_cached(value, schema, globals, scope, memo, context)?;
+                // Prepare physical normalization once. In particular logical
+                // strings may arrive as Utf8View/LargeUtf8 from a source.
+                lower_cast(child, schema, field.data_type())
+            }).collect::<Result<Vec<_>, _>>()?;
+            custom(HailKind::Struct(fields.iter().map(|(n, _)| n.clone()).collect()), args, dtype)
+        }
         Expr::Unary { operator, value } => {
             let child = lower_cached(value, schema, globals, scope, memo, context)?;
             match operator {
@@ -6953,7 +6968,7 @@ fn lower_uncached(
                 _ => {
                     l = lower_cast(l, schema, &dtype)?;
                     r = lower_cast(r, schema, &dtype)?;
-                    custom(HailKind::Numeric(*operator), vec![l, r], dtype)
+                    custom(HailKind::Numeric(*operator, Type::from_arrow(&dtype)?), vec![l, r], dtype)
                 }
             }
         }
@@ -8492,4 +8507,25 @@ mod tests {
         assert_eq!(projected.num_rows(), 0);
         assert!(projected.column(0).is_empty());
     }
+    #[test]
+    fn public_struct_lowering_normalizes_view_and_large_string_storage() {
+        for input in [
+            Arc::new(arrow_array::StringViewArray::from(vec![Some("alpha"), None])) as ArrayRef,
+            Arc::new(arrow_array::LargeStringArray::from(vec![Some("alpha"), None])) as ArrayRef,
+        ] {
+            let schema = Arc::new(Schema::new(vec![Field::new("text", input.data_type().clone(), true)]));
+            let batch = RecordBatch::try_new(schema.clone(), vec![input]).unwrap();
+            let expression = Expr::Struct { fields: vec![("nested".into(), Expr::Struct {
+                fields: vec![("value".into(), Expr::Column { name: "text".into() })],
+            })] };
+            let prepared = lower(&expression, &schema).unwrap();
+            let values = prepared.evaluate(&batch).unwrap().into_array(2).unwrap();
+            let outer = values.as_any().downcast_ref::<StructArray>().unwrap();
+            let nested = outer.column(0).as_any().downcast_ref::<StructArray>().unwrap();
+            let strings = nested.column(0).as_any().downcast_ref::<StringArray>().unwrap();
+            assert_eq!(strings, &StringArray::from(vec![Some("alpha"), None]));
+            assert_eq!(values.data_type(), &prepared.data_type(&schema).unwrap());
+        }
+    }
+
 }

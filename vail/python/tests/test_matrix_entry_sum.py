@@ -123,3 +123,22 @@ def test_array_sum_arrow_kernel_preserves_integer_and_missing_semantics():
     assert hl.eval(
         hl.sum(hl.literal([1, None], hl.tarray(hl.tint64)), filter_missing=False)
     ) is None
+
+
+def test_column_sum_empty_axes_and_missing_entries_keep_aligned_shape():
+    for rows, columns in [(0, 4), (3, 0), (3, 4)]:
+        matrix = hl.range_matrix_table(rows, columns, n_partitions=3)
+        matrix = matrix.annotate_entries(value=matrix.row_idx + matrix.col_idx)
+        result = matrix.annotate_cols(total=hl.agg.sum(matrix.value))
+        assert [(c.col_idx, c.total) for c in result.cols().collect()] == [
+            (c, rows * (rows - 1) // 2 + rows * c) for c in range(columns)]
+        missing = matrix.filter_entries(False)
+        result = missing.annotate_cols(total=hl.agg.sum(missing.value))
+        assert [c.total for c in result.cols().collect()] == [0] * columns
+
+
+def test_column_sum_preserves_int32_map_wrapping_before_wide_accumulation():
+    matrix = hl.range_matrix_table(2, 1, n_partitions=2)
+    matrix = matrix.annotate_entries(value=hl.int32(2147483647) + matrix.row_idx)
+    result = matrix.annotate_cols(total=hl.agg.sum(matrix.value))
+    assert result.cols().collect()[0].total == -1

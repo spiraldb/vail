@@ -764,6 +764,7 @@ fn contains_collect(expression: &Expr) -> bool {
 pub(crate) fn scope_plan(
     mut input: LogicalPlan,
     table: &TableRef,
+    globals_schema: &Schema,
     group: &Group,
     key_names: &[String],
     group_names: &[String],
@@ -792,7 +793,7 @@ pub(crate) fn scope_plan(
             Step::Filter(predicate) => {
                 let predicate = resolve(predicate, &scope)?;
                 if predicate
-                    .dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?
+                    .dtype_with_globals(input.schema().as_arrow(), globals_schema)?
                     != vail_execution::expressions::Type::Primitive(
                         vail_execution::expressions::PrimitiveType::Bool,
                     )
@@ -804,7 +805,7 @@ pub(crate) fn scope_plan(
                 let value = lower_logical_with_bindings(
                     &predicate,
                     input.schema(),
-                    table.globals().schema(),
+                    globals_schema,
                     bindings,
                 )?;
                 input = LogicalPlanBuilder::from(input).filter(value)?.build()?;
@@ -813,7 +814,7 @@ pub(crate) fn scope_plan(
                 let name = unique(used, "__vail_agg_explode");
                 let expr = resolve(value, &scope)?;
                 if !matches!(
-                    expr.dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?,
+                    expr.dtype_with_globals(input.schema().as_arrow(), globals_schema)?,
                     vail_execution::expressions::Type::Array { .. }
                         | vail_execution::expressions::Type::Set { .. }
                 ) {
@@ -824,7 +825,7 @@ pub(crate) fn scope_plan(
                 let value = lower_logical_with_bindings(
                     &expr,
                     input.schema(),
-                    table.globals().schema(),
+                    globals_schema,
                     bindings,
                 )?;
                 let mut fields = columns(&input);
@@ -861,7 +862,7 @@ pub(crate) fn scope_plan(
                 &value,
                 input.schema().as_arrow(),
                 input.schema().as_arrow(),
-                table.globals().schema(),
+                globals_schema,
                 bindings,
                 &scope,
             )?;
@@ -884,9 +885,9 @@ pub(crate) fn scope_plan(
                     .map(|(i, f)| {
                         (
                             f.name().clone(),
-                            if i < table.globals().schema().fields().len() {
+                            if i < globals_schema.fields().len() {
                                 Expr::Global {
-                                    name: table.globals().schema().field(i).name().clone(),
+                                    name: globals_schema.field(i).name().clone(),
                                 }
                             } else {
                                 Expr::Column {
@@ -907,13 +908,13 @@ pub(crate) fn scope_plan(
         };
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
-            lower_logical_with_bindings(value, input.schema(), table.globals().schema(), bindings)?;
+            lower_logical_with_bindings(value, input.schema(), globals_schema, bindings)?;
         let dtype = if matches!(reducer.function.as_str(), "count" | "count_where") {
             None
         } else {
             Some(
                 value
-                    .dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?
+                    .dtype_with_globals(input.schema().as_arrow(), globals_schema)?
                     .to_arrow()?,
             )
         };
@@ -1140,7 +1141,27 @@ pub(crate) fn lower_grouped_fields(
     } else {
         child
     };
-    let child = crate::logical_globals::bind_globals(child, table, context)?;
+    // A grouped reduction that does not read globals must retain the row
+    // stream's partitioning. Joining an unused singleton first can collapse
+    // the stream and copy nested metadata before projection pruning.
+    // Fold packing retains its positional globals contract.
+    let mut needs_globals = false;
+    for (_, expression) in keys.iter().chain(fields.iter()) {
+        expression.visit_unique(&mut |node| {
+            needs_globals |= matches!(node, Expr::Global { .. } | Expr::AggregateFold { .. });
+        });
+    }
+    let child = if needs_globals {
+        crate::logical_globals::bind_globals(child, table, context)?
+    } else {
+        child
+    };
+    let empty_input_globals = Schema::empty();
+    let input_globals = if needs_globals {
+        table.globals().schema().as_ref()
+    } else {
+        &empty_input_globals
+    };
     let (child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
     let mut used: HashSet<String> = child
         .schema()
@@ -1178,7 +1199,7 @@ pub(crate) fn lower_grouped_fields(
     for (_, expr) in &grouping {
         let name = unique(&mut used, "__vail_logical_group_value");
         projections.push(
-            lower_logical_with_bindings(expr, child.schema(), table.globals().schema(), &indices)?
+            lower_logical_with_bindings(expr, child.schema(), input_globals, &indices)?
                 .alias(&name),
         );
         key_names.push(name);
@@ -1190,7 +1211,7 @@ pub(crate) fn lower_grouped_fields(
     for ((_, expr), name) in grouping.iter().zip(&key_names) {
         let group_key = unique(&mut used, "__vail_logical_group_key");
         let dtype =
-            expr.dtype_with_globals(projected.schema().as_arrow(), table.globals().schema())?;
+            expr.dtype_with_globals(projected.schema().as_arrow(), input_globals)?;
         dtype.ensure_keyable()?;
         if !dtype.native_key() {
             return Err(TableError::Invalid(
@@ -1209,6 +1230,7 @@ pub(crate) fn lower_grouped_fields(
     let (mut result, _, _) = scope_plan(
         projected.clone(),
         table,
+        input_globals,
         &anchor,
         &key_names,
         &group_names,
@@ -1222,6 +1244,7 @@ pub(crate) fn lower_grouped_fields(
         let (right, defaults, presence) = scope_plan(
             projected.clone(),
             table,
+            input_globals,
             &group,
             &key_names,
             &group_names,
@@ -1348,7 +1371,17 @@ pub(crate) fn lower_logical_total(
         } else {
             child
         };
-        let mut child = crate::logical_globals::bind_globals(child, table, context)?;
+        // Bind only globals read by this aggregate. The independent-consumer
+        // boundary retains its input schema, so an unused singleton list joined
+        // here would otherwise be copied onto every row before pruning.
+        // Fold packing still uses its existing positional globals contract.
+        let mut needs_globals = false;
+        expression.visit_unique(&mut |node| {
+            needs_globals |= matches!(node, Expr::Global { .. } | Expr::AggregateFold { .. });
+        });
+        let mut child = if needs_globals {
+            crate::logical_globals::bind_globals(child, table, context)?
+        } else { child };
         let (bound_child, indices) =
             crate::logical_globals::bind_external(child, bindings, context)?;
         child = bound_child;
@@ -1361,10 +1394,13 @@ pub(crate) fn lower_logical_total(
         {
             child = crate::logical::protect_round_robin(child, crate::EXECUTION_CONCURRENCY);
         }
+        let empty_globals = Schema::empty();
+        let input_globals = if needs_globals { table.globals().schema().as_ref() } else { &empty_globals };
         for group in groups {
             let (right, _, _) = scope_plan(
                 child.clone(),
                 table,
+                input_globals,
                 &group,
                 &[],
                 &[],
@@ -1470,6 +1506,7 @@ pub(crate) fn body_plan(
     let (mut result, _, _) = scope_plan(
         input.clone(),
         table,
+        table.globals().schema(),
         &anchor,
         key_names,
         group_names,
@@ -1483,6 +1520,7 @@ pub(crate) fn body_plan(
         let (right, defaults, presence) = scope_plan(
             input.clone(),
             table,
+        table.globals().schema(),
             &group,
             key_names,
             group_names,

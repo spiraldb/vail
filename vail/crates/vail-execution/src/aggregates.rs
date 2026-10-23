@@ -35,6 +35,18 @@ impl Hash for SumAdapter {
     }
 }
 
+/// Identifies our typed SUM contract, rather than matching a user-visible name.
+pub(crate) fn coordinate_sum_type(udf: &AggregateUDF) -> Option<DataType> {
+    udf.inner()
+        .downcast_ref::<SumAdapter>()
+        .map(|sum| sum.output.clone())
+}
+
+pub(crate) fn coordinate_count(udf: &AggregateUDF) -> bool {
+    crate::kernel_identity::aggregate_key::<(Kind, DataType)>(udf)
+        .is_some_and(|(kind, _)| *kind == Kind::Count)
+}
+
 fn sum_type(input: &DataType) -> Option<DataType> {
     match input {
         DataType::Boolean | DataType::Int32 | DataType::Int64 => Some(DataType::Int64),
@@ -255,7 +267,7 @@ impl AggregateUDFImpl for SumAdapter {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Kind {
     Count,
     Sum,
@@ -520,7 +532,7 @@ pub fn aggregate_udf(
     };
     Ok(crate::kernel_identity::aggregate_named(
         function,
-        (function.to_owned(), input.clone()),
+        (kind, input.clone()),
         vec![input.clone()],
         output,
         state,

@@ -54,6 +54,9 @@ def test_native_bgen_spec_genotypes(tmp_path, compressed):
     path = _bgen(tmp_path, compressed)
     mt = hl.import_bgen(str(path), ['GT','GP','dosage'])
     assert mt.count() == (1,3)
+    assert set(mt._mir.core._schema['__vail_matrix_cells'].element_type) == {'value'}
+    slots = mt._mir.core['__vail_matrix_cells'].collect()[0]
+    assert len(slots) == 3 and all(set(slot) == {'value'} for slot in slots)
     assert mt.s.collect() == ['s0','s1','s2']
     mt = mt.unfilter_entries()
     assert mt.GT.collect() == [hl.Call((0,0),False), hl.Call((0,1),False), None]

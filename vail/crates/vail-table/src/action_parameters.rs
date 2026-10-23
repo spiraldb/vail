@@ -77,11 +77,68 @@ pub(crate) fn resolve<'a>(
     bindings: &'a mut ActionParameters,
 ) -> BoxFuture<'a, Result<LogicalPlan>> {
     async move {
+        // Prune discarded projection expressions before evaluating singleton
+        // dependencies. Otherwise a dead scalar-subquery aggregate could run
+        // (or fail) even though the normal optimizer would remove it.
+        let aggregate = contains_aggregate_singleton(&logical)?;
+        let logical = if aggregate {
+            use datafusion::optimizer::{
+                OptimizerRule, optimize_projections::OptimizeProjections,
+                optimizer::OptimizerContext,
+            };
+            let config = OptimizerContext::new_with_config_options(
+                bindings.context.session_config().options().clone(),
+            );
+            OptimizeProjections::new().rewrite(logical, &config)?.data
+        } else {
+            logical
+        };
         let changed = resolve_changed(&logical, bindings, &mut HashMap::new()).await?;
         Ok(changed.map(Arc::unwrap_or_clone).unwrap_or(logical))
     }
     .boxed()
 }
+// Traverse actual live input/subquery nodes. DataFusion's apply_subqueries
+// creates temporary Subquery wrappers whose addresses cannot be identity keys.
+fn contains_aggregate_singleton(logical: &LogicalPlan) -> Result<bool> {
+    use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
+    fn visit(
+        root: &LogicalPlan,
+        seen: &mut std::collections::HashSet<usize>,
+        pending: &mut Vec<Arc<LogicalPlan>>,
+    ) -> Result<bool> {
+        let mut found = false;
+        root.apply(|plan| {
+            if !seen.insert(plan as *const LogicalPlan as usize) {
+                return Ok(TreeNodeRecursion::Jump);
+            }
+            if matches!(plan, LogicalPlan::Extension(node) if node.node.as_any().is::<crate::aggregate_singleton::AggregateSingleton>()) {
+                found = true;
+                return Ok(TreeNodeRecursion::Stop);
+            }
+            plan.apply_expressions(|expression| expression.apply(|expr| {
+                if let datafusion_expr::Expr::ScalarSubquery(query) = expr {
+                    pending.push(query.subquery.clone());
+                }
+                Ok(TreeNodeRecursion::Continue)
+            }))?;
+            Ok(TreeNodeRecursion::Continue)
+        })?;
+        Ok(found)
+    }
+    let mut seen = std::collections::HashSet::new();
+    let mut pending = Vec::new();
+    if visit(logical, &mut seen, &mut pending)? {
+        return Ok(true);
+    }
+    while let Some(root) = pending.pop() {
+        if visit(&root, &mut seen, &mut pending)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
 fn resolve_changed<'a>(
     logical: &'a LogicalPlan,
     bindings: &'a mut ActionParameters,
@@ -95,6 +152,20 @@ fn resolve_changed<'a>(
             return Ok(changed.clone());
         }
         if let LogicalPlan::Extension(extension) = logical {
+            if let Some(node) = extension
+                .node
+                .as_any()
+                .downcast_ref::<crate::aggregate_singleton::AggregateSingleton>()
+            {
+                let batch = singleton((3, node.id), node.input.clone(), bindings).await?;
+                let literal = crate::globals::GlobalsIR::arrow_literal(batch)?;
+                let resolved = Some(Arc::new(crate::logical_globals::lower_in_context(
+                    &literal,
+                    &mut bindings.lowering,
+                )?));
+                memo.insert(key, resolved.clone());
+                return Ok(resolved);
+            }
             if let Some(node) = extension
                 .node
                 .as_any()
@@ -174,6 +245,28 @@ fn resolve_changed<'a>(
                 return Ok(resolved);
             }
         }
+        // Scalar subqueries are expression-owned plans, not logical inputs.
+        // Resolve them in this same action so repeated aggregate dependencies
+        // share the identity cache with conditional and initialization inputs.
+        use datafusion_common::tree_node::{Transformed, TreeNode, TreeNodeRecursion};
+        let mut subqueries = HashMap::new();
+        logical.apply_expressions(|expression| {
+            expression.apply(|expr| {
+                if let datafusion_expr::Expr::ScalarSubquery(query) = expr {
+                    subqueries.insert(
+                        Arc::as_ptr(&query.subquery) as usize,
+                        query.subquery.clone(),
+                    );
+                }
+                Ok(TreeNodeRecursion::Continue)
+            })
+        })?;
+        let mut replacements = HashMap::new();
+        for (id, subquery) in subqueries {
+            if let Some(replacement) = resolve_changed(&subquery, bindings, memo).await? {
+                replacements.insert(id, replacement);
+            }
+        }
         let mut children = Vec::new();
         let mut changed = false;
         for input in logical.inputs() {
@@ -181,7 +274,42 @@ fn resolve_changed<'a>(
             changed |= replacement.is_some();
             children.push(replacement);
         }
-        let resolved = if changed {
+        let resolved = if !replacements.is_empty() {
+            let expressions = logical
+                .expressions()
+                .into_iter()
+                .map(|expr| {
+                    expr.transform_up(|expr| {
+                        if let datafusion_expr::Expr::ScalarSubquery(mut query) = expr {
+                            if let Some(replacement) =
+                                replacements.get(&(Arc::as_ptr(&query.subquery) as usize))
+                            {
+                                query.subquery = replacement.clone();
+                                return Ok(Transformed::yes(
+                                    datafusion_expr::Expr::ScalarSubquery(query),
+                                ));
+                            }
+                            return Ok(Transformed::no(datafusion_expr::Expr::ScalarSubquery(
+                                query,
+                            )));
+                        }
+                        Ok(Transformed::no(expr))
+                    })
+                    .map(|result| result.data)
+                })
+                .collect::<datafusion_common::Result<Vec<_>>>()?;
+            let inputs = logical
+                .inputs()
+                .into_iter()
+                .zip(children)
+                .map(|(input, replacement)| {
+                    replacement
+                        .map(Arc::unwrap_or_clone)
+                        .unwrap_or_else(|| input.clone())
+                })
+                .collect();
+            Some(Arc::new(logical.with_new_exprs(expressions, inputs)?))
+        } else if changed {
             Some(Arc::new(replace_changed_inputs(logical, children)?))
         } else {
             None

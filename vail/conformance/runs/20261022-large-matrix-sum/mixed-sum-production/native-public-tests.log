@@ -1,0 +1,24 @@
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/large-matrix-sum/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib test) generated 1 warning (run `cargo fix --lib -p vail-execution --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 15.22s
+     Running unittests src/lib.rs (vail/target/release/deps/vail_execution-a4a8ccfed09de7e4)
+
+running 8 tests
+test expressions::tests::public_physical_metadata_queries_follow_actual_input_schema ... ok
+test expressions::tests::public_struct_lowering_normalizes_view_and_large_string_storage ... ok
+test aligned_matrix_map::runend_experiment_tests::public_aligned_maps_keep_same_schema_generated_bodies_distinct ... ok
+test aligned_matrix_map::runend_experiment_tests::public_aligned_map_normalizes_nested_row_capture_descriptors ... ok
+test expressions::tests::public_grouped_arrays_keep_independent_generated_expressions ... ok
+test expressions::tests::public_compilation_accepts_deep_shared_native_graphs ... ok
+test expressions::tests::public_lambda_projection_rebinds_heterogeneous_source_columns ... ok
+test expressions::tests::public_mapped_dictionary_lookup_preserves_colliding_outer_binding ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 49 filtered out; finished in 0.01s

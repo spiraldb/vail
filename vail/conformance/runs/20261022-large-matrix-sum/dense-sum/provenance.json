@@ -1,0 +1,25 @@
+{
+  "source": "fc0b711e",
+  "native_sha256": "ae3c3e19c2048fccf7bcba0c829abc58548033e9d8fbbf92fa5f43f28fb34408",
+  "profile_hz": 1000,
+  "rows": 10000,
+  "columns": 500000,
+  "partitions": 2500,
+  "result_columns": 500000,
+  "query_wall_seconds": 4.218726249993779,
+  "query_core_seconds": 33.662747,
+  "max_rss_bytes": 8482717696,
+  "python_tests": 123,
+  "rust_coordinate_tests": 2,
+  "rust_tests_source": "fc0b711e",
+  "timing_limit": "Laptop profiling diagnostic, not a controlled Hail/Vail benchmark",
+  "memmove_samples": {
+    "total_profile": 18055,
+    "memmove": 2243,
+    "produced_value_concat": 2212,
+    "projection_broadcast": 22,
+    "other": 9,
+    "cross_join": 0
+  },
+  "additional_struct_numeric_tests": 97
+}

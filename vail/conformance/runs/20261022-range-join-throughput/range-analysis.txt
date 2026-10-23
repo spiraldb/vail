@@ -1,0 +1,73 @@
+TOTAL 17622
+LEAF
+16.99 <vail_table::join_key::KeyPredicate as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+16.08 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::compare_streamed_buffered
+13.3 arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::Date32Type>::{closure#0}>::{closure#0}
+10.06 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::StreamedBatch>::append_output_pair
+8.49 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_advance_buffered_group
+6.23 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::pair_streamed_row_with_group
+5.64 <datafusion_execution::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, datafusion_execution::async_stream::async_try_stream<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError, <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_new::{closure#0}::{closure#0}, <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_new::{closure#0}>::{closure#0}> as futures_core::stream::Stream>::poll_next
+2.38 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::null_join_buffered_group
+2.29 __psynch_cvwait
+1.99 __ulock_wait2
+1.4 <<vail_table::join_key::KeyPredicate as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5} as core::ops::function::FnOnce<(core::cmp::Ordering,)>>::call_once
+1.37 <<vail_table::join_key::KeyPredicate as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#3} as core::ops::function::FnOnce<(core::cmp::Ordering,)>>::call_once
+1.08 <async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::partitioned::OrderedConcatExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}> as futures_core::stream::Stream>::poll_next
+0.95 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::freeze_streamed
+0.94 _platform_memset
+0.87 datafusion_physical_plan::joins::sort_merge_join::materializing_stream::materialize_left_columns
+0.77 madvise
+0.6 <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_iter_values::<core::ops::range::Range<u64>>
+0.58 0x6ef7bf4
+0.53 mach_absolute_time
+0.49 kevent
+0.38 __bzero
+0.36 <datafusion_physical_expr_common::metrics::builder::MetricBuilder>::subset_time::<&str>
+0.33 0x6ef7bf0
+0.3 <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value
+0.25 <tokio::runtime::task::list::OwnedTasks<alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::bind_inner
+0.25 <datafusion_physical_plan::coalesce::LimitedBatchCoalescer>::push_batch
+0.23 <async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}> as futures_core::stream::Stream>::poll_next
+0.18 <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value
+0.16 <futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, vail_table::partitioned::ordered_partition_streams::start::{closure#0}>::{closure#1}> as core::future::future::Future>::poll
+0.1 <tokio::runtime::scheduler::Handle>::spawn::<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>>
+0.09 <alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn arrow_array::array::Array>>, <arrow_select::filter::FilterPredicate>::filter_record_batch::{closure#0}>, core::result::Result<core::convert::Infallible, arrow_schema::error::ArrowError>>>>::from_iter
+0.08 __ulock_wake
+0.07 <arrow_schema::datatype::DataType as core::clone::Clone>::clone
+0.07 <arrow_data::data::ArrayDataBuilder>::build_unchecked
+INCLUSIVE
+97.7 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+97.7 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+97.7 <std::sys::thread::unix::Thread>::new::thread_start
+97.7 tokio::runtime::scheduler::multi_thread::worker::run
+97.7 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+97.7 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+97.7 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+97.7 _pthread_start
+97.7 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+97.7 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+97.7 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+97.7 <tokio::runtime::blocking::pool::Inner>::run
+95.59 <tokio::runtime::scheduler::multi_thread::worker::Context>::run_task
+95.59 <tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll
+63.3 datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#0}
+63.3 <futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll
+63.28 <futures_util::stream::stream::fuse::Fuse<futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}>> as futures_core::stream::Stream>::poll_next
+63.28 <futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}> as futures_core::stream::Stream>::poll_next
+62.94 <datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next
+62.89 <datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::partitioned::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next
+62.89 <async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::partitioned::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}> as futures_core::stream::Stream>::poll_next
+60.49 <datafusion_physical_plan::stream::ObservedStream as futures_core::stream::Stream>::poll_next
+60.28 <datafusion_execution::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, datafusion_execution::async_stream::async_try_stream<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError, <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_new::{closure#0}::{closure#0}, <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_new::{closure#0}>::{closure#0}> as futures_core::stream::Stream>::poll_next
+60.28 <datafusion_physical_plan::stream::RecordBatchStreamAdapter<datafusion_execution::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, datafusion_execution::async_stream::async_try_stream<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError, <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_new::{closure#0}::{closure#0}, <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_new::{closure#0}>::{closure#0}>> as futures_core::stream::Stream>::poll_next
+32.28 <tokio::runtime::task::core::Core<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll
+32.27 <futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, vail_table::partitioned::ordered_partition_streams::start::{closure#0}>::{closure#1}> as core::future::future::Future>::poll
+32.11 datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, vail_table::partitioned::ordered_partition_streams::start::{closure#0}>::{closure#0}
+31.25 <datafusion_physical_plan::filter::FilterExecStream as futures_core::stream::Stream>::poll_next
+29.92 <datafusion_physical_expr::expressions::binary::BinaryExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+29.81 <vail_table::join_key::KeyPredicate as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate
+20.02 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::compare_streamed_buffered
+16.45 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::pair_streamed_row_with_group
+13.3 arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::Date32Type>::{closure#0}>::{closure#0}
+10.21 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::StreamedBatch>::append_output_pair
+10.15 <datafusion_physical_plan::joins::sort_merge_join::materializing_stream::MaterializingSortMergeJoinStream>::try_advance_buffered_group

@@ -284,7 +284,6 @@ fn scan(
             for i in 0..n {
                 let code = ((bytes[i / 4] >> (2 * (i % 4))) & 3) as usize;
                 let (a, b) = calls[code];
-                batch.cids.append_value(i as i64);
                 batch.allele0.append_value(a);
                 batch.allele1.append_value(b);
                 batch.called.push(code != 1);
@@ -316,7 +315,6 @@ struct PlinkBatch {
     alleles: arrow_array::builder::ListBuilder<arrow_array::builder::StringBuilder>,
     rsids: arrow_array::builder::StringBuilder,
     cm: arrow_array::builder::Float64Builder,
-    cids: arrow_array::builder::Int64Builder,
     allele0: arrow_array::builder::UInt16Builder,
     allele1: arrow_array::builder::UInt16Builder,
     called: Vec<bool>,
@@ -332,7 +330,6 @@ impl PlinkBatch {
             alleles: ListBuilder::new(StringBuilder::new()),
             rsids: StringBuilder::with_capacity(rows, rows * 16),
             cm: Float64Builder::with_capacity(rows),
-            cids: Int64Builder::new(),
             allele0: UInt16Builder::new(),
             allele1: UInt16Builder::new(),
             called: Vec::new(),
@@ -396,7 +393,7 @@ impl PlinkBatch {
         .map_err(|e| e.to_string())?;
         let cell_field = element(schema.field(1).data_type())?;
         let cell_fields = fields(cell_field.data_type())?;
-        let entry_fields = fields(cell_fields[1].data_type())?;
+        let entry_fields = fields(cell_fields[0].data_type())?;
         let call_fields = fields(entry_fields[0].data_type())?;
         let count = self.called.len();
         let call = StructArray::try_new(
@@ -414,12 +411,8 @@ impl PlinkBatch {
         .map_err(|e| e.to_string())?;
         let entry = StructArray::try_new(entry_fields, vec![Arc::new(call)], None)
             .map_err(|e| e.to_string())?;
-        let cells = StructArray::try_new(
-            cell_fields,
-            vec![Arc::new(self.cids.finish()), Arc::new(entry)],
-            None,
-        )
-        .map_err(|e| e.to_string())?;
+        let cells = StructArray::try_new(cell_fields, vec![Arc::new(entry)], None)
+            .map_err(|e| e.to_string())?;
         let offsets = arrow_buffer::OffsetBuffer::<i32>::from_lengths(std::iter::repeat_n(
             if decode { n } else { 0 },
             self.rows,

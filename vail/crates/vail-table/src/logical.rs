@@ -1645,6 +1645,11 @@ impl ExtensionPlanner for VailExtensionPlanner {
         if self.diagnostic {
             let label = if node
                 .as_any()
+                .is::<crate::aggregate_singleton::AggregateSingleton>()
+            {
+                Some("shared aggregate singleton remains unbound".to_owned())
+            } else if node
+                .as_any()
                 .is::<crate::conditional_globals::ConditionalNode>()
             {
                 Some("conditional singleton selection remains unbound".to_owned())

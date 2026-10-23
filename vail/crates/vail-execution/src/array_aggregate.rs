@@ -1,11 +1,12 @@
 //! Lift a DataFusion aggregate over array coordinates without unnesting rows.
 //! Arithmetic, null handling, partial states and merges remain owned by the
-//! underlying aggregate. A native GroupsAccumulator processes all coordinates
-//! in one batch; other UDAFs receive one Arrow batch per coordinate.
+//! underlying aggregate. SUM uses reusable typed Arrow vectors; other native
+//! reducers use GroupsAccumulator or one Arrow batch per coordinate.
 use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int64Array, ListArray, StructArray, UInt32Array, new_empty_array,
+    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
+    StructArray, UInt8Array, UInt32Array, UInt64Array, new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
@@ -238,9 +239,7 @@ impl Accumulator for CoordinateBundle {
                     .expect("validated filter type")
             });
             let combined_filter = match (parent_filter.as_ref(), filter) {
-                (Some(parent), Some(filter)) => {
-                    Some(arrow_arith::boolean::and(parent, filter)?)
-                }
+                (Some(parent), Some(filter)) => Some(arrow_arith::boolean::and(parent, filter)?),
                 (Some(parent), None) => Some(parent.clone()),
                 (None, Some(_)) => None,
                 (None, None) => None,
@@ -431,13 +430,214 @@ pub fn coordinate_udaf(
     ))
 }
 
+/// SUM has no per-coordinate null state: its language identity is zero.
+#[derive(Debug)]
+struct DenseSum {
+    values: ArrayRef,
+}
+impl DenseSum {
+    fn new(dtype: &DataType) -> Self {
+        Self {
+            values: new_empty_array(dtype),
+        }
+    }
+    fn update(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        if width == 0 {
+            return Ok(());
+        }
+        // Arrow's mixed primitive kernel reads narrow values directly. Boolean
+        // storage is bit-packed, so use its native one-byte cast, not Int64.
+        let mut input = if flat.data_type() == &DataType::Boolean {
+            cast(flat.as_ref(), &DataType::UInt8)?
+        } else {
+            Arc::clone(flat)
+        };
+        if let Some(filter) = filter {
+            let zero = ScalarValue::try_from(input.data_type())?.to_scalar()?;
+            input = arrow_select::zip::zip(filter, &input, &zero)?;
+        }
+        if input.null_count() != 0 {
+            let mask = arrow_arith::boolean::is_null(input.as_ref())?;
+            let zero = match input.data_type() {
+                DataType::Int32 => ScalarValue::Int32(Some(0)),
+                DataType::Int64 => ScalarValue::Int64(Some(0)),
+                DataType::UInt8 => ScalarValue::UInt8(Some(0)),
+                DataType::UInt64 => ScalarValue::UInt64(Some(0)),
+                DataType::Float32 => ScalarValue::Float32(Some(0.0)),
+                DataType::Float64 => ScalarValue::Float64(Some(0.0)),
+                _ => unreachable!(),
+            }
+            .to_scalar()?;
+            input = arrow_select::zip::zip(&mask, &zero, &input)?;
+        }
+        macro_rules! add {
+            ($array:ty, $input_array:ty, $zero:expr, $op:expr) => {{
+                // Move the sole state owner into Arrow's in-place kernel.
+                let empty = new_empty_array(self.values.data_type());
+                let old = std::mem::replace(&mut self.values, empty);
+                let mut values = if old.is_empty() {
+                    <$array>::from(vec![$zero; width])
+                } else {
+                    old.as_any().downcast_ref::<$array>().unwrap().clone()
+                };
+                drop(old);
+                let input = input.as_any().downcast_ref::<$input_array>().unwrap();
+                for offset in (0..input.len()).step_by(width) {
+                    let row = input.slice(offset, width);
+                    values = match arrow_arith::arity::binary_mut(values, &row, $op) {
+                        Ok(result) => result?,
+                        Err(shared) => arrow_arith::arity::binary(&shared, &row, $op)?,
+                    };
+                }
+                self.values = Arc::new(values);
+            }};
+        }
+        match input.data_type() {
+            DataType::Int32 if self.values.data_type() == &DataType::Float64 => {
+                add!(Float64Array, Int32Array, 0.0f64, |a: f64, b: i32| a
+                    + f64::from(b))
+            }
+            DataType::Int64 if self.values.data_type() == &DataType::Float64 => {
+                add!(Float64Array, Int64Array, 0.0f64, |a: f64, b: i64| a + b
+                    as f64)
+            }
+            DataType::Int32 => add!(Int64Array, Int32Array, 0i64, |a: i64, b: i32| a
+                .wrapping_add(i64::from(b))),
+            DataType::UInt8 if self.values.data_type() == &DataType::UInt64 => {
+                add!(UInt64Array, UInt8Array, 0u64, |a: u64, b: u8| a
+                    .wrapping_add(u64::from(b)))
+            }
+            DataType::UInt64 => add!(UInt64Array, UInt64Array, 0u64, u64::wrapping_add),
+            DataType::UInt8 => add!(Int64Array, UInt8Array, 0i64, |a: i64, b: u8| a
+                .wrapping_add(i64::from(b))),
+            DataType::Int64 => add!(Int64Array, Int64Array, 0i64, i64::wrapping_add),
+            DataType::Float32 => add!(Float64Array, Float32Array, 0.0f64, |a: f64, b: f32| a
+                + f64::from(b)),
+            DataType::Float64 => add!(Float64Array, Float64Array, 0.0f64, |a, b| a + b),
+            _ => unreachable!(),
+        }
+        Ok(())
+    }
+}
+
+/// Two vector states preserve native AVG/fraction wire types at emission.
+#[derive(Debug)]
+struct DenseRatio {
+    count: DenseSum,
+    sum: DenseSum,
+    fraction: bool,
+}
+impl DenseRatio {
+    fn new(fraction: bool) -> Self {
+        Self {
+            count: DenseSum::new(if fraction {
+                &DataType::Int64
+            } else {
+                &DataType::UInt64
+            }),
+            sum: DenseSum::new(if fraction {
+                &DataType::Int64
+            } else {
+                &DataType::Float64
+            }),
+            fraction,
+        }
+    }
+    fn update(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        let mut present = if self.fraction {
+            BooleanArray::from(vec![true; flat.len()])
+        } else {
+            arrow_arith::boolean::is_not_null(flat.as_ref())?
+        };
+        if let Some(filter) = filter {
+            present = arrow_arith::boolean::and(&present, filter)?;
+        }
+        let present: ArrayRef = Arc::new(present);
+        self.count.update(&present, None, width)?;
+        self.sum.update(flat, filter, width)
+    }
+    fn states(&self) -> Result<Vec<ArrayRef>> {
+        Ok(vec![
+            Arc::clone(&self.count.values),
+            Arc::clone(&self.sum.values),
+        ])
+    }
+    fn merge(&mut self, values: &[ArrayRef], width: usize) -> Result<()> {
+        self.count.update(&values[0], None, width)?;
+        self.sum.update(&values[1], None, width)
+    }
+    fn evaluate(&self) -> Result<ArrayRef> {
+        if self.fraction {
+            let count = self
+                .count
+                .values
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap();
+            let sum = self
+                .sum
+                .values
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap();
+            Ok(Arc::new(Float64Array::from_iter((0..count.len()).map(
+                |i| (count.value(i) != 0).then(|| sum.value(i) as f64 / count.value(i) as f64),
+            ))))
+        } else {
+            let count = self
+                .count
+                .values
+                .as_any()
+                .downcast_ref::<UInt64Array>()
+                .unwrap();
+            let sum = self
+                .sum
+                .values
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap();
+            Ok(Arc::new(arrow_arith::arity::binary::<
+                _,
+                _,
+                _,
+                arrow_array::types::Float64Type,
+            >(
+                sum,
+                count,
+                |sum: f64, count: u64| {
+                    if count == 0 {
+                        f64::NAN
+                    } else {
+                        sum / count as f64
+                    }
+                },
+            )?))
+        }
+    }
+}
+
 enum Kernels {
+    Sum(DenseSum),
+    Count(DenseSum),
+    Ratio(DenseRatio),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
 impl std::fmt::Debug for Kernels {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Sum(sum) | Self::Count(sum) => sum.fmt(f),
+            Self::Ratio(ratio) => ratio.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -463,7 +663,15 @@ impl Coordinates {
         input: DataType,
         aggregate_input: DataType,
     ) -> Result<Self> {
-        let kernels = if aggregate.groups_accumulator_supported() {
+        let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(aggregate.fun()) {
+            Kernels::Sum(DenseSum::new(&dtype))
+        } else if crate::aggregates::coordinate_count(aggregate.fun()) {
+            Kernels::Count(DenseSum::new(&DataType::Int64))
+        } else if crate::native_mean::coordinate_mean(aggregate.fun()) {
+            Kernels::Ratio(DenseRatio::new(false))
+        } else if crate::fraction::coordinate_fraction(aggregate.fun()) {
+            Kernels::Ratio(DenseRatio::new(true))
+        } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
             ))
@@ -500,6 +708,8 @@ impl Coordinates {
     fn states(&mut self) -> Result<Vec<ArrayRef>> {
         let width = self.width.unwrap_or(0);
         match &mut self.kernels {
+            Kernels::Sum(sum) | Kernels::Count(sum) => Ok(vec![Arc::clone(&sum.values)]),
+            Kernels::Ratio(ratio) => ratio.states(),
             Kernels::Groups(kernel) => {
                 let kernel = kernel
                     .get_mut()
@@ -539,6 +749,22 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::Sum(sum) = &mut self.kernels {
+            return sum.update(&flat, filter, width);
+        }
+        if let Kernels::Ratio(ratio) = &mut self.kernels {
+            return ratio.update(&flat, filter, width);
+        }
+        if let Kernels::Count(count) = &mut self.kernels {
+            // Count consumes validity, never values. Native Boolean AND combines
+            // callback filtering with presence before the vector update.
+            let mut present = arrow_arith::boolean::is_not_null(flat.as_ref())?;
+            if let Some(filter) = filter {
+                present = arrow_arith::boolean::and(&present, filter)?;
+            }
+            let present: ArrayRef = Arc::new(present);
+            return count.update(&present, None, width);
+        }
         let flat = if self.input == self.aggregate_input {
             flat
         } else {
@@ -584,6 +810,8 @@ impl Coordinates {
             return Ok(new_empty_array(self.aggregate.field().data_type()));
         }
         let mut values = match &mut self.kernels {
+            Kernels::Sum(sum) | Kernels::Count(sum) => Arc::clone(&sum.values),
+            Kernels::Ratio(ratio) => ratio.evaluate()?,
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -643,6 +871,9 @@ impl Accumulator for Coordinates {
             }
             concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
         };
+        if matches!(self.kernels, Kernels::Count(_) | Kernels::Ratio(_)) {
+            return self.update_flat(flat, None, width);
+        }
         let flat = if self.input == self.aggregate_input {
             flat
         } else {
@@ -677,6 +908,11 @@ impl Accumulator for Coordinates {
                 indices.values.capacity() * std::mem::size_of::<usize>()
             })
             + match &self.kernels {
+                Kernels::Sum(sum) | Kernels::Count(sum) => sum.values.get_array_memory_size(),
+                Kernels::Ratio(ratio) => {
+                    ratio.count.values.get_array_memory_size()
+                        + ratio.sum.values.get_array_memory_size()
+                }
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -718,6 +954,8 @@ impl Accumulator for Coordinates {
                 return Err(error("coordinate state length mismatch"));
             }
             match &mut self.kernels {
+                Kernels::Sum(sum) | Kernels::Count(sum) => sum.update(&values[0], None, width)?,
+                Kernels::Ratio(ratio) => ratio.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
@@ -740,7 +978,7 @@ impl Accumulator for Coordinates {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arrow_array::{Int64Array};
+    use arrow_array::Int64Array;
     use arrow_buffer::NullBuffer;
     use arrow_schema::Fields;
     use datafusion_physical_expr::expressions::Column;
@@ -766,6 +1004,74 @@ mod tests {
             vec![reducer(value_index, aggregate)],
         )
         .unwrap()
+    }
+
+    #[test]
+    fn public_coordinate_mean_merge_preserves_full_uint64_count_domain() {
+        let mean = crate::reducer::configured_udaf(
+            "mean",
+            Some(&DataType::Float64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        let aggregate = coordinate_udaf(
+            mean,
+            DataType::Float64,
+            ScalarValue::Float64(Some(f64::NAN)),
+        )
+        .unwrap();
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+            true,
+        )]));
+        let expression = AggregateExprBuilder::new(aggregate, vec![Arc::new(Column::new("xs", 0))])
+            .schema(schema)
+            .alias("means")
+            .build()
+            .unwrap();
+        let mut accumulator = expression.create_accumulator().unwrap();
+        let count = 1u64 << 63;
+        let state_list = |values: ArrayRef| -> ArrayRef {
+            Arc::new(ListArray::new(
+                Arc::new(Field::new_list_field(values.data_type().clone(), true)),
+                OffsetBuffer::from_lengths([1]),
+                values,
+                None,
+            ))
+        };
+        accumulator
+            .merge_batch(&[
+                state_list(Arc::new(UInt64Array::from(vec![count]))),
+                state_list(Arc::new(Float64Array::from(vec![count as f64 * 2.0]))),
+                Arc::new(Int64Array::from(vec![1])),
+            ])
+            .unwrap();
+        let ScalarValue::List(result) = accumulator.evaluate().unwrap() else {
+            panic!("list result");
+        };
+        assert_eq!(
+            result
+                .values()
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap()
+                .value(0),
+            2.0
+        );
+        let state = accumulator.state().unwrap();
+        let ScalarValue::List(counts) = &state[0] else {
+            panic!("list state");
+        };
+        assert_eq!(
+            counts
+                .values()
+                .as_any()
+                .downcast_ref::<UInt64Array>()
+                .unwrap()
+                .value(0),
+            count
+        );
     }
 
     #[test]
@@ -806,14 +1112,12 @@ mod tests {
             packed_list_type,
             true,
         )]));
-        let expression = AggregateExprBuilder::new(
-            bundle,
-            vec![Arc::new(Column::new("packed", 0))],
-        )
-        .schema(input_schema)
-        .alias("counts")
-        .build()
-        .unwrap();
+        let expression =
+            AggregateExprBuilder::new(bundle, vec![Arc::new(Column::new("packed", 0))])
+                .schema(input_schema)
+                .alias("counts")
+                .build()
+                .unwrap();
         let mut accumulator = expression.create_accumulator().unwrap();
 
         let fields = match packed_type {
@@ -841,8 +1145,16 @@ mod tests {
             panic!("coordinate bundle did not return a list")
         };
         let result = result.as_any().downcast_ref::<ListArray>().unwrap();
-        let result = result.values().as_any().downcast_ref::<StructArray>().unwrap();
-        let counts = result.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+        let result = result
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        let counts = result
+            .column(0)
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap();
         assert_eq!(counts.values(), &[0, 1]);
     }
 }

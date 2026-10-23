@@ -143,12 +143,16 @@ fn grouped_gather_preserves_empty_groups_and_scalar_positions() {
 }
 fn records(ids: Vec<Option<i64>>, cells: bool) -> ArrayRef {
     let length = ids.len();
-    let mut fields = vec![Arc::new(Field::new(
-        "__vail_matrix_col_id",
-        DataType::Int64,
-        true,
-    ))];
-    let mut arrays: Vec<ArrayRef> = vec![Arc::new(Int64Array::from(ids))];
+    let mut fields = Vec::new();
+    let mut arrays: Vec<ArrayRef> = Vec::new();
+    if !cells {
+        fields.push(Arc::new(Field::new(
+            "__vail_matrix_col_id",
+            DataType::Int64,
+            true,
+        )));
+        arrays.push(Arc::new(Int64Array::from(ids)));
+    }
     fields.push(Arc::new(Field::new(
         if cells { "value" } else { "__vail_matrix_col" },
         DataType::Struct(Vec::<Field>::new().into()),
@@ -157,144 +161,108 @@ fn records(ids: Vec<Option<i64>>, cells: bool) -> ArrayRef {
     arrays.push(Arc::new(StructArray::new_empty_fields(length, None)));
     Arc::new(StructArray::new(fields.into(), arrays, None))
 }
+fn sparse_records(positions: Vec<Option<i64>>) -> ArrayRef {
+    let values = records(vec![None; positions.len()], true);
+    let values = values.as_any().downcast_ref::<StructArray>().unwrap();
+    Arc::new(StructArray::new(
+        vec![
+            Arc::new(Field::new("__vail_matrix_col_id", DataType::Int64, true)),
+            values.fields()[0].clone(),
+        ]
+        .into(),
+        vec![
+            Arc::new(Int64Array::from(positions)),
+            values.column(0).clone(),
+        ],
+        None,
+    ))
+}
 #[test]
-fn alignment_compares_exact_positional_ids_against_shared_columns() {
-    let cells = list_wrap(
-        records(vec![Some(7), Some(2), Some(7), Some(2)], true),
-        vec![2, 2],
-    );
+fn alignment_uses_positions_and_validates_shared_column_ids() {
+    let cells = list_wrap(records(vec![None; 4], true), vec![2, 2]);
     let columns = list_wrap(records(vec![Some(7), Some(2)], false), vec![2]);
     let expected: ArrayRef = Arc::new(BooleanArray::from(vec![true, true]));
     assert_eq!(
         execute(
             "__vail_matrix_aligned",
-            vec![(cells.clone(), false), (columns.clone(), true)],
+            vec![(cells.clone(), false), (columns, true)],
             &DataType::Boolean
         )
         .unwrap()
         .as_ref(),
         expected.as_ref()
     );
-    for bad in [vec![Some(2), Some(7)], vec![Some(7)], vec![None, Some(2)]] {
-        assert!(
-            execute(
-                "__vail_matrix_aligned",
-                vec![
-                    (cells.clone(), false),
-                    (
-                        list_wrap(records(bad.clone(), false), vec![bad.len()]),
-                        true
-                    )
-                ],
-                &DataType::Boolean
-            )
-            .is_err()
-        );
-    }
-    assert!(
-        execute(
-            "__vail_matrix_columns",
-            vec![(columns, true)],
-            cells.data_type()
-        )
-        .is_err()
-    ); // declared output cannot hide a wrong schema
-    let duplicates = list_wrap(records(vec![Some(7), Some(7)], false), vec![2]);
-    assert!(
-        execute(
-            "__vail_matrix_columns",
-            vec![(duplicates.clone(), true)],
-            duplicates.data_type()
-        )
-        .is_err()
-    );
-}
-
-#[test]
-fn alignment_fast_path_handles_sliced_and_nullable_arrays() {
-    use arrow_buffer::NullBuffer;
-
-    // Both lists are sliced after construction so their offsets are nonzero.
-    // The aligned row must compare the sliced child spans rather than assume
-    // either list starts at child offset zero.
-    let cells = list_wrap(records(vec![Some(99), Some(7), Some(2)], true), vec![1, 2]).slice(1, 1);
-    let columns =
-        list_wrap(records(vec![Some(88), Some(7), Some(2)], false), vec![1, 2]).slice(1, 1);
-    let expected: ArrayRef = Arc::new(BooleanArray::from(vec![true]));
-    assert_eq!(
-        execute(
-            "__vail_matrix_aligned",
-            vec![(cells.clone(), false), (columns.clone(), true)],
-            &DataType::Boolean
-        )
-        .unwrap()
-        .as_ref(),
-        expected.as_ref()
-    );
-
-    let reordered =
-        list_wrap(records(vec![Some(88), Some(2), Some(7)], false), vec![1, 2]).slice(1, 1);
+    // Identity metadata remains shared; IDs do not need to equal list positions.
+    let reordered = list_wrap(records(vec![Some(2), Some(7)], false), vec![2]);
     assert!(
         execute(
             "__vail_matrix_aligned",
             vec![(cells.clone(), false), (reordered, true)],
             &DataType::Boolean
         )
-        .unwrap_err()
-        .contains("identity differs")
+        .is_ok()
     );
-
-    // An explicitly present, all-valid identity bitmap selects the nullable
-    // fallback; it must still accept the valid row and preserve null errors.
-    let valid = records(vec![Some(7), Some(2)], true);
-    let valid = valid.as_any().downcast_ref::<StructArray>().unwrap();
-    let mut nullable_columns = valid.columns().to_vec();
-    nullable_columns[0] = Arc::new(Int64Array::new(
-        vec![7, 2].into(),
-        Some(NullBuffer::from(vec![true, true])),
-    ));
-    let nullable_records = Arc::new(StructArray::new(
-        valid.fields().clone(),
-        nullable_columns.clone(),
-        None,
-    ));
-    let nullable_cells = list_wrap(nullable_records.clone(), vec![2]);
-    let aligned_columns = list_wrap(records(vec![Some(7), Some(2)], false), vec![2]);
+    for bad in [vec![Some(7)], vec![None, Some(2)], vec![Some(7), Some(7)]] {
+        let columns = list_wrap(records(bad.clone(), false), vec![bad.len()]);
+        assert!(
+            execute(
+                "__vail_matrix_aligned",
+                vec![(cells.clone(), false), (columns, true)],
+                &DataType::Boolean
+            )
+            .is_err()
+        );
+    }
+    let DataType::List(item) = cells.data_type() else {
+        unreachable!()
+    };
+    let DataType::Struct(fields) = item.data_type() else {
+        unreachable!()
+    };
     assert_eq!(
-        execute(
-            "__vail_matrix_aligned",
-            vec![
-                (nullable_cells.clone(), false),
-                (aligned_columns.clone(), true)
-            ],
-            &DataType::Boolean
-        )
-        .unwrap()
-        .as_ref(),
-        Arc::new(BooleanArray::from(vec![true])).as_ref()
+        fields.iter().map(|f| f.name().as_str()).collect::<Vec<_>>(),
+        vec!["value"]
     );
-
-    nullable_columns[0] = Arc::new(Int64Array::from(vec![Some(7), None]));
-    let malformed_records = Arc::new(StructArray::new(
-        valid.fields().clone(),
-        nullable_columns,
-        None,
-    ));
-    let malformed_cells = list_wrap(malformed_records, vec![2]);
+}
+#[test]
+fn alignment_handles_sliced_slots_and_missing_entry_values() {
+    use arrow_buffer::NullBuffer;
+    let cells = list_wrap(records(vec![None; 3], true), vec![1, 2]).slice(1, 1);
+    let columns =
+        list_wrap(records(vec![Some(88), Some(7), Some(2)], false), vec![1, 2]).slice(1, 1);
     assert!(
         execute(
             "__vail_matrix_aligned",
-            vec![(malformed_cells, false), (aligned_columns, true)],
+            vec![(cells.clone(), false), (columns.clone(), true)],
             &DataType::Boolean
         )
-        .unwrap_err()
-        .contains("identity differs")
+        .is_ok()
     );
-
-    let DataType::List(entry_type) = cells.data_type() else {
-        panic!("test cells are a list");
+    // Null payloads encode filtered entries, while the owning slot stays defined.
+    let values = StructArray::new_empty_fields(2, Some(NullBuffer::from(vec![true, false])));
+    let slots = StructArray::new(
+        vec![Arc::new(Field::new(
+            "value",
+            values.data_type().clone(),
+            true,
+        ))]
+        .into(),
+        vec![Arc::new(values)],
+        None,
+    );
+    let cells = list_wrap(Arc::new(slots), vec![2]);
+    assert!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(cells.clone(), false), (columns.clone(), true)],
+            &DataType::Boolean
+        )
+        .is_ok()
+    );
+    let DataType::List(item) = cells.data_type() else {
+        unreachable!()
     };
-    let missing_cells: ArrayRef = Arc::new(ListArray::new_null(entry_type.clone(), 1));
+    let missing_cells: ArrayRef = Arc::new(ListArray::new_null(item.clone(), 1));
     assert!(
         execute(
             "__vail_matrix_aligned",
@@ -304,18 +272,17 @@ fn alignment_fast_path_handles_sliced_and_nullable_arrays() {
         .unwrap_err()
         .contains("entry arrays must not be missing")
     );
-    let missing_columns: ArrayRef = Arc::new(ListArray::new_null(
-        Arc::new(Field::new("item", entry_type.data_type().clone(), true)),
-        1,
-    ));
+    let DataType::List(column_item) = columns.data_type() else {
+        unreachable!()
+    };
+    let missing_columns: ArrayRef = Arc::new(ListArray::new_null(column_item.clone(), 1));
     assert!(
         execute(
             "__vail_matrix_aligned",
-            vec![(cells.clone(), false), (missing_columns, true)],
+            vec![(cells, false), (missing_columns, true)],
             &DataType::Boolean
         )
-        .unwrap_err()
-        .contains("entry array length differs")
+        .is_err()
     );
 }
 
@@ -385,15 +352,16 @@ fn dense_scatter_rejects_duplicate_and_out_of_range_positions() {
         vec![Some(2)],
         vec![None],
     ] {
-        let input = list_wrap(records(bad.clone(), true), vec![bad.len()]);
+        let input = list_wrap(sparse_records(bad.clone()), vec![bad.len()]);
         let widths: ArrayRef = Arc::new(Int32Array::from(vec![2]));
         assert!(
             execute(
                 "__vail_dense_cells",
                 vec![(input.clone(), true), (widths, true)],
-                input.data_type()
+                list_wrap(records(vec![], true), vec![0]).data_type()
             )
-            .is_err()
+            .unwrap_err()
+            .contains("sparse entry positions")
         );
     }
 }
@@ -418,29 +386,53 @@ fn empty_batch_does_not_validate_unused_missing_scalar_gather_owner() {
 }
 
 #[test]
-fn alignment_rejects_missing_entry_records_and_identities() {
+fn alignment_rejects_missing_entry_slot_records() {
     use arrow_buffer::NullBuffer;
-    let valid = records(vec![Some(7)], true);
+    let valid = records(vec![None], true);
     let valid = valid.as_any().downcast_ref::<StructArray>().unwrap();
+    let malformed = StructArray::new(
+        valid.fields().clone(),
+        valid.columns().to_vec(),
+        Some(NullBuffer::from(vec![false])),
+    );
+    let cells = list_wrap(Arc::new(malformed), vec![1]);
     let columns = list_wrap(records(vec![Some(7)], false), vec![1]);
-    let mut missing_identity = valid.columns().to_vec();
-    missing_identity[0] = Arc::new(Int64Array::from(vec![None]));
-    for malformed in [
-        StructArray::new(
-            valid.fields().clone(),
-            valid.columns().to_vec(),
-            Some(NullBuffer::from(vec![false])),
-        ),
-        StructArray::new(valid.fields().clone(), missing_identity, None),
-    ] {
-        let cells = list_wrap(Arc::new(malformed), vec![1]);
-        assert!(
-            execute(
-                "__vail_matrix_aligned",
-                vec![(cells, false), (columns.clone(), true)],
-                &DataType::Boolean
-            )
-            .is_err()
-        );
-    }
+    assert!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(cells, false), (columns, true)],
+            &DataType::Boolean
+        )
+        .unwrap_err()
+        .contains("entry records must not be missing")
+    );
+}
+
+#[test]
+fn dense_scatter_emits_only_positional_values_and_null_missing_entries() {
+    let input = list_wrap(sparse_records(vec![Some(2), Some(0)]), vec![2]);
+    let empty_struct = DataType::Struct(Vec::<Field>::new().into());
+    let dtype = DataType::List(Arc::new(Field::new(
+        "item",
+        DataType::Struct(vec![Arc::new(Field::new("value", empty_struct, true))].into()),
+        true,
+    )));
+    let result = execute(
+        "__vail_dense_cells",
+        vec![(input, false), (Arc::new(Int32Array::from(vec![3])), false)],
+        &dtype,
+    )
+    .unwrap();
+    let list = result.as_any().downcast_ref::<ListArray>().unwrap();
+    let slots = list
+        .values()
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    assert_eq!(list.value_length(0), 3);
+    assert_eq!(slots.num_columns(), 1);
+    assert!(slots.column_by_name("__vail_matrix_col_id").is_none());
+    assert!(!slots.column(0).is_null(0));
+    assert!(slots.column(0).is_null(1));
+    assert!(!slots.column(0).is_null(2));
 }

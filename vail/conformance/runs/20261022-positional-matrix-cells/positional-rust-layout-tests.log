@@ -1,0 +1,24 @@
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.74s
+     Running tests/matrix_layout.rs (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/target/release/deps/matrix_layout-14b625e5b5cd33bc)
+
+running 9 tests
+test empty_batch_does_not_validate_unused_missing_scalar_gather_owner ... ok
+test alignment_rejects_missing_entry_slot_records ... ok
+test alignment_uses_positions_and_validates_shared_column_ids ... ok
+test alignment_handles_sliced_slots_and_missing_entry_values ... ok
+test dense_scatter_rejects_duplicate_and_out_of_range_positions ... ok
+test grouped_gather_preserves_empty_groups_and_scalar_positions ... ok
+test dense_scatter_emits_only_positional_values_and_null_missing_entries ... ok
+test gather_preserves_scalar_owners_slices_repetition_and_empty_lists ... ok
+test transpose_preserves_context_nullable_values_and_skips_missing_arrays ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s

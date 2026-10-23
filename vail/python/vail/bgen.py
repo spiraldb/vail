@@ -258,7 +258,7 @@ def import_bgen(path, entry_fields, sample_file=None, n_partitions=None, block_s
     locus_type = tstruct(contig=tstr, position=tint32) if reference is None else tlocus(reference.name)
     row = tstruct(locus=locus_type, alleles=tarray(tstr), **{f:tstr for f in ('rsid','varid') if f in _row_fields})
     entry = tstruct(**{f: {'GT':tcall, 'GP':tarray(tfloat64), 'dosage':tfloat64}[f] for f in entry_fields})
-    schema = tstruct(**{_ROW:row, _CELLS:tarray(tstruct(**{_CID:tint64, 'value':entry}))})
+    schema = tstruct(**{_ROW:row, _CELLS:tarray(tstruct(**{'value':entry}))})
     selector = None
     if variants is not None and not literal_variants:
         from .expressions import Expression

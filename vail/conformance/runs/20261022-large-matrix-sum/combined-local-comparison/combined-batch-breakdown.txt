@@ -1,0 +1,39 @@
+samples 12852
+29.26 3760 arrow_cast::cast::run_array::run_end_encoded_cast::<arrow_array::types::Int32Type>
+14.93 1919 <alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter
+14.57 1872 arrow_arith::arity::binary::<arrow_array::types::Int32Type, arrow_array::types::Int32Type, arrow_arith::numeric::integer_op<arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type>
+13.89 1785 arrow_arith::arity::binary_mut::<arrow_array::types::Int64Type, arrow_array::types::Int32Type, <vail_execution::array_aggregate::DenseSum>::update::{closure#0}>
+8.09 1040 _platform_memmove
+3.7 476 arrow_arith::arity::binary_mut::<arrow_array::types::Int64Type, arrow_array::types::Int64Type, <i64>::wrapping_add>
+2.08 267 __bzero
+1.98 254 __psynch_cvwait
+0.75 97 _kernelrpc_mach_vm_deallocate_trap
+0.54 69 __psynch_mutexwait
+0.3 38 <arrow_data::data::ArrayDataBuilder>::build
+0.19 25 <arrow_data::data::ArrayDataBuilder>::nulls
+0.19 24 0x3c168
+0.16 21 __ulock_wait2
+0.16 21 0x6ef7d74
+0.16 21 datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>
+0.16 20 0x3c2ec
+0.16 20 0x33d48
+0.14 18 <datafusion_common::scalar::ScalarValue>::try_from_array
+0.14 18 0x3a864
+0.13 17 0x352b4
+0.13 17 mach_absolute_time
+inclusive
+94.17 12103 <std::sys::thread::unix::Thread>::new::thread_start
+94.17 12103 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+94.17 12103 <tokio::runtime::blocking::pool::Inner>::run
+94.17 12103 _pthread_start
+94.17 12103 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+94.09 12092 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+94.09 12092 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+94.09 12092 tokio::runtime::scheduler::multi_thread::worker::run
+94.09 12092 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+94.09 12092 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+94.09 12092 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+94.09 12092 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+92.1 11837 <tokio::runtime::scheduler::multi_thread::worker::Context>::run_task
+92.09 11836 <tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll
+89.45 11496 <futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}> as futures_core::stream::Stream>::poll_next

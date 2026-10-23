@@ -110,3 +110,58 @@ def test_coordinate_take_and_filtered_empty_struct_collect():
     ))
     assert [r.first for r in result] == [[0, 1], [10, 11]]
     assert [r.empty for r in result] == [[hl.Struct()] * 3, [hl.Struct()] * 3]
+
+
+@pytest.mark.parametrize("partitions", [1, 3])
+@pytest.mark.parametrize("dtype,arrays,expected", [
+    (hl.tint64, [[9223372036854775807, None], [1, 4]], [-9223372036854775808, 4]),
+    (hl.tfloat64, [[1.5, None], [2.25, None]], [3.75, 0.0]),
+    (hl.tfloat32, [[0.1, None], [0.2, None]], [0.30000000447034836, 0.0]),
+    (hl.tbool, [[True, None], [True, False]], [2, 0]),
+])
+def test_coordinate_sum_widening_nulls_and_partial_merges(partitions, dtype, arrays, expected):
+    table = hl.Table.parallelize(
+        [{"xs": xs} for xs in arrays],
+        schema=hl.tstruct(xs=hl.tarray(dtype)), n_partitions=partitions)
+    assert table.aggregate(hl.agg.array_sum(table.xs)) == expected
+    assert table.aggregate(hl.agg.array_agg(
+        lambda x: hl.agg.filter(False, hl.agg.sum(x)), table.xs)) == [0, 0]
+
+
+@pytest.mark.parametrize("partitions", [1, 4])
+def test_coordinate_counts_preserve_positions_and_empty_filters(partitions):
+    table = hl.Table.parallelize(
+        [{"xs": [None, 2, 3]}, {"xs": [1, None, 4]}, {"xs": None}],
+        schema=hl.tstruct(xs=hl.tarray(hl.tint32)),
+        n_partitions=partitions,
+    )
+    result = table.aggregate(hl.agg.array_agg(
+        lambda x: hl.struct(
+            rows=hl.agg.count(),
+            defined=hl.agg.count_where(hl.is_defined(x)),
+            positive=hl.agg.filter(x > 2, hl.agg.count()),
+            none=hl.agg.filter(False, hl.agg.count()),
+        ), table.xs))
+    assert [(x.rows, x.defined, x.positive, x.none) for x in result] == [
+        (2, 1, 0, 0), (2, 1, 0, 0), (2, 2, 2, 0)]
+
+
+@pytest.mark.parametrize("partitions", [1, 4])
+def test_coordinate_mean_and_fraction_keep_native_empty_and_null_semantics(partitions):
+    import math
+
+    table = hl.Table.parallelize(
+        [{"xs": [None, 2, 3, None]}, {"xs": [1, None, 5, None]}, {"xs": None}],
+        schema=hl.tstruct(xs=hl.tarray(hl.tint32)), n_partitions=partitions)
+    result = table.aggregate(hl.agg.array_agg(
+        lambda x: hl.struct(
+            mean=hl.agg.mean(x), fraction=hl.agg.fraction(x > 2),
+            selected=hl.agg.filter(x > 2, hl.agg.mean(x)),
+            empty=hl.agg.filter(False, hl.agg.fraction(x > 0)),
+        ), table.xs))
+    assert [x.mean for x in result[:3]] == [1.0, 2.0, 4.0]
+    assert math.isnan(result[3].mean)
+    assert [x.fraction for x in result] == [0.0, 0.0, 1.0, 0.0]
+    assert math.isnan(result[0].selected) and math.isnan(result[1].selected)
+    assert result[2].selected == 4.0
+    assert [x.empty for x in result] == [None, None, None, None]
