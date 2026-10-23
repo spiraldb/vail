@@ -1,0 +1,79 @@
+OrderedConcatExec: children=1
+  TablePartitionViewExec: partition=0
+    VailConsumerScopeExec: consumer=2
+      ProjectionExec: expr=[row_idx@0 as row_idx, value@1 as value, 0 as __vail_partition]
+        SortPreservingMergeExec: [row_idx@0 ASC NULLS LAST]
+          ProjectionExec: expr=[__vail_logical_group_key@0 as row_idx, CASE WHEN __vail_aggregate@1 IS NOT NULL THEN __vail_aggregate@1 ELSE [] END as value]
+            AggregateExec: mode=SinglePartitioned, gby=[__vail_logical_group_key@1 as __vail_logical_group_key], aggr=[array_agg(named_struct(Utf8("e"), e)) RESPECT NULLS as __vail_aggregate], ordering_mode=Sorted
+              ProjectionExec: expr=[e@1 as e, __vail_logical_group_key@4 as __vail_logical_group_key]
+                VailConsumerScopeExec: consumer=1
+                  VailCertifiedGroupRangesExec
+                    ProjectionExec: expr=[row_idx@1 as row_idx, vail_semantic_kernel_array_transform_17f23c46608131fb(__vail_matrix_cells@0) as e, __vail_partition@2 as __vail_partition, row_idx@1 as __vail_logical_group_value, row_idx@1 as __vail_logical_group_key]
+                      VailSourcePartitions: 32
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+                        CooperativeExec
+                          VicebergScanExec
+
+20000
+{"wall": 0.037229540990665555, "cpu": 0.18433699999999997, "rss": 168247296}

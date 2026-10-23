@@ -1141,20 +1141,27 @@ pub(crate) fn lower_grouped_fields(
     } else {
         child
     };
-    // Grouped reductions have the same singleton demand contract as totals.
-    // An unused global list must not be broadcast onto every un-nested row.
-    // Fold retains its existing positional globals packing contract.
+    // A grouped reduction that does not read globals must retain the row
+    // stream's partitioning. Joining an unused singleton first can collapse
+    // the stream and copy nested metadata before projection pruning.
+    // Fold packing retains its positional globals contract.
     let mut needs_globals = false;
-    for (_, expression) in keys.iter().chain(fields) {
+    for (_, expression) in keys.iter().chain(fields.iter()) {
         expression.visit_unique(&mut |node| {
             needs_globals |= matches!(node, Expr::Global { .. } | Expr::AggregateFold { .. });
         });
     }
-    let empty_globals = Schema::empty();
-    let input_globals = if needs_globals { table.globals().schema().as_ref() } else { &empty_globals };
     let child = if needs_globals {
         crate::logical_globals::bind_globals(child, table, context)?
-    } else { child };
+    } else {
+        child
+    };
+    let empty_input_globals = Schema::empty();
+    let input_globals = if needs_globals {
+        table.globals().schema().as_ref()
+    } else {
+        &empty_input_globals
+    };
     let (child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
     let mut used: HashSet<String> = child
         .schema()
@@ -1237,7 +1244,7 @@ pub(crate) fn lower_grouped_fields(
         let (right, defaults, presence) = scope_plan(
             projected.clone(),
             table,
-        input_globals,
+            input_globals,
             &group,
             &key_names,
             &group_names,
@@ -1305,7 +1312,7 @@ pub(crate) fn lower_grouped_fields(
         crate::logical_globals::bind_external(result, bindings, context)?;
     let empty_globals = Schema::empty();
     let output_globals = if needs_table_globals {
-        input_globals
+        table.globals().schema()
     } else {
         &empty_globals
     };
