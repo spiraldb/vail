@@ -1426,7 +1426,9 @@ def _numeric_result_type(left, right, operator):
         return tfloat64
     _require_numeric(left, "arithmetic")
     _require_numeric(right, "arithmetic")
-    result = unify_types(left, right)
+    # Arithmetic follows Hail numeric coercion, while schema unions retain
+    # their existing lossless int64/float32 -> float64 policy.
+    result = tfloat32 if {left, right} == {tint64, tfloat32} else unify_types(left, right)
     if result is None:
         raise TypeError(f"incompatible arithmetic types: {left} and {right}")
     if operator == "div":
@@ -1449,7 +1451,7 @@ def _array_arithmetic(left, right, operator):
     if left_array and right_array:
         # Zip requires equal element types. Cast whole arrays with Arrow kernels
         # before building the element callback; preserve parent/child missingness.
-        operand_type = unify_types(left_type, right_type)
+        operand_type = _numeric_result_type(left_type, right_type, "add")
         left = cast(left, tarray(operand_type))
         right = cast(right, tarray(operand_type))
         from .collection_functions import zip
@@ -1494,8 +1496,8 @@ def _comparison_type(left, right):
         return left
     numeric = (tbool, tint32, tint64, tfloat32, tfloat64)
     if left in numeric and right in numeric:
-        return unify_types(tint32 if left == tbool else left,
-                           tint32 if right == tbool else right)
+        return _numeric_result_type(tint32 if left == tbool else left,
+                                    tint32 if right == tbool else right, "add")
     if isinstance(left, tarray) and isinstance(right, tarray):
         element = _comparison_type(left.element_type, right.element_type)
         return None if element is None else tarray(element)

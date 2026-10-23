@@ -13,7 +13,11 @@ import vail as hl
 def test_array_arithmetic_promotes_before_zip(op, left_type, right_type):
     left = hl.literal([8, None, 12], hl.tarray(left_type))
     right = hl.literal([2, 3, None], hl.tarray(right_type))
-    assert hl.eval(op(left, right)) == [op(8, 2), None, None]
+    result = op(left, right)
+    common = hl.tint64 if left_type == hl.tint32 else hl.tfloat32 if right_type == hl.tfloat32 else hl.tfloat64
+    expected_type = hl.tfloat64 if op is operator.pow or op is operator.truediv and common == hl.tint64 else common
+    assert result.dtype == hl.tarray(expected_type)
+    assert hl.eval(result) == [op(8, 2), None, None]
     assert hl.eval(op(hl.missing(left.dtype), right)) is None
     assert hl.eval(op(hl.literal([], left.dtype), hl.literal([], right.dtype))) == []
 
