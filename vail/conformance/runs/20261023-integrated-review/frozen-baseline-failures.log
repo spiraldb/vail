@@ -1,0 +1,65 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_corr_long_arrays_use_shared_constant_size_reducer_state _________
+
+    def test_corr_long_arrays_use_shared_constant_size_reducer_state():
+        # The old expression embedded whole-array means in per-element callbacks,
+        # exceeding a gigabyte at only 4000 elements.
+        assert hl.eval(hl.corr(hl.range(20000), hl.range(20000))) == pytest.approx(1.0)
+>       assert hl.eval(hl.corr([1e12, 1e12 + 1, 1e12 + 2], [3, 2, 1])) == pytest.approx(-1.0)
+E       assert nan == -1.0 ± 1.0e-06
+E         
+E         comparison failed
+E         Obtained: nan
+E         Expected: -1.0 ± 1.0e-06
+
+python/tests/test_collection_functions.py:83: AssertionError
+__________ test_empty_struct_group_key_preserves_rows_and_missingness __________
+
+    def test_empty_struct_group_key_preserves_rows_and_missingness():
+        table = hl.range_table(3).annotate(k=hl.struct())
+        rows = table.group_by('k').aggregate(n=hl.agg.count()).collect()
+        assert len(rows) == 1
+        assert rows[0].k == hl.Struct()
+        assert rows[0].n == 3
+    
+        table = table.annotate(k=hl.or_missing(table.idx != 0, table.k))
+        rows = table.group_by('k').aggregate(n=hl.agg.count()).collect()
+        assert [(row.k, row.n) for row in rows] == [(hl.Struct(), 2), (None, 1)]
+    
+        # Scoped aggregates use the physical aggregate path and collect nested
+        # values into a Dict whose key itself is the zero-field struct.
+>       counts = table.aggregate(hl.agg.group_by(table.k, hl.agg.count()))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_native_type_policy.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../legacy-layout/vail/vail/python/vail/__init__.py:1291: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10c882260>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: This feature is not implemented: Unsupported CAST from List(Struct("key": Struct(), "value": Int64)) to List(Struct("key": Struct(), "value": Int64), field: '__vail_dict_entry', metadata: {"vail.type": "{\"dict\":[{\"struct\":[]},\"int64\"]}", "vail.type.version": "1"})
+
+../../../legacy-layout/vail/vail/python/vail/__init__.py:2043: FatalError
+=========================== short test summary info ============================
+FAILED python/tests/test_collection_functions.py::test_corr_long_arrays_use_shared_constant_size_reducer_state
+FAILED python/tests/test_native_type_policy.py::test_empty_struct_group_key_preserves_rows_and_missingness
+2 failed in 1.07s

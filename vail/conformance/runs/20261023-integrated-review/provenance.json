@@ -1,0 +1,8 @@
+{
+  "python_version": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "python": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/python/vail/__init__.py",
+  "native": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "701de02b98f15551ebead39f68d9a81f0ef67ee14915dd44e65a6f719787d11a",
+  "source_head": "33259e53cbb4b4be368d046ef12b4f6fcf4b6f05",
+  "build": "normal maturin develop --release --locked; kache; CARGO_BUILD_JOBS=2; target-cpu=native"
+}

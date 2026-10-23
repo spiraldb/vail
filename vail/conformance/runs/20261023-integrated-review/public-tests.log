@@ -1,0 +1,717 @@
+........................................................................ [ 22%]
+.........................................F....F........................F [ 44%]
+...F...F..F.....FFFF.....F.F.....FFFFF......F........................... [ 67%]
+........................................................................ [ 89%]
+.................................                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_annotations_actions_globals_and_native_plan _______________
+
+    def test_annotations_actions_globals_and_native_plan():
+        m = matrix()
+        assert m.aggregate_entries(hl.agg.sum(m.x)) == 198
+        assert hl.eval(m.offset) == 5
+        assert hl.eval(m.index_globals()).offset == 5
+        assert m.row_idx.collect() == [0, 1, 2]
+        assert m.col_idx.collect() == [0, 1, 2, 3]
+>       assert m.x.take(3) == [5, 6, 7]
+               ^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:215: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/expressions.py:1043: in take
+    return eval(result) if _localize else result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10f093680>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_4500822b7f81714e returned a different number of rows than expected. Expected: 2, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:2043: FatalError
+________ test_entries_orders_duplicate_multikey_runs_across_partitions _________
+
+    def test_entries_orders_duplicate_multikey_runs_across_partitions():
+        mt = hl.range_matrix_table(2, 3, 1)
+        mt = mt.key_rows_by(row_group=mt.row_idx // 2, row_idx=mt.row_idx)
+        mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
+        mt = mt.key_cols_by(col_group=mt.col_idx % 2, col_idx=mt.col_idx)
+        mt = mt.annotate_entries(value=hl.int32(mt.replica * 100 + mt.col_idx))
+        mt = mt.filter_entries(mt.col_idx != 1).repartition(3)
+    
+>       entries = mt.entries().collect()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10f188c50>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1176: FatalError
+______________ test_table_and_matrix_lookups_and_semi_anti_joins _______________
+
+    def test_table_and_matrix_lookups_and_semi_anti_joins():
+        m = matrix(3, 2)
+        t = hl.Table.parallelize([{"row_idx": 1, "value": 99}], key="row_idx")
+        a = m.annotate_rows(value=t[m.row_idx].value)
+        assert a.value.collect() == [None, 99, None]
+>       assert m.semi_join_rows(t).row_idx.collect() == [1]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:835: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/expressions.py:1034: in collect
+    return eval(result) if _localize else result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10f0a1bd0>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:2043: FatalError
+___________ test_union_rows_columns_distinct_and_outer_missing_cells ___________
+
+    def test_union_rows_columns_distinct_and_outer_missing_cells():
+        m = matrix(2, 2)
+        rows = m.union_rows(m)
+        assert rows.count() == (4, 2)
+        assert rows.x.collect() == [5, 6, 5, 6, 15, 16, 15, 16]
+        assert rows.distinct_by_row()._same(m)
+        cols = m.union_cols(m)
+>       assert cols.count() == (2, 4)
+               ^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:906: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1785: in count
+    return self.count_rows(), self.count_cols()
+           ^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1764: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10f1bd5b0>
+
+    def count(self):
+>       return self._native.count()
+               ^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1367: FatalError
+______________ test_make_table_filter_stats_and_explicit_blockers ______________
+
+    def test_make_table_filter_stats_and_explicit_blockers():
+        m = matrix(2, 2)
+        m = m.key_cols_by(s=hl.str(m.col_idx))
+        t = m.make_table()
+        assert [r["0.x"] for r in t.collect()] == [5, 15]
+        assert [r["1.x"] for r in t.collect()] == [6, 16]
+        assert hl.eval(t.offset) == 5
+        f = m.filter_entries(m.col_idx == 0).compute_entry_filter_stats()
+        assert [r.entry_stats_row.n_filtered for r in f.rows().collect()] == [1, 1]
+        assert [r.entry_stats_col.n_remaining for r in f.cols().collect()] == [2, 0]
+>       with pytest.raises(NotImplementedError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE NotImplementedError
+
+python/tests/test_matrix_table.py:965: Failed
+___________ test_genomic_aggregate_literal_and_per_row_initializers ____________
+
+    def test_genomic_aggregate_literal_and_per_row_initializers():
+        m = (
+            hl.range_matrix_table(2, 3)
+            .annotate_rows(alleles=["A", "C"])
+            .annotate_entries(GT=hl.call(0, 1))
+        )
+>       m = m.annotate_rows(cs=hl.agg.call_stats(m.GT, 2))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:1010: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/agg_genomics.py:18: in call_stats
+    packed = as_expr({"__vail_genomic_call": call, "__vail_genomic_alleles": alleles})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10f024ba0>, <vail.expressions.Expression object at 0x10f024cf0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+python/vail/types.py:688: TypeError
+___ test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[1] ____
+
+partitions = 1
+
+    @pytest.mark.parametrize("partitions", [1, 2, 5])
+    def test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates(partitions):
+        t = hl.Table.parallelize(
+            [
+                {"r": 1, "c": "b", "x": 2},
+                {"r": 1, "c": "a", "x": 1},
+                {"r": 2, "c": "b", "x": 4},
+                {"r": 1, "c": "a", "x": 9},
+                {"r": None, "c": "b", "x": 5},
+            ],
+            schema=hl.tstruct(r=hl.tint32, c=hl.tstr, x=hl.tint32),
+            n_partitions=partitions,
+        )
+        m = t.to_matrix_table(["r"], ["c"], n_partitions=2)
+>       assert m.count() == (3, 2)
+               ^^^^^^^^^
+
+python/tests/test_matrix_table.py:1087: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1785: in count
+    return self.count_rows(), self.count_cols()
+           ^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1764: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10a546180>
+
+    def count(self):
+>       return self._native.count()
+               ^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1367: FatalError
+___ test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[2] ____
+
+partitions = 2
+
+    @pytest.mark.parametrize("partitions", [1, 2, 5])
+    def test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates(partitions):
+        t = hl.Table.parallelize(
+            [
+                {"r": 1, "c": "b", "x": 2},
+                {"r": 1, "c": "a", "x": 1},
+                {"r": 2, "c": "b", "x": 4},
+                {"r": 1, "c": "a", "x": 9},
+                {"r": None, "c": "b", "x": 5},
+            ],
+            schema=hl.tstruct(r=hl.tint32, c=hl.tstr, x=hl.tint32),
+            n_partitions=partitions,
+        )
+        m = t.to_matrix_table(["r"], ["c"], n_partitions=2)
+>       assert m.count() == (3, 2)
+               ^^^^^^^^^
+
+python/tests/test_matrix_table.py:1087: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1785: in count
+    return self.count_rows(), self.count_cols()
+           ^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1764: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10a55fef0>
+
+    def count(self):
+>       return self._native.count()
+               ^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1367: FatalError
+___ test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[5] ____
+
+partitions = 5
+
+    @pytest.mark.parametrize("partitions", [1, 2, 5])
+    def test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates(partitions):
+        t = hl.Table.parallelize(
+            [
+                {"r": 1, "c": "b", "x": 2},
+                {"r": 1, "c": "a", "x": 1},
+                {"r": 2, "c": "b", "x": 4},
+                {"r": 1, "c": "a", "x": 9},
+                {"r": None, "c": "b", "x": 5},
+            ],
+            schema=hl.tstruct(r=hl.tint32, c=hl.tstr, x=hl.tint32),
+            n_partitions=partitions,
+        )
+        m = t.to_matrix_table(["r"], ["c"], n_partitions=2)
+>       assert m.count() == (3, 2)
+               ^^^^^^^^^
+
+python/tests/test_matrix_table.py:1087: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1785: in count
+    return self.count_rows(), self.count_cols()
+           ^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1764: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10a55c0b0>
+
+    def count(self):
+>       return self._native.count()
+               ^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1367: FatalError
+__________ test_struct_row_major_and_unlocalize_dimension_validation ___________
+
+    def test_struct_row_major_and_unlocalize_dimension_validation():
+        t = hl.range_table(3, 2)
+        t = t.annotate(foo=t.idx, bar=hl.struct(v=t.idx * 2), baz=hl.struct(v=t.idx * 3))
+        m = t.to_matrix_table_row_major(["bar", "baz"])
+        assert m.count() == (3, 2)
+        assert m.v.collect() == [0, 0, 2, 3, 4, 6]
+        with pytest.raises(ValueError):
+            t.to_matrix_table_row_major(["foo", "bar"])
+        with pytest.raises(ValueError):
+            t.to_matrix_table_row_major(["bar"], entry_field_name="v")
+        bad = hl.Table.parallelize([{"r": 0, "cells": [{"x": 1}]}], key="r")
+        bad = bad.annotate_globals(cols=[{"s": "a"}, {"s": "b"}])
+>       mt = bad._unlocalize_entries("cells", "cols", ["s"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:1106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:284: in _unlocalize_entries
+    return unlocalize_entries(self, entries_field_name, cols_field_name, col_key, _aligned=_aligned)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+table = <vail.Table object at 0x10a55f260>, entries_field_name = 'cells'
+cols_field_name = 'cols', col_key = ['s'], _aligned = False
+
+    def unlocalize_entries(table, entries_field_name, cols_field_name, col_key, *, _aligned=False):
+        """Inverse of localization, retaining missing structs as filtered cells."""
+        from . import len as length, range as array_range, case
+    
+        if (
+            entries_field_name not in table._schema
+            or cols_field_name not in table._global_schema
+        ):
+            raise ValueError("localized table lacks entry or column arrays")
+        et, ct = table._schema[entries_field_name], table._global_schema[cols_field_name]
+        if (
+            not isinstance(et, tarray)
+            or not isinstance(et.element_type, tstruct)
+            or not isinstance(ct, tarray)
+            or not isinstance(ct.element_type, tstruct)
+        ):
+>           raise TypeError("localized entries and columns must be arrays of structs")
+E           TypeError: localized entries and columns must be arrays of structs
+
+python/vail/matrixtable.py:2988: TypeError
+_________ test_row_aligned_views_and_transformations_do_not_index_rows _________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10a547770>
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-446/test_row_aligned_views_and_tra0')
+
+    def test_row_aligned_views_and_transformations_do_not_index_rows(monkeypatch, tmp_path):
+        import vail.matrixtable as module
+    
+        def unexpected_index(*args, **kwargs):
+            raise AssertionError("row-aligned operation requested coordinate identities")
+    
+        monkeypatch.setattr(module, "_index_relation", unexpected_index, raising=False)
+        m = matrix(3, 3)
+        m = m.key_rows_by(k=0)
+        m = m.filter_rows(m.row_idx != 1)
+        m = m.choose_cols([2, 0, 2])
+        m = m.filter_entries(m.col_idx != 0)
+>       assert set(m._mir.core._schema) == {module._ROW, module._CELLS}
+E       AssertionError: assert {'__vail_matr...rix_row', 'k'} == {'__vail_matr...l_matrix_row'}
+E         
+E         Extra items in the left set:
+E         'k'
+E         Use -v to get more diff
+
+python/tests/test_matrix_table.py:1141: AssertionError
+_____________ test_empty_entry_schema_grouping_uses_no_row_labels ______________
+
+    def test_empty_entry_schema_grouping_uses_no_row_labels():
+        import vail.matrixtable as module
+    
+        m = hl.range_matrix_table(3, 2, 2)
+        annotated = m.annotate_rows(n=hl.agg.count())
+        assert annotated.n.collect() == [2, 2, 2]
+        grouped = m.group_rows_by(g=m.row_idx % 2).aggregate(n=hl.agg.count())
+        assert grouped.n.collect() == [2, 2, 1, 1]
+>       assert set(grouped._mir.core._schema) == {module._ROW, module._CELLS}
+E       AssertionError: assert {'__vail_matr...rix_row', 'g'} == {'__vail_matr...l_matrix_row'}
+E         
+E         Extra items in the left set:
+E         'g'
+E         Use -v to get more diff
+
+python/tests/test_matrix_table.py:1194: AssertionError
+___________ test_entry_aggregations_skip_unreferenced_column_context ___________
+
+    def test_entry_aggregations_skip_unreferenced_column_context():
+    
+        m = hl.range_matrix_table(3, 4, 2)
+        m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+        m = m.filter_entries(m.col_idx % 2 == 0)
+>       result = m.aggregate_entries(hl.struct(stats=hl.agg.stats(m.x), n=hl.agg.count()))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:1264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1732: in aggregate_entries
+    return self._aggregate("entry", expr, _localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1723: in _aggregate
+    return table.aggregate(self._lower(expr, table), _localize=localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/__init__.py:1291: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10f0f1fc0>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_0c11dfdd8dd59afd returned a different number of rows than expected. Expected: 2, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:2043: FatalError
+_____________ test_entry_context_drops_cell_array_before_exploding _____________
+
+    def test_entry_context_drops_cell_array_before_exploding():
+    
+        m = matrix(2, 3)
+>       assert m.aggregate_entries(hl.agg.stats(m.x)).sum == 66
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'dict' object has no attribute 'sum'
+
+python/tests/test_matrix_table.py:1273: AttributeError
+___ test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback ____
+
+    def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():
+        import vail.matrixtable as module
+    
+        m = hl.range_matrix_table(3, 4, 2)
+        m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+        rows = m.annotate_rows(total=hl.agg.sum(m.x), n=hl.agg.count())
+        assert rows.total.collect() == [6, 46, 86]
+        assert rows.n.collect() == [4, 4, 4]
+        filtered = m.filter_entries(m.col_idx % 2 == 0)
+        assert filtered.annotate_rows(total=hl.agg.sum(filtered.x)).total.collect() == [
+            2,
+            22,
+            42,
+        ]
+        grouped_rows = filtered.group_rows_by(g=filtered.row_idx % 2).aggregate(
+            total=hl.agg.sum(filtered.x)
+        )
+        assert grouped_rows.total.collect() == [20, 0, 24, 0, 10, 0, 12, 0]
+        grouped_cols = filtered.group_cols_by(g=filtered.col_idx % 2).aggregate(
+            total=hl.agg.sum(filtered.x)
+        )
+>       assert grouped_cols.total.collect() == [2, 0, 22, 0, 42, 0]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:1299: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/expressions.py:1034: in collect
+    return eval(result) if _localize else result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10f0f2960>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_0c11dfdd8dd59afd returned a different number of rows than expected. Expected: 2, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:2043: FatalError
+_______ test_direct_list_reducers_nested_aggregators_and_missing_values ________
+
+    def test_direct_list_reducers_nested_aggregators_and_missing_values():
+        m = matrix(2, 3)
+        m = m.annotate_entries(x=hl.if_else(m.col_idx == 1, hl.missing(hl.tint32), m.x))
+        rows = m.annotate_rows(
+            values=hl.agg.collect(m.x),
+            count=hl.agg.count(),
+            defined=hl.agg.count_where(hl.is_defined(m.x)),
+            stats=hl.agg.stats(m.x),
+            first=hl.agg.take(m.x, 1),
+            grouped=hl.agg.group_by(m.col_idx % 2, hl.agg.sum(m.x)),
+        )
+        result = rows.rows().collect()
+        assert result[0]["values"] == [5, None, 7]
+        assert result[0].count == 3
+        assert result[0].defined == 2
+>       assert result[0].stats.mean == 6
+               ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'dict' object has no attribute 'mean'
+
+python/tests/test_matrix_table.py:1330: AttributeError
+______________ test_group_by_reductions_use_fused_per_list_groups ______________
+
+    def test_group_by_reductions_use_fused_per_list_groups():
+        import math
+    
+        m = hl.range_matrix_table(2, 3, 2)
+        m = m.annotate_entries(
+            x=hl.if_else(m.col_idx == 1, hl.missing(hl.tint32), m.row_idx * 10 + m.col_idx)
+        )
+        annotated_rows = m.annotate_rows(
+            means=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x)),
+            shifted=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x) + 2),
+            counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
+            positive=hl.agg.group_by(m.col_idx % 2, hl.agg.count_where(m.x > 0)),
+            filtered=hl.agg.group_by(m.col_idx % 2, hl.agg.filter(m.x > 0, hl.agg.count())),
+            fully_filtered=hl.agg.group_by(
+                m.col_idx % 2,
+                hl.agg.filter(m.col_idx < 0, hl.agg.sum(m.x)),
+            ),
+            empty_count=hl.agg.group_by(
+                m.col_idx % 2,
+                hl.agg.filter(False, hl.agg.count()),
+            ),
+            summary=hl.agg.group_by(
+                m.col_idx % 2,
+                hl.struct(
+                    total=hl.agg.sum(m.x),
+                    count=hl.agg.count(),
+                    selected=hl.agg.filter(m.x > 0, hl.agg.sum(m.x)),
+                    selected_count=hl.agg.filter(m.x > 0, hl.agg.count()),
+                ),
+            ),
+        )
+        rows = annotated_rows.rows().collect()
+        assert rows[0].means[0] == 1.0 and math.isnan(rows[0].means[1])
+        assert rows[0].shifted[0] == 3.0 and math.isnan(rows[0].shifted[1])
+        assert rows[0].counts == {0: 2, 1: 1}
+        assert rows[0].positive == {0: 1, 1: 0}
+        assert rows[0].filtered == {0: 1, 1: 0}
+        assert rows[0].fully_filtered == {0: 0, 1: 0}
+        assert rows[0].empty_count == {0: 0, 1: 0}
+        assert rows[0].summary[0].total == 2 and rows[0].summary[0].count == 2
+        assert rows[0].summary[0].selected == 2
+        assert rows[0].summary[0].selected_count == 1
+        assert rows[0].summary[1].total == 0 and rows[0].summary[1].count == 1
+        assert rows[0].summary[1].selected == 0
+        assert rows[0].summary[1].selected_count == 0
+        assert rows[1].means[0] == 11.0 and math.isnan(rows[1].means[1])
+        assert rows[1].shifted[0] == 13.0 and math.isnan(rows[1].shifted[1])
+        assert rows[1].counts == {0: 2, 1: 1}
+        assert rows[1].positive == {0: 2, 1: 0}
+        assert rows[1].filtered == {0: 2, 1: 0}
+        assert rows[1].fully_filtered == {0: 0, 1: 0}
+        assert rows[1].empty_count == {0: 0, 1: 0}
+        assert rows[1].summary[0].total == 22 and rows[1].summary[0].count == 2
+        assert rows[1].summary[0].selected == 22
+        assert rows[1].summary[0].selected_count == 2
+        assert rows[1].summary[1].total == 0 and rows[1].summary[1].count == 1
+        assert rows[1].summary[1].selected == 0
+        assert rows[1].summary[1].selected_count == 0
+    
+>       cols = m.annotate_cols(
+            sums=hl.agg.group_by(m.row_idx % 2, hl.agg.sum(m.x)),
+            counts=hl.agg.group_by(m.row_idx % 2, hl.agg.count()),
+        ).cols().collect()
+
+python/tests/test_matrix_table.py:1395: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1371: in annotate_cols
+    return self._annotate("col", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1305: in _annotate
+    return self._project_axis(
+python/vail/matrixtable.py:1248: in _project_axis
+    self._axis_aggregates(v, axis, base)
+python/vail/matrixtable.py:1141: in _axis_aggregates
+    return Expression(expr.dtype, self, _IR(rewrite(expr.to_ir()), refs, lookups))
+                                            ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+node = NativeExpr(op=agg_group_by)
+
+    def rewrite(node):
+        if isinstance(node, list):
+            return [rewrite(v) for v in node]
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
+            return node
+        if node.get("op") in _AGG_OPS and _has_aggregate(node):
+            raw = _expression(expr.dtype, self, node, expr)
+            lowered = self._lower(raw, context)
+            from .expressions import _global_bindings
+            from .lookups import resolve
+    
+            native, resolved = resolve(context._native, [lowered])
+>           native = native.grouped_aggregate(
+                _native_projection([[_CID, {"op": "column", "name": _CID}]]),
+                _native_projection([["value", resolved[0].to_ir()]]),
+                _global_bindings(resolved),
+            )
+E           ValueError: invalid expression: source column "__vail_matrix_row" is absent or ambiguous
+
+python/vail/matrixtable.py:1123: ValueError
+______ test_row_aggregations_keep_sparse_column_alignment_and_call_fields ______
+
+    def test_row_aggregations_keep_sparse_column_alignment_and_call_fields():
+        m = hl.range_matrix_table(2, 4).annotate_globals(offset=10)
+        m = m.annotate_rows(alleles=['A', 'C'])
+        m = m.annotate_entries(
+            GT=hl.if_else(m.col_idx == 2, hl.missing(hl.tcall), hl.call(0, 1)),
+            value=m.row_idx + m.col_idx,
+            unused=hl.range(50),
+        ).choose_cols([3, 1, 1, 2])
+        m = m.filter_entries(m.col_idx != 3)
+        result = m.annotate_rows(
+>           cs=hl.agg.call_stats(m.GT, m.alleles),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            values=hl.agg.collect(m.value),
+            count=hl.agg.count(),
+            weighted=hl.agg.sum(m.value + m.col_idx + m.offset),
+            selected=hl.agg.filter(m.col_idx == 1, hl.agg.collect(m.value)),
+        ).rows().collect()
+
+python/tests/test_matrix_table.py:1559: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/agg_genomics.py:18: in call_stats
+    packed = as_expr({"__vail_genomic_call": call, "__vail_genomic_alleles": alleles})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10f0e84a0>, <vail.expressions.Expression object at 0x10f0e9cb0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+python/vail/types.py:688: TypeError
+=========================== short test summary info ============================
+FAILED python/tests/test_matrix_table.py::test_annotations_actions_globals_and_native_plan
+FAILED python/tests/test_matrix_table.py::test_entries_orders_duplicate_multikey_runs_across_partitions
+FAILED python/tests/test_matrix_table.py::test_table_and_matrix_lookups_and_semi_anti_joins
+FAILED python/tests/test_matrix_table.py::test_union_rows_columns_distinct_and_outer_missing_cells
+FAILED python/tests/test_matrix_table.py::test_make_table_filter_stats_and_explicit_blockers
+FAILED python/tests/test_matrix_table.py::test_genomic_aggregate_literal_and_per_row_initializers
+FAILED python/tests/test_matrix_table.py::test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[1]
+FAILED python/tests/test_matrix_table.py::test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[2]
+FAILED python/tests/test_matrix_table.py::test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates[5]
+FAILED python/tests/test_matrix_table.py::test_struct_row_major_and_unlocalize_dimension_validation
+FAILED python/tests/test_matrix_table.py::test_row_aligned_views_and_transformations_do_not_index_rows
+FAILED python/tests/test_matrix_table.py::test_empty_entry_schema_grouping_uses_no_row_labels
+FAILED python/tests/test_matrix_table.py::test_entry_aggregations_skip_unreferenced_column_context
+FAILED python/tests/test_matrix_table.py::test_entry_context_drops_cell_array_before_exploding
+FAILED python/tests/test_matrix_table.py::test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback
+FAILED python/tests/test_matrix_table.py::test_direct_list_reducers_nested_aggregators_and_missing_values
+FAILED python/tests/test_matrix_table.py::test_group_by_reductions_use_fused_per_list_groups
+FAILED python/tests/test_matrix_table.py::test_row_aggregations_keep_sparse_column_alignment_and_call_fields
+18 failed, 303 passed in 22.81s
