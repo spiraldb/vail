@@ -28,7 +28,7 @@ use datafusion_physical_plan::{
 };
 use futures::TryStreamExt;
 use std::{fmt, sync::Arc};
-use vail_execution::expressions::Expr;
+use vail_execution::expressions::{Expr, Type};
 
 fn path(expr: &Arc<dyn PhysicalExpr>) -> Option<(usize, Vec<String>)> {
     let expr = crate::projection_broadcast::count_inner(expr);
@@ -58,6 +58,85 @@ fn path(expr: &Arc<dyn PhysicalExpr>) -> Option<(usize, Vec<String>)> {
 fn field_only(expr: &Arc<dyn PhysicalExpr>) -> bool {
     let expr = crate::projection_broadcast::count_inner(expr);
     expr.is::<Literal>() || path(&expr).is_some()
+}
+
+/// Recognize terminal matrix expansion before ordered key-run preparation
+/// combines source partitions. Preserve the complete child row projection and
+/// bind the original column globals into the same action graph.
+pub(crate) async fn matrix_plan(table: &crate::TableRef) -> crate::Result<Option<PhysicalPlan>> {
+    fn field_only(expr: &Expr) -> bool {
+        match expr {
+            Expr::Column { .. } | Expr::Literal { .. } => true,
+            Expr::GetField { value, .. } => field_only(value),
+            _ => false,
+        }
+    }
+    let mut leaf = table;
+    loop {
+        match leaf.node() {
+            crate::TableNode::MapGlobals { child }
+            | crate::TableNode::KeyBy { child, .. }
+            | crate::TableNode::OrderBy { child, .. } => leaf = child,
+            crate::TableNode::MapRows { child, fields, .. }
+                if fields.iter().all(|(_, value)| field_only(value)) =>
+            {
+                leaf = child
+            }
+            _ => break,
+        }
+    }
+    let crate::TableNode::MatrixEntriesByKeyRuns {
+        child,
+        cells_field,
+        columns_global,
+        value_field,
+        ..
+    } = leaf.node()
+    else {
+        return Ok(None);
+    };
+    let mut fields = child
+        .schema()
+        .fields()
+        .iter()
+        .map(|field| {
+            (
+                field.name().clone(),
+                Expr::Column {
+                    name: field.name().clone(),
+                },
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut width = "__vail_count_entry_width".to_owned();
+    while child.schema().index_of(&width).is_ok()
+        || child.globals().schema().index_of(&width).is_ok()
+    {
+        width.push('_');
+    }
+    let width_index = fields.len();
+    let reference = "__vail_count_columns".to_owned();
+    fields.push((
+        width,
+        Expr::ArrayLength {
+            value: Arc::new(Expr::GetField {
+                value: Arc::new(Expr::ExternalGlobal {
+                    reference: reference.clone(),
+                    dtype: Type::from_arrow(&arrow_schema::DataType::Struct(
+                        leaf.globals().schema().fields().clone(),
+                    ))?,
+                }),
+                name: columns_global.clone(),
+            }),
+        },
+    ));
+    let input = child.map_rows_bound(fields, [(reference, leaf.globals().clone())].into())?;
+    let physical = crate::logical::physical(&input).await?;
+    let column = input.schema().index_of(cells_field)?;
+    Ok(Some(Arc::new(
+        CountListExec::new(physical, column, vec![value_field.clone()])
+            .with_width_column(width_index),
+    )))
 }
 
 pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
@@ -391,6 +470,7 @@ struct CountListExec {
     column: usize,
     fields: Vec<String>,
     program: Option<ZipProgram>,
+    width_column: Option<usize>,
     cache: Arc<PlanProperties>,
 }
 impl CountListExec {
@@ -407,11 +487,16 @@ impl CountListExec {
             column,
             fields,
             program: None,
+            width_column: None,
             cache,
         }
     }
 }
 impl CountListExec {
+    fn with_width_column(mut self, column: usize) -> Self {
+        self.width_column = Some(column);
+        self
+    }
     fn with_program(mut self, program: ZipProgram) -> Self {
         self.program = Some(program);
         self
@@ -444,6 +529,7 @@ impl ExecutionPlan for CountListExec {
         }
         let mut replacement = Self::new(children[0].clone(), self.column, self.fields.clone());
         replacement.program = self.program.clone();
+        replacement.width_column = self.width_column;
         Ok(Arc::new(replacement))
     }
     fn apply_expressions(
@@ -474,10 +560,13 @@ impl ExecutionPlan for CountListExec {
         let column = self.column;
         let fields = self.fields.clone();
         let program = self.program.clone();
+        let width_column = self.width_column;
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema,
             stream.and_then(move |batch| {
-                let count = if let Some(program) = &program {
+                let count = if let Some(width_column) = width_column {
+                    count_matrix_list(&batch, column, width_column, &fields)
+                } else if let Some(program) = &program {
                     program.count(&batch, &fields)
                 } else {
                     count_list(batch.column(column), &fields)
@@ -493,6 +582,52 @@ impl ExecutionPlan for CountListExec {
             }),
         )))
     }
+}
+fn count_matrix_list(
+    batch: &RecordBatch,
+    column: usize,
+    width_column: usize,
+    fields: &[String],
+) -> Result<usize> {
+    if batch.num_rows() == 0 {
+        return Ok(0);
+    }
+    let widths = batch
+        .column(width_column)
+        .as_any()
+        .downcast_ref::<arrow_array::Int32Array>()
+        .ok_or_else(|| DataFusionError::Internal("matrix count width must be int32".into()))?;
+    let width = if widths.is_valid(0) {
+        widths.value(0) as i64
+    } else {
+        0
+    };
+    if width == 0 {
+        return Ok(0);
+    }
+    let cells = batch.column(column);
+    let offsets: Vec<i64> = if let Some(list) = cells.as_any().downcast_ref::<ListArray>() {
+        list.offsets().iter().map(|value| *value as i64).collect()
+    } else if let Some(list) = cells.as_any().downcast_ref::<LargeListArray>() {
+        list.offsets().to_vec()
+    } else {
+        return Err(DataFusionError::Internal(
+            "matrix cells must be list".into(),
+        ));
+    };
+    let validity = cells.logical_nulls();
+    for row in 0..batch.num_rows() {
+        if validity.as_ref().is_some_and(|nulls| !nulls.is_valid(row)) {
+            continue;
+        }
+        let actual = offsets[row + 1] - offsets[row];
+        if actual != width {
+            return Err(DataFusionError::Execution(format!(
+                "matrix row has {actual} cells for {width} columns"
+            )));
+        }
+    }
+    count_list(cells, fields)
 }
 fn count_value(value: ColumnarValue, rows: usize, fields: &[String]) -> Result<usize> {
     match value {

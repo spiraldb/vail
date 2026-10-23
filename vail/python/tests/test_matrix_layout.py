@@ -338,3 +338,11 @@ def test_native_entry_count_empty_axes(tmp_path, dimensions):
     path = tmp_path / 'empty.mt'
     matrix.write(path)
     assert hl.read_matrix_table(path).entries()._force_count() == 0
+
+
+def test_forced_entry_count_keeps_column_expression_errors():
+    matrix = hl.range_matrix_table(3, 4, 2)
+    matrix = matrix.key_rows_by(k=matrix.row_idx // 2)
+    matrix = matrix.annotate_cols(bad=hl.int32(hl.str(matrix.col_idx) + 'invalid'))
+    with pytest.raises(hl.utils.FatalError, match='(?i)invalid|parse|cast|digit'):
+        matrix.entries()._force_count()

@@ -1710,6 +1710,10 @@ pub async fn count(table: TableRef) -> Result<usize> {
 /// soon as they have been counted. Unlike ordered row execution, no consumer
 /// waits for an earlier partition before it can drain a later one.
 pub async fn force_count(table: TableRef) -> Result<usize> {
+    if let Some(plan) = crate::count_explode::matrix_plan(&table).await? {
+        let count = plan.output_partitioning().partition_count();
+        return count_parts(partition_views(plan, count), Arc::new(TaskContext::default())).await;
+    }
     let physical = crate::logical::physical(&table).await?;
     let physical = crate::count_explode::optimize(physical.clone())?.unwrap_or(physical);
     let parts = if table.known_n_partitions() == Some(0) {
