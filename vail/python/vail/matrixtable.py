@@ -1223,16 +1223,20 @@ class MatrixTable:
                     **lowered, **{_COLUMNS: self._mir.column_records}
                 )
             )
-        # Preserve the common aggregation scope across named column fields.
-        # Lowering each field separately would create an independent source
-        # scan and decoder for every reducer, even though all see the same cells.
+        # Preserve the common aggregation scope across compatible named fields.
+        # Columns otherwise rescan/decode the source for each field; rows lose
+        # shared reducer DAGs and rebuild the same list contexts separately.
         shared = {}
-        if axis == "col":
+        if axis in ("row", "col"):
             compatible = [(name, value) for name, value in fields
-                          if self._coordinate_column_aggregate_eligible(value)]
+                          if self._coordinate_column_aggregate_eligible(value)
+                          # The plain row fraction route has a distinct empty
+                          # identity (NaN); keep that existing route intact.
+                          and not (axis == "row" and value.to_ir().get("op") == "aggregate"
+                                   and value.to_ir().get("function") == "fraction")]
             if len(compatible) > 1:
-                reduced = self._coordinate_column_aggregate(
-                    struct(**dict(compatible)), base
+                reduced = self._axis_aggregates(
+                    struct(**dict(compatible)), axis, base
                 )
                 shared = {name: reduced[name] for name, _ in compatible}
         prepared = [

@@ -49,3 +49,28 @@ def test_named_projection_can_discard_unused_aggregate_fields():
     m = m.annotate_entries(x=m.row_idx + m.col_idx)
     m = m.annotate_cols(total=hl.agg.sum(m.x), mean=hl.agg.mean(m.x))
     assert [x.total for x in m.cols().select('total').collect()] == [10, 15, 20]
+
+
+def test_shared_row_genomic_reducers_keep_empty_and_defined_probabilities():
+    m = hl.utils.range_matrix_table(4, 3, n_partitions=2)
+    m = m.annotate_entries(GP=hl.if_else(m.col_idx == 1,
+        hl.missing(hl.tarray(hl.tfloat64)),
+        hl.if_else(m.col_idx == 0, hl.array([1., 0., 0.]), hl.array([0., 1., 0.]))))
+    m = m.filter_entries(m.row_idx != 2)
+    summary = hl.agg.info_score(m.GP)
+    m = m.annotate_rows(info=summary, n=summary.n_included,
+                        twice=summary.n_included + summary.n_included)
+    values = m.rows().collect()
+    for row, value in enumerate(values):
+        assert value.info.n_included == value.n == (0 if row == 2 else 2)
+        assert value.twice == 2 * value.n
+        assert value.info.score == (None if row == 2 else 1.)
+
+
+def test_shared_row_reducers_preserve_unselected_result_branch():
+    m = hl.utils.range_matrix_table(3, 4, n_partitions=1)
+    m = m.annotate_entries(x=m.row_idx + m.col_idx)
+    total = hl.agg.sum(m.x)
+    result = hl.if_else(m.row_idx == 0, total, total + total)
+    m = m.annotate_rows(result=result)
+    assert [x.result for x in m.rows().collect()] == [6, 20, 28]
