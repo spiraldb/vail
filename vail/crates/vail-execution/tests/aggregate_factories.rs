@@ -707,3 +707,52 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
     let bounded = bounded.as_any().downcast_ref::<ListArray>().unwrap();
     assert!(bounded.value_length(0) <= 16);
 }
+
+#[test]
+fn coordinate_sum_preserves_published_snapshot_across_batches() {
+    let sum = coordinate_udaf(
+        aggregate_udf("sum", Some(&DataType::Int32)).unwrap(),
+        DataType::Int32,
+        ScalarValue::Int64(Some(0)),
+    )
+    .unwrap();
+    let list = DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true)));
+    let aggregate = AggregateExprBuilder::new(sum, vec![Arc::new(Column::new("value", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new("value", list, true)])))
+        .alias("sum")
+        .build()
+        .unwrap();
+    let batch = |values: Vec<Option<i32>>| -> arrow_array::ArrayRef {
+        Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(DataType::Int32, true)),
+            OffsetBuffer::from_lengths(std::iter::repeat_n(2, values.len() / 2)),
+            Arc::new(Int32Array::from(values)),
+            None,
+        ))
+    };
+    let mut accumulator = aggregate.create_accumulator().unwrap();
+    accumulator
+        .update_batch(&[batch(vec![Some(i32::MAX), None, Some(1), Some(7)])])
+        .unwrap();
+    let snapshot = accumulator.evaluate().unwrap();
+    accumulator
+        .update_batch(&[batch(vec![Some(3), Some(4), Some(-2), None])])
+        .unwrap();
+    let values = |value: &ScalarValue| {
+        let ScalarValue::List(list) = value else {
+            panic!("expected list")
+        };
+        list.values()
+            .as_any()
+            .downcast_ref::<arrow_array::Int64Array>()
+            .unwrap()
+            .values()
+            .to_vec()
+    };
+    assert_eq!(values(&snapshot), vec![2_147_483_648, 7]);
+    assert_eq!(
+        values(&accumulator.evaluate().unwrap()),
+        vec![2_147_483_649, 11]
+    );
+    assert_eq!(values(&snapshot), vec![2_147_483_648, 7]);
+}

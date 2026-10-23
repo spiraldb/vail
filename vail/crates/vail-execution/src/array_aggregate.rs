@@ -430,7 +430,7 @@ pub fn coordinate_udaf(
     ))
 }
 
-/// SUM has no per-coordinate null state: its language identity is zero.
+/// Reusable typed numeric vectors, with a compile-time arithmetic operation.
 #[derive(Debug)]
 struct DenseNumeric {
     values: ArrayRef,
@@ -493,24 +493,32 @@ impl DenseNumeric {
         }
         macro_rules! add {
             ($array:ty, $input_array:ty, $zero:expr, $op:expr) => {{
-                // Move the sole state owner into Arrow's in-place kernel.
+                // Move the state owner into Arrow's writable primitive buffer.
                 let empty = new_empty_array(self.values.data_type());
                 let old = std::mem::replace(&mut self.values, empty);
-                let mut values = if old.is_empty() {
+                let values = if old.is_empty() {
                     <$array>::from(vec![if PRODUCT { 1 as _ } else { $zero }; width])
                 } else {
                     old.as_any().downcast_ref::<$array>().unwrap().clone()
                 };
                 drop(old);
+                // Acquire the writable Arrow state once per batch. Rebuilding
+                // a PrimitiveArray/builder for every short row costs more than
+                // its arithmetic and prevents a tight contiguous inner loop.
+                let mut builder = values.into_builder().unwrap_or_else(|shared| {
+                    <$array>::from(shared.values().to_vec())
+                        .into_builder()
+                        .unwrap()
+                });
+                let output = builder.values_slice_mut();
                 let input = input.as_any().downcast_ref::<$input_array>().unwrap();
-                for offset in (0..input.len()).step_by(width) {
-                    let row = input.slice(offset, width);
-                    values = match arrow_arith::arity::binary_mut(values, &row, $op) {
-                        Ok(result) => result?,
-                        Err(shared) => arrow_arith::arity::binary(&shared, &row, $op)?,
-                    };
+                let op = $op;
+                for row in input.values().chunks_exact(width) {
+                    for (sum, value) in output.iter_mut().zip(row.iter()) {
+                        *sum = op(*sum, *value);
+                    }
                 }
-                self.values = Arc::new(values);
+                self.values = Arc::new(builder.finish());
             }};
         }
         macro_rules! integer_op {
