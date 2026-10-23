@@ -1058,7 +1058,9 @@ class MatrixTable:
             direct = reduce_row_predicate(self, expr, base)
             if direct is not None:
                 return direct
-            return reduce_list(self, expr, base, self._row_aggregate_contexts(expr, base))
+            reduced = reduce_list(self, expr, base, self._row_aggregate_contexts(expr, base))
+            from .shared_expressions import bind_shared_list_results
+            return bind_shared_list_results(reduced, base)
         node = expr.to_ir()
         if (axis == "col" and node.get("op") == "aggregate"
                 and node.get("function") == "sum"
