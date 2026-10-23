@@ -1,0 +1,39 @@
+samples 37618
+88.5 33292 _platform_memmove
+2.08 781 <arrow_data::transform::MutableArrayData>::try_extend
+1.0 378 arrow_data::transform::structure::build_extend::{closure#0}
+0.86 323 __psynch_cvwait
+0.4 150 arrow_data::transform::primitive::build_extend::<i32>::{closure#0}
+0.38 142 arrow_data::transform::primitive::build_extend::<i64>::{closure#0}
+0.33 125 <alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i64, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter
+0.31 118 <arrow_buffer::buffer::mutable::MutableBuffer as core::iter::traits::collect::FromIterator<bool>>::from_iter::<core::iter::adapters::map::Map<arrow_array::iterator::ArrayIter<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>, arrow_select::take::take_impl<arrow_array::types::UInt64Type>::{closure#1}>>
+0.3 113 <datafusion_physical_plan::aggregates::group_values::single_group_by::primitive::GroupValuesPrimitive<arrow_array::types::Int64Type> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern
+0.22 84 arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>
+0.21 78 datafusion_physical_plan::unnest::unnest_list_array
+0.2 77 _PyEval_EvalFrameDefault
+0.2 74 <alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter
+0.15 58 arrow_data::transform::build_extend_null_bits::{closure#2}
+0.13 49 __open
+0.11 42 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+0.11 41 <datafusion_physical_plan::unnest::UnnestStream as futures_core::stream::Stream>::poll_next
+0.1 36 arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>
+0.08 30 <alloc::vec::Vec<u32> as alloc::vec::spec_from_iter::SpecFromIter<u32, core::iter::adapters::flatten::FlatMap<core::ops::range::Range<usize>, core::ops::range::Range<u32>, <datafusion_common::scalar::ScalarValue>::list_to_array_of_size::{closure#0}>>>::from_iter
+0.08 29 mach_o::GenericTrie::find(CString, bool) const
+0.08 29 0x352b4
+0.07 25 _PyObject_Malloc
+inclusive
+97.25 36583 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+97.25 36583 <std::sys::thread::unix::Thread>::new::thread_start
+97.25 36583 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+97.25 36583 _pthread_start
+97.25 36582 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+97.25 36582 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+97.25 36582 <tokio::runtime::blocking::pool::Inner>::run
+97.25 36582 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+97.25 36582 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+97.25 36582 tokio::runtime::scheduler::multi_thread::worker::run
+97.25 36582 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+97.25 36582 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+96.37 36254 <tokio::runtime::scheduler::multi_thread::worker::Context>::run_task
+96.37 36253 <tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll
+96.18 36181 <futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll
