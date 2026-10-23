@@ -45,6 +45,10 @@ pub(crate) fn coordinate_sum_type(udf: &AggregateUDF) -> Option<DataType> {
 pub(crate) fn coordinate_count(udf: &AggregateUDF) -> bool {
     crate::kernel_identity::aggregate_key::<(Kind, DataType)>(udf)
         .is_some_and(|(kind, _)| *kind == Kind::Count)
+        || udf
+            .inner()
+            .downcast_ref::<datafusion_functions_aggregate::count::Count>()
+            .is_some()
 }
 
 pub(crate) fn coordinate_product_type(udf: &AggregateUDF) -> Option<DataType> {
