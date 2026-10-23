@@ -1,6 +1,7 @@
 //! Hail native storage descriptors and streaming decoders. Opening a dataset
 //! reads metadata only; every part is an independently schedulable scan task.
 mod decode;
+mod encoded_int;
 pub mod index;
 mod input;
 pub mod layout;

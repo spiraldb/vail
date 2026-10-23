@@ -104,6 +104,7 @@ enum Column {
     Skipped(DataType, usize, Option<ArrayRef>),
     Bool(BooleanBuilder),
     Int32(Int32Builder),
+    EncodedI32 { bytes: Vec<u8>, count: usize },
     Int64(Int64Builder),
     Float32(Float32Builder),
     Float64(Float64Builder),
@@ -162,7 +163,14 @@ impl Column {
             }
             DataType::List(field) if node.e.kind.starts_with("EArray") => Self::List(
                 field.clone(),
-                Box::new(Self::projected(&node.children[0], field.data_type())),
+                Box::new(if node.children[0].e.required
+                    && matches!(node.children[0].wire, Wire::Varint)
+                    && matches!(node.children[0].append_kind, AppendKind::Int32)
+                {
+                    Self::EncodedI32 { bytes: Vec::with_capacity(8192), count: 0 }
+                } else {
+                    Self::projected(&node.children[0], field.data_type())
+                }),
                 vec![0],
                 NullBufferBuilder::new(8192),
             ),
@@ -246,6 +254,7 @@ impl Column {
             Self::Call(c) => c.valid.len(),
             Self::Bool(b) => b.len(),
             Self::Int32(b) => b.len(),
+            Self::EncodedI32 { count, .. } => *count,
             Self::Int64(b) => b.len(),
             Self::Float32(b) => b.len(),
             Self::Float64(b) => b.len(),
@@ -275,6 +284,7 @@ impl Column {
             }
             Self::Bool(b) => b.append_null(),
             Self::Int32(b) => b.append_null(),
+            Self::EncodedI32 { .. } => return Err("null in required Hail Int32 elements".into()),
             Self::Int64(b) => b.append_null(),
             Self::Float32(b) => b.append_null(),
             Self::Float64(b) => b.append_null(),
@@ -316,6 +326,9 @@ impl Column {
             })
         }
         Ok(match self {
+            Self::EncodedI32 { bytes, count } => super::encoded_int::array(
+                std::mem::take(bytes), std::mem::take(count), field, session,
+            )?,
             Self::Call(c) => super::packed_call::array(c.take_packed(), field, session)?,
             Self::Struct(fs, children, valid) => {
                 let n = valid.len();
@@ -356,6 +369,10 @@ impl Column {
     }
     fn finish(&mut self) -> Result<ArrayRef> {
         Ok(match self {
+            Self::EncodedI32 { bytes, count } => {
+                let bytes = std::mem::take(bytes);
+                super::encoded_int::to_arrow(&bytes, std::mem::take(count))?
+            }
             Self::Call(c) => c.finish()?,
             Self::Skipped(ty, n, cached) => {
                 let length = std::mem::take(n);
@@ -1643,6 +1660,11 @@ impl Node {
         let Column::List(_, child, _, _) = out else {
             unreachable!()
         };
+        if let Column::EncodedI32 { bytes, count } = child.as_mut() {
+            input.capture_varints(n, bytes)?;
+            *count = count.checked_add(n).ok_or("Hail array element count overflow")?;
+            return out.end_list();
+        }
         // Bind primitive builders once per array. AD/PL-style integer
         // arrays avoid recursive Node dispatch and builder selection
         // for every value while retaining element missingness.
@@ -1946,6 +1968,136 @@ impl PartReader {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+#[test]
+fn required_varint_i32_lists_match_arrow_and_keep_vortex_export_lazy() -> Result<()> {
+    use vortex::{VortexSessionDefault, arrow::ArrowSessionExt, array::VortexSessionExecute};
+    fn leb(mut value: u64, out: &mut Vec<u8>) {
+        loop {
+            let byte = (value & 127) as u8;
+            value >>= 7;
+            out.push(byte | if value == 0 { 0 } else { 128 });
+            if value == 0 {
+                break;
+            }
+        }
+    }
+    let ty = Type::Array {
+        array: Box::new(Type::Primitive(P::Int32)),
+    };
+    let encoding = Encoding {
+        kind: "EArray2".into(),
+        required: false,
+        fields: vec![(
+            "element".into(),
+            Encoding {
+                kind: "EVarint".into(),
+                required: true,
+                fields: vec![],
+                rank: 0,
+            },
+        )],
+        rank: 0,
+    };
+    let node = Node::new(&encoding, &ty);
+    let datatype = ty.to_arrow()?;
+    let field = arrow_schema::Field::new("values", datatype.clone(), true);
+    let session = vortex::session::VortexSession::default();
+    let mut encoded = Column::projected(&node, &datatype);
+    let mut generic = Column::new(&datatype);
+    for values in [
+        vec![-1i32, 0, 127, 128, i32::MIN, i32::MAX],
+        vec![],
+        vec![3, 4],
+    ] {
+        let mut bytes = vec![values.len() as u8];
+        for value in values {
+            leb(value as u32 as u64, &mut bytes);
+        }
+        let bytes: Arc<[u8]> = bytes.into();
+        node.append(&mut Input::from_memory(bytes.clone(), false), &mut encoded)?;
+        node.append(&mut Input::from_memory(bytes.clone(), false), &mut generic)?;
+        encoded.null()?;
+        generic.null()?;
+        assert_eq!(encoded.finish()?.as_ref(), generic.finish()?.as_ref());
+        let mut vortex = Column::projected(&node, &datatype);
+        node.append(&mut Input::from_memory(bytes, false), &mut vortex)?;
+        vortex.null()?;
+        let array = vortex.finish_vortex(&field, &session)?;
+        assert_eq!(array.dtype(), &session.arrow().from_arrow_field(&field)?);
+        let mut ctx = session.create_execution_ctx();
+        let arrow = super::super::packed_call::export(array, Some(&field), &mut ctx)?;
+        let list = arrow.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(list.null_count(), 1);
+        assert_eq!(list.values().null_count(), 0);
+        assert!(format!("{:?}", list.values()).contains("materialized: false"));
+        // Physical access materializes the unchanged standard Arrow Int32.
+        assert_eq!(
+            list.values()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .len(),
+            list.value_length(0) as usize
+        );
+    }
+    // Split a continuation across the normal64KiB Input buffer, retaining
+    // exact framing and leaving the following field byte untouched.
+    for truncated in [false, true] {
+        let prefix = 65534;
+        let mut bytes = vec![0; prefix];
+        bytes.extend_from_slice(&[1, 255, 255, 255, 255, 15]);
+        if truncated { bytes.pop(); } else { bytes.push(99); }
+        let bytes: Arc<[u8]> = bytes.into();
+        let mut left = Input::from_memory(bytes.clone(), false);
+        let mut right = Input::from_memory(bytes, false);
+        left.skip(prefix)?; right.skip(prefix)?;
+        let mut eager = Column::new(&datatype);
+        let mut retained = Column::projected(&node, &datatype);
+        let eager_result = node.append(&mut left, &mut eager);
+        let retained_result = node.append(&mut right, &mut retained);
+        assert_eq!(left.bytes, right.bytes);
+        if truncated {
+            assert_eq!(eager_result.unwrap_err().to_string(), retained_result.unwrap_err().to_string());
+        } else {
+            eager_result?; retained_result?;
+            assert_eq!(eager.finish()?.as_ref(), retained.finish()?.as_ref());
+            assert_eq!(right.byte()?, 99);
+        }
+    }
+    let mut nullable = encoding.clone();
+    nullable.fields[0].1.required = false;
+    let nullable_node = Node::new(&nullable, &ty);
+    let mut nullable = Column::projected(&nullable_node, &datatype);
+    nullable_node.append(&mut Input::from_memory(Arc::from([3u8, 2, 5, 7]), false), &mut nullable)?;
+    let values = nullable.finish()?;
+    let list = values.as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(list.values().as_any().downcast_ref::<Int32Array>().unwrap(), &Int32Array::from(vec![Some(5), None, Some(7)]));
+    let Column::List(_, child, _, _) = nullable else {
+        unreachable!()
+    };
+    assert!(matches!(*child, Column::Int32(_)));
+    assert!(matches!(
+        Column::projected(&node.children[0], &DataType::Int32),
+        Column::Int32(_)
+    ));
+    // Framing-only retained leaves intentionally keep low32 bits for an
+    // oversized numeric payload; ordinary scalar decoders remain strict.
+    let mut bytes = vec![1];
+    leb(1u64 << 32, &mut bytes);
+    node.append(&mut Input::from_memory(bytes.into(), false), &mut encoded)?;
+    let array = encoded.finish()?;
+    let list = array.as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(
+        list.values()
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(0),
+        0
+    );
+    Ok(())
+}
 
     #[test]
     fn buffered_program_cache_is_per_codec_and_resets_after_demand() -> Result<()> {

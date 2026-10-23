@@ -400,6 +400,9 @@ pub fn export(
     target: Option<&Field>,
     ctx: &mut ExecutionCtx,
 ) -> VortexResult<ArrowArrayRef> {
+    if let Some(encoded) = super::encoded_int::try_export(&array, ctx)? {
+        return Ok(encoded);
+    }
     let session = ctx.session().clone();
     let inferred;
     let field = match target {

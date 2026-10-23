@@ -198,6 +198,26 @@ impl Input {
         self.bytes += consumed as u64;
         Ok(value)
     }
+    /// Retain exactly `count` terminator-framed values without expanding them.
+    pub(super) fn capture_varints(&mut self, count: usize, out: &mut Vec<u8>) -> Result<()> {
+        let mut remaining = count;
+        while remaining != 0 {
+            let consumed = self.with_buffer(|available| {
+                let mut consumed = 0;
+                for &byte in available {
+                    consumed += 1;
+                    if byte & 128 == 0 {
+                        remaining -= 1;
+                        if remaining == 0 { break; }
+                    }
+                }
+                out.extend_from_slice(&available[..consumed]);
+                (consumed, consumed)
+            })?;
+            if consumed == 0 { return Err("truncated Hail data".into()); }
+        }
+        Ok(())
+    }
     #[cfg(test)]
     pub(super) fn from_memory(bytes: std::sync::Arc<[u8]>, leb: bool) -> Self {
         Self {
