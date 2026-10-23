@@ -6826,14 +6826,18 @@ fn lower_uncached(
             let second = binary(second_lt, Operator::Or, second_touch, schema)?;
             interval_boundary_sequence(second, first)?
         }
-        Expr::Struct { fields } => custom(
-            HailKind::Struct(fields.iter().map(|(n, _)| n.clone()).collect()),
-            fields
-                .iter()
-                .map(|(_, e)| lower_cached(e, schema, globals, scope, memo, context))
-                .collect::<Result<Vec<_>, _>>()?,
-            dtype,
-        ),
+        Expr::Struct { fields } => {
+            let DataType::Struct(output_fields) = &dtype else {
+                return Err(ExprError::Invalid("struct output descriptor is absent".into()));
+            };
+            let args = fields.iter().zip(output_fields).map(|((_, value), field)| {
+                let child = lower_cached(value, schema, globals, scope, memo, context)?;
+                // Prepare physical normalization once. In particular logical
+                // strings may arrive as Utf8View/LargeUtf8 from a source.
+                lower_cast(child, schema, field.data_type())
+            }).collect::<Result<Vec<_>, _>>()?;
+            custom(HailKind::Struct(fields.iter().map(|(n, _)| n.clone()).collect()), args, dtype)
+        }
         Expr::Unary { operator, value } => {
             let child = lower_cached(value, schema, globals, scope, memo, context)?;
             match operator {
@@ -8496,4 +8500,25 @@ mod tests {
         assert_eq!(projected.num_rows(), 0);
         assert!(projected.column(0).is_empty());
     }
+    #[test]
+    fn public_struct_lowering_normalizes_view_and_large_string_storage() {
+        for input in [
+            Arc::new(arrow_array::StringViewArray::from(vec![Some("alpha"), None])) as ArrayRef,
+            Arc::new(arrow_array::LargeStringArray::from(vec![Some("alpha"), None])) as ArrayRef,
+        ] {
+            let schema = Arc::new(Schema::new(vec![Field::new("text", input.data_type().clone(), true)]));
+            let batch = RecordBatch::try_new(schema.clone(), vec![input]).unwrap();
+            let expression = Expr::Struct { fields: vec![("nested".into(), Expr::Struct {
+                fields: vec![("value".into(), Expr::Column { name: "text".into() })],
+            })] };
+            let prepared = lower(&expression, &schema).unwrap();
+            let values = prepared.evaluate(&batch).unwrap().into_array(2).unwrap();
+            let outer = values.as_any().downcast_ref::<StructArray>().unwrap();
+            let nested = outer.column(0).as_any().downcast_ref::<StructArray>().unwrap();
+            let strings = nested.column(0).as_any().downcast_ref::<StringArray>().unwrap();
+            assert_eq!(strings, &StringArray::from(vec![Some("alpha"), None]));
+            assert_eq!(values.data_type(), &prepared.data_type(&schema).unwrap());
+        }
+    }
+
 }
