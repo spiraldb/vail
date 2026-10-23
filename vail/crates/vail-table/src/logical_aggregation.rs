@@ -131,6 +131,15 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                 });
             }
         }
+        // A configured or structured reducer has the same coordinate semantics
+        // whether returned directly or wrapped in a result struct. Preserve the
+        // simple specialized paths above, then apply the existing bundle's
+        // scope/initializer checks to bare reducers too.
+        if matches!(body.as_ref(), Expr::Aggregate { .. }) {
+            if let Some(lifted) = coordinate_bundle(value, parameter, body)? {
+                return Ok(lifted);
+            }
+        }
     }
     expression.try_map_children(coordinate_reductions)
 }

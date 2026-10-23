@@ -11,6 +11,8 @@ def test_coordinate_histogram_boundaries_missing_and_filter(dtype,partitions):
         schema=hl.tstruct(xs=hl.tarray(dtype),keep=hl.tbool),n_partitions=partitions)
     result=table.aggregate(hl.agg.array_agg(lambda x:hl.struct(
         all=hl.agg.hist(x,0,4,2), selected=hl.agg.filter(table.keep,hl.agg.hist(x,0,4,2))),table.xs))
+    simple=table.aggregate(hl.agg.array_agg(lambda x:hl.agg.hist(x,0,4,2),table.xs))
+    assert simple==[x.all for x in result]
     assert result[0].all.bin_edges==[0.,2.,4.]
     assert result[0].all.bin_freq==[2,3]
     assert result[0].all.n_smaller==2 and result[0].all.n_larger==1
