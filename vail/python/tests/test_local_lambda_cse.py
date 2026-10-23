@@ -37,13 +37,13 @@ def test_local_sharing_does_not_cross_lazy_branches_or_nested_lambda_scope():
 @pytest.mark.parametrize('partitions', [1, 3])
 def test_shared_column_predicates_preserve_sparse_entries(partitions):
     matrix = hl.utils.range_matrix_table(9, 4, n_partitions=partitions)
-    matrix = matrix.annotate_entries(x=matrix.row_idx + matrix.col_idx)
+    matrix = matrix.annotate_entries(x=hl.range(matrix.row_idx + matrix.col_idx))
     matrix = matrix.filter_entries(matrix.row_idx % 3 != 0)
     matrix = matrix.annotate_cols(
-        low=hl.agg.fraction(matrix.x / 5 < 1),
-        high=hl.agg.fraction(matrix.x / 5 >= 1),
-        even=hl.agg.count_where(matrix.x % 2 == 0),
-        odd=hl.agg.count_where(matrix.x % 2 != 0))
+        low=hl.agg.fraction(hl.len(matrix.x) / 5 < 1),
+        high=hl.agg.fraction(hl.len(matrix.x) / 5 >= 1),
+        even=hl.agg.count_where(hl.len(matrix.x) % 2 == 0),
+        odd=hl.agg.count_where(hl.len(matrix.x) % 2 != 0))
     result = matrix.cols().collect()
     for col, value in enumerate(result):
         xs = [row + col for row in range(9) if row % 3 != 0]

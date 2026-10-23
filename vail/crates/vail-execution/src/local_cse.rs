@@ -77,11 +77,19 @@ fn safe_node(node: &Expr) -> bool {
     }
 }
 
-pub(crate) fn share_struct(root: &Expr) -> Result<Option<Expr>, ExprError> {
-    if !matches!(root, Expr::Struct { .. }) {
+pub(crate) fn share_struct(
+    root: &Expr,
+    analyzed: &mut HashSet<usize>,
+    reserved_name: impl Fn(&str) -> bool,
+) -> Result<Option<Expr>, ExprError> {
+    if !matches!(root, Expr::Struct { .. }) || !analyzed.insert(address(root)) {
         return Ok(None);
     }
-    let ids = crate::expression_identity::canonical_nodes(root);
+    let ids = crate::expression_identity::canonical_nodes(root, strict);
+    // Ordinary lowering will visit every nested Struct too. Retain this
+    // region's membership in the compilation context so those visits do not
+    // repeat ancestor analysis. Conditional/lambda bodies remain separate.
+    analyzed.extend(ids.keys().copied());
     let mut nodes = HashMap::new();
     let mut counts = HashMap::<usize, usize>::new();
     let mut safe = HashMap::new();
@@ -141,7 +149,7 @@ pub(crate) fn share_struct(root: &Expr) -> Result<Option<Expr>, ExprError> {
         return Ok(None);
     }
     let mut used = HashSet::new();
-    root.visit_unique(&mut |node| {
+    for node in nodes.values() {
         if let Expr::LambdaVariable { name, .. } | Expr::Column { name } = node {
             used.insert(name.clone());
         }
@@ -150,7 +158,7 @@ pub(crate) fn share_struct(root: &Expr) -> Result<Option<Expr>, ExprError> {
             used.extend(node.child_binders(index).into_iter().map(str::to_owned));
             index += 1;
         });
-    });
+    }
     fn replace(
         node: &Expr,
         ids: &HashMap<usize, usize>,
@@ -176,7 +184,7 @@ pub(crate) fn share_struct(root: &Expr) -> Result<Option<Expr>, ExprError> {
     let mut bindings = Vec::new();
     for id in candidates {
         let mut name = format!("__vail_local_cse_{}", bindings.len());
-        while used.contains(&name) {
+        while used.contains(&name) || reserved_name(&name) {
             name.push('_');
         }
         used.insert(name.clone());

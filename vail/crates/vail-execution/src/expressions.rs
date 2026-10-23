@@ -777,6 +777,8 @@ struct CompilationMemo {
     scans: HashMap<*const Expr, bool>,
     root_expression: usize,
     suppress_local_cse: bool,
+    local_cse_regions: HashMap<usize, HashSet<usize>>,
+    local_cse_names: HashSet<String>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct CompilationBindings {
@@ -4907,6 +4909,18 @@ fn lower_bound(
         root_expression: expr as *const Expr as usize,
         ..CompilationMemo::default()
     };
+    // Reserve names once for the whole retained DAG, including binders hidden
+    // inside opaque callbacks. A local binding must not shadow those later.
+    expr.visit_unique(&mut |node| {
+        if let Expr::LambdaVariable { name, .. } | Expr::Column { name } = node {
+            memo.local_cse_names.insert(name.clone());
+        }
+        let mut position = 0;
+        node.for_each_child(&mut |_| {
+            memo.local_cse_names.extend(node.child_binders(position).into_iter().map(str::to_owned));
+            position += 1;
+        });
+    });
     lower_scoped(expr, schema, globals, &[], &mut memo)
 }
 
@@ -6849,7 +6863,14 @@ fn lower_uncached(
         }
         Expr::Struct { fields } => {
             if !memo.suppress_local_cse {
-                if let Some(shared) = crate::local_cse::share_struct(expr)? {
+                let reserved = &memo.local_cse_names;
+                if let Some(shared) = crate::local_cse::share_struct(
+                    expr, memo.local_cse_regions.entry(context).or_default(), |name| {
+                        reserved.contains(name)
+                            || scope.iter().any(|(parameter, _, _)| parameter == name)
+                            || schema.fields().iter().any(|field| field.name() == name)
+                    },
+                )? {
                     return lower_synthetic(shared, schema, globals, scope, memo, context);
                 }
             }
