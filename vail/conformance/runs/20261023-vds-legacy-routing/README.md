@@ -1,6 +1,7 @@
 # Hail VDS read routing
 
-Production/test candidate: `460adffd`, based on frozen main `e79cf6ff`.
+Production candidate: `460adffd`; self-contained test candidate: `0da852af`,
+based on frozen main `e79cf6ff`.
 Branch: `dk/vds-legacy-routing`. Main and cloud benchmark sources are unchanged.
 
 A VDS contains `reference_data` and `variant_data` MatrixTables. Each component
@@ -17,7 +18,10 @@ Dedicated virtualenv `/private/tmp/vail-vds-routing-env`; normally built with
 debug disabled. Build completed in 4m20s. No native artifact copying/reuse.
 `provenance.json` records asserted source/native origins and SHA256.
 
-- Four new public tests pass (7.04s). They read the real Hail-written 1kg VDS,
+- Four new public tests pass (7.04s using external corpus; 6.81s with the
+  resource override explicitly unset and the bundled genuine Hail VDS). The
+  76,517-byte archive includes a source revision and per-file SHA256 manifest.
+  These tests read the real Hail-written 1kg VDS,
   compare every sparse row/entry to the checked-in independently extracted Hail
   oracle, preserve missing entry structs, compare a Vail-native roundtrip, check
   five samples/81 variant rows/max-block-length sidecar, exercise `_drop_end`,
@@ -30,7 +34,8 @@ debug disabled. Build completed in 4m20s. No native artifact copying/reuse.
   25 fail. No remaining failure has the removed storage guard. Detailed results
   are in `upstream-summary.json` and the raw JSONL/log.
 - The 25 downstream failures comprise 20 missing APIs, three scalar-subquery
-  execution errors, one `KeyError: 'op'`, and one 30-second per-test timeout.
+  execution errors, one `KeyError: 'op'`, and one timeout. The latter (`test_filter_chromosomes`)
+  was retried alone with a 120-second limit and timed out again (123.35s total).
   Missing API counts: `filter_intervals` seven; `sample_qc` five; one each of
   `write_variant_datasets`, `segment_reference_blocks`, `interval_coverage`,
   `read_dense_mt`, `truncate_reference_blocks`, `experimental`, `split_multi`,

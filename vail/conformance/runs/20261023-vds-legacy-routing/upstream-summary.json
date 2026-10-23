@@ -173,5 +173,10 @@
       "duration": 0.06340766604989767,
       "error": "E   AttributeError: module 'vail.vds' has no attribute 'export_vcf'"
     }
-  ]
+  ],
+  "filter_chromosomes_retry": {
+    "outcome": "failed",
+    "error": "TimeoutError: per-test time limit exceeded (120 seconds)",
+    "elapsed_seconds": 123.35
+  }
 }
