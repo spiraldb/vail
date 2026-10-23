@@ -192,9 +192,8 @@ fn resolve_changed<'a>(
         // Resolve them in this same action so repeated aggregate dependencies
         // share the identity cache with conditional and initialization inputs.
         use datafusion_common::tree_node::{Transformed, TreeNode, TreeNodeRecursion};
-        let expressions = logical.expressions();
         let mut subqueries = HashMap::new();
-        for expression in &expressions {
+        logical.apply_expressions(|expression| {
             expression.apply(|expr| {
                 if let datafusion_expr::Expr::ScalarSubquery(query) = expr {
                     subqueries.insert(
@@ -203,36 +202,14 @@ fn resolve_changed<'a>(
                     );
                 }
                 Ok(TreeNodeRecursion::Continue)
-            })?;
-        }
+            })
+        })?;
         let mut replacements = HashMap::new();
         for (id, subquery) in subqueries {
             if let Some(replacement) = resolve_changed(&subquery, bindings, memo).await? {
                 replacements.insert(id, replacement);
             }
         }
-        let expressions = expressions
-            .into_iter()
-            .map(|expr| {
-                expr.transform_up(|expr| {
-                    if let datafusion_expr::Expr::ScalarSubquery(mut query) = expr {
-                        if let Some(replacement) =
-                            replacements.get(&(Arc::as_ptr(&query.subquery) as usize))
-                        {
-                            query.subquery = replacement.clone();
-                            return Ok(Transformed::yes(datafusion_expr::Expr::ScalarSubquery(
-                                query,
-                            )));
-                        }
-                        return Ok(Transformed::no(datafusion_expr::Expr::ScalarSubquery(
-                            query,
-                        )));
-                    }
-                    Ok(Transformed::no(expr))
-                })
-                .map(|result| result.data)
-            })
-            .collect::<datafusion_common::Result<Vec<_>>>()?;
         let mut children = Vec::new();
         let mut changed = false;
         for input in logical.inputs() {
@@ -241,6 +218,29 @@ fn resolve_changed<'a>(
             children.push(replacement);
         }
         let resolved = if !replacements.is_empty() {
+            let expressions = logical
+                .expressions()
+                .into_iter()
+                .map(|expr| {
+                    expr.transform_up(|expr| {
+                        if let datafusion_expr::Expr::ScalarSubquery(mut query) = expr {
+                            if let Some(replacement) =
+                                replacements.get(&(Arc::as_ptr(&query.subquery) as usize))
+                            {
+                                query.subquery = replacement.clone();
+                                return Ok(Transformed::yes(
+                                    datafusion_expr::Expr::ScalarSubquery(query),
+                                ));
+                            }
+                            return Ok(Transformed::no(datafusion_expr::Expr::ScalarSubquery(
+                                query,
+                            )));
+                        }
+                        Ok(Transformed::no(expr))
+                    })
+                    .map(|result| result.data)
+                })
+                .collect::<datafusion_common::Result<Vec<_>>>()?;
             let inputs = logical
                 .inputs()
                 .into_iter()
