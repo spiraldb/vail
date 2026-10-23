@@ -16,4 +16,13 @@ For widths >=32 with >=4 rows, the ARM implementation uses CSA15 plus NEON byte-
 
 COUNT obtains logical_nulls once per batch, preserving null semantics for NullArray and dictionary values. Predicate/fraction validity and entry filters remain packed, including unaligned sliced bitmaps. Fraction denominators count active rows even when predicate values are null.
 
-Actual workload results and profiles are pending; do not infer a measured end-to-end speedup from the microbenchmarks.
+## Results
+
+Baseline main5b2c vs candidate e6faf320 (local CSE enabled in both), alternating3independent processes each, exact fixture/query,32execution threads. Median wall2.6566→1.7279s (−35.0%), CPU29.5643→12.9376core-s (−56.2%), peakRSS11.043→7.550GB (−31.6%). Baseline wallrange2.588–2.738s; candidate1.274–1.829s, so wall variability is material. CPUranges29.555–29.782 and12.776–13.102. See pairs.json and summary.json. Ambient laptop activity uncontrolled; observed ranges are not confidence intervals.
+
+Fresh paired stock PyPI Hail0.2.139/Java11,32cores24GBheap, same cached exact data, serial fresh workers,3runs/engine: Vail median1.4727s (1.4569–1.4911),13.0647core-s (13.0444–13.4557); Hail5.7504s (5.7179–5.9942),35.1039core-s (35.0848–36.1589). Hail/Vail3.9046wall,2.6869CPU. Independent medians. Harness samples process-tree CPU at10Hz retaining exited children. This singlecase is not a full-suite result. See fresh-paired/aggregate-report.html and case-medians.csv. Its Vail fixture resolves to the same /tmp/entries-profile25.mt.
+
+Separate200Hz profiles: before32.4896/after15.1049sampled core-s including startup/planning, unlike query-only receipts. Boolean numericcast self4.4910→0, BoolVec construction3.1826→0, BooleanArray valueaccess4.2802→0sampled core-s. Packed-count inclusive0.4993core-s after (3.3%), self0.2952. Listlength inclusive remains5.5127core-s. Inclusive categories overlap; zero samples do not prove an operation can never occur. These removed paths are absent in the exact workload profile. profile_costs.py reproduces categories; original and symbolized profiles retained.
+
+Validation:140Python tests passed corrected installed artifact;3public packed-count native tests pass, including logical/physical null differences, sliced masks, partial state and overflow. Existing coordinate reducer tests retained too. Normal kache builds, exact nativeSHA receipts saved. Production source review cleared logical-null correction ba2fd722; e6faf320 changes only timing probe. Integration receipt follows separately.
+
