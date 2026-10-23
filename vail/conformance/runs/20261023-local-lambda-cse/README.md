@@ -71,6 +71,8 @@ Expr→lower→evaluate: an unused enclosing variable with the generated-name
 prefix, and a96-level nested struct projection with explicit expected values.
 No private helper/plan assertions or mocked execution.
 
-Required reviewer source/test clearance received for `b9b12189`; initial
-quadratic nested-struct analysis and binder-name collision findings were fixed.
-Final performance acceptance requested with this evidence before any main merge.
+Required reviewer final acceptance received for `bdb08b9f`, production
+`b9b12189`; initial quadratic nested-struct analysis and binder-name collision
+findings were fixed. Root merged this exact revision into main `5aa79319`.
+The exact merged source was normally rebuilt with kache (0.46s), retaining the
+reviewed native hash; post-integration validation receipts are included.
