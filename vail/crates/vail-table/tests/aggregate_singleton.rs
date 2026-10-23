@@ -102,22 +102,25 @@ async fn unselected_aggregate_dependency_remains_lazy() {
     let good = count(17);
     let bad_table = TableIR::range(1, 1)
         .unwrap()
-        .map_rows(vec![(
-            "idx".into(),
-            Expr::Die {
-                message: Arc::new(Expr::Literal {
-                    dtype: Type::Primitive(PrimitiveType::Str),
-                    value: json!("unselected aggregate"),
-                }),
-                dtype: Type::Primitive(PrimitiveType::Int32),
-            },
-        )])
+        .map_rows(vec![
+            ("idx".into(), Expr::Column { name: "idx".into() }),
+            (
+                "bad".into(),
+                Expr::Die {
+                    message: Arc::new(Expr::Literal {
+                        dtype: Type::Primitive(PrimitiveType::Str),
+                        value: json!("unselected aggregate"),
+                    }),
+                    dtype: Type::Primitive(PrimitiveType::Int32),
+                },
+            ),
+        ])
         .unwrap();
     let bad = GlobalsIR::aggregate(
         bad_table,
         Expr::Aggregate {
             function: "sum".into(),
-            value: Some(Arc::new(Expr::Column { name: "idx".into() })),
+            value: Some(Arc::new(Expr::Column { name: "bad".into() })),
             options: json!({}),
             result_type: None,
             init: vec![],
@@ -146,5 +149,60 @@ async fn unselected_aggregate_dependency_remains_lazy() {
             .unwrap()
             .value(0),
         17
+    );
+}
+
+#[tokio::test]
+async fn discarded_scalar_aggregate_is_not_evaluated() {
+    let source = TableIR::range(1, 1)
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), Expr::Column { name: "idx".into() }),
+            (
+                "bad".into(),
+                Expr::Die {
+                    message: Arc::new(Expr::Literal {
+                        dtype: Type::Primitive(PrimitiveType::Str),
+                        value: json!("discarded aggregate"),
+                    }),
+                    dtype: Type::Primitive(PrimitiveType::Int32),
+                },
+            ),
+        ])
+        .unwrap();
+    let bad = GlobalsIR::aggregate(
+        source,
+        Expr::Aggregate {
+            function: "sum".into(),
+            value: Some(Arc::new(Expr::Column { name: "bad".into() })),
+            options: json!({}),
+            result_type: None,
+            init: vec![],
+        },
+        Default::default(),
+    )
+    .unwrap();
+    let output = TableIR::range(5, 2)
+        .unwrap()
+        .map_rows_bound(
+            vec![
+                ("idx".into(), Expr::Column { name: "idx".into() }),
+                ("unused".into(), reference(&bad)),
+            ],
+            [("shared".into(), bad)].into(),
+        )
+        .unwrap()
+        .map_rows(vec![("idx".into(), Expr::Column { name: "idx".into() })])
+        .unwrap();
+    assert_eq!(
+        output
+            .collect_partitions()
+            .await
+            .unwrap()
+            .into_iter()
+            .flatten()
+            .map(|batch| batch.num_rows())
+            .sum::<usize>(),
+        5
     );
 }
