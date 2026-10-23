@@ -208,3 +208,34 @@ async fn discarded_scalar_aggregate_is_not_evaluated() {
         5
     );
 }
+
+#[tokio::test]
+async fn unreachable_case_aggregate_is_not_evaluated() {
+    let source = TableIR::range(1, 1).unwrap().map_rows(vec![
+        ("idx".into(), Expr::Column { name: "idx".into() }),
+        ("bad".into(), Expr::Die {
+            message: Arc::new(Expr::Literal { dtype: Type::Primitive(PrimitiveType::Str), value: json!("unreachable aggregate") }),
+            dtype: Type::Primitive(PrimitiveType::Int32),
+        }),
+    ]).unwrap();
+    let bad = GlobalsIR::aggregate(source, Expr::Aggregate {
+        function: "sum".into(), value: Some(Arc::new(Expr::Column { name: "bad".into() })),
+        options: json!({}), result_type: None, init: vec![],
+    }, Default::default()).unwrap();
+    let output = TableIR::range(5, 2).unwrap().map_rows_bound(vec![
+        ("idx".into(), Expr::Column { name: "idx".into() }),
+        ("selected".into(), Expr::IfElse {
+            condition: Arc::new(Expr::Literal { dtype: Type::Primitive(PrimitiveType::Bool), value: json!(false) }),
+            consequent: Arc::new(reference(&bad)),
+            alternate: Arc::new(Expr::Literal { dtype: Type::Primitive(PrimitiveType::Int64), value: json!(7) }),
+        }),
+    ], [("shared".into(), bad)].into()).unwrap();
+    let batches = output.collect_partitions().await.unwrap();
+    let mut rows = 0;
+    for batch in batches.into_iter().flatten() {
+        let values = batch.column_by_name("selected").unwrap().as_any().downcast_ref::<Int64Array>().unwrap();
+        assert!(values.iter().all(|value| value == Some(7)));
+        rows += batch.num_rows();
+    }
+    assert_eq!(rows, 5);
+}
