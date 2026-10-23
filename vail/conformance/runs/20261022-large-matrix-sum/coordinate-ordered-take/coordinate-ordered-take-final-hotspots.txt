@@ -1,0 +1,39 @@
+samples 780
+22.05 172 __psynch_cvwait
+12.18 95 <arrow_ord::sort::LexicographicalComparator>::compare
+6.67 52 arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::Date64Type>::{closure#0}>::{closure#0}
+3.72 29 core::slice::sort::unstable::quicksort::partition::<usize, <[usize]>::select_nth_unstable_by<&mut <vail_execution::coordinate_take::CoordinateOrderedTake>::select::{closure#9}>::{closure#0}>
+3.72 29 <vail_execution::coordinate_take::CoordinateOrderedTake>::select
+3.21 25 _PyEval_EvalFrameDefault
+2.95 23 __open
+2.95 23 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, vail_execution::expressions::columnar_numeric::{closure#1}, arrow_array::types::Int64Type>
+1.54 12 mach_o::GenericTrie::find(CString, bool) const
+1.54 12 _platform_memmove
+1.15 9 stat
+1.15 9 <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int32Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>
+1.03 8 gc_collect_main.llvm.6325940347975832991
+0.9 7 _PyObject_Malloc
+0.9 7 _PyCode_Quicken
+0.77 6 visit_decref
+0.77 6 lsl::Allocator::AllocationMetadata::pool(bool) const
+0.77 6 __psynch_mutexwait
+0.64 5 r_object.llvm.9845490566179339274
+0.64 5 deduce_unreachable
+0.64 5 (anonymous namespace)::quickSort<lsl::Vector<PropertyList::String*>::CheckedIterator<PropertyList::String*> >(lsl::Vector<PropertyList::String*>::CheckedIterator<PropertyList::String*>, lsl::Vector<PropertyList::String*>::CheckedIterator<PropertyList::String*>)
+0.51 4 PyDict_SetItem
+inclusive
+69.74 544 start
+69.74 544 Py_BytesMain
+69.74 544 pymain_main
+68.97 538 Py_RunMain
+66.79 521 _PyEval_EvalFrameDefault
+66.79 521 PyEval_EvalCode
+66.15 516 _PyRun_AnyFileObject
+66.15 516 run_mod.llvm.8217961648363706888
+66.15 516 pyrun_file
+66.15 516 pymain_run_file_obj
+66.15 516 _PyRun_SimpleFileObject
+66.15 516 pymain_run_file
+33.97 265 pyo3::impl_::trampoline::fastcall_cfunction_with_keywords::<<pyo3::impl_::pyclass::PyClassImplCollector<_native::NativeTable> as pyo3::impl_::pyclass::PyMethods<_native::NativeTable>>::py_methods::ITEMS::Def>
+33.97 265 pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::fastcall_cfunction_with_keywords::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>
+33.85 264 <datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next
