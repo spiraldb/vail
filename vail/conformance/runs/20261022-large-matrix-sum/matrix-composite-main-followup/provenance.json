@@ -1,0 +1,16 @@
+{
+  "source": "6a004ca71f50e80b3f3e6a16bb9c4887286300dd",
+  "runtime_source_identical_to_main": "e6abbe86da1184388a2d52de95d06df7023b251b",
+  "test_fixture_only_child": "54cdc0ac",
+  "native_sha256": "c5adb1d8a3204eec5426ddaf6e0e9e51323122b8b9b60c03ef325368c1912db5",
+  "hail": "stockPyPI0.2.139 Spark3.5.9 Java11ARM64",
+  "settings": "32concurrencybothengines, explicit250partitions,14logicalCPU96GiBhost",
+  "measurement": "freshengineprocesses,3repserialengines,queryconstruction+action excludesimport/init,10Hzprocess-treeCPUretainsJVM/exitedchildren,RSSpeakprocesssum",
+  "source_note": "Groupedcollectagent already implemented reviewed grouped-unused-globals guard in a120a86; duplicate670 source reconciled to main exactly, no new runtime material beyond reviewedmain.",
+  "limits": [
+    "Representativefixturefree10k\u00d71kcomposite case, not upstreamfixturebenchmark.",
+    "FirstrepJIT/setup warmer: Hail9.083s then2.685/1.975;Vail1.894 then.529/.554.",
+    "Unrelatedlegacyactivityallowed; ownagenttimingsserial.",
+    "Beforecomparison retainedbigSUMheap; afterfreshRSS cannot attribute allRSSdifference to fix."
+  ]
+}
