@@ -1,0 +1,52 @@
+{
+  "comparisons": [
+    {
+      "case": "table_force_count",
+      "vail_ms": 27.52620796673,
+      "hail_ms": 141.69758302159607,
+      "hail_over_vail": 5.1477335052057,
+      "value": 1000000
+    },
+    {
+      "case": "table_scalar_sum",
+      "vail_ms": 20.233791903592646,
+      "hail_ms": 148.4241250436753,
+      "hail_over_vail": 7.335457720968337,
+      "value": 1499998500000
+    },
+    {
+      "case": "matrix_decode_count",
+      "vail_ms": 719.7955000447109,
+      "hail_ms": 446.0576670244336,
+      "hail_over_vail": 0.6197005496654623,
+      "value": 24885
+    },
+    {
+      "case": "matrix_decode_count_gt",
+      "vail_ms": 434.72283298615366,
+      "hail_ms": 368.85491700377315,
+      "hail_over_vail": 0.8484829620521026,
+      "value": 24885
+    },
+    {
+      "case": "matrix_entries_count",
+      "vail_ms": 745.6007080618292,
+      "hail_ms": 1442.1109580434859,
+      "hail_over_vail": 1.9341598558727473,
+      "value": 63083475
+    },
+    {
+      "case": "matrix_sum_dp",
+      "vail_ms": 538.5684580542147,
+      "hail_ms": 407.39324991591275,
+      "hail_over_vail": 0.7564372621964852,
+      "value": 353709503
+    }
+  ],
+  "implementation_commit": "b9b2ca6c",
+  "native_sha256": "b79ee57890bf7413e2edb3e47fa09675bd4bb2d7fed180c6435a7125d768a3c2",
+  "decision": "Reverted short-array decode and extra inline array skip (4064e659) in 91860911 after regression; positional selection count retained for controlled comparison.",
+  "method": "Two warmups/five measurements on identical Hail-written files; warm local cache; sequential engines on shared M3 Max. No compiler observed during benchmark capture. Build of replacement started after measured Hail queries ended.",
+  "all_values_match": true,
+  "goal_achieved": false
+}
