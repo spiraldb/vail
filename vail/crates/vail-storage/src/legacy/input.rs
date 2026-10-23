@@ -188,6 +188,16 @@ pub struct Input {
     pub bytes: u64,
 }
 impl Input {
+    // The callback accepts only complete logical records from this borrowed
+    // buffer; no owned buffering and no speculative Input counter updates.
+    pub(super) fn with_buffer<T>(&mut self, f: impl FnOnce(&[u8]) -> (T, usize)) -> Result<T> {
+        let available = self.source.fill_buf()?;
+        let (value, consumed) = f(available);
+        debug_assert!(consumed <= available.len());
+        self.source.consume(consumed);
+        self.bytes += consumed as u64;
+        Ok(value)
+    }
     #[cfg(test)]
     pub(super) fn from_memory(bytes: std::sync::Arc<[u8]>, leb: bool) -> Self {
         Self {

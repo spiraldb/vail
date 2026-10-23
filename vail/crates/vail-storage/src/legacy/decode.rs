@@ -764,6 +764,212 @@ impl BoundOp<'_, '_> {
     }
 }
 
+// Slice probing is transactional at entry boundaries. All scalar writes are
+// deferred until the complete entry is present in the existing Input buffer.
+#[derive(Clone, Copy)]
+enum ProbeKind {
+    Byte,
+    Bool,
+    Call,
+    F32,
+    F64,
+    IntegerArray,
+}
+struct ProbeField {
+    kind: ProbeKind,
+    missing: u64,
+    output: Option<usize>,
+}
+struct BufferedScalars {
+    fields: Vec<ProbeField>,
+    bitmap_bytes: usize,
+}
+impl BufferedScalars {
+    fn new(node: &Node, leb: bool) -> Option<Self> {
+        if node.optional_count > 64 || node.fields.is_empty() {
+            return None;
+        }
+        let mut selected = 0;
+        let mut fields = Vec::with_capacity(node.fields.len());
+        for (op, child) in node.fields.iter().zip(&node.children) {
+            let kind = match child.append_kind {
+                AppendKind::Int32 | AppendKind::Int64 | AppendKind::Call
+                    if leb || matches!(child.wire, Wire::Varint) =>
+                {
+                    if op.project && matches!(child.append_kind, AppendKind::Call) {
+                        ProbeKind::Call
+                    } else {
+                        ProbeKind::Byte
+                    }
+                }
+                AppendKind::Bool => ProbeKind::Bool,
+                AppendKind::Float32 => ProbeKind::F32,
+                AppendKind::Float64 => ProbeKind::F64,
+                AppendKind::List
+                    if !op.project
+                        && child.children[0].e.required
+                        && (child.varint_length || leb)
+                        && (matches!(child.array_skip, ArraySkip::Varint)
+                            || leb
+                                && matches!(
+                                    child.array_skip,
+                                    ArraySkip::Int32 | ArraySkip::Int64
+                                )) =>
+                {
+                    ProbeKind::IntegerArray
+                }
+                _ => return None,
+            };
+            let output = if op.project {
+                let index = selected;
+                selected += 1;
+                Some(index)
+            } else {
+                None
+            };
+            if selected > 16 {
+                return None;
+            }
+            fields.push(ProbeField {
+                kind,
+                missing: if op.missing_bit == usize::MAX {
+                    0
+                } else {
+                    1u64 << op.missing_bit
+                },
+                output,
+            });
+        }
+        Some(Self {
+            fields,
+            bitmap_bytes: node.optional_count.div_ceil(8),
+        })
+    }
+    fn probe(&self, bytes: &[u8], cursor: &mut usize, values: &mut [u64; 16]) -> Option<u16> {
+        let bitmap = bytes.get(*cursor..cursor.checked_add(self.bitmap_bytes)?)?;
+        let mut missing = 0u64;
+        for (i, byte) in bitmap.iter().enumerate() {
+            missing |= (*byte as u64) << (i * 8);
+        }
+        *cursor += self.bitmap_bytes;
+        let mut nulls = 0;
+        for field in &self.fields {
+            if missing & field.missing != 0 {
+                if let Some(output) = field.output {
+                    nulls |= 1 << output;
+                }
+                continue;
+            }
+            let value = match field.kind {
+                ProbeKind::Byte | ProbeKind::Bool | ProbeKind::Call => {
+                    let value = *bytes.get(*cursor)?;
+                    if value >= 128
+                        || matches!(field.kind, ProbeKind::Bool) && value > 1
+                        || matches!(field.kind, ProbeKind::Call)
+                            && validate_packed_call(value as u32).is_err()
+                    {
+                        return None;
+                    }
+                    *cursor += 1;
+                    value as u64
+                }
+                ProbeKind::F32 => {
+                    let end = cursor.checked_add(4)?;
+                    let value = u32::from_le_bytes(bytes.get(*cursor..end)?.try_into().ok()?);
+                    *cursor = end;
+                    value as u64
+                }
+                ProbeKind::F64 => {
+                    let end = cursor.checked_add(8)?;
+                    let value = u64::from_le_bytes(bytes.get(*cursor..end)?.try_into().ok()?);
+                    *cursor = end;
+                    value
+                }
+                ProbeKind::IntegerArray => {
+                    let n = *bytes.get(*cursor)?;
+                    if n >= 128 {
+                        return None;
+                    }
+                    *cursor += 1;
+                    let mut remaining = n;
+                    while remaining != 0 {
+                        let byte = *bytes.get(*cursor)?;
+                        *cursor += 1;
+                        if byte < 128 {
+                            remaining -= 1;
+                        }
+                    }
+                    0
+                }
+            };
+            if let Some(output) = field.output {
+                values[output] = value;
+            }
+        }
+        Some(nulls)
+    }
+}
+fn buffered_scalar_field(
+    field: &mut BoundField<'_, '_>,
+    index: &mut usize,
+    values: &[u64; 16],
+    nulls: u16,
+) {
+    if matches!(field.output, BoundOutput::Skip) {
+        return;
+    }
+    let value = values[*index];
+    let missing = nulls & (1 << *index) != 0;
+    macro_rules! append {
+        ($builder:expr, $value:expr) => {
+            if missing {
+                $builder.append_null();
+            } else {
+                $builder.append_value($value);
+            }
+        };
+    }
+    match &mut field.output {
+        BoundOutput::Skip => return,
+        BoundOutput::I32(b) => append!(b, value as i32),
+        BoundOutput::I64(b) => append!(b, value as i64),
+        BoundOutput::F32(b) => append!(b, f32::from_bits(value as u32)),
+        BoundOutput::F64(b) => append!(b, f64::from_bits(value)),
+        BoundOutput::Bool(b) => append!(b, value != 0),
+        BoundOutput::InvertedBool(b) => append!(b, value == 0),
+        BoundOutput::Call(b) => {
+            if missing {
+                b.null();
+            } else {
+                b.packed.push(value as u32);
+                b.valid.append_non_null();
+            }
+        }
+        BoundOutput::Other(_) => unreachable!("buffered scalar eligibility"),
+    }
+    *index += 1;
+}
+fn buffered_scalar_row(ops: &mut [BoundOp<'_, '_>], values: &[u64; 16], nulls: u16) {
+    let mut index = 0;
+    for op in ops {
+        match op {
+            BoundOp::Field(field) => buffered_scalar_field(field, &mut index, values, nulls),
+            BoundOp::Run { fields, .. } => {
+                for field in fields {
+                    buffered_scalar_field(field, &mut index, values, nulls);
+                }
+            }
+        }
+    }
+}
+fn has_buffered_outputs(ops: &[BoundOp<'_, '_>]) -> bool {
+    let eligible = |f: &BoundField<'_, '_>| !matches!(f.output, BoundOutput::Other(_));
+    ops.iter().all(|op| match op {
+        BoundOp::Field(f) => eligible(f),
+        BoundOp::Run { fields, .. } => fields.iter().all(eligible),
+    })
+}
+
 /// Compile physical destination mapping once, outside the row loop.
 struct Node {
     e: Encoding,
@@ -777,6 +983,7 @@ struct Node {
     all_present_mask: Option<u64>,
     struct_postlude: StructPostlude,
     distinct_destinations: bool,
+    buffered_scalars: [std::sync::OnceLock<Option<BufferedScalars>>; 2],
     varint_length: bool,
 }
 impl Node {
@@ -919,6 +1126,7 @@ impl Node {
                 }
             }),
             distinct_destinations,
+            buffered_scalars: std::array::from_fn(|_| std::sync::OnceLock::new()),
             struct_postlude: match t {
                 Type::Locus { .. } => StructPostlude::Locus,
                 Type::Tuple { tuple } if tuple.is_empty() => StructPostlude::EmptyTuple,
@@ -982,6 +1190,9 @@ impl Node {
         self.refresh_run_projection();
     }
     fn refresh_run_projection(&mut self) {
+        for cached in &mut self.buffered_scalars {
+            cached.take();
+        }
         for i in 0..self.fields.len() {
             let count = self.fields[i].varint_run as usize;
             if count == 0 {
@@ -1355,7 +1566,52 @@ impl Node {
             unreachable!("struct array output")
         };
         let mut ops = self.bind_struct(outputs);
-        for i in 0..n {
+        let buffered = self.buffered_scalars[usize::from(input.leb)]
+            .get_or_init(|| BufferedScalars::new(self, input.leb))
+            .as_ref()
+            .filter(|_| has_buffered_outputs(&ops));
+        let mut i = 0;
+        while i < n {
+            // Leading absent entries need no input; preserve that property
+            // even if refilling the underlying reader would fail.
+            if !self.e.required && absent(element_bits, i) {
+                for op in &mut ops {
+                    op.null()?;
+                }
+                validity.append_null();
+                i += 1;
+                continue;
+            }
+
+            if let Some(program) = &buffered {
+                let accepted = input.with_buffer(|bytes| {
+                    let mut cursor = 0;
+                    let mut accepted = 0;
+                    let mut values = [0u64; 16];
+                    while i + accepted < n {
+                        if !self.e.required && absent(element_bits, i + accepted) {
+                            buffered_scalar_row(&mut ops, &values, u16::MAX);
+                            validity.append_null();
+                        } else {
+                            let start = cursor;
+                            let Some(nulls) = program.probe(bytes, &mut cursor, &mut values) else {
+                                cursor = start;
+                                break;
+                            };
+                            buffered_scalar_row(&mut ops, &values, nulls);
+                            validity.append_non_null();
+                        }
+                        accepted += 1;
+                    }
+                    (accepted, cursor)
+                })?;
+                if accepted != 0 {
+                    i += accepted;
+                    continue;
+                }
+            }
+            // A partial/unsupported entry is retried from its original byte
+            // boundary; only the generic decoder produces wire errors.
             if !self.e.required && absent(element_bits, i) {
                 for op in &mut ops {
                     op.null()?;
@@ -1371,6 +1627,7 @@ impl Node {
                 }
                 validity.append_non_null();
             }
+            i += 1;
         }
         Ok(())
     }
@@ -1690,6 +1947,104 @@ impl PartReader {
 mod tests {
     use super::*;
 
+    #[test]
+    fn buffered_program_cache_is_per_codec_and_resets_after_demand() -> Result<()> {
+        let integer = Encoding {
+            kind: "EInt32".into(),
+            required: false,
+            fields: vec![],
+            rank: 0,
+        };
+        let array = Encoding {
+            kind: "EArray2".into(),
+            required: false,
+            fields: vec![(
+                "element".into(),
+                Encoding {
+                    required: true,
+                    ..integer.clone()
+                },
+            )],
+            rank: 0,
+        };
+        let encoding = Encoding {
+            kind: "EArray2".into(),
+            required: true,
+            fields: vec![(
+                "element".into(),
+                Encoding {
+                    kind: "EBaseStruct".into(),
+                    required: true,
+                    fields: vec![("x".into(), integer), ("unused".into(), array)],
+                    rank: 0,
+                },
+            )],
+            rank: 0,
+        };
+        let ty = Type::Array {
+            array: Box::new(Type::Struct {
+                r#struct: vec![
+                    ("x".into(), Type::Primitive(P::Int32)),
+                    (
+                        "unused".into(),
+                        Type::Array {
+                            array: Box::new(Type::Primitive(P::Int32)),
+                        },
+                    ),
+                ],
+            }),
+        };
+        let mut node = Node::new(&encoding, &ty);
+        for projected in [false, true] {
+            if projected {
+                node.demand(&[vec!["x".into()]]);
+                assert!(
+                    node.children[0]
+                        .buffered_scalars
+                        .iter()
+                        .all(|cached| cached.get().is_none())
+                );
+            }
+            for leb in [false, true] {
+                let mut bytes = vec![2];
+                for x in [7i32, 8] {
+                    bytes.push(0);
+                    if leb {
+                        bytes.push(x as u8);
+                    } else {
+                        bytes.extend_from_slice(&x.to_le_bytes());
+                    }
+                    bytes.push(2);
+                    for value in [3i32, 4] {
+                        if leb {
+                            bytes.push(value as u8);
+                        } else {
+                            bytes.extend_from_slice(&value.to_le_bytes());
+                        }
+                    }
+                }
+                let bytes: Arc<[u8]> = bytes.into();
+                let mut expected = Column::projected(&node, &ty.to_arrow()?);
+                let mut actual = Column::projected(&node, &ty.to_arrow()?);
+                append_unbound_struct_array(
+                    &node,
+                    &mut Input::from_memory(bytes.clone(), leb),
+                    &mut expected,
+                )?;
+                node.append(&mut Input::from_memory(bytes, leb), &mut actual)?;
+                assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref());
+                assert_eq!(
+                    node.children[0].buffered_scalars[usize::from(leb)]
+                        .get()
+                        .unwrap()
+                        .is_some(),
+                    projected && leb
+                );
+            }
+        }
+        Ok(())
+    }
+
     fn append_unbound_struct_array(
         node: &Node,
         input: &mut Input,
@@ -1713,6 +2068,236 @@ mod tests {
             }
         }
         output.end_list()
+    }
+
+    fn compare_buffered_array(node: &Node, bytes: Arc<[u8]>, prefix: usize) -> Result<()> {
+        fn lengths(column: &Column, out: &mut Vec<usize>) {
+            // Skipped placeholders inherit length at finish, not per element.
+            if matches!(column, Column::Skipped(..)) {
+                return;
+            }
+            out.push(column.len());
+            match column {
+                Column::Struct(_, children, _) => {
+                    for child in children {
+                        lengths(child, out);
+                    }
+                }
+                Column::List(_, child, _, _) => lengths(child, out),
+                _ => {}
+            }
+        }
+        let mut generic = Input::from_memory(bytes.clone(), true);
+        let mut buffered = Input::from_memory(bytes, true);
+        generic.skip(prefix)?;
+        buffered.skip(prefix)?;
+        let arrow = node.ty.to_arrow()?;
+        let mut expected = Column::projected(node, &arrow);
+        let mut actual = Column::projected(node, &arrow);
+        let left = append_unbound_struct_array(node, &mut generic, &mut expected);
+        let right = node.append(&mut buffered, &mut actual);
+        assert_eq!(left.is_ok(), right.is_ok());
+        assert_eq!(generic.bytes, buffered.bytes);
+        let mut a = Vec::new();
+        let mut b = Vec::new();
+        lengths(&expected, &mut a);
+        lengths(&actual, &mut b);
+        assert_eq!(a, b);
+        match (left, right) {
+            (Ok(()), Ok(())) => assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref()),
+            (Err(left), Err(right)) => assert_eq!(left.to_string(), right.to_string()),
+            _ => unreachable!(),
+        }
+        Ok(())
+    }
+    #[test]
+    fn buffered_scalars_match_generic_boundaries_missing_continuations_and_errors() -> Result<()> {
+        fn leb(mut value: u64, out: &mut Vec<u8>) {
+            loop {
+                let byte = (value & 127) as u8;
+                value >>= 7;
+                out.push(byte | if value == 0 { 0 } else { 128 });
+                if value == 0 {
+                    break;
+                }
+            }
+        }
+        let integer = || Encoding {
+            kind: "EInt32".into(),
+            required: false,
+            fields: vec![],
+            rank: 0,
+        };
+        let array = Encoding {
+            kind: "EArray2".into(),
+            required: false,
+            fields: vec![(
+                "element".into(),
+                Encoding {
+                    required: true,
+                    ..integer()
+                },
+            )],
+            rank: 0,
+        };
+        let encoding = Encoding {
+            kind: "EArray2".into(),
+            required: true,
+            fields: vec![(
+                "element".into(),
+                Encoding {
+                    kind: "EBaseStruct".into(),
+                    required: false,
+                    fields: vec![
+                        ("unused".into(), array),
+                        (
+                            "flag".into(),
+                            Encoding {
+                                kind: "EBoolean".into(),
+                                ..integer()
+                            },
+                        ),
+                        ("call".into(), integer()),
+                        ("value".into(), integer()),
+                        (
+                            "float".into(),
+                            Encoding {
+                                kind: "EFloat64".into(),
+                                ..integer()
+                            },
+                        ),
+                    ],
+                    rank: 0,
+                },
+            )],
+            rank: 0,
+        };
+        let ty = Type::Array {
+            array: Box::new(Type::Struct {
+                r#struct: vec![
+                    ("value".into(), Type::Primitive(P::Int32)),
+                    ("float".into(), Type::Primitive(P::Float64)),
+                    ("call".into(), Type::Primitive(P::Call)),
+                    ("flag".into(), Type::Primitive(P::Bool)),
+                    (
+                        "unused".into(),
+                        Type::Array {
+                            array: Box::new(Type::Primitive(P::Int32)),
+                        },
+                    ),
+                ],
+            }),
+        };
+        for error in [0, 1, 2] {
+            let n = if error == 0 { 8192usize } else { 128 };
+            let mut bytes = Vec::new();
+            leb(n as u64, &mut bytes);
+            let bitmap_start = bytes.len();
+            bytes.resize(bytes.len() + n.div_ceil(8), 0);
+            for row in 0..n {
+                if row % 17 == 0 {
+                    bytes[bitmap_start + row / 8] |= 1 << (row % 8);
+                    continue;
+                }
+                let last = row == n - 1;
+                let missing = if last {
+                    0
+                } else {
+                    u8::from(row % 11 == 0)
+                        | u8::from(row % 23 == 0) << 1
+                        | u8::from(row % 7 == 0) << 2
+                        | u8::from(row % 5 == 0) << 3
+                        | u8::from(row % 13 == 0) << 4
+                };
+                bytes.push(missing | 0xe0);
+                if missing & 1 == 0 {
+                    let count = if row == 1 { 127 } else { 3 };
+                    bytes.push(count);
+                    for _ in 0..count {
+                        if row == 1 {
+                            bytes.extend_from_slice(&[128; 22]);
+                        }
+                        bytes.extend_from_slice(&[128, 1]);
+                    }
+                }
+                if missing & 2 == 0 {
+                    bytes.push(if error == 2 && last { 2 } else { 1 });
+                }
+                if missing & 4 == 0 {
+                    bytes.push(if error == 1 && last { 6 } else { 12 });
+                }
+                if missing & 8 == 0 {
+                    leb(
+                        if row % 29 == 0 {
+                            300
+                        } else {
+                            (row % 100) as u64
+                        },
+                        &mut bytes,
+                    );
+                }
+                if missing & 16 == 0 {
+                    bytes.extend_from_slice(&(f64::NAN.to_bits() | row as u64).to_le_bytes());
+                }
+            }
+            for selected in [
+                vec![vec!["value".into()], vec!["float".into()]],
+                vec![vec!["call".into()], vec!["flag".into()]],
+            ] {
+                let mut node = Node::new(&encoding, &ty);
+                node.demand(&selected);
+                for prefix in [0usize, 1, 65520, 65535] {
+                    let mut padded = vec![0; prefix];
+                    padded.extend_from_slice(&bytes);
+                    compare_buffered_array(&node, padded.into(), prefix)?;
+                }
+                for removed in [1, 2, 7, 17, bytes.len() - 1] {
+                    compare_buffered_array(&node, bytes[..bytes.len() - removed].into(), 0)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    #[test]
+    fn buffered_scalars_support_high_missing_bit_and_zero_byte_null_entries() -> Result<()> {
+        let integer = Encoding {
+            kind: "EInt32".into(),
+            required: false,
+            fields: vec![],
+            rank: 0,
+        };
+        let fields = (0..64)
+            .map(|i| (format!("x{i}"), Type::Primitive(P::Int32)))
+            .collect();
+        let ty = Type::Array {
+            array: Box::new(Type::Struct { r#struct: fields }),
+        };
+        let encoding = Encoding {
+            kind: "EArray2".into(),
+            required: true,
+            fields: vec![(
+                "element".into(),
+                Encoding {
+                    kind: "EBaseStruct".into(),
+                    required: false,
+                    fields: (0..64)
+                        .map(|i| (format!("x{i}"), integer.clone()))
+                        .collect(),
+                    rank: 0,
+                },
+            )],
+            rank: 0,
+        };
+        let mut node = Node::new(&encoding, &ty);
+        node.demand(&[vec!["x63".into()]]);
+        let mut bytes = vec![3, 4];
+        bytes.extend_from_slice(&[0; 8]);
+        bytes.extend_from_slice(&[1; 64]);
+        bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 128]);
+        bytes.extend_from_slice(&[2; 63]);
+        compare_buffered_array(&node, bytes.into(), 0)?;
+        compare_buffered_array(&node, Arc::from([3u8, 7]), 0)?;
+        Ok(())
     }
 
     #[test]
