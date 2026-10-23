@@ -135,3 +135,10 @@ def test_column_sum_empty_axes_and_missing_entries_keep_aligned_shape():
         missing = matrix.filter_entries(False)
         result = missing.annotate_cols(total=hl.agg.sum(missing.value))
         assert [c.total for c in result.cols().collect()] == [0] * columns
+
+
+def test_column_sum_preserves_int32_map_wrapping_before_wide_accumulation():
+    matrix = hl.range_matrix_table(2, 1, n_partitions=2)
+    matrix = matrix.annotate_entries(value=hl.int32(2147483647) + matrix.row_idx)
+    result = matrix.annotate_cols(total=hl.agg.sum(matrix.value))
+    assert result.cols().collect()[0].total == -1
