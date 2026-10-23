@@ -82,7 +82,8 @@ pub(crate) fn resolve<'a>(
         // unreachable CASE branches) must not execute merely to bind an action.
         let aggregate = contains_aggregate_singleton(&logical)?;
         let logical = if aggregate {
-            let protected = crate::logical_parameters::parameterize(logical, bindings.state.execution_props())?;
+            let protected =
+                crate::logical_parameters::parameterize(logical, bindings.state.execution_props())?;
             bindings.state.optimize(&protected)?
         } else {
             logical
