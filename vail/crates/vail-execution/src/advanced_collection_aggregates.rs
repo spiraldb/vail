@@ -173,7 +173,22 @@ struct TakeIdentity {
 
 pub(crate) fn coordinate_take(udf: &AggregateUDF) -> Option<crate::coordinate_collect::CoordinateCollect> {
     let identity = crate::kernel_identity::aggregate_key::<TakeIdentity>(udf)?;
-    (!identity.ordered).then(|| crate::coordinate_collect::CoordinateCollect::bounded(identity.input.clone(), identity.n))
+    (!identity.ordered && bounded_take_owns_values(&identity.input)).then(|| crate::coordinate_collect::CoordinateCollect::bounded(identity.input.clone(), identity.n))
+}
+
+// Arrow MutableArrayData retains all variadic buffers for view storage. Keep
+// these layouts on the native fallback until retained view buffers are compacted.
+fn bounded_take_owns_values(dtype: &DataType) -> bool {
+    match dtype {
+        DataType::Utf8View | DataType::BinaryView | DataType::Dictionary(_, _) => false,
+        DataType::List(f) | DataType::LargeList(f) | DataType::FixedSizeList(f, _)
+        | DataType::Map(f, _) => bounded_take_owns_values(f.data_type()),
+        DataType::ListView(_) | DataType::LargeListView(_) => false,
+        DataType::Struct(fields) => fields.iter().all(|f| bounded_take_owns_values(f.data_type())),
+        DataType::Union(fields, _) => fields.iter().all(|(_,f)| bounded_take_owns_values(f.data_type())),
+        DataType::RunEndEncoded(_, values) => bounded_take_owns_values(values.data_type()),
+        _ => true,
+    }
 }
 
 #[derive(Debug)]

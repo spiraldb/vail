@@ -58,3 +58,10 @@ def test_coordinate_take_bounded_order_nulls_and_filters(partitions,limit):
     assert result[0].filtered==[hl.Struct(s=str(i),v=[i,None]) for i in range(0,9,2)][:limit]
     assert result[1].filtered==[None]*min(limit,5)
     assert result[0].absent==result[1].absent==[]
+
+
+def test_coordinate_take_sparse_selection_over_many_batches():
+    table=hl.utils.range_table(128,n_partitions=8)
+    table=table.annotate(xs=hl.range(128).map(lambda i:hl.struct(value=i,keep=i==table.idx)))
+    result=table.aggregate(hl.agg.array_agg(lambda x:hl.agg.filter(x.keep,hl.agg.take(x.value,1)),table.xs))
+    assert result==[[i] for i in range(128)]

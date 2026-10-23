@@ -20,12 +20,18 @@ enum Source {
         filter: Option<BooleanArray>,
     },
     State(ArrayRef),
+    SparseState {
+        state: ArrayRef,
+        columns: Vec<usize>,
+    },
 }
 impl Source {
     fn values(&self) -> &ArrayRef {
         match self {
             Self::Rows { values, .. } => values,
-            Self::State(state) => state.as_any().downcast_ref::<ListArray>().unwrap().values(),
+            Self::State(state) | Self::SparseState { state, .. } => {
+                state.as_any().downcast_ref::<ListArray>().unwrap().values()
+            }
         }
     }
     fn size(&self) -> usize {
@@ -35,6 +41,9 @@ impl Source {
                     + filter.as_ref().map_or(0, |f| f.get_array_memory_size())
             }
             Self::State(state) => state.get_array_memory_size(),
+            Self::SparseState { state, columns } => {
+                state.get_array_memory_size() + columns.capacity() * std::mem::size_of::<usize>()
+            }
         }
     }
 }
@@ -73,7 +82,8 @@ impl CoordinateCollect {
         }
         let data = source.values().to_data();
         let mut output = MutableArrayData::new(vec![&data], false, 0);
-        let mut lengths = Vec::with_capacity(width);
+        let mut lengths = Vec::new();
+        let mut columns = Vec::new();
         for column in 0..width {
             let before = self.retained[column];
             let remaining = limit - before;
@@ -92,6 +102,9 @@ impl CoordinateCollect {
                         }
                     }
                 }
+                Source::SparseState { .. } => {
+                    unreachable!("bounded input is raw rows or native partial state")
+                }
                 Source::State(state) => {
                     let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
                     if lists.is_valid(column) {
@@ -102,7 +115,10 @@ impl CoordinateCollect {
                     }
                 }
             }
-            lengths.push(self.retained[column] - before);
+            if self.retained[column] != before {
+                columns.push(column);
+                lengths.push(self.retained[column] - before);
+            }
         }
         let mut total = 0usize;
         let mut offsets = vec![0i32];
@@ -122,7 +138,10 @@ impl CoordinateCollect {
                 make_array(output.freeze()),
                 None,
             )?;
-            self.sources.push(Source::State(Arc::new(state)));
+            self.sources.push(Source::SparseState {
+                state: Arc::new(state),
+                columns,
+            });
         }
         Ok(())
     }
@@ -148,6 +167,11 @@ impl CoordinateCollect {
         }
         if filter.is_some_and(|filter| filter.len() != values.len()) {
             return Err(error("coordinate collect filter length mismatch"));
+        }
+        if self.limit.is_some_and(|n| {
+            !self.retained.is_empty() && self.retained.iter().all(|count| *count == n)
+        }) {
+            return Ok(());
         }
         self.extend_snapshot();
         let source = Source::Rows {
@@ -175,6 +199,11 @@ impl CoordinateCollect {
             return Err(error(
                 "coordinate collect partial state type/width mismatch",
             ));
+        }
+        if self.limit.is_some_and(|n| {
+            !self.retained.is_empty() && self.retained.iter().all(|count| *count == n)
+        }) {
+            return Ok(());
         }
         self.extend_snapshot();
         let source = Source::State(Arc::clone(state));
@@ -216,6 +245,14 @@ impl CoordinateCollect {
                                     .ok_or_else(|| error("coordinate collect length overflow"))?;
                             }
                         }
+                    }
+                }
+                Source::SparseState { state, columns } => {
+                    let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
+                    for (index, &column) in columns.iter().enumerate() {
+                        counts[column] = counts[column]
+                            .checked_add(lists.value_length(index) as usize)
+                            .ok_or_else(|| error("coordinate collect length overflow"))?;
                     }
                 }
                 Source::State(state) => {
@@ -263,6 +300,17 @@ impl CoordinateCollect {
                                 }) {
                                     output.try_extend(source_index, index, index + 1)?;
                                 }
+                            }
+                        }
+                        Source::SparseState { state, columns } => {
+                            if let Ok(index) = columns.binary_search(&column) {
+                                let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
+                                let offsets = lists.value_offsets();
+                                output.try_extend(
+                                    source_index,
+                                    offsets[index] as usize,
+                                    offsets[index + 1] as usize,
+                                )?;
                             }
                         }
                         Source::State(state) => {
