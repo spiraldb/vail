@@ -272,3 +272,33 @@ def test_matrix_version_three_drops_repeated_ids_preserving_null_structs(tmp_pat
     assert set(restored._mir.core._schema['__vail_matrix_cells'].element_type) == {'value'}
     assert restored.localize_entries('entries', 'columns').collect() == expected
     assert restored.aggregate_entries(hl.agg.count()) == 4
+
+
+@pytest.mark.parametrize('empty_entry', [False, True])
+def test_forced_entry_count_matches_expansion_with_missing_and_duplicate_slots(empty_entry):
+    matrix = hl.range_matrix_table(2, 3, 2)
+    matrix = matrix.annotate_entries(value=hl.or_missing(matrix.col_idx != 0, matrix.col_idx))
+    matrix = matrix.filter_entries(matrix.col_idx != 1).choose_cols([2, 1, 0, 2])
+    if empty_entry:
+        matrix = matrix.select_entries()
+    entries = matrix.entries()
+    collected = entries.collect()
+    # Each row has a defined entry with all missing fields (or an empty
+    # struct), one filtered slot, and two occurrences of column 2.
+    assert len(collected) == 6
+    assert entries._force_count() == len(collected)
+    if not empty_entry:
+        assert sum(entry.value is None for entry in collected) == 2
+
+
+@pytest.mark.parametrize('stage', ['entry', 'expanded'])
+def test_forced_entry_count_executes_computed_errors(stage):
+    matrix = hl.range_matrix_table(2, 3, 2)
+    if stage == 'entry':
+        matrix = matrix.annotate_entries(value=hl.int32(hl.str(matrix.col_idx) + 'invalid'))
+        entries = matrix.entries()
+    else:
+        entries = matrix.entries()
+        entries = entries.annotate(value=hl.int32(hl.str(entries.col_idx) + 'invalid'))
+    with pytest.raises(hl.utils.FatalError, match='(?i)invalid|parse|cast|digit'):
+        entries._force_count()
