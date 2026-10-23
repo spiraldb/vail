@@ -37,15 +37,18 @@ def run(case):
     if case == 'matrix_entries_count':
         return m.entries()._force_count()
     return m.aggregate_entries(hl.agg.sum(m.DP))
+# process_time includes Vail native worker threads, but excludes Hail's Java child.
+# Compare this CPU metric between Vail binaries only; Hail comparison uses wall time.
 results = {}
 def compiler_active():
     return any(line.strip().rsplit('/', 1)[-1] == 'rustc' for line in subprocess.check_output(['ps', '-axo', 'comm'], text=True).splitlines())
 
 def measure(case):
     if not a.reject_compilers:
+        cpu_start = time.process_time()
         start = time.perf_counter()
         value = run(case)
-        return value, time.perf_counter() - start, False
+        return value, time.perf_counter() - start, False, time.process_time() - cpu_start
     waiting = False
     while compiler_active():
         if not waiting:
@@ -60,31 +63,34 @@ def measure(case):
     thread = threading.Thread(target=monitor, daemon=True)
     thread.start()
     try:
+        cpu_start = time.process_time()
         start = time.perf_counter()
         value = run(case)
         elapsed = time.perf_counter() - start
+        cpu_elapsed = time.process_time() - cpu_start
     finally:
         stop.set()
         thread.join()
-    return value, elapsed, interference.is_set() or compiler_active()
+    return value, elapsed, interference.is_set() or compiler_active(), cpu_elapsed
 
 for case in a.cases:
-    times, values, attempts = [], [], []
+    times, cpu_times, values, attempts = [], [], [], []
     try:
         i = 0
         while i < a.warmup + a.runs:
-            value, elapsed, interference = measure(case)
+            value, elapsed, interference, cpu_elapsed = measure(case)
             values.append(value)
             assert all(v == value for v in values)
-            attempts.append(dict(seconds=elapsed, compiler_interference=interference, warmup=i < a.warmup))
+            attempts.append(dict(seconds=elapsed, python_process_cpu_seconds=cpu_elapsed, compiler_interference=interference, warmup=i < a.warmup))
             if interference:
                 print(case, 'retrying measurement overlapping Rust compilation', elapsed, value, flush=True)
                 continue
             if i >= a.warmup:
                 times.append(elapsed)
+                cpu_times.append(cpu_elapsed)
             print(case, i, elapsed, value, flush=True)
             i += 1
-        results[case] = dict(seconds=times, median=statistics.median(times), value=value, attempts=attempts)
+        results[case] = dict(seconds=times, median=statistics.median(times), python_process_cpu_seconds=cpu_times, python_process_cpu_median=statistics.median(cpu_times), value=value, attempts=attempts)
     except Exception as e:
         results[case] = dict(error=repr(e))
         print(case, repr(e), flush=True)

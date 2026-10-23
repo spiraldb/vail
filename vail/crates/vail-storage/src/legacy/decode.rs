@@ -141,6 +141,9 @@ impl Column {
         }
     }
     fn projected(node: &Node, ty: &DataType) -> Self {
+        Self::projected_encoding(node, ty, false)
+    }
+    fn projected_encoding(node: &Node, ty: &DataType, retain_required_i32: bool) -> Self {
         match ty {
             DataType::Struct(fields) if matches!(node.ty, Type::Primitive(P::Call)) => {
                 Self::Call(Box::new(CallColumn::new(fields.clone())))
@@ -154,7 +157,7 @@ impl Column {
                             Some(j) if !node.fields[j].project => {
                                 Self::Skipped(f.data_type().clone(), 0, None)
                             }
-                            Some(j) => Self::projected(&node.children[j], f.data_type()),
+                            Some(j) => Self::projected_encoding(&node.children[j], f.data_type(), retain_required_i32),
                             None => Self::new(f.data_type()),
                         },
                     )
@@ -163,13 +166,13 @@ impl Column {
             }
             DataType::List(field) if node.e.kind.starts_with("EArray") => Self::List(
                 field.clone(),
-                Box::new(if node.children[0].e.required
+                Box::new(if retain_required_i32 && node.children[0].e.required
                     && matches!(node.children[0].wire, Wire::Varint)
                     && matches!(node.children[0].append_kind, AppendKind::Int32)
                 {
                     Self::EncodedI32(super::encoded_int::EncodedI32Builder::new())
                 } else {
-                    Self::projected(&node.children[0], field.data_type())
+                    Self::projected_encoding(&node.children[0], field.data_type(), retain_required_i32)
                 }),
                 vec![0],
                 NullBufferBuilder::new(8192),
@@ -678,6 +681,7 @@ impl<T> BoundList<'_, T> {
         self.validity.append_null();
     }
 }
+#[inline(always)]
 fn bound_list_length<const MODE: u8>(input: &mut Input) -> Result<usize> {
     let value = match MODE {
         0 => i32::from_le_bytes(input.fixed()?) as i64,
@@ -2087,7 +2091,7 @@ mod tests {
                 let data: Arc<[u8]> = bytes[..bytes.len() - usize::from(truncated)].into();
                 let mut left = Input::from_memory(data.clone(), compressed); let mut right = Input::from_memory(data, compressed);
                 let mut expected = Column::new(&ty.to_arrow()?);
-                let mut actual = if retained { Column::projected(&node, &ty.to_arrow()?) } else { Column::new(&ty.to_arrow()?) };
+                let mut actual = if retained { Column::projected_encoding(&node, &ty.to_arrow()?, true) } else { Column::new(&ty.to_arrow()?) };
                 let generic = append_unbound_struct_array(&node, &mut left, &mut expected);
                 let bound = node.append(&mut right, &mut actual);
                 assert_eq!(left.bytes, right.bytes);
@@ -2198,7 +2202,7 @@ fn required_varint_i32_lists_match_arrow_and_keep_vortex_export_lazy() -> Result
     let datatype = ty.to_arrow()?;
     let field = arrow_schema::Field::new("values", datatype.clone(), true);
     let session = vortex::session::VortexSession::default();
-    let mut encoded = Column::projected(&node, &datatype);
+    let mut encoded = Column::projected_encoding(&node, &datatype, true);
     let mut generic = Column::new(&datatype);
     for values in [
         vec![-1i32, 0, 127, 128, i32::MIN, i32::MAX],
@@ -2215,7 +2219,7 @@ fn required_varint_i32_lists_match_arrow_and_keep_vortex_export_lazy() -> Result
         encoded.null()?;
         generic.null()?;
         assert_eq!(encoded.finish()?.as_ref(), generic.finish()?.as_ref());
-        let mut vortex = Column::projected(&node, &datatype);
+        let mut vortex = Column::projected_encoding(&node, &datatype, true);
         node.append(&mut Input::from_memory(bytes, false), &mut vortex)?;
         vortex.null()?;
         let array = vortex.finish_vortex(&field, &session)?;
@@ -2248,7 +2252,7 @@ fn required_varint_i32_lists_match_arrow_and_keep_vortex_export_lazy() -> Result
         let mut right = Input::from_memory(bytes, false);
         left.skip(prefix)?; right.skip(prefix)?;
         let mut eager = Column::new(&datatype);
-        let mut retained = Column::projected(&node, &datatype);
+        let mut retained = Column::projected_encoding(&node, &datatype, true);
         let eager_result = node.append(&mut left, &mut eager);
         let retained_result = node.append(&mut right, &mut retained);
         assert_eq!(left.bytes, right.bytes);
