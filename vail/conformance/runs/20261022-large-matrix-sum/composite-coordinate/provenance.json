@@ -1,0 +1,16 @@
+{
+  "python_source": "168bee3d",
+  "native_runtime_source": "e6abbe86da1184388a2d52de95d06df7023b251b",
+  "native_sha256": "c5adb1d8a3204eec5426ddaf6e0e9e51323122b8b9b60c03ef325368c1912db5",
+  "matrixtable_py_sha256": "affa968abcfc2d13863fa93d8addfc192a6a1c91337daf7ee1840be8dcbcac69",
+  "native_build": "Normalrelease Rust1.98+kache previousmatchinggrouped-main-reconciled-build; thisstagechangesPythononly,no nativecodechange/rebuildrequired.",
+  "tests": "148publicPythonpass7.50s; focused28pass2.77s",
+  "benchmark": "Representative10k\u00d71k matrix250partitions;3serialVailreps,currentfreshstockHail0.2.139three-repbaseline reused unchanged query/settings (fullrawbaseline+telemetry in siblingmatrix-composite-main-followup).",
+  "settings": "Bothtarget32threads,14logicalCPU96GiBhost,engines serial,10Hzprocess-treeCPU inclretainedexitedJVMchildren",
+  "limitations": [
+    "Representative, notupstreamfixturecase.",
+    "First-repJIT overhead retained;medians/ranges provided.",
+    "RSSsample100ms, fastVailquery~65ms so transientRSSmaybemissed.",
+    "One-shot1kHzprofile1033samples includesimports/planning; useplanforoperatorverification, do notinferlarge precise kernelshares."
+  ]
+}

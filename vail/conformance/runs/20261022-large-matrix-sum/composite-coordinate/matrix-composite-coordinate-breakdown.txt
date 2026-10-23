@@ -1,0 +1,39 @@
+samples 1033
+13.75 142 __psynch_cvwait
+5.42 56 __open
+4.74 49 _PyEval_EvalFrameDefault
+2.42 25 visit_decref
+2.42 25 gc_collect_main.llvm.6325940347975832991
+2.32 24 stat
+2.23 23 mach_o::GenericTrie::find(CString, bool) const
+2.13 22 _PyObject_Malloc
+2.03 21 type_new
+1.94 20 deduce_unreachable
+1.84 19 r_object.llvm.9845490566179339274
+1.45 15 visit_reachable
+1.45 15 _platform_memmove
+1.45 15 __psynch_mutexwait
+1.06 11 PyDict_SetDefault
+0.97 10 PyDict_GetItemWithError
+0.97 10 _PyCode_Quicken
+0.87 9 lsl::Allocator::AllocationMetadata::pool(bool) const
+0.77 8 __mmap
+0.77 8 0x352b4
+0.77 8 func_traverse
+0.68 7 PyDict_SetItem
+inclusive
+82.96 857 start
+82.87 856 Py_BytesMain
+82.87 856 pymain_main
+81.8 845 Py_RunMain
+75.9 784 _PyEval_EvalFrameDefault
+75.8 783 PyEval_EvalCode
+74.93 774 pyrun_file
+74.93 774 pymain_run_file_obj
+74.93 774 _PyRun_SimpleFileObject
+74.93 774 _PyRun_AnyFileObject
+74.93 774 pymain_run_file
+74.83 773 run_mod.llvm.8217961648363706888
+63.7 658 _PyObject_VectorcallTstate.llvm.12038793513780791252
+63.5 656 PyObject_CallMethodObjArgs
+63.5 656 object_vacall.llvm.12038793513780791252

@@ -1,0 +1,39 @@
+samples 1637
+19.12 313 __psynch_cvwait
+3.73 61 __open
+3.12 51 _PyEval_EvalFrameDefault
+2.87 47 stat
+1.59 26 _PyObject_Malloc
+1.59 26 <arrow_buffer::buffer::mutable::MutableBuffer as core::iter::traits::collect::FromIterator<bool>>::from_iter::<core::iter::adapters::map::Map<arrow_array::iterator::ArrayIter<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>, arrow_select::take::take_impl<arrow_array::types::UInt64Type>::{closure#1}>>
+1.53 25 gc_collect_main.llvm.6325940347975832991
+1.53 25 <datafusion_physical_plan::aggregates::group_values::single_group_by::primitive::GroupValuesPrimitive<arrow_array::types::Int64Type> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern
+1.47 24 _platform_memmove
+1.47 24 mach_o::GenericTrie::find(CString, bool) const
+1.41 23 r_object.llvm.9845490566179339274
+1.28 21 deduce_unreachable
+1.16 19 0x3a90c
+1.04 17 visit_decref
+0.98 16 type_new
+0.98 16 visit_reachable
+0.86 14 PyDict_SetDefault
+0.86 14 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+0.79 13 mach_msg2_trap
+0.79 13 read
+0.79 13 _platform_memcmp
+0.79 13 datafusion_physical_plan::unnest::unnest_list_array
+inclusive
+62.92 1030 start
+62.8 1028 Py_BytesMain
+62.8 1028 pymain_main
+62.19 1018 Py_RunMain
+57.36 939 _PyEval_EvalFrameDefault
+57.12 935 PyEval_EvalCode
+56.63 927 _PyRun_SimpleFileObject
+56.63 927 pyrun_file
+56.63 927 pymain_run_file
+56.63 927 _PyRun_AnyFileObject
+56.63 927 run_mod.llvm.8217961648363706888
+56.63 927 pymain_run_file_obj
+42.33 693 _PyObject_VectorcallTstate.llvm.12038793513780791252
+42.03 688 PyImport_ImportModuleLevelObject
+42.03 688 PyObject_CallMethodObjArgs
