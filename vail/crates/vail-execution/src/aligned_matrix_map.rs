@@ -216,6 +216,7 @@ pub(crate) struct AlignedMatrixMapExpr {
     all_present_body: Option<Arc<dyn PhysicalExpr>>,
     input_keys: HashSet<InputKey>,
     binding_order: Vec<InputKey>,
+    capture_types: Vec<DataType>,
     column_dtype: Option<DataType>,
     dtype: DataType,
     body_dtype: DataType,
@@ -232,6 +233,7 @@ impl AlignedMatrixMapExpr {
         body: Arc<dyn PhysicalExpr>,
         all_present_body: Option<Arc<dyn PhysicalExpr>>,
         capture_keys: Vec<(String, Option<String>)>,
+        capture_types: Vec<DataType>,
         column_dtype: Option<DataType>,
         dtype: DataType,
         body_dtype: DataType,
@@ -252,6 +254,7 @@ impl AlignedMatrixMapExpr {
             all_present_body,
             input_keys,
             binding_order,
+            capture_types,
             column_dtype,
             dtype,
             body_dtype,
@@ -535,6 +538,7 @@ impl PartialEq for AlignedMatrixMapExpr {
             && self.globals.as_ref() == other.globals.as_ref()
             && self.body.as_ref() == other.body.as_ref()
             && self.binding_order == other.binding_order
+            && self.capture_types == other.capture_types
             && self.column_dtype == other.column_dtype
             && self.dtype == other.dtype
             && self.body_dtype == other.body_dtype
@@ -551,6 +555,7 @@ impl Hash for AlignedMatrixMapExpr {
         self.globals.hash(state);
         self.body.hash(state);
         self.binding_order.hash(state);
+        self.capture_types.hash(state);
         self.column_dtype.hash(state);
         self.dtype.hash(state);
         self.body_dtype.hash(state);
@@ -608,6 +613,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             body: children[4].clone(),
             input_keys: self.input_keys.clone(),
             binding_order: self.binding_order.clone(),
+            capture_types: self.capture_types.clone(),
             column_dtype: self.column_dtype.clone(),
             dtype: self.dtype.clone(),
             body_dtype: self.body_dtype.clone(),
@@ -679,11 +685,16 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                         .ok_or_else(|| {
                             DataFusionError::Execution("aligned row capture is absent".into())
                         })?;
-                    CaptureSource::Row(Arc::clone(field))
+                    CaptureSource::Row(crate::logical_expr::restore_arrow_array_type(
+                        field, &self.capture_types[index],
+                    )?)
                 }
                 "num_cols" => CaptureSource::Scalar(ScalarValue::Int32(Some(columns.len() as i32))),
                 "global" => match global_bindings.get(key) {
-                    Some(ColumnarValue::Scalar(value)) => CaptureSource::Scalar(value.clone()),
+                    Some(value) => match crate::logical_expr::restore_arrow_value_type(value.clone(), &self.capture_types[index])? {
+                        ColumnarValue::Scalar(value) => CaptureSource::Scalar(value),
+                        _ => return Err(DataFusionError::Internal("global capture ceased to be scalar".into())),
+                    },
                     _ => {
                         return Err(DataFusionError::Execution(
                             "missing scalar global binding".into(),
@@ -1176,4 +1187,49 @@ mod runend_experiment_tests {
             );
         }
     }
+    #[test]
+    fn public_aligned_map_normalizes_nested_row_capture_descriptors() {
+        use crate::expressions::{Expr, Type, lower};
+        use arrow_schema::Field;
+        for child in [
+            Arc::new(Int32Array::from(vec![1, 2])) as ArrayRef,
+            Arc::new(arrow_array::StringViewArray::from(vec!["alpha", "beta"])) as ArrayRef,
+            Arc::new(arrow_array::LargeStringArray::from(vec!["alpha", "beta"])) as ArrayRef,
+        ] {
+            let payload = StructArray::new(
+                vec![Arc::new(Field::new("x", child.data_type().clone(), false))].into(),
+                vec![child.clone()], Some(NullBuffer::from(vec![true, false])));
+            let payload_type = Type::from_arrow(payload.data_type()).unwrap();
+            let bundle = StructArray::from(vec![(Arc::new(Field::new("v", payload.data_type().clone(), true)), Arc::new(payload) as ArrayRef)]);
+            let rows = StructArray::from(vec![(Arc::new(Field::new("__vail_aligned_row", bundle.data_type().clone(), true)), Arc::new(bundle) as ArrayRef)]);
+            let slots = StructArray::from(vec![
+                (Arc::new(Field::new("__vail_matrix_col_id", DataType::Int32, true)), Arc::new(Int32Array::from(vec![0, 0])) as ArrayRef),
+                (Arc::new(Field::new("value", DataType::Struct(Default::default()), true)), Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef),
+            ]);
+            let entries = ListArray::new(Arc::new(Field::new_list_field(slots.data_type().clone(), true)), OffsetBuffer::from_lengths([1, 1]), Arc::new(slots), None);
+            let batch = RecordBatch::try_from_iter(vec![("entries", Arc::new(entries) as ArrayRef), ("rows", Arc::new(rows) as ArrayRef)]).unwrap();
+            let result_type = Type::Array { array: Box::new(Type::Struct { r#struct: vec![("out".into(), payload_type.clone())] }) };
+            let expression = Expr::AlignedMatrixMap {
+                entries: Arc::new(Expr::Column { name: "entries".into() }),
+                rows: Arc::new(Expr::Column { name: "rows".into() }),
+                columns: Arc::new(Expr::RuntimeLiteral { value: ScalarValue::List(Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>(vec![Some(vec![Some(0)])]))) }),
+                globals: Arc::new(Expr::RuntimeLiteral { value: ScalarValue::Int32(None) }),
+                body: Arc::new(Expr::Struct { fields: vec![("out".into(), Expr::AlignedMapInput { axis: "row".into(), name: Some("v".into()), dtype: payload_type })] }),
+                dtype: result_type.clone(), preserve_cell: false,
+            };
+            let prepared = lower(&expression, batch.schema().as_ref()).unwrap();
+            let output = prepared.evaluate(&batch).unwrap().into_array(2).unwrap();
+            assert_eq!(output.data_type(), &result_type.to_arrow().unwrap());
+            let output = output.as_any().downcast_ref::<ListArray>().unwrap();
+            let values = output.values().as_any().downcast_ref::<StructArray>().unwrap();
+            let captured = values.column(0).as_any().downcast_ref::<StructArray>().unwrap();
+            assert!(captured.is_valid(0)); assert!(captured.is_null(1));
+            if child.data_type() == &DataType::Int32 {
+                assert_eq!(captured.column(0).as_any().downcast_ref::<Int32Array>().unwrap().value(0), 1);
+            } else {
+                assert_eq!(captured.column(0).as_any().downcast_ref::<arrow_array::StringArray>().unwrap().value(0), "alpha");
+            }
+        }
+    }
+
 }

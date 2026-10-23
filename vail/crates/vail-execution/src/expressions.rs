@@ -6053,6 +6053,7 @@ fn lower_uncached(
                 rewrite_batch_inputs(value, &names, &mut Default::default())
             ).transpose()?;
             let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
+            let capture_types = body_fields[3..].iter().map(|f| f.data_type().clone()).collect();
             let body_schema = Schema::new(body_fields);
             let body_context = memo.context(&body_schema, globals.schema(), scope);
             let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
@@ -6068,6 +6069,7 @@ fn lower_uncached(
                 body,
                 all_present_body,
                 capture_keys,
+                capture_types,
                 column_dtype,
                 dtype.to_arrow()?,
                 body_dtype,
