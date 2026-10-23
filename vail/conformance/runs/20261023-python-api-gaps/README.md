@@ -1,7 +1,7 @@
 # Small Python API compatibility gaps
 
 Base: frozen main `e79cf6ffeb624756cc27769cd6031b0f12858651`.
-Candidate source: `bab0027baf89a5b72dc964ffaef81b294d4d5255`.
+Candidate source: `42fb93ceffb3ad05f9bbf03649c475e37dd36b6a`.
 Upstream Hail source: `e10cc355bc8cd0de9c5f29d5182d31527898bae1`.
 
 The patch adds struct-expression `values()` and simultaneous `rename()`, Python
@@ -27,8 +27,29 @@ upstream function bodies, including the seven parametrized invalid-window
 cases. Selected bodies have no Hail fixtures or class setup dependencies; this
 is targeted body validation, not a claim that entire upstream modules pass.
 
-Results: **87 public tests passed** (20 new compatibility cases plus existing
+Results: **94 public tests passed** (27 new compatibility cases plus existing
 Call/dictionary tests), **17 unchanged upstream cases passed**. Normal release
 build completed successfully in 12m25s. Native path/hash and exact source are
 recorded in `provenance.json`; build/test logs are adjacent. `git diff --check`
 passed. No Rust source changed, and no performance improvement is claimed.
+
+
+## Required review fixes
+
+- NaN radii are rejected explicitly, including empty arrays.
+- Signed-integer arrays use a separate linear two-pointer scan, comparing exact
+  Python-integer coordinate distances to `floor(radius)`. This preserves
+  adjacent int64 coordinates above 2**53 with floating radii and avoids integer
+  subtraction overflow. Integer endpoint arithmetic is checked against the
+  input dtype domain; positive infinite radii produce whole-array windows.
+- The localized Python Call genotype-index API intentionally returns an
+  unbounded Python integer, matching upstream Hail's value contract. The
+  65535/65535 boundary returns 2147516415. It is not silently wrapped to the
+  native expression API's Int32 result; that native result-type limitation is
+  separate from these Python conveniences.
+
+Public regressions cover NaN radii, fractional/zero/integral floating radii
+above 2**53, int64 endpoint domains, infinite radii, and the large Call index.
+After these Python-only changes, normal `maturin develop --release --locked`
+completed in 0.53s and the 94 public/17 upstream cases passed again against that
+installation. See `python-api-gaps-review-build.log`.
