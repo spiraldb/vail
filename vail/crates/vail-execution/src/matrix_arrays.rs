@@ -125,7 +125,116 @@ impl<'a> ListRows<'a> {
     }
 }
 
+fn take_offset(length: usize) -> Result<i32> {
+    i32::try_from(length).map_err(|_| {
+        datafusion_common::exec_datafusion_err!("matrix gather exceeds Arrow list capacity")
+    })
+}
+/// Visit the same validated selection for payload gathers and validity counts.
+fn visit_take(
+    values: &ListRows<'_>,
+    positions: &ListRows<'_>,
+    mut selected: impl FnMut(usize),
+) -> Result<Vec<i32>> {
+    let indices = positions
+        .values
+        .values()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .ok_or_else(|| datafusion_common::exec_datafusion_err!("list positions must be int32"))?;
+    let mut offsets = vec![0];
+    let mut length = 0usize;
+    for row in 0..values.rows {
+        let source = values.span(row);
+        for index in positions.span(row) {
+            if indices.is_null(index) {
+                return exec_err!("matrix positions must not be missing");
+            }
+            let position = indices.value(index);
+            if position < 0 || position as usize >= source.len() {
+                return exec_err!(
+                    "matrix column index {position} is out of bounds for {} columns",
+                    source.len()
+                );
+            }
+            selected(source.start + position as usize);
+            length = length.checked_add(1).ok_or_else(|| {
+                datafusion_common::exec_datafusion_err!("matrix gather exceeds Arrow list capacity")
+            })?;
+        }
+        offsets.push(take_offset(length)?);
+    }
+    Ok(offsets)
+}
+/// Count a positional gather's selected validity without taking payload arrays.
+/// Owning values and position expressions have already executed in normal order.
+pub(crate) fn count_take(
+    values: ColumnarValue,
+    positions: ColumnarValue,
+    rows: usize,
+    fields: &[String],
+) -> Result<usize> {
+    let first_scalar = matches!(&values, ColumnarValue::Scalar(_));
+    let second_scalar = matches!(&positions, ColumnarValue::Scalar(_));
+    let scalar = first_scalar && second_scalar;
+    let count = if scalar { 1 } else { rows };
+    if count == 0 {
+        return Ok(0);
+    }
+    let first = values.into_array(if first_scalar { 1 } else { count })?;
+    let second = positions.into_array(if second_scalar { 1 } else { count })?;
+    let values = ListRows::new(list(&first)?, first_scalar, count)?;
+    let positions = ListRows::new(list(&second)?, second_scalar, count)?;
+    let mut levels = vec![values.values.values().clone()];
+    for name in fields {
+        let parent = levels
+            .last()
+            .unwrap()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| {
+                datafusion_common::exec_datafusion_err!("gather count field requires struct")
+            })?;
+        let child = parent
+            .column_by_name(name)
+            .ok_or_else(|| datafusion_common::exec_datafusion_err!("gather count field absent"))?
+            .clone();
+        levels.push(child);
+    }
+    let nullable = levels
+        .iter()
+        .filter(|array| array.null_count() != 0)
+        .collect::<Vec<_>>();
+    let mut present = 0usize;
+    visit_take(&values, &positions, |index| {
+        present += usize::from(nullable.iter().all(|array| array.is_valid(index)));
+    })?;
+    present
+        .checked_mul(if scalar { rows } else { 1 })
+        .ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("gather count exceeds usize capacity")
+        })
+}
+
 fn gather(values: ListRows<'_>, positions: ListRows<'_>, grouped: bool) -> Result<ArrayRef> {
+    if !grouped {
+        let mut selection = Vec::new();
+        let offsets = visit_take(&values, &positions, |index| selection.push(index as u32))?;
+        let selected = take(
+            values.values.values().as_ref(),
+            &UInt32Array::from(selection),
+            None,
+        )?;
+        let DataType::List(field) = values.values.data_type() else {
+            unreachable!()
+        };
+        return Ok(Arc::new(ListArray::try_new(
+            field.clone(),
+            OffsetBuffer::new(offsets.into()),
+            selected,
+            None,
+        )?));
+    }
     let indices = if grouped {
         list(positions.values.values())?
     } else {
@@ -564,5 +673,166 @@ impl ScalarUDFImpl for MatrixArray {
         } else {
             Ok(ColumnarValue::Array(result))
         }
+    }
+}
+
+#[cfg(test)]
+mod take_count_tests {
+    use super::*;
+    use arrow_buffer::{NullBuffer, ScalarBuffer};
+    use arrow_schema::Field;
+    fn source() -> ListArray {
+        let entries = Arc::new(StructArray::new(
+            vec![Arc::new(Field::new("x", DataType::Int32, true))].into(),
+            vec![Arc::new(Int32Array::from(vec![None, Some(2), Some(3)]))],
+            Some(NullBuffer::from(vec![true, false, true])),
+        )) as ArrayRef;
+        let cells = Arc::new(StructArray::from(vec![(
+            Arc::new(Field::new("value", entries.data_type().clone(), true)),
+            entries,
+        )])) as ArrayRef;
+        ListArray::new(
+            Arc::new(Field::new("item", cells.data_type().clone(), true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, 3])),
+            cells,
+            None,
+        )
+    }
+    fn positions(indices: Vec<Option<i32>>) -> ListArray {
+        let n = indices.len() as i32;
+        ListArray::new(
+            Arc::new(Field::new("item", DataType::Int32, true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, n])),
+            Arc::new(Int32Array::from(indices)),
+            None,
+        )
+    }
+    fn scalar(list: ListArray) -> ColumnarValue {
+        ColumnarValue::Scalar(ScalarValue::List(Arc::new(list)))
+    }
+    #[test]
+    fn positional_validity_count_matches_gather_with_duplicates_and_null_entry() {
+        let source = source();
+        let positions = positions(vec![Some(0), Some(0), Some(1), Some(2)]);
+        let selected = gather(
+            ListRows::new(&source, true, 1).unwrap(),
+            ListRows::new(&positions, true, 1).unwrap(),
+            false,
+        )
+        .unwrap();
+        let selected = list(&selected)
+            .unwrap()
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap()
+            .column_by_name("value")
+            .unwrap();
+        assert_eq!(selected.len() - selected.null_count(), 3);
+        assert_eq!(
+            count_take(
+                scalar(source.clone()),
+                scalar(positions.clone()),
+                1,
+                &["value".into()]
+            )
+            .unwrap(),
+            3
+        );
+        assert_eq!(
+            count_take(scalar(source), scalar(positions), 3, &["value".into()]).unwrap(),
+            9
+        );
+    }
+    #[test]
+    fn positional_count_retains_index_and_owner_errors() {
+        for (indices, message) in [
+            (vec![Some(0), None], "positions must not be missing"),
+            (vec![Some(-1)], "out of bounds"),
+            (vec![Some(3)], "out of bounds"),
+        ] {
+            let source = source();
+            let positions = positions(indices);
+            let expected = gather(
+                ListRows::new(&source, true, 1).unwrap(),
+                ListRows::new(&positions, true, 1).unwrap(),
+                false,
+            )
+            .unwrap_err()
+            .to_string();
+            let actual = count_take(scalar(source), scalar(positions), 1, &["value".into()])
+                .unwrap_err()
+                .to_string();
+            assert!(actual.contains(message));
+            assert_eq!(actual, expected);
+        }
+        let source = source();
+        let absent = ListArray::new(
+            match source.data_type() {
+                DataType::List(field) => field.clone(),
+                _ => unreachable!(),
+            },
+            source.offsets().clone(),
+            source.values().clone(),
+            Some(NullBuffer::from(vec![false])),
+        );
+        assert!(
+            count_take(
+                scalar(absent.clone()),
+                scalar(positions(vec![Some(0)])),
+                1,
+                &[]
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("defined arrays and positions")
+        );
+        assert!(
+            count_take(
+                scalar(source.clone()),
+                scalar(ListArray::new(
+                    Arc::new(Field::new("item", DataType::Int32, true)),
+                    OffsetBuffer::new(ScalarBuffer::from(vec![0, 0])),
+                    Arc::new(Int32Array::from(Vec::<i32>::new())),
+                    Some(NullBuffer::from(vec![false]))
+                )),
+                1,
+                &[]
+            )
+            .is_err()
+        );
+        assert_eq!(
+            count_take(
+                ColumnarValue::Array(Arc::new(absent)),
+                scalar(positions(vec![Some(-1)])),
+                0,
+                &[]
+            )
+            .unwrap(),
+            0
+        );
+        assert!(
+            count_take(
+                ColumnarValue::Array(Arc::new(source)),
+                scalar(positions(vec![])),
+                2,
+                &[]
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("row counts differ")
+        );
+    }
+    #[test]
+    fn selection_count_uses_gather_arrow_capacity_boundary() {
+        // The shared per-row selection visitor calls this check without
+        // requiring a multi-billion-element test allocation.
+        assert_eq!(take_offset(i32::MAX as usize).unwrap(), i32::MAX);
+        assert!(
+            take_offset(i32::MAX as usize + 1)
+                .unwrap_err()
+                .to_string()
+                .contains("matrix gather exceeds Arrow list capacity")
+        );
     }
 }

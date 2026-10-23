@@ -147,6 +147,36 @@ impl ZipArguments {
             Self::Semantic { bindings, .. } => bindings.iter().collect(),
         }
     }
+    fn count(&self, batch: &RecordBatch, selected: usize, fields: &[String]) -> Result<usize> {
+        let Self::Semantic { bindings, programs } = self else {
+            return count_value(self.evaluate(batch, selected)?, batch.num_rows(), fields);
+        };
+        let values = bindings
+            .iter()
+            .map(|expression| expression.evaluate(batch))
+            .collect::<Result<Vec<_>>>()?;
+        let mut count = None;
+        for (index, program) in programs.iter().enumerate() {
+            if index == selected {
+                count = Some(
+                    if let Some(result) = program.count_take(&values, batch.num_rows(), fields) {
+                        result?
+                    } else {
+                        count_value(
+                            program.evaluate(&values, batch.num_rows())?,
+                            batch.num_rows(),
+                            fields,
+                        )?
+                    },
+                );
+            } else {
+                program.evaluate(&values, batch.num_rows())?;
+            }
+        }
+        count.ok_or_else(|| {
+            DataFusionError::Internal("semantic zip count selected argument missing".into())
+        })
+    }
     fn evaluate(&self, batch: &RecordBatch, selected: usize) -> Result<ColumnarValue> {
         match self {
             Self::Builtin(arguments) => {
@@ -193,6 +223,23 @@ enum Evaluation {
 #[derive(Debug, Clone)]
 struct ZipProgram(Vec<Evaluation>);
 impl ZipProgram {
+    fn count(&self, batch: &RecordBatch, fields: &[String]) -> Result<usize> {
+        let mut count = None;
+        for step in &self.0 {
+            match step {
+                Evaluation::Ordinary(expression) => {
+                    expression.evaluate(batch)?;
+                }
+                Evaluation::Zip {
+                    arguments,
+                    selected,
+                } => {
+                    count = Some(arguments.count(batch, *selected, fields)?);
+                }
+            }
+        }
+        count.ok_or_else(|| DataFusionError::Internal("zip count has no selected argument".into()))
+    }
     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
         let mut selected_value = None;
         for step in &self.0 {
@@ -354,16 +401,7 @@ impl ExecutionPlan for CountListExec {
             schema,
             stream.and_then(move |batch| {
                 let count = if let Some(program) = &program {
-                    program.evaluate(&batch).and_then(|value| match value {
-                        ColumnarValue::Array(array) => count_list(&array, &fields),
-                        ColumnarValue::Scalar(value) => {
-                            count_list(&value.to_array_of_size(1)?, &fields)?
-                                .checked_mul(batch.num_rows())
-                                .ok_or_else(|| {
-                                    DataFusionError::Execution("list count overflow".into())
-                                })
-                        }
-                    })
+                    program.count(&batch, &fields)
                 } else {
                     count_list(batch.column(column), &fields)
                 };
@@ -377,6 +415,14 @@ impl ExecutionPlan for CountListExec {
                 futures::future::ready(result)
             }),
         )))
+    }
+}
+fn count_value(value: ColumnarValue, rows: usize, fields: &[String]) -> Result<usize> {
+    match value {
+        ColumnarValue::Array(array) => count_list(&array, fields),
+        ColumnarValue::Scalar(value) => count_list(&value.to_array_of_size(1)?, fields)?
+            .checked_mul(rows)
+            .ok_or_else(|| DataFusionError::Execution("list count overflow".into())),
     }
 }
 fn count_list(array: &ArrayRef, fields: &[String]) -> Result<usize> {

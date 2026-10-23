@@ -89,8 +89,17 @@ pub struct BoundSemanticProgram {
     inputs: Vec<usize>,
     fields: Vec<arrow_schema::FieldRef>,
     output: arrow_schema::FieldRef,
+    take: Option<Box<(BoundSemanticProgram, BoundSemanticProgram)>>,
 }
 impl BoundSemanticProgram {
+    pub fn count_take(&self, bindings: &[datafusion_expr::ColumnarValue], rows: usize, fields: &[String])
+        -> Option<datafusion_common::Result<usize>> {
+        self.take.as_ref().map(|programs| {
+            let source = programs.0.evaluate(bindings, rows)?;
+            let positions = programs.1.evaluate(bindings, rows)?;
+            crate::matrix_arrays::count_take(source, positions, rows, fields)
+        })
+    }
     pub fn evaluate(&self, bindings: &[datafusion_expr::ColumnarValue], rows: usize)
         -> datafusion_common::Result<datafusion_expr::ColumnarValue> {
         let args = self.inputs.iter().map(|index| bindings.get(*index).cloned().ok_or_else(||
@@ -110,19 +119,27 @@ pub fn semantic_zip_programs(function: &datafusion_expr::ScalarUDF) -> Option<Ve
     let (expression, schema) = semantic_kernel(function)?;
     let Expr::NestedFunction { function: name, args, .. } = expression else { return None; };
     if name != "arrays_zip" { return None; }
+    args.iter().map(|argument| compile_bound_program(argument, schema, true)).collect()
+}
+fn compile_bound_program(argument: &Expr, schema: &Schema, with_take: bool) -> Option<BoundSemanticProgram> {
     let df_schema = DFSchema::try_from(schema.clone()).ok()?;
-    args.iter().map(|argument| {
-        let compiled = logical_kernel(argument, &df_schema, &Schema::empty(), &BTreeMap::new(), &[]).ok()?;
-        let LogicalExpr::ScalarFunction(compiled) = compiled else { return None; };
-        let inputs = compiled.args.iter().map(|argument| {
-            let LogicalExpr::Column(column) = argument else { return None; };
-            schema.index_of(&column.name).ok()
-        }).collect::<Option<Vec<_>>>()?;
-        let fields = inputs.iter().map(|index| schema.fields()[*index].clone()).collect();
-        let dtype = argument.dtype_with_globals(schema, &Schema::empty()).ok()?.to_arrow().ok()?;
-        Some(BoundSemanticProgram { function: compiled.func, inputs, fields,
-            output: Arc::new(arrow_schema::Field::new("value", dtype, true)) })
-    }).collect()
+    let compiled = logical_kernel(argument, &df_schema, &Schema::empty(), &BTreeMap::new(), &[]).ok()?;
+    let LogicalExpr::ScalarFunction(compiled) = compiled else { return None; };
+    let inputs = compiled.args.iter().map(|argument| {
+        let LogicalExpr::Column(column) = argument else { return None; };
+        schema.index_of(&column.name).ok()
+    }).collect::<Option<Vec<_>>>()?;
+    let fields = inputs.iter().map(|index| schema.fields()[*index].clone()).collect();
+    let dtype = argument.dtype_with_globals(schema, &Schema::empty()).ok()?.to_arrow().ok()?;
+    let take = if with_take {
+        if let Expr::NestedFunction { function, args, .. } = argument {
+            if function == "__vail_list_take" && args.len() == 2 {
+                Some(Box::new((compile_bound_program(&args[0], schema, false)?, compile_bound_program(&args[1], schema, false)?)))
+            } else { None }
+        } else { None }
+    } else { None };
+    Some(BoundSemanticProgram { function: compiled.func, inputs, fields, take,
+        output: Arc::new(arrow_schema::Field::new("value", dtype, true)) })
 }
 
 fn contains_global_reference(expression: &Expr) -> bool {
