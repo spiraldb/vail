@@ -35,3 +35,16 @@ def test_count_does_not_change_ordered_selection_scan_or_collection():
     assert sorted(collected) == [1, 1, 2, 3, 3]
     assert ordered.aggregate(hl.agg.count()) == 5
     assert [r.k for r in ordered.collect()] == [0, 2, 3, 1, 4]
+
+
+def test_aggregate_record_results_and_argument_packing_remain_structs():
+    table = hl.range_table(4)
+    stats = table.aggregate(hl.agg.stats(table.idx))
+    assert isinstance(stats, hl.Struct)
+    assert stats.sum == 6.0 and stats.mean == 1.5 and stats.n == 4
+    assert table.aggregate(hl.agg.corr(table.idx, table.idx + 1)) == 1.0
+    calls = table.annotate(GT=hl.call(0, 1))
+    result = calls.aggregate(hl.agg.call_stats(calls.GT, 2))
+    assert isinstance(result, hl.Struct)
+    assert result.AC == [4, 4] and result.AN == 8
+    assert table.aggregate(hl.agg.take(table.idx, 2, ordering=-table.idx)) == [3, 2]

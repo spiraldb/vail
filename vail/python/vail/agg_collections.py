@@ -5,7 +5,7 @@ expressions into the single physical aggregate argument.
 """
 from __future__ import annotations
 
-from .expressions import Expression, as_expr
+from .expressions import struct, Expression, as_expr
 from .types import tarray, tbool, tfloat32, tfloat64, tint32, tint64, tset
 
 
@@ -46,7 +46,7 @@ def take(expr, n, ordering=None):
         if callable(ordering):
             ordering = ordering(value)
         ordering = as_expr(ordering)
-        packed = as_expr({"value": value, "ordering": ordering})
+        packed = struct(**{"value": value, "ordering": ordering})
     from .types import type_to_wire
     options["__vail_result_type"] = type_to_wire(tarray(value.dtype))
     return Expression(tarray(value.dtype), packed.source, {

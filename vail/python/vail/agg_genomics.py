@@ -1,7 +1,7 @@
 """Genomics and ndarray aggregation expression constructors."""
 from __future__ import annotations
 
-from .expressions import as_expr, case, cast, if_else, is_defined, literal, missing
+from .expressions import struct, as_expr, case, cast, if_else, is_defined, literal, missing
 from .types import tarray, tbool, tcall, tfloat32, tfloat64, tint32, tndarray, tstr, tstruct
 
 
@@ -15,7 +15,7 @@ def call_stats(call, alleles):
         raise TypeError("call_stats alleles must be an int32 count or array<str>")
     result = tstruct(AC=tarray(tint32), AF=tarray(tfloat64), AN=tint32,
                      homozygote_count=tarray(tint32))
-    packed = as_expr({"__vail_genomic_call": call, "__vail_genomic_alleles": alleles})
+    packed = struct(**{"__vail_genomic_call": call, "__vail_genomic_alleles": alleles})
     n_alleles = alleles if alleles.dtype == tint32 else alleles.length()
     return _aggregate("call_stats", packed, result, init=[("n_alleles", n_alleles)])
 
@@ -62,7 +62,7 @@ def inbreeding(expr, prior):
     expected_per_call = 1. - 2. * prior * (1. - prior)
     expected_homs = agg.sum(if_else(paired & valid, expected_per_call, missing(tfloat64)))
     f_stat = (cast(observed_homs, tfloat64) - expected_homs) / (cast(n_called, tfloat64) - expected_homs)
-    return as_expr({"f_stat": f_stat, "n_called": n_called,
+    return struct(**{"f_stat": f_stat, "n_called": n_called,
                     "expected_homs": expected_homs, "observed_homs": observed_homs})
 
 
@@ -95,7 +95,7 @@ def info_score(gp):
     n32 = (case()
            .when(n <= 2**31 - 1, cast(n, tint32))
            .or_error("info_score count overflow"))
-    return as_expr({"score": score, "n_included": n32})
+    return struct(**{"score": score, "n_included": n32})
 
 
 def ndarray_sum(expr):

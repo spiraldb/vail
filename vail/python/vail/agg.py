@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from .expressions import Expression, _merge_sources, as_expr, cast, is_missing
+from .expressions import struct, Expression, _merge_sources, as_expr, cast, is_missing
 from .types import tarray, tbool, tfloat32, tfloat64, tint32, tint64, tset
 
 
@@ -147,7 +147,7 @@ def stats(expr):
     n = count_where(~is_missing(value))
     total = sum(value64)
     average = mean(value)
-    return as_expr({
+    return struct(**{
         "mean": average,
         "stdev": _aggregate("stddev_pop", value64, tfloat64),
         "min": cast(min(value), tfloat64),

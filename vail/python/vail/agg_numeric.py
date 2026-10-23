@@ -5,7 +5,7 @@ packed in a struct expression so the execution engine always sees one input.
 """
 from __future__ import annotations
 
-from .expressions import as_expr, cast
+from .expressions import as_expr, cast, struct
 from .types import tarray, tfloat32, tfloat64, tint32, tint64, tstr, tstruct, ttuple
 
 
@@ -35,7 +35,7 @@ def _numeric_parameter(value, name):
 def corr(x, y):
     """Pearson correlation, using only rows with both values defined."""
     x, y = _numeric(x, "x"), _numeric(y, "y")
-    return _aggregate("corr", {"x": x, "y": y}, tfloat64)
+    return _aggregate("corr", struct(x=x, y=y), tfloat64)
 
 
 def hist(expr, start, end, bins):
@@ -105,7 +105,7 @@ def linreg(y, x, nested_dim=1, weight=None):
         raise ValueError("nested_dim must be between zero and len(x)")
     # Predictors are fixed-width columns, not a variable-length list per row.
     # A struct retains the Arrow child arrays through grouped/array aggregation.
-    data = {"y": y, "x": {f"x{i}": value for i, value in enumerate(xs)}}
+    data = {"y": y, "x": struct(**{f"x{i}": value for i, value in enumerate(xs)})}
     if weight is not None:
         data["weight"] = cast(_numeric(weight, "weight"), tfloat64)
     doubles = tarray(tfloat64)
@@ -113,7 +113,7 @@ def linreg(y, x, nested_dim=1, weight=None):
                      p_value=doubles, multiple_standard_error=tfloat64,
                      multiple_r_squared=tfloat64, adjusted_r_squared=tfloat64,
                      f_stat=tfloat64, multiple_p_value=tfloat64, n=tint64)
-    return _aggregate("linreg", data, result, nested_dim=nested_dim, n_predictors=len(xs))
+    return _aggregate("linreg", struct(**data), result, nested_dim=nested_dim, n_predictors=len(xs))
 
 
 def downsample(x, y, label=None, n_divisions=500):
@@ -128,5 +128,5 @@ def downsample(x, y, label=None, n_divisions=500):
     fields = {"x": x, "y": y}
     if label is not None:
         fields["label"] = as_expr(label)
-    return _aggregate("downsample", fields, tarray(ttuple(tfloat64, tfloat64, tarray(tstr))),
+    return _aggregate("downsample", struct(**fields), tarray(ttuple(tfloat64, tfloat64, tarray(tstr))),
                       n_divisions=n_divisions)

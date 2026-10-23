@@ -1102,7 +1102,7 @@ def test_struct_row_major_and_unlocalize_dimension_validation():
     with pytest.raises(ValueError):
         t.to_matrix_table_row_major(["bar"], entry_field_name="v")
     bad = hl.Table.parallelize([{"r": 0, "cells": [{"x": 1}]}], key="r")
-    bad = bad.annotate_globals(cols=[{"s": "a"}, {"s": "b"}])
+    bad = bad.annotate_globals(cols=[hl.Struct(s="a"), hl.Struct(s="b")])
     mt = bad._unlocalize_entries("cells", "cols", ["s"])
     with pytest.raises((RuntimeError, ValueError), match="length differs"):
         mt.entries().collect()
