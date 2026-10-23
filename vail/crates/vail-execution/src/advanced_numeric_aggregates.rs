@@ -1405,7 +1405,7 @@ pub(crate) struct CoordinateCorrelation {
     // Only one native-state row per coordinate is merged at finalization;
     // these identity indices are O(width), never O(input entries).
     indices: Vec<usize>,
-    native: CorrGroupsAccumulator,
+    native: std::sync::Mutex<CorrGroupsAccumulator>,
 }
 impl std::fmt::Debug for CoordinateCorrelation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1419,12 +1419,12 @@ pub(crate) fn coordinate_correlation(udf: &AggregateUDF) -> Option<CoordinateCor
     Some(CoordinateCorrelation {
         partials: Vec::new(),
         indices: Vec::new(),
-        native: CorrGroupsAccumulator {
+        native: std::sync::Mutex::new(CorrGroupsAccumulator {
             inner: Box::new(
                 datafusion_functions_aggregate::correlation::CorrelationGroupsAccumulator::new(),
             ),
             pair_counts: Vec::new(),
-        },
+        }),
     })
 }
 impl CoordinateCorrelation {
@@ -1527,14 +1527,14 @@ impl CoordinateCorrelation {
     }
     pub(crate) fn array(&mut self) -> DfResult<ArrayRef> {
         let states = self.states();
-        self.native
-            .merge_batch(&states, &self.indices, self.partials.len())?;
-        self.native.evaluate(EmitTo::All)
+        let native = self.native.get_mut().map_err(|_| DataFusionError::Execution("coordinate corr native state poisoned".into()))?;
+        native.merge_batch(&states, &self.indices, self.partials.len())?;
+        native.evaluate(EmitTo::All)
     }
     pub(crate) fn size(&self) -> usize {
         self.partials.capacity() * std::mem::size_of::<CorrPartial>()
             + self.indices.capacity() * std::mem::size_of::<usize>()
-            + self.native.size()
+            + self.native.lock().map_or(0, |native| native.size())
     }
 }
 
