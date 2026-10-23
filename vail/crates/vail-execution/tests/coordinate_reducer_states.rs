@@ -865,3 +865,117 @@ fn linreg_coordinate_native_qr_states_preserve_replay_and_update() {
         &[2, 2]
     );
 }
+
+#[test]
+fn ordered_take_coordinate_native_wire_and_preinput_snapshot_replay() {
+    let fields = vec![
+        Field::new("value", DataType::Int32, true),
+        Field::new("ordering", DataType::Int32, true),
+    ];
+    let packed = DataType::Struct(fields.clone().into());
+    let native = configured_udaf(
+        "take",
+        Some(&packed),
+        &serde_json::json!({"n":2,"ordered":true}),
+    )
+    .unwrap();
+    let native_expr =
+        AggregateExprBuilder::new(native.clone(), vec![Arc::new(Column::new("vk", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "vk",
+                packed.clone(),
+                true,
+            )])))
+            .alias("native")
+            .build()
+            .unwrap();
+    let empty = native_expr
+        .create_accumulator()
+        .unwrap()
+        .evaluate()
+        .unwrap();
+    let udf = coordinate_udaf(native, packed.clone(), empty).unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(Arc::new(Field::new_list_field(packed, true))),
+            true,
+        )])))
+        .alias("selected")
+        .build()
+        .unwrap();
+    let make_input = |values: Vec<i32>, keys: Vec<i32>, lengths: Vec<usize>| -> ArrayRef {
+        let rows: ArrayRef = Arc::new(arrow_array::StructArray::new(
+            fields.clone().into(),
+            vec![
+                Arc::new(arrow_array::Int32Array::from(values)),
+                Arc::new(arrow_array::Int32Array::from(keys)),
+            ],
+            None,
+        ));
+        Arc::new(ListArray::new(
+            Arc::new(Field::new_list_field(rows.data_type().clone(), true)),
+            OffsetBuffer::from_lengths(lengths),
+            rows,
+            None,
+        ))
+    };
+    let mut state = aggregate.create_accumulator().unwrap();
+    state.state().unwrap();
+    state.state().unwrap();
+    state
+        .update_batch(&[make_input(
+            vec![10, 20, 30, 40],
+            vec![4, 3, 2, 1],
+            vec![2, 2],
+        )])
+        .unwrap();
+    let snapshot = state.evaluate().unwrap();
+    assert_eq!(state.evaluate().unwrap(), snapshot);
+    let published = state.state().unwrap();
+    let ScalarValue::List(wire) = &published[0] else {
+        panic!("list")
+    };
+    let mut original = native_expr.create_accumulator().unwrap();
+    original.merge_batch(&[wire.values().slice(0, 1)]).unwrap();
+    let ScalarValue::List(values) = original.evaluate().unwrap() else {
+        panic!("list")
+    };
+    assert_eq!(
+        values.values().to_data(),
+        arrow_array::Int32Array::from(vec![30, 10]).to_data()
+    );
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|s| s.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    let extra = make_input(vec![50, 60], vec![0, 0], vec![2]);
+    state.update_batch(&[extra.clone()]).unwrap();
+    restored.update_batch(&[extra]).unwrap();
+    assert_eq!(state.evaluate().unwrap(), restored.evaluate().unwrap());
+    let ScalarValue::List(outer) = state.evaluate().unwrap() else {
+        panic!("list")
+    };
+    let lists = outer.values().as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(
+        lists.value(0).to_data(),
+        arrow_array::Int32Array::from(vec![50, 30]).to_data()
+    );
+    assert_eq!(
+        lists.value(1).to_data(),
+        arrow_array::Int32Array::from(vec![60, 40]).to_data()
+    );
+    let ScalarValue::List(outer) = snapshot else {
+        panic!("list")
+    };
+    let lists = outer.values().as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(
+        lists.value(0).to_data(),
+        arrow_array::Int32Array::from(vec![30, 10]).to_data()
+    );
+}
