@@ -1,0 +1,51 @@
+{
+  "comparisons": [
+    {
+      "case": "table_force_count",
+      "hail_seconds": 0.19435420900117606,
+      "vail_seconds": 0.03485287504736334,
+      "hail_over_vail": 5.576418264979812,
+      "value": 1000000
+    },
+    {
+      "case": "table_scalar_sum",
+      "hail_seconds": 0.15754150005523115,
+      "vail_seconds": 0.02520945796277374,
+      "hail_over_vail": 6.249301364903175,
+      "value": 1499998500000
+    },
+    {
+      "case": "matrix_decode_count",
+      "hail_seconds": 0.48578474996611476,
+      "vail_seconds": 0.978498125099577,
+      "hail_over_vail": 0.4964595613473238,
+      "value": 24885
+    },
+    {
+      "case": "matrix_decode_count_gt",
+      "hail_seconds": 0.4297464999835938,
+      "vail_seconds": 0.6825059580150992,
+      "hail_over_vail": 0.629659704705591,
+      "value": 24885
+    },
+    {
+      "case": "matrix_entries_count",
+      "hail_seconds": 1.526117792003788,
+      "vail_seconds": 2.0618767079431564,
+      "hail_over_vail": 0.7401595770128179,
+      "value": 63083475
+    },
+    {
+      "case": "matrix_sum_dp",
+      "hail_seconds": 0.43998687504790723,
+      "vail_seconds": 0.7262653330108151,
+      "hail_over_vail": 0.6058211166763142,
+      "value": 353709503
+    }
+  ],
+  "method": "Sequential engine processes, same Hail-written files; two warmups, five measured runs; warm local cache on shared14logicalcoreM3Max laptop. No compiler observed during paired captures. Not a dedicated benchmark host.",
+  "native_sha256": "d7874b55c4a80b6054b5fc3c3f9bf04099752071da8185bd39528fc1e4de7de8",
+  "source_scope": "Intermediate diagnostic:5a5481ab plus first primitivearray specialization, lazy Arrow validity, input small-varint fastpath. Later compactleaf decoder and compositional layout edits are not included in this binary. No pinned complete source snapshot for this intermediate binary.",
+  "all_values_match": true,
+  "goal_achieved": false
+}

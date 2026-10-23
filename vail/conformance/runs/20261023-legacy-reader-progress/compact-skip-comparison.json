@@ -1,0 +1,45 @@
+{
+  "comparisons": {
+    "table_force_count": {
+      "vail_ms": 32.211167039349675,
+      "hail_ms": 164.60775001905859,
+      "hail_over_vail": 5.110269671942377,
+      "value": 1000000
+    },
+    "table_scalar_sum": {
+      "vail_ms": 22.055999957956374,
+      "hail_ms": 141.43245795276016,
+      "hail_over_vail": 6.41242556321916,
+      "value": 1499998500000
+    },
+    "matrix_decode_count": {
+      "vail_ms": 666.9025410665199,
+      "hail_ms": 389.8510420694947,
+      "hail_over_vail": 0.584569735550924,
+      "value": 24885
+    },
+    "matrix_decode_count_gt": {
+      "vail_ms": 440.1487079448998,
+      "hail_ms": 338.39858404826373,
+      "hail_over_vail": 0.7688278482703766,
+      "value": 24885
+    },
+    "matrix_entries_count": {
+      "vail_ms": 814.9373749038205,
+      "hail_ms": 1337.134583038278,
+      "hail_over_vail": 1.6407820087967957,
+      "value": 63083475
+    },
+    "matrix_sum_dp": {
+      "vail_ms": 480.9795409673825,
+      "hail_ms": 384.33404196985066,
+      "hail_over_vail": 0.7990652600250916,
+      "value": 353709503
+    }
+  },
+  "method": "Sequential engine processes; identical Hail-written legacy files; two warmups and five measured runs; warm local cache; shared M3 Max, 14 workers. No compiler observed during benchmark captures.",
+  "native_sha256": "fef1226cc4de920de12965cfa32066f99dc416c7b4d3118fc750712445808c06",
+  "source_scope": "Intermediate diagnostic: 5a5481ab plus Vortex Struct/List matrix layout composition, terminal count expansion optimization, compact decoder dispatch, deferred skipped child lengths and bulk single-byte varint skips. Later regression/diagnostic and optimizer edits not included. Complete source snapshot not pinned for this intermediate binary.",
+  "all_values_match": true,
+  "goal_achieved": false
+}

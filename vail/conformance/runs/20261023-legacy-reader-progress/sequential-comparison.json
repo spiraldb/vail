@@ -1,0 +1,60 @@
+{
+  "comparisons": [
+    {
+      "case": "table_force_count",
+      "vail_ms": 27.224875055253506,
+      "hail_ms": 176.9899589708075,
+      "hail_over_vail": 6.5010384294364005,
+      "value": 1000000
+    },
+    {
+      "case": "table_scalar_sum",
+      "vail_ms": 21.264791022986174,
+      "hail_ms": 155.3528750082478,
+      "hail_over_vail": 7.305638453738817,
+      "value": 1499998500000
+    },
+    {
+      "case": "matrix_decode_count",
+      "vail_ms": 615.4555409448221,
+      "hail_ms": 411.4975829143077,
+      "hail_over_vail": 0.6686065126371167,
+      "value": 24885
+    },
+    {
+      "case": "matrix_decode_count_gt",
+      "vail_ms": 410.3818329749629,
+      "hail_ms": 346.828458015807,
+      "hail_over_vail": 0.8451359932323484,
+      "value": 24885
+    },
+    {
+      "case": "matrix_entries_count",
+      "vail_ms": 872.7754589635879,
+      "hail_ms": 1382.5541670667008,
+      "hail_over_vail": 1.5840891868207088,
+      "value": 63083475
+    },
+    {
+      "case": "matrix_sum_dp",
+      "vail_ms": 470.61479196418077,
+      "hail_ms": 400.8904160000384,
+      "hail_over_vail": 0.8518440619489724,
+      "value": 353709503
+    }
+  ],
+  "implementation_commit": "6b52549f95ab7632a2bade075ba0a91e381a1fd6",
+  "public_regression_commit": "d517e11e",
+  "native_sha256": "0e9d009b23c0cfce160980fbaf19c2f70f6234790175b08a3061f9887518d29c",
+  "method": "Sequential processes, identical Hail-written files; two warmups, five measurements; warm cache; shared M3 Max, 14 workers; no compiler observed during benchmark captures.",
+  "validation": {
+    "legacy_python": 165,
+    "count_public": 4,
+    "storage_unit": 19,
+    "storage_corpus": 2,
+    "count_unit": 7,
+    "sequential_scan_unit": 1
+  },
+  "all_values_match": true,
+  "goal_achieved": false
+}
