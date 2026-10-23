@@ -105,6 +105,10 @@ impl ExecutionPlan for GroupIndexExec {
     fn children(&self) -> Vec<&PhysicalPlan> {
         vec![&self.input]
     }
+    fn required_input_ordering(&self) -> Vec<Option<datafusion_physical_expr::OrderingRequirements>> {
+        // Contiguous groups contain different rows if the input sequence changes.
+        vec![self.input.properties().output_ordering().cloned().map(Into::into)]
+    }
     fn maintains_input_order(&self) -> Vec<bool> {
         vec![true]
     }

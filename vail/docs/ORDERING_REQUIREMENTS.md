@@ -28,6 +28,7 @@ to its implicit table order.
 | SplitPartitions | Per-lane source subsequence | No key sorting demand | Barrier until partition/RNG proof is explicit |
 | SourceOrdinal | Adds partition/ordinal order | Existing input sequence affects ordinals | Barrier; declare established child ordering required |
 | PreviousNonNull | Preserves input order | Prefix state depends on sequence | Barrier; declare established child ordering required |
+| GroupIndex | Adds contiguous group/ordinal order | Group membership depends on input sequence | Barrier; declare established child ordering required |
 | AdjacentKeys | Canonical key ordering | Adjacent dedup requires canonical keys | Barrier; already declares key ordering |
 | Certified group ranges | Establishes a source certificate | Certificate proves source representation | Barrier; not an inherited-order assertion |
 | MatrixEntriesByKeyRuns | Compound row/column-key ordering | Equal row-key runs must be contiguous | Barrier; ordered requirement coordinated with entries-count fix |
