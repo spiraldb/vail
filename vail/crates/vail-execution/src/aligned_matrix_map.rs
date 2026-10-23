@@ -440,7 +440,8 @@ impl AlignedMatrixMapExpr {
                 _ => continue,
             };
             let run_values = crate::logical_expr::restore_arrow_array_type(
-                &run_values, &self.capture_types[capture_index],
+                &run_values,
+                &self.capture_types[capture_index],
             )?;
             let logical_dtype = run_values.data_type().clone();
             let encoded = RunArray::<Int32Type>::try_new(&run_ends, run_values.as_ref())?;
@@ -689,14 +690,22 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                             DataFusionError::Execution("aligned row capture is absent".into())
                         })?;
                     CaptureSource::Row(crate::logical_expr::restore_arrow_array_type(
-                        field, &self.capture_types[index],
+                        field,
+                        &self.capture_types[index],
                     )?)
                 }
                 "num_cols" => CaptureSource::Scalar(ScalarValue::Int32(Some(columns.len() as i32))),
                 "global" => match global_bindings.get(key) {
-                    Some(value) => match crate::logical_expr::restore_arrow_value_type(value.clone(), &self.capture_types[index])? {
+                    Some(value) => match crate::logical_expr::restore_arrow_value_type(
+                        value.clone(),
+                        &self.capture_types[index],
+                    )? {
                         ColumnarValue::Scalar(value) => CaptureSource::Scalar(value),
-                        _ => return Err(DataFusionError::Internal("global capture ceased to be scalar".into())),
+                        _ => {
+                            return Err(DataFusionError::Internal(
+                                "global capture ceased to be scalar".into(),
+                            ));
+                        }
                     },
                     _ => {
                         return Err(DataFusionError::Execution(
@@ -1201,38 +1210,121 @@ mod runend_experiment_tests {
         ] {
             let payload = StructArray::new(
                 vec![Arc::new(Field::new("x", child.data_type().clone(), false))].into(),
-                vec![child.clone()], Some(NullBuffer::from(vec![true, false])));
+                vec![child.clone()],
+                Some(NullBuffer::from(vec![true, false])),
+            );
             let payload_type = Type::from_arrow(payload.data_type()).unwrap();
-            let bundle = StructArray::from(vec![(Arc::new(Field::new("v", payload.data_type().clone(), true)), Arc::new(payload) as ArrayRef)]);
-            let rows = StructArray::from(vec![(Arc::new(Field::new("__vail_aligned_row", bundle.data_type().clone(), true)), Arc::new(bundle) as ArrayRef)]);
+            let bundle = StructArray::from(vec![(
+                Arc::new(Field::new("v", payload.data_type().clone(), true)),
+                Arc::new(payload) as ArrayRef,
+            )]);
+            let rows = StructArray::from(vec![(
+                Arc::new(Field::new(
+                    "__vail_aligned_row",
+                    bundle.data_type().clone(),
+                    true,
+                )),
+                Arc::new(bundle) as ArrayRef,
+            )]);
             let slots = StructArray::from(vec![
-                (Arc::new(Field::new("__vail_matrix_col_id", DataType::Int32, true)), Arc::new(Int32Array::from(vec![0, 0])) as ArrayRef),
-                (Arc::new(Field::new("value", DataType::Struct(Default::default()), true)), Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef),
+                (
+                    Arc::new(Field::new("__vail_matrix_col_id", DataType::Int32, true)),
+                    Arc::new(Int32Array::from(vec![0, 0])) as ArrayRef,
+                ),
+                (
+                    Arc::new(Field::new(
+                        "value",
+                        DataType::Struct(Default::default()),
+                        true,
+                    )),
+                    Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef,
+                ),
             ]);
-            let entries = ListArray::new(Arc::new(Field::new_list_field(slots.data_type().clone(), true)), OffsetBuffer::from_lengths([1, 1]), Arc::new(slots), None);
-            let batch = RecordBatch::try_from_iter(vec![("entries", Arc::new(entries) as ArrayRef), ("rows", Arc::new(rows) as ArrayRef)]).unwrap();
-            let result_type = Type::Array { array: Box::new(Type::Struct { r#struct: vec![("out".into(), payload_type.clone())] }) };
+            let entries = ListArray::new(
+                Arc::new(Field::new_list_field(slots.data_type().clone(), true)),
+                OffsetBuffer::from_lengths([1, 1]),
+                Arc::new(slots),
+                None,
+            );
+            let batch = RecordBatch::try_from_iter(vec![
+                ("entries", Arc::new(entries) as ArrayRef),
+                ("rows", Arc::new(rows) as ArrayRef),
+            ])
+            .unwrap();
+            let result_type = Type::Array {
+                array: Box::new(Type::Struct {
+                    r#struct: vec![("out".into(), payload_type.clone())],
+                }),
+            };
             let expression = Expr::AlignedMatrixMap {
-                entries: Arc::new(Expr::Column { name: "entries".into() }),
-                rows: Arc::new(Expr::Column { name: "rows".into() }),
-                columns: Arc::new(Expr::RuntimeLiteral { value: ScalarValue::List(Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>(vec![Some(vec![Some(0)])]))) }),
-                globals: Arc::new(Expr::RuntimeLiteral { value: ScalarValue::Int32(None) }),
-                body: Arc::new(Expr::Struct { fields: vec![("out".into(), Expr::AlignedMapInput { axis: "row".into(), name: Some("v".into()), dtype: payload_type })] }),
-                dtype: result_type.clone(), preserve_cell: false,
+                entries: Arc::new(Expr::Column {
+                    name: "entries".into(),
+                }),
+                rows: Arc::new(Expr::Column {
+                    name: "rows".into(),
+                }),
+                columns: Arc::new(Expr::RuntimeLiteral {
+                    value: ScalarValue::List(Arc::new(ListArray::from_iter_primitive::<
+                        Int32Type,
+                        _,
+                        _,
+                    >(vec![Some(vec![
+                        Some(0),
+                    ])]))),
+                }),
+                globals: Arc::new(Expr::RuntimeLiteral {
+                    value: ScalarValue::Int32(None),
+                }),
+                body: Arc::new(Expr::Struct {
+                    fields: vec![(
+                        "out".into(),
+                        Expr::AlignedMapInput {
+                            axis: "row".into(),
+                            name: Some("v".into()),
+                            dtype: payload_type,
+                        },
+                    )],
+                }),
+                dtype: result_type.clone(),
+                preserve_cell: false,
             };
             let prepared = lower(&expression, batch.schema().as_ref()).unwrap();
             let output = prepared.evaluate(&batch).unwrap().into_array(2).unwrap();
             assert_eq!(output.data_type(), &result_type.to_arrow().unwrap());
             let output = output.as_any().downcast_ref::<ListArray>().unwrap();
-            let values = output.values().as_any().downcast_ref::<StructArray>().unwrap();
-            let captured = values.column(0).as_any().downcast_ref::<StructArray>().unwrap();
-            assert!(captured.is_valid(0)); assert!(captured.is_null(1));
+            let values = output
+                .values()
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .unwrap();
+            let captured = values
+                .column(0)
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .unwrap();
+            assert!(captured.is_valid(0));
+            assert!(captured.is_null(1));
             if child.data_type() == &DataType::Int32 {
-                assert_eq!(captured.column(0).as_any().downcast_ref::<Int32Array>().unwrap().value(0), 1);
+                assert_eq!(
+                    captured
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap()
+                        .value(0),
+                    1
+                );
             } else {
-                assert_eq!(captured.column(0).as_any().downcast_ref::<arrow_array::StringArray>().unwrap().value(0), "alpha");
+                assert_eq!(
+                    captured
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<arrow_array::StringArray>()
+                        .unwrap()
+                        .value(0),
+                    "alpha"
+                );
             }
         }
     }
-
 }

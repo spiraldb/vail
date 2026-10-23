@@ -5,8 +5,8 @@
 use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray, StructArray, UInt32Array,
-    new_empty_array,
+    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
+    StructArray, UInt8Array, UInt32Array, new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
@@ -450,19 +450,24 @@ impl DenseSum {
         if width == 0 {
             return Ok(());
         }
-        let mut input = if flat.data_type() == self.values.data_type() {
-            Arc::clone(flat)
+        // Arrow's mixed primitive kernel reads narrow values directly. Boolean
+        // storage is bit-packed, so use its native one-byte cast, not Int64.
+        let mut input = if flat.data_type() == &DataType::Boolean {
+            cast(flat.as_ref(), &DataType::UInt8)?
         } else {
-            cast(flat.as_ref(), self.values.data_type())?
+            Arc::clone(flat)
         };
         if let Some(filter) = filter {
-            let zero = ScalarValue::try_from(self.values.data_type())?.to_scalar()?;
+            let zero = ScalarValue::try_from(input.data_type())?.to_scalar()?;
             input = arrow_select::zip::zip(filter, &input, &zero)?;
         }
         if input.null_count() != 0 {
             let mask = arrow_arith::boolean::is_null(input.as_ref())?;
             let zero = match input.data_type() {
+                DataType::Int32 => ScalarValue::Int32(Some(0)),
                 DataType::Int64 => ScalarValue::Int64(Some(0)),
+                DataType::UInt8 => ScalarValue::UInt8(Some(0)),
+                DataType::Float32 => ScalarValue::Float32(Some(0.0)),
                 DataType::Float64 => ScalarValue::Float64(Some(0.0)),
                 _ => unreachable!(),
             }
@@ -470,16 +475,17 @@ impl DenseSum {
             input = arrow_select::zip::zip(&mask, &zero, &input)?;
         }
         macro_rules! add {
-            ($array:ty, $zero:expr, $op:expr) => {{
+            ($array:ty, $input_array:ty, $zero:expr, $op:expr) => {{
                 // Move the sole state owner into Arrow's in-place kernel.
-                let old = std::mem::replace(&mut self.values, new_empty_array(input.data_type()));
+                let empty = new_empty_array(self.values.data_type());
+                let old = std::mem::replace(&mut self.values, empty);
                 let mut values = if old.is_empty() {
                     <$array>::from(vec![$zero; width])
                 } else {
                     old.as_any().downcast_ref::<$array>().unwrap().clone()
                 };
                 drop(old);
-                let input = input.as_any().downcast_ref::<$array>().unwrap();
+                let input = input.as_any().downcast_ref::<$input_array>().unwrap();
                 for offset in (0..input.len()).step_by(width) {
                     let row = input.slice(offset, width);
                     values = match arrow_arith::arity::binary_mut(values, &row, $op) {
@@ -491,8 +497,14 @@ impl DenseSum {
             }};
         }
         match input.data_type() {
-            DataType::Int64 => add!(Int64Array, 0i64, i64::wrapping_add),
-            DataType::Float64 => add!(Float64Array, 0.0f64, |a, b| a + b),
+            DataType::Int32 => add!(Int64Array, Int32Array, 0i64, |a: i64, b: i32| a
+                .wrapping_add(i64::from(b))),
+            DataType::UInt8 => add!(Int64Array, UInt8Array, 0i64, |a: i64, b: u8| a
+                .wrapping_add(i64::from(b))),
+            DataType::Int64 => add!(Int64Array, Int64Array, 0i64, i64::wrapping_add),
+            DataType::Float32 => add!(Float64Array, Float32Array, 0.0f64, |a: f64, b: f32| a
+                + f64::from(b)),
+            DataType::Float64 => add!(Float64Array, Float64Array, 0.0f64, |a, b| a + b),
             _ => unreachable!(),
         }
         Ok(())

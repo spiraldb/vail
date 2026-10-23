@@ -975,13 +975,13 @@ class MatrixTable:
             from .matrix_list_aggregates import _entry_field_input
 
             def project_sum_input(cell):
-                value = cast(self._lower_cell(argument, core, cell, struct()), expr.dtype)
+                value = self._lower_cell(argument, core, cell, struct())
                 # Direct field extraction already intersects the entry struct's
                 # validity. Preserve the guard for constants and expressions
                 # that can produce a value for an absent entry.
                 if _entry_field_input(node["value"]):
                     return value
-                return if_else(is_defined(cell[_VALUE]), value, missing(expr.dtype))
+                return if_else(is_defined(cell[_VALUE]), value, missing(value.dtype))
 
             values = core[_CELLS].map(project_sum_input)
             totals = core.aggregate(agg.array_sum(values), _localize=False)
