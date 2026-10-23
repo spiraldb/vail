@@ -1,0 +1,16 @@
+{
+  "source": "c3faa101875e2349b0ee198522daa0a87a62a220",
+  "native_sha256": "58a3a6e519802779415cb29cc9907d6b26d343c30facbf3238e5bffdc93745e6",
+  "status": "Experimental combined candidate; general aggregate singleton sharing is not approved due dead-CASE demand bug. The timed query does not contain that dead branch. Experimental batch dispatch is not production.",
+  "hail": "stock PyPI 0.2.139, Spark 3.5.9, Java 11 ARM64",
+  "settings": "32 Vail workers / Spark local[32], host 14 logical CPUs and 96GiB RAM; engines serial; three reps; unrelated background contention recorded",
+  "scope": "query construction and action; imports/init excluded; 10Hz process-tree CPU with retained exited children and sampled RSS",
+  "verification": "2500 map batches, 10000 rows, 5,000,000,000 physical entries; one execution",
+  "limitations": [
+    "Wall-time contention, especially Vail exact case 4.4665\u20137.3504s.",
+    "Table array_sum upstream defaults differ in source partition count (Vail 1, Hail Spark default), although concurrency target32.",
+    "Grouped mean is deterministic representative, not missing upstream random_doubles_mt fixture.",
+    "Missing paired local profile25_mt, gnomad_dp_sim, random_doubles_mt fixtures; no regeneration.",
+    "RSS includes retained engine heap from earlier cases."
+  ]
+}
