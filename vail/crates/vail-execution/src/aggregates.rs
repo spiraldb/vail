@@ -35,6 +35,13 @@ impl Hash for SumAdapter {
     }
 }
 
+/// Identifies our typed SUM contract, rather than matching a user-visible name.
+pub(crate) fn coordinate_sum_type(udf: &AggregateUDF) -> Option<DataType> {
+    udf.inner()
+        .downcast_ref::<SumAdapter>()
+        .map(|sum| sum.output.clone())
+}
+
 fn sum_type(input: &DataType) -> Option<DataType> {
     match input {
         DataType::Boolean | DataType::Int32 | DataType::Int64 => Some(DataType::Int64),

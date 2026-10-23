@@ -251,3 +251,14 @@ def test_global_conditionals_keep_lexical_callback_values_in_scope():
     nested = hl.range(2).map(lambda x: hl.range(3).map(
         lambda y: hl.if_else(y < offset, hl.int64(x + y + offset), hl.int64(x - y))))
     assert hl.eval(nested) == [[2, 3, -2], [3, 4, -1]]
+
+
+def test_total_aggregates_keep_used_and_unused_global_scopes_distinct():
+    table = hl.range_table(9, n_partitions=3).annotate_globals(
+        offset=4, metadata=hl.range(1000))
+    assert table.aggregate(hl.struct(
+        total=hl.agg.sum(table.idx), n=hl.agg.count())) == hl.Struct(total=36, n=9)
+    assert table.aggregate(hl.agg.sum(table.idx + table.offset)) == 72
+    empty = table.filter(False)
+    assert empty.aggregate(hl.agg.sum(empty.idx)) == 0
+    assert empty.aggregate(hl.agg.sum(empty.idx + empty.offset)) == 0

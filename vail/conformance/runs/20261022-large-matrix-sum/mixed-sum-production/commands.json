@@ -1,0 +1,84 @@
+[
+  {
+    "cwd": "/Users/danielking/.codex/worktrees/large-matrix-sum",
+    "env": {
+      "RUSTUP_TOOLCHAIN": "1.98.0",
+      "CARGO_TARGET_DIR": "/Users/danielking/.codex/worktrees/large-matrix-sum/vail/target",
+      "VIRTUAL_ENV": "/private/tmp/large-matrix-sum-env"
+    },
+    "argv": [
+      "/private/tmp/large-matrix-sum-env/bin/maturin",
+      "develop",
+      "--release",
+      "--locked",
+      "--manifest-path",
+      "vail/crates/vail-python/Cargo.toml"
+    ],
+    "output": "build.log"
+  },
+  {
+    "cwd": "/Users/danielking/.codex/worktrees/large-matrix-sum",
+    "argv": [
+      "/private/tmp/large-matrix-sum-env/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "vail/python/tests/test_scalar_external_context.py",
+      "vail/python/tests/test_matrix_strict_entry_inputs.py",
+      "vail/python/tests/test_aligned_runend_experiment.py",
+      "vail/python/tests/test_globals.py",
+      "vail/python/tests/test_array_agg_coordinate_callbacks.py",
+      "vail/python/tests/test_array_agg_coordinate_dag.py",
+      "vail/python/tests/test_matrix_entry_sum.py",
+      "vail/python/tests/test_matrix_array_agg.py",
+      "vail/python/tests/test_mapped_dictionary_lookup.py",
+      "vail/python/tests/test_randomness.py",
+      "vail/python/tests/test_agg_fold.py",
+      "vail/python/tests/test_aggregate_initialization_lazy.py",
+      "vail/python/tests/test_row_expressions.py",
+      "vail/python/tests/test_expression_inputs.py",
+      "vail/python/tests/test_agg_numeric.py",
+      "vail/python/tests/test_empty_struct_aggregation.py",
+      "vail/python/tests/test_struct_parent_validity_storage.py"
+    ],
+    "output": "python-tests.log"
+  },
+  {
+    "cwd": "/Users/danielking/.codex/worktrees/large-matrix-sum",
+    "env": {
+      "RUSTUP_TOOLCHAIN": "1.98.0",
+      "CARGO_TARGET_DIR": "/Users/danielking/.codex/worktrees/large-matrix-sum/vail/target",
+      "CARGO_ENCODED_RUSTFLAGS": "-C\u001flink-arg=-undefined\u001f-C\u001flink-arg=dynamic_lookup"
+    },
+    "argv": [
+      "cargo",
+      "test",
+      "--release",
+      "--locked",
+      "--manifest-path",
+      "vail/Cargo.toml",
+      "-p",
+      "vail-execution",
+      "public_",
+      "--lib"
+    ],
+    "output": "native-public-tests.log"
+  },
+  {
+    "cwd": "/Users/danielking/.codex/worktrees/large-matrix-sum",
+    "argv": [
+      "samply",
+      "record",
+      "-r",
+      "1000",
+      "--save-only",
+      "--unstable-presymbolicate",
+      "-o",
+      "/tmp/dense-mixed-final.json.gz",
+      "/private/tmp/large-matrix-sum-env/bin/python",
+      "/tmp/large-matrix-sum-profile.py"
+    ],
+    "query_copy": "profile-query.py",
+    "output": "profile.log"
+  }
+]
