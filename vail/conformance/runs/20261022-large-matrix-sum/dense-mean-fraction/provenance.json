@@ -1,0 +1,9 @@
+{
+  "source": "3e6d2b75",
+  "material_source": "d945bf91",
+  "native_sha256": "b4a61500d7d5ed93684787c745e255eeda295720f8b615ef4e6b8466f4c6e8d5",
+  "build": "VIRTUAL_ENV=/private/tmp/large-matrix-sum-env RUSTUP_TOOLCHAIN=1.98.0 CARGO_TARGET_DIR=/Users/danielking/.codex/worktrees/large-matrix-sum/vail/target /private/tmp/large-matrix-sum-env/bin/maturin develop --release --locked",
+  "python_tests": "python -m pytest -q python/tests/test_array_agg_coordinate_callbacks.py python/tests/test_array_agg_coordinate_dag.py python/tests/test_matrix_array_agg.py python/tests/test_matrix_entry_sum.py python/tests/test_agg_numeric.py",
+  "native_tests": "CARGO_ENCODED_RUSTFLAGS=-C<link-arg=-undefined>... RUSTUP_TOOLCHAIN=1.98.0 cargo test --release --locked -p vail-execution public_coordinate_mean_merge_preserves_full_uint64_count_domain --lib",
+  "result": "89 Python passed23.24s;1publicnativeUInt64 count2^63 passed"
+}
