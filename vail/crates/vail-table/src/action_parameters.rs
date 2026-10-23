@@ -77,14 +77,19 @@ pub(crate) fn resolve<'a>(
     bindings: &'a mut ActionParameters,
 ) -> BoxFuture<'a, Result<LogicalPlan>> {
     async move {
-        // Preserve native expression simplification and relational pruning before
-        // evaluating singleton dependencies. Dead scalar subqueries (including
-        // unreachable CASE branches) must not execute merely to bind an action.
+        // Prune discarded projection expressions before evaluating singleton
+        // dependencies. Otherwise a dead scalar-subquery aggregate could run
+        // (or fail) even though the normal optimizer would remove it.
         let aggregate = contains_aggregate_singleton(&logical)?;
         let logical = if aggregate {
-            let protected =
-                crate::logical_parameters::parameterize(logical, bindings.state.execution_props())?;
-            bindings.state.optimize(&protected)?
+            use datafusion::optimizer::{
+                OptimizerRule, optimize_projections::OptimizeProjections,
+                optimizer::OptimizerContext,
+            };
+            let config = OptimizerContext::new_with_config_options(
+                bindings.context.session_config().options().clone(),
+            );
+            OptimizeProjections::new().rewrite(logical, &config)?.data
         } else {
             logical
         };
