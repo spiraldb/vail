@@ -789,6 +789,7 @@ enum Kernels {
     Ratio(DenseRatio),
     Product(DenseProduct),
     Bool(DenseBool),
+    Extrema(crate::coordinate_extrema::DenseExtrema),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -799,6 +800,7 @@ impl std::fmt::Debug for Kernels {
             Self::Ratio(ratio) => ratio.fmt(f),
             Self::Product(product) => product.fmt(f),
             Self::Bool(boolean) => boolean.fmt(f),
+            Self::Extrema(extrema) => extrema.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -836,6 +838,10 @@ impl Coordinates {
             Kernels::Product(DenseProduct::new(&dtype))
         } else if let Some(all) = crate::native_bool::coordinate_bool(aggregate.fun()) {
             Kernels::Bool(DenseBool::new(all))
+        } else if let Some(extrema) = crate::coordinate_extrema::native_minimum(aggregate.fun())
+            .and_then(|minimum| crate::coordinate_extrema::DenseExtrema::new(&aggregate_input, minimum))
+        {
+            Kernels::Extrema(extrema)
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
@@ -876,6 +882,7 @@ impl Coordinates {
             Kernels::Sum(sum) | Kernels::Count(sum) => Ok(vec![Arc::clone(&sum.values)]),
             Kernels::Ratio(ratio) => ratio.states(),
             Kernels::Bool(boolean) => Ok(vec![boolean.array()]),
+            Kernels::Extrema(extrema) => Ok(vec![extrema.array()]),
             Kernels::Product(product) => Ok(vec![
                 Arc::clone(&product.count.values),
                 Arc::clone(&product.values.values),
@@ -919,6 +926,9 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::Extrema(extrema) = &mut self.kernels {
+            return extrema.update(&flat, filter, width);
+        }
         if let Kernels::Sum(sum) = &mut self.kernels {
             return sum.update(&flat, filter, width);
         }
@@ -990,6 +1000,7 @@ impl Coordinates {
             Kernels::Ratio(ratio) => ratio.evaluate()?,
             Kernels::Product(product) => Arc::clone(&product.values.values),
             Kernels::Bool(boolean) => boolean.array(),
+            Kernels::Extrema(extrema) => extrema.array(),
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -1051,7 +1062,7 @@ impl Accumulator for Coordinates {
         };
         if matches!(
             self.kernels,
-            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_)
+            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_)
         ) {
             return self.update_flat(flat, None, width);
         }
@@ -1099,6 +1110,7 @@ impl Accumulator for Coordinates {
                         + product.values.values.get_array_memory_size()
                 }
                 Kernels::Bool(boolean) => boolean.values.inner().capacity(),
+                Kernels::Extrema(extrema) => extrema.size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -1144,6 +1156,7 @@ impl Accumulator for Coordinates {
                 Kernels::Ratio(ratio) => ratio.merge(&values, width)?,
                 Kernels::Product(product) => product.merge(&values, width)?,
                 Kernels::Bool(boolean) => boolean.update(&values[0], None, width)?,
+                Kernels::Extrema(extrema) => extrema.update(&values[0], None, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
