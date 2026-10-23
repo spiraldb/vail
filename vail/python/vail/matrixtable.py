@@ -967,8 +967,7 @@ class MatrixTable:
             # Cell positions already align with the global column array.
             # Reduce each position with DataFusion's coordinate aggregate,
             # avoiding an explode and a hash lookup for every matrix entry.
-            from . import agg, cast, len as length, repeat
-            from .collections import _function
+            from . import agg, cast, is_missing, len as length, repeat
 
             core = self._mir.core
             argument_type = type_from_wire(node["value"].infer_type([], [], []))
@@ -987,14 +986,11 @@ class MatrixTable:
             values = core[_CELLS].map(project_sum_input)
             totals = core.aggregate(agg.array_sum(values), _localize=False)
             # An empty row axis still has one zero result per column.
-            # Native coalesce consumes the aggregate singleton once. A
-            # separate conditional singleton would execute totals for its
-            # condition and again for its selected branch. Width-zero results
-            # are already correct; only missing (no-row) results need filling.
-            totals = _function("coalesce", [
-                totals,
+            totals = if_else(
+                is_missing(totals) | (length(totals) == 0),
                 repeat(literal(0, expr.dtype), length(self._mir.column_records)),
-            ], totals.dtype)
+                totals,
+            )
             records = _zip_arrays(self._mir.column_records, totals).map(
                 lambda pair: struct(**{_CID: pair["1"][_CID], "value": pair["2"]})
             )

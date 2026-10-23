@@ -393,7 +393,7 @@ impl AlignedMatrixMapExpr {
         let row_run_ends = Int32Array::from(run_ends);
         let mut ree_bytes = 0;
         let mut dense_bytes = 0;
-        for key in &self.binding_order {
+        for (capture_index, key) in self.binding_order.iter().enumerate() {
             let (run_ends, run_values) = match key.axis.as_str() {
                 "row" => {
                     let name = key.name.as_deref().ok_or_else(|| {
@@ -439,6 +439,9 @@ impl AlignedMatrixMapExpr {
                 }
                 _ => continue,
             };
+            let run_values = crate::logical_expr::restore_arrow_array_type(
+                &run_values, &self.capture_types[capture_index],
+            )?;
             let logical_dtype = run_values.data_type().clone();
             let encoded = RunArray::<Int32Type>::try_new(&run_ends, run_values.as_ref())?;
             ree_bytes += encoded.get_array_memory_size();
