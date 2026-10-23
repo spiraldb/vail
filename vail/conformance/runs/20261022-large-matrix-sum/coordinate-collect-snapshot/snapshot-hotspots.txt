@@ -1,0 +1,39 @@
+samples 1063
+22.48 239 __psynch_cvwait
+17.31 184 <datafusion_functions_aggregate::array_agg::ArrayAggGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::evaluate
+6.3 67 <core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<arrow_select::interleave::Interleave<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>>::new::{closure#1}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<<arrow_select::interleave::Interleave<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>>::new::{closure#1}>::{closure#0}>>::{closure#0}>::{closure#0}>
+5.83 62 arrow_select::interleave::interleave_primitive::<arrow_array::types::Int32Type>
+3.67 39 _platform_memmove
+3.29 35 <datafusion_functions_aggregate::array_agg::ArrayAggGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::merge_batch
+2.35 25 _PyEval_EvalFrameDefault
+1.79 19 __open
+1.6 17 <datafusion_functions_aggregate::array_agg::ArrayAggGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::update_batch
+1.03 11 stat
+0.94 10 type_new
+0.85 9 r_object.llvm.9845490566179339274
+0.75 8 _PyCode_Quicken
+0.75 8 gc_collect_main.llvm.6325940347975832991
+0.75 8 mach_o::GenericTrie::find(CString, bool) const
+0.66 7 deduce_unreachable
+0.66 7 visit_reachable
+0.66 7 __bzero
+0.66 7 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+0.56 6 _PyObject_Malloc
+0.56 6 invocation function for block in dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const
+0.56 6 lsl::Allocator::AllocationMetadata::pool(bool) const
+inclusive
+59.08 628 start
+58.98 627 pymain_main
+58.98 627 Py_BytesMain
+58.42 621 Py_RunMain
+56.73 603 _PyEval_EvalFrameDefault
+56.54 601 PyEval_EvalCode
+56.26 598 pymain_run_file_obj
+56.26 598 pymain_run_file
+56.26 598 run_mod.llvm.8217961648363706888
+56.26 598 _PyRun_SimpleFileObject
+56.26 598 pyrun_file
+56.26 598 _PyRun_AnyFileObject
+44.97 478 <futures_util::stream::stream::fuse::Fuse<futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}>> as futures_core::stream::Stream>::poll_next
+44.97 478 <futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}> as futures_core::stream::Stream>::poll_next
+40.45 430 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>

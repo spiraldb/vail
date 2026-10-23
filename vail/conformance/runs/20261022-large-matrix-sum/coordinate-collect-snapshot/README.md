@@ -1,0 +1,9 @@
+# Native coordinate collect snapshot lifetime
+
+Material1970c6da with zero-width edge fix af41e8cf. Native SHA256 d1f1a8731e28e6c72a75045e3db118f1e9489663d169ab4bfab23eb5819cf63a. Normal Rust1.98 release maturin build/worktree-local target/configured kache. Initial build46.58s; normal return build after baseline proof2.63s. No copied SO.
+
+Native grouped state emission is destructive. Store its immutable native snapshot; restore only if later update/merge arrives. Typed native ArrayAgg's sole ListArray state is its result, so avoid another merge/interleave just to evaluate. Preserve existing language empty identities. Public native protocol test requests state before first input (widthNone), evaluates repeatedly, publishes state, restores another accumulator, updates both, asserts order/null retention and published snapshot immutability. All11 coordinate native tests pass.
+
+Broadened Python suite:141 passed, one failure. The failing collection_aggregate Matrix row/column capture test reports UDF cardinality Expected3/Got1. **Proven existing on reviewed primitive baseline c140458f**, rebuilt normally with exact native e16486cc6be3e3e530db12cabf497a81f111e48208c767b79d988c5ce6e9570e; same test fails identically. Baseline build/test logs attached. No claim all142 passed.
+
+1kHz profiles: four repetitions of Table100k rows×100 coordinate collect, retaining missing elements, taking each collected list length to force materialization without exporting10M Python values. Same workload both sides. Before1349 samples: native ArrayAgg evaluate self327(24.24%), merge110(8.15%). After1063: evaluate184(17.31%), merge35(3.29%). These are proportional/sample diagnostics including startup/waits, not fair elapsed-time measurements. Native interleave and coordinate grouping metadata remain; this stage removes redundant snapshot/output work and does NOT complete the implicit-coordinate collect layout adapter.
