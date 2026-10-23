@@ -1,0 +1,31 @@
+Partition-preserving aggregate splitting — 2026-10-23
+
+Source commit: bba0d826. Baseline: 2be18474. M3 Max, 14 cores (10P + 4E), shared host.
+
+Old Vail explicitly repartitioned total-aggregate input to 32 outputs. New Vail preserves existing source partitions and splits only underparallel aggregate input into bounded lanes. Each lane belongs to one parent; whole RecordBatches or zero-copy slices pass through without list concatenation. The target uses available_parallelism capped by EXECUTION_CONCURRENCY and known useful batch count. Each source still has one read/decode stream; splitting parallelizes downstream work. Order-sensitive aggregates retain their prior path.
+
+Method: six legacy cases use A-B-B-A phases (3 warmups, 7 accepted samples/case/phase), 14 measured samples per binary. Linreg uses a separate, tighter A-B-B-A (2 warmups, 5 accepted samples/variant/phase), 10 samples per binary. Warmups excluded. Samples overlapping rustc rejected. CPU is process_time, including native worker threads. Reported numbers are pooled medians; ordinary host load and frequency variation remain. Initial exploratory regression timings were noisier; the archived tight paired phases are the reported regression comparison.
+
+Old wall / new wall; old CPU / new CPU (seconds):
+table_force_count: 0.030048 / 0.029222; 0.301250 / 0.308035; wall speedup 1.028x
+table_scalar_sum: 0.023045 / 0.018702; 0.184373 / 0.160401; wall speedup 1.232x
+matrix_decode_count: 0.434211 / 0.442323; 4.365386 / 4.389115; wall speedup 0.982x
+matrix_decode_count_gt: 0.267673 / 0.274387; 2.622708 / 2.732021; wall speedup 0.976x
+matrix_entries_count: 0.477926 / 0.475241; 4.384256 / 4.384612; wall speedup 1.006x
+matrix_sum_dp: 0.562942 / 0.286743; 2.906086 / 2.687048; wall speedup 1.963x
+regression_75_native_18: 1.389939 / 1.363747; 14.963233 / 14.192649; wall speedup 1.019x
+regression_75_single_stream: 1.441366 / 1.392822; 15.110750 / 13.804246; wall speedup 1.035x
+
+The published 75-regression expression runs over all 7,500,000 rows with four predictors. The fixture metadata declares one writer partition, but current native reads expose 18 file partitions. We test both that natural input and naive_coalesce(1), a streaming single-input reproduction of the historical aggregation bottleneck. The lazy coalesce node is constructed before timing; its stream execution remains inside the timed action for both binaries. This is one aggregation input stream, not a claim that the underlying reader has returned to one physical file.
+
+All six legacy scalar/count results agree exactly across all accepted phases. All 75 regression results agree across every accepted run at rtol=1e-7, atol=1e-9 (observed max absolute difference 6.984919309616089e-10; n exact).
+
+DP improves 1.96x in wall time, 8% in CPU; minor faults 137107 -> 24979 (82% lower). Average utilized cores (CPU/wall) increase roughly 5.2 -> 9.4. This is not a halving of decode computation. The exchange and producer-side coalescing held small output batches for finalization. DataFusion 55.2 SharedCoalescer tracks all input senders per output; the last sender finishes/concatenates residual batches. Its input-finalization loop runs output finalizers sequentially. Removing that boundary allows source batches to flow directly into partial aggregation.
+
+Actual new DP plan: final aggregate -> CoalescePartitions -> partial aggregate with row-local integer-list sum -> legacy source partitions(16). The CoalescePartitions combines scalar partial states. No nested-list exchange remains. The warmed 4-second sample has no concat_lists, SharedCoalescer, or RepartitionExec frames. Dominant collapsed self frames remain BufferedScalars::probe (5419 samples), buffered_scalar_row (3029), ZSTD_decompressSequences (3353). Samples include inlined work; waiting-thread samples are not CPU percentages. Profile timings are not benchmark timings.
+
+Validation: 47 vail-table library tests, 11 DataFusion plan tests, and 350 affected Python tests pass. Explicit tests cover source separation, buffer allocation identity through zero-copy slices, row preservation, state reset/repeated execution, cancellation with unclaimed lanes, preservation of parallel inputs, and order-sensitive reducers. Read-only subagent review found no additional concrete defect.
+
+Globals test: captured_globals_share_ir_without_retaining_table_rows had an obsolete requirement for CrossJoinExec. The exact assertion fails on unchanged baseline (log archived). Main contains the same assertion and scalar-external-binding implementation. Main commit 4f3205f8 intentionally bound external globals through scalar subqueries. Removed only the obsolete cross-join requirement; existing lifetime, returned values, and filter checks all pass. No globals value/execution bug was found.
+
+Remaining: full matrix and GT-only decoding are essentially unchanged. This patch does not establish that code generation explains their remaining gap versus Hail. No new Hail run is included in this old/new Vail comparison.
