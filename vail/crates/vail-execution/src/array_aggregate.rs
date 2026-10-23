@@ -596,8 +596,8 @@ impl DenseRatio {
             Ok(Arc::new(arrow_arith::arity::binary::<
                 _,
                 _,
-                arrow_array::types::Float64Type,
                 _,
+                arrow_array::types::Float64Type,
             >(
                 sum,
                 count,
