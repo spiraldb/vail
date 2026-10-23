@@ -1,0 +1,106 @@
+{
+  "engine": "vail",
+  "warmup": 2,
+  "runs": 5,
+  "reject_compilers": true,
+  "matrix": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "matrix_decode_count_gt": {
+      "seconds": [
+        0.3265674590365961,
+        0.3494297090219334,
+        0.3306054159766063,
+        0.4111563330516219,
+        0.3819486249703914
+      ],
+      "median": 0.3494297090219334,
+      "value": 24885,
+      "attempts": [
+        {
+          "seconds": 0.3540999999968335,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.3402226659236476,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.3265674590365961,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3494297090219334,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3306054159766063,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.4111563330516219,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3819486249703914,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_sum_dp": {
+      "seconds": [
+        0.5628702910616994,
+        0.6295199589803815,
+        0.5841230000369251,
+        0.5955429170280695,
+        0.5771217909641564
+      ],
+      "median": 0.5841230000369251,
+      "value": 353709503,
+      "attempts": [
+        {
+          "seconds": 0.7911141670774668,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.6051087089581415,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5628702910616994,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.6295199589803815,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5841230000369251,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5955429170280695,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5771217909641564,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}

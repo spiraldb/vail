@@ -1,0 +1,72 @@
+{
+  "engine": "vail",
+  "warmup": 1,
+  "runs": 3,
+  "reject_compilers": true,
+  "matrix": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "matrix_decode_count_gt": {
+      "seconds": [
+        0.36617587495129555,
+        0.332548875012435,
+        0.3516701660118997
+      ],
+      "median": 0.3516701660118997,
+      "value": 24885,
+      "attempts": [
+        {
+          "seconds": 0.34213295800145715,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.36617587495129555,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.332548875012435,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3516701660118997,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_sum_dp": {
+      "seconds": [
+        0.586679624975659,
+        0.6002844159957021,
+        0.5852035410935059
+      ],
+      "median": 0.586679624975659,
+      "value": 353709503,
+      "attempts": [
+        {
+          "seconds": 0.793238167068921,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.586679624975659,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.6002844159957021,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5852035410935059,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}
