@@ -150,6 +150,34 @@ fn collect_coordinate_reuses_repeatable_native_state_then_restores_on_update() {
     let snapshot = accumulator.evaluate().unwrap();
     assert_eq!(accumulator.evaluate().unwrap(), snapshot);
     let published = accumulator.state().unwrap();
+    // The layout adapter emits the existing native ARRAY_AGG wire protocol:
+    // another public native grouped factory can consume it directly.
+    let native =
+        configured_udaf("collect", Some(&DataType::Int32), &serde_json::json!({})).unwrap();
+    let native_aggregate =
+        AggregateExprBuilder::new(native, vec![Arc::new(Column::new("value", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "value",
+                DataType::Int32,
+                true,
+            )])))
+            .alias("native_collect")
+            .build()
+            .unwrap();
+    let ScalarValue::List(wire) = &published[0] else {
+        panic!("coordinate state must be a list")
+    };
+    let mut native_groups = native_aggregate.create_groups_accumulator().unwrap();
+    native_groups
+        .merge_batch(&[wire.values().clone()], &[0, 1], 2)
+        .unwrap();
+    assert_eq!(
+        native_groups
+            .evaluate(datafusion_expr::EmitTo::All)
+            .unwrap()
+            .to_data(),
+        wire.values().to_data()
+    );
     let mut restored = aggregate.create_accumulator().unwrap();
     restored
         .merge_batch(
