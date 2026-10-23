@@ -134,6 +134,12 @@ mod tests {
         .unwrap()
     }
     fn sorted(input: PhysicalPlan, local: bool, fetch: Option<usize>) -> PhysicalPlan {
+        // A global sort requires a singleton input, as enforced by the planner.
+        let input = if local {
+            input
+        } else {
+            Arc::new(CoalescePartitionsExec::new(input))
+        };
         Arc::new(
             SortExec::new(
                 LexOrdering::new(vec![PhysicalSortExpr::new(
