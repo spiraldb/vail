@@ -193,16 +193,17 @@ warning: associated function `new` is never used
     |                   ^^^
 
 warning: `vail-table` (lib) generated 16 warnings (run `cargo fix --lib -p vail-table` to apply 5 suggestions)
-    Finished `release` profile [optimized] target(s) in 32.24s
+    Finished `release` profile [optimized] target(s) in 3.25s
      Running tests/aggregate_singleton.rs (vail/target/release/deps/aggregate_singleton-86f783378c40a7ee)
 
-running 4 tests
+running 5 tests
 test discarded_scalar_aggregate_is_not_evaluated ... ok
 test unselected_aggregate_dependency_remains_lazy ... ok
+test unselected_conditional_aggregate_does_not_fold_invalid_cast ... ok
 test aggregate_dependency_can_be_shared_by_selector_and_selected_branch ... ok
 test scalar_subqueries_share_aggregate_dependencies_and_independent_actions ... ok
 
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
 
      Running tests/conditional_globals.rs (vail/target/release/deps/conditional_globals-13928f41ff7cdaff)
 
@@ -210,7 +211,7 @@ running 2 tests
 test conditional_globals_promote_nullable_outputs_and_choose_nonnullable_branches ... ok
 test conditional_singleton_binding_skips_unchosen_and_missing_branches ... ok
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
 
      Running tests/consumer_actions.rs (vail/target/release/deps/consumer_actions-5d662e8eb12fb363)
 
@@ -222,5 +223,5 @@ test an_exchange_requires_an_independent_action_for_replay ... ok
 test force_count_handles_grouped_output_with_row_payload ... ok
 test force_count_preserves_ordered_rows_and_limit_semantics ... ok
 
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
 

@@ -42,3 +42,15 @@ and deferred public diagnostics. No mocks or private plan-display assertions.
 Normal final build log: native-tests.log. No Python wheel built in this worktree.
 Combined SUM profile must confirm actual processed entries fall from 10B to 5B;
 these public semantic tests intentionally do not assert private plan shape.
+
+Final validation and baseline demand check
+Final production is byte-identical to fe5323cb; dc10bbab adds one public lazy
+foldable-cast regression. Exact dc10bbab: 5 singleton +2 conditional +6 consumer
+native tests PASS (13 total). An attempted broader native optimizer prepass was
+reverted: literal-false row CASE with an external aggregate SUM(Die) still retained
+and executed its scalar subquery. Running that exact same public test against
+unmodified dec4b8 production ALSO failed. See dead-case-baseline.log. This is a
+pre-existing demand-optimization opportunity, not a regression introduced by the
+aggregate identity binding. No private plan-display assertions were added.
+The paired SUM agent reports its combined fe532/SUM profile processes exactly
+5 billion entries once; that evidence is maintained by the SUM agent separately.
