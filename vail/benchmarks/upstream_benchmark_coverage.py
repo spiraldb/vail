@@ -23,6 +23,8 @@ import time
 import traceback
 from urllib.request import urlretrieve
 
+from benchmark_policy import exclusion_result, load_policy
+
 
 ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM = Path(os.environ.get(
@@ -570,9 +572,19 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true",
                         help="Retain completed case results from --output and run only missing cases.")
     parser.add_argument("--list", action="store_true", help="Print discovered cases and exit.")
+    parser.add_argument("--probe-excluded", action="store_true",
+                        help="Probe only explicitly selected excluded cases after a suspected fix.")
+    parser.add_argument("--probe-reason", help="Concrete functionality/adapter fix suspected by this targeted probe.")
     args = parser.parse_args()
     if args.resume and not args.output:
         parser.error("--resume requires --output PATH")
+    if args.probe_excluded and (not args.case or not args.probe_reason or not args.probe_reason.strip()):
+        parser.error("--probe-excluded requires exact --case selection and a concrete --probe-reason")
+    if args.probe_excluded and args.resume:
+        parser.error("Use a fresh report for --probe-excluded; it cannot be combined with --resume")
+    if args.probe_reason and not args.probe_excluded:
+        parser.error("--probe-reason requires --probe-excluded")
+    policy, policy_metadata = load_policy()
     cases = inventory()
     if args.case:
         selected = set(args.case)
@@ -586,6 +598,8 @@ def main() -> None:
     report = {"runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               "upstream_sha256": {name: hashlib.sha256((UPSTREAM / name).read_bytes()).hexdigest()
                                   for name in (*SOURCES, "fixtures.py")},
+              "exclusion_policy": policy_metadata,
+              "targeted_probe": {"reason": args.probe_reason, "cases": args.case} if args.probe_excluded else None,
               "engine": args.engine, "timeout_seconds": args.timeout,
               "fixture_timeout_seconds": args.fixture_timeout, "data_dir": str(args.data_dir),
               "smoke_fixtures": args.smoke, "discovered": len(cases), "cases": []}
@@ -604,7 +618,9 @@ def main() -> None:
         timeout = max([args.timeout, *(mark["args"][0] for mark in case["upstream_marks"]
                                       if mark["name"] == "xtimeout" and mark["args"]
                                       and isinstance(mark["args"][0], (int, float)))])
-        result = run_one(case, args.engine, timeout, args.fixture_timeout, args.smoke, str(args.data_dir))
+        result = None if args.probe_excluded else exclusion_result(policy, case["id"], args.engine)
+        if result is None:
+            result = run_one(case, args.engine, timeout, args.fixture_timeout, args.smoke, str(args.data_dir))
         report["cases"].append({**case, **result})
         report["cases"].sort(key=lambda item: next(i for i, original in enumerate(cases) if original["id"] == item["id"]))
         report["totals"] = {status: sum(item["status"] == status for item in report["cases"])
