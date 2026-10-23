@@ -61,6 +61,56 @@ fn field_only(expr: &Arc<dyn PhysicalExpr>) -> bool {
 }
 
 pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
+    if let Some(entries) = plan.downcast_ref::<crate::matrix_entries::MatrixEntriesExec>() {
+        return Ok(Some(entries.count_plan()));
+    }
+    if let Some(merge) = plan.downcast_ref::<datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec>() {
+        if merge.fetch().is_none() {
+            if let Some(input) = optimize(merge.input().clone())? {
+                return Ok(Some(Arc::new(datafusion_physical_plan::coalesce_partitions::CoalescePartitionsExec::new(input))));
+            }
+        }
+        return Ok(None);
+    }
+    if plan.is::<datafusion_physical_plan::union::UnionExec>() {
+        let mut parts = Vec::new();
+        for child in plan.children() {
+            let Some(part) = optimize(child.clone())? else {
+                return Ok(None);
+            };
+            parts.push(part);
+        }
+        return Ok(Some(datafusion_physical_plan::union::UnionExec::try_new(
+            parts,
+        )?));
+    }
+    if plan.is::<crate::partitioned::OrderedConcatExec>() {
+        // Concat may normally cast to its declared schema. Only erase row
+        // assembly when every child already has exactly those value types.
+        let schema = plan.schema();
+        if plan.children().iter().any(|child| {
+            let child = child.schema();
+            child.fields().len() != schema.fields().len()
+                || child
+                    .fields()
+                    .iter()
+                    .zip(schema.fields())
+                    .any(|(left, right)| left.data_type() != right.data_type())
+        }) {
+            return Ok(None);
+        }
+        let mut parts = Vec::new();
+        for child in plan.children() {
+            let Some(part) = optimize(child.clone())? else {
+                return Ok(None);
+            };
+            parts.push(part);
+        }
+        return Ok(Some(Arc::new(crate::partitioned::OrderedConcatExec::new(
+            parts,
+            Arc::new(Schema::empty()),
+        ))));
+    }
     if let Some(projection) = plan.downcast_ref::<ProjectionExec>() {
         if projection
             .expr()
@@ -71,7 +121,8 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
         }
         return Ok(None);
     }
-    if plan.is::<ScalarSubqueryExec>()
+    if plan.is::<crate::partitioned::PartitionViewExec>()
+        || plan.is::<ScalarSubqueryExec>()
         || crate::action_parameters::repeatable_node(&plan)
         || plan.is::<crate::rng_context::ConsumerScopeExec>()
     {
@@ -425,7 +476,7 @@ fn count_value(value: ColumnarValue, rows: usize, fields: &[String]) -> Result<u
             .ok_or_else(|| DataFusionError::Execution("list count overflow".into())),
     }
 }
-fn count_list(array: &ArrayRef, fields: &[String]) -> Result<usize> {
+pub(crate) fn count_list(array: &ArrayRef, fields: &[String]) -> Result<usize> {
     if array.data_type() == &arrow_schema::DataType::Null {
         return Ok(0);
     }
@@ -480,28 +531,34 @@ fn count_offsets(
             .clone();
         levels.push(child);
     }
-    let nullable = levels
+    // Combine ancestor/entry logical validity once per batch, then count bits
+    // over each list range. Never inspect nullable payload fields.
+    let validity = levels
         .iter()
         .filter_map(|array| array.logical_nulls())
         .filter(|nulls| nulls.null_count() != 0)
-        .collect::<Vec<_>>();
+        .reduce(|left, right| arrow_buffer::NullBuffer::union(Some(&left), Some(&right)).unwrap());
     let list_nulls = list.logical_nulls();
+    if list_nulls
+        .as_ref()
+        .is_none_or(|nulls| nulls.null_count() == 0)
+    {
+        let start = offsets[0];
+        let len = offsets[list.len()] - start;
+        return Ok(validity
+            .as_ref()
+            .map_or(len, |nulls| len - nulls.slice(start, len).null_count()));
+    }
     let mut count = 0;
     for row in 0..list.len() {
-        if list_nulls
-            .as_ref()
-            .is_some_and(|nulls| !nulls.is_valid(row))
-        {
+        if !list_nulls.as_ref().unwrap().is_valid(row) {
             continue;
         }
-        let range = offsets[row]..offsets[row + 1];
-        count += if nullable.is_empty() {
-            range.len()
-        } else {
-            range
-                .filter(|index| nullable.iter().all(|nulls| nulls.is_valid(*index)))
-                .count()
-        };
+        let start = offsets[row];
+        let len = offsets[row + 1] - start;
+        count += validity
+            .as_ref()
+            .map_or(len, |nulls| len - nulls.slice(start, len).null_count());
     }
     Ok(count)
 }

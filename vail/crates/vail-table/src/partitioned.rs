@@ -1187,7 +1187,8 @@ impl ExecutionPlan for OrderedConcatExec {
                         let columns = columns.iter().zip(schema.fields())
                             .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
                             .collect::<std::result::Result<Vec<_>, _>>()?;
-                        yield RecordBatch::try_new(schema.clone(),columns)?;
+                        yield RecordBatch::try_new_with_options(schema.clone(), columns,
+                            &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
                     }
                 }
             },

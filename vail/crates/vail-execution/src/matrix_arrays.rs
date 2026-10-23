@@ -235,8 +235,46 @@ pub(crate) fn count_take(
         })
 }
 
+/// A shared identity permutation is common after sorting already-ordered
+/// column metadata. Check the small index owner once, and retain the original
+/// Arrow list buffers instead of copying every entry payload.
+fn identity_gather(values: &ListRows<'_>, positions: &ListRows<'_>) -> Result<Option<ArrayRef>> {
+    if values.scalar && values.rows != 1 {
+        return Ok(None);
+    }
+    if values.rows == 0 {
+        return Ok(Some(Arc::new(values.values.clone())));
+    }
+    let indices = positions
+        .values
+        .values()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .ok_or_else(|| datafusion_common::exec_datafusion_err!("list positions must be int32"))?;
+    let nulls = indices.logical_nulls();
+    let owners = if positions.scalar { 1 } else { values.rows };
+    for row in 0..owners {
+        let owner = positions.span(row);
+        for (position, index) in owner.enumerate() {
+            if nulls.as_ref().is_some_and(|nulls| !nulls.is_valid(index))
+                || indices.value(index) as i64 != position as i64
+            {
+                return Ok(None);
+            }
+        }
+    }
+    for row in 0..values.rows {
+        if values.span(row).len() != positions.span(row).len() {
+            return Ok(None);
+        }
+    }
+    Ok(Some(Arc::new(values.values.clone())))
+}
 fn gather(values: ListRows<'_>, positions: ListRows<'_>, grouped: bool) -> Result<ArrayRef> {
     if !grouped {
+        if let Some(identity) = identity_gather(&values, &positions)? {
+            return Ok(identity);
+        }
         let mut selection = Vec::new();
         let offsets = visit_take(&values, &positions, |index| selection.push(index as u32))?;
         let selected = take(

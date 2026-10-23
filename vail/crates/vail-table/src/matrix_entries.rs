@@ -9,7 +9,7 @@
 
 use crate::plan::{PhysicalPlan, properties};
 use arrow_array::{
-    Array, ArrayRef, LargeListArray, ListArray, RecordBatch, StructArray, UInt64Array,
+    Array, ArrayRef, LargeListArray, ListArray, RecordBatch, RecordBatchOptions, StructArray, UInt64Array,
 };
 use arrow_schema::{DataType, Field, Schema, SchemaRef, SortOptions};
 use datafusion_common::{DataFusionError, tree_node::TreeNodeRecursion};
@@ -272,15 +272,27 @@ pub(crate) fn lower(
 }
 
 #[derive(Debug)]
-struct MatrixEntriesExec {
+pub(crate) struct MatrixEntriesExec {
     rows: PhysicalPlan,
     columns: PhysicalPlan,
     config: Config,
+    count_only: bool,
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
 }
 
 impl MatrixEntriesExec {
+    pub(crate) fn count_plan(&self) -> PhysicalPlan {
+        let schema = Arc::new(Schema::empty());
+        Arc::new(Self {
+            rows: self.rows.clone(),
+            columns: self.columns.clone(),
+            config: self.config.clone(),
+            count_only: true,
+            schema: schema.clone(),
+            properties: properties(schema, EmissionType::Incremental),
+        })
+    }
     fn new(
         rows: PhysicalPlan,
         columns: PhysicalPlan,
@@ -318,6 +330,7 @@ impl MatrixEntriesExec {
             rows,
             columns,
             config,
+            count_only: false,
             schema,
             properties,
         })
@@ -326,13 +339,13 @@ impl MatrixEntriesExec {
 
 impl DisplayAs for MatrixEntriesExec {
     fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "MatrixEntriesByKeyRunsExec")
+        write!(f, "{}", self.name())
     }
 }
 
 impl ExecutionPlan for MatrixEntriesExec {
     fn name(&self) -> &'static str {
-        "MatrixEntriesByKeyRunsExec"
+        if self.count_only { "CountMatrixEntriesExec" } else { "MatrixEntriesByKeyRunsExec" }
     }
 
     fn properties(&self) -> &Arc<PlanProperties> {
@@ -366,11 +379,8 @@ impl ExecutionPlan for MatrixEntriesExec {
                 "MatrixEntriesByKeyRunsExec expects row and global inputs".into(),
             ));
         }
-        Ok(Arc::new(Self::new(
-            children[0].clone(),
-            children[1].clone(),
-            self.config.clone(),
-        )?))
+        let replacement = Self::new(children[0].clone(), children[1].clone(), self.config.clone())?;
+        if self.count_only { Ok(replacement.count_plan()) } else { Ok(Arc::new(replacement)) }
     }
 
     fn execute(
@@ -387,6 +397,7 @@ impl ExecutionPlan for MatrixEntriesExec {
         let columns_plan = self.columns.clone();
         let config = self.config.clone();
         let schema = self.schema.clone();
+        let count_only = self.count_only;
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
@@ -396,6 +407,29 @@ impl ExecutionPlan for MatrixEntriesExec {
                     ))?;
                 let columns = read_columns(&columns_batch, &config)?;
                 let mut input = rows_plan.execute(0, context)?;
+                if count_only {
+                    // Row/column expressions still execute. Only expansion and
+                    // key-run transposition disappear for this count action.
+                    let fields = vec![config.value_field.clone()];
+                    while let Some(batch) = input.try_next().await? {
+                        let cells = batch.column(config.cells);
+                        let count = if columns.is_empty() { 0 } else {
+                            let row_offsets = offsets(cells)?;
+                            let validity = cells.logical_nulls();
+                            for row in 0..cells.len() {
+                                if validity.as_ref().is_some_and(|nulls| !nulls.is_valid(row)) { continue; }
+                                let width = row_offsets[row + 1] - row_offsets[row];
+                                if width != columns.len() as i64 {
+                                    Err(DataFusionError::Execution(format!("matrix row has {width} cells for {} columns", columns.len())))?;
+                                }
+                            }
+                            crate::count_explode::count_list(cells, &fields)?
+                        };
+                        yield RecordBatch::try_new_with_options(schema.clone(), vec![],
+                            &RecordBatchOptions::new().with_row_count(Some(count)))?;
+                    }
+                    return;
+                }
                 let mut run = KeyRun::default();
                 let mut singleton_rows = Vec::<RecordBatch>::new();
                 let mut singleton_bytes = 0usize;
