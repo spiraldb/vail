@@ -9,10 +9,7 @@ use arrow_array::{
     RecordBatchOptions, StructArray,
 };
 use arrow_schema::Schema;
-use datafusion_common::{
-    DataFusionError, NullHandling, Result,
-    tree_node::{Transformed, TreeNode},
-};
+use datafusion_common::{DataFusionError, NullHandling, Result};
 use datafusion_execution::TaskContext;
 use datafusion_expr::ColumnarValue;
 use datafusion_physical_expr::{
@@ -130,10 +127,66 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
 }
 
 #[derive(Debug, Clone)]
+enum ZipArguments {
+    Builtin(Vec<Arc<dyn PhysicalExpr>>),
+    Semantic {
+        bindings: Vec<Arc<dyn PhysicalExpr>>,
+        programs: Vec<vail_execution::logical_expr::BoundSemanticProgram>,
+    },
+}
+impl ZipArguments {
+    fn len(&self) -> usize {
+        match self {
+            Self::Builtin(arguments) => arguments.len(),
+            Self::Semantic { programs, .. } => programs.len(),
+        }
+    }
+    fn expressions(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
+        match self {
+            Self::Builtin(arguments) => arguments.iter().collect(),
+            Self::Semantic { bindings, .. } => bindings.iter().collect(),
+        }
+    }
+    fn evaluate(&self, batch: &RecordBatch, selected: usize) -> Result<ColumnarValue> {
+        match self {
+            Self::Builtin(arguments) => {
+                let mut selected_value = None;
+                for (index, expression) in arguments.iter().enumerate() {
+                    let value = expression.evaluate(batch)?;
+                    if index == selected {
+                        selected_value = Some(value);
+                    }
+                }
+                selected_value.ok_or_else(|| {
+                    DataFusionError::Internal("zip count selected argument missing".into())
+                })
+            }
+            Self::Semantic { bindings, programs } => {
+                // Match ScalarFunctionExpr: capture every physical ref once,
+                // before evaluating any part of the native semantic program.
+                let values = bindings
+                    .iter()
+                    .map(|expression| expression.evaluate(batch))
+                    .collect::<Result<Vec<_>>>()?;
+                let mut selected_value = None;
+                for (index, program) in programs.iter().enumerate() {
+                    let value = program.evaluate(&values, batch.num_rows())?;
+                    if index == selected {
+                        selected_value = Some(value);
+                    }
+                }
+                selected_value.ok_or_else(|| {
+                    DataFusionError::Internal("semantic zip count selected argument missing".into())
+                })
+            }
+        }
+    }
+}
+#[derive(Debug, Clone)]
 enum Evaluation {
     Ordinary(Arc<dyn PhysicalExpr>),
     Zip {
-        arguments: Vec<Arc<dyn PhysicalExpr>>,
+        arguments: ZipArguments,
         selected: usize,
     },
 }
@@ -151,12 +204,7 @@ impl ZipProgram {
                     arguments,
                     selected,
                 } => {
-                    for (index, expression) in arguments.iter().enumerate() {
-                        let value = expression.evaluate(batch)?;
-                        if index == *selected {
-                            selected_value = Some(value);
-                        }
-                    }
+                    selected_value = Some(arguments.evaluate(batch, *selected)?);
                 }
             }
         }
@@ -164,7 +212,7 @@ impl ZipProgram {
             .ok_or_else(|| DataFusionError::Internal("zip count has no selected argument".into()))
     }
 }
-fn zip_arguments(expr: &Arc<dyn PhysicalExpr>) -> Option<Vec<Arc<dyn PhysicalExpr>>> {
+fn zip_arguments(expr: &Arc<dyn PhysicalExpr>) -> Option<ZipArguments> {
     let expr = crate::projection_broadcast::count_inner(expr);
     let function = expr.downcast_ref::<ScalarFunctionExpr>()?;
     if function
@@ -172,51 +220,12 @@ fn zip_arguments(expr: &Arc<dyn PhysicalExpr>) -> Option<Vec<Arc<dyn PhysicalExp
         .inner()
         .is::<datafusion_functions_nested::arrays_zip::ArraysZip>()
     {
-        return Some(function.args().to_vec());
+        return Some(ZipArguments::Builtin(function.args().to_vec()));
     }
-    if !vail_execution::logical_expr::semantic_kernel_can_split(function.fun()) {
-        return None;
-    }
-    // Rebinding may duplicate refs across branches. Only already-materialized
-    // columns and immutable literals are safe to duplicate or reorder. In
-    // particular, keep fallible/volatile refs in the original whole kernel.
-    if !function.args().iter().all(|argument| {
-        let argument = crate::projection_broadcast::count_inner(argument);
-        argument.is::<Column>() || argument.is::<Literal>()
-    }) {
-        return None;
-    }
-
-    let (expression, schema) = vail_execution::logical_expr::semantic_kernel(function.fun())?;
-    let Expr::NestedFunction {
-        function: name,
-        args,
-        ..
-    } = expression
-    else {
-        return None;
-    };
-    if name != "arrays_zip" {
-        return None;
-    }
-    args.iter()
-        .map(|argument| {
-            let lowered = vail_execution::expressions::lower(argument, schema).ok()?;
-            lowered
-                .transform_up(|node| {
-                    if let Some(column) = node.downcast_ref::<Column>() {
-                        let bound = function.args().get(column.index()).ok_or_else(|| {
-                            DataFusionError::Internal("semantic argument missing".into())
-                        })?;
-                        Ok(Transformed::yes(bound.clone()))
-                    } else {
-                        Ok(Transformed::no(node))
-                    }
-                })
-                .ok()
-                .map(|rewritten| rewritten.data)
-        })
-        .collect()
+    Some(ZipArguments::Semantic {
+        bindings: function.args().to_vec(),
+        programs: vail_execution::logical_expr::semantic_zip_programs(function.fun())?,
+    })
 }
 fn zip_program(
     plan: &PhysicalPlan,
@@ -325,7 +334,7 @@ impl ExecutionPlan for CountListExec {
             .flat_map(|program| program.0.iter())
             .flat_map(|step| match step {
                 Evaluation::Ordinary(expression) => vec![expression],
-                Evaluation::Zip { arguments, .. } => arguments.iter().collect(),
+                Evaluation::Zip { arguments, .. } => arguments.expressions(),
             })
             .collect::<Vec<_>>();
         datafusion_physical_plan::apply_expression_roots(expressions, f)
@@ -849,9 +858,74 @@ mod tests {
             ));
             let guarded = zip.clone().with_new_children(guarded_arguments).unwrap();
             assert!(
-                zip_arguments(&guarded).is_none(),
-                "nontrivial refs must stay in original kernel"
+                zip_arguments(&guarded).is_some(),
+                "explicit binding capture supports nontrivial physical refs"
             );
+            if position == 0 {
+                use std::sync::atomic::{AtomicUsize, Ordering};
+                assert_eq!(function.args().len(), 1);
+                let scalar_list = batch
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<ListArray>()
+                    .unwrap()
+                    .slice(0, 1);
+                for fail in [false, true] {
+                    let calls = Arc::new(AtomicUsize::new(0));
+                    let observed = calls.clone();
+                    let scalar =
+                        datafusion_common::ScalarValue::List(Arc::new(scalar_list.clone()));
+                    let probe = datafusion_expr::create_udf(
+                        "semantic_zip_binding_probe",
+                        vec![],
+                        batch.schema().field(0).data_type().clone(),
+                        datafusion_expr::Volatility::Volatile,
+                        Arc::new(move |_| {
+                            observed.fetch_add(1, Ordering::SeqCst);
+                            if fail {
+                                return Err(DataFusionError::Execution(
+                                    "binding failed before semantic program".into(),
+                                ));
+                            }
+                            Ok(ColumnarValue::Scalar(scalar.clone()))
+                        }),
+                    );
+                    let probe = Arc::new(
+                        ScalarFunctionExpr::try_new(
+                            Arc::new(probe),
+                            vec![],
+                            source.schema().as_ref(),
+                            Arc::new(datafusion_common::config::ConfigOptions::default()),
+                        )
+                        .unwrap(),
+                    ) as Arc<dyn PhysicalExpr>;
+                    let bound = zip.clone().with_new_children(vec![probe]).unwrap();
+                    let program = zip_arguments(&bound)
+                        .expect("nontrivial scalar ref must use explicit capture");
+                    let ordinary = bound.evaluate(&batch);
+                    assert_eq!(calls.swap(0, Ordering::SeqCst), 1);
+                    let selected = program.evaluate(&batch, 0);
+                    assert_eq!(calls.load(Ordering::SeqCst), 1);
+                    if fail {
+                        assert!(ordinary.unwrap_err().to_string().contains("binding failed"));
+                        assert!(selected.unwrap_err().to_string().contains("binding failed"));
+                    } else {
+                        assert!(matches!(
+                            ordinary.as_ref().unwrap(),
+                            ColumnarValue::Scalar(_)
+                        ));
+                        assert!(matches!(
+                            selected.as_ref().unwrap(),
+                            ColumnarValue::Scalar(_)
+                        ));
+                        assert_eq!(
+                            count_list(&ordinary.unwrap().into_array(1).unwrap(), &["1".into()])
+                                .unwrap(),
+                            count_list(&selected.unwrap().into_array(1).unwrap(), &[]).unwrap()
+                        );
+                    }
+                }
+            }
             let projected = Arc::new(
                 ProjectionExec::try_new(vec![(zip, "items".into())], source.clone()).unwrap(),
             );

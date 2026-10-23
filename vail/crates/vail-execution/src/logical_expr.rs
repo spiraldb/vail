@@ -81,6 +81,50 @@ pub fn semantic_kernel_can_split(function: &datafusion_expr::ScalarUDF) -> bool 
     })
 }
 
+/// One branch of a deterministic semantic zip, evaluated against bindings
+/// already captured once by its caller. Scalar owners remain scalar captures.
+#[derive(Debug, Clone)]
+pub struct BoundSemanticProgram {
+    function: Arc<datafusion_expr::ScalarUDF>,
+    inputs: Vec<usize>,
+    fields: Vec<arrow_schema::FieldRef>,
+    output: arrow_schema::FieldRef,
+}
+impl BoundSemanticProgram {
+    pub fn evaluate(&self, bindings: &[datafusion_expr::ColumnarValue], rows: usize)
+        -> datafusion_common::Result<datafusion_expr::ColumnarValue> {
+        let args = self.inputs.iter().map(|index| bindings.get(*index).cloned().ok_or_else(||
+            datafusion_common::DataFusionError::Internal("semantic zip binding missing".into())))
+            .collect::<datafusion_common::Result<Vec<_>>>()?;
+        self.function.invoke_with_args(datafusion_expr::ScalarFunctionArgs {
+            args, arg_fields: self.fields.clone(), number_rows: rows, return_field: self.output.clone(),
+            config_options: Arc::new(datafusion_common::config::ConfigOptions::default()),
+        })
+    }
+}
+/// Compile the exact native branches without changing scalar specialization
+/// or value-domain checks. Original physical bindings must be evaluated once
+/// before invoking these branches, in their original argument order.
+pub fn semantic_zip_programs(function: &datafusion_expr::ScalarUDF) -> Option<Vec<BoundSemanticProgram>> {
+    if !semantic_kernel_can_split(function) { return None; }
+    let (expression, schema) = semantic_kernel(function)?;
+    let Expr::NestedFunction { function: name, args, .. } = expression else { return None; };
+    if name != "arrays_zip" { return None; }
+    let df_schema = DFSchema::try_from(schema.clone()).ok()?;
+    args.iter().map(|argument| {
+        let compiled = logical_kernel(argument, &df_schema, &Schema::empty(), &BTreeMap::new(), &[]).ok()?;
+        let LogicalExpr::ScalarFunction(compiled) = compiled else { return None; };
+        let inputs = compiled.args.iter().map(|argument| {
+            let LogicalExpr::Column(column) = argument else { return None; };
+            schema.index_of(&column.name).ok()
+        }).collect::<Option<Vec<_>>>()?;
+        let fields = inputs.iter().map(|index| schema.fields()[*index].clone()).collect();
+        let dtype = argument.dtype_with_globals(schema, &Schema::empty()).ok()?.to_arrow().ok()?;
+        Some(BoundSemanticProgram { function: compiled.func, inputs, fields,
+            output: Arc::new(arrow_schema::Field::new("value", dtype, true)) })
+    }).collect()
+}
+
 fn contains_global_reference(expression: &Expr) -> bool {
     let mut found = false;
     expression.visit_unique(&mut |node| {

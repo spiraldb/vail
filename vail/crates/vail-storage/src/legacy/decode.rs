@@ -1,7 +1,7 @@
 use super::input::Input;
 use super::*;
 use arrow_array::{builder::*, *};
-use arrow_buffer::{NullBufferBuilder, OffsetBuffer, ScalarBuffer};
+use arrow_buffer::{BooleanBufferBuilder, NullBufferBuilder, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, FieldRef, Fields};
 use vail_execution::expressions::PrimitiveType as P;
 
@@ -9,41 +9,54 @@ use vail_execution::expressions::PrimitiveType as P;
 // their hot append path binds the four physical builders without enum lookups.
 struct CallColumn {
     fields: Fields,
-    first: UInt16Builder,
-    second: UInt16Builder,
-    ploidy: UInt8Builder,
-    phased: BooleanBuilder,
+    first: Vec<u16>,
+    second: Vec<u16>,
+    ploidy: Vec<u8>,
+    phased: BooleanBufferBuilder,
     valid: NullBufferBuilder,
 }
 impl CallColumn {
     fn new(fields: Fields) -> Self {
         Self {
             fields,
-            first: UInt16Builder::with_capacity(8192),
-            second: UInt16Builder::with_capacity(8192),
-            ploidy: UInt8Builder::with_capacity(8192),
-            phased: BooleanBuilder::with_capacity(8192),
+            first: Vec::with_capacity(8192),
+            second: Vec::with_capacity(8192),
+            ploidy: Vec::with_capacity(8192),
+            phased: BooleanBufferBuilder::new(8192),
             valid: NullBufferBuilder::new(8192),
         }
     }
     fn null(&mut self) {
-        self.first.append_null();
-        self.second.append_null();
-        self.ploidy.append_null();
-        self.phased.append_null();
+        self.first.push(0);
+        self.second.push(0);
+        self.ploidy.push(0);
+        self.phased.append(false);
         self.valid.append_null();
     }
     fn finish(&mut self) -> Result<ArrayRef> {
         let len = self.valid.len();
+        // Hail Call children share exactly their parent's missingness. Clone
+        // this immutable Arrow bitmap instead of appending/materializing five
+        // independent validity buffers for every call.
+        let nulls = self.valid.finish();
         Ok(Arc::new(StructArray::try_new_with_length(
             self.fields.clone(),
             vec![
-                Arc::new(self.first.finish()),
-                Arc::new(self.second.finish()),
-                Arc::new(self.ploidy.finish()),
-                Arc::new(self.phased.finish()),
+                Arc::new(UInt16Array::new(
+                    ScalarBuffer::from(std::mem::take(&mut self.first)),
+                    nulls.clone(),
+                )),
+                Arc::new(UInt16Array::new(
+                    ScalarBuffer::from(std::mem::take(&mut self.second)),
+                    nulls.clone(),
+                )),
+                Arc::new(UInt8Array::new(
+                    ScalarBuffer::from(std::mem::take(&mut self.ploidy)),
+                    nulls.clone(),
+                )),
+                Arc::new(BooleanArray::new(self.phased.finish(), nulls.clone())),
             ],
-            self.valid.finish(),
+            nulls,
             len,
         )?))
     }
@@ -99,13 +112,15 @@ impl Column {
                 let children = fields
                     .iter()
                     .enumerate()
-                    .map(|(i, f)| match node.dest.iter().position(|&d| d == i) {
-                        Some(j) if !node.project[j] => {
-                            Self::Skipped(f.data_type().clone(), 0, None)
-                        }
-                        Some(j) => Self::projected(&node.children[j], f.data_type()),
-                        None => Self::new(f.data_type()),
-                    })
+                    .map(
+                        |(i, f)| match node.fields.iter().position(|field| field.dest == i) {
+                            Some(j) if !node.fields[j].project => {
+                                Self::Skipped(f.data_type().clone(), 0, None)
+                            }
+                            Some(j) => Self::projected(&node.children[j], f.data_type()),
+                            None => Self::new(f.data_type()),
+                        },
+                    )
                     .collect();
                 Self::Struct(fields.clone(), children, NullBufferBuilder::new(8192))
             }
@@ -485,17 +500,33 @@ impl AppendKind {
     }
 }
 
+#[derive(Clone, Copy)]
+enum ArraySkip {
+    Int32,
+    Int64,
+    Varint,
+    Fixed {
+        raw: Option<usize>,
+        leb: Option<usize>,
+    },
+}
+
+struct FieldOp {
+    dest: usize,
+    missing_bit: usize,
+    project: bool,
+    invert_boolean: bool,
+}
+
 /// Compile physical destination mapping once, outside the row loop.
 struct Node {
     e: Encoding,
     wire: Wire,
     append_kind: AppendKind,
-    missing_bits: Vec<usize>,
-    invert_boolean: Vec<bool>,
+    fields: Vec<FieldOp>,
+    array_skip: ArraySkip,
     ty: Type,
     children: Vec<Node>,
-    dest: Vec<usize>,
-    project: Vec<bool>,
     optional_count: usize,
     varint_length: bool,
 }
@@ -532,35 +563,52 @@ impl Node {
         } else if let Type::Ndarray { ndarray } = t {
             children.push(Self::new(&e.fields[0].1, &ndarray.0));
         }
-        let project = vec![true; children.len()];
         let mut optional_count = 0;
-        let missing_bits = children
+        let fields = children
             .iter()
-            .map(|child| {
-                if child.e.required {
+            .enumerate()
+            .map(|(i, child)| {
+                let missing_bit = if child.e.required {
                     usize::MAX
                 } else {
                     let bit = optional_count;
                     optional_count += 1;
                     bit
+                };
+                FieldOp {
+                    dest: dest.get(i).copied().unwrap_or(i),
+                    missing_bit,
+                    project: true,
+                    invert_boolean: matches!(t, Type::Interval { .. })
+                        && e.fields[i].0 == "includesStart",
                 }
             })
             .collect();
-        let invert_boolean = e
-            .fields
-            .iter()
-            .map(|(name, _)| matches!(t, Type::Interval { .. }) && name == "includesStart")
-            .collect();
+        let array_skip = if e.kind.starts_with("EArray") {
+            let child = &children[0];
+            match child.wire {
+                Wire::Int32 => ArraySkip::Int32,
+                Wire::Int64 => ArraySkip::Int64,
+                Wire::Varint => ArraySkip::Varint,
+                _ => ArraySkip::Fixed {
+                    raw: child.fixed_width(false),
+                    leb: child.fixed_width(true),
+                },
+            }
+        } else {
+            ArraySkip::Fixed {
+                raw: None,
+                leb: None,
+            }
+        };
         Self {
             e: e.clone(),
             wire: Wire::new(&e.kind),
             append_kind: AppendKind::new(t),
-            missing_bits,
-            invert_boolean,
+            fields,
+            array_skip,
             ty: t.clone(),
             children,
-            dest,
-            project,
             optional_count,
             varint_length: e.kind.ends_with('2'),
         }
@@ -609,8 +657,8 @@ impl Node {
                     .filter(|p| p.first() == Some(name))
                     .map(|p| p[1..].to_vec())
                     .collect::<Vec<_>>();
-                self.project[i] &= !selected.is_empty();
-                if self.project[i] {
+                self.fields[i].project &= !selected.is_empty();
+                if self.fields[i].project {
                     self.children[i].demand(&selected);
                 }
             }
@@ -661,8 +709,8 @@ impl Node {
             }
             Wire::Struct => {
                 let bits = bitmap(input, self.optional_count)?;
-                for (i, c) in self.children.iter().enumerate() {
-                    let bit = self.missing_bits[i];
+                for (op, c) in self.fields.iter().zip(&self.children) {
+                    let bit = op.missing_bit;
                     let missing = bit != usize::MAX && absent(&bits, bit);
                     if !missing {
                         c.skip(input)?
@@ -677,11 +725,13 @@ impl Node {
                 } else {
                     bitmap(input, n)?
                 };
-                let varint_bits = match c.wire {
-                    Wire::Int32 if input.leb => Some(32),
-                    Wire::Int64 if input.leb => Some(64),
-                    Wire::Varint => Some(64),
-                    _ => None,
+                let (varint_bits, fixed_width) = match self.array_skip {
+                    ArraySkip::Int32 if input.leb => (Some(32), None),
+                    ArraySkip::Int32 => (None, Some(4)),
+                    ArraySkip::Int64 if input.leb => (Some(64), None),
+                    ArraySkip::Int64 => (None, Some(8)),
+                    ArraySkip::Varint => (Some(64), None),
+                    ArraySkip::Fixed { raw, leb } => (None, if input.leb { leb } else { raw }),
                 };
                 if let Some(bits_per_value) = varint_bits {
                     let count = if c.e.required {
@@ -690,7 +740,7 @@ impl Node {
                         bits.present_count(n)
                     };
                     input.skip_varints(count, bits_per_value)?;
-                } else if let Some(width) = c.fixed_width(input.leb) {
+                } else if let Some(width) = fixed_width {
                     let count = if c.e.required {
                         n
                     } else {
@@ -777,10 +827,10 @@ impl Node {
         let first = u16::try_from(a)?;
         let second = u16::try_from(b)?;
         if let Column::Call(c) = out {
-            c.first.append_value(first);
-            c.second.append_value(second);
-            c.ploidy.append_value(ploidy);
-            c.phased.append_value(phased);
+            c.first.push(first);
+            c.second.push(second);
+            c.ploidy.push(ploidy);
+            c.phased.append(phased);
             c.valid.append_non_null();
         } else {
             // Generic Arrow builders are retained for record helpers and
@@ -796,10 +846,13 @@ impl Node {
     }
     fn append_struct(&self, input: &mut Input, out: &mut Column) -> Result<()> {
         let bits = bitmap(input, self.optional_count)?;
-        for (i, c) in self.children.iter().enumerate() {
-            let bit = self.missing_bits[i];
+        let Column::Struct(_, outputs, validity) = out else {
+            unreachable!("compiled struct output")
+        };
+        for (op, c) in self.fields.iter().zip(&self.children) {
+            let bit = op.missing_bit;
             let missing = bit != usize::MAX && absent(&bits, bit);
-            if !self.project[i] {
+            if !op.project {
                 if !missing {
                     c.skip(input)?
                 }
@@ -807,17 +860,17 @@ impl Node {
                 // finish; no work per omitted field per entry.
                 continue;
             }
-            let target = &mut out.children()[self.dest[i]];
+            let target = &mut outputs[op.dest];
             if missing {
                 target.null()?
-            } else if self.invert_boolean[i] {
+            } else if op.invert_boolean {
                 target.bool_builder().append_value(!boolean(input)?)
             } else {
                 c.append(input, target)?
             }
         }
         if let Type::Locus { locus } = &self.ty {
-            let c = out.children();
+            let c = &mut *outputs;
             let builder = c[1].string();
             let bytes = builder.values_slice();
             let offsets = builder.offsets_slice();
@@ -828,9 +881,9 @@ impl Node {
             c[0].int32().append_value(ordinal);
         }
         if matches!(&self.ty,Type::Tuple{tuple}if tuple.is_empty()) {
-            out.children()[0].bool_builder().append_value(true)
+            outputs[0].bool_builder().append_value(true)
         }
-        out.valid(true);
+        validity.append_non_null();
 
         Ok(())
     }
@@ -978,10 +1031,9 @@ impl PartReader {
             .ok_or("Hail part index out of bounds")?
             .clone();
         let mut node = Node::new(&c.encoding, &c.dtype);
-        node.project
-            .iter_mut()
-            .enumerate()
-            .for_each(|(i, p)| *p = projection.contains(&node.dest[i]));
+        for field in &mut node.fields {
+            field.project = projection.contains(&field.dest);
+        }
         Ok(Self {
             input: Input::open(&path, &c.buffer)?,
             node,
@@ -1031,11 +1083,11 @@ impl PartReader {
                 .map(|(i, f)| {
                     let physical = self
                         .node
-                        .dest
+                        .fields
                         .iter()
-                        .position(|&d| d == self.projection[i])
+                        .position(|field| field.dest == self.projection[i])
                         .unwrap();
-                    if !self.node.project[physical] {
+                    if !self.node.fields[physical].project {
                         Column::Skipped(f.data_type().clone(), 0, None)
                     } else {
                         Column::projected(&self.node.children[physical], f.data_type())
@@ -1059,23 +1111,16 @@ impl PartReader {
                 _ => return Err("invalid Hail row marker".into()),
             }
             let bits = bitmap(&mut self.input, self.node.optional_count)?;
-            let mut optional = 0;
-            for (i, c) in self.node.children.iter().enumerate() {
-                let missing = if c.e.required {
-                    false
-                } else {
-                    let b = absent(&bits, optional);
-                    optional += 1;
-                    b
-                };
-                if let Some(dest) = self.projection.iter().position(|p| *p == self.node.dest[i]) {
+            for (op, c) in self.node.fields.iter().zip(&self.node.children) {
+                let missing = op.missing_bit != usize::MAX && absent(&bits, op.missing_bit);
+                if let Some(dest) = self.projection.iter().position(|p| *p == op.dest) {
                     if missing {
                         columns[dest].null()?
-                    } else if !self.node.project[i]
+                    } else if !op.project
                         || self
                             .decode_columns
                             .as_ref()
-                            .is_some_and(|columns| !columns.contains(&self.node.dest[i]))
+                            .is_some_and(|columns| !columns.contains(&op.dest))
                     {
                         c.skip(&mut self.input)?;
                         columns[dest].null()?;
@@ -1142,9 +1187,50 @@ mod tests {
                 let calls = typed_array.as_any().downcast_ref::<StructArray>().unwrap();
                 for child in calls.columns() {
                     assert_eq!(child.null_count(), calls.null_count());
+                    assert_eq!(
+                        child.nulls().unwrap().inner().values().as_ptr(),
+                        calls.nulls().unwrap().inner().values().as_ptr()
+                    );
                     for i in 0..calls.len() {
                         assert_eq!(child.is_null(i), calls.is_null(i));
                     }
+                }
+                for i in (1..calls.len()).step_by(2) {
+                    assert_eq!(
+                        calls
+                            .column(0)
+                            .as_any()
+                            .downcast_ref::<UInt16Array>()
+                            .unwrap()
+                            .value(i),
+                        0
+                    );
+                    assert_eq!(
+                        calls
+                            .column(1)
+                            .as_any()
+                            .downcast_ref::<UInt16Array>()
+                            .unwrap()
+                            .value(i),
+                        0
+                    );
+                    assert_eq!(
+                        calls
+                            .column(2)
+                            .as_any()
+                            .downcast_ref::<UInt8Array>()
+                            .unwrap()
+                            .value(i),
+                        0
+                    );
+                    assert!(
+                        !calls
+                            .column(3)
+                            .as_any()
+                            .downcast_ref::<BooleanArray>()
+                            .unwrap()
+                            .value(i)
+                    );
                 }
             }
             // Invalid ploidy still follows the validated generic decoder path.
@@ -1444,6 +1530,10 @@ mod tests {
                                 } else {
                                     serde_json::json!({"name":"StreamBufferSpec"})
                                 };
+                                let mut skipped = Input::open(&path, &spec)?;
+                                node.skip(&mut skipped)?;
+                                assert_eq!(skipped.bytes, bytes.len() as u64);
+                                skipped.finish()?;
                                 let mut specialized = Column::new(&ty.to_arrow()?);
                                 node.append(&mut Input::open(&path, &spec)?, &mut specialized)?;
                                 specialized.null()?; // A missing owning array retains its own null slot.
