@@ -783,6 +783,34 @@ impl DenseRatio {
     }
 }
 
+/// DataFusion grouped state emission consumes its buffers. Keep that immutable
+/// snapshot until another input arrives; read-only state/evaluate calls must not
+/// repeatedly reconstruct and re-emit every group's state.
+struct GroupKernel {
+    kernel: Box<dyn GroupsAccumulator>,
+    snapshot: Option<Vec<ArrayRef>>,
+}
+impl GroupKernel {
+    fn snapshot(&mut self) -> Result<Vec<ArrayRef>> {
+        if self.snapshot.is_none() {
+            self.snapshot = Some(self.kernel.state(EmitTo::All)?);
+        }
+        Ok(self.snapshot.as_ref().unwrap().clone())
+    }
+    fn restore(&mut self, width: usize) -> Result<()> {
+        if let Some(snapshot) = self.snapshot.take() {
+            if width > 0 {
+                self.kernel.merge_batch(&snapshot, &(0..width).collect::<Vec<_>>(), width)?;
+            }
+        }
+        Ok(())
+    }
+    fn size(&self) -> usize {
+        self.kernel.size() + self.snapshot.as_ref().map_or(0, |states|
+            states.iter().map(|array| array.get_array_memory_size()).sum::<usize>())
+    }
+}
+
 enum Kernels {
     Sum(DenseNumeric),
     Count(DenseNumeric),
@@ -791,7 +819,7 @@ enum Kernels {
     Bool(DenseBool),
     Extrema(crate::coordinate_extrema::DenseExtrema),
     Stddev(crate::coordinate_stddev::DenseStddev),
-    Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
+    Groups(std::sync::Mutex<GroupKernel>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
 impl std::fmt::Debug for Kernels {
@@ -851,9 +879,10 @@ impl Coordinates {
         } else if crate::native_stddev::coordinate_stddev(native) {
             Kernels::Stddev(Default::default())
         } else if aggregate.groups_accumulator_supported() {
-            Kernels::Groups(std::sync::Mutex::new(
-                aggregate.create_groups_accumulator()?,
-            ))
+            Kernels::Groups(std::sync::Mutex::new(GroupKernel {
+                kernel: aggregate.create_groups_accumulator()?,
+                snapshot: None,
+            }))
         } else {
             Kernels::Coordinates(Vec::new())
         };
@@ -900,13 +929,7 @@ impl Coordinates {
                 let kernel = kernel
                     .get_mut()
                     .map_err(|_| error("coordinate accumulator state poisoned"))?;
-                let state = kernel.state(EmitTo::All)?;
-                // GroupsAccumulator emits state destructively, whereas the
-                // scalar Accumulator interface requires a repeatable snapshot.
-                if width > 0 {
-                    kernel.merge_batch(&state, &(0..width).collect::<Vec<_>>(), width)?;
-                }
-                Ok(state)
+                kernel.snapshot()
             }
             Kernels::Coordinates(kernels) => {
                 let states = kernels
@@ -980,10 +1003,9 @@ impl Coordinates {
             let Kernels::Groups(kernel) = &mut self.kernels else {
                 unreachable!()
             };
-            return kernel
-                .get_mut()
-                .map_err(|_| error("coordinate accumulator state poisoned"))?
-                .update_batch(&[flat], indices, filter, width);
+            let kernel = kernel.get_mut().map_err(|_| error("coordinate accumulator state poisoned"))?;
+            kernel.restore(width)?;
+            return kernel.kernel.update_batch(&[flat], indices, filter, width);
         }
         let Kernels::Coordinates(kernels) = &mut self.kernels else {
             unreachable!()
@@ -1017,9 +1039,18 @@ impl Coordinates {
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
-                let mut copy = self.aggregate.create_groups_accumulator()?;
-                copy.merge_batch(&states, &(0..width).collect::<Vec<_>>(), width)?;
-                copy.evaluate(EmitTo::All)?
+                if crate::reducer::native_reducer(self.aggregate.fun()).inner()
+                    .downcast_ref::<datafusion_functions_aggregate::array_agg::ArrayAgg>().is_some()
+                {
+                    // Native ARRAY_AGG's sole ListArray state is its result.
+                    // Retain its native order/null semantics without a second
+                    // merge/counting-sort/interleave of the collected values.
+                    states.into_iter().next().ok_or_else(|| error("collect snapshot is missing"))?
+                } else {
+                    let mut copy = self.aggregate.create_groups_accumulator()?;
+                    copy.merge_batch(&states, &(0..width).collect::<Vec<_>>(), width)?;
+                    copy.evaluate(EmitTo::All)?
+                }
             }
             Kernels::Coordinates(kernels) => ScalarValue::iter_to_array(
                 kernels
@@ -1176,7 +1207,8 @@ impl Accumulator for Coordinates {
                     let kernel = kernel
                         .get_mut()
                         .map_err(|_| error("coordinate accumulator state poisoned"))?;
-                    kernel.merge_batch(&values, &(0..width).collect::<Vec<_>>(), width)?
+                    kernel.restore(width)?;
+                    kernel.kernel.merge_batch(&values, &(0..width).collect::<Vec<_>>(), width)?
                 }
                 Kernels::Coordinates(kernels) => {
                     for (i, kernel) in kernels.iter_mut().enumerate() {
