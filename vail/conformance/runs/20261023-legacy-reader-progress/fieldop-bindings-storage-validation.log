@@ -1,0 +1,100 @@
+    Blocking waiting for file lock on build directory
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/crates/vail-execution)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+   Compiling vail-storage v0.1.0 (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/crates/vail-storage)
+warning: method `length` is never used
+   --> crates/vail-storage/src/legacy/input.rs:365:12
+    |
+190 | impl Input {
+    | ---------- method in this implementation
+...
+365 |     pub fn length(&mut self, e: &Encoding) -> Result<usize> {
+    |            ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-storage` (lib test) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 43.14s
+     Running unittests src/lib.rs (target/release/deps/vail_storage-f98c2767fb7b1846)
+
+running 21 tests
+test legacy::decode::tests::bitmap_present_count_ignores_padding_bits ... ok
+test legacy::input::tests::bulk_varint_word_skip_stops_at_requested_value ... ok
+test legacy::input::tests::bulk_varint_skip_preserves_width_and_position ... ok
+test legacy::input::tests::varint_crosses_buffer_boundary_and_checks_overflow ... ok
+test legacy::input::tests::projected_skip_crosses_buffer_boundaries ... ok
+test legacy::decode::tests::container_validity_is_lazy_and_resets_between_batches ... ok
+test legacy::tests::hail_compatibility_corpus_decodes_in_native_columns ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test legacy::tests::indexed_row_slices_match_full_reads ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test legacy::decode::tests::skipped_placeholders_reuse_largest_batch ... ok
+test legacy::decode::tests::skipped_children_inherit_parent_length_across_missing_structs_and_batches ... ok
+test legacy::decode::tests::compiled_leaf_dispatch_preserves_physical_field_order_and_missingness ... ok
+test legacy::decode::tests::nested_array_demand_skips_invalid_unselected_string ... ok
+test legacy::decode::tests::compact_skip_retains_boolean_overflow_and_truncation_checks ... ok
+test legacy::decode::tests::typed_call_builder_matches_generic_schema_and_child_validity ... ok
+test legacy::decode::tests::primitive_array_specialization_matches_recursive_decoder ... ok
+test legacy::layout::tests::rejected_mask_does_not_open_file ... ok
+test legacy::matrix_layout::tests::value_projection_rejects_wrong_entry_array_length ... ok
+test legacy::matrix_layout::tests::list_length_uses_metadata_without_opening_either_file ... ok
+test legacy::matrix_layout::tests::entry_projection_keeps_validity_and_never_opens_rows ... ok
+test legacy::matrix_layout::tests::entry_partition_count_errors_keep_legacy_diagnostic ... ok
+test legacy::matrix_layout::tests::bounded_sparse_scan_rebases_entries_across_splits ... ok
+
+test result: ok. 19 passed; 0 failed; 2 ignored; 0 measured; 23 filtered out; finished in 0.01s
+
