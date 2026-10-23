@@ -22,4 +22,14 @@ Cached NativeExpr views are also essential for actual substitution: inline Vec c
 
 Both frozenbaseline and candidate already execute errors in projected-away bad aggregate siblings at Matrix row/column annotation boundaries. This pre-existing behavior is not claimed fixed or introduced here. Unselected conditional failing branches remain lazy and are explicitly tested.
 
-Final exact same-artifact cost comparisons and broader tests are pending. Source review is clear atb81205d0; final integration approval remains pending matching evidence. No main changes by this agent.
+Expanded matching suites: 181 passed, 12 failures. All 12 reproduce against untouched git-archived base3dfd7318 Python using the same normally built native through a symlink (no compiled-library copy): test_matrix_table has 86 passes/12 failures in both. Logs retain exact failures, including scalar-subquery execution, UDF row count and unsupported-operation expectation issues. Other selected suites, including randomness, pass. No baseline failure is waived as a candidate success.
+
+Exact BGEN info-score, three alternating serial pairs, same native/Python except immutable binding-helper versus no-op counterfactual: median CPU113.851→73.183 core-seconds (−35.7%), retired instructions1.64768T→0.86393T (−47.6%), peak RSS3.112→3.064GiB. Wall78.680→43.196s (−45.1%); one candidate run had unrelated JVM contention, so latency is diagnostic. Same8 partitions/two-batch queues and249115 output rows in every run. See bgen-binding-pairs.json and the BGEN agent's durable profile/telemetry evidence. Four reductions are now actual shared references; identity preservation alone was insufficient.
+
+Source review is clear atb81205d0; final integration approval remains pending matching evidence. No main changes by this agent.
+
+## Exact many-column annotation diagnostic
+
+Three alternating serial original-query pairs, same normal native/Python except the baseline _project_axis method loaded from base3dfd7318: median20.928→4.151s wall,166.453→41.897 core-seconds (−74.8%). All outputs2535 columns. Process rusage RSS medians5.764→10.697GB: the single shared bundle keeps all33 states live rather than separate readers/states, an explicit memory tradeoff. These are diagnostic self-rusage timings, not a replacement fresh paired Hail run or the full runner's10Hz telemetry. The exact original output schema is retained; users do not need to wrap a struct.
+
+The candidate symbol profile (36.73 sampled core-seconds) shows projected reader CPU8.44% inclusive vs59.77% in the original profile; actual coordinate bundle updates46.46% inclusive, including DenseNumeric37.42%. Remaining self cost includes BooleanArray.value11.43%, Bool→UInt8 cast11.09%, Vec<bool>→BooleanArray8.76%, memmove3.88%. These percentages overlap by callers; do not add inclusive numbers. The work moved from33 repeated reads to one prepared bundle; there is remaining native predicate/accumulator cost. Durable symbol profile and weighted callers are included.
