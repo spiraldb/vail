@@ -1,0 +1,39 @@
+samples 774
+31.01 240 __psynch_cvwait
+6.33 49 arrow_buffer::util::bit_mask::set_bits
+5.04 39 _platform_memmove
+4.65 36 <arrow_data::transform::MutableArrayData>::try_extend
+4.01 31 _PyEval_EvalFrameDefault
+2.97 23 arrow_data::transform::build_extend_null_bits::{closure#0}
+2.58 20 mach_o::GenericTrie::find(CString, bool) const
+2.33 18 __open
+1.55 12 arrow_data::transform::primitive::build_extend::<i32>::{closure#0}
+1.42 11 gc_collect_main.llvm.6325940347975832991
+1.16 9 lsl::Allocator::AllocationMetadata::pool(bool) const
+0.9 7 _PyObject_Free
+0.9 7 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+0.78 6 type_new
+0.78 6 _PyObject_Malloc
+0.78 6 r_object.llvm.9845490566179339274
+0.65 5 _PyCode_Quicken
+0.65 5 stat
+0.65 5 sre_ucs1_match
+0.65 5 deduce_unreachable
+0.65 5 visit_decref
+0.65 5 <vail_execution::coordinate_collect::CoordinateCollect>::array
+inclusive
+52.97 410 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+52.97 410 <std::sys::thread::unix::Thread>::new::thread_start
+52.97 410 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+52.97 410 tokio::runtime::scheduler::multi_thread::worker::run
+52.97 410 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+52.97 410 _pthread_start
+52.97 410 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+52.97 410 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+52.97 410 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+52.97 410 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+52.97 410 <tokio::runtime::blocking::pool::Inner>::run
+52.97 410 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+46.38 359 start
+46.25 358 pymain_main
+46.25 358 Py_BytesMain

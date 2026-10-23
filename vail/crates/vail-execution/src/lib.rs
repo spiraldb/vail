@@ -550,6 +550,7 @@ pub mod advanced_genomic_aggregates;
 pub mod advanced_numeric_aggregates;
 pub mod array_aggregate;
 mod coordinate_extrema;
+mod coordinate_collect;
 mod coordinate_stddev;
 mod fraction;
 mod list_aggregate;

@@ -823,6 +823,7 @@ enum Kernels {
     Bool(DenseBool),
     Extrema(crate::coordinate_extrema::DenseExtrema),
     Stddev(crate::coordinate_stddev::DenseStddev),
+    Collect(crate::coordinate_collect::CoordinateCollect),
     Groups(std::sync::Mutex<GroupKernel>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -835,6 +836,7 @@ impl std::fmt::Debug for Kernels {
             Self::Bool(boolean) => boolean.fmt(f),
             Self::Extrema(extrema) => extrema.fmt(f),
             Self::Stddev(stddev) => stddev.fmt(f),
+            Self::Collect(collect) => collect.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -882,6 +884,10 @@ impl Coordinates {
             Kernels::Extrema(extrema)
         } else if crate::native_stddev::coordinate_stddev(native) {
             Kernels::Stddev(Default::default())
+        } else if native.inner().downcast_ref::<datafusion_functions_aggregate::array_agg::ArrayAgg>().is_some()
+            && aggregate.groups_accumulator_supported()
+        {
+            Kernels::Collect(crate::coordinate_collect::CoordinateCollect::new(aggregate_input.clone()))
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(GroupKernel {
                 kernel: aggregate.create_groups_accumulator()?,
@@ -925,6 +931,7 @@ impl Coordinates {
             Kernels::Bool(boolean) => Ok(vec![boolean.array()]),
             Kernels::Extrema(extrema) => Ok(vec![extrema.array()]),
             Kernels::Stddev(stddev) => Ok(stddev.states()),
+            Kernels::Collect(collect) => Ok(vec![collect.array(width)?]),
             Kernels::Product(product) => Ok(vec![
                 Arc::clone(&product.count.values),
                 Arc::clone(&product.values.values),
@@ -962,6 +969,10 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::Collect(collect) = &mut self.kernels {
+            let flat = if flat.data_type() == &self.aggregate_input { flat } else { cast(&flat, &self.aggregate_input)? };
+            return collect.update(&flat, filter, width);
+        }
         if let Kernels::Stddev(stddev) = &mut self.kernels {
             return stddev.update(&flat, filter, width);
         }
@@ -1040,6 +1051,7 @@ impl Coordinates {
             Kernels::Bool(boolean) => boolean.array(),
             Kernels::Extrema(extrema) => extrema.array(),
             Kernels::Stddev(stddev) => stddev.array(),
+            Kernels::Collect(collect) => collect.array(self.width.unwrap_or(0))?,
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -1110,7 +1122,7 @@ impl Accumulator for Coordinates {
         };
         if matches!(
             self.kernels,
-            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_)
+            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_) | Kernels::Collect(_)
         ) {
             return self.update_flat(flat, None, width);
         }
@@ -1160,6 +1172,7 @@ impl Accumulator for Coordinates {
                 Kernels::Bool(boolean) => boolean.values.inner().capacity(),
                 Kernels::Extrema(extrema) => extrema.size(),
                 Kernels::Stddev(stddev) => stddev.size(),
+                Kernels::Collect(collect) => collect.size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -1207,6 +1220,7 @@ impl Accumulator for Coordinates {
                 Kernels::Bool(boolean) => boolean.update(&values[0], None, width)?,
                 Kernels::Extrema(extrema) => extrema.update(&values[0], None, width)?,
                 Kernels::Stddev(stddev) => stddev.merge(&values, width)?,
+                Kernels::Collect(collect) => collect.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()

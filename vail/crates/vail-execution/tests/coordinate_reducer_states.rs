@@ -150,6 +150,34 @@ fn collect_coordinate_reuses_repeatable_native_state_then_restores_on_update() {
     let snapshot = accumulator.evaluate().unwrap();
     assert_eq!(accumulator.evaluate().unwrap(), snapshot);
     let published = accumulator.state().unwrap();
+    // The layout adapter emits the existing native ARRAY_AGG wire protocol:
+    // another public native grouped factory can consume it directly.
+    let native =
+        configured_udaf("collect", Some(&DataType::Int32), &serde_json::json!({})).unwrap();
+    let native_aggregate =
+        AggregateExprBuilder::new(native, vec![Arc::new(Column::new("value", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "value",
+                DataType::Int32,
+                true,
+            )])))
+            .alias("native_collect")
+            .build()
+            .unwrap();
+    let ScalarValue::List(wire) = &published[0] else {
+        panic!("coordinate state must be a list")
+    };
+    let mut native_groups = native_aggregate.create_groups_accumulator().unwrap();
+    native_groups
+        .merge_batch(&[wire.values().clone()], &[0, 1], 2)
+        .unwrap();
+    assert_eq!(
+        native_groups
+            .evaluate(datafusion_expr::EmitTo::All)
+            .unwrap()
+            .to_data(),
+        wire.values().to_data()
+    );
     let mut restored = aggregate.create_accumulator().unwrap();
     restored
         .merge_batch(
@@ -196,4 +224,67 @@ fn collect_coordinate_reuses_repeatable_native_state_then_restores_on_update() {
             vec![None, Some(4), Some(6)]
         ]
     );
+}
+
+#[test]
+fn collect_coordinate_preserves_view_and_nested_physical_descriptors() {
+    let inputs: Vec<ArrayRef> = vec![
+        Arc::new(arrow_array::StringViewArray::from(vec![
+            Some("hello"),
+            None,
+        ])),
+        Arc::new(arrow_array::LargeStringArray::from(vec![
+            Some("hello"),
+            None,
+        ])),
+        Arc::new(arrow_array::StructArray::new(
+            vec![Arc::new(Field::new("x", DataType::Int32, false))].into(),
+            vec![Arc::new(arrow_array::Int32Array::from(vec![1, 2]))],
+            Some(arrow_buffer::NullBuffer::from(vec![true, false])),
+        )),
+        Arc::new(arrow_array::StructArray::new_empty_fields(
+            2,
+            Some(arrow_buffer::NullBuffer::from(vec![true, false])),
+        )),
+    ];
+    for input in inputs {
+        let dtype = input.data_type().clone();
+        let native = configured_udaf("collect", Some(&dtype), &serde_json::json!({})).unwrap();
+        let field = Arc::new(Field::new_list_field(dtype.clone(), true));
+        let empty = ScalarValue::List(Arc::new(ListArray::new(
+            field.clone(),
+            OffsetBuffer::from_lengths([0]),
+            arrow_array::new_empty_array(&dtype),
+            None,
+        )));
+        let udf = coordinate_udaf(native, dtype.clone(), empty).unwrap();
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(field.clone()),
+            true,
+        )]));
+        let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+            .schema(schema)
+            .alias("collected")
+            .build()
+            .unwrap();
+        let mut accumulator = aggregate.create_accumulator().unwrap();
+        let rows: ArrayRef = Arc::new(ListArray::new(
+            field,
+            OffsetBuffer::from_lengths([1, 1]),
+            input.clone(),
+            None,
+        ));
+        accumulator.update_batch(&[rows]).unwrap();
+        let ScalarValue::List(result) = accumulator.evaluate().unwrap() else {
+            panic!("coordinate output must be list")
+        };
+        let columns = result
+            .values()
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        assert_eq!(columns.len(), 1);
+        assert_eq!(columns.value(0).to_data(), input.to_data());
+    }
 }
