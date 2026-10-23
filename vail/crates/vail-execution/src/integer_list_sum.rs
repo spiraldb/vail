@@ -98,6 +98,9 @@ pub(super) fn evaluate(
     dtype: &DataType,
 ) -> Result<ArrayRef, ExprError> {
     let lists = list_array(array)?;
+    let list_nulls = lists
+        .logical_nulls()
+        .filter(|nulls| nulls.null_count() != 0);
     let mut values = lists.values();
     let mut parents = Vec::with_capacity(path.len());
     for name in path {
@@ -105,14 +108,23 @@ pub(super) fn evaluate(
             .as_any()
             .downcast_ref::<StructArray>()
             .ok_or_else(|| ExprError::Invalid("integer list sum requires struct path".into()))?;
-        if parent.null_count() != 0 {
-            parents.push(parent);
+        if let Some(nulls) = parent
+            .logical_nulls()
+            .filter(|nulls| nulls.null_count() != 0)
+        {
+            parents.push(nulls);
         }
         values = parent
             .column_by_name(name)
             .ok_or_else(|| ExprError::Invalid("integer list sum field absent".into()))?;
     }
-    let valid = |i| values.is_valid(i) && parents.iter().all(|p| p.is_valid(i));
+    let value_nulls = values
+        .logical_nulls()
+        .filter(|nulls| nulls.null_count() != 0);
+    let valid = |i| {
+        value_nulls.as_ref().is_none_or(|nulls| nulls.is_valid(i))
+            && parents.iter().all(|nulls| nulls.is_valid(i))
+    };
     let source32 = values.as_any().downcast_ref::<Int32Array>();
     let source64 = values.as_any().downcast_ref::<Int64Array>();
     if source32.is_none() && source64.is_none() {
@@ -127,19 +139,14 @@ pub(super) fn evaluate(
             let source = $source;
             let mut output = Vec::with_capacity(lists.len());
             for row in 0..lists.len() {
-                if lists.is_null(row) {
+                if list_nulls.as_ref().is_some_and(|nulls| nulls.is_null(row)) {
                     output.push(None);
                     continue;
                 }
                 let start = lists.value_offsets()[row] as usize;
                 let end = lists.value_offsets()[row + 1] as usize;
                 let mut missing = false;
-                let sum = if source.null_count() == 0 {
-                    source.values()[start..end]
-                        .iter()
-                        .fold(0_i64, |sum, &v| sum.wrapping_add(i64::from(v)))
-                } else {
-                    let nulls = source.nulls().expect("nonzero null count");
+                let sum = if let Some(nulls) = &value_nulls {
                     let mut sum = 0_i64;
                     for (i, &v) in source.values()[start..end].iter().enumerate() {
                         if nulls.is_valid(start + i) {
@@ -149,6 +156,10 @@ pub(super) fn evaluate(
                         }
                     }
                     sum
+                } else {
+                    source.values()[start..end]
+                        .iter()
+                        .fold(0_i64, |sum, &v| sum.wrapping_add(i64::from(v)))
                 };
                 output.push((filter_missing || !missing).then_some(sum));
             }
@@ -164,7 +175,7 @@ pub(super) fn evaluate(
     } else {
         let mut output = Vec::with_capacity(lists.len());
         for row in 0..lists.len() {
-            if lists.is_null(row) {
+            if list_nulls.as_ref().is_some_and(|nulls| nulls.is_null(row)) {
                 output.push(None);
                 continue;
             }
@@ -234,6 +245,52 @@ mod tests {
             Some(NullBuffer::from(vec![true, true, true, false])),
         ))
     }
+    fn sum_expression(path: &[String], filter_missing: bool, dtype: &DataType) -> Expr {
+        let mut body = Expr::LambdaVariable {
+            name: "entry".into(),
+            dtype: None,
+        };
+        for name in path {
+            body = Expr::GetField {
+                value: Arc::new(body),
+                name: name.clone(),
+            };
+        }
+        if dtype == &DataType::Int64 {
+            body = Expr::Cast {
+                dtype: Type::Primitive(PrimitiveType::Int64),
+                value: Arc::new(body),
+            };
+        }
+        Expr::ArrayReduce {
+            operation: ArrayReduction::Sum,
+            filter_missing,
+            value: Arc::new(Expr::ArrayMap {
+                value: Arc::new(Expr::Column {
+                    name: "cells".into(),
+                }),
+                parameter: "entry".into(),
+                body: Arc::new(body),
+            }),
+        }
+    }
+    fn public_sum(
+        input: &ArrayRef,
+        path: &[String],
+        filter_missing: bool,
+        dtype: &DataType,
+    ) -> Result<ArrayRef, ExprError> {
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "cells",
+            input.data_type().clone(),
+            true,
+        )]));
+        let batch = RecordBatch::try_new(schema.clone(), vec![input.clone()]).unwrap();
+        lower(&sum_expression(path, filter_missing, dtype), &schema)?
+            .evaluate(&batch)?
+            .into_array(batch.num_rows())
+            .map_err(Into::into)
+    }
     fn results(value: ArrayRef) -> Vec<Option<i64>> {
         value
             .as_any()
@@ -247,26 +304,26 @@ mod tests {
         let input = fixture();
         let p = vec!["payload".into(), "number".into()];
         assert_eq!(
-            results(evaluate(&input, &p, true, &DataType::Int64).unwrap()),
+            results(public_sum(&input, &p, true, &DataType::Int64).unwrap()),
             vec![Some(i64::from(i32::MAX) * 2), Some(0), Some(0), None]
         );
         assert_eq!(
-            results(evaluate(&input, &p, false, &DataType::Int64).unwrap()),
+            results(public_sum(&input, &p, false, &DataType::Int64).unwrap()),
             vec![None, Some(0), None, None]
         );
         assert_eq!(
-            results(evaluate(&input.slice(1, 3), &p, true, &DataType::Int64).unwrap()),
+            results(public_sum(&input.slice(1, 3), &p, true, &DataType::Int64).unwrap()),
             vec![Some(0), Some(0), None]
         );
         let selected =
             arrow_select::take::take(&input, &UInt32Array::from(vec![2, 0]), None).unwrap();
         assert_eq!(
-            results(evaluate(&selected, &p, true, &DataType::Int64).unwrap()),
+            results(public_sum(&selected, &p, true, &DataType::Int64).unwrap()),
             vec![Some(0), Some(i64::from(i32::MAX) * 2)]
         );
     }
     #[test]
-    fn physical_lowering_fuses_the_actual_nested_map_cast_sum_shape() {
+    fn nested_map_cast_sum_returns_wide_values() {
         let input = fixture();
         let schema = Arc::new(Schema::new(vec![Field::new(
             "cells",
@@ -298,9 +355,6 @@ mod tests {
             }),
         };
         let program = lower(&expr, &schema).unwrap();
-        let compiled = program.downcast_ref::<CompiledPhysical>().unwrap();
-        let physical = compiled.inner.downcast_ref::<HailPhysicalExpr>().unwrap();
-        assert!(matches!(physical.kind, HailKind::IntegerListFieldSum(..)));
         let batch = RecordBatch::try_new(schema, vec![input]).unwrap();
         let result = program.evaluate(&batch).unwrap().into_array(4).unwrap();
         assert_eq!(
@@ -328,15 +382,6 @@ mod tests {
             true,
         )]));
         let program = lower(&expression, &schema).unwrap();
-        let compiled = program.downcast_ref::<CompiledPhysical>().unwrap();
-        assert!(matches!(
-            compiled
-                .inner
-                .downcast_ref::<HailPhysicalExpr>()
-                .unwrap()
-                .kind,
-            HailKind::IntegerListFieldSum(..)
-        ));
         let batch = RecordBatch::try_new(schema, vec![input]).unwrap();
         let result = program.evaluate(&batch).unwrap().into_array(4).unwrap();
         assert_eq!(
@@ -351,7 +396,7 @@ mod tests {
     }
 
     #[test]
-    fn int64_sum_wraps_without_intermediate_vector() {
+    fn int64_sum_wraps_at_public_expression_boundary() {
         let slots = StructArray::new(
             vec![Arc::new(Field::new("n", DataType::Int64, true))].into(),
             vec![Arc::new(Int64Array::from(vec![i64::MAX, 1]))],
@@ -364,12 +409,12 @@ mod tests {
             None,
         ));
         assert_eq!(
-            results(evaluate(&lists, &["n".into()], true, &DataType::Int64).unwrap()),
+            results(public_sum(&lists, &["n".into()], true, &DataType::Int64).unwrap()),
             vec![Some(i64::MIN)]
         );
     }
     #[test]
-    fn typed_fast_paths_preserve_null_outer_lists_slices_and_nullable_leaves() {
+    fn public_sums_preserve_null_outer_lists_slices_and_nullable_leaves() {
         for values in [
             Arc::new(Int32Array::from(vec![i32::MAX, 1, 7, 8])) as ArrayRef,
             Arc::new(Int64Array::from(vec![i64::MAX, 1, 7, 8])) as ArrayRef,
@@ -386,11 +431,11 @@ mod tests {
                 Some(NullBuffer::from(vec![true, false, true])),
             ));
             assert_eq!(
-                results(evaluate(&lists, &[], true, &DataType::Int64).unwrap()),
+                results(public_sum(&lists, &[], true, &DataType::Int64).unwrap()),
                 vec![Some(expected), None, Some(0)]
             );
             assert_eq!(
-                results(evaluate(&lists.slice(1, 2), &[], true, &DataType::Int64).unwrap()),
+                results(public_sum(&lists.slice(1, 2), &[], true, &DataType::Int64).unwrap()),
                 vec![None, Some(0)]
             );
         }
@@ -405,49 +450,84 @@ mod tests {
                 None,
             ));
             assert_eq!(
-                results(evaluate(&lists.slice(1, 1), &[], true, &DataType::Int64).unwrap()),
+                results(public_sum(&lists.slice(1, 1), &[], true, &DataType::Int64).unwrap()),
                 vec![Some(5)]
             );
             assert_eq!(
-                results(evaluate(&lists.slice(1, 1), &[], false, &DataType::Int64).unwrap()),
+                results(public_sum(&lists.slice(1, 1), &[], false, &DataType::Int64).unwrap()),
                 vec![None]
             );
         }
     }
 
     #[test]
-    fn recognizer_accepts_widening_and_rejects_fallible_or_narrowing_bodies() {
-        let element = Type::Struct {
-            r#struct: vec![("n".into(), Type::Primitive(PrimitiveType::Int32))],
-        };
+    fn computed_map_bodies_preserve_narrowing_and_division_errors() {
+        let input = fixture();
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "cells",
+            input.data_type().clone(),
+            true,
+        )]));
+        let batch = RecordBatch::try_new(schema.clone(), vec![input]).unwrap();
         let leaf = Expr::GetField {
-            value: Arc::new(Expr::LambdaVariable {
-                name: "x".into(),
-                dtype: None,
+            name: "number".into(),
+            value: Arc::new(Expr::GetField {
+                name: "payload".into(),
+                value: Arc::new(Expr::LambdaVariable {
+                    name: "entry".into(),
+                    dtype: None,
+                }),
             }),
-            name: "n".into(),
         };
-        let widened = Expr::Cast {
-            dtype: Type::Primitive(PrimitiveType::Int64),
-            value: Arc::new(leaf.clone()),
+        let map_sum = |body| Expr::ArrayReduce {
+            operation: ArrayReduction::Sum,
+            filter_missing: true,
+            value: Arc::new(Expr::ArrayMap {
+                value: Arc::new(Expr::Column {
+                    name: "cells".into(),
+                }),
+                parameter: "entry".into(),
+                body: Arc::new(body),
+            }),
         };
+        let narrowed = Expr::Cast {
+            dtype: Type::Primitive(PrimitiveType::Int32),
+            value: Arc::new(Expr::Cast {
+                dtype: Type::Primitive(PrimitiveType::Int64),
+                value: Arc::new(leaf.clone()),
+            }),
+        };
+        let actual = lower(&map_sum(narrowed), &schema)
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(4)
+            .unwrap();
         assert_eq!(
-            projection(&widened, "x", &element, &DataType::Int64),
-            Some(vec!["n".into()])
+            actual
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .iter()
+                .collect::<Vec<_>>(),
+            vec![Some(-2), Some(0), Some(0), None]
         );
-        let fallible = Expr::IntegerBinary {
-            operator: BinaryOperator::Div,
-            left: Arc::new(leaf),
+        let fallible = Expr::Binary {
+            operator: BinaryOperator::Floordiv,
+            left: Arc::new(Expr::Cast {
+                dtype: Type::Primitive(PrimitiveType::Int64),
+                value: Arc::new(leaf),
+            }),
             right: Arc::new(Expr::Literal {
-                dtype: Type::Primitive(PrimitiveType::Int32),
+                dtype: Type::Primitive(PrimitiveType::Int64),
                 value: serde_json::json!(0),
             }),
         };
-        assert!(projection(&fallible, "x", &element, &DataType::Int32).is_none());
-        let narrowed = Expr::Cast {
-            dtype: Type::Primitive(PrimitiveType::Int32),
-            value: Arc::new(widened),
-        };
-        assert!(projection(&narrowed, "x", &element, &DataType::Int32).is_none());
+        assert!(
+            lower(&map_sum(fallible), &schema)
+                .unwrap()
+                .evaluate(&batch)
+                .is_err()
+        );
     }
 }

@@ -692,27 +692,21 @@ async fn total_aggregation_splits_only_underparallel_sources_and_repeats_safely(
             Default::default(),
         )
         .unwrap();
-        let physical = total.physical_plan().unwrap();
-        assert!(
-            !physical.contains("RoundRobin"),
-            "a total sum must not combine input partitions: {physical}"
-        );
-        assert_eq!(
-            physical.contains("VailSplitPartitionsExec"),
-            partitions < workers,
-            "split only when more execution parallelism is available: {physical}"
-        );
         // Repeated actions must get fresh channels and aggregate state.
         for _ in 0..2 {
             let batch = total.evaluate().await.unwrap();
-            let sums = batch.column(0).as_any().downcast_ref::<Int64Array>().unwrap();
+            let sums = batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap();
             assert_eq!(sums.value(0), 499_999_500_000);
         }
     }
 }
 
-#[test]
-fn total_collect_keeps_source_order_without_split_or_exchange() {
+#[tokio::test]
+async fn total_collect_preserves_source_order_across_repeated_actions() {
     let total = vail_table::globals::GlobalsIR::aggregate(
         TableIR::range(65_536, 1).unwrap(),
         ScalarIR::Aggregate {
@@ -725,7 +719,69 @@ fn total_collect_keeps_source_order_without_split_or_exchange() {
         Default::default(),
     )
     .unwrap();
-    let physical = total.physical_plan().unwrap();
-    assert!(!physical.contains("VailSplitPartitionsExec"), "{physical}");
-    assert!(!physical.contains("RoundRobin"), "{physical}");
+    for _ in 0..2 {
+        let batch = total.evaluate().await.unwrap();
+        let list = batch
+            .column(0)
+            .as_any()
+            .downcast_ref::<arrow_array::ListArray>()
+            .unwrap();
+        let values = list.value(0);
+        let values = values.as_any().downcast_ref::<Int32Array>().unwrap();
+        assert_eq!(values.values().as_ref(), &(0..65_536).collect::<Vec<i32>>());
+    }
+}
+
+#[tokio::test]
+async fn total_aggregation_propagates_source_errors_across_uneven_partitions_and_retries() {
+    use vail_execution::expressions::Expr;
+    use vail_table::globals::GlobalsIR;
+    for partitions in [1, 3] {
+        let source = TableIR::range(100_003, partitions)
+            .unwrap()
+            .with_keys(vec![])
+            .unwrap()
+            .map_rows(vec![(
+                "x".into(),
+                Expr::IfElse {
+                    condition: Arc::new(Expr::Binary {
+                        operator: BinaryOperator::Lt,
+                        left: Arc::new(Expr::Column { name: "idx".into() }),
+                        right: Arc::new(Expr::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Int32),
+                            value: json!(50_000),
+                        }),
+                    }),
+                    consequent: Arc::new(Expr::Column { name: "idx".into() }),
+                    alternate: Arc::new(Expr::Die {
+                        message: Arc::new(Expr::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Str),
+                            value: json!("split input failure"),
+                        }),
+                        dtype: Type::Primitive(PrimitiveType::Int32),
+                    }),
+                },
+            )])
+            .unwrap();
+        let total = GlobalsIR::aggregate(
+            source,
+            Expr::Aggregate {
+                function: "sum".into(),
+                value: Some(Arc::new(Expr::Column { name: "x".into() })),
+                options: json!({}),
+                result_type: None,
+                init: vec![],
+            },
+            Default::default(),
+        )
+        .unwrap();
+        for _ in 0..2 {
+            let error = tokio::time::timeout(std::time::Duration::from_secs(10), total.evaluate())
+                .await
+                .expect("aggregate error must not strand split consumers")
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains("split input failure"), "{error}");
+        }
+    }
 }

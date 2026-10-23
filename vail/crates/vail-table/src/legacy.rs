@@ -242,8 +242,11 @@ pub(crate) fn matrix_batch(
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or("invalid Hail entry array")?;
+        let entry_nulls = entries.logical_nulls();
         for r in 0..n {
-            if entries.is_null(r) || entries.value_length(r) as usize != ncols {
+            if entry_nulls.as_ref().is_some_and(|nulls| !nulls.is_valid(r))
+                || entries.value_length(r) as usize != ncols
+            {
                 return Err("Hail entry array length differs from column count".into());
             }
         }
@@ -337,8 +340,13 @@ mod tests {
             .as_any()
             .downcast_ref::<StructArray>()
             .unwrap();
-        assert!(values.is_valid(0));
-        assert!(values.column(0).is_null(0));
-        assert!(values.is_null(1));
+        assert!(
+            values
+                .logical_nulls()
+                .as_ref()
+                .is_none_or(|nulls| nulls.is_valid(0))
+        );
+        assert!(values.column(0).logical_nulls().unwrap().is_null(0));
+        assert!(values.logical_nulls().unwrap().is_null(1));
     }
 }

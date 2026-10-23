@@ -34,13 +34,13 @@ impl CallColumn {
     }
     fn finish(&mut self) -> Result<ArrayRef> {
         let packed = self.take_packed();
-        let nulls = packed.nulls().cloned();
+        let nulls = packed.logical_nulls();
         let mut first = Vec::with_capacity(packed.len());
         let mut second = Vec::with_capacity(packed.len());
         let mut ploidies = Vec::with_capacity(packed.len());
         let mut phased = BooleanBufferBuilder::new(packed.len());
         for i in 0..packed.len() {
-            let (a, b, p, phase) = if packed.is_null(i) {
+            let (a, b, p, phase) = if nulls.as_ref().is_some_and(|nulls| !nulls.is_valid(i)) {
                 (0, 0, 0, false)
             } else {
                 call_parts(packed.value(i))?
@@ -107,7 +107,6 @@ enum Column {
     Skipped(DataType, usize, Option<ArrayRef>),
     Bool(BooleanBuilder),
     Int32(Int32Builder),
-    EncodedI32(super::encoded_int::EncodedI32Builder),
     Int64(Int64Builder),
     Float32(Float32Builder),
     Float64(Float64Builder),
@@ -115,8 +114,38 @@ enum Column {
     UInt16(UInt16Builder),
     UInt8(UInt8Builder),
     Call(Box<CallColumn>),
+    Ndarray(Box<NdarrayColumn>),
     Struct(Fields, Vec<Column>, NullBufferBuilder),
     List(FieldRef, Box<Column>, Vec<i32>, NullBufferBuilder),
+}
+// Reader-owned scratch is prepared with the output column and retained across
+// cells and finished batches. Shape arithmetic depends on the actual input;
+// schema conversion, element dispatch, and allocations do not occur per cell.
+struct NdarrayColumn {
+    output: Column,
+    shape: Vec<usize>,
+    source: Vec<usize>,
+    values: NdarrayValues,
+}
+enum NdarrayValues {
+    Bool(Vec<bool>),
+    I32(Vec<i32>),
+    I64(Vec<i64>),
+    F32(Vec<f32>),
+    F64(Vec<f64>),
+    Unsupported,
+}
+impl NdarrayValues {
+    fn new(ty: &Type) -> Self {
+        match ty {
+            Type::Primitive(P::Bool) => Self::Bool(Vec::new()),
+            Type::Primitive(P::Int32) => Self::I32(Vec::new()),
+            Type::Primitive(P::Int64) => Self::I64(Vec::new()),
+            Type::Primitive(P::Float32) => Self::F32(Vec::new()),
+            Type::Primitive(P::Float64) => Self::F64(Vec::new()),
+            _ => Self::Unsupported,
+        }
+    }
 }
 impl Column {
     fn new(t: &DataType) -> Self {
@@ -144,9 +173,14 @@ impl Column {
         }
     }
     fn projected(node: &Node, ty: &DataType) -> Self {
-        Self::projected_encoding(node, ty, false)
-    }
-    fn projected_encoding(node: &Node, ty: &DataType, retain_required_i32: bool) -> Self {
+        if let Type::Ndarray { ndarray } = &node.ty {
+            return Self::Ndarray(Box::new(NdarrayColumn {
+                output: Self::new(ty),
+                shape: vec![0; ndarray.1],
+                source: Vec::new(),
+                values: NdarrayValues::new(&ndarray.0),
+            }));
+        }
         match ty {
             DataType::Struct(fields) if matches!(node.ty, Type::Primitive(P::Call)) => {
                 Self::Call(Box::new(CallColumn::new(fields.clone())))
@@ -160,11 +194,7 @@ impl Column {
                             Some(j) if !node.fields[j].project => {
                                 Self::Skipped(f.data_type().clone(), 0, None)
                             }
-                            Some(j) => Self::projected_encoding(
-                                &node.children[j],
-                                f.data_type(),
-                                retain_required_i32,
-                            ),
+                            Some(j) => Self::projected(&node.children[j], f.data_type()),
                             None => Self::new(f.data_type()),
                         },
                     )
@@ -173,21 +203,7 @@ impl Column {
             }
             DataType::List(field) if node.e.kind.starts_with("EArray") => Self::List(
                 field.clone(),
-                Box::new(
-                    if retain_required_i32
-                        && node.children[0].e.required
-                        && matches!(node.children[0].wire, Wire::Varint)
-                        && matches!(node.children[0].append_kind, AppendKind::Int32)
-                    {
-                        Self::EncodedI32(super::encoded_int::EncodedI32Builder::new())
-                    } else {
-                        Self::projected_encoding(
-                            &node.children[0],
-                            field.data_type(),
-                            retain_required_i32,
-                        )
-                    },
-                ),
+                Box::new(Self::projected(&node.children[0], field.data_type())),
                 vec![0],
                 NullBufferBuilder::new(8192),
             ),
@@ -269,9 +285,9 @@ impl Column {
         match self {
             Self::Skipped(_, n, _) => *n,
             Self::Call(c) => c.valid.len(),
+            Self::Ndarray(c) => c.output.len(),
             Self::Bool(b) => b.len(),
             Self::Int32(b) => b.len(),
-            Self::EncodedI32(builder) => builder.len(),
             Self::Int64(b) => b.len(),
             Self::Float32(b) => b.len(),
             Self::Float64(b) => b.len(),
@@ -285,6 +301,7 @@ impl Column {
         match self {
             Self::Skipped(_, n, _) => *n += 1,
             Self::Call(c) => c.null(),
+            Self::Ndarray(c) => c.output.null()?,
             Self::Struct(_, c, v) => {
                 for c in c {
                     // A skipped child takes its full length from this owning
@@ -301,7 +318,6 @@ impl Column {
             }
             Self::Bool(b) => b.append_null(),
             Self::Int32(b) => b.append_null(),
-            Self::EncodedI32(_) => return Err("null in required Hail Int32 elements".into()),
             Self::Int64(b) => b.append_null(),
             Self::Float32(b) => b.append_null(),
             Self::Float64(b) => b.append_null(),
@@ -343,7 +359,7 @@ impl Column {
             })
         }
         Ok(match self {
-            Self::EncodedI32(builder) => builder.finish_vortex(field, session)?,
+            Self::Ndarray(c) => c.output.finish_vortex(field, session)?,
             Self::Call(c) => super::packed_call::array(c.take_packed(), field, session)?,
             Self::Struct(fs, children, valid) => {
                 let n = valid.len();
@@ -384,7 +400,7 @@ impl Column {
     }
     fn finish(&mut self) -> Result<ArrayRef> {
         Ok(match self {
-            Self::EncodedI32(builder) => builder.finish_arrow()?,
+            Self::Ndarray(c) => c.output.finish()?,
             Self::Call(c) => c.finish()?,
             Self::Skipped(ty, n, cached) => {
                 let length = std::mem::take(n);
@@ -670,7 +686,7 @@ enum StructPostlude {
 
 // Builder references are bound once per array in physical wire order. Taking
 // each logical destination from disjoint iter_mut references needs no aliasing.
-enum BoundOutput<'a> {
+enum BoundOutput<'n, 'a> {
     Skip,
     Bool(&'a mut BooleanBuilder),
     InvertedBool(&'a mut BooleanBuilder),
@@ -679,9 +695,8 @@ enum BoundOutput<'a> {
     F32(&'a mut Float32Builder),
     F64(&'a mut Float64Builder),
     Call(&'a mut CallColumn),
-    EncodedList(BoundList<'a, super::encoded_int::EncodedI32Builder>),
     ArrowList(BoundList<'a, Int32Builder>),
-    Other(&'a mut Column),
+    Other(Box<BatchColumn<'n, 'a>>),
 }
 struct BoundList<'a, T> {
     values: &'a mut T,
@@ -704,16 +719,6 @@ fn bound_list_length<const MODE: u8>(input: &mut Input) -> Result<usize> {
         _ => unreachable!(),
     };
     Ok(usize::try_from(value).map_err(|_| "negative Hail collection length")?)
-}
-fn decode_encoded_list<const MODE: u8>(
-    input: &mut Input,
-    list: &mut BoundList<'_, super::encoded_int::EncodedI32Builder>,
-) -> Result<()> {
-    let count = bound_list_length::<MODE>(input)?;
-    list.values.capture(input, count)?;
-    list.offsets.push(i32::try_from(list.values.len())?);
-    list.validity.append_non_null();
-    Ok(())
 }
 fn decode_arrow_list<const MODE: u8>(
     input: &mut Input,
@@ -782,7 +787,7 @@ fn append_buffered_i32_values(
 struct BoundField<'n, 'a> {
     node: &'n Node,
     missing: usize,
-    output: BoundOutput<'a>,
+    output: BoundOutput<'n, 'a>,
 }
 impl BoundField<'_, '_> {
     fn null(&mut self) -> Result<()> {
@@ -794,7 +799,6 @@ impl BoundField<'_, '_> {
             BoundOutput::F32(b) => b.append_null(),
             BoundOutput::F64(b) => b.append_null(),
             BoundOutput::Call(b) => b.null(),
-            BoundOutput::EncodedList(list) => list.null(),
             BoundOutput::ArrowList(list) => list.null(),
             BoundOutput::Other(b) => b.null()?,
         }
@@ -815,8 +819,7 @@ impl BoundField<'_, '_> {
                 b.packed.push(value);
                 b.valid.append_non_null();
             }
-            BoundOutput::Other(b) => self.node.append(input, b)?,
-            BoundOutput::EncodedList(list) => (list.decode)(input, list)?,
+            BoundOutput::Other(b) => b.append(input)?,
             BoundOutput::ArrowList(list) => (list.decode)(input, list)?,
         }
         Ok(())
@@ -831,7 +834,12 @@ impl BoundField<'_, '_> {
                 b.packed.push(value as u32);
                 b.valid.append_non_null();
             }
-            BoundOutput::Other(b) => self.node.append_call_value(value as u32, b)?,
+            BoundOutput::Other(b) => {
+                let BatchColumn::Leaf { column, .. } = b.as_mut() else {
+                    unreachable!("bound integer output")
+                };
+                self.node.append_call_value(value as u32, column)?;
+            }
             _ => unreachable!("bound integer run"),
         }
         Ok(())
@@ -1022,7 +1030,13 @@ impl BufferedScalars {
                         && matches!(child.children[0].wire, Wire::Varint)
                         && matches!(child.children[0].append_kind, AppendKind::Int32) =>
                 {
-                    ProbeKind::I32List(if child.varint_length { 2 } else if leb { 1 } else { 0 })
+                    ProbeKind::I32List(if child.varint_length {
+                        2
+                    } else if leb {
+                        1
+                    } else {
+                        0
+                    })
                 }
                 AppendKind::List
                     if !op.project
@@ -1067,7 +1081,9 @@ impl BufferedScalars {
             });
         }
         Some(Self {
-            has_lists: fields.iter().any(|field| matches!(field.kind, ProbeKind::I32List(_))),
+            has_lists: fields
+                .iter()
+                .any(|field| matches!(field.kind, ProbeKind::I32List(_))),
             fields,
             bitmap_bytes: node.optional_count.div_ceil(8),
         })
@@ -1076,8 +1092,12 @@ impl BufferedScalars {
         self.probe_values::<false>(bytes, cursor, values, &mut [0; 32], &mut [(0, 0); 16])
     }
     fn probe_values<const LISTS: bool>(
-        &self, bytes: &[u8], cursor: &mut usize, values: &mut [u64; 16],
-        elements: &mut [i32; 32], ranges: &mut [(u8, u8); 16],
+        &self,
+        bytes: &[u8],
+        cursor: &mut usize,
+        values: &mut [u64; 16],
+        elements: &mut [i32; 32],
+        ranges: &mut [(u8, u8); 16],
     ) -> Option<u16> {
         let mut used = 0usize;
         let missing = if self.bitmap_bytes == 1 {
@@ -1140,7 +1160,9 @@ impl BufferedScalars {
                     value
                 }
                 ProbeKind::I32List(mode) => {
-                    if !LISTS { return None; }
+                    if !LISTS {
+                        return None;
+                    }
                     let count = if mode == 0 {
                         let end = cursor.checked_add(4)?;
                         let signed = i32::from_le_bytes(bytes.get(*cursor..end)?.try_into().ok()?);
@@ -1148,11 +1170,16 @@ impl BufferedScalars {
                         usize::try_from(signed).ok()?
                     } else {
                         let value = slice_varint(bytes, cursor, 32)?;
-                        if mode == 1 { usize::try_from(value as u32 as i32).ok()? }
-                        else { usize::try_from(value).ok()? }
+                        if mode == 1 {
+                            usize::try_from(value as u32 as i32).ok()?
+                        } else {
+                            usize::try_from(value).ok()?
+                        }
                     };
                     let end = used.checked_add(count)?;
-                    if end > elements.len() { return None; }
+                    if end > elements.len() {
+                        return None;
+                    }
                     for element in &mut elements[used..end] {
                         let value = slice_varint(bytes, cursor, 64)?;
                         *element = u32::try_from(value).ok()? as i32;
@@ -1178,24 +1205,7 @@ impl BufferedScalars {
         Some(nulls)
     }
 }
-fn bind_buffered_outputs<'p, 'n, 'a>(
-    ops: &'p mut [BoundOp<'n, 'a>],
-) -> vortex::array::smallvec::SmallVec<[&'p mut BoundOutput<'a>; 16]> {
-    let mut selected = vortex::array::smallvec::SmallVec::new();
-    for op in ops {
-        let fields = match op {
-            BoundOp::Field(field) => std::slice::from_mut(field),
-            BoundOp::Run { fields, .. } => fields.as_mut_slice(),
-        };
-        for field in fields {
-            if !matches!(field.output, BoundOutput::Skip) {
-                selected.push(&mut field.output);
-            }
-        }
-    }
-    selected
-}
-fn buffered_scalar_output(output: &mut BoundOutput<'_>, value: u64, missing: bool) {
+fn buffered_scalar_output(output: &mut BoundOutput<'_, '_>, value: u64, missing: bool) {
     macro_rules! append {
         ($builder:expr, $value:expr) => {
             if missing {
@@ -1221,30 +1231,14 @@ fn buffered_scalar_output(output: &mut BoundOutput<'_>, value: u64, missing: boo
                 b.valid.append_non_null();
             }
         }
-        BoundOutput::Other(_) | BoundOutput::EncodedList(_) | BoundOutput::ArrowList(_) => {
+        BoundOutput::Other(_) | BoundOutput::ArrowList(_) => {
             unreachable!("buffered scalar eligibility")
-        }
-    }
-}
-fn buffered_scalar_row(outputs: &mut [&mut BoundOutput<'_>], values: &[u64; 16], nulls: u16) {
-    if let [output] = outputs {
-        buffered_scalar_output(output, values[0], nulls & 1 != 0);
-    } else if nulls == 0 {
-        for (output, value) in outputs.iter_mut().zip(values) {
-            buffered_scalar_output(output, *value, false);
-        }
-    } else {
-        for (index, output) in outputs.iter_mut().enumerate() {
-            buffered_scalar_output(output, values[index], nulls & (1 << index) != 0);
         }
     }
 }
 fn has_buffered_outputs(ops: &[BoundOp<'_, '_>]) -> bool {
     let eligible = |f: &BoundField<'_, '_>| {
-        !matches!(
-            f.output,
-            BoundOutput::Other(_) | BoundOutput::EncodedList(_) | BoundOutput::ArrowList(_)
-        )
+        !matches!(f.output, BoundOutput::Other(_) | BoundOutput::ArrowList(_))
     };
     ops.iter().all(|op| match op {
         BoundOp::Field(f) => eligible(f),
@@ -1259,11 +1253,18 @@ fn mixed_list_end(length: usize, range: (u8, u8)) -> Option<i32> {
 fn mixed_list_block_end(length: usize, remaining: usize) -> Option<i32> {
     i32::try_from(length.checked_add(remaining.checked_mul(32)?)?).ok()
 }
-fn mixed_offsets_all_fit(outputs: &[&mut BoundOutput<'_>], remaining: usize) -> bool {
-    outputs.iter().all(|output| {
+fn mixed_offsets_all_fit(
+    ops: &[BoundOp<'_, '_>],
+    selected: &[(usize, usize)],
+    remaining: usize,
+) -> bool {
+    selected.iter().all(|&location| {
+        let output = selected_output_ref(ops, location);
         if let BoundOutput::ArrowList(list) = output {
             mixed_list_block_end(list.values.len(), remaining).is_some()
-        } else { true }
+        } else {
+            true
+        }
     })
 }
 const MIXED_COMMIT_ROWS: usize = 16;
@@ -1277,23 +1278,39 @@ struct MixedBatch {
 }
 impl MixedBatch {
     fn new() -> Self {
-        Self { scalars: [[0; 16]; MIXED_COMMIT_ROWS], elements: [[0; 32]; MIXED_COMMIT_ROWS],
-            ranges: [[(0, 0); 16]; MIXED_COMMIT_ROWS], nulls: [0; MIXED_COMMIT_ROWS],
-            entry_valid: [false; MIXED_COMMIT_ROWS], len: 0 }
+        Self {
+            scalars: [[0; 16]; MIXED_COMMIT_ROWS],
+            elements: [[0; 32]; MIXED_COMMIT_ROWS],
+            ranges: [[(0, 0); 16]; MIXED_COMMIT_ROWS],
+            nulls: [0; MIXED_COMMIT_ROWS],
+            entry_valid: [false; MIXED_COMMIT_ROWS],
+            len: 0,
+        }
     }
 }
 fn mixed_staged_offsets_fit(
-    outputs: &[&mut BoundOutput<'_>], ranges: &[(u8, u8); 16], nulls: u16,
+    ops: &[BoundOp<'_, '_>],
+    selected: &[(usize, usize)],
+    ranges: &[(u8, u8); 16],
+    nulls: u16,
     growth: &mut [usize; 16],
 ) -> bool {
-    for (index, output) in outputs.iter().enumerate() {
-        if nulls & (1 << index) != 0 { continue; }
+    for (index, &location) in selected.iter().enumerate() {
+        let output = selected_output_ref(ops, location);
+        if nulls & (1 << index) != 0 {
+            continue;
+        }
         if let BoundOutput::ArrowList(list) = output {
-            let Some(length) = list.values.len().checked_add(growth[index]) else { return false; };
-            if mixed_list_end(length, ranges[index]).is_none() { return false; }
+            let Some(length) = list.values.len().checked_add(growth[index]) else {
+                return false;
+            };
+            if mixed_list_end(length, ranges[index]).is_none() {
+                return false;
+            }
         }
     }
-    for (index, output) in outputs.iter().enumerate() {
+    for (index, &location) in selected.iter().enumerate() {
+        let output = selected_output_ref(ops, location);
         if nulls & (1 << index) == 0 && matches!(output, BoundOutput::ArrowList(_)) {
             growth[index] += usize::from(ranges[index].1 - ranges[index].0);
         }
@@ -1302,49 +1319,71 @@ fn mixed_staged_offsets_fit(
 }
 // The enum/type dispatch occurs once per output column and completed chunk.
 fn buffered_mixed_batch(
-    outputs: &mut [&mut BoundOutput<'_>], batch: &MixedBatch,
+    ops: &mut [BoundOp<'_, '_>],
+    selected: &[(usize, usize)],
+    batch: &MixedBatch,
     gathered: &mut [i32; MIXED_COMMIT_ROWS * 32],
 ) {
     let n = batch.len;
     let mut valid = [false; MIXED_COMMIT_ROWS];
-    for (index, output) in outputs.iter_mut().enumerate() {
+    for (index, &location) in selected.iter().enumerate() {
+        let output = selected_output(ops, location);
         let mut all_valid = true;
         for row in 0..n {
             valid[row] = batch.nulls[row] & (1 << index) == 0;
             all_valid &= valid[row];
         }
-    macro_rules! primitive {
-        ($builder:expr, $zero:expr, $convert:expr) => {{
-            let mut values = [$zero; MIXED_COMMIT_ROWS];
-            for row in 0..n {
-                if valid[row] { values[row] = ($convert)(batch.scalars[row][index]); }
-            }
-            if all_valid { $builder.append_slice(&values[..n]); }
-            else { $builder.append_values(&values[..n], &valid[..n]); }
-        }};
-    }
+        macro_rules! primitive {
+            ($builder:expr, $zero:expr, $convert:expr) => {{
+                let mut values = [$zero; MIXED_COMMIT_ROWS];
+                for row in 0..n {
+                    if valid[row] {
+                        values[row] = ($convert)(batch.scalars[row][index]);
+                    }
+                }
+                if all_valid {
+                    $builder.append_slice(&values[..n]);
+                } else {
+                    $builder.append_values(&values[..n], &valid[..n]);
+                }
+            }};
+        }
         let inverted = matches!(output, BoundOutput::InvertedBool(_));
         match output {
             BoundOutput::I32(builder) => primitive!(builder, 0i32, |v: u64| v as i32),
             BoundOutput::I64(builder) => primitive!(builder, 0i64, |v: u64| v as i64),
-            BoundOutput::F32(builder) => primitive!(builder, 0f32, |v: u64| f32::from_bits(v as u32)),
+            BoundOutput::F32(builder) => {
+                primitive!(builder, 0f32, |v: u64| f32::from_bits(v as u32))
+            }
             BoundOutput::F64(builder) => primitive!(builder, 0f64, f64::from_bits),
             BoundOutput::Bool(builder) | BoundOutput::InvertedBool(builder) => {
                 let mut values = [false; MIXED_COMMIT_ROWS];
                 for row in 0..n {
-                    if valid[row] { values[row] = (batch.scalars[row][index] != 0) ^ inverted; }
+                    if valid[row] {
+                        values[row] = (batch.scalars[row][index] != 0) ^ inverted;
+                    }
                 }
-                if all_valid { builder.append_slice(&values[..n]); }
-                else { builder.append_values(&values[..n], &valid[..n]).expect("matched staged lengths"); }
+                if all_valid {
+                    builder.append_slice(&values[..n]);
+                } else {
+                    builder
+                        .append_values(&values[..n], &valid[..n])
+                        .expect("matched staged lengths");
+                }
             }
             BoundOutput::Call(builder) => {
                 let mut values = [0u32; MIXED_COMMIT_ROWS];
                 for row in 0..n {
-                    if valid[row] { values[row] = batch.scalars[row][index] as u32; }
+                    if valid[row] {
+                        values[row] = batch.scalars[row][index] as u32;
+                    }
                 }
                 builder.packed.extend_from_slice(&values[..n]);
-                if all_valid { builder.valid.append_n_non_nulls(n); }
-                else { builder.valid.append_slice(&valid[..n]); }
+                if all_valid {
+                    builder.valid.append_n_non_nulls(n);
+                } else {
+                    builder.valid.append_slice(&valid[..n]);
+                }
             }
             BoundOutput::ArrowList(list) => {
                 let mut offsets = [0i32; MIXED_COMMIT_ROWS];
@@ -1361,21 +1400,312 @@ fn buffered_mixed_batch(
                 }
                 list.values.append_slice(&gathered[..used]);
                 list.offsets.extend_from_slice(&offsets[..n]);
-                if all_valid { list.validity.append_n_non_nulls(n); }
-                else { list.validity.append_slice(&valid[..n]); }
+                if all_valid {
+                    list.validity.append_n_non_nulls(n);
+                } else {
+                    list.validity.append_slice(&valid[..n]);
+                }
             }
             _ => unreachable!("mixed buffered output eligibility"),
         }
     }
 }
 fn has_mixed_outputs(ops: &[BoundOp<'_, '_>]) -> bool {
-    let eligible = |field: &BoundField<'_, '_>| {
-        !matches!(field.output, BoundOutput::Other(_) | BoundOutput::EncodedList(_))
-    };
+    let eligible = |field: &BoundField<'_, '_>| !matches!(field.output, BoundOutput::Other(_));
     ops.iter().all(|op| match op {
         BoundOp::Field(field) => eligible(field),
         BoundOp::Run { fields, .. } => fields.iter().all(eligible),
     })
+}
+
+// Builder borrows and schema choices live for one read_columns call. Owned
+// Node descriptors remain reusable across batches; no references point back
+// into this tree or into movable sibling fields.
+fn reused_bitmap(input: &mut Input, n: usize, scratch: &mut Vec<u8>) -> Result<Bitmap> {
+    if n <= 64 {
+        return bitmap(input, n);
+    }
+    scratch.resize(n.div_ceil(8), 0);
+    let mut written = 0;
+    while written < scratch.len() {
+        let used = input.with_buffer(|bytes| {
+            let used = bytes.len().min(scratch.len() - written);
+            scratch[written..written + used].copy_from_slice(&bytes[..used]);
+            (used, used)
+        })?;
+        if used == 0 {
+            return Err("truncated Hail data".into());
+        }
+        written += used;
+    }
+    Ok(Bitmap::Heap(std::mem::take(scratch)))
+}
+struct PreparedStruct<'n, 'a> {
+    ops: Vec<BoundOp<'n, 'a>>,
+    selected: Vec<(usize, usize)>,
+    program: Option<&'n BufferedScalars>,
+    bitmap: Vec<u8>,
+    batch: MixedBatch,
+    gathered: [i32; MIXED_COMMIT_ROWS * 32],
+    values: [u64; 16],
+}
+impl<'n, 'a> PreparedStruct<'n, 'a> {
+    fn new(node: &'n Node, fields: &'a mut [Column], leb: bool) -> Self {
+        let ops = node.bind_struct(fields, leb);
+        let mut selected = Vec::new();
+        for (op_index, op) in ops.iter().enumerate() {
+            let fields = match op {
+                BoundOp::Field(field) => std::slice::from_ref(field),
+                BoundOp::Run { fields, .. } => fields.as_slice(),
+            };
+            for (field_index, field) in fields.iter().enumerate() {
+                if !matches!(field.output, BoundOutput::Skip) {
+                    selected.push((op_index, field_index));
+                }
+            }
+        }
+        let program = node.buffered_scalars[usize::from(leb)]
+            .get_or_init(|| BufferedScalars::new(node, leb))
+            .as_ref()
+            .filter(|program| {
+                if program.has_lists {
+                    has_mixed_outputs(&ops)
+                } else {
+                    has_buffered_outputs(&ops)
+                }
+            });
+        Self {
+            ops,
+            selected,
+            program,
+            bitmap: Vec::with_capacity(if node.optional_count > 64 {
+                node.optional_count.div_ceil(8)
+            } else {
+                0
+            }),
+            batch: MixedBatch::new(),
+            gathered: [0; MIXED_COMMIT_ROWS * 32],
+            values: [0; 16],
+        }
+    }
+    fn null(&mut self) -> Result<()> {
+        for op in &mut self.ops {
+            op.null()?;
+        }
+        Ok(())
+    }
+    fn append(&mut self, node: &Node, input: &mut Input) -> Result<()> {
+        let bits = reused_bitmap(input, node.optional_count, &mut self.bitmap)?;
+        let all_present = node
+            .all_present_mask
+            .is_some_and(|mask| bits.low_word() & mask == 0);
+        let result = self
+            .ops
+            .iter_mut()
+            .try_for_each(|op| op.append(input, &bits, all_present));
+        if let Bitmap::Heap(bytes) = bits {
+            self.bitmap = bytes;
+        }
+        result
+    }
+}
+enum BatchColumn<'n, 'a> {
+    Leaf {
+        node: &'n Node,
+        column: &'a mut Column,
+    },
+    Struct {
+        node: &'n Node,
+        prepared: Box<PreparedStruct<'n, 'a>>,
+        validity: &'a mut NullBufferBuilder,
+    },
+    List {
+        node: &'n Node,
+        child: Box<BatchColumn<'n, 'a>>,
+        offsets: &'a mut Vec<i32>,
+        validity: &'a mut NullBufferBuilder,
+        bitmap: Vec<u8>,
+    },
+}
+impl<'n, 'a> BatchColumn<'n, 'a> {
+    fn new(node: &'n Node, column: &'a mut Column, leb: bool) -> Self {
+        if matches!(column, Column::Skipped(..)) {
+            return Self::Leaf { node, column };
+        }
+        let structure = matches!(node.wire, Wire::Struct)
+            && matches!(node.struct_postlude, StructPostlude::Plain)
+            && node.distinct_destinations;
+        let nested_list = matches!(node.wire, Wire::Array)
+            && matches!(node.children[0].wire, Wire::Array | Wire::Struct);
+        if structure {
+            let Column::Struct(_, fields, validity) = column else {
+                unreachable!("prepared struct")
+            };
+            Self::Struct {
+                node,
+                prepared: Box::new(PreparedStruct::new(node, fields, leb)),
+                validity,
+            }
+        } else if nested_list {
+            let Column::List(_, child, offsets, validity) = column else {
+                unreachable!("prepared list")
+            };
+            Self::List {
+                node,
+                child: Box::new(Self::new(&node.children[0], child, leb)),
+                offsets,
+                validity,
+                bitmap: Vec::new(),
+            }
+        } else {
+            Self::Leaf { node, column }
+        }
+    }
+    fn len(&self) -> usize {
+        match self {
+            Self::Leaf { column, .. } => column.len(),
+            Self::Struct { validity, .. } => validity.len(),
+            Self::List { offsets, .. } => offsets.len() - 1,
+        }
+    }
+    fn null(&mut self) -> Result<()> {
+        match self {
+            Self::Leaf { column, .. } => column.null(),
+            Self::Struct {
+                prepared, validity, ..
+            } => {
+                prepared.null()?;
+                validity.append_null();
+                Ok(())
+            }
+            Self::List {
+                offsets, validity, ..
+            } => {
+                offsets.push(*offsets.last().unwrap());
+                validity.append_null();
+                Ok(())
+            }
+        }
+    }
+    fn append(&mut self, input: &mut Input) -> Result<()> {
+        match self {
+            Self::Leaf { node, column } => node.append(input, column),
+            Self::Struct {
+                node,
+                prepared,
+                validity,
+            } => {
+                prepared.append(node, input)?;
+                validity.append_non_null();
+                Ok(())
+            }
+            Self::List {
+                node,
+                child,
+                offsets,
+                validity,
+                bitmap: scratch,
+            } => {
+                let n = node.length(input)?;
+                let element = &node.children[0];
+                let bits = if element.e.required {
+                    Bitmap::Inline([0; 8])
+                } else {
+                    reused_bitmap(input, n, scratch)?
+                };
+                let result = if let Self::Struct {
+                    node,
+                    prepared,
+                    validity,
+                } = child.as_mut()
+                {
+                    if element.e.required {
+                        node.append_prepared_struct_elements::<true>(
+                            input, n, &bits, prepared, validity,
+                        )
+                    } else {
+                        node.append_prepared_struct_elements::<false>(
+                            input, n, &bits, prepared, validity,
+                        )
+                    }
+                } else {
+                    (|| -> Result<()> {
+                        for i in 0..n {
+                            if !element.e.required && absent(&bits, i) {
+                                child.null()?;
+                            } else {
+                                child.append(input)?;
+                            }
+                        }
+                        Ok(())
+                    })()
+                };
+                if let Bitmap::Heap(bytes) = bits {
+                    *scratch = bytes;
+                }
+                result?;
+                offsets.push(i32::try_from(child.len())?);
+                validity.append_non_null();
+                Ok(())
+            }
+        }
+    }
+}
+struct BatchRootField<'n, 'a> {
+    node: &'n Node,
+    missing_bit: usize,
+    output: Option<BatchColumn<'n, 'a>>,
+    decode: bool,
+}
+impl BatchRootField<'_, '_> {
+    fn append(&mut self, input: &mut Input, bits: &Bitmap) -> Result<()> {
+        let missing = self.missing_bit != usize::MAX && absent(bits, self.missing_bit);
+        if let Some(output) = &mut self.output {
+            if missing {
+                output.null()?;
+            } else if self.decode {
+                output.append(input)?;
+            } else {
+                self.node.skip(input)?;
+                output.null()?;
+            }
+        } else if !missing {
+            self.node.skip(input)?;
+        }
+        Ok(())
+    }
+}
+fn selected_output<'p, 'n, 'a>(
+    ops: &'p mut [BoundOp<'n, 'a>],
+    location: (usize, usize),
+) -> &'p mut BoundOutput<'n, 'a> {
+    match &mut ops[location.0] {
+        BoundOp::Field(field) => &mut field.output,
+        BoundOp::Run { fields, .. } => &mut fields[location.1].output,
+    }
+}
+fn selected_output_ref<'p, 'n, 'a>(
+    ops: &'p [BoundOp<'n, 'a>],
+    location: (usize, usize),
+) -> &'p BoundOutput<'n, 'a> {
+    match &ops[location.0] {
+        BoundOp::Field(field) => &field.output,
+        BoundOp::Run { fields, .. } => &fields[location.1].output,
+    }
+}
+fn prepared_scalar_row(
+    ops: &mut [BoundOp<'_, '_>],
+    selected: &[(usize, usize)],
+    values: &[u64; 16],
+    nulls: u16,
+) {
+    for (index, &location) in selected.iter().enumerate() {
+        buffered_scalar_output(
+            selected_output(ops, location),
+            values[index],
+            nulls & (1 << index) != 0,
+        );
+    }
 }
 
 /// Compile physical destination mapping once, outside the row loop.
@@ -1636,8 +1966,12 @@ impl Node {
             }
             Wire::Int32 if input.leb => input.skip_varints(1, 32)?,
             Wire::Int64 if input.leb => input.skip_varints(1, 64)?,
-            Wire::Int32 => { input.int(32)?; }
-            Wire::Int64 => { input.int(64)?; }
+            Wire::Int32 => {
+                input.int(32)?;
+            }
+            Wire::Int64 => {
+                input.int(64)?;
+            }
             // Unselected integers need framing, not value decoding or range
             // validation. Match the existing required-array skip path.
             Wire::Varint => input.skip_varints(1, 64)?,
@@ -1945,16 +2279,6 @@ impl Node {
                             0
                         };
                         match child.as_mut() {
-                            Column::EncodedI32(values) => BoundOutput::EncodedList(BoundList {
-                                values,
-                                offsets,
-                                validity,
-                                decode: [
-                                    decode_encoded_list::<0>,
-                                    decode_encoded_list::<1>,
-                                    decode_encoded_list::<2>,
-                                ][mode],
-                            }),
                             Column::Int32(values) => BoundOutput::ArrowList(BoundList {
                                 values,
                                 offsets,
@@ -1981,7 +2305,9 @@ impl Node {
                             Column::Float32(b) => BoundOutput::F32(b),
                             Column::Float64(b) => BoundOutput::F64(b),
                             Column::Call(b) => BoundOutput::Call(b),
-                            other => BoundOutput::Other(other),
+                            other => {
+                                BoundOutput::Other(Box::new(BatchColumn::new(node, other, leb)))
+                            }
                         }
                     }
                 };
@@ -2031,30 +2357,39 @@ impl Node {
         n: usize,
         element_bits: &Bitmap,
     ) -> Result<()> {
-        if !matches!(self.struct_postlude, StructPostlude::Plain) || !self.distinct_destinations {
-            for i in 0..n {
-                if !REQUIRED && absent(element_bits, i) {
-                    child.null()?;
-                } else {
-                    self.append_struct(input, child)?;
-                }
+        for i in 0..n {
+            if !REQUIRED && absent(element_bits, i) {
+                child.null()?;
+            } else {
+                self.append_struct(input, child)?;
             }
-            return Ok(());
         }
-        let Column::Struct(_, outputs, validity) = child else {
-            unreachable!("struct array output")
-        };
-        let mut ops = self.bind_struct(outputs, input.leb);
-        let buffered = self.buffered_scalars[usize::from(input.leb)]
-            .get_or_init(|| BufferedScalars::new(self, input.leb))
-            .as_ref()
-            .filter(|program| if program.has_lists { has_mixed_outputs(&ops) } else { has_buffered_outputs(&ops) });
+        Ok(())
+    }
+    fn append_prepared_struct_elements<const REQUIRED: bool>(
+        &self,
+        input: &mut Input,
+        n: usize,
+        element_bits: &Bitmap,
+        prepared: &mut PreparedStruct<'_, '_>,
+        validity: &mut NullBufferBuilder,
+    ) -> Result<()> {
+        let PreparedStruct {
+            ops,
+            selected,
+            program,
+            batch,
+            gathered,
+            values,
+            ..
+        } = prepared;
+        let buffered = *program;
         let mut i = 0;
         while i < n {
             // Leading absent entries need no input; preserve that property
             // even if refilling the underlying reader would fail.
             if !REQUIRED && absent(element_bits, i) {
-                for op in &mut ops {
+                for op in ops.iter_mut() {
                     op.null()?;
                 }
                 validity.append_null();
@@ -2064,12 +2399,9 @@ impl Node {
 
             if let Some(program) = buffered.filter(|program| program.has_lists) {
                 let accepted = input.with_buffer(|bytes| {
-                    let mut selected_outputs = bind_buffered_outputs(&mut ops);
-                    let offsets_safe = mixed_offsets_all_fit(&selected_outputs, n - i);
+                    let offsets_safe = mixed_offsets_all_fit(ops, selected, n - i);
                     let mut cursor = 0;
                     let mut accepted = 0;
-                    let mut batch = MixedBatch::new();
-                    let mut gathered = [0i32; MIXED_COMMIT_ROWS * 32];
                     while i + accepted < n {
                         batch.len = 0;
                         let mut growth = [0usize; 16];
@@ -2080,13 +2412,25 @@ impl Node {
                                 batch.entry_valid[row] = false;
                             } else {
                                 let start = cursor;
-                                let Some(nulls) = program.probe_values::<true>(bytes, &mut cursor,
-                                    &mut batch.scalars[row], &mut batch.elements[row], &mut batch.ranges[row]) else {
+                                let Some(nulls) = program.probe_values::<true>(
+                                    bytes,
+                                    &mut cursor,
+                                    &mut batch.scalars[row],
+                                    &mut batch.elements[row],
+                                    &mut batch.ranges[row],
+                                ) else {
                                     cursor = start;
                                     break;
                                 };
-                                if !offsets_safe && !mixed_staged_offsets_fit(&selected_outputs,
-                                    &batch.ranges[row], nulls, &mut growth) {
+                                if !offsets_safe
+                                    && !mixed_staged_offsets_fit(
+                                        ops,
+                                        selected,
+                                        &batch.ranges[row],
+                                        nulls,
+                                        &mut growth,
+                                    )
+                                {
                                     cursor = start;
                                     break;
                                 }
@@ -2095,33 +2439,38 @@ impl Node {
                             }
                             batch.len += 1;
                         }
-                        if batch.len == 0 { break; }
-                        buffered_mixed_batch(&mut selected_outputs, &batch, &mut gathered);
+                        if batch.len == 0 {
+                            break;
+                        }
+                        buffered_mixed_batch(ops, selected, batch, gathered);
                         validity.append_slice(&batch.entry_valid[..batch.len]);
                         accepted += batch.len;
-                        if batch.len < MIXED_COMMIT_ROWS { break; }
+                        if batch.len < MIXED_COMMIT_ROWS {
+                            break;
+                        }
                     }
                     (accepted, cursor)
                 })?;
-                if accepted != 0 { i += accepted; continue; }
+                if accepted != 0 {
+                    i += accepted;
+                    continue;
+                }
             }
             if let Some(program) = buffered.filter(|program| !program.has_lists) {
                 let accepted = input.with_buffer(|bytes| {
-                    let mut selected_outputs = bind_buffered_outputs(&mut ops);
                     let mut cursor = 0;
                     let mut accepted = 0;
-                    let mut values = [0u64; 16];
                     while i + accepted < n {
                         if !REQUIRED && absent(element_bits, i + accepted) {
-                            buffered_scalar_row(&mut selected_outputs, &values, u16::MAX);
+                            prepared_scalar_row(ops, selected, values, u16::MAX);
                             validity.append_null();
                         } else {
                             let start = cursor;
-                            let Some(nulls) = program.probe(bytes, &mut cursor, &mut values) else {
+                            let Some(nulls) = program.probe(bytes, &mut cursor, values) else {
                                 cursor = start;
                                 break;
                             };
-                            buffered_scalar_row(&mut selected_outputs, &values, nulls);
+                            prepared_scalar_row(ops, selected, values, nulls);
                             validity.append_non_null();
                         }
                         accepted += 1;
@@ -2136,7 +2485,7 @@ impl Node {
             // A partial/unsupported entry is retried from its original byte
             // boundary; only the generic decoder produces wire errors.
             if !REQUIRED && absent(element_bits, i) {
-                for op in &mut ops {
+                for op in ops.iter_mut() {
                     op.null()?;
                 }
                 validity.append_null();
@@ -2145,7 +2494,7 @@ impl Node {
                 let all_present = self
                     .all_present_mask
                     .is_some_and(|mask| bits.low_word() & mask == 0);
-                for op in &mut ops {
+                for op in ops.iter_mut() {
                     op.append(input, &bits, all_present)?;
                 }
                 validity.append_non_null();
@@ -2166,10 +2515,6 @@ impl Node {
         let Column::List(_, child, _, _) = out else {
             unreachable!()
         };
-        if let Column::EncodedI32(builder) = child.as_mut() {
-            builder.capture(input, n)?;
-            return out.end_list();
-        }
         // Bind primitive builders once per array. AD/PL-style integer
         // arrays avoid recursive Node dispatch and builder selection
         // for every value while retaining element missingness.
@@ -2233,59 +2578,91 @@ impl Node {
     }
 
     fn append_ndarray(&self, input: &mut Input, out: &mut Column) -> Result<()> {
-        let Type::Ndarray { ndarray } = &self.ty else {
-            unreachable!("compiled ndarray operation")
+        let Column::Ndarray(state) = out else {
+            return Err("Hail ndarray output requires prepared column".into());
         };
-
-        let shape = (0..ndarray.1)
-            .map(|_| Ok(usize::try_from(input.int(64)?)?))
-            .collect::<Result<Vec<_>>>()?;
-        let n = shape.iter().try_fold(1usize, |n, x| {
-            n.checked_mul(*x).ok_or("Hail ndarray shape overflow")
+        let mut changed = false;
+        for dimension in &mut state.shape {
+            let next = usize::try_from(input.int(64)?)?;
+            changed |= next != *dimension;
+            *dimension = next;
+        }
+        let count = state.shape.iter().try_fold(1usize, |n, &dimension| {
+            n.checked_mul(dimension)
+                .ok_or("Hail ndarray shape overflow")
         })?;
-        // Arrow data is C order; Hail encodes Fortran order. Decode straight
-        // into a typed temporary column, then permute this one ndarray.
-        let mut values = Column::new(&ndarray.0.to_arrow()?);
-        for _ in 0..n {
-            self.children[0].append(input, &mut values)?
-        }
-        let array = values.finish()?;
-        let c = out.children();
-        let Column::List(_, data, _, _) = &mut c[0] else {
-            unreachable!()
-        };
-        for row in 0..n {
-            let mut rest = row;
-            let mut source = 0;
-            let mut stride = n;
-            let mut fstride = 1;
-            for &dim in &shape {
-                stride /= dim;
-                let coord = rest / stride;
-                rest %= stride;
-                source += coord * fstride;
-                fstride *= dim;
+        // Reuse the permutation buffer; no per-cell Arrow array or kernel is
+        // constructed. The shape may vary, so indices are input-derived data.
+        if changed || state.source.len() != count {
+            state.source.clear();
+            for row in 0..count {
+                let mut rest = row;
+                let mut source = 0;
+                let mut stride = count;
+                let mut fstride = 1;
+                for &dimension in &state.shape {
+                    stride /= dimension;
+                    let coordinate = rest / stride;
+                    rest %= stride;
+                    source += coordinate * fstride;
+                    fstride *= dimension;
+                }
+                state.source.push(source);
             }
-            append_array(data, &array, source)?;
         }
-        c[0].end_list()?;
-        let Column::List(_, dims, _, _) = &mut c[1] else {
+        let columns = state.output.children();
+        let Column::List(_, data, _, _) = &mut columns[0] else {
             unreachable!()
         };
-        for d in shape {
-            dims.int64().append_value(d as i64)
+        // Select the element kernel once per array; retained typed vectors grow
+        // only as necessary and are never converted into temporary Arrow arrays.
+        macro_rules! transpose {
+            ($values:expr, $read:expr, $builder:expr) => {{
+                let values = $values;
+                values.clear();
+                for _ in 0..count {
+                    values.push($read);
+                }
+                let builder = $builder;
+                for &source in &state.source {
+                    builder.append_value(values[source]);
+                }
+            }};
         }
-        c[1].end_list()?;
-        out.valid(true);
-
+        match &mut state.values {
+            NdarrayValues::Bool(values) => transpose!(values, boolean(input)?, data.bool_builder()),
+            NdarrayValues::I32(values) => transpose!(
+                values,
+                self.children[0].integer(input, 32)? as i32,
+                data.int32()
+            ),
+            NdarrayValues::I64(values) => {
+                transpose!(values, self.children[0].integer(input, 64)?, data.int64())
+            }
+            NdarrayValues::F32(values) => {
+                transpose!(values, f32::from_le_bytes(input.fixed()?), data.float32())
+            }
+            NdarrayValues::F64(values) => {
+                transpose!(values, f64::from_le_bytes(input.fixed()?), data.float64())
+            }
+            NdarrayValues::Unsupported => {
+                return Err("unsupported Hail ndarray element type".into());
+            }
+        }
+        columns[0].end_list()?;
+        let Column::List(_, dimensions, _, _) = &mut columns[1] else {
+            unreachable!()
+        };
+        let builder = dimensions.int64();
+        for &dimension in &state.shape {
+            builder.append_value(dimension as i64);
+        }
+        columns[1].end_list()?;
+        state.output.valid(true);
         Ok(())
     }
 }
-fn append_array(out: &mut Column, array: &ArrayRef, i: usize) -> Result<()> {
-    macro_rules! primitive{($($a:ty=>$b:ident),*)=>{$(if let Some(a)=array.as_any().downcast_ref::<$a>(){out.$b().append_value(a.value(i));return Ok(())})*}}
-    primitive!(Int32Array=>int32,Int64Array=>int64,Float32Array=>float32,Float64Array=>float64,BooleanArray=>bool_builder);
-    Err("unsupported Hail ndarray element type".into())
-}
+
 pub(super) fn record(input: &mut Input, e: &Encoding, ty: &Type) -> Result<ArrayRef> {
     let node = Node::new(e, ty);
     let mut column = Column::projected(&node, &ty.to_arrow()?);
@@ -2428,6 +2805,32 @@ impl PartReader {
                 })
                 .collect::<Vec<_>>()
         });
+        let mut destinations = columns.iter_mut().map(Some).collect::<Vec<_>>();
+        let mut root_fields = self
+            .node
+            .fields
+            .iter()
+            .zip(&self.node.children)
+            .map(|(op, node)| {
+                let output = self
+                    .projection
+                    .iter()
+                    .position(|dest| *dest == op.dest)
+                    .map(|dest| {
+                        BatchColumn::new(node, destinations[dest].take().unwrap(), self.input.leb)
+                    });
+                BatchRootField {
+                    node,
+                    missing_bit: op.missing_bit,
+                    output,
+                    decode: op.project
+                        && self
+                            .decode_columns
+                            .as_ref()
+                            .is_none_or(|columns| columns.contains(&op.dest)),
+                }
+            })
+            .collect::<Vec<_>>();
         let mut n = 0;
         let start_bytes = self.input.bytes;
         while n < size.max(1)
@@ -2444,2115 +2847,18 @@ impl PartReader {
                 _ => return Err("invalid Hail row marker".into()),
             }
             let bits = bitmap(&mut self.input, self.node.optional_count)?;
-            for (op, c) in self.node.fields.iter().zip(&self.node.children) {
-                let missing = op.missing_bit != usize::MAX && absent(&bits, op.missing_bit);
-                if let Some(dest) = self.projection.iter().position(|p| *p == op.dest) {
-                    if missing {
-                        columns[dest].null()?
-                    } else if !op.project
-                        || self
-                            .decode_columns
-                            .as_ref()
-                            .is_some_and(|columns| !columns.contains(&op.dest))
-                    {
-                        c.skip(&mut self.input)?;
-                        columns[dest].null()?;
-                    } else {
-                        c.append(&mut self.input, &mut columns[dest])?
-                    }
-                } else if !missing {
-                    c.skip(&mut self.input)?
-                }
+            for field in &mut root_fields {
+                field.append(&mut self.input, &bits)?;
             }
             n += 1;
             self.rows += 1;
         }
+        drop(root_fields);
+        drop(destinations);
         if n == 0 {
             return Ok(None);
         }
         Ok(Some((n, columns)))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn wide_scalar_probe_matches_numeric_widths_and_skip_framing() {
-        fn leb(mut value: u64) -> Vec<u8> {
-            let mut bytes = vec![];
-            loop {
-                let b = (value & 127) as u8;
-                value >>= 7;
-                bytes.push(b | if value == 0 { 0 } else { 128 });
-                if value == 0 {
-                    return bytes;
-                }
-            }
-        }
-        for bits in [32, 64] {
-            for value in [0, 127, 128, 200, 16384, u32::MAX as u64, u64::MAX] {
-                let bytes = leb(value);
-                let mut cursor = 0;
-                let actual = slice_varint(&bytes, &mut cursor, bits);
-                if bits == 32 && value > u32::MAX as u64 {
-                    assert!(actual.is_none());
-                    assert_eq!(cursor, 0);
-                } else {
-                    assert_eq!(actual, Some(value));
-                    assert_eq!(cursor, bytes.len());
-                }
-                for end in 0..bytes.len() {
-                    let mut pos = 0;
-                    assert!(slice_varint(&bytes[..end], &mut pos, bits).is_none());
-                    assert_eq!(pos, 0);
-                }
-            }
-        }
-        for bytes in [
-            vec![255; 10],
-            vec![128; 10],
-            vec![255, 255, 255, 255, 31],
-            vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2],
-        ] {
-            let mut cursor = 0;
-            assert!(slice_varint(&bytes, &mut cursor, 64).is_none() || bytes.len() == 5);
-        }
-        let mut cursor = 0;
-        assert!(slice_varint(&[255, 255, 255, 255, 31], &mut cursor, 32).is_none());
-        assert_eq!(cursor, 0);
-        let call = BufferedScalars {
-            has_lists: false,
-            bitmap_bytes: 0,
-            fields: vec![ProbeField {
-                kind: ProbeKind::Call,
-                missing: 0,
-                output: 0,
-                bits: 64,
-            }],
-        };
-        for invalid in [6u64, (65536u64 << 3) | 2, u32::MAX as u64 + 1] {
-            assert!(call.probe(&leb(invalid), &mut 0, &mut [0; 16]).is_none());
-        }
-        let plan = BufferedScalars {
-            has_lists: false,
-            bitmap_bytes: 0,
-            fields: vec![
-                ProbeField {
-                    kind: ProbeKind::SkipByte,
-                    missing: 0,
-                    output: u8::MAX,
-                    bits: 64,
-                },
-                ProbeField {
-                    kind: ProbeKind::Byte,
-                    missing: 0,
-                    output: 0,
-                    bits: 64,
-                },
-                ProbeField {
-                    kind: ProbeKind::I64,
-                    missing: 0,
-                    output: 1,
-                    bits: 64,
-                },
-                ProbeField {
-                    kind: ProbeKind::Call,
-                    missing: 0,
-                    output: 2,
-                    bits: 64,
-                },
-            ],
-        };
-        let mut bytes = vec![128; 37];
-        bytes.push(1);
-        bytes.extend(leb(u32::MAX as u64));
-        bytes.extend(leb(u64::MAX));
-        bytes.extend(leb(4));
-        let mut values = [0; 16];
-        let mut cursor = 0;
-        assert_eq!(plan.probe(&bytes, &mut cursor, &mut values), Some(0));
-        assert_eq!(values[..3], [u32::MAX as u64, u64::MAX, 4]);
-        assert_eq!(cursor, bytes.len());
-        *bytes.last_mut().unwrap() = 6;
-        assert!(plan.probe(&bytes, &mut 0, &mut values).is_none());
-    }
-
-    #[test]
-    fn wide_scalar_root_matches_generic_for_both_integer_wire_encodings() -> Result<()> {
-        for wire in ["EInt32", "EVarint"] {
-            let element = Encoding {
-                kind: "EBaseStruct".into(),
-                required: true,
-                fields: vec![
-                    (
-                        "small".into(),
-                        Encoding {
-                            kind: wire.into(),
-                            required: true,
-                            fields: vec![],
-                            rank: 0,
-                        },
-                    ),
-                    (
-                        "wide".into(),
-                        Encoding {
-                            kind: if wire == "EVarint" {
-                                wire.into()
-                            } else {
-                                "EInt64".into()
-                            },
-                            required: true,
-                            fields: vec![],
-                            rank: 0,
-                        },
-                    ),
-                ],
-                rank: 0,
-            };
-            let encoding = Encoding {
-                kind: "EArray2".into(),
-                required: true,
-                fields: vec![("element".into(), element)],
-                rank: 0,
-            };
-            let ty = Type::Array {
-                array: Box::new(Type::Struct {
-                    r#struct: vec![
-                        ("small".into(), Type::Primitive(P::Int32)),
-                        ("wide".into(), Type::Primitive(P::Int64)),
-                    ],
-                }),
-            };
-            let mut bytes = vec![4];
-            for (small, wide) in [
-                (200u64, 300u64),
-                (u32::MAX as u64, u64::MAX),
-                (16384, 1u64 << 48),
-                (127, 0),
-            ] {
-                for mut value in [small, wide] {
-                    loop {
-                        let byte = (value & 127) as u8;
-                        value >>= 7;
-                        bytes.push(byte | if value == 0 { 0 } else { 128 });
-                        if value == 0 {
-                            break;
-                        }
-                    }
-                }
-            }
-            for demand in [
-                vec![vec!["small".into()]],
-                vec![vec!["wide".into()]],
-                vec![vec!["small".into()], vec!["wide".into()]],
-            ] {
-                let mut node = Node::new(&encoding, &ty);
-                node.demand(&demand);
-                compare_buffered_array(&node, bytes.clone().into(), 0)?;
-            }
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn compact_scalar_plan_handles_projection_missing_and_boundary() {
-        assert!(std::mem::size_of::<ProbeField>() <= 16);
-        let plan = BufferedScalars {
-            has_lists: false,
-            bitmap_bytes: 1,
-            fields: vec![
-                ProbeField {
-                    kind: ProbeKind::SkipByte,
-                    missing: 1,
-                    bits: 64,
-                    output: u8::MAX,
-                },
-                ProbeField {
-                    kind: ProbeKind::Byte,
-                    missing: 2,
-                    bits: 32,
-                    output: 0,
-                },
-                ProbeField {
-                    kind: ProbeKind::IntegerArray,
-                    missing: 4,
-                    bits: 64,
-                    output: u8::MAX,
-                },
-            ],
-        };
-        let mut values = [0; 16];
-        let mut cursor = 0;
-        assert_eq!(
-            plan.probe(&[0, 3, 9, 2, 128, 1, 7], &mut cursor, &mut values),
-            Some(0)
-        );
-        assert_eq!(cursor, 7);
-        assert_eq!(values[0], 9);
-        cursor = 0;
-        assert_eq!(plan.probe(&[7], &mut cursor, &mut values), Some(1));
-        assert_eq!(cursor, 1);
-        cursor = 0;
-        assert!(
-            plan.probe(&[0, 3, 9, 2, 128], &mut cursor, &mut values)
-                .is_none()
-        );
-    }
-
-    use super::*;
-
-    use super::*;
-
-    #[test]
-    fn bound_required_varint_lists_match_generic_all_length_modes_and_nullable_fallback()
-    -> Result<()> {
-        fn leb(mut value: u64, out: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                out.push(byte | if value == 0 { 0 } else { 128 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        for modern in [false, true] {
-            for compressed in [false, true] {
-                for required in [false, true] {
-                    let integer = |required| Encoding {
-                        kind: "EVarint".into(),
-                        required,
-                        fields: vec![],
-                        rank: 0,
-                    };
-                    let list = Encoding {
-                        kind: if modern { "EArray2" } else { "EArray" }.into(),
-                        required: false,
-                        fields: vec![("element".into(), integer(required))],
-                        rank: 0,
-                    };
-                    let encoding = Encoding {
-                        kind: "EArray2".into(),
-                        required: true,
-                        fields: vec![(
-                            "element".into(),
-                            Encoding {
-                                kind: "EBaseStruct".into(),
-                                required: true,
-                                fields: vec![
-                                    ("scalar".into(), integer(true)),
-                                    ("array".into(), list),
-                                ],
-                                rank: 0,
-                            },
-                        )],
-                        rank: 0,
-                    };
-                    let ty = Type::Array {
-                        array: Box::new(Type::Struct {
-                            r#struct: vec![
-                                (
-                                    "array".into(),
-                                    Type::Array {
-                                        array: Box::new(Type::Primitive(P::Int32)),
-                                    },
-                                ),
-                                ("scalar".into(), Type::Primitive(P::Int32)),
-                            ],
-                        }),
-                    };
-                    let node = Node::new(&encoding, &ty);
-                    let mut bytes = vec![3, 0, 6];
-                    if modern || compressed {
-                        bytes.push(2);
-                    } else {
-                        bytes.extend_from_slice(&2i32.to_le_bytes());
-                    }
-                    if !required {
-                        bytes.push(2);
-                    }
-                    leb(u32::MAX as u64, &mut bytes);
-                    if required {
-                        leb(300, &mut bytes);
-                    }
-                    bytes.extend_from_slice(&[1, 7, 0, 8]);
-                    if modern || compressed {
-                        bytes.push(0);
-                    } else {
-                        bytes.extend_from_slice(&0i32.to_le_bytes());
-                    }
-                    for retained in [false, true] {
-                        for truncated in [false, true] {
-                            let data: Arc<[u8]> =
-                                bytes[..bytes.len() - usize::from(truncated)].into();
-                            let mut left = Input::from_memory(data.clone(), compressed);
-                            let mut right = Input::from_memory(data, compressed);
-                            let mut expected = Column::new(&ty.to_arrow()?);
-                            let mut actual = if retained {
-                                Column::projected_encoding(&node, &ty.to_arrow()?, true)
-                            } else {
-                                Column::new(&ty.to_arrow()?)
-                            };
-                            let generic =
-                                append_unbound_struct_array(&node, &mut left, &mut expected);
-                            let bound = node.append(&mut right, &mut actual);
-                            assert_eq!(left.bytes, right.bytes);
-                            if truncated {
-                                assert_eq!(
-                                    generic.unwrap_err().to_string(),
-                                    bound.unwrap_err().to_string()
-                                );
-                            } else {
-                                generic?;
-                                bound?;
-                                assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn buffered_selected_bindings_preserve_physical_order_and_null_slots() -> Result<()> {
-        let fields = ["x", "y", "z"]
-            .into_iter()
-            .map(|name| (name.into(), Type::Primitive(P::Int32)))
-            .collect();
-        let ty = Type::Struct { r#struct: fields };
-        let encoding = Encoding {
-            kind: "EBaseStruct".into(),
-            required: true,
-            fields: ["y", "z", "x"]
-                .into_iter()
-                .map(|name| {
-                    (
-                        name.into(),
-                        Encoding {
-                            kind: "EInt32".into(),
-                            required: false,
-                            fields: vec![],
-                            rank: 0,
-                        },
-                    )
-                })
-                .collect(),
-            rank: 0,
-        };
-        let mut node = Node::new(&encoding, &ty);
-        node.demand(&[vec!["x".into()], vec!["z".into()]]);
-        let mut column = Column::projected(&node, &ty.to_arrow()?);
-        {
-            let Column::Struct(_, outputs, validity) = &mut column else {
-                unreachable!()
-            };
-            let mut ops = node.bind_struct(outputs, true);
-            let mut selected = bind_buffered_outputs(&mut ops);
-            assert_eq!(selected.len(), 2);
-            assert!(!selected.spilled());
-            let mut values = [0; 16];
-            values[0] = 5;
-            values[1] = 9;
-            buffered_scalar_row(&mut selected, &values, 2);
-            validity.append_non_null();
-            values[0] = 12;
-            values[1] = 17;
-            buffered_scalar_row(&mut selected, &values, 1);
-            validity.append_non_null();
-        }
-        let array = column.finish()?;
-        let array = array.as_any().downcast_ref::<StructArray>().unwrap();
-        assert_eq!(
-            array
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap(),
-            &Int32Array::from(vec![None, Some(17)])
-        );
-        assert_eq!(
-            array
-                .column(2)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap(),
-            &Int32Array::from(vec![Some(5), None])
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn slice_varint_skip_matches_scalar_at_word_and_buffer_boundaries() {
-        fn reference(bytes: &[u8], start: usize, mut n: usize) -> Option<usize> {
-            if n == 0 {
-                return Some(start);
-            }
-            for (i, byte) in bytes.iter().enumerate().skip(start) {
-                if byte & 128 == 0 {
-                    n -= 1;
-                    if n == 0 {
-                        return Some(i + 1);
-                    }
-                }
-            }
-            None
-        }
-        for pattern in 0..256u16 {
-            for len in 0..=72 {
-                for start in 0..=8 {
-                    let mut bytes = vec![255; start];
-                    bytes.extend((0..len).map(|i| {
-                        (i % 127) as u8
-                            | if pattern & (1 << (i % 8)) != 0 {
-                                128
-                            } else {
-                                0
-                            }
-                    }));
-                    for n in 0..=9 {
-                        let expected = reference(&bytes, start, n);
-                        let mut cursor = start;
-                        let actual = slice_skip_varints(&bytes, &mut cursor, n);
-                        assert_eq!(
-                            actual.is_some(),
-                            expected.is_some(),
-                            "pattern={pattern} len={len} start={start} n={n}"
-                        );
-                        assert_eq!(cursor, expected.unwrap_or(start));
-                    }
-                }
-            }
-        }
-        // Skipped values are framed by terminators, not numeric width. Include
-        // an overwide payload crossing both8-byte and64-byte boundaries.
-        let mut bytes = vec![128; 129];
-        bytes.push(1);
-        bytes.extend_from_slice(&[2; 72]);
-        for n in 0..=74 {
-            let expected = reference(&bytes, 0, n);
-            let mut cursor = 0;
-            assert_eq!(
-                slice_skip_varints(&bytes, &mut cursor, n).is_some(),
-                expected.is_some()
-            );
-            assert_eq!(cursor, expected.unwrap_or(0));
-        }
-        for end in [7, 8, 9, 63, 64, 65, 128, 129] {
-            let mut cursor = 0;
-            assert!(slice_skip_varints(&bytes[..end], &mut cursor, 1).is_none());
-            assert_eq!(cursor, 0);
-        }
-    }
-
-    #[test]
-    fn required_varint_i32_lists_match_arrow_and_keep_vortex_export_lazy() -> Result<()> {
-        use vortex::{VortexSessionDefault, array::VortexSessionExecute, arrow::ArrowSessionExt};
-        fn leb(mut value: u64, out: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                out.push(byte | if value == 0 { 0 } else { 128 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        let ty = Type::Array {
-            array: Box::new(Type::Primitive(P::Int32)),
-        };
-        let encoding = Encoding {
-            kind: "EArray2".into(),
-            required: false,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    kind: "EVarint".into(),
-                    required: true,
-                    fields: vec![],
-                    rank: 0,
-                },
-            )],
-            rank: 0,
-        };
-        let node = Node::new(&encoding, &ty);
-        let datatype = ty.to_arrow()?;
-        let field = arrow_schema::Field::new("values", datatype.clone(), true);
-        let session = vortex::session::VortexSession::default();
-        let mut encoded = Column::projected_encoding(&node, &datatype, true);
-        let mut generic = Column::new(&datatype);
-        for values in [
-            vec![-1i32, 0, 127, 128, i32::MIN, i32::MAX],
-            vec![],
-            vec![3, 4],
-        ] {
-            let mut bytes = vec![values.len() as u8];
-            for value in values {
-                leb(value as u32 as u64, &mut bytes);
-            }
-            let bytes: Arc<[u8]> = bytes.into();
-            node.append(&mut Input::from_memory(bytes.clone(), false), &mut encoded)?;
-            node.append(&mut Input::from_memory(bytes.clone(), false), &mut generic)?;
-            encoded.null()?;
-            generic.null()?;
-            assert_eq!(encoded.finish()?.as_ref(), generic.finish()?.as_ref());
-            let mut vortex = Column::projected_encoding(&node, &datatype, true);
-            node.append(&mut Input::from_memory(bytes, false), &mut vortex)?;
-            vortex.null()?;
-            let array = vortex.finish_vortex(&field, &session)?;
-            assert_eq!(array.dtype(), &session.arrow().from_arrow_field(&field)?);
-            let mut ctx = session.create_execution_ctx();
-            let arrow = super::super::packed_call::export(array, Some(&field), &mut ctx)?;
-            let list = arrow.as_any().downcast_ref::<ListArray>().unwrap();
-            assert_eq!(list.null_count(), 1);
-            assert_eq!(list.values().null_count(), 0);
-            assert!(format!("{:?}", list.values()).contains("materialized: false"));
-            // Physical access materializes the unchanged standard Arrow Int32.
-            assert_eq!(
-                list.values()
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap()
-                    .len(),
-                list.value_length(0) as usize
-            );
-        }
-        // Split a continuation across the normal64KiB Input buffer, retaining
-        // exact framing and leaving the following field byte untouched.
-        for truncated in [false, true] {
-            let prefix = 65534;
-            let mut bytes = vec![0; prefix];
-            bytes.extend_from_slice(&[1, 255, 255, 255, 255, 15]);
-            if truncated {
-                bytes.pop();
-            } else {
-                bytes.push(99);
-            }
-            let bytes: Arc<[u8]> = bytes.into();
-            let mut left = Input::from_memory(bytes.clone(), false);
-            let mut right = Input::from_memory(bytes, false);
-            left.skip(prefix)?;
-            right.skip(prefix)?;
-            let mut eager = Column::new(&datatype);
-            let mut retained = Column::projected_encoding(&node, &datatype, true);
-            let eager_result = node.append(&mut left, &mut eager);
-            let retained_result = node.append(&mut right, &mut retained);
-            assert_eq!(left.bytes, right.bytes);
-            if truncated {
-                assert_eq!(
-                    eager_result.unwrap_err().to_string(),
-                    retained_result.unwrap_err().to_string()
-                );
-            } else {
-                eager_result?;
-                retained_result?;
-                assert_eq!(eager.finish()?.as_ref(), retained.finish()?.as_ref());
-                assert_eq!(right.byte()?, 99);
-            }
-        }
-        let mut nullable = encoding.clone();
-        nullable.fields[0].1.required = false;
-        let nullable_node = Node::new(&nullable, &ty);
-        let mut nullable = Column::projected(&nullable_node, &datatype);
-        nullable_node.append(
-            &mut Input::from_memory(Arc::from([3u8, 2, 5, 7]), false),
-            &mut nullable,
-        )?;
-        let values = nullable.finish()?;
-        let list = values.as_any().downcast_ref::<ListArray>().unwrap();
-        assert_eq!(
-            list.values().as_any().downcast_ref::<Int32Array>().unwrap(),
-            &Int32Array::from(vec![Some(5), None, Some(7)])
-        );
-        let Column::List(_, child, _, _) = nullable else {
-            unreachable!()
-        };
-        assert!(matches!(*child, Column::Int32(_)));
-        assert!(matches!(
-            Column::projected(&node.children[0], &DataType::Int32),
-            Column::Int32(_)
-        ));
-        // Framing-only retained leaves intentionally keep low32 bits for an
-        // oversized numeric payload; ordinary scalar decoders remain strict.
-        let mut bytes = vec![1];
-        leb(1u64 << 32, &mut bytes);
-        node.append(&mut Input::from_memory(bytes.into(), false), &mut encoded)?;
-        let array = encoded.finish()?;
-        let list = array.as_any().downcast_ref::<ListArray>().unwrap();
-        assert_eq!(
-            list.values()
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .value(0),
-            0
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn buffered_program_cache_is_per_codec_and_resets_after_demand() -> Result<()> {
-        let integer = Encoding {
-            kind: "EInt32".into(),
-            required: false,
-            fields: vec![],
-            rank: 0,
-        };
-        let array = Encoding {
-            kind: "EArray2".into(),
-            required: false,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    required: true,
-                    ..integer.clone()
-                },
-            )],
-            rank: 0,
-        };
-        let encoding = Encoding {
-            kind: "EArray2".into(),
-            required: true,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    kind: "EBaseStruct".into(),
-                    required: true,
-                    fields: vec![("x".into(), integer), ("unused".into(), array)],
-                    rank: 0,
-                },
-            )],
-            rank: 0,
-        };
-        let ty = Type::Array {
-            array: Box::new(Type::Struct {
-                r#struct: vec![
-                    ("x".into(), Type::Primitive(P::Int32)),
-                    (
-                        "unused".into(),
-                        Type::Array {
-                            array: Box::new(Type::Primitive(P::Int32)),
-                        },
-                    ),
-                ],
-            }),
-        };
-        let mut node = Node::new(&encoding, &ty);
-        for projected in [false, true] {
-            if projected {
-                node.demand(&[vec!["x".into()]]);
-                assert!(
-                    node.children[0]
-                        .buffered_scalars
-                        .iter()
-                        .all(|cached| cached.get().is_none())
-                );
-            }
-            for leb in [false, true] {
-                let mut bytes = vec![2];
-                for x in [7i32, 8] {
-                    bytes.push(0);
-                    if leb {
-                        bytes.push(x as u8);
-                    } else {
-                        bytes.extend_from_slice(&x.to_le_bytes());
-                    }
-                    bytes.push(2);
-                    for value in [3i32, 4] {
-                        if leb {
-                            bytes.push(value as u8);
-                        } else {
-                            bytes.extend_from_slice(&value.to_le_bytes());
-                        }
-                    }
-                }
-                let bytes: Arc<[u8]> = bytes.into();
-                let mut expected = Column::projected(&node, &ty.to_arrow()?);
-                let mut actual = Column::projected(&node, &ty.to_arrow()?);
-                append_unbound_struct_array(
-                    &node,
-                    &mut Input::from_memory(bytes.clone(), leb),
-                    &mut expected,
-                )?;
-                node.append(&mut Input::from_memory(bytes, leb), &mut actual)?;
-                assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref());
-                assert_eq!(
-                    node.children[0].buffered_scalars[usize::from(leb)]
-                        .get()
-                        .unwrap()
-                        .is_some(),
-                    projected && leb
-                );
-            }
-        }
-        Ok(())
-    }
-
-    fn append_unbound_struct_array(
-        node: &Node,
-        input: &mut Input,
-        output: &mut Column,
-    ) -> Result<()> {
-        let n = node.length(input)?;
-        let element = &node.children[0];
-        let bits = if element.e.required {
-            Bitmap::Inline([0; 8])
-        } else {
-            bitmap(input, n)?
-        };
-        let Column::List(_, child, _, _) = output else {
-            unreachable!()
-        };
-        for i in 0..n {
-            if !element.e.required && absent(&bits, i) {
-                child.null()?;
-            } else {
-                element.append_struct(input, child)?;
-            }
-        }
-        output.end_list()
-    }
-
-    fn compare_buffered_array(node: &Node, bytes: Arc<[u8]>, prefix: usize) -> Result<()> {
-        fn lengths(column: &Column, out: &mut Vec<usize>) {
-            // Skipped placeholders inherit length at finish, not per element.
-            if matches!(column, Column::Skipped(..)) {
-                return;
-            }
-            out.push(column.len());
-            match column {
-                Column::Struct(_, children, _) => {
-                    for child in children {
-                        lengths(child, out);
-                    }
-                }
-                Column::List(_, child, _, _) => lengths(child, out),
-                _ => {}
-            }
-        }
-        let mut generic = Input::from_memory(bytes.clone(), true);
-        let mut buffered = Input::from_memory(bytes, true);
-        generic.skip(prefix)?;
-        buffered.skip(prefix)?;
-        let arrow = node.ty.to_arrow()?;
-        let mut expected = Column::projected(node, &arrow);
-        let mut actual = Column::projected(node, &arrow);
-        let left = append_unbound_struct_array(node, &mut generic, &mut expected);
-        let right = node.append(&mut buffered, &mut actual);
-        assert_eq!(left.is_ok(), right.is_ok());
-        assert_eq!(generic.bytes, buffered.bytes);
-        let mut a = Vec::new();
-        let mut b = Vec::new();
-        lengths(&expected, &mut a);
-        lengths(&actual, &mut b);
-        assert_eq!(a, b);
-        match (left, right) {
-            (Ok(()), Ok(())) => assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref()),
-            (Err(left), Err(right)) => assert_eq!(left.to_string(), right.to_string()),
-            _ => unreachable!(),
-        }
-        Ok(())
-    }
-    #[test]
-    fn buffered_scalars_match_generic_boundaries_missing_continuations_and_errors() -> Result<()> {
-        fn leb(mut value: u64, out: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                out.push(byte | if value == 0 { 0 } else { 128 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        let integer = || Encoding {
-            kind: "EInt32".into(),
-            required: false,
-            fields: vec![],
-            rank: 0,
-        };
-        let array = Encoding {
-            kind: "EArray2".into(),
-            required: false,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    required: true,
-                    ..integer()
-                },
-            )],
-            rank: 0,
-        };
-        let encoding = Encoding {
-            kind: "EArray2".into(),
-            required: true,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    kind: "EBaseStruct".into(),
-                    required: false,
-                    fields: vec![
-                        ("unused".into(), array),
-                        (
-                            "flag".into(),
-                            Encoding {
-                                kind: "EBoolean".into(),
-                                ..integer()
-                            },
-                        ),
-                        ("call".into(), integer()),
-                        ("value".into(), integer()),
-                        (
-                            "float".into(),
-                            Encoding {
-                                kind: "EFloat64".into(),
-                                ..integer()
-                            },
-                        ),
-                    ],
-                    rank: 0,
-                },
-            )],
-            rank: 0,
-        };
-        let ty = Type::Array {
-            array: Box::new(Type::Struct {
-                r#struct: vec![
-                    ("value".into(), Type::Primitive(P::Int32)),
-                    ("float".into(), Type::Primitive(P::Float64)),
-                    ("call".into(), Type::Primitive(P::Call)),
-                    ("flag".into(), Type::Primitive(P::Bool)),
-                    (
-                        "unused".into(),
-                        Type::Array {
-                            array: Box::new(Type::Primitive(P::Int32)),
-                        },
-                    ),
-                ],
-            }),
-        };
-        for error in [0, 1, 2] {
-            let n = if error == 0 { 8192usize } else { 128 };
-            let mut bytes = Vec::new();
-            leb(n as u64, &mut bytes);
-            let bitmap_start = bytes.len();
-            bytes.resize(bytes.len() + n.div_ceil(8), 0);
-            for row in 0..n {
-                if row % 17 == 0 {
-                    bytes[bitmap_start + row / 8] |= 1 << (row % 8);
-                    continue;
-                }
-                let last = row == n - 1;
-                let missing = if last {
-                    0
-                } else {
-                    u8::from(row % 11 == 0)
-                        | u8::from(row % 23 == 0) << 1
-                        | u8::from(row % 7 == 0) << 2
-                        | u8::from(row % 5 == 0) << 3
-                        | u8::from(row % 13 == 0) << 4
-                };
-                bytes.push(missing | 0xe0);
-                if missing & 1 == 0 {
-                    let count = if row == 1 { 127 } else { 3 };
-                    bytes.push(count);
-                    for _ in 0..count {
-                        if row == 1 {
-                            bytes.extend_from_slice(&[128; 22]);
-                        }
-                        bytes.extend_from_slice(&[128, 1]);
-                    }
-                }
-                if missing & 2 == 0 {
-                    bytes.push(if error == 2 && last { 2 } else { 1 });
-                }
-                if missing & 4 == 0 {
-                    bytes.push(if error == 1 && last { 6 } else { 12 });
-                }
-                if missing & 8 == 0 {
-                    leb(
-                        if row % 29 == 0 {
-                            300
-                        } else {
-                            (row % 100) as u64
-                        },
-                        &mut bytes,
-                    );
-                }
-                if missing & 16 == 0 {
-                    bytes.extend_from_slice(&(f64::NAN.to_bits() | row as u64).to_le_bytes());
-                }
-            }
-            for selected in [
-                vec![vec!["value".into()], vec!["float".into()]],
-                vec![vec!["call".into()], vec!["flag".into()]],
-            ] {
-                let mut node = Node::new(&encoding, &ty);
-                node.demand(&selected);
-                for prefix in [0usize, 1, 65520, 65535] {
-                    let mut padded = vec![0; prefix];
-                    padded.extend_from_slice(&bytes);
-                    compare_buffered_array(&node, padded.into(), prefix)?;
-                }
-                for removed in [1, 2, 7, 17, bytes.len() - 1] {
-                    compare_buffered_array(&node, bytes[..bytes.len() - removed].into(), 0)?;
-                }
-            }
-        }
-        Ok(())
-    }
-    #[test]
-    fn buffered_scalars_support_high_missing_bit_and_zero_byte_null_entries() -> Result<()> {
-        let integer = Encoding {
-            kind: "EInt32".into(),
-            required: false,
-            fields: vec![],
-            rank: 0,
-        };
-        let fields = (0..64)
-            .map(|i| (format!("x{i}"), Type::Primitive(P::Int32)))
-            .collect();
-        let ty = Type::Array {
-            array: Box::new(Type::Struct { r#struct: fields }),
-        };
-        let encoding = Encoding {
-            kind: "EArray2".into(),
-            required: true,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    kind: "EBaseStruct".into(),
-                    required: false,
-                    fields: (0..64)
-                        .map(|i| (format!("x{i}"), integer.clone()))
-                        .collect(),
-                    rank: 0,
-                },
-            )],
-            rank: 0,
-        };
-        let mut node = Node::new(&encoding, &ty);
-        node.demand(&[vec!["x63".into()]]);
-        let mut bytes = vec![3, 4];
-        bytes.extend_from_slice(&[0; 8]);
-        bytes.extend_from_slice(&[1; 64]);
-        bytes.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0, 128]);
-        bytes.extend_from_slice(&[2; 63]);
-        compare_buffered_array(&node, bytes.into(), 0)?;
-        compare_buffered_array(&node, Arc::from([3u8, 7]), 0)?;
-        Ok(())
-    }
-
-    #[test]
-    fn bound_struct_arrays_match_generic_high_masks_nested_calls_and_reordering() -> Result<()> {
-        let path =
-            std::env::temp_dir().join(format!("vail-bound-struct-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            let mut fields = (0..67)
-                .map(|i| (format!("x{i}"), Type::Primitive(P::Int32)))
-                .collect::<Vec<_>>();
-            fields.push(("call".into(), Type::Primitive(P::Call)));
-            fields.push((
-                "array".into(),
-                Type::Array {
-                    array: Box::new(Type::Primitive(P::Int32)),
-                },
-            ));
-            let ty = Type::Array {
-                array: Box::new(Type::Struct {
-                    r#struct: fields.clone(),
-                }),
-            };
-            let scalar = |required| Encoding {
-                kind: "EInt32".into(),
-                required,
-                fields: vec![],
-                rank: 0,
-            };
-            let physical = fields
-                .iter()
-                .rev()
-                .map(|(name, ty)| {
-                    (
-                        name.clone(),
-                        if matches!(ty, Type::Array { .. }) {
-                            Encoding {
-                                kind: "EArray2".into(),
-                                required: false,
-                                fields: vec![("element".into(), scalar(true))],
-                                rank: 0,
-                            }
-                        } else {
-                            scalar(false)
-                        },
-                    )
-                })
-                .collect::<Vec<_>>();
-            let encoding = Encoding {
-                kind: "EArray2".into(),
-                required: true,
-                fields: vec![(
-                    "element".into(),
-                    Encoding {
-                        kind: "EBaseStruct".into(),
-                        required: false,
-                        fields: physical,
-                        rank: 0,
-                    },
-                )],
-                rank: 0,
-            };
-            let mut bytes = vec![4, 8];
-            for row in 0..3 {
-                let mut missing = vec![0u8; 9];
-                missing[8] = 0xe0; // unused bitmap padding
-                if row == 1 {
-                    missing[8] |= 1;
-                } // physical bit64
-                if row == 2 {
-                    missing[0] |= 3;
-                } // absent nested array and Call
-                bytes.extend_from_slice(&missing);
-                for i in 0..69 {
-                    if missing[i / 8] & (1 << (i % 8)) != 0 {
-                        continue;
-                    }
-                    match i {
-                        0 => bytes.extend_from_slice(&[2, 1, 2]),
-                        1 => bytes.push(12),
-                        _ => bytes.push(i as u8 + 1),
-                    }
-                }
-            }
-            std::fs::write(&path, bytes)?;
-            for projection in [
-                None,
-                Some(vec![vec!["x0".into()]]),
-                Some(vec![vec!["call".into()], vec!["array".into()]]),
-            ] {
-                let mut node = Node::new(&encoding, &ty);
-                if let Some(paths) = projection {
-                    node.demand(&paths);
-                }
-                let mut expected = Column::projected(&node, &ty.to_arrow()?);
-                let mut actual = Column::projected(&node, &ty.to_arrow()?);
-                let spec = serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}});
-                append_unbound_struct_array(&node, &mut Input::open(&path, &spec)?, &mut expected)?;
-                node.append(&mut Input::open(&path, &spec)?, &mut actual)?;
-                assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref());
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn dense_struct_array_matches_missing_aware_loop_with_projection() -> Result<()> {
-        let path =
-            std::env::temp_dir().join(format!("vail-dense-struct-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            for required_fields in [false, true] {
-                for required_elements in [false, true] {
-                    for projection in [None, Some("x"), Some("flag")] {
-                        let fields = vec![
-                            ("x".into(), Type::Primitive(P::Int32)),
-                            ("y".into(), Type::Primitive(P::Int64)),
-                            ("flag".into(), Type::Primitive(P::Bool)),
-                        ];
-                        let ty = Type::Array {
-                            array: Box::new(Type::Struct { r#struct: fields }),
-                        };
-                        let scalar = |kind: &str| Encoding {
-                            kind: kind.into(),
-                            required: required_fields,
-                            fields: vec![],
-                            rank: 0,
-                        };
-                        let encoding = Encoding {
-                            kind: "EArray2".into(),
-                            required: true,
-                            fields: vec![(
-                                "element".into(),
-                                Encoding {
-                                    kind: "EBaseStruct".into(),
-                                    required: required_elements,
-                                    fields: vec![
-                                        ("y".into(), scalar("EInt64")),
-                                        ("x".into(), scalar("EInt32")),
-                                        ("flag".into(), scalar("EBoolean")),
-                                    ],
-                                    rank: 0,
-                                },
-                            )],
-                            rank: 0,
-                        };
-                        let mut fast = Node::new(&encoding, &ty);
-                        if let Some(field) = projection {
-                            fast.demand(&[vec![field.into()]]);
-                        }
-                        let mut slow = Node::new(&encoding, &ty);
-                        if let Some(field) = projection {
-                            slow.demand(&[vec![field.into()]]);
-                        }
-                        slow.children[0].all_present_mask = None;
-                        let mut bytes = vec![if required_elements { 3 } else { 4 }];
-                        if !required_elements {
-                            bytes.push(8);
-                        }
-                        for row in 0..3 {
-                            let missing = if required_fields { 0 } else { [0, 2, 4][row] };
-                            // High padding bits must not reject the dense path.
-                            if !required_fields {
-                                bytes.push(0xf8 | missing);
-                            }
-                            bytes.push(13 + row as u8);
-                            if missing & 2 == 0 {
-                                bytes.push(7 + row as u8);
-                            }
-                            if missing & 4 == 0 {
-                                bytes.push(1);
-                            }
-                        }
-                        std::fs::write(&path, bytes)?;
-                        let spec = serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}});
-                        let mut expected = Column::projected(&slow, &ty.to_arrow()?);
-                        let mut actual = Column::projected(&fast, &ty.to_arrow()?);
-                        append_unbound_struct_array(
-                            &slow,
-                            &mut Input::open(&path, &spec)?,
-                            &mut expected,
-                        )?;
-                        fast.append(&mut Input::open(&path, &spec)?, &mut actual)?;
-                        assert_eq!(
-                            expected.finish()?.as_ref(),
-                            actual.finish()?.as_ref(),
-                            "required fields {required_fields}, elements {required_elements}, projection {projection:?}"
-                        );
-                    }
-                }
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn adjacent_varint_run_masks_handle_high_and_wide_missingness() -> Result<()> {
-        let path =
-            std::env::temp_dir().join(format!("vail-run-missing-masks-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            for preceding in [62usize, 65] {
-                let mut types = (0..preceding)
-                    .map(|i| (format!("b{i}"), Type::Primitive(P::Bool)))
-                    .collect::<Vec<_>>();
-                types.extend([
-                    ("x".into(), Type::Primitive(P::Int32)),
-                    ("y".into(), Type::Primitive(P::Int32)),
-                ]);
-                let ty = Type::Struct { r#struct: types };
-                let mut fields = (0..preceding)
-                    .map(|i| {
-                        (
-                            format!("b{i}"),
-                            Encoding {
-                                kind: "EBoolean".into(),
-                                required: false,
-                                fields: vec![],
-                                rank: 0,
-                            },
-                        )
-                    })
-                    .collect::<Vec<_>>();
-                fields.extend(["x", "y"].into_iter().map(|name| {
-                    (
-                        name.into(),
-                        Encoding {
-                            kind: "EVarint".into(),
-                            required: false,
-                            fields: vec![],
-                            rank: 0,
-                        },
-                    )
-                }));
-                let encoding = Encoding {
-                    kind: "EBaseStruct".into(),
-                    required: true,
-                    fields,
-                    rank: 0,
-                };
-                for missing in 0..4u8 {
-                    let mut fast = Node::new(&encoding, &ty);
-                    fast.demand(&[vec!["x".into()]]);
-                    let mut slow = Node::new(&encoding, &ty);
-                    slow.demand(&[vec!["x".into()]]);
-                    for field in &mut slow.fields {
-                        field.varint_run = 0;
-                    }
-                    assert_eq!(fast.fields[preceding].run_wide_missingness, preceding >= 64);
-                    let mut bytes = vec![255u8; (preceding + 2).div_ceil(8)];
-                    for offset in 0..2 {
-                        if missing & (1 << offset) == 0 {
-                            let bit = preceding + offset;
-                            bytes[bit / 8] &= !(1 << (bit % 8));
-                        }
-                    }
-                    if missing & 1 == 0 {
-                        bytes.push(10);
-                    }
-                    if missing & 2 == 0 {
-                        bytes.push(20);
-                    }
-                    std::fs::write(&path, bytes)?;
-                    let spec = serde_json::json!({"name":"StreamBufferSpec"});
-                    let mut fast_column = Column::projected(&fast, &ty.to_arrow()?);
-                    let mut slow_column = Column::projected(&slow, &ty.to_arrow()?);
-                    fast.append(&mut Input::open(&path, &spec)?, &mut fast_column)?;
-                    slow.append(&mut Input::open(&path, &spec)?, &mut slow_column)?;
-                    assert_eq!(
-                        fast_column.finish()?.as_ref(),
-                        slow_column.finish()?.as_ref()
-                    );
-                }
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn adjacent_varint_runs_match_scalar_fields_with_projection_and_missingness() -> Result<()> {
-        fn leb(mut value: u64, bytes: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                bytes.push(byte | if value != 0 { 128 } else { 0 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        let ty = Type::Struct {
-            r#struct: vec![
-                ("a".into(), Type::Primitive(P::Int32)),
-                ("call".into(), Type::Primitive(P::Call)),
-                ("z".into(), Type::Primitive(P::Int64)),
-            ],
-        };
-        let path =
-            std::env::temp_dir().join(format!("vail-adjacent-varints-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            for mode in 0..3 {
-                for optional in [false, true] {
-                    for mask in 0..8u8 {
-                        if !optional && mask != 0 {
-                            continue;
-                        }
-                        for selection in 0..4 {
-                            for values in [[3i64, 12, 5], [-1, 12, -2], [128, 20, 129], [3, 6, 5]] {
-                                for prefix in [0usize, 65534] {
-                                    let field = |width| Encoding {
-                                        kind: if mode == 0 {
-                                            "EVarint"
-                                        } else if width == 64 {
-                                            "EInt64"
-                                        } else {
-                                            "EInt32"
-                                        }
-                                        .into(),
-                                        required: !optional,
-                                        fields: vec![],
-                                        rank: 0,
-                                    };
-                                    let encoding = Encoding {
-                                        kind: "EBaseStruct".into(),
-                                        required: true,
-                                        fields: vec![
-                                            ("z".into(), field(64)),
-                                            ("call".into(), field(32)),
-                                            ("a".into(), field(32)),
-                                        ],
-                                        rank: 0,
-                                    };
-                                    let paths = match selection {
-                                        0 => vec![vec![]],
-                                        1 => vec![vec!["a".into()]],
-                                        2 => vec![vec!["call".into()]],
-                                        _ => vec![],
-                                    };
-                                    let mut fast = Node::new(&encoding, &ty);
-                                    fast.demand(&paths);
-                                    assert_eq!(fast.fields[0].varint_run, 3);
-                                    let mut slow = Node::new(&encoding, &ty);
-                                    slow.demand(&paths);
-                                    for field in &mut slow.fields {
-                                        field.varint_run = 0;
-                                    }
-                                    let mut bytes = vec![0; prefix];
-                                    if optional {
-                                        bytes.push(mask | 0b1111_1000);
-                                    }
-                                    for (i, value) in values.into_iter().enumerate() {
-                                        if optional && mask & (1 << i) != 0 {
-                                            continue;
-                                        }
-                                        let width = if i == 0 { 64 } else { 32 };
-                                        if mode != 2 {
-                                            leb(
-                                                if width == 32 {
-                                                    value as u32 as u64
-                                                } else {
-                                                    value as u64
-                                                },
-                                                &mut bytes,
-                                            );
-                                        } else if width == 32 {
-                                            bytes.extend((value as i32).to_le_bytes());
-                                        } else {
-                                            bytes.extend(value.to_le_bytes());
-                                        }
-                                    }
-                                    std::fs::write(&path, &bytes)?;
-                                    let spec = if mode == 1 {
-                                        serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
-                                    } else {
-                                        serde_json::json!({"name":"StreamBufferSpec"})
-                                    };
-                                    let mut fast_input = Input::open(&path, &spec)?;
-                                    let mut slow_input = Input::open(&path, &spec)?;
-                                    fast_input.skip(prefix)?;
-                                    slow_input.skip(prefix)?;
-                                    let mut fast_column = Column::projected(&fast, &ty.to_arrow()?);
-                                    let mut slow_column = Column::projected(&slow, &ty.to_arrow()?);
-                                    let fast_result =
-                                        fast.append(&mut fast_input, &mut fast_column);
-                                    let slow_result =
-                                        slow.append(&mut slow_input, &mut slow_column);
-                                    assert_eq!(fast_result.is_ok(), slow_result.is_ok());
-                                    if fast_result.is_err() {
-                                        continue;
-                                    }
-                                    assert_eq!(fast_input.bytes, bytes.len() as u64);
-                                    assert_eq!(slow_input.bytes, fast_input.bytes);
-                                    fast_column.null()?;
-                                    slow_column.null()?;
-                                    assert_eq!(
-                                        fast_column.finish()?.as_ref(),
-                                        slow_column.finish()?.as_ref(),
-                                        "mode={mode} optional={optional} mask={mask} selection={selection} values={values:?} prefix={prefix}"
-                                    );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn packed_calls_nested_vortex_export_matches_arrow_across_batches() -> Result<()> {
-        use vortex::{VortexSessionDefault, arrow::ArrowSessionExt};
-        let session = vortex::session::VortexSession::default();
-        let call_type = Type::Primitive(P::Call).to_arrow()?;
-        let DataType::Struct(call_fields) = &call_type else {
-            unreachable!()
-        };
-        let element = Arc::new(arrow_schema::Field::new("item", call_type.clone(), true));
-        let lists = Arc::new(arrow_schema::Field::new(
-            "calls",
-            DataType::List(element.clone()),
-            true,
-        ));
-        let fields: Fields = vec![lists.clone()].into();
-        let field = arrow_schema::Field::new("root", DataType::Struct(fields.clone()), true);
-        let make = || {
-            Column::Struct(
-                fields.clone(),
-                vec![Column::List(
-                    element.clone(),
-                    Box::new(Column::Call(Box::new(CallColumn::new(call_fields.clone())))),
-                    vec![0],
-                    NullBufferBuilder::new(8),
-                )],
-                NullBufferBuilder::new(8),
-            )
-        };
-        let node = Node::new(
-            &Encoding {
-                kind: "EInt32".into(),
-                required: false,
-                fields: vec![],
-                rank: 0,
-            },
-            &Type::Primitive(P::Call),
-        );
-        let mut arrow = make();
-        let mut vortex = make();
-        for values in [
-            vec![0, 4, 5, 12, 13, 20, 21, u32::MAX - 2],
-            vec![2, 65535 << 3 | 2],
-        ] {
-            for column in [&mut arrow, &mut vortex] {
-                let list = &mut column.children()[0];
-                let Column::List(_, child, _, _) = list else {
-                    unreachable!()
-                };
-                for value in &values {
-                    node.append_call_value(*value, child)?;
-                    child.null()?;
-                }
-                list.end_list()?;
-                column.valid(true);
-                column.children()[0].null()?;
-                column.valid(true);
-                column.null()?;
-            }
-            let expected = arrow.finish()?;
-            let packed = vortex.finish_vortex(&field, &session)?;
-            assert_eq!(packed.dtype(), &session.arrow().from_arrow_field(&field)?);
-            let actual = super::super::packed_call::export(
-                packed,
-                Some(&field),
-                &mut vortex::array::ExecutionCtx::new(session.clone()),
-            )?;
-            assert_eq!(expected.as_ref(), actual.as_ref());
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn packed_call_validation_matches_expansion_at_boundaries() {
-        let payloads = [
-            0u32,
-            1,
-            2,
-            3,
-            65534,
-            65535,
-            65536,
-            65537,
-            (1 << 28) - 1,
-            (1 << 29) - 2,
-            (1 << 29) - 1,
-        ];
-        for payload in payloads {
-            for tag in 0..8 {
-                let value = (payload << 3) | tag;
-                assert_eq!(
-                    validate_packed_call(value).is_ok(),
-                    call_parts(value).is_ok(),
-                    "{value}"
-                );
-            }
-        }
-        for value in [
-            u32::MAX,
-            i32::MIN as u32,
-            (-8i32) as u32,
-            (-6i32) as u32,
-            (-4i32) as u32,
-        ] {
-            assert_eq!(
-                validate_packed_call(value).is_ok(),
-                call_parts(value).is_ok(),
-                "{value}"
-            );
-        }
-        // Deterministic samples include the entire UInt32 domain, both phases,
-        // all ploidies, and the original signed-wire-to-UInt32 interpretation.
-        let mut value = 0u32;
-        for _ in 0..16384 {
-            value = value.wrapping_mul(1664525).wrapping_add(1013904223);
-            assert_eq!(
-                validate_packed_call(value).is_ok(),
-                call_parts(value).is_ok(),
-                "{value}"
-            );
-        }
-    }
-
-    #[test]
-    fn packed_calls_validate_before_materialization() -> Result<()> {
-        let ty = Type::Primitive(P::Call);
-        let node = Node::new(
-            &Encoding {
-                kind: "EInt32".into(),
-                required: false,
-                fields: vec![],
-                rank: 0,
-            },
-            &ty,
-        );
-        let mut column = Column::projected(&node, &ty.to_arrow()?);
-        // Invalid ploidy, and a haploid allele exceeding the public UInt16.
-        for packed in [6, (65536 << 3) | 2] {
-            assert!(node.append_call_value(packed, &mut column).is_err());
-            assert_eq!(column.len(), 0);
-        }
-        node.append_call_value(12, &mut column)?;
-        column.null()?;
-        let Column::Call(call) = &column else {
-            panic!("expected packed Call builder")
-        };
-        assert_eq!(call.packed, vec![12, 0]);
-        assert_eq!(call.valid.len(), 2);
-        Ok(())
-    }
-
-    #[test]
-    fn typed_call_builder_matches_generic_schema_and_child_validity() -> Result<()> {
-        let ty = Type::Primitive(P::Call);
-        let encoding = Encoding {
-            kind: "EInt32".into(),
-            required: false,
-            fields: vec![],
-            rank: 0,
-        };
-        let node = Node::new(&encoding, &ty);
-        let path =
-            std::env::temp_dir().join(format!("vail-typed-calls-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            let mut typed = Column::projected(&node, &ty.to_arrow()?);
-            let mut generic = Column::new(&ty.to_arrow()?);
-            for values in [
-                vec![0i32, 1, 2, 3, 4, 5, 12, 13, 20, 21, 44, 45],
-                vec![12, 4],
-            ] {
-                for value in values {
-                    std::fs::write(&path, value.to_le_bytes())?;
-                    let spec = serde_json::json!({"name":"StreamBufferSpec"});
-                    node.append(&mut Input::open(&path, &spec)?, &mut typed)?;
-                    node.append(&mut Input::open(&path, &spec)?, &mut generic)?;
-                    typed.null()?;
-                    generic.null()?;
-                }
-                let typed_array = typed.finish()?;
-                let generic_array = generic.finish()?;
-                assert_eq!(typed_array.as_ref(), generic_array.as_ref());
-                let calls = typed_array.as_any().downcast_ref::<StructArray>().unwrap();
-                for child in calls.columns() {
-                    assert_eq!(child.null_count(), calls.null_count());
-                    assert_eq!(
-                        child.nulls().unwrap().inner().values().as_ptr(),
-                        calls.nulls().unwrap().inner().values().as_ptr()
-                    );
-                    for i in 0..calls.len() {
-                        assert_eq!(child.is_null(i), calls.is_null(i));
-                    }
-                }
-                for i in (1..calls.len()).step_by(2) {
-                    assert_eq!(
-                        calls
-                            .column(0)
-                            .as_any()
-                            .downcast_ref::<UInt16Array>()
-                            .unwrap()
-                            .value(i),
-                        0
-                    );
-                    assert_eq!(
-                        calls
-                            .column(1)
-                            .as_any()
-                            .downcast_ref::<UInt16Array>()
-                            .unwrap()
-                            .value(i),
-                        0
-                    );
-                    assert_eq!(
-                        calls
-                            .column(2)
-                            .as_any()
-                            .downcast_ref::<UInt8Array>()
-                            .unwrap()
-                            .value(i),
-                        0
-                    );
-                    assert!(
-                        !calls
-                            .column(3)
-                            .as_any()
-                            .downcast_ref::<BooleanArray>()
-                            .unwrap()
-                            .value(i)
-                    );
-                }
-            }
-            // Invalid ploidy still follows the validated generic decoder path.
-            std::fs::write(&path, 6i32.to_le_bytes())?;
-            assert!(
-                node.append(
-                    &mut Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?,
-                    &mut typed
-                )
-                .is_err()
-            );
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn skipped_integer_values_only_require_framing() -> Result<()> {
-        let path = std::env::temp_dir().join(format!("vail-compact-skip-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            for (kind, ty, bytes, leb, skip_ok) in [
-                ("EBoolean", P::Bool, vec![2], false, false),
-                ("EInt32", P::Int32, vec![255, 255, 255, 255, 16], true, true),
-                ("EVarint", P::Int64, vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2], false, true),
-                ("EInt32", P::Int32, vec![128, 128, 128, 128, 128, 0], true, true),
-                ("EInt32", P::Int32, vec![255; 5], true, false),
-                ("EVarint", P::Int64, vec![255; 10], false, false),
-                ("EFloat64", P::Float64, vec![0; 7], false, false),
-            ] {
-                std::fs::write(&path, &bytes)?;
-                let encoding = Encoding { kind: kind.into(), required: true, fields: vec![], rank: 0 };
-                let dtype = Type::Primitive(ty);
-                let node = Node::new(&encoding, &dtype);
-                let spec = if leb {
-                    serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
-                } else {
-                    serde_json::json!({"name":"StreamBufferSpec"})
-                };
-                let mut skipped = Input::open(&path, &spec)?;
-                assert_eq!(node.skip(&mut skipped).is_ok(), skip_ok, "{kind}");
-                if skip_ok { assert_eq!(skipped.bytes, bytes.len() as u64); }
-                // Selected values still need to fit the requested Arrow type.
-                let mut selected = Column::new(&dtype.to_arrow()?);
-                assert!(node.append(&mut Input::open(&path, &spec)?, &mut selected).is_err(), "{kind}");
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn skipped_children_inherit_parent_length_across_missing_structs_and_batches() -> Result<()> {
-        let ty = Type::Struct {
-            r#struct: vec![
-                ("selected".into(), Type::Primitive(P::Int32)),
-                (
-                    "unused".into(),
-                    Type::Array {
-                        array: Box::new(Type::Primitive(P::Int32)),
-                    },
-                ),
-            ],
-        };
-        let integer = Encoding {
-            kind: "EInt32".into(),
-            required: true,
-            fields: vec![],
-            rank: 0,
-        };
-        let encoding = Encoding {
-            kind: "EBaseStruct".into(),
-            required: true,
-            fields: vec![
-                ("selected".into(), integer.clone()),
-                (
-                    "unused".into(),
-                    Encoding {
-                        kind: "EArray".into(),
-                        required: true,
-                        fields: vec![("element".into(), integer)],
-                        rank: 0,
-                    },
-                ),
-            ],
-            rank: 0,
-        };
-        let mut node = Node::new(&encoding, &ty);
-        node.demand(&[vec!["selected".into()]]);
-        let mut column = Column::projected(&node, &ty.to_arrow()?);
-        let path =
-            std::env::temp_dir().join(format!("vail-deferred-lengths-{}.bin", std::process::id()));
-        let bytes = [4i32, 2, 8, 9, 5, 1, 6]
-            .into_iter()
-            .flat_map(i32::to_le_bytes)
-            .collect::<Vec<_>>();
-        std::fs::write(&path, bytes)?;
-        let result = (|| -> Result<()> {
-            for leading_nulls in [1usize, 3, 0] {
-                let mut input =
-                    Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
-                for _ in 0..leading_nulls {
-                    column.null()?;
-                }
-                node.append(&mut input, &mut column)?;
-                column.null()?;
-                node.append(&mut input, &mut column)?;
-                let array = column.finish()?;
-                let structs = array.as_any().downcast_ref::<StructArray>().unwrap();
-                assert_eq!(structs.len(), leading_nulls + 3);
-                assert_eq!(structs.column(1).len(), structs.len());
-                assert_eq!(structs.column(1).null_count(), structs.len());
-                let values = structs
-                    .column(0)
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap();
-                assert_eq!(values.value(leading_nulls), 4);
-                assert_eq!(values.value(leading_nulls + 2), 5);
-                assert_eq!(structs.null_count(), leading_nulls + 1);
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn compiled_leaf_dispatch_preserves_physical_field_order_and_missingness() -> Result<()> {
-        let ty = Type::Struct {
-            r#struct: vec![
-                ("a".into(), Type::Primitive(P::Int32)),
-                ("b".into(), Type::Primitive(P::Bool)),
-                ("c".into(), Type::Primitive(P::Float64)),
-            ],
-        };
-        let field = |kind: &str| Encoding {
-            kind: kind.into(),
-            required: false,
-            fields: vec![],
-            rank: 0,
-        };
-        let encoding = Encoding {
-            kind: "EBaseStruct".into(),
-            required: true,
-            fields: vec![
-                ("b".into(), field("EBoolean")),
-                ("c".into(), field("EFloat64")),
-                ("a".into(), field("EInt32")),
-            ],
-            rank: 0,
-        };
-        let node = Node::new(&encoding, &ty);
-        let mut bytes = vec![0b1111_1001]; // b absent; trailing bits are padding.
-        bytes.extend(1.5f64.to_le_bytes());
-        bytes.extend((-3i32).to_le_bytes());
-        let path =
-            std::env::temp_dir().join(format!("vail-compiled-leaves-{}.bin", std::process::id()));
-        std::fs::write(&path, bytes)?;
-        let result = (|| -> Result<()> {
-            let mut input = Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
-            let mut column = Column::new(&ty.to_arrow()?);
-            node.append(&mut input, &mut column)?;
-            column.null()?;
-            let output = column.finish()?;
-            let output = output.as_any().downcast_ref::<StructArray>().unwrap();
-            assert_eq!(
-                output
-                    .column(0)
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap()
-                    .value(0),
-                -3
-            );
-            assert!(output.column(1).is_null(0));
-            assert_eq!(
-                output
-                    .column(2)
-                    .as_any()
-                    .downcast_ref::<Float64Array>()
-                    .unwrap()
-                    .value(0),
-                1.5
-            );
-            assert!(output.is_null(1));
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn container_validity_is_lazy_and_resets_between_batches() -> Result<()> {
-        let mut column = Column::new(&DataType::Struct(Default::default()));
-        column.valid(true);
-        column.valid(true);
-        assert_eq!(column.len(), 2);
-        let first = column.finish()?;
-        assert_eq!(first.len(), 2);
-        assert!(first.nulls().is_none());
-        assert_eq!(column.len(), 0);
-        column.null()?;
-        column.valid(true);
-        let second = column.finish()?;
-        assert!(second.is_null(0));
-        assert!(!second.is_null(1));
-        column.valid(true);
-        assert!(column.finish()?.nulls().is_none());
-        Ok(())
-    }
-
-    #[test]
-    fn primitive_array_specialization_matches_recursive_decoder() -> Result<()> {
-        fn leb(mut value: u64, bytes: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                bytes.push(byte | if value != 0 { 128 } else { 0 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        let path =
-            std::env::temp_dir().join(format!("vail-primitive-arrays-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            for required in [false, true] {
-                for compressed_int in [false, true] {
-                    for explicit_varint in [false, true] {
-                        for modern_length in [false, true] {
-                            for width in [32, 64] {
-                                let child_encoding = Encoding {
-                                    kind: if explicit_varint {
-                                        "EVarint"
-                                    } else if width == 32 {
-                                        "EInt32"
-                                    } else {
-                                        "EInt64"
-                                    }
-                                    .into(),
-                                    required,
-                                    fields: vec![],
-                                    rank: 0,
-                                };
-                                let encoding = Encoding {
-                                    kind: if modern_length { "EArray2" } else { "EArray" }.into(),
-                                    required: false,
-                                    fields: vec![("element".into(), child_encoding)],
-                                    rank: 0,
-                                };
-                                let ty = Type::Array {
-                                    array: Box::new(Type::Primitive(if width == 32 {
-                                        P::Int32
-                                    } else {
-                                        P::Int64
-                                    })),
-                                };
-                                let node = Node::new(&encoding, &ty);
-                                let mut bytes = vec![];
-                                if modern_length || compressed_int {
-                                    leb(4, &mut bytes);
-                                } else {
-                                    bytes.extend(4i32.to_le_bytes());
-                                }
-                                if !required {
-                                    bytes.push(0b1111_0010);
-                                }
-                                for (i, value) in [-1i64, 2, 127, 128].into_iter().enumerate() {
-                                    if !required && i == 1 {
-                                        continue;
-                                    }
-                                    if explicit_varint || compressed_int {
-                                        leb(
-                                            if width == 32 {
-                                                value as u32 as u64
-                                            } else {
-                                                value as u64
-                                            },
-                                            &mut bytes,
-                                        );
-                                    } else if width == 32 {
-                                        bytes.extend((value as i32).to_le_bytes());
-                                    } else {
-                                        bytes.extend(value.to_le_bytes());
-                                    }
-                                }
-                                std::fs::write(&path, &bytes)?;
-                                let spec = if compressed_int {
-                                    serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
-                                } else {
-                                    serde_json::json!({"name":"StreamBufferSpec"})
-                                };
-                                let mut skipped = Input::open(&path, &spec)?;
-                                node.skip(&mut skipped)?;
-                                assert_eq!(skipped.bytes, bytes.len() as u64);
-                                skipped.finish()?;
-                                let mut specialized = Column::new(&ty.to_arrow()?);
-                                node.append(&mut Input::open(&path, &spec)?, &mut specialized)?;
-                                specialized.null()?; // A missing owning array retains its own null slot.
-                                let mut generic = Column::new(&ty.to_arrow()?);
-                                let mut input = Input::open(&path, &spec)?;
-                                let len = node.length(&mut input)?;
-                                let bitmap = if required {
-                                    Bitmap::Inline([0; 8])
-                                } else {
-                                    bitmap(&mut input, len)?
-                                };
-                                let Column::List(_, values, _, _) = &mut generic else {
-                                    unreachable!()
-                                };
-                                for i in 0..len {
-                                    if !required && absent(&bitmap, i) {
-                                        values.null()?;
-                                    } else {
-                                        node.children[0].append(&mut input, values)?;
-                                    }
-                                }
-                                generic.end_list()?;
-                                generic.null()?;
-                                assert_eq!(
-                                    specialized.finish()?.as_ref(),
-                                    generic.finish()?.as_ref(),
-                                    "required={required} leb={compressed_int} varint={explicit_varint} length2={modern_length} width={width}"
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn bitmap_present_count_ignores_padding_bits() {
-        assert_eq!(Bitmap::Inline([255; 8]).present_count(0), 0);
-        assert_eq!(Bitmap::Inline([0b1111_0101; 8]).present_count(3), 1);
-        assert_eq!(
-            Bitmap::Heap(vec![0b0101_0101, 0b1111_1110]).present_count(9),
-            5
-        );
-    }
-
-    #[test]
-    fn skipped_placeholders_reuse_largest_batch() -> Result<()> {
-        let mut column = Column::Skipped(DataType::Utf8, 4, None);
-        let first = column.finish()?;
-        let Column::Skipped(_, n, cached) = &mut column else {
-            unreachable!()
-        };
-        let original = cached.clone().unwrap();
-        *n = 2;
-        let second = column.finish()?;
-        let Column::Skipped(_, n, cached) = &mut column else {
-            unreachable!()
-        };
-        assert!(Arc::ptr_eq(&original, cached.as_ref().unwrap()));
-        assert_eq!(first.len(), 4);
-        assert_eq!(second.len(), 2);
-        *n = 5;
-        let third = column.finish()?;
-        let Column::Skipped(_, _, cached) = &column else {
-            unreachable!()
-        };
-        assert!(!Arc::ptr_eq(&original, cached.as_ref().unwrap()));
-        assert_eq!(third.len(), 5);
-        assert_eq!(cached.as_ref().unwrap().len(), 5);
-        Ok(())
-    }
-
-    #[test]
-    fn nested_array_demand_skips_invalid_unselected_string() -> Result<()> {
-        fn encoding(kind: &str, fields: Vec<(String, Encoding)>) -> Encoding {
-            Encoding {
-                kind: kind.into(),
-                required: true,
-                fields,
-                rank: 0,
-            }
-        }
-        let ty = Type::Array {
-            array: Box::new(Type::Struct {
-                r#struct: vec![
-                    ("DP".into(), Type::Primitive(P::Int32)),
-                    ("unused".into(), Type::Primitive(P::Str)),
-                ],
-            }),
-        };
-        let enc = encoding(
-            "EArray",
-            vec![(
-                "element".into(),
-                encoding(
-                    "EBaseStruct",
-                    vec![
-                        ("DP".into(), encoding("EInt32", vec![])),
-                        ("unused".into(), encoding("EBinary", vec![])),
-                    ],
-                ),
-            )],
-        );
-        let mut node = Node::new(&enc, &ty);
-        node.demand(&[vec!["DP".into()]]);
-        let arrow_ty = ty.to_arrow()?;
-        let mut column = Column::projected(&node, &arrow_ty);
-        let path = std::env::temp_dir().join(format!(
-            "vail-nested-demand-{}-{}.bin",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)?
-                .as_nanos()
-        ));
-        let mut bytes = 2i32.to_le_bytes().to_vec();
-        for dp in [7i32, 9] {
-            bytes.extend(dp.to_le_bytes());
-            bytes.extend(1i32.to_le_bytes());
-            bytes.push(255); // Selected UTF-8 decoding would fail.
-        }
-        std::fs::write(&path, bytes)?;
-        let result = (|| -> Result<()> {
-            let mut input = Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
-            node.append(&mut input, &mut column)?;
-            let array = column.finish()?;
-            let list = array.as_any().downcast_ref::<ListArray>().unwrap();
-            let values = list
-                .values()
-                .as_any()
-                .downcast_ref::<StructArray>()
-                .unwrap();
-            let dp = values
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap();
-            assert_eq!(dp.values().as_ref(), &[7, 9]);
-            assert_eq!(values.column(1).null_count(), 2);
-            assert_eq!(list.value_length(0), 2);
-
-            let whole = Node::new(&enc, &ty);
-            let mut input = Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
-            assert!(
-                whole
-                    .append(&mut input, &mut Column::new(&arrow_ty))
-                    .is_err()
-            );
-
-            let mut shape = Node::new(&enc, &ty);
-            shape.demand(&[vec!["\0shape".into()]]);
-            let mut input = Input::open(&path, &serde_json::json!({"name":"StreamBufferSpec"}))?;
-            let mut column = Column::projected(&shape, &arrow_ty);
-            shape.append(&mut input, &mut column)?;
-            let array = column.finish()?;
-            let list = array.as_any().downcast_ref::<ListArray>().unwrap();
-            let values = list
-                .values()
-                .as_any()
-                .downcast_ref::<StructArray>()
-                .unwrap();
-            assert_eq!(list.value_length(0), 2);
-            assert_eq!(values.null_count(), 0);
-            assert_eq!(values.column(0).null_count(), 2);
-            assert_eq!(values.column(1).null_count(), 2);
-            Ok(())
-        })();
-        std::fs::remove_file(path)?;
-        result
     }
 }
 
@@ -4563,313 +2869,3 @@ mod decode_bench;
 #[cfg(test)]
 #[path = "numeric_array_bench.rs"]
 mod numeric_array_bench;
-
-#[cfg(test)]
-mod buffered_i32_list_tests {
-    use super::*;
-
-    fn reference(input: &mut Input, output: &mut Int32Builder, count: usize) -> Result<()> {
-        for _ in 0..count {
-            let value = input.varint(64)?;
-            if value > u32::MAX as u64 {
-                return Err("Hail int32 varint overflow".into());
-            }
-            output.append_value(value as u32 as i32);
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn buffered_required_i32_lists_match_values_errors_and_consumption() -> Result<()> {
-        let cases: Vec<(Vec<u8>, usize)> = vec![
-            (vec![], 0),
-            (vec![0, 127, 128, 1, 255, 255, 255, 255, 15, 42], 4),
-            // Overlong but valid u32 and u64 representations.
-            (vec![128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 9], 2),
-            (vec![7, 128], 2),
-            (vec![7, 128, 128, 128, 128, 16, 3], 3),
-            (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 2),
-            (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 2),
-        ];
-        for prefix in [0, 65_526, 65_535, 65_536] {
-            for (bytes, count) in &cases {
-                let mut data = vec![0; prefix];
-                data.extend_from_slice(bytes);
-                let data: Arc<[u8]> = data.into();
-                let mut ordinary = Input::from_memory(data.clone(), true);
-                let mut buffered = Input::from_memory(data, true);
-                ordinary.skip(prefix)?;
-                buffered.skip(prefix)?;
-                let mut expected = Int32Builder::new();
-                let mut actual = Int32Builder::new();
-                let left = reference(&mut ordinary, &mut expected, *count);
-                let right = append_buffered_i32_values(&mut buffered, &mut actual, *count);
-                assert_eq!(left.err().map(|e| e.to_string()), right.err().map(|e| e.to_string()));
-                assert_eq!(ordinary.bytes, buffered.bytes);
-                assert_eq!(expected.finish(), actual.finish());
-                // Exact stopping position also preserves following fields.
-                assert_eq!(ordinary.byte().ok(), buffered.byte().ok());
-            }
-        }
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod borrowed_string_tests {
-    use super::*;
-
-    #[test]
-    fn borrowed_strings_match_values_errors_and_consumption() -> Result<()> {
-        let encoding = Encoding {
-            kind: "EBinary2".into(), required: true, fields: vec![], rank: 0,
-        };
-        let ty = Type::Primitive(P::Str);
-        let node = Node::new(&encoding, &ty);
-        let cases = [vec![], b"12345678".to_vec(), vec![b'x'; 70_000],
-                     vec![0xff], vec![0xc3, 0xa9]];
-        for prefix in [0, 65_530, 65_535] {
-            for bytes in &cases {
-                for truncated in [false, true] {
-                    let mut data = vec![0; prefix];
-                    let mut n = bytes.len();
-                    loop {
-                        let byte = (n & 127) as u8;
-                        n >>= 7;
-                        data.push(byte | if n != 0 { 128 } else { 0 });
-                        if n == 0 { break; }
-                    }
-                    data.extend_from_slice(bytes);
-                    if truncated {
-                        if !bytes.is_empty() { data.pop(); }
-                    } else { data.push(42); }
-                    let data: Arc<[u8]> = data.into();
-                    let mut old = Input::from_memory(data.clone(), false);
-                    let mut new = Input::from_memory(data, false);
-                    old.skip(prefix)?;
-                    new.skip(prefix)?;
-                    let mut expected = Column::new(&ty.to_arrow()?);
-                    let mut actual = Column::new(&ty.to_arrow()?);
-                    let reference = (|| -> Result<()> {
-                        let n = node.length(&mut old)?;
-                        let bytes = old.bytes(n)?;
-                        expected.string().append_value(std::str::from_utf8(&bytes)?);
-                        Ok(())
-                    })();
-                    let borrowed = node.append_string(&mut new, &mut actual);
-                    assert_eq!(reference.err().map(|e| e.to_string()), borrowed.err().map(|e| e.to_string()));
-                    assert_eq!(old.bytes, new.bytes);
-                    assert_eq!(expected.finish()?.to_data(), actual.finish()?.to_data());
-                    assert_eq!(old.byte().ok(), new.byte().ok());
-                }
-            }
-        }
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod mixed_list_probe_tests {
-    use super::*;
-    fn unsigned(mut value: u64, bytes: &mut Vec<u8>) {
-        loop {
-            let byte = (value & 127) as u8;
-            value >>= 7;
-            bytes.push(byte | if value == 0 { 0 } else { 128 });
-            if value == 0 { break; }
-        }
-    }
-    fn length(value: usize, mode: u8, bytes: &mut Vec<u8>) {
-        if mode == 0 { bytes.extend_from_slice(&(value as i32).to_le_bytes()); }
-        else { unsigned(value as u64, bytes); }
-    }
-    fn node(mode: u8, required: bool) -> Node {
-        let scalar = |kind: &str| Encoding { kind: kind.into(), required: false, fields: vec![], rank: 0 };
-        let array = || Encoding { kind: if mode == 2 { "EArray2" } else { "EArray" }.into(), required: false,
-            fields: vec![("element".into(), Encoding { required: true, ..scalar("EVarint") })], rank: 0 };
-        let integer_array = || Type::Array { array: Box::new(Type::Primitive(P::Int32)) };
-        let ty = Type::Array { array: Box::new(Type::Struct { r#struct: vec![
-            ("DP".into(), Type::Primitive(P::Int32)), ("GT".into(), Type::Primitive(P::Call)),
-            ("AD".into(), integer_array()), ("z".into(), Type::Primitive(P::Int64)),
-            ("PL".into(), integer_array()),
-        ] }) };
-        Node::new(&Encoding { kind: "EArray2".into(), required: true, rank: 0,
-            fields: vec![("element".into(), Encoding { kind: "EBaseStruct".into(), required,
-                fields: vec![("PL".into(), array()), ("z".into(), scalar("EVarint")),
-                    ("GT".into(), scalar("EVarint")), ("AD".into(), array()),
-                    ("DP".into(), scalar("EVarint"))], rank: 0 })] }, &ty)
-    }
-    fn entry(pl: usize, ad: usize, mask: u8, mode: u8, bytes: &mut Vec<u8>) {
-        bytes.push(mask);
-        if mask & 1 == 0 {
-            length(pl, mode, bytes);
-            for value in 0..pl { unsigned((value * 129) as u64, bytes); }
-        }
-        if mask & 2 == 0 { unsigned(u64::MAX, bytes); }
-        if mask & 4 == 0 { unsigned(12, bytes); }
-        if mask & 8 == 0 {
-            length(ad, mode, bytes);
-            for value in 0..ad { unsigned((value * 191) as u64, bytes); }
-        }
-        if mask & 16 == 0 { unsigned(257, bytes); }
-    }
-    fn compare(mode: u8, required: bool, bytes: Vec<u8>, prefix: usize, project: bool) -> Result<()> {
-        let mut fast = node(mode, required);
-        let mut slow = node(mode, required);
-        if project {
-            let paths = [vec!["PL".into()], vec!["GT".into()], vec!["DP".into()]];
-            fast.demand(&paths); slow.demand(&paths);
-        }
-        // Force only the scalar generic entry loop for the reference.
-        for cached in &slow.children[0].buffered_scalars { assert!(cached.set(None).is_ok()); }
-        let mut input = vec![0; prefix]; input.extend(bytes);
-        let input: Arc<[u8]> = input.into();
-        let mut a = Input::from_memory(input.clone(), mode == 1);
-        let mut b = Input::from_memory(input, mode == 1);
-        a.skip(prefix)?; b.skip(prefix)?;
-        let mut left = Column::projected(&fast, &fast.ty.to_arrow()?);
-        let mut right = Column::projected(&slow, &slow.ty.to_arrow()?);
-        let x = fast.append(&mut a, &mut left);
-        let y = slow.append(&mut b, &mut right);
-        fn state(column: &Column, out: &mut Vec<usize>) {
-            if matches!(column, Column::Skipped(..)) { return; }
-            out.push(column.len());
-            match column {
-                Column::Struct(_, children, _) => for child in children { state(child, out); },
-                Column::List(_, child, offsets, _) => {
-                    out.extend(offsets.iter().map(|offset| *offset as usize));
-                    state(child, out);
-                }
-                _ => {}
-            }
-        }
-        let mut left_state = Vec::new();
-        let mut right_state = Vec::new();
-        state(&left, &mut left_state); state(&right, &mut right_state);
-        assert_eq!(left_state, right_state);
-        assert_eq!(x.is_ok(), y.is_ok());
-        assert_eq!(a.bytes, b.bytes);
-        match (x, y) {
-            (Ok(()), Ok(())) => assert_eq!(left.finish()?.to_data(), right.finish()?.to_data()),
-            (Err(x), Err(y)) => assert_eq!(x.to_string(), y.to_string()),
-            _ => unreachable!(),
-        }
-        assert_eq!(a.byte().ok(), b.byte().ok());
-        Ok(())
-    }
-    #[test]
-    fn mixed_lists_match_generic_missing_projection_lengths_and_boundaries() -> Result<()> {
-        for mode in 0..3 {
-            for required in [false, true] {
-                for (pl, ad) in [(0, 0), (31, 1), (32, 0), (32, 1), (33, 0), (17, 16)] {
-                    let mut bytes = vec![3];
-                    if !required { bytes.push(2); }
-                    entry(pl, ad, 0, mode, &mut bytes);
-                    if required { entry(0, 0, 0, mode, &mut bytes); }
-                    // Missing PL and GT, defined empty AD; unlike missing entries.
-                    entry(0, 0, 5, mode, &mut bytes);
-                    bytes.push(42);
-                    for prefix in [0, 65_520, 65_535] {
-                        for projected in [false, true] {
-                            compare(mode, required, bytes.clone(), prefix, projected)?;
-                        }
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
-    #[test]
-    fn mixed_list_offset_bounds_and_unsupported_builders_remain_generic() -> Result<()> {
-        assert_eq!(mixed_list_end(0, (0, 32)), Some(32));
-        assert_eq!(mixed_list_end(i32::MAX as usize, (0, 0)), Some(i32::MAX));
-        assert_eq!(mixed_list_end(i32::MAX as usize, (0, 1)), None);
-        assert_eq!(mixed_list_end(usize::MAX, (0, 1)), None);
-        assert_eq!(mixed_list_end(0, (2, 1)), None);
-        assert_eq!(mixed_list_block_end(0, 10_000), Some(320_000));
-        assert_eq!(mixed_list_block_end(i32::MAX as usize, 0), Some(i32::MAX));
-        assert_eq!(mixed_list_block_end(i32::MAX as usize, 1), None);
-        assert_eq!(mixed_list_block_end(0, usize::MAX), None);
-        let node = node(2, true);
-        let mut outputs = Column::projected_encoding(&node.children[0], &node.children[0].ty.to_arrow()?, true);
-        let Column::Struct(_, children, _) = &mut outputs else { unreachable!() };
-        let ops = node.children[0].bind_struct(children, true);
-        assert!(!has_mixed_outputs(&ops));
-        assert!(BufferedScalars::new(&node.children[0], true).unwrap().has_lists);
-        let mut nullable_leaf = node.e.clone();
-        nullable_leaf.fields[0].1.fields[0].1.fields[0].1.required = false;
-        let unsupported = Node::new(&nullable_leaf, &node.ty);
-        assert!(BufferedScalars::new(&unsupported.children[0], true).is_none());
-        Ok(())
-    }
-
-    #[test]
-    fn mixed_lists_rollback_on_late_invalid_words_lengths_and_truncation() -> Result<()> {
-        for mode in 0..3 {
-            let mut valid = vec![1];
-            entry(3, 2, 0, mode, &mut valid);
-            for cut in 1..valid.len() {
-                compare(mode, true, valid[..cut].to_vec(), 65_520, false)?;
-            }
-            // All preceding selected lists must remain transactional when the
-            // final scalar overflows u32 or contains an invalid u64 encoding.
-            for invalid in [vec![128,128,128,128,16], vec![128; 10]] {
-                let mut bytes = valid[..valid.len()-2].to_vec();
-                bytes.extend(invalid);
-                compare(mode, true, bytes, 0, false)?;
-            }
-            let mut bad_length = vec![1, 0];
-            if mode == 0 { bad_length.extend_from_slice(&(-1i32).to_le_bytes()); }
-            else { unsigned(u32::MAX as u64, &mut bad_length); }
-            compare(mode, true, bad_length, 0, false)?;
-        }
-        Ok(())
-    }
-    #[test]
-    fn mixed_batched_commit_matches_all_chunk_edges_and_entry_validity() -> Result<()> {
-        for mode in 0..3 {
-            for count in [1usize, 15, 16, 17, 31, 32, 33] {
-                for required in [false, true] {
-                    let mut bytes = vec![count as u8];
-                    if !required {
-                        let mut bitmap = vec![0u8; count.div_ceil(8)];
-                        for row in 0..count { if row % 5 == 1 { bitmap[row / 8] |= 1 << (row % 8); } }
-                        bytes.extend_from_slice(&bitmap);
-                    }
-                    for row in 0..count {
-                        if !required && row % 5 == 1 { continue; }
-                        // A defined entry with all fields null is distinct
-                        // from the absent entries in the enclosing bitmap.
-                        let mask = match row % 4 { 0 => 0, 1 => 31, 2 => 5, _ => 8 };
-                        entry(row % 4, row % 3, mask, mode, &mut bytes);
-                    }
-                    bytes.push(42);
-                    for prefix in [0, 65_500, 65_535] {
-                        for projection in [false, true] {
-                            compare(mode, required, bytes.clone(), prefix, projection)?;
-                        }
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
-    #[test]
-    fn mixed_batched_commit_preserves_prefix_on_mid_chunk_failure() -> Result<()> {
-        for mode in 0..3 {
-            for bad_row in [0usize, 1, 7, 15, 16, 17, 31, 32] {
-                for invalid in [vec![128], vec![128; 10], vec![128,128,128,128,16]] {
-                    let mut bytes = vec![33];
-                    for _ in 0..bad_row { entry(3, 2, 0, mode, &mut bytes); }
-                    let mut broken = Vec::new();
-                    entry(3, 2, 0, mode, &mut broken);
-                    broken.truncate(broken.len() - 2); // replace final DP=257
-                    bytes.extend(broken);
-                    bytes.extend(invalid);
-                    for prefix in [0, 65_520] { compare(mode, true, bytes.clone(), prefix, false)?; }
-                }
-            }
-        }
-        Ok(())
-    }
-}

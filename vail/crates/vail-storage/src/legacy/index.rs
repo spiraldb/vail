@@ -64,11 +64,49 @@ impl IndexSpec {
         }))
     }
 }
+// Construction proves defined, nonnegative, sorted internal child ordinals.
+struct SortedOrdinals(Vec<u64>);
+impl SortedOrdinals {
+    fn new(array: &ArrayRef) -> Result<Self> {
+        if array
+            .logical_nulls()
+            .is_some_and(|nulls| nulls.null_count() != 0)
+        {
+            return Err("missing Hail index integer".into());
+        }
+        let values = if let Some(values) = array.as_any().downcast_ref::<Int64Array>() {
+            values
+                .values()
+                .iter()
+                .map(|&value| Ok(u64::try_from(value)?))
+                .collect::<Result<Vec<_>>>()?
+        } else if let Some(values) = array.as_any().downcast_ref::<Int32Array>() {
+            values
+                .values()
+                .iter()
+                .map(|&value| Ok(u64::try_from(value)?))
+                .collect::<Result<Vec<_>>>()?
+        } else {
+            return Err("invalid Hail index integer type".into());
+        };
+        if values.windows(2).any(|pair| pair[0] > pair[1]) {
+            return Err("unsorted Hail internal ordinals".into());
+        }
+        Ok(Self(values))
+    }
+    fn child(&self, index: u64) -> Result<usize> {
+        self.0
+            .partition_point(|&first| first <= index)
+            .checked_sub(1)
+            .ok_or_else(|| "Hail internal node does not cover row".into())
+    }
+}
 #[derive(Clone)]
 struct Node {
     array: Arc<StructArray>,
     leaf: bool,
     first: u64,
+    ordinals: Option<Arc<SortedOrdinals>>,
 }
 pub struct IndexReader {
     spec: Arc<IndexSpec>,
@@ -90,9 +128,16 @@ fn field<'a>(array: &'a StructArray, name: &str) -> Result<&'a ArrayRef> {
         .ok_or_else(|| format!("missing Hail index field {name}").into())
 }
 fn number(array: &ArrayRef, row: usize) -> Result<i64> {
-    if array.is_null(row) {
+    if array
+        .logical_nulls()
+        .is_some_and(|nulls| !nulls.is_valid(row))
+    {
         return Err("missing Hail index integer".into());
     }
+    number_defined(array, row)
+}
+// Caller has already checked the prepared logical mask for this position.
+fn number_defined(array: &ArrayRef, row: usize) -> Result<i64> {
     if let Some(a) = array.as_any().downcast_ref::<Int64Array>() {
         Ok(a.value(row))
     } else if let Some(a) = array.as_any().downcast_ref::<Int32Array>() {
@@ -181,14 +226,20 @@ impl IndexReader {
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or("invalid Hail index child array")?;
-        if list.len() != 1 || list.is_null(0) {
+        if list.len() != 1 || list.logical_nulls().is_some_and(|nulls| !nulls.is_valid(0)) {
             return Err("invalid Hail index child array".into());
         }
         let children = list.value(0);
         let array = Arc::new(structure(&children)?.clone());
         // Keep leaf first_idx alongside its child records for ordinal queries.
+        let ordinals = if leaf {
+            None
+        } else {
+            Some(Arc::new(SortedOrdinals::new(field(&array, "first_idx")?)?))
+        };
         let node = Node {
             array,
+            ordinals,
             leaf,
             first: if leaf {
                 unsigned(field(record, "first_idx")?, 0)?
@@ -222,16 +273,11 @@ impl IndexReader {
                 }
                 return self.offset(&node.array, row);
             }
-            let first = field(&node.array, "first_idx")?;
-            let mut selected = None;
-            for i in 0..node.array.len() {
-                if unsigned(first, i)? <= index {
-                    selected = Some(i)
-                } else {
-                    break;
-                }
-            }
-            let i = selected.ok_or("Hail internal node does not cover row")?;
+            let i = node
+                .ordinals
+                .as_ref()
+                .ok_or("missing Hail internal ordinals")?
+                .child(index)?;
             offset = unsigned(field(&node.array, "index_file_offset")?, i)?;
         }
         Err("invalid Hail index traversal".into())
@@ -254,11 +300,15 @@ impl IndexReader {
             let keys = field(&node.array, if leaf { "key" } else { "first_key" })?;
             let key_struct = structure(keys)?;
             let values = field(key_struct, key)?;
+            let key_nulls = keys.logical_nulls();
+            let value_nulls = values.logical_nulls();
             let before = |i: usize| -> Result<bool> {
-                if keys.is_null(i) || values.is_null(i) {
+                if key_nulls.as_ref().is_some_and(|nulls| !nulls.is_valid(i))
+                    || value_nulls.as_ref().is_some_and(|nulls| !nulls.is_valid(i))
+                {
                     return Ok(false);
                 }
-                let actual = number(values, i)?;
+                let actual = number_defined(values, i)?;
                 Ok(if upper {
                     actual <= value
                 } else {

@@ -820,9 +820,14 @@ mod tests {
             .as_any()
             .downcast_ref::<StructArray>()
             .unwrap();
-        assert!(entries.is_valid(0));
-        assert!(entries.column(0).is_null(0));
-        assert!(entries.is_null(1));
+        assert!(
+            entries
+                .logical_nulls()
+                .as_ref()
+                .is_none_or(|nulls| nulls.is_valid(0))
+        );
+        assert!(entries.column(0).logical_nulls().unwrap().is_null(0));
+        assert!(entries.logical_nulls().unwrap().is_null(1));
         assert_eq!(
             entries
                 .column(0)

@@ -142,7 +142,7 @@ impl PhysicalExpr for ProjectionBroadcastExpr {
                 batch.num_rows()
             )));
         }
-        if selection.null_count() == 0 && !selection.has_false() {
+        if selection.logical_null_count() == 0 && !selection.has_false() {
             return self.evaluate(batch);
         }
         // In particular, retain Scalar results for partial selections: the

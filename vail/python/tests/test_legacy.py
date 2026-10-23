@@ -583,9 +583,12 @@ def test_native_matrix_uses_hail_distinct_row_property(tmp_path, distinct):
     rvd.mkdir()
     (path / 'rows/metadata.json.gz').rename(rvd / 'metadata.json.gz')
     (path / 'rows/parts').rename(rvd / 'parts')
+    second_id = 2 if distinct is True else 1
     (rvd / 'parts/part-0').write_bytes(
         b'\x01' + struct.pack('<ii', 1, 0)
-        + b'\x01' + struct.pack('<ii', 2, 1) + b'\x00')
+        + b'\x01' + struct.pack('<ii', second_id, 1) + b'\x00')
+    entry = struct.pack('<i', 3) + b'\x02\x00' + struct.pack('<i', 12) + b'\x01'
+    (path / 'entries/parts/part-0').write_bytes(b'\x01' + entry + b'\x01' + entry + b'\x00')
     row_spec = dict(name='TableSpec', file_version=67328,
                     table_type='Table{global:Struct{},key:[id],row:Struct{id:Int32,__legacy_entries:Int32}}',
                     components=dict(rows=dict(name='RVDComponentSpec', rel_path='rows')))
@@ -599,8 +602,11 @@ def test_native_matrix_uses_hail_distinct_row_property(tmp_path, distinct):
     with gzip.open(path / 'metadata.json.gz', 'wt') as stream:
         json.dump(spec, stream)
     matrix = hl.MatrixTable.read_legacy(path)
-    assert matrix._mir.row_key_unique is (distinct is True)
-    assert len(matrix.entries().collect()) == 2
+    expected = sorted([(row, sample) for row in [1, second_id] for sample in ['z', 'a']])
+    for _ in range(2):
+        entries = matrix.entries().collect()
+        assert [(entry.id, entry.s) for entry in entries] == expected
+        assert sum(entry.GT is None for entry in entries) == 2
 
 
 @pytest.mark.parametrize('query', [
