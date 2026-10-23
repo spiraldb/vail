@@ -1,0 +1,92 @@
+{
+  "before": {
+    "sampled_core_seconds": 13.122496,
+    "costs": {
+      "numeric": {
+        "self_core_seconds": 0.595733,
+        "inclusive_core_seconds": 0.623113
+      },
+      "list_length": {
+        "self_core_seconds": 1.038907,
+        "inclusive_core_seconds": 4.789734
+      },
+      "lexical_binder": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 7.985338
+      },
+      "boolean_cast": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "boolean_build": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "boolean_access": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "local_cse_planning": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.007231
+      },
+      "structural_classes": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.007231
+      },
+      "packed_counts": {
+        "self_core_seconds": 0.197334,
+        "inclusive_core_seconds": 0.374049
+      },
+      "offset_length": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      }
+    }
+  },
+  "after": {
+    "sampled_core_seconds": 8.506701,
+    "costs": {
+      "numeric": {
+        "self_core_seconds": 0.597157,
+        "inclusive_core_seconds": 0.599971
+      },
+      "list_length": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "lexical_binder": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 3.443446
+      },
+      "boolean_cast": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "boolean_build": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "boolean_access": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "local_cse_planning": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "structural_classes": {
+        "self_core_seconds": 0.0,
+        "inclusive_core_seconds": 0.0
+      },
+      "packed_counts": {
+        "self_core_seconds": 0.207818,
+        "inclusive_core_seconds": 0.345425
+      },
+      "offset_length": {
+        "self_core_seconds": 0.036829,
+        "inclusive_core_seconds": 0.036829
+      }
+    }
+  }
+}

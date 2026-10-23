@@ -244,7 +244,7 @@ pub(crate) fn lower(
                 .build()?;
             let positions = datafusion_functions_nested::range::range_udf().call(vec![
                 lit(0i64),
-                datafusion_functions_nested::length::array_length_udf()
+                vail_execution::array_length::udf()
                     .call(vec![value.clone()])
                     .cast_to(&DataType::Int64, input.schema())?,
             ]);
