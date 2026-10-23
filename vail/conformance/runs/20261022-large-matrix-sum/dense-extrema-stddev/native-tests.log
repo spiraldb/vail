@@ -1,0 +1,40 @@
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/large-matrix-sum/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: `vail-execution` (lib test) generated 1 warning (1 duplicate)
+    Finished `release` profile [optimized] target(s) in 39.46s
+     Running unittests src/lib.rs (vail/target/release/deps/vail_execution-a4a8ccfed09de7e4)
+
+running 3 tests
+test array_aggregate::tests::public_coordinate_mean_merge_preserves_full_uint64_count_domain ... ok
+test expressions::tests::locus_coordinates_classification_boundaries_and_global_positions ... ok
+test logical_expr::tests::invalid_locus_coordinate_is_deferred_until_selected ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 55 filtered out; finished in 0.01s
+
+     Running tests/aggregate_factories.rs (vail/target/release/deps/aggregate_factories-b1599514a219add1)
+
+running 6 tests
+test coordinate_boolean_preserves_published_states_and_native_merge_wire_type ... ok
+test coordinate_factory_checks_empty_identity_against_executable_output ... ok
+test coordinate_sum_widens_float32_before_native_grouped_kernel ... ok
+test coordinate_sum_widens_boolean_input_to_int64 ... ok
+test coordinate_sum_uses_actual_int32_input_not_frontend_result_annotation ... ok
+test coordinate_sum_preserves_published_snapshot_across_batches ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.01s
+
+     Running tests/coordinate_reducer_states.rs (vail/target/release/deps/coordinate_reducer_states-a7b2b1885e5f9573)
+
+running 1 test
+test stddev_coordinate_accepts_native_uint64_state_and_published_snapshots ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
