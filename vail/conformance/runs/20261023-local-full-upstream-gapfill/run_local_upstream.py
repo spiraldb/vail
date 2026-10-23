@@ -79,6 +79,8 @@ def main():
      with path.with_suffix('.log').open('w') as log:run=subprocess.run(cmd,env=env,stdout=log,stderr=subprocess.STDOUT)
      if not path.exists():write(path,dict(cases=[dict(case,status='harness_failed',returncode=run.returncode,comparable=False)]))
      report=json.loads(path.read_text())
+    scratch=out/f'rep-{rep:02}'/'scratch'/engine/case['id'].replace('::','--').replace('/','_')
+    if scratch.exists():shutil.rmtree(scratch)
     result=report['cases'][0];result.update(source_commit=a.commit,comparable=True,baseline_hardware='sameM3Maxlaptop;seeprovenanceforbackgroundactivity');reports[engine]['cases'].append(result);write(repdir/f'{engine}.json',reports[engine])
     status=result['status'];print(f'DONE rep{rep} {engine} {case["id"]} {status}',flush=True)
     if engine=='vail':vail_pass=status=='passed'

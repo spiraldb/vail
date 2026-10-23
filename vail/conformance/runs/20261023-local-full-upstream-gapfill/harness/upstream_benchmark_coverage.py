@@ -363,8 +363,17 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue, start_ev
             hl = importlib.import_module("hail")
             cores = int(os.environ.get("HAIL_BENCHMARK_CORES", os.cpu_count() or 1))
             memory = os.environ.get("HAIL_BENCHMARK_MEMORY", "16g")
-            hl.init(quiet=True, master=f"local[{cores}]",
-                    spark_conf={"spark.driver.memory": memory, "spark.executor.memory": memory,
+            telemetry_root = Path(os.environ["VAIL_BENCHMARK_TELEMETRY_DIR"])
+            label = case["id"].replace("::", "--").replace("/", "_")
+            scratch = telemetry_root.parent / "scratch" / engine / label
+            scratch.mkdir(parents=True, exist_ok=True)
+            for name in ("hail", "local", "spark"):
+                (scratch / name).mkdir(exist_ok=True)
+            log = telemetry_root / engine / label / "hail.log"
+            log.parent.mkdir(parents=True, exist_ok=True)
+            hl.init(quiet=True, master=f"local[{cores}]", log=str(log),
+                    tmp_dir=str(scratch / "hail"), local_tmpdir=str(scratch / "local"),
+                    spark_conf={"spark.local.dir": str(scratch / "spark"),"spark.driver.memory": memory, "spark.executor.memory": memory,
                                 "spark.ui.enabled": "false",
                                 "spark.driver.extraJavaOptions": f"-XX:ActiveProcessorCount={cores}",
                                 "spark.executor.extraJavaOptions": f"-XX:ActiveProcessorCount={cores}"})

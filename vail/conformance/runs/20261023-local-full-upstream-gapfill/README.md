@@ -11,3 +11,11 @@ After the initial three-repetition timing phase finishes (never concurrently wit
 5. Renderlatest overlay by selectingexactlyone sample perengine/case/repetition; followupcasesreplaceinitialreports. ReusedVail samplesretainoriginalrawtiming/telemetryprovenance and are neverdoublecounted. Initialbadindexfailuresremainarchived.
 
 No fullgnomad/randomdoubles/manystrings generation/download is included. Those15caseusesremainexplicitmissingfixtures. No representative substitute. Stagehelperrefuseswhileinitialtimingrunneractive;source/artifactremainfixedthroughbothphases. This preparation was syntaxchecked only; runtimefixture/index receipts andfinalbenchmarkresults willfollow.
+
+## Runtime setup and phase start
+
+All9boundedpreparationscompleted successfully: separateHailBGENindex249115variantsverified; cachedrawHailprofile25/manyints; canonicalranges10/100/1000partitionsforbothengines. No query CPU ran during preparation. Storage used~1GiB;5.2GiBfree atgapstart.
+
+A one-case validation exercised actualHailsetup/reusedVailreceipt and per-case scratchcleanup. GapHailSpark/Hailtempfiles now live in an explicit owned `rep-*/scratch/engine/case` directory, removed by the supervisor only after worker/JVM reaping. This prevents repeated-worker scratchgrowth without deleting unproven sharedtmpfiles. Per-caseHail.log is retained with telemetry. This affects temporary locations/cleanup, not query logic or inputs.
+
+Actual54casegapfill started, same1c00d2d6/native3f8b5061,3freshHailrepetitions and needednewVailrepetitions. ExistingVailPASS samples reused only withmatchingexactsource/artifact; rawprovenance retained. Gap uses remaining time from the initial6hbudget,2GiBdiskreserve,48GiBRSS. Receipts, validation, and actual invocation/provenance committed; complete timing results follow. Initial full108inventoryphase3repetitions is immutable and remainsarchived separately.

@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>Local upstream validation</title><style>body{font:15px system-ui;max-width:1450px;margin:32px auto;padding:0 20px}table{border-collapse:collapse;width:100%;font-size:13px}td,th{padding:9px;border-bottom:1px solid #ddd;text-align:left}td:first-child{max-width:380px;overflow-wrap:anywhere}td:last-child{max-width:330px;overflow-wrap:anywhere}canvas{width:100%;height:220px}select{max-width:100%;padding:8px}.legend{color:#555}</style><h1>Local upstream validation</h1><p>Fresh independentworkers; exactinputs,serialengines,threeattempts. Missingfixturesandfailuresseparate. Validationselectionisnotafullsuite.</p><pre>{
+  &quot;selected&quot;: 1,
+  &quot;completed&quot;: {
+    &quot;vail&quot;: 1,
+    &quot;hail&quot;: 1
+  },
+  &quot;common_passes&quot;: 1,
+  &quot;vail_wins&quot;: 1,
+  &quot;hail_wins&quot;: 0,
+  &quot;common_totals_seconds&quot;: {
+    &quot;vail&quot;: 0.08844045898877084,
+    &quot;hail&quot;: 0.4952830000547692
+  },
+  &quot;status_counts&quot;: {
+    &quot;vail&quot;: {
+      &quot;passed&quot;: 1
+    },
+    &quot;hail&quot;: {
+      &quot;passed&quot;: 1
+    }
+  }
+}</pre><h2>10 Hz process-tree telemetry</h2><select id="case"><option value="benchmark_table::test_table_python_construction">benchmark_table::test_table_python_construction</option></select><p class="legend">Blue: Vail · Orange: Hail. Each trace starts at its own query measurement; failures and timeouts show only the captured portion. Disk counters are process-tree physical bytes, not logical array traffic.</p><canvas id="cpu" width="1400" height="220"></canvas><canvas id="ram" width="1400" height="220"></canvas><canvas id="read" width="1400" height="220"></canvas><canvas id="write" width="1400" height="220"></canvas><h2>Every selected case</h2><p>Hail/Vail ratio above 1 means Vail is faster. Failed cases are excluded from speedups.</p><table><thead><tr><th>Benchmark</th><th>Vail seconds</th><th>Hail seconds</th><th>Vail core-seconds</th><th>Hail core-seconds</th><th>Hail/Vail</th><th>Hail baseline</th><th>Failure details</th></tr></thead><tbody><tr><td>benchmark_table::test_table_python_construction</td><td>0.088</td><td>0.495</td><td>0.104</td><td>0.514</td><td>5.60×</td><td>sameM3Maxlaptop;seeprovenanceforbackgroundactivity</td><td></td></tr></tbody></table><script>
+const data={"benchmark_table::test_table_python_construction":{"vail":[[0.0,0.0,0.041839599609375,0.0,0.0]],"hail":[[0.0,0.0,0.617706298828125,0.0,0.0],[0.095637584,1.2110702559501376,0.6180572509765625,0.0,0.0],[0.186284875,0.8240952286152641,0.618194580078125,0.0,0.0],[0.2834175,1.0181560177815334,0.6182403564453125,0.0,0.0],[0.389109584,1.0122912011713854,0.6184234619140625,0.0,0.0]]}};
+function draw(id,index,label){const c=document.getElementById(id),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);let series=data[document.getElementById('case').value]||{},points=Object.values(series).flat(),xmax=Math.max(1,...points.map(p=>p[0])),ymax=Math.max(1,...points.map(p=>p[index]));ctx.fillStyle='#333';ctx.font='14px system-ui';ctx.fillText(label,55,20);ctx.strokeStyle='#ddd';ctx.strokeRect(55,30,1310,155);for(let i=0;i<=4;i++){ctx.fillText((ymax*i/4).toFixed(1),5,185-155*i/4);ctx.fillText((xmax*i/4).toFixed(1)+'s',55+1310*i/4,210);}for(let [name,ps] of Object.entries(series)){ctx.strokeStyle=name==='vail'?'#087ec4':'#de7418';ctx.lineWidth=1.6;ctx.beginPath();ps.forEach((p,i)=>{let x=55+p[0]/xmax*1310,y=185-Math.max(0,p[index])/ymax*155;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}}
+function update(){draw('cpu',1,'CPU cores (100% = one core)');draw('ram',2,'Process-tree RSS (GiB)');draw('read',3,'Physical disk reads (MiB)');draw('write',4,'Physical disk writes (MiB)')};document.getElementById('case').onchange=update;update();</script>
