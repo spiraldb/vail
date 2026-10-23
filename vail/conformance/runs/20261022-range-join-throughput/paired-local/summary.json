@@ -1,0 +1,112 @@
+{
+  "hail": {
+    "repetitions": [
+      {
+        "event": "done",
+        "engine": "hail",
+        "case": "test_table_range_join_1B_1B",
+        "rep": 1,
+        "status": "pass",
+        "result": 1000000000,
+        "wall": 8.183315166039392,
+        "self_core": 2.0408250000000003,
+        "self_maxrss": 280150016,
+        "tree_core": 50.577376640000004,
+        "tree_peak_rss": 865009664,
+        "telemetry": "/tmp/local-range-join-paired-20261022/hail-test_table_range_join_1B_1B-1-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "hail",
+        "case": "test_table_range_join_1B_1B",
+        "rep": 2,
+        "status": "pass",
+        "result": 1000000000,
+        "wall": 4.701270291930996,
+        "self_core": 1.1163410000000002,
+        "self_maxrss": 280150016,
+        "tree_core": 43.478474624,
+        "tree_peak_rss": 889274368,
+        "telemetry": "/tmp/local-range-join-paired-20261022/hail-test_table_range_join_1B_1B-2-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "hail",
+        "case": "test_table_range_join_1B_1B",
+        "rep": 3,
+        "status": "pass",
+        "result": 1000000000,
+        "wall": 5.708480458008125,
+        "self_core": 1.2617959999999995,
+        "self_maxrss": 280150016,
+        "tree_core": 47.609249792,
+        "tree_peak_rss": 994721792,
+        "telemetry": "/tmp/local-range-join-paired-20261022/hail-test_table_range_join_1B_1B-3-telemetry.jsonl"
+      }
+    ],
+    "wall_median": 5.708480458008125,
+    "core_median": 47.609249792,
+    "peak_rss_bytes": 994721792
+  },
+  "vail": {
+    "repetitions": [
+      {
+        "event": "done",
+        "engine": "vail",
+        "case": "test_table_range_join_1B_1B",
+        "rep": 1,
+        "status": "pass",
+        "result": 1000000000,
+        "wall": 6.342380792018957,
+        "self_core": 54.18646400000001,
+        "self_maxrss": 898400256,
+        "tree_core": 54.217499512,
+        "tree_peak_rss": 898367488,
+        "telemetry": "/tmp/local-range-join-paired-20261022/vail-test_table_range_join_1B_1B-1-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "vail",
+        "case": "test_table_range_join_1B_1B",
+        "rep": 2,
+        "status": "pass",
+        "result": 1000000000,
+        "wall": 6.449141499935649,
+        "self_core": 57.661342000000005,
+        "self_maxrss": 898711552,
+        "tree_core": 57.69478784000001,
+        "tree_peak_rss": 898711552,
+        "telemetry": "/tmp/local-range-join-paired-20261022/vail-test_table_range_join_1B_1B-2-telemetry.jsonl"
+      },
+      {
+        "event": "done",
+        "engine": "vail",
+        "case": "test_table_range_join_1B_1B",
+        "rep": 3,
+        "status": "pass",
+        "result": 1000000000,
+        "wall": 5.017823957954533,
+        "self_core": 56.58141799999999,
+        "self_maxrss": 902971392,
+        "tree_core": 56.62322534400002,
+        "tree_peak_rss": 902971392,
+        "telemetry": "/tmp/local-range-join-paired-20261022/vail-test_table_range_join_1B_1B-3-telemetry.jsonl"
+      }
+    ],
+    "wall_median": 6.342380792018957,
+    "core_median": 56.62322534400002,
+    "peak_rss_bytes": 902971392
+  },
+  "ratio_hail_over_vail": {
+    "wall_median": 0.9000532521149611,
+    "core_median": 0.8408078046201377
+  },
+  "provenance": {
+    "vail_source": "922e6c33 (production 9bf9b864), reviewed merged main de726be9",
+    "vail_native_sha256": "227d10a99fed459d422356df1d1ad6632e10764f716ae7dbc5ca5c6dcb64c7a3",
+    "hail": "stock PyPI0.2.139",
+    "cores": 32,
+    "hail_heap": "24g",
+    "note": "Unrelated legacy rustc roughlyonecore andGit observed; timings contended, engine runs serial. No cloud. Nativecandidate excludes laterunrelatedSUM/writerchanges; rangeproduction sameasmerged."
+  }
+}
