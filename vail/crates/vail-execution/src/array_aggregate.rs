@@ -513,6 +513,10 @@ impl DenseNumeric {
                 let output = builder.values_slice_mut();
                 let input = input.as_any().downcast_ref::<$input_array>().unwrap();
                 let op = $op;
+                // Coordinates checks equal list widths and flattens only whole
+                // defined lists (and validates partial-state widths), so the
+                // flat length is divisible by width. Numeric state has no nulls;
+                // input null/filter slots were replaced by the identity above.
                 for row in input.values().chunks_exact(width) {
                     for (sum, value) in output.iter_mut().zip(row.iter()) {
                         *sum = op(*sum, *value);
