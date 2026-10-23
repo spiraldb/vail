@@ -1,0 +1,45 @@
+--- a/vail/crates/vail-storage/src/legacy/decode.rs
++++ b/vail/crates/vail-storage/src/legacy/decode.rs
+@@ -725,9 +725,30 @@
+     list.validity.append_non_null();
+     Ok(())
+ }
++#[inline(always)]
++fn append_buffered_i32_values(
++    input: &mut Input,
++    output: &mut Int32Builder,
++    count: usize,
++) -> Result<()> {
++    if count <= 3 {
++        for _ in 0..count {
++            let value = input.varint(64)?;
++            if value > u32::MAX as u64 {
++                return Err("Hail int32 varint overflow".into());
++            }
++            output.append_value(value as u32 as i32);
++        }
++        Ok(())
++    } else {
++        append_buffered_large_i32_values(input, output, count)
++    }
++}
++
+ // Decode complete values from one borrowed block. On any exceptional word,
+ // leave that word untouched for the ordinary decoder's exact error behavior.
+-fn append_buffered_i32_values(
++#[inline(never)]
++fn append_buffered_large_i32_values(
+     input: &mut Input,
+     output: &mut Int32Builder,
+     count: usize,
+@@ -4375,6 +4396,10 @@
+             // Overlong but valid u32 and u64 representations.
+             (vec![128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 9], 2),
+             (vec![7, 128], 2),
++            (vec![1, 2, 3, 128], 4),
++            (vec![1, 2, 3, 128, 128, 128, 128, 16], 4),
++            (vec![1, 2, 3, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 4),
++            (vec![1, 2, 3, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 4),
+             (vec![7, 128, 128, 128, 128, 16, 3], 3),
+             (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 2),
+             (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 2),

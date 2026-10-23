@@ -1,0 +1,34 @@
+Scale decoder experiments: preliminary largest-fixture measurements, 2026-10-23
+
+Earlier paired Hail references and complete grid are in ../scaled-baseline. These candidate runs use 1 warmup and 3 accepted measurements; they are not a new Hail/Vail ABBA pair. Identical Hail-written 100M-row table / 1B-entry matrix. Compiler overlap rejected. All query outputs agree. CPU-seconds include all native threads.
+
+C: compact wide scalar probe; borrowed required-I32 list decoding; borrowed contiguous UTF-8 string append; skipped integers frame varints without numeric validation. Selected integers retain existing range checks. No batch prebinding.
+Vec: C plus required explicit EVarint Int32 list Vec sink and scalar parsing fallback for lengths<=3. This variant is experimental and has no demonstrated full-matrix CPU win.
+
+legacy-scale-candidate-largest.json
+table_force_count: wall=1.4180625419830903; CPU=16.222699; value=100000000
+table_scalar_sum: wall=0.844536832999438; CPU=10.075504999999993; value=14999999850000000
+matrix_decode_count: wall=8.788953082985245; CPU=96.20288599999998; value=100000
+matrix_decode_count_gt: wall=4.314242959022522; CPU=50.59432400000003; value=100000
+matrix_sum_dp: wall=5.051600042032078; CPU=58.87316999999996; value=99526426397
+
+legacy-scale-vec-largest.json
+table_force_count: wall=1.25319054198917; CPU=15.443699; value=100000000
+matrix_decode_count: wall=8.63855112507008; CPU=93.95897000000002; value=100000
+matrix_decode_count_gt: wall=4.370906500029378; CPU=51.63893099999996; value=100000
+matrix_sum_dp: wall=5.090531290974468; CPU=59.20537200000001; value=99526426397
+
+Earlier real-profile25 batch prebinding experiment (14 samples per variant, ABBA) had full CPU 4.2502 base / 4.2557 candidate: no gain. GT CPU 2.6584/2.5048, DP2.6627/2.3810. More general wide scalar C subsequently replaced this experiment. Batch prebinding complexity was not retained.
+
+Full matrix CPU remains unresolved. Do not interpret faster HT or projected MT reads as a full-matrix improvement.
+
+Short-list fallback only (no Vec): full1B wall=8.576300750020891, CPU=97.21085700000003. No established improvement. Profile in profile-analysis.txt.
+
+Final retained source is candidate C, not the required-Vec or short-list-only experiments. Both experiments showed no clear full-MT CPU benefit. Fresh profile describes the short-list-only experiment explicitly. C passed60Rust decoder tests,262Python tests,and2realHail corpus tests. Short-list-only additionally passed60Rust+262Python; Vec63Rust+2corpus. The source and Python extension were restored to tested C. Full-MT timing regressions in these unpaired candidate runs require paired confirmation; no full-read improvement is claimed.
+
+Interpretation:
+- The retained changes cut large-HT full-read CPU from35.95to16.22 and wall2.91to1.42. They combine direct string borrowing and integer-array parsing; this experiment does not attribute the combined gain to either change alone.
+- GT projected CPU82.36to50.59 and wall7.90to4.31; DP CPU83.04to58.87 and wall6.98to5.05. Wide scalar buffered parsing avoids old fallback on multibyte values; skipped integer values are framed without materializing/validating their numeric range.
+- Full-MT CPU93.10to96.20, wall8.10to8.79; no demonstrated full-MT benefit. Hail reference58.42CPU/7.08wall remains better.
+- Fresh large full profile still charges~25%active leaves to typed list decoding,~35%to BoundOp/BoundField append,~7%to longvarints,~14%Zstd/Huffman,~1%memmove. These include inlined work and do not prove dispatch alone or codegen exclusively causes the gap.
+- Next full-read targets: hoist per-field all-present decisions outside field loops, reduce typed list length/offset/append and dispatch overhead, and compare a precompiled operation plan against existing binding. RequiredVec bookkeeping alone and batch prebinding did not establish a full-read win.

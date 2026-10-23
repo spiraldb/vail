@@ -720,17 +720,65 @@ fn decode_arrow_list<const MODE: u8>(
     list: &mut BoundList<'_, Int32Builder>,
 ) -> Result<()> {
     let count = bound_list_length::<MODE>(input)?;
-    for _ in 0..count {
-        let value = input.varint(64)?;
-        if value > u32::MAX as u64 {
-            return Err("Hail int32 varint overflow".into());
-        }
-        list.values.append_value(value as u32 as i32);
-    }
+    append_buffered_i32_values(input, list.values, count)?;
     list.offsets.push(i32::try_from(list.values.len())?);
     list.validity.append_non_null();
     Ok(())
 }
+// Decode complete values from one borrowed block. On any exceptional word,
+// leave that word untouched for the ordinary decoder's exact error behavior.
+fn append_buffered_i32_values(
+    input: &mut Input,
+    output: &mut Int32Builder,
+    count: usize,
+) -> Result<()> {
+    if count == 0 {
+        return Ok(());
+    }
+    let completed = input.with_buffer(|bytes| {
+        let mut cursor = 0;
+        let mut completed = 0;
+        'values: while completed < count {
+            let start = cursor;
+            let mut value = 0u64;
+            for shift in (0..64).step_by(7) {
+                let Some(&byte) = bytes.get(cursor) else {
+                    cursor = start;
+                    break 'values;
+                };
+                // The tenth byte may carry only the top bit of a u64.
+                if shift == 63 && byte & 0x7f > 1 {
+                    cursor = start;
+                    break 'values;
+                }
+                cursor += 1;
+                value |= u64::from(byte & 0x7f) << shift;
+                if byte & 0x80 == 0 {
+                    if value > u32::MAX as u64 {
+                        cursor = start;
+                        break 'values;
+                    }
+                    output.append_value(value as u32 as i32);
+                    completed += 1;
+                    continue 'values;
+                }
+            }
+            // Ten continuation bytes are invalid, even if their payloads fit.
+            cursor = start;
+            break;
+        }
+        (completed, cursor)
+    })?;
+    for _ in completed..count {
+        let value = input.varint(64)?;
+        if value > u32::MAX as u64 {
+            return Err("Hail int32 varint overflow".into());
+        }
+        output.append_value(value as u32 as i32);
+    }
+    Ok(())
+}
+
 struct BoundField<'n, 'a> {
     node: &'n Node,
     missing: usize,
@@ -851,7 +899,9 @@ impl BoundOp<'_, '_> {
 // deferred until the complete entry is present in the existing Input buffer.
 #[derive(Clone, Copy)]
 enum ProbeKind {
+    SkipByte,
     Byte,
+    I64,
     Bool,
     Call,
     F32,
@@ -861,7 +911,8 @@ enum ProbeKind {
 struct ProbeField {
     kind: ProbeKind,
     missing: u64,
-    output: Option<usize>,
+    output: u8,
+    bits: u8,
 }
 struct BufferedScalars {
     fields: Vec<ProbeField>,
@@ -910,6 +961,34 @@ fn slice_skip_varints(bytes: &[u8], cursor: &mut usize, mut remaining: usize) ->
     *cursor = position;
     Some(())
 }
+#[inline]
+fn slice_varint(bytes: &[u8], cursor: &mut usize, bits: u8) -> Option<u64> {
+    let first = *bytes.get(*cursor)?;
+    if first < 128 {
+        *cursor += 1;
+        return Some(u64::from(first));
+    }
+    slice_varint_long(bytes, cursor, bits)
+}
+#[inline(never)]
+fn slice_varint_long(bytes: &[u8], cursor: &mut usize, bits: u8) -> Option<u64> {
+    let mut position = *cursor;
+    let mut value = 0u64;
+    for shift in (0..u32::from(bits)).step_by(7) {
+        let byte = *bytes.get(position)?;
+        position += 1;
+        let payload = u64::from(byte & 127);
+        if shift + 7 > u32::from(bits) && payload >= (1u64 << (u32::from(bits) - shift)) {
+            return None;
+        }
+        value |= payload << shift;
+        if byte < 128 {
+            *cursor = position;
+            return Some(value);
+        }
+    }
+    None
+}
 impl BufferedScalars {
     fn new(node: &Node, leb: bool) -> Option<Self> {
         if node.optional_count > 64 || node.fields.is_empty() {
@@ -924,8 +1003,12 @@ impl BufferedScalars {
                 {
                     if op.project && matches!(child.append_kind, AppendKind::Call) {
                         ProbeKind::Call
-                    } else {
+                    } else if op.project && matches!(child.append_kind, AppendKind::Int64) {
+                        ProbeKind::I64
+                    } else if op.project {
                         ProbeKind::Byte
+                    } else {
+                        ProbeKind::SkipByte
                     }
                 }
                 AppendKind::Bool => ProbeKind::Bool,
@@ -949,15 +1032,22 @@ impl BufferedScalars {
             let output = if op.project {
                 let index = selected;
                 selected += 1;
-                Some(index)
+                index as u8
             } else {
-                None
+                u8::MAX
             };
             if selected > 16 {
                 return None;
             }
             fields.push(ProbeField {
                 kind,
+                bits: if matches!(child.wire, Wire::Varint)
+                    || matches!(child.append_kind, AppendKind::Int64)
+                {
+                    64
+                } else {
+                    32
+                },
                 missing: if op.missing_bit == usize::MAX {
                     0
                 } else {
@@ -972,32 +1062,52 @@ impl BufferedScalars {
         })
     }
     fn probe(&self, bytes: &[u8], cursor: &mut usize, values: &mut [u64; 16]) -> Option<u16> {
-        let bitmap = bytes.get(*cursor..cursor.checked_add(self.bitmap_bytes)?)?;
-        let mut missing = 0u64;
-        for (i, byte) in bitmap.iter().enumerate() {
-            missing |= (*byte as u64) << (i * 8);
-        }
-        *cursor += self.bitmap_bytes;
+        let missing = if self.bitmap_bytes == 1 {
+            let byte = u64::from(*bytes.get(*cursor)?);
+            *cursor += 1;
+            byte
+        } else {
+            let bitmap = bytes.get(*cursor..cursor.checked_add(self.bitmap_bytes)?)?;
+            let mut word = [0u8; 8];
+            word[..self.bitmap_bytes].copy_from_slice(bitmap);
+            *cursor += self.bitmap_bytes;
+            u64::from_le_bytes(word)
+        };
         let mut nulls = 0;
         for field in &self.fields {
             if missing & field.missing != 0 {
-                if let Some(output) = field.output {
-                    nulls |= 1 << output;
+                if field.output != u8::MAX {
+                    nulls |= 1 << field.output;
                 }
                 continue;
             }
             let value = match field.kind {
-                ProbeKind::Byte | ProbeKind::Bool | ProbeKind::Call => {
+                ProbeKind::SkipByte => {
+                    slice_skip_varints(bytes, cursor, 1)?;
+                    continue;
+                }
+                ProbeKind::Byte => {
+                    let value = slice_varint(bytes, cursor, field.bits)?;
+                    if value > u32::MAX as u64 {
+                        return None;
+                    }
+                    value
+                }
+                ProbeKind::I64 => slice_varint(bytes, cursor, field.bits)?,
+                ProbeKind::Bool => {
                     let value = *bytes.get(*cursor)?;
-                    if value >= 128
-                        || matches!(field.kind, ProbeKind::Bool) && value > 1
-                        || matches!(field.kind, ProbeKind::Call)
-                            && validate_packed_call(value as u32).is_err()
-                    {
+                    if value > 1 {
                         return None;
                     }
                     *cursor += 1;
                     value as u64
+                }
+                ProbeKind::Call => {
+                    let value = slice_varint(bytes, cursor, field.bits)?;
+                    if value > u32::MAX as u64 || validate_packed_call(value as u32).is_err() {
+                        return None;
+                    }
+                    value
                 }
                 ProbeKind::F32 => {
                     let end = cursor.checked_add(4)?;
@@ -1018,11 +1128,11 @@ impl BufferedScalars {
                     }
                     *cursor += 1;
                     slice_skip_varints(bytes, cursor, usize::from(n))?;
-                    0
+                    continue;
                 }
             };
-            if let Some(output) = field.output {
-                values[output] = value;
+            if field.output != u8::MAX {
+                values[usize::from(field.output)] = value;
             }
         }
         Some(nulls)
@@ -1077,8 +1187,16 @@ fn buffered_scalar_output(output: &mut BoundOutput<'_>, value: u64, missing: boo
     }
 }
 fn buffered_scalar_row(outputs: &mut [&mut BoundOutput<'_>], values: &[u64; 16], nulls: u16) {
-    for (index, output) in outputs.iter_mut().enumerate() {
-        buffered_scalar_output(output, values[index], nulls & (1 << index) != 0);
+    if let [output] = outputs {
+        buffered_scalar_output(output, values[0], nulls & 1 != 0);
+    } else if nulls == 0 {
+        for (output, value) in outputs.iter_mut().zip(values) {
+            buffered_scalar_output(output, *value, false);
+        }
+    } else {
+        for (index, output) in outputs.iter_mut().enumerate() {
+            buffered_scalar_output(output, values[index], nulls & (1 << index) != 0);
+        }
     }
 }
 fn has_buffered_outputs(ops: &[BoundOp<'_, '_>]) -> bool {
@@ -1350,15 +1468,13 @@ impl Node {
             Wire::Bool => {
                 boolean(input)?;
             }
-            Wire::Int32 => {
-                input.int(32)?;
-            }
-            Wire::Int64 => {
-                input.int(64)?;
-            }
-            Wire::Varint => {
-                input.varint(64)?;
-            }
+            Wire::Int32 if input.leb => input.skip_varints(1, 32)?,
+            Wire::Int64 if input.leb => input.skip_varints(1, 64)?,
+            Wire::Int32 => { input.int(32)?; }
+            Wire::Int64 => { input.int(64)?; }
+            // Unselected integers need framing, not value decoding or range
+            // validation. Match the existing required-array skip path.
+            Wire::Varint => input.skip_varints(1, 64)?,
             Wire::Float32 => input.skip(4)?,
             Wire::Float64 => input.skip(8)?,
             Wire::Array => return self.skip_array(input),
@@ -1469,8 +1585,28 @@ impl Node {
     }
     fn append_string(&self, input: &mut Input, out: &mut Column) -> Result<()> {
         let n = self.length(input)?;
-        let bytes = input.bytes(n)?;
-        out.string().append_value(std::str::from_utf8(&bytes)?);
+        if n == 0 {
+            out.string().append_value("");
+            return Ok(());
+        }
+        // A contiguous string needs one copy into Arrow, without a temporary
+        // allocation. Crossing a block retains the existing read/error path.
+        let appended: Result<bool> = input.with_buffer(|available| {
+            let Some(bytes) = available.get(..n) else {
+                return (Ok(false), 0);
+            };
+            match std::str::from_utf8(bytes) {
+                Ok(value) => {
+                    out.string().append_value(value);
+                    (Ok(true), n)
+                }
+                Err(error) => (Err(error.into()), n),
+            }
+        })?;
+        if !appended? {
+            let bytes = input.bytes(n)?;
+            out.string().append_value(std::str::from_utf8(&bytes)?);
+        }
         Ok(())
     }
     fn append_call(&self, input: &mut Input, out: &mut Column) -> Result<()> {
@@ -1848,7 +1984,11 @@ impl Node {
         }
         match c.ty {
             Type::Primitive(P::Int32) => {
-                primitive_elements!(child.int32(), c.integer(input, 32)? as i32)
+                if c.e.required && matches!(c.wire, Wire::Varint) {
+                    append_buffered_i32_values(input, child.int32(), n)?;
+                } else {
+                    primitive_elements!(child.int32(), c.integer(input, 32)? as i32)
+                }
             }
             Type::Primitive(P::Int64) => {
                 primitive_elements!(child.int64(), c.integer(input, 64)?)
@@ -2127,6 +2267,228 @@ impl PartReader {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn wide_scalar_probe_matches_numeric_widths_and_skip_framing() {
+        fn leb(mut value: u64) -> Vec<u8> {
+            let mut bytes = vec![];
+            loop {
+                let b = (value & 127) as u8;
+                value >>= 7;
+                bytes.push(b | if value == 0 { 0 } else { 128 });
+                if value == 0 {
+                    return bytes;
+                }
+            }
+        }
+        for bits in [32, 64] {
+            for value in [0, 127, 128, 200, 16384, u32::MAX as u64, u64::MAX] {
+                let bytes = leb(value);
+                let mut cursor = 0;
+                let actual = slice_varint(&bytes, &mut cursor, bits);
+                if bits == 32 && value > u32::MAX as u64 {
+                    assert!(actual.is_none());
+                    assert_eq!(cursor, 0);
+                } else {
+                    assert_eq!(actual, Some(value));
+                    assert_eq!(cursor, bytes.len());
+                }
+                for end in 0..bytes.len() {
+                    let mut pos = 0;
+                    assert!(slice_varint(&bytes[..end], &mut pos, bits).is_none());
+                    assert_eq!(pos, 0);
+                }
+            }
+        }
+        for bytes in [
+            vec![255; 10],
+            vec![128; 10],
+            vec![255, 255, 255, 255, 31],
+            vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2],
+        ] {
+            let mut cursor = 0;
+            assert!(slice_varint(&bytes, &mut cursor, 64).is_none() || bytes.len() == 5);
+        }
+        let mut cursor = 0;
+        assert!(slice_varint(&[255, 255, 255, 255, 31], &mut cursor, 32).is_none());
+        assert_eq!(cursor, 0);
+        let call = BufferedScalars {
+            bitmap_bytes: 0,
+            fields: vec![ProbeField {
+                kind: ProbeKind::Call,
+                missing: 0,
+                output: 0,
+                bits: 64,
+            }],
+        };
+        for invalid in [6u64, (65536u64 << 3) | 2, u32::MAX as u64 + 1] {
+            assert!(call.probe(&leb(invalid), &mut 0, &mut [0; 16]).is_none());
+        }
+        let plan = BufferedScalars {
+            bitmap_bytes: 0,
+            fields: vec![
+                ProbeField {
+                    kind: ProbeKind::SkipByte,
+                    missing: 0,
+                    output: u8::MAX,
+                    bits: 64,
+                },
+                ProbeField {
+                    kind: ProbeKind::Byte,
+                    missing: 0,
+                    output: 0,
+                    bits: 64,
+                },
+                ProbeField {
+                    kind: ProbeKind::I64,
+                    missing: 0,
+                    output: 1,
+                    bits: 64,
+                },
+                ProbeField {
+                    kind: ProbeKind::Call,
+                    missing: 0,
+                    output: 2,
+                    bits: 64,
+                },
+            ],
+        };
+        let mut bytes = vec![128; 37];
+        bytes.push(1);
+        bytes.extend(leb(u32::MAX as u64));
+        bytes.extend(leb(u64::MAX));
+        bytes.extend(leb(4));
+        let mut values = [0; 16];
+        let mut cursor = 0;
+        assert_eq!(plan.probe(&bytes, &mut cursor, &mut values), Some(0));
+        assert_eq!(values[..3], [u32::MAX as u64, u64::MAX, 4]);
+        assert_eq!(cursor, bytes.len());
+        *bytes.last_mut().unwrap() = 6;
+        assert!(plan.probe(&bytes, &mut 0, &mut values).is_none());
+    }
+
+    #[test]
+    fn wide_scalar_root_matches_generic_for_both_integer_wire_encodings() -> Result<()> {
+        for wire in ["EInt32", "EVarint"] {
+            let element = Encoding {
+                kind: "EBaseStruct".into(),
+                required: true,
+                fields: vec![
+                    (
+                        "small".into(),
+                        Encoding {
+                            kind: wire.into(),
+                            required: true,
+                            fields: vec![],
+                            rank: 0,
+                        },
+                    ),
+                    (
+                        "wide".into(),
+                        Encoding {
+                            kind: if wire == "EVarint" {
+                                wire.into()
+                            } else {
+                                "EInt64".into()
+                            },
+                            required: true,
+                            fields: vec![],
+                            rank: 0,
+                        },
+                    ),
+                ],
+                rank: 0,
+            };
+            let encoding = Encoding {
+                kind: "EArray2".into(),
+                required: true,
+                fields: vec![("element".into(), element)],
+                rank: 0,
+            };
+            let ty = Type::Array {
+                array: Box::new(Type::Struct {
+                    r#struct: vec![
+                        ("small".into(), Type::Primitive(P::Int32)),
+                        ("wide".into(), Type::Primitive(P::Int64)),
+                    ],
+                }),
+            };
+            let mut bytes = vec![4];
+            for (small, wide) in [
+                (200u64, 300u64),
+                (u32::MAX as u64, u64::MAX),
+                (16384, 1u64 << 48),
+                (127, 0),
+            ] {
+                for mut value in [small, wide] {
+                    loop {
+                        let byte = (value & 127) as u8;
+                        value >>= 7;
+                        bytes.push(byte | if value == 0 { 0 } else { 128 });
+                        if value == 0 {
+                            break;
+                        }
+                    }
+                }
+            }
+            for demand in [
+                vec![vec!["small".into()]],
+                vec![vec!["wide".into()]],
+                vec![vec!["small".into()], vec!["wide".into()]],
+            ] {
+                let mut node = Node::new(&encoding, &ty);
+                node.demand(&demand);
+                compare_buffered_array(&node, bytes.clone().into(), 0)?;
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn compact_scalar_plan_handles_projection_missing_and_boundary() {
+        assert!(std::mem::size_of::<ProbeField>() <= 16);
+        let plan = BufferedScalars {
+            bitmap_bytes: 1,
+            fields: vec![
+                ProbeField {
+                    kind: ProbeKind::SkipByte,
+                    missing: 1,
+                    bits: 64,
+                    output: u8::MAX,
+                },
+                ProbeField {
+                    kind: ProbeKind::Byte,
+                    missing: 2,
+                    bits: 32,
+                    output: 0,
+                },
+                ProbeField {
+                    kind: ProbeKind::IntegerArray,
+                    missing: 4,
+                    bits: 64,
+                    output: u8::MAX,
+                },
+            ],
+        };
+        let mut values = [0; 16];
+        let mut cursor = 0;
+        assert_eq!(
+            plan.probe(&[0, 3, 9, 2, 128, 1, 7], &mut cursor, &mut values),
+            Some(0)
+        );
+        assert_eq!(cursor, 7);
+        assert_eq!(values[0], 9);
+        cursor = 0;
+        assert_eq!(plan.probe(&[7], &mut cursor, &mut values), Some(1));
+        assert_eq!(cursor, 1);
+        cursor = 0;
+        assert!(
+            plan.probe(&[0, 3, 9, 2, 128], &mut cursor, &mut values)
+                .is_none()
+        );
+    }
+
+    use super::*;
+
     use super::*;
 
     #[test]
@@ -3527,38 +3889,33 @@ mod tests {
     }
 
     #[test]
-    fn compact_skip_retains_boolean_overflow_and_truncation_checks() -> Result<()> {
-        let path =
-            std::env::temp_dir().join(format!("vail-compact-skip-{}.bin", std::process::id()));
+    fn skipped_integer_values_only_require_framing() -> Result<()> {
+        let path = std::env::temp_dir().join(format!("vail-compact-skip-{}.bin", std::process::id()));
         let result = (|| -> Result<()> {
-            for (kind, ty, bytes, leb) in [
-                ("EBoolean", P::Bool, vec![2], false),
-                ("EInt32", P::Int32, vec![255, 255, 255, 255, 16], true),
-                (
-                    "EVarint",
-                    P::Int64,
-                    vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2],
-                    false,
-                ),
-                ("EFloat64", P::Float64, vec![0; 7], false),
+            for (kind, ty, bytes, leb, skip_ok) in [
+                ("EBoolean", P::Bool, vec![2], false, false),
+                ("EInt32", P::Int32, vec![255, 255, 255, 255, 16], true, true),
+                ("EVarint", P::Int64, vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2], false, true),
+                ("EInt32", P::Int32, vec![128, 128, 128, 128, 128, 0], true, true),
+                ("EInt32", P::Int32, vec![255; 5], true, false),
+                ("EVarint", P::Int64, vec![255; 10], false, false),
+                ("EFloat64", P::Float64, vec![0; 7], false, false),
             ] {
-                std::fs::write(&path, bytes)?;
-                let encoding = Encoding {
-                    kind: kind.into(),
-                    required: true,
-                    fields: vec![],
-                    rank: 0,
-                };
-                let node = Node::new(&encoding, &Type::Primitive(ty));
+                std::fs::write(&path, &bytes)?;
+                let encoding = Encoding { kind: kind.into(), required: true, fields: vec![], rank: 0 };
+                let dtype = Type::Primitive(ty);
+                let node = Node::new(&encoding, &dtype);
                 let spec = if leb {
                     serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
                 } else {
                     serde_json::json!({"name":"StreamBufferSpec"})
                 };
-                assert!(
-                    node.skip(&mut Input::open(&path, &spec)?).is_err(),
-                    "{kind}"
-                );
+                let mut skipped = Input::open(&path, &spec)?;
+                assert_eq!(node.skip(&mut skipped).is_ok(), skip_ok, "{kind}");
+                if skip_ok { assert_eq!(skipped.bytes, bytes.len() as u64); }
+                // Selected values still need to fit the requested Arrow type.
+                let mut selected = Column::new(&dtype.to_arrow()?);
+                assert!(node.append(&mut Input::open(&path, &spec)?, &mut selected).is_err(), "{kind}");
             }
             Ok(())
         })();
@@ -3994,3 +4351,107 @@ mod decode_bench;
 #[cfg(test)]
 #[path = "numeric_array_bench.rs"]
 mod numeric_array_bench;
+
+#[cfg(test)]
+mod buffered_i32_list_tests {
+    use super::*;
+
+    fn reference(input: &mut Input, output: &mut Int32Builder, count: usize) -> Result<()> {
+        for _ in 0..count {
+            let value = input.varint(64)?;
+            if value > u32::MAX as u64 {
+                return Err("Hail int32 varint overflow".into());
+            }
+            output.append_value(value as u32 as i32);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn buffered_required_i32_lists_match_values_errors_and_consumption() -> Result<()> {
+        let cases: Vec<(Vec<u8>, usize)> = vec![
+            (vec![], 0),
+            (vec![0, 127, 128, 1, 255, 255, 255, 255, 15, 42], 4),
+            // Overlong but valid u32 and u64 representations.
+            (vec![128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 9], 2),
+            (vec![7, 128], 2),
+            (vec![7, 128, 128, 128, 128, 16, 3], 3),
+            (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 2),
+            (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 2),
+        ];
+        for prefix in [0, 65_526, 65_535, 65_536] {
+            for (bytes, count) in &cases {
+                let mut data = vec![0; prefix];
+                data.extend_from_slice(bytes);
+                let data: Arc<[u8]> = data.into();
+                let mut ordinary = Input::from_memory(data.clone(), true);
+                let mut buffered = Input::from_memory(data, true);
+                ordinary.skip(prefix)?;
+                buffered.skip(prefix)?;
+                let mut expected = Int32Builder::new();
+                let mut actual = Int32Builder::new();
+                let left = reference(&mut ordinary, &mut expected, *count);
+                let right = append_buffered_i32_values(&mut buffered, &mut actual, *count);
+                assert_eq!(left.err().map(|e| e.to_string()), right.err().map(|e| e.to_string()));
+                assert_eq!(ordinary.bytes, buffered.bytes);
+                assert_eq!(expected.finish(), actual.finish());
+                // Exact stopping position also preserves following fields.
+                assert_eq!(ordinary.byte().ok(), buffered.byte().ok());
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod borrowed_string_tests {
+    use super::*;
+
+    #[test]
+    fn borrowed_strings_match_values_errors_and_consumption() -> Result<()> {
+        let encoding = Encoding {
+            kind: "EBinary2".into(), required: true, fields: vec![], rank: 0,
+        };
+        let ty = Type::Primitive(P::Str);
+        let node = Node::new(&encoding, &ty);
+        let cases = [vec![], b"12345678".to_vec(), vec![b'x'; 70_000],
+                     vec![0xff], vec![0xc3, 0xa9]];
+        for prefix in [0, 65_530, 65_535] {
+            for bytes in &cases {
+                for truncated in [false, true] {
+                    let mut data = vec![0; prefix];
+                    let mut n = bytes.len();
+                    loop {
+                        let byte = (n & 127) as u8;
+                        n >>= 7;
+                        data.push(byte | if n != 0 { 128 } else { 0 });
+                        if n == 0 { break; }
+                    }
+                    data.extend_from_slice(bytes);
+                    if truncated {
+                        if !bytes.is_empty() { data.pop(); }
+                    } else { data.push(42); }
+                    let data: Arc<[u8]> = data.into();
+                    let mut old = Input::from_memory(data.clone(), false);
+                    let mut new = Input::from_memory(data, false);
+                    old.skip(prefix)?;
+                    new.skip(prefix)?;
+                    let mut expected = Column::new(&ty.to_arrow()?);
+                    let mut actual = Column::new(&ty.to_arrow()?);
+                    let reference = (|| -> Result<()> {
+                        let n = node.length(&mut old)?;
+                        let bytes = old.bytes(n)?;
+                        expected.string().append_value(std::str::from_utf8(&bytes)?);
+                        Ok(())
+                    })();
+                    let borrowed = node.append_string(&mut new, &mut actual);
+                    assert_eq!(reference.err().map(|e| e.to_string()), borrowed.err().map(|e| e.to_string()));
+                    assert_eq!(old.bytes, new.bytes);
+                    assert_eq!(expected.finish()?.to_data(), actual.finish()?.to_data());
+                    assert_eq!(old.byte().ok(), new.byte().ok());
+                }
+            }
+        }
+        Ok(())
+    }
+}

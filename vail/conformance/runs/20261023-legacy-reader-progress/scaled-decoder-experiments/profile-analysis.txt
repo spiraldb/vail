@@ -1,0 +1,14 @@
+Fresh billion-entry full-read profile, C + short-list scalar fallback (no Vec sink).
+4 seconds, 1ms sample interval. This profiling execution is separate from timed measurements.
+Shares below are collapsed leaf samples after excluding named wait syscalls. They approximate active sampled work, not hardware CPU counters. Inlined work is charged to its containing function; percentages do not isolate parsing from builder writes. Small <5 counts are omitted by sample output.
+
+Active collapsed leaf samples: 18954
+decode_arrow_list: 4803 (25.3%)
+BoundOp6append: 3937 (20.8%)
+BoundField6append: 2694 (14.2%)
+varint_long: 1417 (7.5%)
+Node11append_list: 1322 (7.0%)
+ZSTD_: 1384 (7.3%)
+HUF_: 1176 (6.2%)
+memmove: 246 (1.3%)
+BooleanBufferBuilder7advance: 380 (2.0%)

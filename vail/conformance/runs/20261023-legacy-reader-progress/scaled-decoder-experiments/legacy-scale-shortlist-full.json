@@ -1,0 +1,72 @@
+{
+  "engine": "vail",
+  "hail_threads": null,
+  "warmup": 1,
+  "runs": 3,
+  "reject_compilers": true,
+  "matrix": "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "matrix_decode_count": {
+      "seconds": [
+        8.351958875078708,
+        8.967510749935172,
+        8.576300750020891
+      ],
+      "median": 8.576300750020891,
+      "python_process_cpu_seconds": [
+        96.668629,
+        100.47944900000002,
+        97.210845
+      ],
+      "python_process_cpu_median": 97.210845,
+      "engine_cpu_seconds": [
+        96.66864299999999,
+        100.47946199999998,
+        97.21085700000003
+      ],
+      "engine_cpu_median": 97.21085700000003,
+      "python_process_minor_faults": [
+        1049557,
+        1106131,
+        1055990
+      ],
+      "python_process_minor_faults_median": 1055990,
+      "value": 100000,
+      "attempts": [
+        {
+          "seconds": 8.553456749999896,
+          "python_process_cpu_seconds": 95.460613,
+          "engine_cpu_seconds": 95.46062900000001,
+          "python_process_minor_faults": 1053372,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 8.351958875078708,
+          "python_process_cpu_seconds": 96.668629,
+          "engine_cpu_seconds": 96.66864299999999,
+          "python_process_minor_faults": 1049557,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 8.967510749935172,
+          "python_process_cpu_seconds": 100.47944900000002,
+          "engine_cpu_seconds": 100.47946199999998,
+          "python_process_minor_faults": 1106131,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 8.576300750020891,
+          "python_process_cpu_seconds": 97.210845,
+          "engine_cpu_seconds": 97.21085700000003,
+          "python_process_minor_faults": 1055990,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}

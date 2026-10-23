@@ -1,0 +1,308 @@
+--- a/vail/crates/vail-storage/src/legacy/decode.rs
++++ b/vail/crates/vail-storage/src/legacy/decode.rs
+@@ -108,6 +108,7 @@
+     Bool(BooleanBuilder),
+     Int32(Int32Builder),
+     EncodedI32(super::encoded_int::EncodedI32Builder),
++    RequiredI32(Vec<i32>),
+     Int64(Int64Builder),
+     Float32(Float32Builder),
+     Float64(Float64Builder),
+@@ -180,6 +181,11 @@
+                         && matches!(node.children[0].append_kind, AppendKind::Int32)
+                     {
+                         Self::EncodedI32(super::encoded_int::EncodedI32Builder::new())
++                    } else if node.children[0].e.required
++                        && matches!(node.children[0].wire, Wire::Varint)
++                        && matches!(node.children[0].append_kind, AppendKind::Int32)
++                    {
++                        Self::RequiredI32(Vec::with_capacity(8192))
+                     } else {
+                         Self::projected_encoding(
+                             &node.children[0],
+@@ -272,6 +278,7 @@
+             Self::Bool(b) => b.len(),
+             Self::Int32(b) => b.len(),
+             Self::EncodedI32(builder) => builder.len(),
++            Self::RequiredI32(values) => values.len(),
+             Self::Int64(b) => b.len(),
+             Self::Float32(b) => b.len(),
+             Self::Float64(b) => b.len(),
+@@ -301,7 +308,9 @@
+             }
+             Self::Bool(b) => b.append_null(),
+             Self::Int32(b) => b.append_null(),
+-            Self::EncodedI32(_) => return Err("null in required Hail Int32 elements".into()),
++            Self::EncodedI32(_) | Self::RequiredI32(_) => {
++                return Err("null in required Hail Int32 elements".into());
++            }
+             Self::Int64(b) => b.append_null(),
+             Self::Float32(b) => b.append_null(),
+             Self::Float64(b) => b.append_null(),
+@@ -395,6 +404,9 @@
+             }
+             Self::Bool(b) => Arc::new(b.finish()),
+             Self::Int32(b) => Arc::new(b.finish()),
++            Self::RequiredI32(values) => Arc::new(Int32Array::new(
++                ScalarBuffer::from(std::mem::take(values)), None,
++            )),
+             Self::Int64(b) => Arc::new(b.finish()),
+             Self::Float32(b) => Arc::new(b.finish()),
+             Self::Float64(b) => Arc::new(b.finish()),
+@@ -681,6 +693,7 @@
+     Call(&'a mut CallColumn),
+     EncodedList(BoundList<'a, super::encoded_int::EncodedI32Builder>),
+     ArrowList(BoundList<'a, Int32Builder>),
++    RequiredList(BoundList<'a, Vec<i32>>),
+     Other(&'a mut Column),
+ }
+ struct BoundList<'a, T> {
+@@ -725,11 +738,54 @@
+     list.validity.append_non_null();
+     Ok(())
+ }
++fn decode_required_list<const MODE: u8>(
++    input: &mut Input,
++    list: &mut BoundList<'_, Vec<i32>>,
++) -> Result<()> {
++    let count = bound_list_length::<MODE>(input)?;
++    append_buffered_i32_values(input, list.values, count)?;
++    list.offsets.push(i32::try_from(list.values.len())?);
++    list.validity.append_non_null();
++    Ok(())
++}
++trait I32Sink {
++    fn push_i32(&mut self, value: i32);
++}
++impl I32Sink for Int32Builder {
++    #[inline(always)]
++    fn push_i32(&mut self, value: i32) { self.append_value(value); }
++}
++impl I32Sink for Vec<i32> {
++    #[inline(always)]
++    fn push_i32(&mut self, value: i32) { self.push(value); }
++}
++
++#[inline(always)]
++fn append_buffered_i32_values<S: I32Sink>(
++    input: &mut Input,
++    output: &mut S,
++    count: usize,
++) -> Result<()> {
++    if count <= 3 {
++        for _ in 0..count {
++            let value = input.varint(64)?;
++            if value > u32::MAX as u64 {
++                return Err("Hail int32 varint overflow".into());
++            }
++            output.push_i32(value as u32 as i32);
++        }
++        Ok(())
++    } else {
++        append_buffered_large_i32_values(input, output, count)
++    }
++}
++
+ // Decode complete values from one borrowed block. On any exceptional word,
+ // leave that word untouched for the ordinary decoder's exact error behavior.
+-fn append_buffered_i32_values(
++#[inline(never)]
++fn append_buffered_large_i32_values<S: I32Sink>(
+     input: &mut Input,
+-    output: &mut Int32Builder,
++    output: &mut S,
+     count: usize,
+ ) -> Result<()> {
+     if count == 0 {
+@@ -758,7 +814,7 @@
+                         cursor = start;
+                         break 'values;
+                     }
+-                    output.append_value(value as u32 as i32);
++                    output.push_i32(value as u32 as i32);
+                     completed += 1;
+                     continue 'values;
+                 }
+@@ -774,7 +830,7 @@
+         if value > u32::MAX as u64 {
+             return Err("Hail int32 varint overflow".into());
+         }
+-        output.append_value(value as u32 as i32);
++        output.push_i32(value as u32 as i32);
+     }
+     Ok(())
+ }
+@@ -796,6 +852,7 @@
+             BoundOutput::Call(b) => b.null(),
+             BoundOutput::EncodedList(list) => list.null(),
+             BoundOutput::ArrowList(list) => list.null(),
++            BoundOutput::RequiredList(list) => list.null(),
+             BoundOutput::Other(b) => b.null()?,
+         }
+         Ok(())
+@@ -818,6 +875,7 @@
+             BoundOutput::Other(b) => self.node.append(input, b)?,
+             BoundOutput::EncodedList(list) => (list.decode)(input, list)?,
+             BoundOutput::ArrowList(list) => (list.decode)(input, list)?,
++            BoundOutput::RequiredList(list) => (list.decode)(input, list)?,
+         }
+         Ok(())
+     }
+@@ -1181,7 +1239,8 @@
+                 b.valid.append_non_null();
+             }
+         }
+-        BoundOutput::Other(_) | BoundOutput::EncodedList(_) | BoundOutput::ArrowList(_) => {
++        BoundOutput::Other(_) | BoundOutput::EncodedList(_) | BoundOutput::ArrowList(_)
++            | BoundOutput::RequiredList(_) => {
+             unreachable!("buffered scalar eligibility")
+         }
+     }
+@@ -1204,6 +1263,7 @@
+         !matches!(
+             f.output,
+             BoundOutput::Other(_) | BoundOutput::EncodedList(_) | BoundOutput::ArrowList(_)
++            | BoundOutput::RequiredList(_)
+         )
+     };
+     ops.iter().all(|op| match op {
+@@ -1789,6 +1849,16 @@
+                                     decode_encoded_list::<2>,
+                                 ][mode],
+                             }),
++                            Column::RequiredI32(values) => BoundOutput::RequiredList(BoundList {
++                                values,
++                                offsets,
++                                validity,
++                                decode: [
++                                    decode_required_list::<0>,
++                                    decode_required_list::<1>,
++                                    decode_required_list::<2>,
++                                ][mode],
++                            }),
+                             Column::Int32(values) => BoundOutput::ArrowList(BoundList {
+                                 values,
+                                 offsets,
+@@ -1959,6 +2029,10 @@
+         };
+         if let Column::EncodedI32(builder) = child.as_mut() {
+             builder.capture(input, n)?;
++            return out.end_list();
++        }
++        if let Column::RequiredI32(values) = child.as_mut() {
++            append_buffered_i32_values(input, values, n)?;
+             return out.end_list();
+         }
+         // Bind primitive builders once per array. AD/PL-style integer
+@@ -4375,6 +4449,10 @@
+             // Overlong but valid u32 and u64 representations.
+             (vec![128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 9], 2),
+             (vec![7, 128], 2),
++            (vec![1, 2, 3, 128], 4),
++            (vec![1, 2, 3, 128, 128, 128, 128, 16], 4),
++            (vec![1, 2, 3, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 4),
++            (vec![1, 2, 3, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 4),
+             (vec![7, 128, 128, 128, 128, 16, 3], 3),
+             (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 2),
+             (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 2),
+@@ -4455,3 +4533,100 @@
+         Ok(())
+     }
+ }
++
++#[cfg(test)]
++mod required_i32_sink_tests {
++    use super::*;
++
++    #[test]
++    fn required_vec_list_matches_arrow_builder_and_resets_without_null_children() -> Result<()> {
++        let child = FieldRef::new(arrow_schema::Field::new("item", DataType::Int32, false));
++        let field = arrow_schema::Field::new("array", DataType::List(child.clone()), true);
++        let mut required = Column::List(child.clone(), Box::new(Column::RequiredI32(Vec::new())),
++                                        vec![0], NullBufferBuilder::new(8));
++        let mut ordinary = Column::List(child, Box::new(Column::Int32(Int32Builder::new())),
++                                        vec![0], NullBufferBuilder::new(8));
++        for _ in 0..2 {
++            for payload in [Some(vec![0, 127, 128, 1]), None, Some(vec![]), Some(vec![255, 255, 255, 255, 15])] {
++                for column in [&mut required, &mut ordinary] {
++                    if let Some(bytes) = &payload {
++                        let count = if bytes.len() == 4 { 3 } else if bytes.is_empty() { 0 } else { 1 };
++                        let mut input = Input::from_memory(Arc::from(bytes.clone()), true);
++                        let Column::List(_, values, _, _) = column else { unreachable!() };
++                        match values.as_mut() {
++                            Column::RequiredI32(values) => append_buffered_i32_values(&mut input, values, count)?,
++                            Column::Int32(values) => append_buffered_i32_values(&mut input, values, count)?,
++                            _ => unreachable!(),
++                        }
++                        column.end_list()?;
++                    } else { column.null()?; }
++                }
++            }
++            assert_eq!(required.len(), ordinary.len());
++            let left = required.finish()?;
++            let right = ordinary.finish()?;
++            assert_eq!(left.to_data(), right.to_data());
++            let list = left.as_any().downcast_ref::<ListArray>().unwrap();
++            assert_eq!(list.value_offsets(), &[0, 3, 3, 3, 4]);
++            assert_eq!(list.null_count(), 1);
++            assert_eq!(list.values().null_count(), 0);
++        }
++        // Requiredness is enforced by the sink rather than silently inserting
++        // a null primitive slot when an invalid caller requests one.
++        let Column::List(_, values, _, _) = &mut required else { unreachable!() };
++        assert!(values.null().is_err());
++        let session = vortex::session::VortexSession::default();
++        assert_eq!(required.finish_vortex(&field, &session)?.len(), 0);
++        Ok(())
++    }
++
++    #[test]
++    fn projected_required_varint_lists_choose_vec_only_for_required_leaves() -> Result<()> {
++        let ty = Type::Array { array: Box::new(Type::Primitive(P::Int32)) };
++        for (kind, required) in [("EVarint", true), ("EVarint", false), ("EInt32", true)] {
++            let encoding = Encoding {
++                kind: "EArray2".into(), required: false, rank: 0,
++                fields: vec![("element".into(), Encoding {
++                    kind: kind.into(), required, fields: vec![], rank: 0,
++                })],
++            };
++            let node = Node::new(&encoding, &ty);
++            let mut projected = Column::projected(&node, &ty.to_arrow()?);
++            let Column::List(_, child, _, _) = &projected else { unreachable!() };
++            assert_eq!(matches!(child.as_ref(), Column::RequiredI32(_)), kind == "EVarint" && required);
++            if kind == "EVarint" {
++                let bytes: Arc<[u8]> = if required { Arc::from([2, 128, 1, 7]) }
++                                      else { Arc::from([2, 2, 128, 1]) };
++                let mut ordinary = Column::new(&ty.to_arrow()?);
++                node.append(&mut Input::from_memory(bytes.clone(), false), &mut projected)?;
++                node.append(&mut Input::from_memory(bytes, false), &mut ordinary)?;
++                assert_eq!(projected.finish()?.to_data(), ordinary.finish()?.to_data());
++            }
++        }
++        Ok(())
++    }
++
++    #[test]
++    fn required_vec_sink_matches_builder_errors_and_consumption() -> Result<()> {
++        for bytes in [vec![1, 2, 3, 128], vec![1, 2, 3, 128, 128, 128, 128, 16],
++                      [vec![1, 2, 3], vec![128; 11]].concat()] {
++            for prefix in [0, 65_535] {
++                let mut data = vec![0; prefix];
++                data.extend_from_slice(&bytes);
++                let data: Arc<[u8]> = data.into();
++                let mut left = Input::from_memory(data.clone(), true);
++                let mut right = Input::from_memory(data, true);
++                left.skip(prefix)?;
++                right.skip(prefix)?;
++                let mut required = Vec::new();
++                let mut ordinary = Int32Builder::new();
++                let a = append_buffered_i32_values(&mut left, &mut required, 4);
++                let b = append_buffered_i32_values(&mut right, &mut ordinary, 4);
++                assert_eq!(a.err().map(|e| e.to_string()), b.err().map(|e| e.to_string()));
++                assert_eq!(left.bytes, right.bytes);
++                assert_eq!(required.as_slice(), ordinary.values_slice());
++            }
++        }
++        Ok(())
++    }
++}
