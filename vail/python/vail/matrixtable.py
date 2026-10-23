@@ -1268,12 +1268,26 @@ class MatrixTable:
             return self._replace_column_metadata(_project(base, [(_CID, base[_CID]), (_COL, value)]))
 
     @staticmethod
+    def _with_ordered_row_keys(rows, keys):
+        """Expose a reader/sort's established row order to axis projections.
+
+        This does not sort or prove uniqueness. The caller must establish that
+        the complete nested row key is already in encounter order.
+        """
+        if not keys or any(name in (_ROW, _CELLS) for name in keys):
+            return rows.key_by()
+        indexed = _project(rows, [(_ROW, rows[_ROW]), (_CELLS, rows[_CELLS])]
+                           + [(name, rows[_ROW][name]) for name in keys])
+        return indexed._with_keys(*keys)
+
+    @staticmethod
     def _sort_rows(rows, keys):
         if not keys:
             return rows.key_by()
         from . import asc
 
-        return rows.order_by(*(asc(rows[_ROW][name]) for name in keys)).key_by()
+        ordered = rows.order_by(*(asc(rows[_ROW][name]) for name in keys)).key_by()
+        return MatrixTable._with_ordered_row_keys(ordered, keys)
 
     def _annotate(self, axis, named):
         schema = self._axis_type(axis)
