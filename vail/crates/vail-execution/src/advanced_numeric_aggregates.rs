@@ -767,6 +767,7 @@ fn quantiles(
     let ret = result_type.clone();
     let input = t.clone();
     let scalar = o["scalar"].as_bool().unwrap_or(false);
+    let identity = QuantileIdentity { input: t.clone(), k, qs: qs.iter().map(|q| q.map(f64::to_bits)).collect(), scalar, missing_quantiles };
     let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
         Ok(Box::new(KllAccumulator::new(
             input.clone(),
@@ -777,14 +778,24 @@ fn quantiles(
         )))
     });
     let udaf_name = configured_udaf_name(name, t, o);
-    Ok(Arc::new(create_udaf(
-        &udaf_name,
-        vec![t.clone()],
-        Arc::new(ret),
-        Volatility::Immutable,
-        factory,
-        Arc::new(vec![state_type]),
-    )))
+    Ok(crate::kernel_identity::aggregate_named(
+        &udaf_name, identity, vec![t.clone()], ret, vec![state_type], factory,
+    ))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct QuantileIdentity {
+    input: DataType,
+    k: u16,
+    qs: Vec<Option<u64>>,
+    scalar: bool,
+    missing_quantiles: bool,
+}
+fn kll_int64(value: i64) -> DfResult<f64> {
+    if !(-9_007_199_254_740_992..=9_007_199_254_740_992).contains(&value) {
+        return Err(DataFusionError::Execution("approximate quantiles for int64 inputs outside ±2^53 cannot be represented exactly by the f64 sketch".into()));
+    }
+    Ok(value as f64)
 }
 
 #[derive(Debug)]
@@ -811,6 +822,12 @@ impl KllAccumulator {
             missing_quantiles,
             sketch: KllDoubleSketch::new_with_k(k).expect("validated k"),
             empty: true,
+        }
+    }
+    fn add_value(&mut self, value: f64) {
+        if !value.is_nan() {
+            self.sketch.update(value);
+            self.empty = false;
         }
     }
     fn merge_serialized(&mut self, bytes: &[u8]) -> DfResult<()> {
@@ -898,17 +915,10 @@ impl Accumulator for KllAccumulator {
             if a.is_null(i) {
                 continue;
             }
-            if let Some(ints) = a.as_any().downcast_ref::<Int64Array>() {
-                let value = ints.value(i);
-                if !(-9_007_199_254_740_992..=9_007_199_254_740_992).contains(&value) {
-                    return Err(DataFusionError::Execution("approximate quantiles for int64 inputs outside ±2^53 cannot be represented exactly by the f64 sketch".into()));
-                }
-            }
-            let x = read_f64(a.as_ref(), i)?;
-            if !x.is_nan() {
-                self.sketch.update(x);
-                self.empty = false;
-            }
+            let x = if let Some(ints) = a.as_any().downcast_ref::<Int64Array>() {
+                kll_int64(ints.value(i))?
+            } else { read_f64(a.as_ref(), i)? };
+            self.add_value(x);
         }
         Ok(())
     }
@@ -941,6 +951,156 @@ impl Accumulator for KllAccumulator {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct CoordinateQuantiles {
+    config: QuantileIdentity,
+    queries: Vec<Option<f64>>,
+    output: DataType,
+    kernels: Vec<KllAccumulator>,
+}
+pub(crate) fn coordinate_quantiles(udf: &AggregateUDF) -> Option<CoordinateQuantiles> {
+    let config = crate::kernel_identity::aggregate_key::<QuantileIdentity>(udf)?.clone();
+    let queries = config.qs.iter().map(|q| q.map(f64::from_bits)).collect();
+    let output = if config.scalar {
+        config.input.clone()
+    } else {
+        DataType::List(Arc::new(Field::new_list_field(config.input.clone(), true)))
+    };
+    Some(CoordinateQuantiles {
+        config,
+        queries,
+        output,
+        kernels: Vec::new(),
+    })
+}
+impl CoordinateQuantiles {
+    fn ensure_width(&mut self, width: usize) -> DfResult<()> {
+        if !self.kernels.is_empty() && self.kernels.len() != width {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile width mismatch".into(),
+            ));
+        }
+        if self.kernels.len() != width {
+            self.kernels = (0..width)
+                .map(|_| {
+                    KllAccumulator::new(
+                        self.config.input.clone(),
+                        self.config.k,
+                        self.queries.clone(),
+                        self.config.scalar,
+                        self.config.missing_quantiles,
+                    )
+                })
+                .collect();
+        }
+        Ok(())
+    }
+    pub(crate) fn update(
+        &mut self,
+        values: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        if width == 0
+            || values.len() % width != 0
+            || filter.is_some_and(|f| f.len() != values.len())
+            || values.data_type() != &self.config.input
+        {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile input type/shape mismatch".into(),
+            ));
+        }
+        self.ensure_width(width)?;
+        macro_rules! update {
+            ($array:ty, $convert:expr) => {{
+                let input = values.as_any().downcast_ref::<$array>().unwrap();
+                let convert = $convert;
+                for (row, chunk) in input.values().chunks_exact(width).enumerate() {
+                    for (column, (kernel, &value)) in self.kernels.iter_mut().zip(chunk).enumerate()
+                    {
+                        let index = row * width + column;
+                        if input.is_valid(index)
+                            && filter.is_none_or(|f| f.is_valid(index) && f.value(index))
+                        {
+                            kernel.add_value(convert(value)?);
+                        }
+                    }
+                }
+            }};
+        }
+        match &self.config.input {
+            DataType::Int32 => update!(arrow_array::Int32Array, |v: i32| -> DfResult<f64> {
+                Ok(v as f64)
+            }),
+            DataType::Int64 => update!(Int64Array, kll_int64),
+            DataType::Float32 => update!(arrow_array::Float32Array, |v: f32| -> DfResult<f64> {
+                Ok(v as f64)
+            }),
+            DataType::Float64 => update!(Float64Array, |v: f64| -> DfResult<f64> { Ok(v) }),
+            _ => {
+                return Err(DataFusionError::Execution(
+                    "coordinate quantile requires numeric input".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn states(&mut self) -> DfResult<Vec<ArrayRef>> {
+        let serialized = self
+            .kernels
+            .iter()
+            .map(|k| {
+                k.sketch
+                    .serialize()
+                    .map_err(|e| DataFusionError::Execution(e.to_string()))
+            })
+            .collect::<DfResult<Vec<_>>>()?;
+        Ok(vec![Arc::new(arrow_array::BinaryArray::from_iter_values(
+            serialized.iter().map(|bytes| bytes.as_slice()),
+        ))])
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        let [state] = states else {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile requires one native binary state".into(),
+            ));
+        };
+        let state = state
+            .as_any()
+            .downcast_ref::<arrow_array::BinaryArray>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("coordinate quantile state must be binary".into())
+            })?;
+        if state.len() != width {
+            return Err(DataFusionError::Execution(
+                "coordinate quantile state width mismatch".into(),
+            ));
+        }
+        self.ensure_width(width)?;
+        for (column, kernel) in self.kernels.iter_mut().enumerate() {
+            if state.is_valid(column) {
+                kernel.merge_serialized(state.value(column))?;
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn array(&self) -> DfResult<ArrayRef> {
+        if self.kernels.is_empty() {
+            return Ok(new_empty_array(&self.output));
+        }
+        ScalarValue::iter_to_array(
+            self.kernels
+                .iter()
+                .map(|k| k.evaluate_value())
+                .collect::<DfResult<Vec<_>>>()?,
+        )
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.kernels.iter().map(Accumulator::size).sum::<usize>()
+            + self.queries.capacity() * std::mem::size_of::<Option<f64>>()
     }
 }
 

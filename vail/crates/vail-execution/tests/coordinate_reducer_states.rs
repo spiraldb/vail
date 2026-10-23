@@ -651,3 +651,105 @@ fn correlation_coordinate_uses_native_wire_full_uint64_domain_and_snapshots() {
         count
     );
 }
+
+#[test]
+fn quantile_coordinate_reuses_native_binary_state_and_published_snapshots() {
+    let native = configured_udaf(
+        "approx_quantiles",
+        Some(&DataType::Int32),
+        &serde_json::json!({"k":128,"quantiles":[0.,0.5,1.],"scalar":false}),
+    )
+    .unwrap();
+    let native_expr =
+        AggregateExprBuilder::new(native.clone(), vec![Arc::new(Column::new("x", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "x",
+                DataType::Int32,
+                true,
+            )])))
+            .alias("native")
+            .build()
+            .unwrap();
+    let empty = native_expr
+        .create_accumulator()
+        .unwrap()
+        .evaluate()
+        .unwrap();
+    let udf = coordinate_udaf(native, DataType::Int32, empty).unwrap();
+    let item = Arc::new(Field::new_list_field(DataType::Int32, true));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(item.clone()),
+            true,
+        )])))
+        .alias("coordinate")
+        .build()
+        .unwrap();
+    let mut state = aggregate.create_accumulator().unwrap();
+    state.state().unwrap();
+    state
+        .update_batch(&[Arc::new(ListArray::new(
+            item,
+            OffsetBuffer::from_lengths([2, 2]),
+            Arc::new(arrow_array::Int32Array::from(vec![
+                Some(1),
+                None,
+                Some(3),
+                Some(4),
+            ])),
+            None,
+        ))])
+        .unwrap();
+    let snapshot = state.evaluate().unwrap();
+    assert_eq!(state.evaluate().unwrap(), snapshot);
+    let published = state.state().unwrap();
+    let ScalarValue::List(wire) = &published[0] else {
+        panic!("list")
+    };
+    assert_eq!(wire.values().data_type(), &DataType::Binary);
+    let mut native_state = native_expr.create_accumulator().unwrap();
+    native_state
+        .merge_batch(&[wire.values().slice(0, 1)])
+        .unwrap();
+    let ScalarValue::List(native_output) = native_state.evaluate().unwrap() else {
+        panic!("list")
+    };
+    let ScalarValue::List(outer) = &snapshot else {
+        panic!("list")
+    };
+    let columns = outer.values().as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(native_output.values().to_data(), columns.value(0).to_data());
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|s| s.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    let next = list(Arc::new(arrow_array::Int32Array::from(vec![5, 6])));
+    state.update_batch(&[next.clone()]).unwrap();
+    restored.update_batch(&[next]).unwrap();
+    assert_eq!(restored.evaluate().unwrap(), state.evaluate().unwrap());
+    let ScalarValue::List(outer) = state.evaluate().unwrap() else {
+        panic!("list")
+    };
+    let columns = outer.values().as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(
+        columns.value(0).to_data(),
+        arrow_array::Int32Array::from(vec![1, 3, 5]).to_data()
+    );
+    assert_eq!(
+        columns.value(1).to_data(),
+        arrow_array::Int32Array::from(vec![4, 6, 6]).to_data()
+    );
+    // Published bytes remain the original native state after further input.
+    let mut original = native_expr.create_accumulator().unwrap();
+    original.merge_batch(&[wire.values().slice(0, 1)]).unwrap();
+    assert_eq!(
+        original.evaluate().unwrap(),
+        native_state.evaluate().unwrap()
+    );
+}
