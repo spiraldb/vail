@@ -290,38 +290,73 @@ impl CoordinateCollect {
                 .map(|source| source.values().to_data())
                 .collect::<Vec<_>>();
             let mut output = MutableArrayData::new(data.iter().collect(), false, total);
-            for column in 0..width {
+            if self.limit.is_some() {
+                // Index selected spans once, in incoming source order. Sparse
+                // batches do not cause a coordinate-by-source cross product.
+                let mut spans = vec![Vec::new(); width];
                 for (source_index, source) in self.sources.iter().enumerate() {
                     match source {
-                        Source::Rows { values, filter } => {
-                            for index in (column..values.len()).step_by(width) {
-                                if filter.as_ref().is_none_or(|filter| {
-                                    filter.is_valid(index) && filter.value(index)
-                                }) {
-                                    output.try_extend(source_index, index, index + 1)?;
-                                }
-                            }
-                        }
                         Source::SparseState { state, columns } => {
-                            if let Ok(index) = columns.binary_search(&column) {
-                                let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
-                                let offsets = lists.value_offsets();
-                                output.try_extend(
+                            let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
+                            let offsets = lists.value_offsets();
+                            for (index, &column) in columns.iter().enumerate() {
+                                spans[column].push((
                                     source_index,
                                     offsets[index] as usize,
                                     offsets[index + 1] as usize,
-                                )?;
+                                ));
                             }
                         }
                         Source::State(state) => {
                             let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
-                            if lists.is_valid(column) {
-                                let offsets = lists.value_offsets();
-                                output.try_extend(
-                                    source_index,
-                                    offsets[column] as usize,
-                                    offsets[column + 1] as usize,
-                                )?;
+                            let offsets = lists.value_offsets();
+                            for (column, spans) in spans.iter_mut().enumerate() {
+                                if lists.is_valid(column) && offsets[column] != offsets[column + 1]
+                                {
+                                    spans.push((
+                                        source_index,
+                                        offsets[column] as usize,
+                                        offsets[column + 1] as usize,
+                                    ));
+                                }
+                            }
+                        }
+                        Source::Rows { .. } => {
+                            unreachable!("bounded inputs are copied into compact states")
+                        }
+                    }
+                }
+                for spans in spans {
+                    for (source, start, end) in spans {
+                        output.try_extend(source, start, end)?;
+                    }
+                }
+            } else {
+                for column in 0..width {
+                    for (source_index, source) in self.sources.iter().enumerate() {
+                        match source {
+                            Source::Rows { values, filter } => {
+                                for index in (column..values.len()).step_by(width) {
+                                    if filter.as_ref().is_none_or(|filter| {
+                                        filter.is_valid(index) && filter.value(index)
+                                    }) {
+                                        output.try_extend(source_index, index, index + 1)?;
+                                    }
+                                }
+                            }
+                            Source::SparseState { .. } => {
+                                unreachable!("sparse states are bounded TAKE only")
+                            }
+                            Source::State(state) => {
+                                let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
+                                if lists.is_valid(column) {
+                                    let offsets = lists.value_offsets();
+                                    output.try_extend(
+                                        source_index,
+                                        offsets[column] as usize,
+                                        offsets[column + 1] as usize,
+                                    )?;
+                                }
                             }
                         }
                     }
