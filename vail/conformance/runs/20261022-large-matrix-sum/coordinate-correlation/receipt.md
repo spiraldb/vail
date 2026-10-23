@@ -1,0 +1,11 @@
+# Direct coordinate correlation native partial states
+
+Material56362b5d with native-finalizer synchronization fix2ddee112; public native protocol testd968d421. Normal Rust1.98.0 release `maturin develop --release --locked`, worktree-local target/kache,49.77s. Installed native SHA256 eb0d06f25e8404774465664d1505d88252c8089b12a608ef557c479c43250abe. No copied native artifact.2GiB hard disk guard observed minimum10,074,075,136free bytes.
+
+152 Python PASS and16 native PASS (3library+6factory+7state protocol). Public correlation tests compare bare/composite/filter/missing/constant/nonfinite results to existing native scalar corr across partitions1/3 and Int32/Float64 input. Native protocol regression exercises UInt64count2^63 and+1, six-state wire consumption by actual native grouped correlation, repeat output, restore/update, and immutable published snapshots. Prior primitive/collect/take/histogram selectors included in expanded validation.
+
+Implicit-coordinate traversal emits the exact existing DataFusion55 six-state additive protocol: UInt64count and Float64sumx,sumy,sumxy,sumxx,sumyy. Pair casting/parent validity handled by existing corr_pair once per batch; pure typed traversal has no per-entry preparation, group-ID buffer or gather. Only O(width) cached identity indices are used to merge native state at output. Final Pearson coefficient, invalid/nonfinite and language null policy remain in the existing native CorrGroups wrapper; native grouped finalizer is prepared once and Mutexget_mut used only at output (no hot-loop mutex).
+
+Postprofile:1kHz samply on exact native,4public100000-row×100-position actions,32partitions; actual input40million pairs, result finite/range assertions. Embedded symbols/actual inclusive counts included. Direct CoordinateCorrelation::update is sampled; no input coordinate grouping/UNNEST samples. Counts include cold process startup/waiting. Profile ran during native test compilation, deliberately proportional-only; no paired speedup or fair timing claim. Full local paired suite remains parent coordinated.
+
+Still queued: ordered TAKE/TopK, real-value hash set/counter, quantile/sketch and remaining genomic/regression adapters. Matrix global collect cardinality fallback and borrowed view TAKE fallback remain explicit.

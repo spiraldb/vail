@@ -1,0 +1,39 @@
+samples 987
+16.92 167 __psynch_cvwait
+8.0 79 _PyEval_EvalFrameDefault
+4.26 42 __open
+3.24 32 <vail_execution::advanced_numeric_aggregates::CoordinateCorrelation>::update
+2.94 29 mach_o::GenericTrie::find(CString, bool) const
+2.53 25 gc_collect_main.llvm.6325940347975832991
+2.43 24 stat
+2.23 22 visit_decref
+1.93 19 type_new
+1.93 19 deduce_unreachable
+1.72 17 _PyObject_Malloc
+1.72 17 __mmap
+1.42 14 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+1.22 12 func_traverse
+1.22 12 r_object.llvm.9845490566179339274
+1.22 12 _PyCode_Quicken
+1.11 11 _platform_memmove
+1.11 11 visit_reachable
+1.01 10 lsl::Allocator::AllocationMetadata::pool(bool) const
+0.91 9 0x352b4
+0.91 9 PyDict_SetDefault
+0.91 9 _Py_hashtable_get_entry_generic
+inclusive
+76.09 751 start
+75.99 750 pymain_main
+75.99 750 Py_BytesMain
+74.97 740 Py_RunMain
+67.48 666 _PyEval_EvalFrameDefault
+67.38 665 PyEval_EvalCode
+66.87 660 run_mod.llvm.8217961648363706888
+66.87 660 pyrun_file
+66.87 660 _PyRun_AnyFileObject
+66.87 660 pymain_run_file_obj
+66.87 660 _PyRun_SimpleFileObject
+66.87 660 pymain_run_file
+62.72 619 _PyObject_VectorcallTstate.llvm.12038793513780791252
+62.61 618 PyImport_ImportModuleLevelObject
+62.61 618 object_vacall.llvm.12038793513780791252
