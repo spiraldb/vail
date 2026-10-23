@@ -826,6 +826,7 @@ enum Kernels {
     Collect(crate::coordinate_collect::CoordinateCollect),
     Histogram(crate::advanced_numeric_aggregates::CoordinateHistogram),
     Correlation(crate::advanced_numeric_aggregates::CoordinateCorrelation),
+    Quantiles(crate::advanced_numeric_aggregates::CoordinateQuantiles),
     Groups(std::sync::Mutex<GroupKernel>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -841,6 +842,7 @@ impl std::fmt::Debug for Kernels {
             Self::Collect(collect) => collect.fmt(f),
             Self::Histogram(histogram) => histogram.fmt(f),
             Self::Correlation(correlation) => correlation.fmt(f),
+            Self::Quantiles(quantiles) => quantiles.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -898,6 +900,8 @@ impl Coordinates {
             Kernels::Histogram(histogram)
         } else if let Some(correlation) = crate::advanced_numeric_aggregates::coordinate_correlation(native) {
             Kernels::Correlation(correlation)
+        } else if let Some(quantiles) = crate::advanced_numeric_aggregates::coordinate_quantiles(native) {
+            Kernels::Quantiles(quantiles)
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(GroupKernel {
                 kernel: aggregate.create_groups_accumulator()?,
@@ -944,6 +948,7 @@ impl Coordinates {
             Kernels::Collect(collect) => Ok(vec![collect.array(width)?]),
             Kernels::Histogram(histogram) => histogram.states(),
             Kernels::Correlation(correlation) => Ok(correlation.states()),
+            Kernels::Quantiles(quantiles) => quantiles.states(),
             Kernels::Product(product) => Ok(vec![
                 Arc::clone(&product.count.values),
                 Arc::clone(&product.values.values),
@@ -981,6 +986,9 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::Quantiles(quantiles) = &mut self.kernels {
+            return quantiles.update(&flat, filter, width);
+        }
         if let Kernels::Correlation(correlation) = &mut self.kernels {
             return correlation.update(&flat, filter, width);
         }
@@ -1072,6 +1080,7 @@ impl Coordinates {
             Kernels::Collect(collect) => collect.array(self.width.unwrap_or(0))?,
             Kernels::Histogram(histogram) => histogram.array()?,
             Kernels::Correlation(correlation) => correlation.array()?,
+            Kernels::Quantiles(quantiles) => quantiles.array()?,
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -1142,7 +1151,7 @@ impl Accumulator for Coordinates {
         };
         if matches!(
             self.kernels,
-            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_) | Kernels::Collect(_) | Kernels::Histogram(_) | Kernels::Correlation(_)
+            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_) | Kernels::Collect(_) | Kernels::Histogram(_) | Kernels::Correlation(_) | Kernels::Quantiles(_)
         ) {
             return self.update_flat(flat, None, width);
         }
@@ -1195,6 +1204,7 @@ impl Accumulator for Coordinates {
                 Kernels::Collect(collect) => collect.size(),
                 Kernels::Histogram(histogram) => histogram.size(),
                 Kernels::Correlation(correlation) => correlation.size(),
+                Kernels::Quantiles(quantiles) => quantiles.size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -1245,6 +1255,7 @@ impl Accumulator for Coordinates {
                 Kernels::Collect(collect) => collect.merge(&values, width)?,
                 Kernels::Histogram(histogram) => histogram.merge(&values, width)?,
                 Kernels::Correlation(correlation) => correlation.merge(&values, width)?,
+                Kernels::Quantiles(quantiles) => quantiles.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
