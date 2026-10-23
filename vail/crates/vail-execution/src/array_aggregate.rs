@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    StructArray, UInt8Array, UInt32Array, new_empty_array,
+    StructArray, UInt8Array, UInt32Array, UInt64Array, new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
@@ -467,6 +467,7 @@ impl DenseSum {
                 DataType::Int32 => ScalarValue::Int32(Some(0)),
                 DataType::Int64 => ScalarValue::Int64(Some(0)),
                 DataType::UInt8 => ScalarValue::UInt8(Some(0)),
+                DataType::UInt64 => ScalarValue::UInt64(Some(0)),
                 DataType::Float32 => ScalarValue::Float32(Some(0.0)),
                 DataType::Float64 => ScalarValue::Float64(Some(0.0)),
                 _ => unreachable!(),
@@ -497,8 +498,21 @@ impl DenseSum {
             }};
         }
         match input.data_type() {
+            DataType::Int32 if self.values.data_type() == &DataType::Float64 => {
+                add!(Float64Array, Int32Array, 0.0f64, |a: f64, b: i32| a
+                    + f64::from(b))
+            }
+            DataType::Int64 if self.values.data_type() == &DataType::Float64 => {
+                add!(Float64Array, Int64Array, 0.0f64, |a: f64, b: i64| a + b
+                    as f64)
+            }
             DataType::Int32 => add!(Int64Array, Int32Array, 0i64, |a: i64, b: i32| a
                 .wrapping_add(i64::from(b))),
+            DataType::UInt8 if self.values.data_type() == &DataType::UInt64 => {
+                add!(UInt64Array, UInt8Array, 0u64, |a: u64, b: u8| a
+                    .wrapping_add(u64::from(b)))
+            }
+            DataType::UInt64 => add!(UInt64Array, UInt64Array, 0u64, u64::wrapping_add),
             DataType::UInt8 => add!(Int64Array, UInt8Array, 0i64, |a: i64, b: u8| a
                 .wrapping_add(i64::from(b))),
             DataType::Int64 => add!(Int64Array, Int64Array, 0i64, i64::wrapping_add),
@@ -511,9 +525,111 @@ impl DenseSum {
     }
 }
 
+/// Two vector states preserve native AVG/fraction wire types at emission.
+#[derive(Debug)]
+struct DenseRatio {
+    count: DenseSum,
+    sum: DenseSum,
+    fraction: bool,
+}
+impl DenseRatio {
+    fn new(fraction: bool) -> Self {
+        Self {
+            count: DenseSum::new(if fraction {
+                &DataType::Int64
+            } else {
+                &DataType::UInt64
+            }),
+            sum: DenseSum::new(if fraction {
+                &DataType::Int64
+            } else {
+                &DataType::Float64
+            }),
+            fraction,
+        }
+    }
+    fn update(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        let mut present = if self.fraction {
+            BooleanArray::from(vec![true; flat.len()])
+        } else {
+            arrow_arith::boolean::is_not_null(flat.as_ref())?
+        };
+        if let Some(filter) = filter {
+            present = arrow_arith::boolean::and(&present, filter)?;
+        }
+        let present: ArrayRef = Arc::new(present);
+        self.count.update(&present, None, width)?;
+        self.sum.update(flat, filter, width)
+    }
+    fn states(&self) -> Result<Vec<ArrayRef>> {
+        Ok(vec![
+            Arc::clone(&self.count.values),
+            Arc::clone(&self.sum.values),
+        ])
+    }
+    fn merge(&mut self, values: &[ArrayRef], width: usize) -> Result<()> {
+        self.count.update(&values[0], None, width)?;
+        self.sum.update(&values[1], None, width)
+    }
+    fn evaluate(&self) -> Result<ArrayRef> {
+        if self.fraction {
+            let count = self
+                .count
+                .values
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap();
+            let sum = self
+                .sum
+                .values
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap();
+            Ok(Arc::new(Float64Array::from_iter((0..count.len()).map(
+                |i| (count.value(i) != 0).then(|| sum.value(i) as f64 / count.value(i) as f64),
+            ))))
+        } else {
+            let count = self
+                .count
+                .values
+                .as_any()
+                .downcast_ref::<UInt64Array>()
+                .unwrap();
+            let sum = self
+                .sum
+                .values
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap();
+            Ok(Arc::new(arrow_arith::arity::binary::<
+                _,
+                _,
+                _,
+                arrow_array::types::Float64Type,
+            >(
+                sum,
+                count,
+                |sum: f64, count: u64| {
+                    if count == 0 {
+                        f64::NAN
+                    } else {
+                        sum / count as f64
+                    }
+                },
+            )?))
+        }
+    }
+}
+
 enum Kernels {
     Sum(DenseSum),
     Count(DenseSum),
+    Ratio(DenseRatio),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -521,6 +637,7 @@ impl std::fmt::Debug for Kernels {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Sum(sum) | Self::Count(sum) => sum.fmt(f),
+            Self::Ratio(ratio) => ratio.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -550,6 +667,10 @@ impl Coordinates {
             Kernels::Sum(DenseSum::new(&dtype))
         } else if crate::aggregates::coordinate_count(aggregate.fun()) {
             Kernels::Count(DenseSum::new(&DataType::Int64))
+        } else if crate::native_mean::coordinate_mean(aggregate.fun()) {
+            Kernels::Ratio(DenseRatio::new(false))
+        } else if crate::fraction::coordinate_fraction(aggregate.fun()) {
+            Kernels::Ratio(DenseRatio::new(true))
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
@@ -588,6 +709,7 @@ impl Coordinates {
         let width = self.width.unwrap_or(0);
         match &mut self.kernels {
             Kernels::Sum(sum) | Kernels::Count(sum) => Ok(vec![Arc::clone(&sum.values)]),
+            Kernels::Ratio(ratio) => ratio.states(),
             Kernels::Groups(kernel) => {
                 let kernel = kernel
                     .get_mut()
@@ -629,6 +751,9 @@ impl Coordinates {
     ) -> Result<()> {
         if let Kernels::Sum(sum) = &mut self.kernels {
             return sum.update(&flat, filter, width);
+        }
+        if let Kernels::Ratio(ratio) = &mut self.kernels {
+            return ratio.update(&flat, filter, width);
         }
         if let Kernels::Count(count) = &mut self.kernels {
             // Count consumes validity, never values. Native Boolean AND combines
@@ -686,6 +811,7 @@ impl Coordinates {
         }
         let mut values = match &mut self.kernels {
             Kernels::Sum(sum) | Kernels::Count(sum) => Arc::clone(&sum.values),
+            Kernels::Ratio(ratio) => ratio.evaluate()?,
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -745,7 +871,7 @@ impl Accumulator for Coordinates {
             }
             concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
         };
-        if matches!(self.kernels, Kernels::Count(_)) {
+        if matches!(self.kernels, Kernels::Count(_) | Kernels::Ratio(_)) {
             return self.update_flat(flat, None, width);
         }
         let flat = if self.input == self.aggregate_input {
@@ -783,6 +909,10 @@ impl Accumulator for Coordinates {
             })
             + match &self.kernels {
                 Kernels::Sum(sum) | Kernels::Count(sum) => sum.values.get_array_memory_size(),
+                Kernels::Ratio(ratio) => {
+                    ratio.count.values.get_array_memory_size()
+                        + ratio.sum.values.get_array_memory_size()
+                }
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -825,6 +955,7 @@ impl Accumulator for Coordinates {
             }
             match &mut self.kernels {
                 Kernels::Sum(sum) | Kernels::Count(sum) => sum.update(&values[0], None, width)?,
+                Kernels::Ratio(ratio) => ratio.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
@@ -873,6 +1004,74 @@ mod tests {
             vec![reducer(value_index, aggregate)],
         )
         .unwrap()
+    }
+
+    #[test]
+    fn public_coordinate_mean_merge_preserves_full_uint64_count_domain() {
+        let mean = crate::reducer::configured_udaf(
+            "mean",
+            Some(&DataType::Float64),
+            &serde_json::json!({}),
+        )
+        .unwrap();
+        let aggregate = coordinate_udaf(
+            mean,
+            DataType::Float64,
+            ScalarValue::Float64(Some(f64::NAN)),
+        )
+        .unwrap();
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+            true,
+        )]));
+        let expression = AggregateExprBuilder::new(aggregate, vec![Arc::new(Column::new("xs", 0))])
+            .schema(schema)
+            .alias("means")
+            .build()
+            .unwrap();
+        let mut accumulator = expression.create_accumulator().unwrap();
+        let count = 1u64 << 63;
+        let state_list = |values: ArrayRef| -> ArrayRef {
+            Arc::new(ListArray::new(
+                Arc::new(Field::new_list_field(values.data_type().clone(), true)),
+                OffsetBuffer::from_lengths([1]),
+                values,
+                None,
+            ))
+        };
+        accumulator
+            .merge_batch(&[
+                state_list(Arc::new(UInt64Array::from(vec![count]))),
+                state_list(Arc::new(Float64Array::from(vec![count as f64 * 2.0]))),
+                Arc::new(Int64Array::from(vec![1])),
+            ])
+            .unwrap();
+        let ScalarValue::List(result) = accumulator.evaluate().unwrap() else {
+            panic!("list result");
+        };
+        assert_eq!(
+            result
+                .values()
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap()
+                .value(0),
+            2.0
+        );
+        let state = accumulator.state().unwrap();
+        let ScalarValue::List(counts) = &state[0] else {
+            panic!("list state");
+        };
+        assert_eq!(
+            counts
+                .values()
+                .as_any()
+                .downcast_ref::<UInt64Array>()
+                .unwrap()
+                .value(0),
+            count
+        );
     }
 
     #[test]

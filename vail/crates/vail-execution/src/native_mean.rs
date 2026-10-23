@@ -132,6 +132,10 @@ struct MeanUdf {
     signature: Signature,
 }
 
+pub(crate) fn coordinate_mean(udf: &AggregateUDF) -> bool {
+    udf.inner().downcast_ref::<MeanUdf>().is_some()
+}
+
 impl MeanUdf {
     fn native() -> Arc<AggregateUDF> {
         datafusion_functions_aggregate::average::avg_udaf()
