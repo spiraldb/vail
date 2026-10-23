@@ -24,10 +24,26 @@ pub fn udf() -> Arc<ScalarUDF> {
                 match input {
                     ColumnarValue::Array(array) => Ok(ColumnarValue::Array(lengths(array)?)),
                     ColumnarValue::Scalar(value) => {
-                        let output = lengths(&value.to_array_of_size(1)?)?;
-                        Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
-                            &output, 0,
-                        )?))
+                        // Scalar list values already own a one-row Arrow list. Read
+                        // its offsets directly: no one-row output/argument arrays.
+                        let (valid, length) = match value {
+                            ScalarValue::List(a) => (!a.is_null(0), i64::from(a.value_length(0))),
+                            ScalarValue::LargeList(a) => (!a.is_null(0), a.value_length(0)),
+                            ScalarValue::FixedSizeList(a) => {
+                                (!a.is_null(0), i64::from(a.value_length()))
+                            }
+                            _ => return exec_err!("array length requires list input"),
+                        };
+                        let length = if valid {
+                            Some(i32::try_from(length).map_err(|_| {
+                                datafusion_common::exec_datafusion_err!(
+                                    "array length exceeds Hail Int32 range"
+                                )
+                            })?)
+                        } else {
+                            None
+                        };
+                        Ok(ColumnarValue::Scalar(ScalarValue::Int32(length)))
                     }
                 }
             }),
