@@ -80,26 +80,65 @@ pub(crate) fn resolve<'a>(
         // Prune discarded projection expressions before evaluating singleton
         // dependencies. Otherwise a dead scalar-subquery aggregate could run
         // (or fail) even though the normal optimizer would remove it.
-        use datafusion_common::tree_node::TreeNodeRecursion;
-        let mut aggregate = false;
-        let mut seen = std::collections::HashSet::new();
-        logical.apply_with_subqueries(|plan| {
-            if !seen.insert(plan as *const LogicalPlan as usize) {
-                return Ok(TreeNodeRecursion::Jump);
-            }
-            aggregate |= matches!(plan, LogicalPlan::Extension(node) if node.node.as_any().is::<crate::aggregate_singleton::AggregateSingleton>());
-            Ok(if aggregate { TreeNodeRecursion::Stop } else { TreeNodeRecursion::Continue })
-        })?;
+        let aggregate = contains_aggregate_singleton(&logical)?;
         let logical = if aggregate {
-            use datafusion::optimizer::{OptimizerRule, optimizer::OptimizerContext, optimize_projections::OptimizeProjections};
-            let config = OptimizerContext::new_with_config_options(bindings.context.session_config().options().clone());
+            use datafusion::optimizer::{
+                OptimizerRule, optimize_projections::OptimizeProjections,
+                optimizer::OptimizerContext,
+            };
+            let config = OptimizerContext::new_with_config_options(
+                bindings.context.session_config().options().clone(),
+            );
             OptimizeProjections::new().rewrite(logical, &config)?.data
-        } else { logical };
+        } else {
+            logical
+        };
         let changed = resolve_changed(&logical, bindings, &mut HashMap::new()).await?;
         Ok(changed.map(Arc::unwrap_or_clone).unwrap_or(logical))
     }
     .boxed()
 }
+// Traverse actual live input/subquery nodes. DataFusion's apply_subqueries
+// creates temporary Subquery wrappers whose addresses cannot be identity keys.
+fn contains_aggregate_singleton(logical: &LogicalPlan) -> Result<bool> {
+    use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
+    fn visit(
+        root: &LogicalPlan,
+        seen: &mut std::collections::HashSet<usize>,
+        pending: &mut Vec<Arc<LogicalPlan>>,
+    ) -> Result<bool> {
+        let mut found = false;
+        root.apply(|plan| {
+            if !seen.insert(plan as *const LogicalPlan as usize) {
+                return Ok(TreeNodeRecursion::Jump);
+            }
+            if matches!(plan, LogicalPlan::Extension(node) if node.node.as_any().is::<crate::aggregate_singleton::AggregateSingleton>()) {
+                found = true;
+                return Ok(TreeNodeRecursion::Stop);
+            }
+            plan.apply_expressions(|expression| expression.apply(|expr| {
+                if let datafusion_expr::Expr::ScalarSubquery(query) = expr {
+                    pending.push(query.subquery.clone());
+                }
+                Ok(TreeNodeRecursion::Continue)
+            }))?;
+            Ok(TreeNodeRecursion::Continue)
+        })?;
+        Ok(found)
+    }
+    let mut seen = std::collections::HashSet::new();
+    let mut pending = Vec::new();
+    if visit(logical, &mut seen, &mut pending)? {
+        return Ok(true);
+    }
+    while let Some(root) = pending.pop() {
+        if visit(&root, &mut seen, &mut pending)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
 fn resolve_changed<'a>(
     logical: &'a LogicalPlan,
     bindings: &'a mut ActionParameters,
