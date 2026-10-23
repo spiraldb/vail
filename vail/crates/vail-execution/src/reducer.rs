@@ -58,6 +58,16 @@ impl std::hash::Hash for IdentifiedReducer {
         self.identity.hash(state);
     }
 }
+/// Identity wrappers preserve a reducer's semantics and state protocol. Layout
+/// adapters may inspect the underlying typed factory without changing the
+/// original UDAF used for logical identity, physical expressions, or states.
+pub(crate) fn native_reducer(mut udf: &AggregateUDF) -> &AggregateUDF {
+    while let Some(identified) = udf.inner().downcast_ref::<IdentifiedReducer>() {
+        udf = identified.inner.as_ref();
+    }
+    udf
+}
+
 pub fn configured_udaf(
     function: &str,
     dtype: Option<&DataType>,

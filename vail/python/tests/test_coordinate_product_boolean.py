@@ -44,3 +44,13 @@ def test_coordinate_product_preserves_int32_map_wrapping_before_widening():
     output = table.aggregate(hl.agg.array_agg(lambda x: hl.struct(
         product=hl.agg.product(x + 1)), table.xs))
     assert output[0].product == 4611686018427387904
+
+
+@pytest.mark.parametrize('partitions', [1, 3])
+def test_coordinate_true_count_simple_and_composite(partitions):
+    table = hl.Table.parallelize([{'xs': xs} for xs in [[True, None, False], [False, None, True], [True, None, None]]],
+        schema=hl.tstruct(xs=hl.tarray(hl.tbool)), n_partitions=partitions)
+    assert table.aggregate(hl.agg.array_agg(lambda x: hl.agg.count_where(x), table.xs)) == [2,0,1]
+    output = table.aggregate(hl.agg.array_agg(lambda x: hl.struct(
+        count=hl.agg.count_where(x), filtered=hl.agg.filter(False, hl.agg.count_where(x))), table.xs))
+    assert [(x.count,x.filtered) for x in output] == [(2,0),(0,0),(1,0)]

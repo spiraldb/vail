@@ -74,7 +74,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                 && coordinate_options
                 && matches!(
                     function.as_str(),
-                    "sum" | "min" | "max" | "mean" | "count" | "product" | "all" | "any" | "fraction" | "stddev_pop" | "linreg"
+                    "sum" | "min" | "max" | "mean" | "count" | "count_where" | "product" | "all" | "any" | "fraction" | "stddev_pop" | "linreg"
                 )
             {
                 use vail_execution::expressions::{PrimitiveType, Type};
@@ -600,7 +600,7 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
             "sum" => vail_execution::aggregates::aggregate_udf("sum", Some(input))?,
             "min" => datafusion_functions_aggregate::min_max::min_udaf(),
             "max" => datafusion_functions_aggregate::min_max::max_udaf(),
-            "mean" | "product" | "all" | "any" | "fraction" =>
+            "mean" | "product" | "all" | "any" | "fraction" | "count_where" =>
                 vail_execution::aggregates::aggregate_udf(function, Some(input))?,
             "count" => datafusion_functions_aggregate::count::count_udaf(),
             "stddev_pop" => vail_execution::aggregates::aggregate_udf(function, Some(input))?,

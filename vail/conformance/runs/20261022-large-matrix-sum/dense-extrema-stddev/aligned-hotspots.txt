@@ -1,0 +1,39 @@
+samples 1567
+44.03 690 __psynch_cvwait
+5.74 90 __psynch_mutexwait
+2.49 39 <vail_execution::coordinate_extrema::DenseExtrema>::update
+1.79 28 _PyEval_EvalFrameDefault
+1.72 27 <arrow_array::array::boolean_array::BooleanArray>::value
+1.47 23 __ulock_wait
+1.34 21 __open
+1.28 20 arrow_cast::cast::cast_bool_to_numeric::<arrow_array::types::UInt8Type>
+1.15 18 <vail_execution::coordinate_stddev::DenseStddev>::add
+1.08 17 _platform_memmove
+1.02 16 kevent
+1.02 16 <vail_execution::coordinate_stddev::DenseStddev>::update
+0.96 15 _PyObject_Malloc
+0.77 12 gc_collect_main.llvm.6325940347975832991
+0.7 11 arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>
+0.64 10 mach_o::GenericTrie::find(CString, bool) const
+0.51 8 r_object.llvm.9845490566179339274
+0.45 7 type_new
+0.45 7 _PyCode_Quicken
+0.45 7 lsl::Allocator::AllocationMetadata::pool(bool) const
+0.45 7 0x3c168
+0.38 6 0x33be0
+inclusive
+67.58 1059 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+67.58 1059 tokio::runtime::scheduler::multi_thread::worker::run
+67.58 1059 <tokio::runtime::blocking::pool::Inner>::run
+67.58 1059 <std::sys::thread::unix::Thread>::new::thread_start
+67.58 1059 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+67.58 1059 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+67.58 1059 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+67.58 1059 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+67.58 1059 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+67.58 1059 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+67.58 1059 _pthread_start
+67.58 1059 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+44.1 691 _pthread_cond_wait
+44.03 690 __psynch_cvwait
+42.95 673 <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal

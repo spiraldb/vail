@@ -789,6 +789,8 @@ enum Kernels {
     Ratio(DenseRatio),
     Product(DenseProduct),
     Bool(DenseBool),
+    Extrema(crate::coordinate_extrema::DenseExtrema),
+    Stddev(crate::coordinate_stddev::DenseStddev),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -799,6 +801,8 @@ impl std::fmt::Debug for Kernels {
             Self::Ratio(ratio) => ratio.fmt(f),
             Self::Product(product) => product.fmt(f),
             Self::Bool(boolean) => boolean.fmt(f),
+            Self::Extrema(extrema) => extrema.fmt(f),
+            Self::Stddev(stddev) => stddev.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -824,18 +828,28 @@ impl Coordinates {
         input: DataType,
         aggregate_input: DataType,
     ) -> Result<Self> {
-        let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(aggregate.fun()) {
+        let native = crate::reducer::native_reducer(aggregate.fun());
+        let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(native) {
             Kernels::Sum(DenseNumeric::new(&dtype))
-        } else if crate::aggregates::coordinate_count(aggregate.fun()) {
+        } else if crate::aggregates::coordinate_count(native) {
             Kernels::Count(DenseNumeric::new(&DataType::Int64))
-        } else if crate::native_mean::coordinate_mean(aggregate.fun()) {
+        } else if crate::native_count_where::coordinate_count_where(native) {
+            // Boolean true counts are the numeric SUM of defined true bits.
+            Kernels::Sum(DenseNumeric::new(&DataType::Int64))
+        } else if crate::native_mean::coordinate_mean(native) {
             Kernels::Ratio(DenseRatio::new(false))
-        } else if crate::fraction::coordinate_fraction(aggregate.fun()) {
+        } else if crate::fraction::coordinate_fraction(native) {
             Kernels::Ratio(DenseRatio::new(true))
-        } else if let Some(dtype) = crate::aggregates::coordinate_product_type(aggregate.fun()) {
+        } else if let Some(dtype) = crate::aggregates::coordinate_product_type(native) {
             Kernels::Product(DenseProduct::new(&dtype))
-        } else if let Some(all) = crate::native_bool::coordinate_bool(aggregate.fun()) {
+        } else if let Some(all) = crate::native_bool::coordinate_bool(native) {
             Kernels::Bool(DenseBool::new(all))
+        } else if let Some(extrema) = crate::coordinate_extrema::native_minimum(native)
+            .and_then(|minimum| crate::coordinate_extrema::DenseExtrema::new(&aggregate_input, minimum))
+        {
+            Kernels::Extrema(extrema)
+        } else if crate::native_stddev::coordinate_stddev(native) {
+            Kernels::Stddev(Default::default())
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
@@ -876,6 +890,8 @@ impl Coordinates {
             Kernels::Sum(sum) | Kernels::Count(sum) => Ok(vec![Arc::clone(&sum.values)]),
             Kernels::Ratio(ratio) => ratio.states(),
             Kernels::Bool(boolean) => Ok(vec![boolean.array()]),
+            Kernels::Extrema(extrema) => Ok(vec![extrema.array()]),
+            Kernels::Stddev(stddev) => Ok(stddev.states()),
             Kernels::Product(product) => Ok(vec![
                 Arc::clone(&product.count.values),
                 Arc::clone(&product.values.values),
@@ -919,6 +935,12 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::Stddev(stddev) = &mut self.kernels {
+            return stddev.update(&flat, filter, width);
+        }
+        if let Kernels::Extrema(extrema) = &mut self.kernels {
+            return extrema.update(&flat, filter, width);
+        }
         if let Kernels::Sum(sum) = &mut self.kernels {
             return sum.update(&flat, filter, width);
         }
@@ -990,6 +1012,8 @@ impl Coordinates {
             Kernels::Ratio(ratio) => ratio.evaluate()?,
             Kernels::Product(product) => Arc::clone(&product.values.values),
             Kernels::Bool(boolean) => boolean.array(),
+            Kernels::Extrema(extrema) => extrema.array(),
+            Kernels::Stddev(stddev) => stddev.array(),
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -1051,7 +1075,7 @@ impl Accumulator for Coordinates {
         };
         if matches!(
             self.kernels,
-            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_)
+            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_)
         ) {
             return self.update_flat(flat, None, width);
         }
@@ -1099,6 +1123,8 @@ impl Accumulator for Coordinates {
                         + product.values.values.get_array_memory_size()
                 }
                 Kernels::Bool(boolean) => boolean.values.inner().capacity(),
+                Kernels::Extrema(extrema) => extrema.size(),
+                Kernels::Stddev(stddev) => stddev.size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -1144,6 +1170,8 @@ impl Accumulator for Coordinates {
                 Kernels::Ratio(ratio) => ratio.merge(&values, width)?,
                 Kernels::Product(product) => product.merge(&values, width)?,
                 Kernels::Bool(boolean) => boolean.update(&values[0], None, width)?,
+                Kernels::Extrema(extrema) => extrema.update(&values[0], None, width)?,
+                Kernels::Stddev(stddev) => stddev.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
