@@ -1,10 +1,13 @@
 # Matrix column layout and execution
 
 The ordered `MatrixIR.column_records` array is authoritative. For every row,
-`len(_CELLS) == len(column_records)` and `_CELLS[j]._CID == column_records[j]._CID`.
-A missing entry retains its slot with `present = false`. Public column keys can
-repeat; `_CID` identifies a column occurrence and must be unique within a matrix.
-Identifiers need not be contiguous or sorted.
+`len(_CELLS) == len(column_records)`. Position `j` associates the entry in
+`_CELLS[j].value` with `column_records[j]`; cells contain no column IDs. A null
+entry struct represents absence, while a defined entry struct with null fields
+remains present. Arrow/Vortex struct validity carries this distinction, without
+an explicit presence flag. Public column keys can repeat; `_CID` occurs only in
+shared column metadata and identifies a column occurrence. Those identifiers
+must be unique within a matrix but need not be contiguous or sorted.
 
 The public keyed `mt.cols()` Table may sort by column keys, as Hail does. Its
 presentation order is not the physical slot order. `localize_entries` exports
@@ -21,7 +24,8 @@ and every row, through DataFusion `arrays_zip`, `array_filter`, and
 Column selection, permutation, head/tail, semi/anti joins, deduplication, and
 column explosion compute positions once and gather the same positions from
 metadata and row slots. Repeated selection creates new occurrence identities;
-metadata and cells receive the same identities. Joins and deduplication restore
+only shared metadata receives new identities. Cells retain their positional
+alignment. Joins and deduplication restore
 source position order before gathering.
 
 DataFusion 55 has scalar array extraction, but no batched per-row gather with an
@@ -43,8 +47,8 @@ This also preserves positions whose aggregate has no present input entries.
 ## Validation
 
 The MatrixIR constructor checks Arrow-compatible schemas immediately. Untrusted
-layouts (including reads and unlocalization) also validate metadata identities,
-slot lengths, positional identities, and defined presence bits lazily. Boundary
+layouts (including unlocalization) also validate shared metadata identities,
+slot lengths, and defined owning slots lazily. Nullable entry structs are valid. Boundary
 checks use Arrow kernels and remain observable to count actions. Internally
 constructed layouts preserve the invariant by construction and do not stack
 redundant validators at every transformation.
@@ -52,6 +56,13 @@ redundant validators at every transformation.
 The row-local layout validator permits interval-read pushdown, so checking a
 matrix does not force unrelated source files to be read. Other filters, including
 scan-dependent filters, retain their existing planning rules.
+
+## Persistence
+
+New matrix snapshots use descriptor version 4 and store positional cells with
+only the `value` field. Version 3 snapshots remain readable: their repeated cell
+IDs are dropped by a projection at the read boundary. Shared column metadata
+and entry struct validity are preserved.
 
 ## Verification
 

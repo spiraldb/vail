@@ -1,7 +1,7 @@
 //! VCF text decoding directly into Arrow child buffers. No per-cell objects.
 //! FORMAT plans are cached; delimiter discovery is shared across all fields and
 //! field dispatch happens outside each contiguous sample loop.
-use arrow_array::{Array, ArrayRef, Int64Array, ListArray, RecordBatch, StructArray, builder::*};
+use arrow_array::{Array, ArrayRef, ListArray, RecordBatch, StructArray, builder::*};
 use arrow_buffer::{OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use serde::{Deserialize, Serialize};
@@ -320,10 +320,7 @@ impl Header {
         )
     }
     pub fn core_schema(&self, options: &Options) -> Result<SchemaRef> {
-        let cell = structure(vec![
-            ("__vail_matrix_col_id".into(), primitive(P::Int64)),
-            ("value".into(), self.entry_type()),
-        ]);
+        let cell = structure(vec![("value".into(), self.entry_type())]);
         Ok(Arc::new(Schema::new(vec![
             Field::new(
                 "__vail_matrix_row",
@@ -1289,7 +1286,7 @@ impl Batch {
         let DataType::Struct(cell_fields) = cell_field.data_type() else {
             unreachable!()
         };
-        let DataType::Struct(entry_fields) = cell_fields[1].data_type() else {
+        let DataType::Struct(entry_fields) = cell_fields[0].data_type() else {
             unreachable!()
         };
         let n = self.rows * self.samples;
@@ -1298,16 +1295,7 @@ impl Batch {
             self.entries.iter_mut().map(Sink::finish).collect(),
             n,
         )?;
-        let cells = struct_array(
-            cell_fields.clone(),
-            vec![
-                Arc::new(Int64Array::from_iter_values(
-                    (0..n).map(|i| (i % self.samples) as i64),
-                )),
-                entries,
-            ],
-            n,
-        )?;
+        let cells = struct_array(cell_fields.clone(), vec![entries], n)?;
         let offsets = OffsetBuffer::new(ScalarBuffer::from(
             (0..=self.rows)
                 .map(|i| {
@@ -1332,4 +1320,58 @@ fn struct_array(
     Ok(Arc::new(
         StructArray::try_new_with_length(fields, arrays, None, len).map_err(|e| e.to_string())?,
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn matrix_slots_use_list_positions_without_column_ids() -> Result<()> {
+        let header = Header {
+            samples: vec!["a".into(), "b".into()],
+            info: vec![],
+            format: vec![FieldSpec {
+                name: "DP".into(),
+                number: "1".into(),
+                kind: "Integer".into(),
+                dtype: primitive(P::Int32),
+            }],
+            metadata: BTreeMap::new(),
+        };
+        let mut parser = Parser::new(header, Options::default())?;
+        let mut batch = parser.batch()?;
+        assert!(parser.append(&mut batch, "1\t1\t.\tA\tC\t.\tPASS\t.\tDP\t5\t.")?);
+        assert!(parser.append(&mut batch, "1\t2\t.\tA\tG\t.\tPASS\t.\tDP\t7\t9")?);
+        let batch = batch.finish()?;
+        let cells = batch
+            .column(1)
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        assert_eq!(cells.value_offsets(), &[0, 2, 4]);
+        let slots = cells
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        assert_eq!(slots.num_columns(), 1);
+        assert_eq!(slots.fields()[0].name(), "value");
+        let entries = slots
+            .column(0)
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        let depths = entries
+            .column(0)
+            .as_any()
+            .downcast_ref::<arrow_array::Int32Array>()
+            .unwrap();
+        assert_eq!(
+            depths.iter().collect::<Vec<_>>(),
+            vec![Some(5), None, Some(7), Some(9)]
+        );
+        assert_eq!(slots.null_count(), 0);
+        Ok(())
+    }
 }

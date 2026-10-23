@@ -377,10 +377,7 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
     };
     let entry_value_type = Type::Struct { r#struct: vec![] };
     let entry_type = Type::Struct {
-        r#struct: vec![
-            ("__vail_matrix_col_id".into(), int64.clone()),
-            ("value".into(), entry_value_type),
-        ],
+        r#struct: vec![("value".into(), entry_value_type)],
     };
 
     let entry_values: ArrayRef = Arc::new(StructArray::new_empty_fields(
@@ -388,17 +385,8 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         None,
     ));
     let entries_child: ArrayRef = Arc::new(StructArray::new(
-        vec![
-            Field::new("__vail_matrix_col_id", DataType::Int64, true),
-            Field::new("value", entry_values.data_type().clone(), true),
-        ]
-        .into(),
-        vec![
-            Arc::new(Int64Array::from_iter_values(
-                (0..row_count * columns_count).map(|i| (i % columns_count) as i64),
-            )),
-            entry_values,
-        ],
+        vec![Field::new("value", entry_values.data_type().clone(), true)].into(),
+        vec![entry_values],
         None,
     ));
     let entries: ArrayRef = Arc::new(ListArray::new(

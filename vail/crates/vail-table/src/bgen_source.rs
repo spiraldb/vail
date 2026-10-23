@@ -1,8 +1,8 @@
 //! Bounded native BGEN layout-2 scan. Variant and probability decoding is lazy.
 //! A blocking decoder worker feeds at most two Arrow batches to the async scan.
 use arrow_array::{
-    ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray, RecordBatch, RecordBatchOptions,
-    StructArray, UInt8Array, UInt16Array,
+    ArrayRef, BooleanArray, Float64Array, ListArray, RecordBatch, RecordBatchOptions, StructArray,
+    UInt8Array, UInt16Array,
     builder::{
         ArrayBuilder, Float64Builder, Int32Builder, ListBuilder, StringBuilder, StructBuilder,
         make_builder,
@@ -292,7 +292,7 @@ fn bgen_builder(dtype: &DataType, capacity: usize) -> Box<dyn ArrayBuilder> {
 }
 
 /// Row builders and reusable sample-layout buffers belong to the scan. Entry
-/// batches own primitive Arrow buffers; fixed IDs, offsets and Call metadata
+/// batches own primitive Arrow buffers; offsets and Call metadata
 /// are shared across variants. Undemanded cells allocate no sample buffers.
 struct Batch {
     schema: SchemaRef,
@@ -303,7 +303,6 @@ struct Batch {
     cell_field: FieldRef,
     cell_fields: Fields,
     entry_fields: Fields,
-    sample_ids: ArrayRef,
     ploidy: ArrayRef,
     phase: ArrayRef,
     gp_offsets: OffsetBuffer<i32>,
@@ -347,7 +346,7 @@ impl Batch {
         let DataType::Struct(cell_fields) = cell_field.data_type() else {
             return Err("BGEN cell schema must contain structs".into());
         };
-        let DataType::Struct(entry_fields) = cell_fields[1].data_type() else {
+        let DataType::Struct(entry_fields) = cell_fields[0].data_type() else {
             return Err("BGEN entries must contain structs".into());
         };
         let gp_end = samples
@@ -358,15 +357,12 @@ impl Batch {
             (0..=samples).map(|i| (i * 3) as i32).collect::<Vec<_>>(),
         ));
         debug_assert_eq!(*gp_offsets.last().unwrap(), gp_end);
-        let sample_ids = Arc::new(Int64Array::from(
-            (0..samples).map(|i| i as i64).collect::<Vec<_>>(),
-        )) as ArrayRef;
         let missing_entries =
             arrow_array::new_null_array(&DataType::Struct(entry_fields.clone()), samples);
         let missing_cells = Arc::new(
             StructArray::try_new_with_length(
                 cell_fields.clone(),
-                vec![sample_ids.clone(), missing_entries],
+                vec![missing_entries],
                 None,
                 samples,
             )
@@ -381,7 +377,6 @@ impl Batch {
             cell_field: cell_field.clone(),
             cell_fields: cell_fields.clone(),
             entry_fields: entry_fields.clone(),
-            sample_ids,
             ploidy: Arc::new(UInt8Array::from(vec![2; samples])),
             phase: Arc::new(BooleanArray::new(BooleanBuffer::new_unset(samples), None)),
             gp_offsets,
@@ -589,13 +584,8 @@ impl Batch {
                 .map_err(|e| e.to_string())?,
         ) as ArrayRef;
         let cells = Arc::new(
-            StructArray::try_new_with_length(
-                self.cell_fields.clone(),
-                vec![self.sample_ids.clone(), entries],
-                None,
-                n,
-            )
-            .map_err(|e| e.to_string())?,
+            StructArray::try_new_with_length(self.cell_fields.clone(), vec![entries], None, n)
+                .map_err(|e| e.to_string())?,
         ) as ArrayRef;
         self.push_cells(cells, n)
     }

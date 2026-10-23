@@ -16,6 +16,9 @@ def files(tmp_path, data=bytes([0x6C, 0x1B, 1, 0xE4, 0x03]), bim="1 rs1 2.5 10 A
 
 def test_specification_codes_and_sample_order(tmp_path):
     mt = import_plink(*files(tmp_path))
+    assert set(mt._mir.core._schema['__vail_matrix_cells'].element_type) == {'value'}
+    slots = mt._mir.core['__vail_matrix_cells'].collect()[0]
+    assert len(slots) == 5 and all(set(slot) == {'value'} for slot in slots)
     rows = mt.localize_entries("e", "c").collect()
     columns = hl.eval(mt.localize_entries("e", "c").index_globals().c)
     assert [c.s for c in columns] == ["z", "a", "y", "b", "x"]

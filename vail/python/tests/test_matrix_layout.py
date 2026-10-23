@@ -226,3 +226,49 @@ def test_entries_expansion_preserves_nested_child_offsets(filter_slots):
         for row in range(5) for col in range(7)
         if not filter_slots or col % 2 == 0
     ]
+
+
+def test_matrix_slots_use_positions_without_repeated_column_ids(tmp_path):
+    import json
+    matrix = hl.range_matrix_table(2, 4)
+    matrix = matrix.annotate_entries(value=matrix.row_idx * 10 + matrix.col_idx)
+    matrix = matrix.filter_entries(matrix.col_idx != 1).choose_cols([3, 1, 3, 0])
+    assert set(matrix._mir.core._schema['__vail_matrix_cells'].element_type) == {'value'}
+    localized = matrix.localize_entries('entries', 'columns')
+    assert [[None if entry is None else entry.value for entry in row.entries]
+            for row in localized.collect()] == [[3, None, 3, 0], [13, None, 13, 10]]
+    path = tmp_path / 'positional.mt'
+    matrix.write(path)
+    descriptor = json.loads((path / '_vail_matrix.json').read_text())
+    assert descriptor['version'] == 4
+    core = hl.read_table(path / descriptor['generation'] / 'core')
+    assert set(core._schema['__vail_matrix_cells'].element_type) == {'value'}
+    assert hl.read_matrix_table(path).localize_entries('entries', 'columns').collect() == localized.collect()
+
+
+@pytest.mark.parametrize('empty_entry', [False, True])
+def test_matrix_version_three_drops_repeated_ids_preserving_null_structs(tmp_path, empty_entry):
+    import json
+    matrix = hl.range_matrix_table(2, 3)
+    matrix = matrix.annotate_entries(value=hl.or_missing(matrix.col_idx != 0, matrix.col_idx))
+    matrix = matrix.filter_entries(matrix.col_idx != 1)
+    if empty_entry:
+        matrix = matrix.select_entries()
+    expected = matrix.localize_entries('entries', 'columns').collect()
+    path = tmp_path / 'version-three.mt'
+    matrix.write(path)
+    manifest = path / '_vail_matrix.json'
+    descriptor = json.loads(manifest.read_text())
+    core_path = path / descriptor['generation'] / 'core'
+    core = hl.read_table(core_path)
+    cells = core['__vail_matrix_cells']
+    old_cells = hl.zip(cells, hl.range(hl.len(cells))).map(lambda pair: hl.struct(**{
+        '__vail_matrix_col_id': hl.int64(pair[1]), 'value': pair[0].value,
+    }))
+    core.annotate(**{'__vail_matrix_cells': old_cells}).write(core_path, overwrite=True)
+    descriptor['version'] = 3
+    manifest.write_text(json.dumps(descriptor))
+    restored = hl.read_matrix_table(path)
+    assert set(restored._mir.core._schema['__vail_matrix_cells'].element_type) == {'value'}
+    assert restored.localize_entries('entries', 'columns').collect() == expected
+    assert restored.aggregate_entries(hl.agg.count()) == 4

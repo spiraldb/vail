@@ -5988,7 +5988,12 @@ fn lower_uncached(
                     | Expr::Literal { .. } | Expr::Column { .. }
                     | Expr::Binary { .. } | Expr::IntegerBinary { .. }
                     | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
-                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. });
+                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. })
+                    // This native Unicode kernel is fully prepared at lowering
+                    // and borrows its input. Keep wide shared column strings
+                    // on the row path rather than taking their bytes per entry.
+                    || matches!(node, Expr::StringFunction { function, .. }
+                        if function == "character_length");
             });
             let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let body_dtype = body_type.to_arrow()?;

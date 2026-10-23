@@ -71,7 +71,7 @@ def import_plink(
     )
     entry = tstruct(GT=tcall)
     schema = tstruct(
-        **{_ROW: row, _CELLS: tarray(tstruct(**{_CID: tint64, "value": entry}))}
+        **{_ROW: row, _CELLS: tarray(tstruct(**{"value": entry}))}
     )
     options = dict(
         bim=bim,
