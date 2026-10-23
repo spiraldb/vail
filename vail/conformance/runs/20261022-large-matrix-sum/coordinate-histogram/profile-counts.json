@@ -1,0 +1,23 @@
+{
+  "before": {
+    "samples": 1923,
+    "inclusive_sample_counts": {
+      "cast::": 44,
+      "Unnest": 492,
+      "unnest": 492,
+      "group_values": 55,
+      "_platform_memmove": 171,
+      "GroupsAccumulator": 67,
+      "histogram_bin": 31
+    }
+  },
+  "after": {
+    "samples": 595,
+    "inclusive_sample_counts": {
+      "_platform_memmove": 15,
+      "CoordinateHistogram": 77,
+      "GroupsAccumulator": 1,
+      "histogram_bin": 58
+    }
+  }
+}

@@ -288,3 +288,106 @@ fn collect_coordinate_preserves_view_and_nested_physical_descriptors() {
         assert_eq!(columns.value(0).to_data(), input.to_data());
     }
 }
+
+#[test]
+fn histogram_coordinate_matches_native_groups_and_partial_state_protocol() {
+    let native = configured_udaf(
+        "hist",
+        Some(&DataType::Int32),
+        &serde_json::json!({"start":0.,"end":4.,"bins":2}),
+    )
+    .unwrap();
+    let native_expression =
+        AggregateExprBuilder::new(native.clone(), vec![Arc::new(Column::new("value", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "value",
+                DataType::Int32,
+                true,
+            )])))
+            .alias("hist")
+            .build()
+            .unwrap();
+    let empty = native_expression
+        .create_accumulator()
+        .unwrap()
+        .evaluate()
+        .unwrap();
+    let udf = coordinate_udaf(native, DataType::Int32, empty).unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "xs",
+        DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(schema)
+        .alias("coordinate_hist")
+        .build()
+        .unwrap();
+    let mut accumulator = aggregate.create_accumulator().unwrap();
+    let flat: ArrayRef = Arc::new(arrow_array::Int32Array::from(vec![
+        Some(0),
+        Some(2),
+        Some(4),
+        None,
+    ]));
+    let input: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Int32, true)),
+        OffsetBuffer::from_lengths([2, 2]),
+        flat.clone(),
+        None,
+    ));
+    accumulator.update_batch(&[input]).unwrap();
+    let snapshot = accumulator.evaluate().unwrap();
+    let ScalarValue::List(result) = &snapshot else {
+        panic!("coordinate result must be a list")
+    };
+    let mut native_groups = native_expression.create_groups_accumulator().unwrap();
+    native_groups
+        .update_batch(&[flat], &[0, 1, 0, 1], None, 2)
+        .unwrap();
+    assert_eq!(
+        native_groups
+            .evaluate(datafusion_expr::EmitTo::All)
+            .unwrap()
+            .to_data(),
+        result.values().to_data()
+    );
+    let published = accumulator.state().unwrap();
+    let ScalarValue::List(wire) = &published[0] else {
+        panic!("hist partial state must be a list")
+    };
+    let mut native_restored = native_expression.create_groups_accumulator().unwrap();
+    native_restored
+        .merge_batch(&[wire.values().clone()], &[0, 1], 2)
+        .unwrap();
+    assert_eq!(
+        native_restored
+            .evaluate(datafusion_expr::EmitTo::All)
+            .unwrap()
+            .to_data(),
+        result.values().to_data()
+    );
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|state| state.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    let additional = list(Arc::new(arrow_array::Int32Array::from(vec![1, 3])));
+    accumulator.update_batch(&[additional.clone()]).unwrap();
+    restored.update_batch(&[additional]).unwrap();
+    assert_eq!(
+        accumulator.evaluate().unwrap(),
+        restored.evaluate().unwrap()
+    );
+    let list_state = wire.values().as_any().downcast_ref::<ListArray>().unwrap();
+    let counts = list_state
+        .values()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert_eq!(counts.values(), &[0, 1, 1, 0, 0, 0, 1, 0]);
+}

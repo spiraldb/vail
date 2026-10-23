@@ -124,6 +124,41 @@ struct HistogramConfig {
     bins: usize,
     edges: Arc<Float64Array>,
 }
+/// Semantic identity retains the existing prepared histogram configuration;
+/// coordinate layout adapters inspect this typed key, never UDAF names.
+#[derive(Debug, Clone)]
+struct HistogramIdentity {
+    input: DataType,
+    config: Arc<HistogramConfig>,
+}
+impl PartialEq for HistogramIdentity {
+    fn eq(&self, other: &Self) -> bool {
+        self.input == other.input
+            && self.config.bins == other.config.bins
+            && self.config.range.start.to_bits() == other.config.range.start.to_bits()
+            && self.config.range.end.to_bits() == other.config.range.end.to_bits()
+    }
+}
+impl Eq for HistogramIdentity {}
+impl Hash for HistogramIdentity {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.input.hash(state);
+        self.config.bins.hash(state);
+        self.config.range.start.to_bits().hash(state);
+        self.config.range.end.to_bits().hash(state);
+    }
+}
+pub(crate) fn coordinate_histogram(udf: &AggregateUDF) -> Option<CoordinateHistogram> {
+    crate::kernel_identity::aggregate_key::<HistogramIdentity>(udf).map(|identity| {
+        CoordinateHistogram {
+            inner: HistGroupsAccumulator {
+                config: Arc::clone(&identity.config),
+                counts: Vec::new(),
+            },
+        }
+    })
+}
+
 fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, ExprError> {
     if !numeric(t) {
         return Err(invalid(format!("hist requires numeric input, got {t:?}")));
@@ -187,7 +222,7 @@ fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, E
     });
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         &udf_name,
-        (udf_name.clone(), t.clone(), output.clone()),
+        HistogramIdentity { input: t.clone(), config: Arc::clone(&config) },
         vec![t.clone()],
         output,
         vec![state],
@@ -436,11 +471,121 @@ impl HistGroupsAccumulator {
         Ok(input)
     }
 
+    fn merge_row(&mut self, row: usize, group: usize, lists: &ListArray, values: &Int64Array) -> DfResult<()> {
+            if lists.is_null(row) { return Ok(()); }
+            let start = lists.value_offsets()[row] as usize;
+            if lists.value_length(row) as usize != self.width() {
+                return Err(DataFusionError::Execution(
+                    "hist grouped state width mismatch".into(),
+                ));
+            }
+            for offset in 0..self.width() {
+                if values.is_null(start + offset) {
+                    return Err(DataFusionError::Execution(
+                        "hist grouped counts must be defined".into(),
+                    ));
+                }
+                let dst = group * self.width() + offset;
+                self.counts[dst] = self.counts[dst].wrapping_add(values.value(start + offset));
+            }
+        Ok(())
+    }
     fn add_row(&mut self, group: usize, value: f64) {
         if let Some(index) = histogram_bin(&self.config, value) {
             let offset = group * self.width() + index;
             self.counts[offset] = self.counts[offset].wrapping_add(1);
         }
+    }
+}
+
+/// The same histogram engine with implicit aligned coordinates rather than
+/// DataFusion's general per-entry group IDs. No histogram math is duplicated.
+#[derive(Debug)]
+pub(crate) struct CoordinateHistogram {
+    inner: HistGroupsAccumulator,
+}
+impl CoordinateHistogram {
+    pub(crate) fn update(
+        &mut self,
+        input: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> DfResult<()> {
+        if width == 0
+            || input.len() % width != 0
+            || filter.is_some_and(|filter| filter.len() != input.len())
+        {
+            return Err(DataFusionError::Execution(
+                "hist coordinate input shape mismatch".into(),
+            ));
+        }
+        self.inner.ensure_groups(width)?;
+        macro_rules! update {
+            ($array:ty) => {{
+                let values = input.as_any().downcast_ref::<$array>().unwrap();
+                for (row, chunk) in values.values().chunks_exact(width).enumerate() {
+                    for (column, value) in chunk.iter().copied().enumerate() {
+                        let index = row * width + column;
+                        if values.is_valid(index)
+                            && filter
+                                .is_none_or(|filter| filter.is_valid(index) && filter.value(index))
+                        {
+                            self.inner.add_row(column, value as f64);
+                        }
+                    }
+                }
+            }};
+        }
+        match input.data_type() {
+            DataType::Int32 => update!(arrow_array::Int32Array),
+            DataType::Int64 => update!(Int64Array),
+            DataType::Float32 => update!(arrow_array::Float32Array),
+            DataType::Float64 => update!(Float64Array),
+            _ => {
+                return Err(DataFusionError::Execution(
+                    "hist requires numeric coordinate input".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
+    pub(crate) fn states(&self) -> DfResult<Vec<ArrayRef>> {
+        Ok(vec![list_array(
+            Arc::new(Int64Array::from(self.inner.counts.clone())),
+            self.inner.width(),
+        )?])
+    }
+    pub(crate) fn array(&self) -> DfResult<ArrayRef> {
+        histogram_groups_output(&self.inner.config, self.inner.counts.clone())
+    }
+    pub(crate) fn size(&self) -> usize {
+        self.inner.size()
+    }
+    pub(crate) fn merge(&mut self, states: &[ArrayRef], width: usize) -> DfResult<()> {
+        let [state] = states else {
+            return Err(DataFusionError::Execution(
+                "hist state shape mismatch".into(),
+            ));
+        };
+        let lists = state
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("hist state must be int64 list".into()))?;
+        let values = lists
+            .values()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| DataFusionError::Execution("hist counts must be int64".into()))?;
+        if lists.len() != width {
+            return Err(DataFusionError::Execution(
+                "hist coordinate state width mismatch".into(),
+            ));
+        }
+        self.inner.ensure_groups(width)?;
+        for column in 0..width {
+            self.inner.merge_row(column, column, lists, values)?;
+        }
+        Ok(())
     }
 }
 
@@ -521,24 +666,7 @@ impl GroupsAccumulator for HistGroupsAccumulator {
         }
         self.ensure_groups(total_num_groups)?;
         for (row, group) in group_indices.iter().copied().enumerate() {
-            if lists.is_null(row) {
-                continue;
-            }
-            let start = lists.value_offsets()[row] as usize;
-            if lists.value_length(row) as usize != self.width() {
-                return Err(DataFusionError::Execution(
-                    "hist grouped state width mismatch".into(),
-                ));
-            }
-            for offset in 0..self.width() {
-                if values.is_null(start + offset) {
-                    return Err(DataFusionError::Execution(
-                        "hist grouped counts must be defined".into(),
-                    ));
-                }
-                let dst = group * self.width() + offset;
-                self.counts[dst] = self.counts[dst].wrapping_add(values.value(start + offset));
-            }
+            self.merge_row(row, group, lists, values)?;
         }
         Ok(())
     }

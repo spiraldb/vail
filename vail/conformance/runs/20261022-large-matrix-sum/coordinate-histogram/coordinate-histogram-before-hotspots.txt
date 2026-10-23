@@ -1,0 +1,39 @@
+samples 1923
+15.81 304 __psynch_cvwait
+8.89 171 _platform_memmove
+6.92 133 __fcntl
+3.17 61 read
+2.96 57 _kernelrpc_mach_vm_deallocate_trap
+2.55 49 std::sys::thread_local::native::eager::destroy::<core::cell::Cell<std::thread::spawnhook::SpawnHooks>>
+2.34 45 <datafusion_physical_plan::aggregates::group_values::single_group_by::primitive::GroupValuesPrimitive<arrow_array::types::Int64Type> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern
+1.66 32 _PyEval_EvalFrameDefault
+1.66 32 <arrow_data::transform::MutableArrayData>::try_extend
+1.61 31 <async_stream::yielder::STORE::{K#0}::{closure#1} as core::ops::function::FnOnce<(core::option::Option<&mut core::option::Option<core::cell::Cell<*mut ()>>>,)>>::call_once
+1.61 31 vail_execution::advanced_numeric_aggregates::histogram_bin
+1.61 31 <async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, vail_table::partitioned::limited_input::{closure#0}> as futures_core::stream::Stream>::poll_next
+1.56 30 __open
+1.4 27 arrow_ord::cmp::apply::<&[i64]>
+1.35 26 __ulock_wait2
+1.3 25 arrow_data::transform::primitive::build_extend::<i32>::{closure#0}
+1.3 25 <vail_execution::advanced_numeric_aggregates::HistGroupsAccumulator as datafusion_expr_common::groups_accumulator::GroupsAccumulator>::update_batch
+1.3 25 arrow_select::take::take_nulls::<arrow_array::types::UInt32Type>
+1.25 24 arrow_ord::cmp::apply_op::<&[i64], <&[i64] as arrow_ord::cmp::ArrayOrd>::is_lt>
+1.2 23 invocation function for block in mach_o::RebaseOpcodes::forEachRebaseLocation(std::__1::span<mach_o::MappedSegment const, (unsigned long)18446744073709551615>, unsigned long long, void (mach_o::Fixup const&, bool&) block_pointer) const
+1.09 21 <dyn arrow_array::array::Array as datafusion_common::__private::DowncastArrayHelper>::downcast_array_helper::<arrow_array::array::list_array::GenericListArray<i32>>
+0.88 17 __psynch_mutexwait
+inclusive
+53.51 1029 _pthread_start
+50.96 980 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+50.96 980 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+50.96 980 <tokio::runtime::blocking::pool::Inner>::run
+50.96 980 <std::sys::thread::unix::Thread>::new::thread_start
+50.18 965 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+50.18 965 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+50.18 965 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+50.18 965 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+50.18 965 tokio::runtime::scheduler::multi_thread::worker::run
+50.18 965 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+50.18 965 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+46.23 889 start
+46.07 886 pymain_main
+46.07 886 Py_BytesMain
