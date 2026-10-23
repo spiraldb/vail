@@ -597,10 +597,14 @@ fn count_matrix_list(
         .as_any()
         .downcast_ref::<arrow_array::Int32Array>()
         .ok_or_else(|| DataFusionError::Internal("matrix count width must be int32".into()))?;
-    let width = if widths.is_valid(0) {
-        widths.value(0) as i64
-    } else {
+    let width = if widths
+        .logical_nulls()
+        .as_ref()
+        .is_some_and(|nulls| !nulls.is_valid(0))
+    {
         0
+    } else {
+        widths.value(0) as i64
     };
     if width == 0 {
         return Ok(0);
