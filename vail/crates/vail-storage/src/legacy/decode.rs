@@ -643,7 +643,6 @@ enum StructPostlude {
 // each logical destination from disjoint iter_mut references needs no aliasing.
 enum BoundOutput<'a> {
     Skip,
-    SkipIntegerArray(fn(&mut Input) -> Result<()>),
     Bool(&'a mut BooleanBuilder),
     InvertedBool(&'a mut BooleanBuilder),
     I32(&'a mut Int32Builder),
@@ -653,58 +652,6 @@ enum BoundOutput<'a> {
     Call(&'a mut CallColumn),
     Other(&'a mut Column),
 }
-// LENGTH: 0 = raw signed Int32, 1 = LEB signed Int32, 2 = unsigned LEB32.
-// WIDTH zero denotes varint payloads; otherwise it is the raw integer width.
-#[inline(never)]
-fn skip_required_integer_array<const LENGTH: u8, const WIDTH: usize>(
-    input: &mut Input,
-) -> Result<()> {
-    let length = match LENGTH {
-        0 => i32::from_le_bytes(input.fixed()?) as i64,
-        1 => input.varint(32)? as u32 as i32 as i64,
-        2 => input.varint(32)? as i64,
-        _ => unreachable!(),
-    };
-    let n = usize::try_from(length).map_err(|_| "negative Hail collection length")?;
-    if WIDTH == 0 {
-        input.skip_varints(n, 64)
-    } else {
-        input.skip(
-            n.checked_mul(WIDTH)
-                .ok_or("Hail array byte length overflow")?,
-        )
-    }
-}
-fn required_integer_array_skip(node: &Node, leb: bool) -> Option<fn(&mut Input) -> Result<()>> {
-    if !matches!(node.wire, Wire::Array) || !node.children[0].e.required {
-        return None;
-    }
-    let width = match node.array_skip {
-        ArraySkip::Int32 if !leb => 4,
-        ArraySkip::Int64 if !leb => 8,
-        ArraySkip::Int32 | ArraySkip::Int64 | ArraySkip::Varint => 0,
-        _ => return None,
-    };
-    let length = if node.varint_length {
-        2
-    } else if leb {
-        1
-    } else {
-        0
-    };
-    Some(match (length, width) {
-        (0, 0) => skip_required_integer_array::<0, 0>,
-        (0, 4) => skip_required_integer_array::<0, 4>,
-        (0, 8) => skip_required_integer_array::<0, 8>,
-        (1, 0) => skip_required_integer_array::<1, 0>,
-        (1, 4) => skip_required_integer_array::<1, 4>,
-        (1, 8) => skip_required_integer_array::<1, 8>,
-        (2, 0) => skip_required_integer_array::<2, 0>,
-        (2, 4) => skip_required_integer_array::<2, 4>,
-        (2, 8) => skip_required_integer_array::<2, 8>,
-        _ => unreachable!(),
-    })
-}
 struct BoundField<'n, 'a> {
     node: &'n Node,
     missing: usize,
@@ -713,7 +660,7 @@ struct BoundField<'n, 'a> {
 impl BoundField<'_, '_> {
     fn null(&mut self) -> Result<()> {
         match &mut self.output {
-            BoundOutput::Skip | BoundOutput::SkipIntegerArray(_) => {}
+            BoundOutput::Skip => {}
             BoundOutput::Bool(b) | BoundOutput::InvertedBool(b) => b.append_null(),
             BoundOutput::I32(b) => b.append_null(),
             BoundOutput::I64(b) => b.append_null(),
@@ -727,7 +674,6 @@ impl BoundField<'_, '_> {
     fn append(&mut self, input: &mut Input) -> Result<()> {
         match &mut self.output {
             BoundOutput::Skip => self.node.skip(input)?,
-            BoundOutput::SkipIntegerArray(skip) => skip(input)?,
             BoundOutput::Bool(b) => b.append_value(boolean(input)?),
             BoundOutput::InvertedBool(b) => b.append_value(!boolean(input)?),
             BoundOutput::I32(b) => b.append_value(self.node.integer(input, 32)? as i32),
@@ -746,7 +692,7 @@ impl BoundField<'_, '_> {
     }
     fn append_small(&mut self, value: u8) -> Result<()> {
         match &mut self.output {
-            BoundOutput::Skip | BoundOutput::SkipIntegerArray(_) => {}
+            BoundOutput::Skip => {}
             BoundOutput::I32(b) => b.append_value(value as i32),
             BoundOutput::I64(b) => b.append_value(value as i64),
             BoundOutput::Call(b) => {
@@ -1333,7 +1279,7 @@ impl Node {
         Ok(())
     }
 
-    fn bind_struct<'n, 'a>(&'n self, outputs: &'a mut [Column], leb: bool) -> Vec<BoundOp<'n, 'a>> {
+    fn bind_struct<'n, 'a>(&'n self, outputs: &'a mut [Column]) -> Vec<BoundOp<'n, 'a>> {
         let mut destinations = outputs.iter_mut().map(Some).collect::<Vec<_>>();
         let mut fields = self
             .fields
@@ -1341,10 +1287,7 @@ impl Node {
             .zip(&self.children)
             .map(|(op, node)| {
                 let output = if !op.project {
-                    match required_integer_array_skip(node, leb) {
-                        Some(skip) => BoundOutput::SkipIntegerArray(skip),
-                        None => BoundOutput::Skip,
-                    }
+                    BoundOutput::Skip
                 } else {
                     match destinations[op.dest]
                         .take()
@@ -1411,7 +1354,7 @@ impl Node {
         let Column::Struct(_, outputs, validity) = child else {
             unreachable!("struct array output")
         };
-        let mut ops = self.bind_struct(outputs, input.leb);
+        let mut ops = self.bind_struct(outputs);
         for i in 0..n {
             if !self.e.required && absent(element_bits, i) {
                 for op in &mut ops {
@@ -1746,180 +1689,6 @@ impl PartReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn bound_required_integer_array_skip_matches_generic_codecs_and_truncations() -> Result<()> {
-        fn leb(mut value: u64, out: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                out.push(byte | if value == 0 { 0 } else { 128 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        for kind in ["EInt32", "EInt64", "EVarint"] {
-            for compressed in [false, true] {
-                for modern in [false, true] {
-                    let ty = Type::Array {
-                        array: Box::new(Type::Primitive(if kind == "EInt64" {
-                            P::Int64
-                        } else {
-                            P::Int32
-                        })),
-                    };
-                    let encoding = Encoding {
-                        kind: if modern { "EArray2" } else { "EArray" }.into(),
-                        required: false,
-                        fields: vec![(
-                            "element".into(),
-                            Encoding {
-                                kind: kind.into(),
-                                required: true,
-                                fields: vec![],
-                                rank: 0,
-                            },
-                        )],
-                        rank: 0,
-                    };
-                    let node = Node::new(&encoding, &ty);
-                    let skip = required_integer_array_skip(&node, compressed).unwrap();
-                    for n in [0usize, 1, 3, 9] {
-                        let mut bytes = Vec::new();
-                        if modern || compressed {
-                            leb(n as u64, &mut bytes);
-                        } else {
-                            bytes.extend_from_slice(&(n as i32).to_le_bytes());
-                        }
-                        for i in 0..n {
-                            let value = [0, 127, 128, 300, u32::MAX as u64][i % 5];
-                            if kind == "EVarint" || compressed {
-                                leb(value, &mut bytes);
-                            } else if kind == "EInt64" {
-                                bytes.extend_from_slice(&(value as i64).to_le_bytes());
-                            } else {
-                                bytes.extend_from_slice(&(value as u32).to_le_bytes());
-                            }
-                        }
-                        for end in 0..=bytes.len() {
-                            let data: Arc<[u8]> = bytes[..end].into();
-                            let mut generic = Input::from_memory(data.clone(), compressed);
-                            let mut bound = Input::from_memory(data, compressed);
-                            let expected = node.skip(&mut generic);
-                            let actual = skip(&mut bound);
-                            assert_eq!(
-                                expected.is_ok(),
-                                actual.is_ok(),
-                                "{kind} compressed={compressed} modern={modern} n={n} end={end}"
-                            );
-                            assert_eq!(generic.bytes, bound.bytes);
-                            if let (Err(expected), Err(actual)) = (expected, actual) {
-                                assert_eq!(expected.to_string(), actual.to_string());
-                            }
-                        }
-                        bytes.push(77);
-                        let mut input = Input::from_memory(bytes.into(), compressed);
-                        skip(&mut input)?;
-                        assert_eq!(input.byte()?, 77);
-                    }
-                    if !modern {
-                        let mut bytes = Vec::new();
-                        if compressed {
-                            leb(u32::MAX as u64, &mut bytes);
-                        } else {
-                            bytes.extend_from_slice(&(-1i32).to_le_bytes());
-                        }
-                        let bytes: Arc<[u8]> = bytes.into();
-                        let expected = node
-                            .skip(&mut Input::from_memory(bytes.clone(), compressed))
-                            .unwrap_err();
-                        let actual = skip(&mut Input::from_memory(bytes, compressed)).unwrap_err();
-                        assert_eq!(expected.to_string(), actual.to_string());
-                    }
-                    let mut nullable = encoding.clone();
-                    nullable.fields[0].1.required = false;
-                    assert!(
-                        required_integer_array_skip(&Node::new(&nullable, &ty), compressed)
-                            .is_none()
-                    );
-                }
-            }
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn bound_integer_array_skip_handles_missing_outer_array() -> Result<()> {
-        let integer = Encoding {
-            kind: "EInt32".into(),
-            required: true,
-            fields: vec![],
-            rank: 0,
-        };
-        let array = Encoding {
-            kind: "EArray2".into(),
-            required: false,
-            fields: vec![("element".into(), integer.clone())],
-            rank: 0,
-        };
-        let encoding = Encoding {
-            kind: "EArray2".into(),
-            required: true,
-            fields: vec![(
-                "element".into(),
-                Encoding {
-                    kind: "EBaseStruct".into(),
-                    required: true,
-                    fields: vec![("unused".into(), array), ("x".into(), integer)],
-                    rank: 0,
-                },
-            )],
-            rank: 0,
-        };
-        let ty = Type::Array {
-            array: Box::new(Type::Struct {
-                r#struct: vec![
-                    (
-                        "unused".into(),
-                        Type::Array {
-                            array: Box::new(Type::Primitive(P::Int32)),
-                        },
-                    ),
-                    ("x".into(), Type::Primitive(P::Int32)),
-                ],
-            }),
-        };
-        let mut node = Node::new(&encoding, &ty);
-        node.demand(&[vec!["x".into()]]);
-        for compressed in [false, true] {
-            let mut bytes = vec![2, 1];
-            if compressed {
-                bytes.push(7);
-            } else {
-                bytes.extend_from_slice(&7i32.to_le_bytes());
-            }
-            bytes.extend_from_slice(&[0, 2]);
-            for value in [5i32, 6, 8] {
-                if compressed {
-                    bytes.push(value as u8);
-                } else {
-                    bytes.extend_from_slice(&value.to_le_bytes());
-                }
-            }
-            let bytes: Arc<[u8]> = bytes.into();
-            let mut expected = Column::projected(&node, &ty.to_arrow()?);
-            let mut actual = Column::projected(&node, &ty.to_arrow()?);
-            append_unbound_struct_array(
-                &node,
-                &mut Input::from_memory(bytes.clone(), compressed),
-                &mut expected,
-            )?;
-            node.append(&mut Input::from_memory(bytes, compressed), &mut actual)?;
-            assert_eq!(expected.finish()?.as_ref(), actual.finish()?.as_ref());
-        }
-        Ok(())
-    }
 
     fn append_unbound_struct_array(
         node: &Node,
@@ -3066,7 +2835,3 @@ mod tests {
 #[cfg(test)]
 #[path = "decode_bench.rs"]
 mod decode_bench;
-
-#[cfg(test)]
-#[path = "numeric_array_bench.rs"]
-mod numeric_array_bench;
