@@ -2835,3 +2835,7 @@ mod tests {
 #[cfg(test)]
 #[path = "decode_bench.rs"]
 mod decode_bench;
+
+#[cfg(test)]
+#[path = "numeric_array_bench.rs"]
+mod numeric_array_bench;
