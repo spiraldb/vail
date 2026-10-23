@@ -1,0 +1,14 @@
+{
+  "baseline_commit": "7aad07b5388bcafa2e95c2a59c79743fdc91e837",
+  "candidate_commit": "b9b12189a2b9c285f24de27c83e09de4329fe93a",
+  "baseline_native_sha256": "3f8b5061f4d9fc1b0e8b9ec26e68fb3847d547511fdd87c72ae6ec06182b2201",
+  "candidate_native_sha256": "f6b3508541d306fe0fb7220d3706edebc2f624827b57d1f7e910f867e2ceb41c",
+  "baseline_python": "/tmp/large-matrix-sum-env/bin/python",
+  "candidate_python": "/tmp/shared-annotation-env/bin/python",
+  "fixture": "/tmp/entries-profile25.mt",
+  "expected_columns": 2535,
+  "execution_concurrency": 32,
+  "upstream_source": "/Users/danielking/projects/vail/hail/hail/python/benchmark/hail/benchmark_matrix_table.py",
+  "upstream_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "measurement": "Alternating fresh processes, three baseline/candidate pairs. Query-only process rusage user+system across native threads, wall, maxRSS. No builds/profiles concurrent with paired timings. Ambient laptop activity not controlled; diagnostic comparative evidence, not fresh Hail comparison. Profiles separate at200Hz; CPU weights include startup/preparation and overlapping inclusive stacks."
+}
