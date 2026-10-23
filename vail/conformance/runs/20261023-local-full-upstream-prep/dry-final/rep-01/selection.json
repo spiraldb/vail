@@ -1,0 +1,28 @@
+[
+  {
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  }
+]
