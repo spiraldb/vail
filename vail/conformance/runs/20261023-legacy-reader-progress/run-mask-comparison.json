@@ -1,0 +1,57 @@
+{
+  "comparisons": [
+    {
+      "case": "table_force_count",
+      "vail_ms": 28.608332970179617,
+      "hail_ms": 147.5626250030473,
+      "hail_over_vail": 5.158029485914531,
+      "value": 1000000
+    },
+    {
+      "case": "table_scalar_sum",
+      "vail_ms": 21.882666973397136,
+      "hail_ms": 142.91625004261732,
+      "hail_over_vail": 6.5310252272431555,
+      "value": 1499998500000
+    },
+    {
+      "case": "matrix_decode_count",
+      "vail_ms": 511.7354580434039,
+      "hail_ms": 399.70554190222174,
+      "hail_over_vail": 0.7810784568856667,
+      "value": 24885
+    },
+    {
+      "case": "matrix_decode_count_gt",
+      "vail_ms": 337.6811249181628,
+      "hail_ms": 348.6862500431016,
+      "hail_over_vail": 1.032590288034624,
+      "value": 24885
+    },
+    {
+      "case": "matrix_entries_count",
+      "vail_ms": 510.8485829550773,
+      "hail_ms": 1256.5691249910742,
+      "hail_over_vail": 2.459768250157941,
+      "value": 63083475
+    },
+    {
+      "case": "matrix_sum_dp",
+      "vail_ms": 501.10270793084055,
+      "hail_ms": 399.9102079542354,
+      "hail_over_vail": 0.798060360929897,
+      "value": 353709503
+    }
+  ],
+  "implementation_commit": "6d7050a4",
+  "native_sha256": "7841b19db389cc949b91f4c3e99e0c4a95f0126ec8dc7ba541247b278c6ae11f",
+  "method": "Sequential engines; identical Hail-written files; two warmups/five measured runs; warm cache; shared M3 Max/14 workers. Harness waits for Rust builds and retries measurements overlapping compilers.",
+  "validation": {
+    "legacy_and_matrix_layout_python": 189,
+    "storage_unit": 23,
+    "storage_corpus": 2,
+    "current_selection_count_unit": 3
+  },
+  "all_values_match": true,
+  "goal_achieved": false
+}

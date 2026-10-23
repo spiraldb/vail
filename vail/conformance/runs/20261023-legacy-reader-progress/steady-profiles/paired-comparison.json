@@ -1,0 +1,42 @@
+{
+  "source": "79fd29d6",
+  "native_sha256": "8bdaf0eda1f9884c0dc1a28e145ad1eab25f67b034f7ca401abbfc606c0eb2a5",
+  "results": {
+    "table_force_count": {
+      "vail_ms": 27.91587496176362,
+      "hail_ms": 156.01249993778765,
+      "hail_over_vail": 5.588665952669512,
+      "value": 1000000
+    },
+    "table_scalar_sum": {
+      "vail_ms": 21.365290973335505,
+      "hail_ms": 130.62224991153926,
+      "hail_over_vail": 6.11375946503886,
+      "value": 1499998500000
+    },
+    "matrix_decode_count": {
+      "vail_ms": 483.2116669276729,
+      "hail_ms": 386.25195797067136,
+      "hail_over_vail": 0.7993431955534416,
+      "value": 24885
+    },
+    "matrix_decode_count_gt": {
+      "vail_ms": 342.3052500002086,
+      "hail_ms": 349.07925000879914,
+      "hail_over_vail": 1.0197893547019403,
+      "value": 24885
+    },
+    "matrix_entries_count": {
+      "vail_ms": 515.9184579970315,
+      "hail_ms": 1224.9593751039356,
+      "hail_over_vail": 2.3743274855093164,
+      "value": 63083475
+    },
+    "matrix_sum_dp": {
+      "vail_ms": 540.703458013013,
+      "hail_ms": 400.6569579942152,
+      "hail_over_vail": 0.7409920392715015,
+      "value": 353709503
+    }
+  }
+}

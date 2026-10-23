@@ -1,0 +1,20 @@
+
+running 4 tests
+test legacy::decode::decode_bench::resident_decoder_stages ... Resident Cursor -> normal buffered Input; 2 warmups, 7 samples, median. No filesystem/decompression. Stages overlap and MUST NOT be added together.
+parse varint32 + checksum               3.489 ns/value   286.61 Mvalue/s   469.71 MiB/s (262144 values, 450477 input bytes)
+skip varints (no value decode)          0.146 ns/value  6845.92 Mvalue/s 11219.27 MiB/s (262144 values, 450477 input bytes)
+parse float64 + checksum                2.198 ns/value   454.88 Mvalue/s  3470.46 MiB/s (262144 values, 2097152 input bytes)
+Arrow Int32 append (predecoded)         0.662 ns/value  1510.92 Mvalue/s     0.00 MiB/s (262144 values, 0 input bytes)
+Arrow Float64 append (predecoded)       0.703 ns/value  1423.40 Mvalue/s     0.00 MiB/s (262144 values, 0 input bytes)
+bitmap3 present + present count         0.909 ns/value  1099.91 Mvalue/s  1048.95 MiB/s (262144 values, 262144 input bytes)
+Node selected struct present + append   10.865 ns/value    92.04 Mvalue/s   545.84 MiB/s (524288 values, 3260250 input bytes)
+bitmap3 mixed + present count           0.862 ns/value  1160.14 Mvalue/s  1106.40 MiB/s (262144 values, 262144 input bytes)
+Node selected struct mixed + append    13.452 ns/value    74.34 Mvalue/s   476.30 MiB/s (471859 values, 3170156 input bytes)
+ok
+test legacy::input::tests::benchmark_real_entry_part_read_and_decompression ... {"benchmark":"legacy_entry_part_stages","path":"/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/entries/rows/parts/part-00-094762f2-924f-4110-af66-e06fc7b4e0cd","compressed_bytes":12708768,"uncompressed_bytes":45708313,"cached_file_read":{"seconds":[0.001222209,0.001235167,0.001090417,0.001058375,0.001062041],"median_seconds":0.001090417,"median_mib_per_second":11115.037306613547},"file_read_and_decompress":{"seconds":[0.035908542,0.035605,0.035784042,0.035879875,0.035831333],"median_seconds":0.035831333,"median_mib_per_second":1216.5565862246294},"memory_decompress":{"seconds":[0.034507,0.034240125,0.034226041,0.035419083,0.034209667],"median_seconds":0.034240125,"median_mib_per_second":1273.092436267622}}
+ok
+test legacy::tests::hail_compatibility_corpus_decodes_in_native_columns ... ok
+test legacy::tests::indexed_row_slices_match_full_reads ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 58 filtered out; finished in 2.30s
+

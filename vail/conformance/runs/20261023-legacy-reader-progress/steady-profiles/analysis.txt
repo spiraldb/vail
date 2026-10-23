@@ -1,0 +1,81 @@
+Legacy reader isolation, 2026-10-23
+
+Profiles: macOS sample, six seconds at 1 ms, after the second warmup.
+Full matrix force-count and DP sum use profile25.mt, the same Hail-written
+24,885 x 2,535 matrix as paired benchmarks. Sampling adds substantial overhead;
+legacy-focused-profile.json is profiling-run timing, NOT a benchmark comparison.
+The compressed text files retain the complete stacks. Wait samples and worker
+samples must not be combined into naive wall-time percentages.
+
+Findings:
+1. Full decode hot code includes Node::append_list, append_struct,
+   try_append_varint_run, scalar varint continuation handling and Zstd.
+   append_list includes inlined parsing/building; its name does not establish
+   that Arrow's append methods are intrinsically slow.
+2. Actual DataFusion file-source BaselineMetrics asks
+   get_record_batch_memory_size -> List.to_data -> Struct.to_data ->
+   LazyArrowCall.to_data. Thus accounting expanded calls despite storage-level
+   lazy export. A new buffer visitor preserves exact allocation deduplication
+   without materializing values, covered through actual DataFusion accounting.
+3. DP sum samples include struct dispatch, varint runs, skip_varints and
+   skip_array. Unreferenced GT is skipped without allele decomposition.
+4. Scalar field decisions include projection, requiredness, append kind,
+   run eligibility and special struct postprocessing; these are known per
+   reader. Missing bits and varint terminators depend on input bytes.
+
+Stage measurements (single thread, resident synthetic data, 2 warmups and
+7 samples, median; see legacy-isolated-stages.log):
+  varint32 parsing/checksum                 3.489 ns/value
+  float64 parsing/checksum                  2.198 ns/value
+  predecoded Arrow Int32 append             0.662 ns/value
+  predecoded Arrow Float64 append           0.703 ns/value
+  projected struct, all fields present     10.865 ns/output value
+  projected struct, mixed missingness      13.452 ns/output value
+These are overlapping workloads, not additive timings. Structs include
+bitmap reading, two selected scalar fields, one skipped integer and output
+growth; output-value denominators differ when values are absent. Builder
+stages use predecoded data. Do not infer an exact dispatch percentage.
+
+Real entry part 0: 12,708,768 compressed / 45,708,313 decompressed bytes.
+Median cached file read 1.090 ms; file read + framing/decompression 35.831 ms;
+resident compressed bytes + framing/decompression 34.240 ms. Full byte counts
+agree. This is sequential one-part throughput, not a parallel query estimate.
+
+Changes under validation:
+- Memory accounting visits retained buffers without materializing calls.
+- Select struct element decoding outside list element loop; precompute struct
+  postprocessing; one dense-record missingness guard.
+- Skipped varints count terminators using word masks/popcount without decoding
+  or validating numeric widths. Bounds, exact cursor position and EOF remain.
+
+Validation: 35 ordinary storage tests and four ignored tests (stage benchmarks
+plus Hail compatibility corpus and indexed row slices) passed. Native/Python
+validation: 189 Python tests passed with the rebuilt native extension.
+
+Matched follow-up (legacy-matched-stages.log): identical encoded scalar rows,
+initial Column capacity, selected fields, skipped field and validity; untimed
+full Arrow-output equality check. Generic Node 22.660 ns/row all-present and
+24.817 ns/row with missing values; handwritten scalar path 10.108/9.548 ns/row.
+Predecoded Arrow builders at capacity8192 including growth cost0.931/0.912
+ns/value versus capacity=N 0.895/0.955. Measurements are synthetic single-thread
+floors, not an end-to-end speedup claim. The handwritten loop prebinds builders
+and has a fixed schema; Node repeatedly dispatches over runtime schema state.
+This is evidence for specializing/binding the decoder, not for slow Arrow
+primitive append methods. Fresh paired query measurements follow.
+
+Paired query medians at source79fd29d6 (milliseconds, Vail/Hail):
+  table force count    27.9 / 156.0
+  table scalar sum     21.4 / 130.6
+  matrix full decode  483.2 / 386.3
+  matrix GT decode    342.3 / 349.1
+  matrix entry count  515.9 /1225.0
+  matrix DP sum       540.7 / 400.7
+All values match. Compiler-overlapping samples were retried by the harness.
+Tables and entry counting win; full decode and DP sum remain slower.
+No matrix performance target achieved by this checkpoint.
+
+Fresh actual full-query profile after accounting fix no longer contains
+LazyArrowCall expansion/to_data or packed allele decoding stacks. Its major
+active frames remain integer-array append_list loops, struct field dispatch,
+adjacent varint runs and decompression. Profiles cannot assign all inlined
+work to a single source-level operation.

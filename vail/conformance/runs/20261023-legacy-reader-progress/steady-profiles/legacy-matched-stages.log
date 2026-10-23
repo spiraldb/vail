@@ -1,0 +1,24 @@
+
+running 1 test
+test legacy::decode::decode_bench::resident_decoder_stages ... Resident Cursor -> normal buffered Input; 2 warmups, 7 samples, median. No filesystem/decompression. Stages overlap and MUST NOT be added together.
+parse varint32 + checksum               5.363 ns/value   186.45 Mvalue/s   305.55 MiB/s (262144 values, 450477 input bytes)
+skip varints (no value decode)          0.234 ns/value  4265.42 Mvalue/s  6990.28 MiB/s (262144 values, 450477 input bytes)
+parse float64 + checksum                3.158 ns/value   316.61 Mvalue/s  2415.58 MiB/s (262144 values, 2097152 input bytes)
+Int32 append capacity=N                 0.895 ns/value  1117.09 Mvalue/s     0.00 MiB/s (262144 values, 0 input bytes)
+Float64 append capacity=N               0.955 ns/value  1046.83 Mvalue/s     0.00 MiB/s (262144 values, 0 input bytes)
+Int32 append capacity8192 + growth      0.931 ns/value  1074.36 Mvalue/s     0.00 MiB/s (262144 values, 0 input bytes)
+Float64 append capacity8192 + growth    0.912 ns/value  1096.64 Mvalue/s     0.00 MiB/s (262144 values, 0 input bytes)
+bitmap3 present + present count         1.151 ns/value   868.87 Mvalue/s   828.62 MiB/s (262144 values, 262144 input bytes)
+Node selected struct present + append   11.330 ns/value    88.26 Mvalue/s   523.42 MiB/s (524288 values, 3260250 input bytes)
+  Node: 22.660 ns/row (262144 rows)
+handwritten selected present + append    5.054 ns/value   197.87 Mvalue/s  1173.46 MiB/s (524288 values, 3260250 input bytes)
+  handwritten: 10.108 ns/row (262144 rows)
+bitmap3 mixed + present count           0.862 ns/value  1160.57 Mvalue/s  1106.81 MiB/s (262144 values, 262144 input bytes)
+Node selected struct mixed + append    13.787 ns/value    72.53 Mvalue/s   464.71 MiB/s (471859 values, 3170156 input bytes)
+  Node: 24.817 ns/row (262144 rows)
+handwritten selected mixed + append     5.305 ns/value   188.51 Mvalue/s  1207.85 MiB/s (471859 values, 3170156 input bytes)
+  handwritten: 9.548 ns/row (262144 rows)
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 61 filtered out; finished in 0.23s
+

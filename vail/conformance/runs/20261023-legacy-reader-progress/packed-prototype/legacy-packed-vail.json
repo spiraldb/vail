@@ -1,0 +1,298 @@
+{
+  "engine": "vail",
+  "warmup": 2,
+  "runs": 5,
+  "reject_compilers": true,
+  "matrix": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "table_force_count": {
+      "seconds": [
+        0.025805584038607776,
+        0.027093583019450307,
+        0.027651250013150275,
+        0.028808583039790392,
+        0.02950270799919963
+      ],
+      "median": 0.027651250013150275,
+      "value": 1000000,
+      "attempts": [
+        {
+          "seconds": 0.03106795798521489,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.027912833029404283,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.025805584038607776,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.027093583019450307,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.027651250013150275,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.028808583039790392,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.02950270799919963,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "table_scalar_sum": {
+      "seconds": [
+        0.02285641699563712,
+        0.0234676250256598,
+        0.023040167056024075,
+        0.022825416992418468,
+        0.02350608306005597
+      ],
+      "median": 0.023040167056024075,
+      "value": 1499998500000,
+      "attempts": [
+        {
+          "seconds": 0.21640704199671745,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.022706208983436227,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.02285641699563712,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.0234676250256598,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.023040167056024075,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.022825416992418468,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.02350608306005597,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_decode_count": {
+      "seconds": [
+        0.6161621250212193,
+        0.5221730419434607,
+        0.4804036249406636,
+        0.60178274998907,
+        0.5311788329854608
+      ],
+      "median": 0.5311788329854608,
+      "value": 24885,
+      "attempts": [
+        {
+          "seconds": 0.549412083113566,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5272725420072675,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.6161621250212193,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5221730419434607,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.4804036249406636,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.60178274998907,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5311788329854608,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_decode_count_gt": {
+      "seconds": [
+        0.3523542919429019,
+        0.3869531248928979,
+        0.3881455840310082,
+        0.34426795900799334,
+        0.38329012505710125
+      ],
+      "median": 0.38329012505710125,
+      "value": 24885,
+      "attempts": [
+        {
+          "seconds": 0.3763452920829877,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.3651267080567777,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.3523542919429019,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3869531248928979,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.3881455840310082,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.34426795900799334,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.38329012505710125,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_entries_count": {
+      "seconds": [
+        0.5727471660356969,
+        0.5379831669852138,
+        0.5262230000225827,
+        0.5303029170027003,
+        0.5260326249990612
+      ],
+      "median": 0.5303029170027003,
+      "value": 63083475,
+      "attempts": [
+        {
+          "seconds": 0.5310870000394061,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5155316250165924,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5727471660356969,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5379831669852138,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5262230000225827,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5303029170027003,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5260326249990612,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    },
+    "matrix_sum_dp": {
+      "seconds": [
+        0.5506417080760002,
+        0.5536555829457939,
+        0.5794231250183657,
+        0.5639718750026077,
+        0.5774634580593556
+      ],
+      "median": 0.5639718750026077,
+      "value": 353709503,
+      "attempts": [
+        {
+          "seconds": 0.5396913329605013,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.553968625026755,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 0.5506417080760002,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5536555829457939,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5794231250183657,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5639718750026077,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 0.5774634580593556,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}
