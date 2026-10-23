@@ -8,6 +8,13 @@ use datafusion_common::{Result, ScalarValue, exec_datafusion_err};
 use datafusion_expr::{Accumulator, AggregateUDF, EmitTo, GroupsAccumulator};
 use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Column};
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct CountWhere;
+
+pub(crate) fn coordinate_count_where(udf: &AggregateUDF) -> bool {
+    crate::kernel_identity::aggregate_key::<CountWhere>(udf).is_some()
+}
+
 fn true_values(values: &[ArrayRef]) -> Result<ArrayRef> {
     let input = values
         .first()
@@ -50,7 +57,7 @@ pub(crate) fn udf(
     );
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         "count_where",
-        ("count_where", DataType::Boolean),
+        CountWhere,
         vec![DataType::Boolean],
         DataType::Int64,
         vec![DataType::Int64],

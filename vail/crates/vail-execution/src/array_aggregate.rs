@@ -833,6 +833,9 @@ impl Coordinates {
             Kernels::Sum(DenseNumeric::new(&dtype))
         } else if crate::aggregates::coordinate_count(native) {
             Kernels::Count(DenseNumeric::new(&DataType::Int64))
+        } else if crate::native_count_where::coordinate_count_where(native) {
+            // Boolean true counts are the numeric SUM of defined true bits.
+            Kernels::Sum(DenseNumeric::new(&DataType::Int64))
         } else if crate::native_mean::coordinate_mean(native) {
             Kernels::Ratio(DenseRatio::new(false))
         } else if crate::fraction::coordinate_fraction(native) {
