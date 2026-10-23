@@ -346,3 +346,17 @@ def test_forced_entry_count_keeps_column_expression_errors():
     matrix = matrix.annotate_cols(bad=hl.int32(hl.str(matrix.col_idx) + 'invalid'))
     with pytest.raises(hl.utils.FatalError, match='(?i)invalid|parse|cast|digit'):
         matrix.entries()._force_count()
+
+
+@pytest.mark.parametrize('seed', [13, 27])
+def test_forced_entry_count_preserves_seeded_entry_and_column_masks(seed):
+    matrix = hl.range_matrix_table(12, 9, 3)
+    matrix = matrix.key_rows_by(group=matrix.row_idx // 2)
+    matrix = matrix.annotate_entries(score=hl.rand_int32(0, 11, seed=seed))
+    matrix = matrix.filter_entries(matrix.score % 3 != 0)
+    matrix = matrix.annotate_cols(keep=hl.rand_bool(0.6, seed=seed + 1))
+    matrix = matrix.filter_cols(matrix.keep)
+    entries = matrix.entries()
+    expected = len(entries.collect())
+    assert entries._force_count() == expected
+    assert entries._force_count() == expected
