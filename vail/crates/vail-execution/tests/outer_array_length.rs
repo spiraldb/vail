@@ -19,6 +19,11 @@ fn run(value: ColumnarValue) -> datafusion_common::Result<ColumnarValue> {
     })
 }
 fn check(value: ArrayRef, expected: Vec<Option<i32>>) {
+    for (i, expected) in expected.iter().enumerate() {
+        let scalar = ScalarValue::try_from_array(value.as_ref(), i).unwrap();
+        let result = run(ColumnarValue::Scalar(scalar)).unwrap();
+        assert!(matches!(result, ColumnarValue::Scalar(ScalarValue::Int32(v)) if v == *expected));
+    }
     let ColumnarValue::Array(result) = run(ColumnarValue::Array(value)).unwrap() else {
         panic!("array")
     };
