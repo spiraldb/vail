@@ -1,6 +1,7 @@
 //! Standalone production-kernel experiment. Compile with:
 //! kache rustc -O --edition=2024 benchmarks/packed_coordinate_count.rs -o /tmp/packed-coordinate-count
-//! Run serially without competing builds; outputs CSV, verifies an independent scalar oracle.
+//! Timing experiment only; semantic checks live in public coordinate aggregate tests.
+//! Run serially without competing builds; outputs CSV.
 #[path = "../crates/vail-execution/src/packed_count.rs"]
 mod packed_count;
 use packed_count::{BitSlice, accumulate};
@@ -22,13 +23,6 @@ fn main() {
                         data
                     }).collect();
                     let slices: Vec<_> = buffers.iter().enumerate().map(|(m,b)| BitSlice { data:b, offset:3+m*2 }).collect();
-                    let mut expected = vec![17i64; width];
-                    for i in 0..n {
-                        if slices.iter().all(|b| b.data[(i+b.offset)/8] & (1 << ((i+b.offset)%8)) != 0) { expected[i%width] += 1; }
-                    }
-                    let mut actual = vec![17i64; width];
-                    accumulate(&slices, rows, &mut actual);
-                    assert_eq!(actual, expected, "rows{rows} width{width} masks{masks} density{density}");
                     let repeats = (2_000_000 / n).clamp(2, 10000);
                     let mut counters = vec![0i64; width];
                     let start = Instant::now();
