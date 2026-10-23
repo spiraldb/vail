@@ -34,6 +34,10 @@ impl CoordinateOrderedTake {
         }
     }
     fn ensure_width(&mut self, width: usize) -> Result<()> {
+        // state() may be requested before input establishes coordinate width.
+        if width > 0 && self.state.as_ref().is_some_and(|state| state.is_empty()) {
+            self.state = None;
+        }
         if let Some(state) = &self.state {
             if state.len() != width {
                 return Err(error("coordinate ordered take width mismatch"));
