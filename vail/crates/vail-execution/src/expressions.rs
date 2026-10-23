@@ -776,12 +776,16 @@ struct CompilationMemo {
     generated: Vec<Arc<Expr>>,
     scans: HashMap<*const Expr, bool>,
     root_expression: usize,
+    suppress_local_cse: bool,
+    local_cse_regions: HashMap<usize, HashSet<usize>>,
+    local_cse_names: HashSet<String>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct CompilationBindings {
     schema: Schema,
     globals: Schema,
     scope: Vec<(String, Type, usize)>,
+    suppress_local_cse: bool,
 }
 impl CompilationMemo {
     fn context(
@@ -794,6 +798,7 @@ impl CompilationMemo {
             schema: schema.clone(),
             globals: globals.clone(),
             scope: scope.to_vec(),
+            suppress_local_cse: self.suppress_local_cse,
         };
         let next = self.contexts.len();
         *self.contexts.entry(descriptor).or_insert(next)
@@ -4904,6 +4909,18 @@ fn lower_bound(
         root_expression: expr as *const Expr as usize,
         ..CompilationMemo::default()
     };
+    // Reserve names once for the whole retained DAG, including binders hidden
+    // inside opaque callbacks. A local binding must not shadow those later.
+    expr.visit_unique(&mut |node| {
+        if let Expr::LambdaVariable { name, .. } | Expr::Column { name } = node {
+            memo.local_cse_names.insert(name.clone());
+        }
+        let mut position = 0;
+        node.for_each_child(&mut |_| {
+            memo.local_cse_names.extend(node.child_binders(position).into_iter().map(str::to_owned));
+            position += 1;
+        });
+    });
     lower_scoped(expr, schema, globals, &[], &mut memo)
 }
 
@@ -6060,12 +6077,23 @@ fn lower_uncached(
             let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
             let capture_types = body_fields[3..].iter().map(|f| f.data_type().clone()).collect();
             let body_schema = Schema::new(body_fields);
-            let body_context = memo.context(&body_schema, globals.schema(), scope);
-            let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
-            let all_present_body = all_present.map(|value|
-                lower_synthetic(Expr::Cast { dtype: body_type, value: Arc::new(value) },
-                    &body_schema, globals, scope, memo, body_context)
-            ).transpose()?;
+            // The lexical binder stores its inputs in Arrow batch columns.
+            // Do not turn scalar row/global captures into repeated arrays on
+            // the scalar-row route. That route needs a scalar-preserving local
+            // binder before it can benefit from CSE.
+            let previous_cse = memo.suppress_local_cse;
+            memo.suppress_local_cse |= scalar_rows && !capture_keys.is_empty();
+            let compiled = (|| {
+                let body_context = memo.context(&body_schema, globals.schema(), scope);
+                let body = lower_synthetic(body, &body_schema, globals, scope, memo, body_context)?;
+                let all_present_body = all_present.map(|value|
+                    lower_synthetic(Expr::Cast { dtype: body_type, value: Arc::new(value) },
+                        &body_schema, globals, scope, memo, body_context)
+                ).transpose()?;
+                Ok::<_, ExprError>((body, all_present_body))
+            })();
+            memo.suppress_local_cse = previous_cse;
+            let (body, all_present_body) = compiled?;
             Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new(
                 entries,
                 columns,
@@ -6834,6 +6862,18 @@ fn lower_uncached(
             interval_boundary_sequence(second, first)?
         }
         Expr::Struct { fields } => {
+            if !memo.suppress_local_cse {
+                let reserved = &memo.local_cse_names;
+                if let Some(shared) = crate::local_cse::share_struct(
+                    expr, memo.local_cse_regions.entry(context).or_default(), |name| {
+                        reserved.contains(name)
+                            || scope.iter().any(|(parameter, _, _)| parameter == name)
+                            || schema.fields().iter().any(|field| field.name() == name)
+                    },
+                )? {
+                    return lower_synthetic(shared, schema, globals, scope, memo, context);
+                }
+            }
             let DataType::Struct(output_fields) = &dtype else {
                 return Err(ExprError::Invalid("struct output descriptor is absent".into()));
             };
