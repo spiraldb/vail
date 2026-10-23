@@ -154,7 +154,7 @@ def test_grouped_reducers_with_unused_and_referenced_global_arrays():
         (0, 4, 18), (1, 4, 22), (2, 4, 26)]
     referenced = table.group_by(k=(table.idx + table.shift) % 3).aggregate(
         total=hl.agg.sum(table.idx + table.shift),
-        payload=hl.agg.take(table.payload[table.idx], 1))
+        picked=hl.agg.take(table.payload[table.idx], 1))
     assert [(x.k, x.total) for x in referenced.collect()] == [(0, 54), (1, 46), (2, 50)]
 
 
