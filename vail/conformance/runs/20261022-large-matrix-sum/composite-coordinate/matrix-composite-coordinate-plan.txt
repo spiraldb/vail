@@ -1,0 +1,1222 @@
+ScalarSubqueryExec: subqueries=1
+  ProjectionExec: expr=[col_idx@0 as col_idx, result@1 as result, 0 as __vail_partition]
+    OrderedConcatExec: children=1
+      TablePartitionViewExec: partition=0
+        VailConsumerScopeExec: consumer=46
+          SortExec: expr=[col_idx@0 ASC NULLS LAST, __vail_sort_ordinal@3 ASC], preserve_partitioning=[false]
+            BoundedWindowAggExec: wdw=[__vail_sort_ordinal: Field { "__vail_sort_ordinal": UInt64 }, frame: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW], mode=[Sorted]
+              OrderedConcatExec: children=1
+                TablePartitionViewExec: partition=0
+                  VailConsumerScopeExec: consumer=45
+                    ProjectionExec: expr=[vail_semantic_kernel_get_field_bfba1512024a586e(__vail_matrix_col@1) as col_idx, vail_semantic_kernel_get_field_1bad7e9cc8b7c613(__vail_matrix_col@1) as result, __vail_partition@2 as __vail_partition]
+                      UnboundActionExec: Expression semantic operation; action preparation remains unbound [diagnostic only; dependencies were not executed]
+                        ProjectionExec: expr=[vail_semantic_kernel_get_field_93ea9b81b2be9bd9(__vail_external_global_0@0) as __vail_matrix_columns]
+                          CrossJoinExec
+                            CrossJoinExec
+                              ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                  ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                    CrossJoinExec
+                                      PlaceholderRowExec
+                                      ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                        AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                          ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                            VailConsumerScopeExec: consumer=44
+                                              OrderedConcatExec: children=1
+                                                TablePartitionViewExec: partition=0
+                                                  VailConsumerScopeExec: consumer=43
+                                                    ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, named_struct(col_idx, vail_semantic_kernel_get_field_c4cd9c37b52a3114(__vail_matrix_col@1), result, vail_semantic_kernel_get_field_e0531ed78052c8ab(__vail_lookup@2)) as __vail_matrix_col, __vail_partition@3 as __vail_partition]
+                                                      UnboundActionExec: Lookup semantic operation; action preparation remains unbound [diagnostic only; dependencies were not executed]
+                                                        UnboundActionExec: Expression semantic operation; action preparation remains unbound [diagnostic only; dependencies were not executed]
+                                                          ProjectionExec: expr=[vail_semantic_kernel_get_field_76be0fe81e1dc6ed(__vail_external_global_0@0) as __vail_matrix_columns]
+                                                            CrossJoinExec
+                                                              ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                                                UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                  ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                                                    CrossJoinExec
+                                                                      PlaceholderRowExec
+                                                                      ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                                                        AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                                                          ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                                                            VailConsumerScopeExec: consumer=29
+                                                                              OrderedConcatExec: children=1
+                                                                                TablePartitionViewExec: partition=0
+                                                                                  VailConsumerScopeExec: consumer=28
+                                                                                    ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                                                                                      VailSourcePartitions: 1
+                                                                                        CooperativeExec
+                                                                                          RangeExec: [0, 1000)
+                                                              PlaceholderRowExec
+                                                        ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, value@1 as value, 0 as __vail_partition]
+                                                          OrderedConcatExec: children=1
+                                                            TablePartitionViewExec: partition=0
+                                                              VailConsumerScopeExec: consumer=42
+                                                                SortExec: expr=[__vail_matrix_col_id@0 ASC NULLS LAST, __vail_sort_ordinal@3 ASC], preserve_partitioning=[false]
+                                                                  BoundedWindowAggExec: wdw=[__vail_sort_ordinal: Field { "__vail_sort_ordinal": UInt64 }, frame: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW], mode=[Sorted]
+                                                                    OrderedConcatExec: children=1
+                                                                      TablePartitionViewExec: partition=0
+                                                                        VailConsumerScopeExec: consumer=41
+                                                                          UnboundActionExec: Expression semantic operation; action preparation remains unbound [diagnostic only; dependencies were not executed]
+                                                                            UnboundActionExec: conditional singleton selection remains unbound [diagnostic only; dependencies were not executed]
+                                                                              ProjectionExec: expr=[__common_expr_1@0 IS NULL OR array_length(__common_expr_1@0) = 0 as value]
+                                                                                ProjectionExec: expr=[vail_semantic_kernel_get_field_40de2114114e1667(__vail_external_global_0@0) as __common_expr_1]
+                                                                                  CrossJoinExec
+                                                                                    ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                                                                      UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                        ProjectionExec: expr=[vail_semantic_kernel_array_transform_1c3c4e8d6ce0c593(__vail_aggregate@0) as value]
+                                                                                          CrossJoinExec
+                                                                                            CrossJoinExec
+                                                                                              ProjectionExec: expr=[]
+                                                                                                UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                                  ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                                                                                    CrossJoinExec
+                                                                                                      PlaceholderRowExec
+                                                                                                      ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                                                                                        AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                                                                                          ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                                                                                            VailConsumerScopeExec: consumer=31
+                                                                                                              OrderedConcatExec: children=1
+                                                                                                                TablePartitionViewExec: partition=0
+                                                                                                                  VailConsumerScopeExec: consumer=30
+                                                                                                                    ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                                                                                                                      VailSourcePartitions: 1
+                                                                                                                        CooperativeExec
+                                                                                                                          RangeExec: [0, 1000)
+                                                                                              PlaceholderRowExec
+                                                                                            CrossJoinExec
+                                                                                              PlaceholderRowExec
+                                                                                              AggregateExec: mode=Final, gby=[], aggr=[vail_coordinate_bundle(vail_semantic_kernel_array_transform_2af742e954fcc683(__vail_matrix_cells)) RESPECT NULLS as __vail_aggregate]
+                                                                                                CoalescePartitionsExec
+                                                                                                  AggregateExec: mode=Partial, gby=[], aggr=[vail_coordinate_bundle(vail_semantic_kernel_array_transform_2af742e954fcc683(__vail_matrix_cells)) RESPECT NULLS as __vail_aggregate]
+                                                                                                    ProjectionExec: expr=[__vail_matrix_cells@1 as __vail_matrix_cells]
+                                                                                                      VailConsumerScopeExec: consumer=32
+                                                                                                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, Projection(__vail_matrix_cells) as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+                                                                                                          ProjectionExec: expr=[named_struct(row_idx, idx@0) as __vail_matrix_row, ProjectionBroadcast(vail_semantic_kernel_array_transform_375443bbd99dd65f()) as __vail_matrix_cells, __vail_partition@1 as __vail_partition]
+                                                                                                            VailSourcePartitions: 250
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [0, 40)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [40, 80)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [80, 120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [120, 160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [160, 200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [200, 240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [240, 280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [280, 320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [320, 360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [360, 400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [400, 440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [440, 480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [480, 520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [520, 560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [560, 600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [600, 640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [640, 680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [680, 720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [720, 760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [760, 800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [800, 840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [840, 880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [880, 920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [920, 960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [960, 1000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1000, 1040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1040, 1080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1080, 1120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1120, 1160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1160, 1200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1200, 1240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1240, 1280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1280, 1320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1320, 1360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1360, 1400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1400, 1440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1440, 1480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1480, 1520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1520, 1560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1560, 1600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1600, 1640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1640, 1680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1680, 1720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1720, 1760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1760, 1800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1800, 1840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1840, 1880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1880, 1920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1920, 1960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [1960, 2000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2000, 2040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2040, 2080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2080, 2120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2120, 2160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2160, 2200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2200, 2240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2240, 2280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2280, 2320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2320, 2360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2360, 2400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2400, 2440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2440, 2480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2480, 2520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2520, 2560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2560, 2600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2600, 2640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2640, 2680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2680, 2720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2720, 2760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2760, 2800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2800, 2840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2840, 2880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2880, 2920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2920, 2960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [2960, 3000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3000, 3040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3040, 3080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3080, 3120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3120, 3160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3160, 3200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3200, 3240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3240, 3280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3280, 3320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3320, 3360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3360, 3400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3400, 3440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3440, 3480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3480, 3520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3520, 3560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3560, 3600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3600, 3640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3640, 3680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3680, 3720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3720, 3760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3760, 3800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3800, 3840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3840, 3880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3880, 3920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3920, 3960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [3960, 4000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4000, 4040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4040, 4080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4080, 4120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4120, 4160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4160, 4200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4200, 4240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4240, 4280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4280, 4320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4320, 4360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4360, 4400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4400, 4440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4440, 4480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4480, 4520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4520, 4560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4560, 4600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4600, 4640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4640, 4680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4680, 4720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4720, 4760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4760, 4800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4800, 4840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4840, 4880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4880, 4920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4920, 4960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [4960, 5000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5000, 5040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5040, 5080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5080, 5120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5120, 5160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5160, 5200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5200, 5240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5240, 5280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5280, 5320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5320, 5360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5360, 5400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5400, 5440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5440, 5480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5480, 5520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5520, 5560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5560, 5600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5600, 5640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5640, 5680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5680, 5720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5720, 5760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5760, 5800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5800, 5840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5840, 5880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5880, 5920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5920, 5960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [5960, 6000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6000, 6040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6040, 6080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6080, 6120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6120, 6160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6160, 6200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6200, 6240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6240, 6280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6280, 6320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6320, 6360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6360, 6400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6400, 6440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6440, 6480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6480, 6520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6520, 6560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6560, 6600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6600, 6640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6640, 6680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6680, 6720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6720, 6760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6760, 6800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6800, 6840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6840, 6880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6880, 6920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6920, 6960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [6960, 7000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7000, 7040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7040, 7080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7080, 7120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7120, 7160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7160, 7200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7200, 7240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7240, 7280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7280, 7320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7320, 7360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7360, 7400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7400, 7440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7440, 7480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7480, 7520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7520, 7560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7560, 7600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7600, 7640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7640, 7680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7680, 7720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7720, 7760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7760, 7800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7800, 7840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7840, 7880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7880, 7920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7920, 7960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [7960, 8000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8000, 8040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8040, 8080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8080, 8120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8120, 8160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8160, 8200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8200, 8240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8240, 8280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8280, 8320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8320, 8360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8360, 8400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8400, 8440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8440, 8480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8480, 8520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8520, 8560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8560, 8600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8600, 8640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8640, 8680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8680, 8720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8720, 8760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8760, 8800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8800, 8840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8840, 8880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8880, 8920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8920, 8960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [8960, 9000)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9000, 9040)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9040, 9080)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9080, 9120)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9120, 9160)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9160, 9200)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9200, 9240)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9240, 9280)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9280, 9320)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9320, 9360)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9360, 9400)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9400, 9440)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9440, 9480)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9480, 9520)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9520, 9560)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9560, 9600)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9600, 9640)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9640, 9680)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9680, 9720)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9720, 9760)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9760, 9800)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9800, 9840)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9840, 9880)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9880, 9920)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9920, 9960)
+                                                                                                              CooperativeExec
+                                                                                                                RangeExec: [9960, 10000)
+                                                                                    PlaceholderRowExec
+                                                                              ProjectionExec: expr=[vail_semantic_kernel_array_transform_4de739d0fe109a08(__vail_external_global_0@1, __vail_external_global_1@0) as value]
+                                                                                CrossJoinExec
+                                                                                  CrossJoinExec
+                                                                                    ProjectionExec: expr=[named_struct(__vail_matrix_columns, vail_semantic_kernel_get_field_76be0fe81e1dc6ed(__vail_external_global_0@0)) as __vail_external_global_1]
+                                                                                      CrossJoinExec
+                                                                                        ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                                                                          UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                            ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                                                                              CrossJoinExec
+                                                                                                PlaceholderRowExec
+                                                                                                ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                                                                                  AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                                                                                    ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                                                                                      VailConsumerScopeExec: consumer=34
+                                                                                                        OrderedConcatExec: children=1
+                                                                                                          TablePartitionViewExec: partition=0
+                                                                                                            VailConsumerScopeExec: consumer=33
+                                                                                                              ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                                                                                                                VailSourcePartitions: 1
+                                                                                                                  CooperativeExec
+                                                                                                                    RangeExec: [0, 1000)
+                                                                                        PlaceholderRowExec
+                                                                                    ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                                                                      UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                        ProjectionExec: expr=[named_struct(total, __vail_aggregate@0, n, __vail_aggregate_@1, mean, __vail_aggregate__@2, fraction, __vail_aggregate___@3) as value]
+                                                                                          CrossJoinExec
+                                                                                            PlaceholderRowExec
+                                                                                            ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE 0 END as __vail_aggregate, __vail_aggregate_@1 as __vail_aggregate_, __vail_aggregate__@2 as __vail_aggregate__, __vail_aggregate___@3 as __vail_aggregate___]
+                                                                                              AggregateExec: mode=Single, gby=[], aggr=[sum(__common_expr_2) RESPECT NULLS as __vail_aggregate, count(1) RESPECT NULLS as __vail_aggregate_, mean(__common_expr_2) RESPECT NULLS as __vail_aggregate__, fraction(__common_expr_2 > 5000) RESPECT NULLS as __vail_aggregate___]
+                                                                                                ProjectionExec: expr=[vail_semantic_kernel_get_field_0210c316d83d2016(__vail_matrix_entry@2) as __common_expr_2]
+                                                                                                  VailConsumerScopeExec: consumer=35
+                                                                                                    VailSourcePartitions: 1
+                                                                                                      CooperativeExec
+                                                                                                        ParallelizeExec
+                                                                                  PlaceholderRowExec
+                                                                              ProjectionExec: expr=[vail_semantic_kernel_get_field_40de2114114e1667(__vail_external_global_0@0) as value]
+                                                                                CrossJoinExec
+                                                                                  ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                                                                    UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                      ProjectionExec: expr=[vail_semantic_kernel_array_transform_1c3c4e8d6ce0c593(__vail_aggregate@0) as value]
+                                                                                        CrossJoinExec
+                                                                                          CrossJoinExec
+                                                                                            ProjectionExec: expr=[]
+                                                                                              UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                                ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                                                                                  CrossJoinExec
+                                                                                                    PlaceholderRowExec
+                                                                                                    ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                                                                                      AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                                                                                        ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                                                                                          VailConsumerScopeExec: consumer=37
+                                                                                                            OrderedConcatExec: children=1
+                                                                                                              TablePartitionViewExec: partition=0
+                                                                                                                VailConsumerScopeExec: consumer=36
+                                                                                                                  ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                                                                                                                    VailSourcePartitions: 1
+                                                                                                                      CooperativeExec
+                                                                                                                        RangeExec: [0, 1000)
+                                                                                            PlaceholderRowExec
+                                                                                          CrossJoinExec
+                                                                                            PlaceholderRowExec
+                                                                                            AggregateExec: mode=Final, gby=[], aggr=[vail_coordinate_bundle(vail_semantic_kernel_array_transform_2af742e954fcc683(__vail_matrix_cells)) RESPECT NULLS as __vail_aggregate]
+                                                                                              CoalescePartitionsExec
+                                                                                                AggregateExec: mode=Partial, gby=[], aggr=[vail_coordinate_bundle(vail_semantic_kernel_array_transform_2af742e954fcc683(__vail_matrix_cells)) RESPECT NULLS as __vail_aggregate]
+                                                                                                  ProjectionExec: expr=[__vail_matrix_cells@1 as __vail_matrix_cells]
+                                                                                                    VailConsumerScopeExec: consumer=38
+                                                                                                      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, Projection(__vail_matrix_cells) as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+                                                                                                        ProjectionExec: expr=[named_struct(row_idx, idx@0) as __vail_matrix_row, ProjectionBroadcast(vail_semantic_kernel_array_transform_375443bbd99dd65f()) as __vail_matrix_cells, __vail_partition@1 as __vail_partition]
+                                                                                                          VailSourcePartitions: 250
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [0, 40)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [40, 80)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [80, 120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [120, 160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [160, 200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [200, 240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [240, 280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [280, 320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [320, 360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [360, 400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [400, 440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [440, 480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [480, 520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [520, 560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [560, 600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [600, 640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [640, 680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [680, 720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [720, 760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [760, 800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [800, 840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [840, 880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [880, 920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [920, 960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [960, 1000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1000, 1040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1040, 1080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1080, 1120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1120, 1160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1160, 1200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1200, 1240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1240, 1280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1280, 1320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1320, 1360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1360, 1400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1400, 1440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1440, 1480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1480, 1520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1520, 1560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1560, 1600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1600, 1640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1640, 1680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1680, 1720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1720, 1760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1760, 1800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1800, 1840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1840, 1880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1880, 1920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1920, 1960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [1960, 2000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2000, 2040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2040, 2080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2080, 2120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2120, 2160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2160, 2200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2200, 2240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2240, 2280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2280, 2320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2320, 2360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2360, 2400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2400, 2440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2440, 2480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2480, 2520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2520, 2560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2560, 2600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2600, 2640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2640, 2680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2680, 2720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2720, 2760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2760, 2800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2800, 2840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2840, 2880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2880, 2920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2920, 2960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [2960, 3000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3000, 3040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3040, 3080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3080, 3120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3120, 3160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3160, 3200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3200, 3240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3240, 3280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3280, 3320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3320, 3360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3360, 3400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3400, 3440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3440, 3480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3480, 3520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3520, 3560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3560, 3600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3600, 3640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3640, 3680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3680, 3720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3720, 3760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3760, 3800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3800, 3840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3840, 3880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3880, 3920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3920, 3960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [3960, 4000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4000, 4040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4040, 4080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4080, 4120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4120, 4160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4160, 4200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4200, 4240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4240, 4280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4280, 4320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4320, 4360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4360, 4400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4400, 4440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4440, 4480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4480, 4520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4520, 4560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4560, 4600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4600, 4640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4640, 4680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4680, 4720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4720, 4760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4760, 4800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4800, 4840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4840, 4880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4880, 4920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4920, 4960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [4960, 5000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5000, 5040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5040, 5080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5080, 5120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5120, 5160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5160, 5200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5200, 5240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5240, 5280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5280, 5320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5320, 5360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5360, 5400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5400, 5440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5440, 5480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5480, 5520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5520, 5560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5560, 5600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5600, 5640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5640, 5680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5680, 5720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5720, 5760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5760, 5800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5800, 5840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5840, 5880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5880, 5920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5920, 5960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [5960, 6000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6000, 6040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6040, 6080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6080, 6120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6120, 6160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6160, 6200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6200, 6240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6240, 6280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6280, 6320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6320, 6360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6360, 6400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6400, 6440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6440, 6480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6480, 6520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6520, 6560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6560, 6600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6600, 6640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6640, 6680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6680, 6720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6720, 6760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6760, 6800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6800, 6840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6840, 6880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6880, 6920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6920, 6960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [6960, 7000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7000, 7040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7040, 7080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7080, 7120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7120, 7160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7160, 7200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7200, 7240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7240, 7280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7280, 7320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7320, 7360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7360, 7400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7400, 7440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7440, 7480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7480, 7520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7520, 7560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7560, 7600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7600, 7640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7640, 7680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7680, 7720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7720, 7760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7760, 7800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7800, 7840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7840, 7880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7880, 7920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7920, 7960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [7960, 8000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8000, 8040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8040, 8080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8080, 8120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8120, 8160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8160, 8200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8200, 8240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8240, 8280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8280, 8320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8320, 8360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8360, 8400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8400, 8440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8440, 8480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8480, 8520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8520, 8560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8560, 8600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8600, 8640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8640, 8680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8680, 8720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8720, 8760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8760, 8800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8800, 8840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8840, 8880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8880, 8920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8920, 8960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [8960, 9000)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9000, 9040)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9040, 9080)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9080, 9120)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9120, 9160)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9160, 9200)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9200, 9240)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9240, 9280)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9280, 9320)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9320, 9360)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9360, 9400)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9400, 9440)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9440, 9480)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9480, 9520)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9520, 9560)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9560, 9600)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9600, 9640)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9640, 9680)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9680, 9720)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9720, 9760)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9760, 9800)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9800, 9840)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9840, 9880)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9880, 9920)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9920, 9960)
+                                                                                                            CooperativeExec
+                                                                                                              RangeExec: [9960, 10000)
+                                                                                  PlaceholderRowExec
+                                                                            ProjectionExec: expr=[vail_semantic_kernel_get_field_76be0fe81e1dc6ed(__vail_external_global_0@0) as __vail_matrix_columns]
+                                                                              CrossJoinExec
+                                                                                ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+                                                                                  UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                                                                    ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                                                                      CrossJoinExec
+                                                                                        PlaceholderRowExec
+                                                                                        ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                                                                          AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                                                                            ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                                                                              VailConsumerScopeExec: consumer=40
+                                                                                                OrderedConcatExec: children=1
+                                                                                                  TablePartitionViewExec: partition=0
+                                                                                                    VailConsumerScopeExec: consumer=39
+                                                                                                      ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                                                                                                        VailSourcePartitions: 1
+                                                                                                          CooperativeExec
+                                                                                                            RangeExec: [0, 1000)
+                                                                                PlaceholderRowExec
+                              ProjectionExec: expr=[]
+                                UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+                                  ProjectionExec: expr=[__vail_aggregate@0 as value]
+                                    CrossJoinExec
+                                      PlaceholderRowExec
+                                      ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                                        AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                                          ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                                            VailConsumerScopeExec: consumer=6
+                                              OrderedConcatExec: children=1
+                                                TablePartitionViewExec: partition=0
+                                                  VailConsumerScopeExec: consumer=5
+                                                    ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                                                      VailSourcePartitions: 1
+                                                        CooperativeExec
+                                                          RangeExec: [0, 1000)
+                            PlaceholderRowExec
+  ProjectionExec: expr=[named_struct(__vail_matrix_columns, vail_semantic_kernel_get_field_76be0fe81e1dc6ed(__vail_external_global_0@0)) as __vail_scalar_external_0]
+    CrossJoinExec
+      ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+        UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+          ProjectionExec: expr=[__vail_aggregate@0 as value]
+            CrossJoinExec
+              PlaceholderRowExec
+              ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                  ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                    VailConsumerScopeExec: consumer=3
+                      OrderedConcatExec: children=1
+                        TablePartitionViewExec: partition=0
+                          VailConsumerScopeExec: consumer=2
+                            ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                              VailSourcePartitions: 1
+                                CooperativeExec
+                                  RangeExec: [0, 1000)
+      PlaceholderRowExec
+
