@@ -3487,6 +3487,9 @@ fn hail_f64_max(a: f64, b: f64) -> f64 {
     }
 }
 
+#[path = "integer_list_sum.rs"]
+mod integer_list_sum;
+
 fn array_reduce(
     array: &ArrayRef,
     operation: ArrayReduction,
@@ -3645,6 +3648,7 @@ enum HailKind {
         step: bool,
     },
     ArrayReduce(ArrayReduction, bool),
+    IntegerListFieldSum(Vec<String>, bool),
     Locus {
         operation: String,
         reference: Arc<ReferenceDefinition>,
@@ -4762,6 +4766,9 @@ impl PhysicalExpr for HailPhysicalExpr {
                 HailKind::ArrayIndex => array_index(&args[0], &args[1], &self.dtype),
                 HailKind::ArraySlice { start, stop, step } => {
                     array_slice(&args, *start, *stop, *step, &self.dtype)
+                }
+                HailKind::IntegerListFieldSum(path, filter_missing) => {
+                    integer_list_sum::evaluate(&args[0], path, *filter_missing, &self.dtype)
                 }
                 HailKind::ArrayReduce(operation, filter_missing) => {
                     array_reduce(&args[0], *operation, *filter_missing, &self.dtype)
@@ -6580,11 +6587,23 @@ fn lower_uncached(
             operation,
             filter_missing,
             value,
-        } => custom(
-            HailKind::ArrayReduce(*operation, *filter_missing),
-            vec![lower_cached(value, schema, globals, scope, memo, context)?],
-            dtype,
-        ),
+        } => {
+            let fusion = if *operation == ArrayReduction::Sum {
+                if let Expr::ArrayMap { value: input, parameter, body } = value.as_ref() {
+                    if let Type::Array { array } = input.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
+                        integer_list_sum::projection(body, parameter, &array, &dtype)
+                            .map(|path| (input, path))
+                    } else { None }
+                } else { None }
+            } else { None };
+            if let Some((input, path)) = fusion {
+                custom(HailKind::IntegerListFieldSum(path, *filter_missing),
+                    vec![lower_cached(input, schema, globals, scope, memo, context)?], dtype)
+            } else {
+                custom(HailKind::ArrayReduce(*operation, *filter_missing),
+                    vec![lower_cached(value, schema, globals, scope, memo, context)?], dtype)
+            }
+        },
         Expr::GetField { value, name } => {
             let invert = name == "includes_start"
                 && matches!(

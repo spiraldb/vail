@@ -142,3 +142,36 @@ def test_column_sum_preserves_int32_map_wrapping_before_wide_accumulation():
     matrix = matrix.annotate_entries(value=hl.int32(2147483647) + matrix.row_idx)
     result = matrix.annotate_cols(total=hl.agg.sum(matrix.value))
     assert result.cols().collect()[0].total == -1
+
+
+def test_entry_sum_widens_int32_before_row_reduction():
+    matrix = hl.utils.range_matrix_table(1, 3, 1)
+    positive = matrix.annotate_entries(value=hl.int32(2**31 - 1))
+    assert positive.aggregate_entries(hl.agg.sum(positive.value)) == 3 * (2**31 - 1)
+    lazy = positive.aggregate_entries(hl.agg.sum(positive.value), _localize=False)
+    assert hl.eval(lazy) == 3 * (2**31 - 1)
+    negative = matrix.annotate_entries(value=hl.int32(-(2**31)))
+    assert negative.aggregate_entries(hl.agg.sum(negative.value)) == -3 * 2**31
+    missing = positive.filter_entries(positive.col_idx != 1)
+    assert missing.aggregate_entries(hl.agg.sum(missing.value)) == 2 * (2**31 - 1)
+    nulls = matrix.annotate_entries(value=hl.missing(hl.tint32))
+    assert nulls.aggregate_entries(hl.agg.sum(nulls.value)) == 0
+    empty = positive.filter_entries(False)
+    assert empty.aggregate_entries(hl.agg.sum(empty.value)) == 0
+    # Scalar array sums retain their element type and wrapping arithmetic.
+    assert hl.eval(hl.sum(hl.array([hl.int32(2**31 - 1)] * 3))) == 2**31 - 3
+
+
+def test_entry_sum_widens_float32_and_preserves_computed_missing_guard():
+    matrix = hl.utils.range_matrix_table(1, 3, 1)
+    values = hl.array([hl.float32(2**24), hl.float32(1), hl.float32(-(2**24))])
+    matrix = matrix.annotate_entries(value=values[matrix.col_idx])
+    assert matrix.aggregate_entries(hl.agg.sum(matrix.value)) == 1.0
+    filtered = matrix.filter_entries(matrix.col_idx != 1)
+    # A computed expression that would replace a missing entry must still be
+    # suppressed by the direct-entry sum's existing presence guard.
+    assert filtered.aggregate_entries(hl.agg.sum(hl.or_else(filtered.value, 10))) == 0.0
+    guarded = hl.case().when(
+        hl.is_defined(filtered.value), hl.float64(filtered.value)
+    ).or_error("excluded missing entry")
+    assert filtered.aggregate_entries(hl.agg.sum(guarded)) == 0.0

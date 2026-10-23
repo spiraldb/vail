@@ -7,7 +7,7 @@ execution. Unsupported shared list kernels are explicit capability boundaries.
 from .expressions import IR_NODE_TYPES, NativeExpr
 
 from .expressions import Expression, _IR, cast
-from .types import tarray, tbool, tcall, tint32, tint64, type_from_wire
+from .types import tarray, tbool, tcall, tint32, tint64, type_from_wire, type_to_wire
 
 
 
@@ -333,7 +333,13 @@ def reduce_list(
         result_type = expr.dtype
         cells = base[_CELLS]
         def project_sum(cell):
-            value = cast(raw(bind_entry(aggregate["value"], cell), result_type), result_type)
+            # raw's declared Python type is the result type, so cast(raw(...))
+            # would elide the required Int32/Float32 aggregate widening.
+            value = raw({
+                "op": "cast",
+                "dtype": type_to_wire(result_type),
+                "value": bind_entry(aggregate["value"], cell),
+            }, result_type)
             if _entry_field_input(aggregate["value"]):
                 return value
             return if_else(is_defined(cell[_VALUE]), value, missing(result_type))
