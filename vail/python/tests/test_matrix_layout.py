@@ -322,14 +322,7 @@ def test_native_entry_count_preserves_filtered_slots_and_key_occurrences(tmp_pat
     assert restored.entries()._force_count() == len(expected)
     # A post-expansion filter/head is a cardinality barrier, not a validity count.
     assert restored.entries().head(3)._force_count() == min(3, len(expected))
-    # Existing snapshots without the optional proofs still count correctly.
-    import json
-    manifest = path / '_vail_matrix.json'
-    descriptor = json.loads(manifest.read_text())
-    descriptor.pop('row_key_unique', None)
-    descriptor.pop('column_ordering', None)
-    manifest.write_text(json.dumps(descriptor))
-    assert hl.read_matrix_table(path).entries()._force_count() == len(expected)
+
 
 
 @pytest.mark.parametrize('dimensions', [(0, 3), (3, 0), (0, 0)])

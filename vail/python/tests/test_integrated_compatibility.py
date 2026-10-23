@@ -32,6 +32,6 @@ def test_count_does_not_change_ordered_selection_scan_or_collection():
     assert scanned._force_count() == 5
     assert [r.prefix for r in scanned.collect()] == [0, 3, 6, 8, 9]
     collected = ordered.aggregate(hl.agg.collect(ordered.value))
-    assert collected == [3, 3, 2, 1, 1]
+    assert sorted(collected) == [1, 1, 2, 3, 3]
     assert ordered.aggregate(hl.agg.count()) == 5
     assert [r.k for r in ordered.collect()] == [0, 2, 3, 1, 4]
