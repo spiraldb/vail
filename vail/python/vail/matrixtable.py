@@ -937,11 +937,12 @@ class MatrixTable:
                 entry=entry(cell), present=is_defined(cell[_VALUE]), bindings=struct()))
         return contexts.filter(lambda ctx: ctx.present)
 
-    def _coordinate_column_aggregate(self, expr, base):
-        """Reduce aligned entry positions without an entry relation or CID groups."""
+    @staticmethod
+    def _coordinate_column_aggregate_eligible(expr):
+        """Whether an expression can share the aligned column reducer bundle."""
         node = expr.to_ir()
         if expr._lookup_refs or node.contains_random() or node.matrix_dependencies()[2]:
-            return None
+            return False
         supported = {"sum", "count", "count_where", "mean", "fraction", "product", "all", "any",
                      "min", "max", "stddev_pop"}
         pending, seen, retained = [(node, False)], set(), {}
@@ -963,11 +964,11 @@ class MatrixTable:
             op = current.get("op")
             if op in ("matrix_field", "matrix_scope") and not inside and current["axis"] != "global":
                 # Indexed result callbacks keep the existing relational path.
-                return None
+                return False
             if op == "aggregate":
                 if (current.get("function") not in supported or current.get("init")
                         or set(current.get("options", {})) - {"__vail_result_type"}):
-                    return None
+                    return False
                 found = True
                 pending.extend((value, True) for value in current.values())
             elif op == "agg_filter":
@@ -976,11 +977,16 @@ class MatrixTable:
             elif op in _AGG_OPS:
                 # Grouping, explode, nested array scopes and fold retain their
                 # general implementation; this is positional reduction only.
-                return None
+                return False
             else:
                 pending.extend((value, inside) for value in current.values())
-        if not found:
+        return found
+
+    def _coordinate_column_aggregate(self, expr, base):
+        """Reduce aligned entry positions without an entry relation or CID groups."""
+        if not self._coordinate_column_aggregate_eligible(expr):
             return None
+        node = expr.to_ir()
         from . import agg, is_missing, len as length, repeat
         core = self._mir.core
         uses_columns = bool(node.matrix_dependencies()[1])
@@ -1187,12 +1193,25 @@ class MatrixTable:
                     **lowered, **{_COLUMNS: self._mir.column_records}
                 )
             )
+        # Preserve the common aggregation scope across named column fields.
+        # Lowering each field separately would create an independent source
+        # scan and decoder for every reducer, even though all see the same cells.
+        shared = {}
+        if axis == "col":
+            compatible = [(name, value) for name, value in fields
+                          if self._coordinate_column_aggregate_eligible(value)]
+            if len(compatible) > 1:
+                reduced = self._coordinate_column_aggregate(
+                    struct(**dict(compatible)), base
+                )
+                shared = {name: reduced[name] for name, _ in compatible}
         prepared = [
             (
                 n,
-                self._axis_aggregates(v, axis, base)
-                if _has_aggregate(v.to_ir())
-                else v,
+                shared[n] if n in shared else (
+                    self._axis_aggregates(v, axis, base)
+                    if _has_aggregate(v.to_ir()) else v
+                ),
             )
             for n, v in fields
         ]
