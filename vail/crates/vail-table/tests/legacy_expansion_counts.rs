@@ -238,3 +238,20 @@ async fn sliced_lists_combine_ancestor_validity_and_ignore_null_owner_ranges() {
     .unwrap();
     assert_count(filtered(table, field(col("items"), "value")), 1).await;
 }
+
+#[tokio::test]
+async fn shared_union_expansions_preserve_every_occurrence() {
+    let values = Arc::new(Int32Array::from(vec![Some(7), None, Some(11)]));
+    let mut table = filtered(
+        source(values, vec![0, 3], None)
+            .explode(vec!["items".into()])
+            .unwrap(),
+        col("items"),
+    );
+    // Reuse the same table at both union edges. Each occurrence contributes
+    // rows even though planning and action-local rewrites can share work.
+    for _ in 0..8 {
+        table = TableIR::union(vec![table.clone(), table], false).unwrap();
+    }
+    assert_count(table, 2 * (1 << 8)).await;
+}

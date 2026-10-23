@@ -27,7 +27,7 @@ use datafusion_physical_plan::{
     unnest::UnnestExec,
 };
 use futures::TryStreamExt;
-use std::{fmt, sync::Arc};
+use std::{collections::HashMap, fmt, sync::Arc};
 use vail_execution::expressions::{Expr, Type};
 
 fn path(expr: &Arc<dyn PhysicalExpr>) -> Option<(usize, Vec<String>)> {
@@ -140,12 +140,31 @@ pub(crate) async fn matrix_plan(table: &crate::TableRef) -> crate::Result<Option
 }
 
 pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
+    optimize_cached(plan, &mut HashMap::new())
+}
+
+// Keep the original owners alive alongside cached answers: pointer identity is
+// stable for this action, including nodes whose rewrite removes their owner.
+// Repeated DAG edges still occur in each parent, preserving row multiplicity.
+type CountMemo = HashMap<usize, (PhysicalPlan, Option<PhysicalPlan>)>;
+
+fn optimize_cached(plan: PhysicalPlan, memo: &mut CountMemo) -> Result<Option<PhysicalPlan>> {
+    let key = Arc::as_ptr(&plan) as *const () as usize;
+    if let Some((_, replacement)) = memo.get(&key) {
+        return Ok(replacement.clone());
+    }
+    let replacement = optimize_node(plan.clone(), memo)?;
+    memo.insert(key, (plan, replacement.clone()));
+    Ok(replacement)
+}
+
+fn optimize_node(plan: PhysicalPlan, memo: &mut CountMemo) -> Result<Option<PhysicalPlan>> {
     if let Some(entries) = plan.downcast_ref::<crate::matrix_entries::MatrixEntriesExec>() {
         return Ok(Some(entries.count_plan()));
     }
     if let Some(merge) = plan.downcast_ref::<datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec>() {
         if merge.fetch().is_none() {
-            if let Some(input) = optimize(merge.input().clone())? {
+            if let Some(input) = optimize_cached(merge.input().clone(), memo)? {
                 return Ok(Some(Arc::new(datafusion_physical_plan::coalesce_partitions::CoalescePartitionsExec::new(input))));
             }
         }
@@ -166,7 +185,7 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
         }
         let mut parts = Vec::new();
         for child in plan.children() {
-            let Some(part) = optimize(child.clone())? else {
+            let Some(part) = optimize_cached(child.clone(), memo)? else {
                 return Ok(None);
             };
             parts.push(part);
@@ -179,7 +198,7 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
     if plan.is::<datafusion_physical_plan::union::UnionExec>() {
         let mut parts = Vec::new();
         for child in plan.children() {
-            let Some(part) = optimize(child.clone())? else {
+            let Some(part) = optimize_cached(child.clone(), memo)? else {
                 return Ok(None);
             };
             parts.push(part);
@@ -205,7 +224,7 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
         }
         let mut parts = Vec::new();
         for child in plan.children() {
-            let Some(part) = optimize(child.clone())? else {
+            let Some(part) = optimize_cached(child.clone(), memo)? else {
                 return Ok(None);
             };
             parts.push(part);
@@ -221,7 +240,7 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
             .iter()
             .all(|entry| field_only(&entry.expr))
         {
-            return optimize(projection.input().clone());
+            return optimize_cached(projection.input().clone(), memo);
         }
         return Ok(None);
     }
@@ -235,7 +254,7 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
         let Some(input) = children.first() else {
             return Ok(None);
         };
-        if let Some(replacement) = optimize(input.clone())? {
+        if let Some(replacement) = optimize_cached(input.clone(), memo)? {
             children[0] = replacement;
             return Ok(Some(plan.replace_children(
                 children,
