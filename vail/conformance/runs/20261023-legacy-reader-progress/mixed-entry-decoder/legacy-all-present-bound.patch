@@ -1,0 +1,397 @@
+--- a/vail/crates/vail-storage/src/legacy/decode.rs
++++ b/vail/crates/vail-storage/src/legacy/decode.rs
+@@ -842,10 +842,7 @@
+ }
+ enum BoundOp<'n, 'a> {
+     Field(BoundField<'n, 'a>),
+-    Run {
+-        fields: Vec<BoundField<'n, 'a>>,
+-        requires_leb: bool,
+-    },
++    Run { fields: Vec<BoundField<'n, 'a>> },
+ }
+ impl BoundOp<'_, '_> {
+     fn null(&mut self) -> Result<()> {
+@@ -859,22 +856,17 @@
+             }
+         }
+     }
+-    fn append(&mut self, input: &mut Input, bits: &Bitmap, all_present: bool) -> Result<()> {
++    fn append<const ALL_PRESENT: bool>(&mut self, input: &mut Input, bits: &Bitmap) -> Result<()> {
+         match self {
+             Self::Field(field) => {
+-                if !all_present && field.missing(bits) {
++                if !ALL_PRESENT && field.missing(bits) {
+                     field.null()
+                 } else {
+                     field.append(input)
+                 }
+             }
+-            Self::Run {
+-                fields,
+-                requires_leb,
+-            } => {
+-                if (!*requires_leb || input.leb)
+-                    && (all_present || !fields.iter().any(|f| f.missing(bits)))
+-                {
++            Self::Run { fields } => {
++                if ALL_PRESENT || !fields.iter().any(|f| f.missing(bits)) {
+                     if let Some(values) = input.try_small_varints(fields.len())? {
+                         for (field, value) in fields.iter_mut().zip(values) {
+                             field.append_small(value)?;
+@@ -883,7 +875,7 @@
+                     }
+                 }
+                 for field in fields {
+-                    if !all_present && field.missing(bits) {
++                    if !ALL_PRESENT && field.missing(bits) {
+                         field.null()?;
+                     } else {
+                         field.append(input)?;
+@@ -1831,12 +1823,9 @@
+         let mut i = 0;
+         while i < self.fields.len() {
+             let op = &self.fields[i];
+-            if op.varint_run != 0 {
++            if op.varint_run != 0 && (!op.run_requires_leb || leb) {
+                 let run = fields.by_ref().take(op.varint_run as usize).collect();
+-                ops.push(BoundOp::Run {
+-                    fields: run,
+-                    requires_leb: op.run_requires_leb,
+-                });
++                ops.push(BoundOp::Run { fields: run });
+                 i += op.varint_run as usize;
+             } else {
+                 ops.push(BoundOp::Field(fields.next().unwrap()));
+@@ -1936,8 +1925,14 @@
+                 let all_present = self
+                     .all_present_mask
+                     .is_some_and(|mask| bits.low_word() & mask == 0);
+-                for op in &mut ops {
+-                    op.append(input, &bits, all_present)?;
++                if all_present {
++                    for op in &mut ops {
++                        op.append::<true>(input, &bits)?;
++                    }
++                } else {
++                    for op in &mut ops {
++                        op.append::<false>(input, &bits)?;
++                    }
+                 }
+                 validity.append_non_null();
+             }
+@@ -2267,6 +2262,171 @@
+ 
+ #[cfg(test)]
+ mod tests {
++    #[test]
++    fn bound_run_codec_is_resolved_before_rows() -> Result<()> {
++        let refs = std::collections::HashMap::new();
++        let encoding = Parser::new("+EBaseStruct{a:EInt32,b:EInt64,c:EInt32}", &refs).encoded()?;
++        let (ty, _) = Parser::new("Struct{a:Int32,b:Int64,c:Int32}", &refs).virtual_type()?;
++        let node = Node::new(&encoding, &ty);
++        let datatype = ty.to_arrow()?;
++        for leb in [false, true] {
++            for missing in [0u8, 2] {
++                let mut payload = vec![];
++                for (index, value) in [1i64, 300, -1].into_iter().enumerate() {
++                    if missing & (1 << index) != 0 {
++                        continue;
++                    }
++                    if leb {
++                        let mut value = if index == 1 {
++                            value as u64
++                        } else {
++                            value as u32 as u64
++                        };
++                        loop {
++                            let byte = (value & 127) as u8;
++                            value >>= 7;
++                            payload.push(byte | if value == 0 { 0 } else { 128 });
++                            if value == 0 {
++                                break;
++                            }
++                        }
++                    } else if index == 1 {
++                        payload.extend_from_slice(&value.to_le_bytes());
++                    } else {
++                        payload.extend_from_slice(&(value as i32).to_le_bytes());
++                    }
++                }
++                for truncate in [false, true] {
++                    let bytes = if truncate {
++                        &payload[..payload.len() - 1]
++                    } else {
++                        &payload[..]
++                    };
++                    let mut column = Column::projected(&node, &datatype);
++                    let Column::Struct(_, outputs, validity) = &mut column else {
++                        unreachable!()
++                    };
++                    let mut ops = node.bind_struct(outputs, leb);
++                    assert_eq!(ops.iter().any(|op| matches!(op, BoundOp::Run { .. })), leb);
++                    let mut bitmap = [0u8; 8];
++                    bitmap[0] = missing;
++                    let bits = Bitmap::Inline(bitmap);
++                    let mut input = Input::from_memory(Arc::from(bytes), leb);
++                    let actual = (|| -> Result<()> {
++                        for op in &mut ops {
++                            if missing == 0 {
++                                op.append::<true>(&mut input, &bits)?;
++                            } else {
++                                op.append::<false>(&mut input, &bits)?;
++                            }
++                        }
++                        validity.append_non_null();
++                        Ok(())
++                    })();
++                    drop(ops);
++                    let mut whole = vec![missing];
++                    whole.extend_from_slice(bytes);
++                    let mut reference_input = Input::from_memory(whole.into(), leb);
++                    let mut reference = Column::projected(&node, &datatype);
++                    let expected = node.append(&mut reference_input, &mut reference);
++                    assert_eq!(actual.is_ok(), expected.is_ok());
++                    assert_eq!(input.bytes + 1, reference_input.bytes);
++                    if actual.is_ok() {
++                        assert_eq!(column.finish()?.to_data(), reference.finish()?.to_data());
++                    } else {
++                        assert_eq!(
++                            actual.unwrap_err().to_string(),
++                            expected.unwrap_err().to_string()
++                        );
++                    }
++                }
++            }
++        }
++        Ok(())
++    }
++
++    #[test]
++    fn bound_all_present_variants_match_nullable_decoding_and_errors() -> Result<()> {
++        let refs = std::collections::HashMap::new();
++        let encoding = Parser::new(
++            "+EBaseStruct{a:EVarint,b:EVarint,c:EVarint,values:EArray2[+EVarint],tail:EVarint}",
++            &refs,
++        )
++        .encoded()?;
++        let (ty, _) = Parser::new(
++            "Struct{a:Int32,b:Int32,c:Int32,values:Array[Int32],tail:Int32}",
++            &refs,
++        )
++        .virtual_type()?;
++        let datatype = ty.to_arrow()?;
++        for leb in [false, true] {
++            for projected in [false, true] {
++                let mut node = Node::new(&encoding, &ty);
++                if projected {
++                    node.demand(&[vec!["a".into()], vec!["values".into()]]);
++                }
++                for (missing, payload) in [
++                    (0_u8, vec![1, 2, 3, 2, 128, 1, 5, 7]),
++                    (0_u8, vec![1, 128, 1, 3, 0, 7]),
++                    (10_u8, vec![1, 3, 7]),
++                ] {
++                    for truncate in [false, true] {
++                        let payload = if truncate {
++                            &payload[..payload.len() - 1]
++                        } else {
++                            &payload[..]
++                        };
++                        for present_path in [false, true] {
++                            if present_path && missing != 0 {
++                                continue;
++                            }
++                            let mut input = Input::from_memory(Arc::from(payload), leb);
++                            let mut column = Column::projected(&node, &datatype);
++                            let Column::Struct(_, outputs, validity) = &mut column else {
++                                unreachable!()
++                            };
++                            let mut ops = node.bind_struct(outputs, leb);
++                            let mut bitmap_bytes = [0_u8; 8];
++                            bitmap_bytes[0] = missing;
++                            let bits = Bitmap::Inline(bitmap_bytes);
++                            let result = (|| -> Result<()> {
++                                for op in &mut ops {
++                                    if present_path {
++                                        op.append::<true>(&mut input, &bits)?;
++                                    } else {
++                                        op.append::<false>(&mut input, &bits)?;
++                                    }
++                                }
++                                validity.append_non_null();
++                                Ok(())
++                            })();
++                            drop(ops);
++                            let mut encoded = vec![missing];
++                            encoded.extend_from_slice(payload);
++                            let mut reference_input = Input::from_memory(encoded.into(), leb);
++                            let mut reference = Column::projected(&node, &datatype);
++                            let expected = node.append(&mut reference_input, &mut reference);
++                            assert_eq!(result.is_ok(), expected.is_ok());
++                            assert_eq!(input.bytes + 1, reference_input.bytes);
++                            if result.is_ok() {
++                                assert_eq!(
++                                    column.finish()?.to_data(),
++                                    reference.finish()?.to_data()
++                                );
++                            } else {
++                                assert_eq!(
++                                    result.unwrap_err().to_string(),
++                                    expected.unwrap_err().to_string()
++                                );
++                            }
++                        }
++                    }
++                }
++            }
++        }
++        Ok(())
++    }
++
+     #[test]
+     fn wide_scalar_probe_matches_numeric_widths_and_skip_framing() {
+         fn leb(mut value: u64) -> Vec<u8> {
+@@ -3890,19 +4050,37 @@
+ 
+     #[test]
+     fn skipped_integer_values_only_require_framing() -> Result<()> {
+-        let path = std::env::temp_dir().join(format!("vail-compact-skip-{}.bin", std::process::id()));
++        let path =
++            std::env::temp_dir().join(format!("vail-compact-skip-{}.bin", std::process::id()));
+         let result = (|| -> Result<()> {
+             for (kind, ty, bytes, leb, skip_ok) in [
+                 ("EBoolean", P::Bool, vec![2], false, false),
+                 ("EInt32", P::Int32, vec![255, 255, 255, 255, 16], true, true),
+-                ("EVarint", P::Int64, vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2], false, true),
+-                ("EInt32", P::Int32, vec![128, 128, 128, 128, 128, 0], true, true),
++                (
++                    "EVarint",
++                    P::Int64,
++                    vec![255, 255, 255, 255, 255, 255, 255, 255, 255, 2],
++                    false,
++                    true,
++                ),
++                (
++                    "EInt32",
++                    P::Int32,
++                    vec![128, 128, 128, 128, 128, 0],
++                    true,
++                    true,
++                ),
+                 ("EInt32", P::Int32, vec![255; 5], true, false),
+                 ("EVarint", P::Int64, vec![255; 10], false, false),
+                 ("EFloat64", P::Float64, vec![0; 7], false, false),
+             ] {
+                 std::fs::write(&path, &bytes)?;
+-                let encoding = Encoding { kind: kind.into(), required: true, fields: vec![], rank: 0 };
++                let encoding = Encoding {
++                    kind: kind.into(),
++                    required: true,
++                    fields: vec![],
++                    rank: 0,
++                };
+                 let dtype = Type::Primitive(ty);
+                 let node = Node::new(&encoding, &dtype);
+                 let spec = if leb {
+@@ -3912,10 +4090,16 @@
+                 };
+                 let mut skipped = Input::open(&path, &spec)?;
+                 assert_eq!(node.skip(&mut skipped).is_ok(), skip_ok, "{kind}");
+-                if skip_ok { assert_eq!(skipped.bytes, bytes.len() as u64); }
++                if skip_ok {
++                    assert_eq!(skipped.bytes, bytes.len() as u64);
++                }
+                 // Selected values still need to fit the requested Arrow type.
+                 let mut selected = Column::new(&dtype.to_arrow()?);
+-                assert!(node.append(&mut Input::open(&path, &spec)?, &mut selected).is_err(), "{kind}");
++                assert!(
++                    node.append(&mut Input::open(&path, &spec)?, &mut selected)
++                        .is_err(),
++                    "{kind}"
++                );
+             }
+             Ok(())
+         })();
+@@ -4377,7 +4561,10 @@
+             (vec![7, 128], 2),
+             (vec![7, 128, 128, 128, 128, 16, 3], 3),
+             (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2], 2),
+-            (vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0], 2),
++            (
++                vec![7, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0],
++                2,
++            ),
+         ];
+         for prefix in [0, 65_526, 65_535, 65_536] {
+             for (bytes, count) in &cases {
+@@ -4392,7 +4579,10 @@
+                 let mut actual = Int32Builder::new();
+                 let left = reference(&mut ordinary, &mut expected, *count);
+                 let right = append_buffered_i32_values(&mut buffered, &mut actual, *count);
+-                assert_eq!(left.err().map(|e| e.to_string()), right.err().map(|e| e.to_string()));
++                assert_eq!(
++                    left.err().map(|e| e.to_string()),
++                    right.err().map(|e| e.to_string())
++                );
+                 assert_eq!(ordinary.bytes, buffered.bytes);
+                 assert_eq!(expected.finish(), actual.finish());
+                 // Exact stopping position also preserves following fields.
+@@ -4410,12 +4600,20 @@
+     #[test]
+     fn borrowed_strings_match_values_errors_and_consumption() -> Result<()> {
+         let encoding = Encoding {
+-            kind: "EBinary2".into(), required: true, fields: vec![], rank: 0,
++            kind: "EBinary2".into(),
++            required: true,
++            fields: vec![],
++            rank: 0,
+         };
+         let ty = Type::Primitive(P::Str);
+         let node = Node::new(&encoding, &ty);
+-        let cases = [vec![], b"12345678".to_vec(), vec![b'x'; 70_000],
+-                     vec![0xff], vec![0xc3, 0xa9]];
++        let cases = [
++            vec![],
++            b"12345678".to_vec(),
++            vec![b'x'; 70_000],
++            vec![0xff],
++            vec![0xc3, 0xa9],
++        ];
+         for prefix in [0, 65_530, 65_535] {
+             for bytes in &cases {
+                 for truncated in [false, true] {
+@@ -4425,12 +4623,18 @@
+                         let byte = (n & 127) as u8;
+                         n >>= 7;
+                         data.push(byte | if n != 0 { 128 } else { 0 });
+-                        if n == 0 { break; }
++                        if n == 0 {
++                            break;
++                        }
+                     }
+                     data.extend_from_slice(bytes);
+                     if truncated {
+-                        if !bytes.is_empty() { data.pop(); }
+-                    } else { data.push(42); }
++                        if !bytes.is_empty() {
++                            data.pop();
++                        }
++                    } else {
++                        data.push(42);
++                    }
+                     let data: Arc<[u8]> = data.into();
+                     let mut old = Input::from_memory(data.clone(), false);
+                     let mut new = Input::from_memory(data, false);
+@@ -4445,7 +4649,10 @@
+                         Ok(())
+                     })();
+                     let borrowed = node.append_string(&mut new, &mut actual);
+-                    assert_eq!(reference.err().map(|e| e.to_string()), borrowed.err().map(|e| e.to_string()));
++                    assert_eq!(
++                        reference.err().map(|e| e.to_string()),
++                        borrowed.err().map(|e| e.to_string())
++                    );
+                     assert_eq!(old.bytes, new.bytes);
+                     assert_eq!(expected.finish()?.to_data(), actual.finish()?.to_data());
+                     assert_eq!(old.byte().ok(), new.byte().ok());

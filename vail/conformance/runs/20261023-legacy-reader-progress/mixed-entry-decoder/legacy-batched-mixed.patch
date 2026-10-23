@@ -1,0 +1,267 @@
+--- a/vail/crates/vail-storage/src/legacy/decode.rs
++++ b/vail/crates/vail-storage/src/legacy/decode.rs
+@@ -1266,31 +1266,105 @@
+         } else { true }
+     })
+ }
+-fn mixed_offsets_fit(outputs: &[&mut BoundOutput<'_>], ranges: &[(u8, u8); 16], nulls: u16) -> bool {
+-    outputs.iter().enumerate().all(|(index, output)| {
+-        if nulls & (1 << index) != 0 { return true; }
++const MIXED_COMMIT_ROWS: usize = 16;
++struct MixedBatch {
++    scalars: [[u64; 16]; MIXED_COMMIT_ROWS],
++    elements: [[i32; 32]; MIXED_COMMIT_ROWS],
++    ranges: [[(u8, u8); 16]; MIXED_COMMIT_ROWS],
++    nulls: [u16; MIXED_COMMIT_ROWS],
++    entry_valid: [bool; MIXED_COMMIT_ROWS],
++    len: usize,
++}
++impl MixedBatch {
++    fn new() -> Self {
++        Self { scalars: [[0; 16]; MIXED_COMMIT_ROWS], elements: [[0; 32]; MIXED_COMMIT_ROWS],
++            ranges: [[(0, 0); 16]; MIXED_COMMIT_ROWS], nulls: [0; MIXED_COMMIT_ROWS],
++            entry_valid: [false; MIXED_COMMIT_ROWS], len: 0 }
++    }
++}
++fn mixed_staged_offsets_fit(
++    outputs: &[&mut BoundOutput<'_>], ranges: &[(u8, u8); 16], nulls: u16,
++    growth: &mut [usize; 16],
++) -> bool {
++    for (index, output) in outputs.iter().enumerate() {
++        if nulls & (1 << index) != 0 { continue; }
+         if let BoundOutput::ArrowList(list) = output {
+-            mixed_list_end(list.values.len(), ranges[index]).is_some()
+-        } else { true }
+-    })
+-}
+-fn buffered_mixed_row(
+-    outputs: &mut [&mut BoundOutput<'_>], values: &[u64; 16], nulls: u16,
+-    elements: &[i32; 32], ranges: &[(u8, u8); 16],
++            let Some(length) = list.values.len().checked_add(growth[index]) else { return false; };
++            if mixed_list_end(length, ranges[index]).is_none() { return false; }
++        }
++    }
++    for (index, output) in outputs.iter().enumerate() {
++        if nulls & (1 << index) == 0 && matches!(output, BoundOutput::ArrowList(_)) {
++            growth[index] += usize::from(ranges[index].1 - ranges[index].0);
++        }
++    }
++    true
++}
++// The enum/type dispatch occurs once per output column and completed chunk.
++fn buffered_mixed_batch(
++    outputs: &mut [&mut BoundOutput<'_>], batch: &MixedBatch,
++    gathered: &mut [i32; MIXED_COMMIT_ROWS * 32],
+ ) {
++    let n = batch.len;
++    let mut valid = [false; MIXED_COMMIT_ROWS];
+     for (index, output) in outputs.iter_mut().enumerate() {
+-        let missing = nulls & (1 << index) != 0;
+-        if let BoundOutput::ArrowList(list) = output {
+-            if missing {
+-                list.null();
+-            } else {
+-                let (start, end) = ranges[index];
+-                list.values.append_slice(&elements[usize::from(start)..usize::from(end)]);
+-                list.offsets.push(list.values.len() as i32); // checked before any writes
+-                list.validity.append_non_null();
+-            }
+-        } else {
+-            buffered_scalar_output(output, values[index], missing);
++        let mut all_valid = true;
++        for row in 0..n {
++            valid[row] = batch.nulls[row] & (1 << index) == 0;
++            all_valid &= valid[row];
++        }
++    macro_rules! primitive {
++        ($builder:expr, $zero:expr, $convert:expr) => {{
++            let mut values = [$zero; MIXED_COMMIT_ROWS];
++            for row in 0..n {
++                if valid[row] { values[row] = ($convert)(batch.scalars[row][index]); }
++            }
++            if all_valid { $builder.append_slice(&values[..n]); }
++            else { $builder.append_values(&values[..n], &valid[..n]); }
++        }};
++    }
++        let inverted = matches!(output, BoundOutput::InvertedBool(_));
++        match output {
++            BoundOutput::I32(builder) => primitive!(builder, 0i32, |v: u64| v as i32),
++            BoundOutput::I64(builder) => primitive!(builder, 0i64, |v: u64| v as i64),
++            BoundOutput::F32(builder) => primitive!(builder, 0f32, |v: u64| f32::from_bits(v as u32)),
++            BoundOutput::F64(builder) => primitive!(builder, 0f64, f64::from_bits),
++            BoundOutput::Bool(builder) | BoundOutput::InvertedBool(builder) => {
++                let mut values = [false; MIXED_COMMIT_ROWS];
++                for row in 0..n {
++                    if valid[row] { values[row] = (batch.scalars[row][index] != 0) ^ inverted; }
++                }
++                if all_valid { builder.append_slice(&values[..n]); }
++                else { builder.append_values(&values[..n], &valid[..n]).expect("matched staged lengths"); }
++            }
++            BoundOutput::Call(builder) => {
++                let mut values = [0u32; MIXED_COMMIT_ROWS];
++                for row in 0..n {
++                    if valid[row] { values[row] = batch.scalars[row][index] as u32; }
++                }
++                builder.packed.extend_from_slice(&values[..n]);
++                if all_valid { builder.valid.append_n_non_nulls(n); }
++                else { builder.valid.append_slice(&valid[..n]); }
++            }
++            BoundOutput::ArrowList(list) => {
++                let mut offsets = [0i32; MIXED_COMMIT_ROWS];
++                let mut used = 0;
++                let base = list.values.len();
++                for row in 0..n {
++                    if valid[row] {
++                        let (start, end) = batch.ranges[row][index];
++                        let values = &batch.elements[row][usize::from(start)..usize::from(end)];
++                        gathered[used..used + values.len()].copy_from_slice(values);
++                        used += values.len();
++                    }
++                    offsets[row] = (base + used) as i32; // preflight checked the chunk
++                }
++                list.values.append_slice(&gathered[..used]);
++                list.offsets.extend_from_slice(&offsets[..n]);
++                if all_valid { list.validity.append_n_non_nulls(n); }
++                else { list.validity.append_slice(&valid[..n]); }
++            }
++            _ => unreachable!("mixed buffered output eligibility"),
+         }
+     }
+ }
+@@ -1991,30 +2065,41 @@
+             if let Some(program) = buffered.filter(|program| program.has_lists) {
+                 let accepted = input.with_buffer(|bytes| {
+                     let mut selected_outputs = bind_buffered_outputs(&mut ops);
++                    let offsets_safe = mixed_offsets_all_fit(&selected_outputs, n - i);
+                     let mut cursor = 0;
+                     let mut accepted = 0;
+-                    let mut values = [0u64; 16];
+-                    let offsets_safe = mixed_offsets_all_fit(&selected_outputs, n - i);
+-                    let mut elements = [0i32; 32];
+-                    let mut ranges = [(0u8, 0u8); 16];
++                    let mut batch = MixedBatch::new();
++                    let mut gathered = [0i32; MIXED_COMMIT_ROWS * 32];
+                     while i + accepted < n {
+-                        if !REQUIRED && absent(element_bits, i + accepted) {
+-                            buffered_mixed_row(&mut selected_outputs, &values, u16::MAX, &elements, &ranges);
+-                            validity.append_null();
+-                        } else {
+-                            let start = cursor;
+-                            let Some(nulls) = program.probe_values::<true>(bytes, &mut cursor, &mut values, &mut elements, &mut ranges) else {
+-                                cursor = start;
+-                                break;
+-                            };
+-                            if !offsets_safe && !mixed_offsets_fit(&selected_outputs, &ranges, nulls) {
+-                                cursor = start;
+-                                break;
++                        batch.len = 0;
++                        let mut growth = [0usize; 16];
++                        while batch.len < MIXED_COMMIT_ROWS && i + accepted + batch.len < n {
++                            let row = batch.len;
++                            if !REQUIRED && absent(element_bits, i + accepted + row) {
++                                batch.nulls[row] = u16::MAX;
++                                batch.entry_valid[row] = false;
++                            } else {
++                                let start = cursor;
++                                let Some(nulls) = program.probe_values::<true>(bytes, &mut cursor,
++                                    &mut batch.scalars[row], &mut batch.elements[row], &mut batch.ranges[row]) else {
++                                    cursor = start;
++                                    break;
++                                };
++                                if !offsets_safe && !mixed_staged_offsets_fit(&selected_outputs,
++                                    &batch.ranges[row], nulls, &mut growth) {
++                                    cursor = start;
++                                    break;
++                                }
++                                batch.nulls[row] = nulls;
++                                batch.entry_valid[row] = true;
+                             }
+-                            buffered_mixed_row(&mut selected_outputs, &values, nulls, &elements, &ranges);
+-                            validity.append_non_null();
++                            batch.len += 1;
+                         }
+-                        accepted += 1;
++                        if batch.len == 0 { break; }
++                        buffered_mixed_batch(&mut selected_outputs, &batch, &mut gathered);
++                        validity.append_slice(&batch.entry_valid[..batch.len]);
++                        accepted += batch.len;
++                        if batch.len < MIXED_COMMIT_ROWS { break; }
+                     }
+                     (accepted, cursor)
+                 })?;
+@@ -4646,6 +4731,22 @@
+         let mut right = Column::projected(&slow, &slow.ty.to_arrow()?);
+         let x = fast.append(&mut a, &mut left);
+         let y = slow.append(&mut b, &mut right);
++        fn state(column: &Column, out: &mut Vec<usize>) {
++            if matches!(column, Column::Skipped(..)) { return; }
++            out.push(column.len());
++            match column {
++                Column::Struct(_, children, _) => for child in children { state(child, out); },
++                Column::List(_, child, offsets, _) => {
++                    out.extend(offsets.iter().map(|offset| *offset as usize));
++                    state(child, out);
++                }
++                _ => {}
++            }
++        }
++        let mut left_state = Vec::new();
++        let mut right_state = Vec::new();
++        state(&left, &mut left_state); state(&right, &mut right_state);
++        assert_eq!(left_state, right_state);
+         assert_eq!(x.is_ok(), y.is_ok());
+         assert_eq!(a.bytes, b.bytes);
+         match (x, y) {
+@@ -4724,4 +4825,51 @@
+         }
+         Ok(())
+     }
+-}
++    #[test]
++    fn mixed_batched_commit_matches_all_chunk_edges_and_entry_validity() -> Result<()> {
++        for mode in 0..3 {
++            for count in [1usize, 15, 16, 17, 31, 32, 33] {
++                for required in [false, true] {
++                    let mut bytes = vec![count as u8];
++                    if !required {
++                        let mut bitmap = vec![0u8; count.div_ceil(8)];
++                        for row in 0..count { if row % 5 == 1 { bitmap[row / 8] |= 1 << (row % 8); } }
++                        bytes.extend_from_slice(&bitmap);
++                    }
++                    for row in 0..count {
++                        if !required && row % 5 == 1 { continue; }
++                        // A defined entry with all fields null is distinct
++                        // from the absent entries in the enclosing bitmap.
++                        let mask = match row % 4 { 0 => 0, 1 => 31, 2 => 5, _ => 8 };
++                        entry(row % 4, row % 3, mask, mode, &mut bytes);
++                    }
++                    bytes.push(42);
++                    for prefix in [0, 65_500, 65_535] {
++                        for projection in [false, true] {
++                            compare(mode, required, bytes.clone(), prefix, projection)?;
++                        }
++                    }
++                }
++            }
++        }
++        Ok(())
++    }
++    #[test]
++    fn mixed_batched_commit_preserves_prefix_on_mid_chunk_failure() -> Result<()> {
++        for mode in 0..3 {
++            for bad_row in [0usize, 1, 7, 15, 16, 17, 31, 32] {
++                for invalid in [vec![128], vec![128; 10], vec![128,128,128,128,16]] {
++                    let mut bytes = vec![33];
++                    for _ in 0..bad_row { entry(3, 2, 0, mode, &mut bytes); }
++                    let mut broken = Vec::new();
++                    entry(3, 2, 0, mode, &mut broken);
++                    broken.truncate(broken.len() - 2); // replace final DP=257
++                    bytes.extend(broken);
++                    bytes.extend(invalid);
++                    for prefix in [0, 65_520] { compare(mode, true, bytes.clone(), prefix, false)?; }
++                }
++            }
++        }
++        Ok(())
++    }
++}

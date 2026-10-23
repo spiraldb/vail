@@ -1,0 +1,10 @@
+Mixed per-entry commit profile, 4s at1ms, profiling separate from benchmark.
+Active collapsed leaf samples exclude named waits; inlined work charged to containing function, not precise CPU counters.
+Active samples:16936
+probe_values:5860 (34.6%)
+buffered_scalar_output:2448 (14.5%)
+buffered_mixed_row:2365 (14.0%)
+memmove:1049 (6.2%)
+slice_varint_long:838 (4.9%)
+ZSTD_:1477 (8.7%)
+HUF_:1317 (7.8%)

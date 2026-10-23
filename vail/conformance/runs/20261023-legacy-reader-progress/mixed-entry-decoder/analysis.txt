@@ -1,0 +1,90 @@
+Mixed-entry legacy decoder: 2026-10-23
+
+Retained change
+--------------
+Read multiple mixed scalar/list entries from one borrowed decompressed block.
+Decode each scalar and list integer once into bounded stack scratch. Stage up
+to 16 complete entries, then dispatch once per output column and bulk-append
+primitive values, packed calls, list children, list offsets, and validity.
+Scratch is approximately 7 KiB per active reader invocation, reused across
+chunks within the borrowed block. It supports up to 32 selected list elements
+in one entry; larger/unsupported entries retain the original decoder.
+
+The length remains read from the file; AD/PL sizes are not assumed. Whole-entry
+probing is transactional: incomplete or invalid entries do not modify outputs.
+A completed prefix is committed once, consumed once, and the failing entry is
+retried by the original decoder. Conservative offset bounds are checked once
+per block; near the limit, staged prefix growth is checked before any writes.
+There are staging/gather copies, but no per-entry allocation or repeated numeric
+parsing. Missing lists, empty lists, and missing entry structs remain distinct.
+
+Experiments and measurements
+---------------------------
+Baseline is 03fd0f33, which already includes the wider scalar/string improvements.
+All runs read the same Hail-written files directly. Compiler overlap is rejected.
+Timing and profiling executions are separate. CPU includes all native threads
+for Vail and the exact gateway JVM plus Python for Hail. The host is shared;
+wall-time drift is visible and these results are not controlled hardware trials.
+
+1. Isolated all-present field-loop and bind-time codec selection:
+   1B full read: 8.532 wall / 95.823 CPU, versus initial base 8.428 / 92.688.
+   No established improvement; this source experiment is NOT retained.
+
+2. Borrowing across entries but committing output one entry at a time:
+   ABA base/mixed/base CPU: 92.688 / 89.665 / 93.862 seconds (~4% reduction).
+   Corresponding wall: 8.428 / 8.819 / 9.538 seconds, visibly drifting.
+   Profile showed commit work still ~28.5% of active leaf samples.
+   This intermediate variant is archived as per-entry-staging.patch.
+
+3. Retained 16-entry batched commit:
+   Initial 1B full read: 7.405 wall / 79.536 CPU seconds, about 15% less CPU
+   than the flanking baseline average (93.275 CPU). One warmup, three samples.
+
+   Original profile25 matrix, ABBA base/batch/batch/base; two warmups and five
+   accepted samples per process/query (10 samples per variant):
+                         base wall / batch wall     base CPU / batch CPU
+   full read                 .4674 / .4708             4.3415 / 4.2138
+   GT-only                   .2698 / .2774             2.6187 / 2.6012
+   DP sum                    .2595 / .2709             2.4985 / 2.5418
+   Full CPU improves ~3%, full wall is flat. Projected CPU changes are within
+   about 2%; do not claim a projected-query improvement or zero regression.
+
+Fresh Hail / Vail full-read comparison
+-------------------------------------
+100,000 rows x 10,000 columns = 1 billion entries; 16 source partitions.
+New synthetic fixtures use independently mixed row/column values and more wide
+varints than original profile25. Compare engines within the same fixture.
+Hail then Vail, each two warmups and three accepted measurements:
+               wall seconds       CPU-seconds
+Hail               7.854              59.914
+Vail               7.641              75.276
+Results agree (100,000 rows). This is a fresh sequential pair, not ABBA.
+Wall is roughly at parity, Vail 2.8% faster in this pair; Vail still uses 25.6%
+more CPU. Earlier Vail samples were 79.5 CPU seconds; do not overinterpret
+single-digit differences between runs. Full native CPU gap remains unresolved.
+
+Profile
+-------
+Fresh 1B batched profile: 4 seconds at 1 ms sampling. Approximate active collapsed
+leaf shares, excluding named blocked waits; inlined work is charged to its
+containing function, so these are not isolated instruction or hardware counters:
+  mixed probe                 39.0%
+  long-varint helper           5.7%
+  batched output commit       13.7%  (per-entry commit previously ~28.5%)
+  Zstd/Huffman                19.8%
+  memmove                      8.8%
+Output batching removed substantial work; dynamic probe/parse remains the largest
+component. Staging/gather copying is measurable, but the net CPU result improves.
+No claim that code generation alone explains the remaining Hail gap.
+
+Validation
+----------
+65 Rust legacy tests, 262 Python tests, and both real Hail corpus tests pass.
+Independent source review found no substantive correctness issue. Differential
+tests cover chunks 1/15/16/17/31/32/33; all supported length modes; projection and
+physical field order; missing entries/lists versus defined empty lists; block
+boundaries; oversized scratch fallback; late malformed/truncated entries;
+exact error/byte consumption and partially committed list offsets/lengths.
+
+Raw results, logs, binary SHA-256 fingerprints, rejected experiment patches,
+and separate profile analyses are saved alongside this report.

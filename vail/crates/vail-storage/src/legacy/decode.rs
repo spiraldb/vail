@@ -907,6 +907,7 @@ enum ProbeKind {
     F32,
     F64,
     IntegerArray,
+    I32List(u8),
 }
 struct ProbeField {
     kind: ProbeKind,
@@ -917,6 +918,7 @@ struct ProbeField {
 struct BufferedScalars {
     fields: Vec<ProbeField>,
     bitmap_bytes: usize,
+    has_lists: bool,
 }
 // The final word can contain following fields: consume precisely the Nth
 // terminator. An incomplete payload leaves the caller's cursor unchanged.
@@ -1015,6 +1017,14 @@ impl BufferedScalars {
                 AppendKind::Float32 => ProbeKind::F32,
                 AppendKind::Float64 => ProbeKind::F64,
                 AppendKind::List
+                    if op.project
+                        && child.children[0].e.required
+                        && matches!(child.children[0].wire, Wire::Varint)
+                        && matches!(child.children[0].append_kind, AppendKind::Int32) =>
+                {
+                    ProbeKind::I32List(if child.varint_length { 2 } else if leb { 1 } else { 0 })
+                }
+                AppendKind::List
                     if !op.project
                         && child.children[0].e.required
                         && (child.varint_length || leb)
@@ -1057,11 +1067,19 @@ impl BufferedScalars {
             });
         }
         Some(Self {
+            has_lists: fields.iter().any(|field| matches!(field.kind, ProbeKind::I32List(_))),
             fields,
             bitmap_bytes: node.optional_count.div_ceil(8),
         })
     }
     fn probe(&self, bytes: &[u8], cursor: &mut usize, values: &mut [u64; 16]) -> Option<u16> {
+        self.probe_values::<false>(bytes, cursor, values, &mut [0; 32], &mut [(0, 0); 16])
+    }
+    fn probe_values<const LISTS: bool>(
+        &self, bytes: &[u8], cursor: &mut usize, values: &mut [u64; 16],
+        elements: &mut [i32; 32], ranges: &mut [(u8, u8); 16],
+    ) -> Option<u16> {
+        let mut used = 0usize;
         let missing = if self.bitmap_bytes == 1 {
             let byte = u64::from(*bytes.get(*cursor)?);
             *cursor += 1;
@@ -1120,6 +1138,28 @@ impl BufferedScalars {
                     let value = u64::from_le_bytes(bytes.get(*cursor..end)?.try_into().ok()?);
                     *cursor = end;
                     value
+                }
+                ProbeKind::I32List(mode) => {
+                    if !LISTS { return None; }
+                    let count = if mode == 0 {
+                        let end = cursor.checked_add(4)?;
+                        let signed = i32::from_le_bytes(bytes.get(*cursor..end)?.try_into().ok()?);
+                        *cursor = end;
+                        usize::try_from(signed).ok()?
+                    } else {
+                        let value = slice_varint(bytes, cursor, 32)?;
+                        if mode == 1 { usize::try_from(value as u32 as i32).ok()? }
+                        else { usize::try_from(value).ok()? }
+                    };
+                    let end = used.checked_add(count)?;
+                    if end > elements.len() { return None; }
+                    for element in &mut elements[used..end] {
+                        let value = slice_varint(bytes, cursor, 64)?;
+                        *element = u32::try_from(value).ok()? as i32;
+                    }
+                    ranges[usize::from(field.output)] = (used as u8, end as u8);
+                    used = end;
+                    continue;
                 }
                 ProbeKind::IntegerArray => {
                     let n = *bytes.get(*cursor)?;
@@ -1208,6 +1248,132 @@ fn has_buffered_outputs(ops: &[BoundOp<'_, '_>]) -> bool {
     };
     ops.iter().all(|op| match op {
         BoundOp::Field(f) => eligible(f),
+        BoundOp::Run { fields, .. } => fields.iter().all(eligible),
+    })
+}
+
+// Check every selected list offset before publishing any field of the entry.
+fn mixed_list_end(length: usize, range: (u8, u8)) -> Option<i32> {
+    i32::try_from(length.checked_add(usize::from(range.1.checked_sub(range.0)?))?).ok()
+}
+fn mixed_list_block_end(length: usize, remaining: usize) -> Option<i32> {
+    i32::try_from(length.checked_add(remaining.checked_mul(32)?)?).ok()
+}
+fn mixed_offsets_all_fit(outputs: &[&mut BoundOutput<'_>], remaining: usize) -> bool {
+    outputs.iter().all(|output| {
+        if let BoundOutput::ArrowList(list) = output {
+            mixed_list_block_end(list.values.len(), remaining).is_some()
+        } else { true }
+    })
+}
+const MIXED_COMMIT_ROWS: usize = 16;
+struct MixedBatch {
+    scalars: [[u64; 16]; MIXED_COMMIT_ROWS],
+    elements: [[i32; 32]; MIXED_COMMIT_ROWS],
+    ranges: [[(u8, u8); 16]; MIXED_COMMIT_ROWS],
+    nulls: [u16; MIXED_COMMIT_ROWS],
+    entry_valid: [bool; MIXED_COMMIT_ROWS],
+    len: usize,
+}
+impl MixedBatch {
+    fn new() -> Self {
+        Self { scalars: [[0; 16]; MIXED_COMMIT_ROWS], elements: [[0; 32]; MIXED_COMMIT_ROWS],
+            ranges: [[(0, 0); 16]; MIXED_COMMIT_ROWS], nulls: [0; MIXED_COMMIT_ROWS],
+            entry_valid: [false; MIXED_COMMIT_ROWS], len: 0 }
+    }
+}
+fn mixed_staged_offsets_fit(
+    outputs: &[&mut BoundOutput<'_>], ranges: &[(u8, u8); 16], nulls: u16,
+    growth: &mut [usize; 16],
+) -> bool {
+    for (index, output) in outputs.iter().enumerate() {
+        if nulls & (1 << index) != 0 { continue; }
+        if let BoundOutput::ArrowList(list) = output {
+            let Some(length) = list.values.len().checked_add(growth[index]) else { return false; };
+            if mixed_list_end(length, ranges[index]).is_none() { return false; }
+        }
+    }
+    for (index, output) in outputs.iter().enumerate() {
+        if nulls & (1 << index) == 0 && matches!(output, BoundOutput::ArrowList(_)) {
+            growth[index] += usize::from(ranges[index].1 - ranges[index].0);
+        }
+    }
+    true
+}
+// The enum/type dispatch occurs once per output column and completed chunk.
+fn buffered_mixed_batch(
+    outputs: &mut [&mut BoundOutput<'_>], batch: &MixedBatch,
+    gathered: &mut [i32; MIXED_COMMIT_ROWS * 32],
+) {
+    let n = batch.len;
+    let mut valid = [false; MIXED_COMMIT_ROWS];
+    for (index, output) in outputs.iter_mut().enumerate() {
+        let mut all_valid = true;
+        for row in 0..n {
+            valid[row] = batch.nulls[row] & (1 << index) == 0;
+            all_valid &= valid[row];
+        }
+    macro_rules! primitive {
+        ($builder:expr, $zero:expr, $convert:expr) => {{
+            let mut values = [$zero; MIXED_COMMIT_ROWS];
+            for row in 0..n {
+                if valid[row] { values[row] = ($convert)(batch.scalars[row][index]); }
+            }
+            if all_valid { $builder.append_slice(&values[..n]); }
+            else { $builder.append_values(&values[..n], &valid[..n]); }
+        }};
+    }
+        let inverted = matches!(output, BoundOutput::InvertedBool(_));
+        match output {
+            BoundOutput::I32(builder) => primitive!(builder, 0i32, |v: u64| v as i32),
+            BoundOutput::I64(builder) => primitive!(builder, 0i64, |v: u64| v as i64),
+            BoundOutput::F32(builder) => primitive!(builder, 0f32, |v: u64| f32::from_bits(v as u32)),
+            BoundOutput::F64(builder) => primitive!(builder, 0f64, f64::from_bits),
+            BoundOutput::Bool(builder) | BoundOutput::InvertedBool(builder) => {
+                let mut values = [false; MIXED_COMMIT_ROWS];
+                for row in 0..n {
+                    if valid[row] { values[row] = (batch.scalars[row][index] != 0) ^ inverted; }
+                }
+                if all_valid { builder.append_slice(&values[..n]); }
+                else { builder.append_values(&values[..n], &valid[..n]).expect("matched staged lengths"); }
+            }
+            BoundOutput::Call(builder) => {
+                let mut values = [0u32; MIXED_COMMIT_ROWS];
+                for row in 0..n {
+                    if valid[row] { values[row] = batch.scalars[row][index] as u32; }
+                }
+                builder.packed.extend_from_slice(&values[..n]);
+                if all_valid { builder.valid.append_n_non_nulls(n); }
+                else { builder.valid.append_slice(&valid[..n]); }
+            }
+            BoundOutput::ArrowList(list) => {
+                let mut offsets = [0i32; MIXED_COMMIT_ROWS];
+                let mut used = 0;
+                let base = list.values.len();
+                for row in 0..n {
+                    if valid[row] {
+                        let (start, end) = batch.ranges[row][index];
+                        let values = &batch.elements[row][usize::from(start)..usize::from(end)];
+                        gathered[used..used + values.len()].copy_from_slice(values);
+                        used += values.len();
+                    }
+                    offsets[row] = (base + used) as i32; // preflight checked the chunk
+                }
+                list.values.append_slice(&gathered[..used]);
+                list.offsets.extend_from_slice(&offsets[..n]);
+                if all_valid { list.validity.append_n_non_nulls(n); }
+                else { list.validity.append_slice(&valid[..n]); }
+            }
+            _ => unreachable!("mixed buffered output eligibility"),
+        }
+    }
+}
+fn has_mixed_outputs(ops: &[BoundOp<'_, '_>]) -> bool {
+    let eligible = |field: &BoundField<'_, '_>| {
+        !matches!(field.output, BoundOutput::Other(_) | BoundOutput::EncodedList(_))
+    };
+    ops.iter().all(|op| match op {
+        BoundOp::Field(field) => eligible(field),
         BoundOp::Run { fields, .. } => fields.iter().all(eligible),
     })
 }
@@ -1882,7 +2048,7 @@ impl Node {
         let buffered = self.buffered_scalars[usize::from(input.leb)]
             .get_or_init(|| BufferedScalars::new(self, input.leb))
             .as_ref()
-            .filter(|_| has_buffered_outputs(&ops));
+            .filter(|program| if program.has_lists { has_mixed_outputs(&ops) } else { has_buffered_outputs(&ops) });
         let mut i = 0;
         while i < n {
             // Leading absent entries need no input; preserve that property
@@ -1896,7 +2062,50 @@ impl Node {
                 continue;
             }
 
-            if let Some(program) = &buffered {
+            if let Some(program) = buffered.filter(|program| program.has_lists) {
+                let accepted = input.with_buffer(|bytes| {
+                    let mut selected_outputs = bind_buffered_outputs(&mut ops);
+                    let offsets_safe = mixed_offsets_all_fit(&selected_outputs, n - i);
+                    let mut cursor = 0;
+                    let mut accepted = 0;
+                    let mut batch = MixedBatch::new();
+                    let mut gathered = [0i32; MIXED_COMMIT_ROWS * 32];
+                    while i + accepted < n {
+                        batch.len = 0;
+                        let mut growth = [0usize; 16];
+                        while batch.len < MIXED_COMMIT_ROWS && i + accepted + batch.len < n {
+                            let row = batch.len;
+                            if !REQUIRED && absent(element_bits, i + accepted + row) {
+                                batch.nulls[row] = u16::MAX;
+                                batch.entry_valid[row] = false;
+                            } else {
+                                let start = cursor;
+                                let Some(nulls) = program.probe_values::<true>(bytes, &mut cursor,
+                                    &mut batch.scalars[row], &mut batch.elements[row], &mut batch.ranges[row]) else {
+                                    cursor = start;
+                                    break;
+                                };
+                                if !offsets_safe && !mixed_staged_offsets_fit(&selected_outputs,
+                                    &batch.ranges[row], nulls, &mut growth) {
+                                    cursor = start;
+                                    break;
+                                }
+                                batch.nulls[row] = nulls;
+                                batch.entry_valid[row] = true;
+                            }
+                            batch.len += 1;
+                        }
+                        if batch.len == 0 { break; }
+                        buffered_mixed_batch(&mut selected_outputs, &batch, &mut gathered);
+                        validity.append_slice(&batch.entry_valid[..batch.len]);
+                        accepted += batch.len;
+                        if batch.len < MIXED_COMMIT_ROWS { break; }
+                    }
+                    (accepted, cursor)
+                })?;
+                if accepted != 0 { i += accepted; continue; }
+            }
+            if let Some(program) = buffered.filter(|program| !program.has_lists) {
                 let accepted = input.with_buffer(|bytes| {
                     let mut selected_outputs = bind_buffered_outputs(&mut ops);
                     let mut cursor = 0;
@@ -2312,6 +2521,7 @@ mod tests {
         assert!(slice_varint(&[255, 255, 255, 255, 31], &mut cursor, 32).is_none());
         assert_eq!(cursor, 0);
         let call = BufferedScalars {
+            has_lists: false,
             bitmap_bytes: 0,
             fields: vec![ProbeField {
                 kind: ProbeKind::Call,
@@ -2324,6 +2534,7 @@ mod tests {
             assert!(call.probe(&leb(invalid), &mut 0, &mut [0; 16]).is_none());
         }
         let plan = BufferedScalars {
+            has_lists: false,
             bitmap_bytes: 0,
             fields: vec![
                 ProbeField {
@@ -2447,6 +2658,7 @@ mod tests {
     fn compact_scalar_plan_handles_projection_missing_and_boundary() {
         assert!(std::mem::size_of::<ProbeField>() <= 16);
         let plan = BufferedScalars {
+            has_lists: false,
             bitmap_bytes: 1,
             fields: vec![
                 ProbeField {
@@ -4449,6 +4661,212 @@ mod borrowed_string_tests {
                     assert_eq!(old.bytes, new.bytes);
                     assert_eq!(expected.finish()?.to_data(), actual.finish()?.to_data());
                     assert_eq!(old.byte().ok(), new.byte().ok());
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod mixed_list_probe_tests {
+    use super::*;
+    fn unsigned(mut value: u64, bytes: &mut Vec<u8>) {
+        loop {
+            let byte = (value & 127) as u8;
+            value >>= 7;
+            bytes.push(byte | if value == 0 { 0 } else { 128 });
+            if value == 0 { break; }
+        }
+    }
+    fn length(value: usize, mode: u8, bytes: &mut Vec<u8>) {
+        if mode == 0 { bytes.extend_from_slice(&(value as i32).to_le_bytes()); }
+        else { unsigned(value as u64, bytes); }
+    }
+    fn node(mode: u8, required: bool) -> Node {
+        let scalar = |kind: &str| Encoding { kind: kind.into(), required: false, fields: vec![], rank: 0 };
+        let array = || Encoding { kind: if mode == 2 { "EArray2" } else { "EArray" }.into(), required: false,
+            fields: vec![("element".into(), Encoding { required: true, ..scalar("EVarint") })], rank: 0 };
+        let integer_array = || Type::Array { array: Box::new(Type::Primitive(P::Int32)) };
+        let ty = Type::Array { array: Box::new(Type::Struct { r#struct: vec![
+            ("DP".into(), Type::Primitive(P::Int32)), ("GT".into(), Type::Primitive(P::Call)),
+            ("AD".into(), integer_array()), ("z".into(), Type::Primitive(P::Int64)),
+            ("PL".into(), integer_array()),
+        ] }) };
+        Node::new(&Encoding { kind: "EArray2".into(), required: true, rank: 0,
+            fields: vec![("element".into(), Encoding { kind: "EBaseStruct".into(), required,
+                fields: vec![("PL".into(), array()), ("z".into(), scalar("EVarint")),
+                    ("GT".into(), scalar("EVarint")), ("AD".into(), array()),
+                    ("DP".into(), scalar("EVarint"))], rank: 0 })] }, &ty)
+    }
+    fn entry(pl: usize, ad: usize, mask: u8, mode: u8, bytes: &mut Vec<u8>) {
+        bytes.push(mask);
+        if mask & 1 == 0 {
+            length(pl, mode, bytes);
+            for value in 0..pl { unsigned((value * 129) as u64, bytes); }
+        }
+        if mask & 2 == 0 { unsigned(u64::MAX, bytes); }
+        if mask & 4 == 0 { unsigned(12, bytes); }
+        if mask & 8 == 0 {
+            length(ad, mode, bytes);
+            for value in 0..ad { unsigned((value * 191) as u64, bytes); }
+        }
+        if mask & 16 == 0 { unsigned(257, bytes); }
+    }
+    fn compare(mode: u8, required: bool, bytes: Vec<u8>, prefix: usize, project: bool) -> Result<()> {
+        let mut fast = node(mode, required);
+        let mut slow = node(mode, required);
+        if project {
+            let paths = [vec!["PL".into()], vec!["GT".into()], vec!["DP".into()]];
+            fast.demand(&paths); slow.demand(&paths);
+        }
+        // Force only the scalar generic entry loop for the reference.
+        for cached in &slow.children[0].buffered_scalars { assert!(cached.set(None).is_ok()); }
+        let mut input = vec![0; prefix]; input.extend(bytes);
+        let input: Arc<[u8]> = input.into();
+        let mut a = Input::from_memory(input.clone(), mode == 1);
+        let mut b = Input::from_memory(input, mode == 1);
+        a.skip(prefix)?; b.skip(prefix)?;
+        let mut left = Column::projected(&fast, &fast.ty.to_arrow()?);
+        let mut right = Column::projected(&slow, &slow.ty.to_arrow()?);
+        let x = fast.append(&mut a, &mut left);
+        let y = slow.append(&mut b, &mut right);
+        fn state(column: &Column, out: &mut Vec<usize>) {
+            if matches!(column, Column::Skipped(..)) { return; }
+            out.push(column.len());
+            match column {
+                Column::Struct(_, children, _) => for child in children { state(child, out); },
+                Column::List(_, child, offsets, _) => {
+                    out.extend(offsets.iter().map(|offset| *offset as usize));
+                    state(child, out);
+                }
+                _ => {}
+            }
+        }
+        let mut left_state = Vec::new();
+        let mut right_state = Vec::new();
+        state(&left, &mut left_state); state(&right, &mut right_state);
+        assert_eq!(left_state, right_state);
+        assert_eq!(x.is_ok(), y.is_ok());
+        assert_eq!(a.bytes, b.bytes);
+        match (x, y) {
+            (Ok(()), Ok(())) => assert_eq!(left.finish()?.to_data(), right.finish()?.to_data()),
+            (Err(x), Err(y)) => assert_eq!(x.to_string(), y.to_string()),
+            _ => unreachable!(),
+        }
+        assert_eq!(a.byte().ok(), b.byte().ok());
+        Ok(())
+    }
+    #[test]
+    fn mixed_lists_match_generic_missing_projection_lengths_and_boundaries() -> Result<()> {
+        for mode in 0..3 {
+            for required in [false, true] {
+                for (pl, ad) in [(0, 0), (31, 1), (32, 0), (32, 1), (33, 0), (17, 16)] {
+                    let mut bytes = vec![3];
+                    if !required { bytes.push(2); }
+                    entry(pl, ad, 0, mode, &mut bytes);
+                    if required { entry(0, 0, 0, mode, &mut bytes); }
+                    // Missing PL and GT, defined empty AD; unlike missing entries.
+                    entry(0, 0, 5, mode, &mut bytes);
+                    bytes.push(42);
+                    for prefix in [0, 65_520, 65_535] {
+                        for projected in [false, true] {
+                            compare(mode, required, bytes.clone(), prefix, projected)?;
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    #[test]
+    fn mixed_list_offset_bounds_and_unsupported_builders_remain_generic() -> Result<()> {
+        assert_eq!(mixed_list_end(0, (0, 32)), Some(32));
+        assert_eq!(mixed_list_end(i32::MAX as usize, (0, 0)), Some(i32::MAX));
+        assert_eq!(mixed_list_end(i32::MAX as usize, (0, 1)), None);
+        assert_eq!(mixed_list_end(usize::MAX, (0, 1)), None);
+        assert_eq!(mixed_list_end(0, (2, 1)), None);
+        assert_eq!(mixed_list_block_end(0, 10_000), Some(320_000));
+        assert_eq!(mixed_list_block_end(i32::MAX as usize, 0), Some(i32::MAX));
+        assert_eq!(mixed_list_block_end(i32::MAX as usize, 1), None);
+        assert_eq!(mixed_list_block_end(0, usize::MAX), None);
+        let node = node(2, true);
+        let mut outputs = Column::projected_encoding(&node.children[0], &node.children[0].ty.to_arrow()?, true);
+        let Column::Struct(_, children, _) = &mut outputs else { unreachable!() };
+        let ops = node.children[0].bind_struct(children, true);
+        assert!(!has_mixed_outputs(&ops));
+        assert!(BufferedScalars::new(&node.children[0], true).unwrap().has_lists);
+        let mut nullable_leaf = node.e.clone();
+        nullable_leaf.fields[0].1.fields[0].1.fields[0].1.required = false;
+        let unsupported = Node::new(&nullable_leaf, &node.ty);
+        assert!(BufferedScalars::new(&unsupported.children[0], true).is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn mixed_lists_rollback_on_late_invalid_words_lengths_and_truncation() -> Result<()> {
+        for mode in 0..3 {
+            let mut valid = vec![1];
+            entry(3, 2, 0, mode, &mut valid);
+            for cut in 1..valid.len() {
+                compare(mode, true, valid[..cut].to_vec(), 65_520, false)?;
+            }
+            // All preceding selected lists must remain transactional when the
+            // final scalar overflows u32 or contains an invalid u64 encoding.
+            for invalid in [vec![128,128,128,128,16], vec![128; 10]] {
+                let mut bytes = valid[..valid.len()-2].to_vec();
+                bytes.extend(invalid);
+                compare(mode, true, bytes, 0, false)?;
+            }
+            let mut bad_length = vec![1, 0];
+            if mode == 0 { bad_length.extend_from_slice(&(-1i32).to_le_bytes()); }
+            else { unsigned(u32::MAX as u64, &mut bad_length); }
+            compare(mode, true, bad_length, 0, false)?;
+        }
+        Ok(())
+    }
+    #[test]
+    fn mixed_batched_commit_matches_all_chunk_edges_and_entry_validity() -> Result<()> {
+        for mode in 0..3 {
+            for count in [1usize, 15, 16, 17, 31, 32, 33] {
+                for required in [false, true] {
+                    let mut bytes = vec![count as u8];
+                    if !required {
+                        let mut bitmap = vec![0u8; count.div_ceil(8)];
+                        for row in 0..count { if row % 5 == 1 { bitmap[row / 8] |= 1 << (row % 8); } }
+                        bytes.extend_from_slice(&bitmap);
+                    }
+                    for row in 0..count {
+                        if !required && row % 5 == 1 { continue; }
+                        // A defined entry with all fields null is distinct
+                        // from the absent entries in the enclosing bitmap.
+                        let mask = match row % 4 { 0 => 0, 1 => 31, 2 => 5, _ => 8 };
+                        entry(row % 4, row % 3, mask, mode, &mut bytes);
+                    }
+                    bytes.push(42);
+                    for prefix in [0, 65_500, 65_535] {
+                        for projection in [false, true] {
+                            compare(mode, required, bytes.clone(), prefix, projection)?;
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    #[test]
+    fn mixed_batched_commit_preserves_prefix_on_mid_chunk_failure() -> Result<()> {
+        for mode in 0..3 {
+            for bad_row in [0usize, 1, 7, 15, 16, 17, 31, 32] {
+                for invalid in [vec![128], vec![128; 10], vec![128,128,128,128,16]] {
+                    let mut bytes = vec![33];
+                    for _ in 0..bad_row { entry(3, 2, 0, mode, &mut bytes); }
+                    let mut broken = Vec::new();
+                    entry(3, 2, 0, mode, &mut broken);
+                    broken.truncate(broken.len() - 2); // replace final DP=257
+                    bytes.extend(broken);
+                    bytes.extend(invalid);
+                    for prefix in [0, 65_520] { compare(mode, true, bytes.clone(), prefix, false)?; }
                 }
             }
         }

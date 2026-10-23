@@ -1,0 +1,72 @@
+{
+  "engine": "vail",
+  "hail_threads": null,
+  "warmup": 1,
+  "runs": 3,
+  "reject_compilers": true,
+  "matrix": "/private/tmp/vail-legacy-scale-20261023/matrix_100000x10000.mt",
+  "table": "/private/tmp/vail-legacy-native-benchmark.ht",
+  "results": {
+    "matrix_decode_count": {
+      "seconds": [
+        9.538435416994616,
+        9.57706479204353,
+        9.057802833034657
+      ],
+      "median": 9.538435416994616,
+      "python_process_cpu_seconds": [
+        93.327751,
+        97.73758300000003,
+        93.86228700000004
+      ],
+      "python_process_cpu_median": 93.86228700000004,
+      "engine_cpu_seconds": [
+        93.327763,
+        97.737595,
+        93.86229800000001
+      ],
+      "engine_cpu_median": 93.86229800000001,
+      "python_process_minor_faults": [
+        1164980,
+        1194096,
+        1193360
+      ],
+      "python_process_minor_faults_median": 1193360,
+      "value": 100000,
+      "attempts": [
+        {
+          "seconds": 8.963271374930628,
+          "python_process_cpu_seconds": 89.711545,
+          "engine_cpu_seconds": 89.711564,
+          "python_process_minor_faults": 1138099,
+          "compiler_interference": false,
+          "warmup": true
+        },
+        {
+          "seconds": 9.538435416994616,
+          "python_process_cpu_seconds": 93.327751,
+          "engine_cpu_seconds": 93.327763,
+          "python_process_minor_faults": 1164980,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 9.57706479204353,
+          "python_process_cpu_seconds": 97.73758300000003,
+          "engine_cpu_seconds": 97.737595,
+          "python_process_minor_faults": 1194096,
+          "compiler_interference": false,
+          "warmup": false
+        },
+        {
+          "seconds": 9.057802833034657,
+          "python_process_cpu_seconds": 93.86228700000004,
+          "engine_cpu_seconds": 93.86229800000001,
+          "python_process_minor_faults": 1193360,
+          "compiler_interference": false,
+          "warmup": false
+        }
+      ]
+    }
+  }
+}
