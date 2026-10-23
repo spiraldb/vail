@@ -1,0 +1,44 @@
+total 505412
+SELF
+99.64 <vail_execution::array_aggregate::DenseNumeric>::update_inner::<false>
+0.24 0x35214
+0.07 0x33d30
+0.02 0x3b410
+0.02 <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::into_builder
+0.01 <arrow_data::data::ArrayDataBuilder>::build_unchecked
+0.0 0x3bfac
+INCLUSIVE
+100.0 datafusion_physical_plan::aggregates::aggregate_stream::aggregate_batch
+100.0 <tokio::runtime::scheduler::multi_thread::worker::Context>::run
+100.0 std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>
+100.0 <tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+100.0 <tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll
+100.0 <tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>
+100.0 <vail_execution::array_aggregate::Coordinates>::update_flat
+100.0 <futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll
+100.0 <tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll
+100.0 <futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}> as futures_core::stream::Stream>::poll_next
+100.0 <tokio::runtime::scheduler::multi_thread::worker::Context>::run_task
+100.0 tokio::runtime::scheduler::multi_thread::worker::run
+100.0 <tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll
+100.0 tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>
+100.0 <vail_execution::array_aggregate::Coordinates as datafusion_expr_common::accumulator::Accumulator>::update_batch
+100.0 <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+100.0 <tokio::runtime::blocking::pool::Inner>::run
+100.0 _pthread_start
+100.0 <vail_execution::array_aggregate::DenseNumeric>::update_inner::<false>
+100.0 datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#0}
+100.0 <futures_util::stream::stream::fuse::Fuse<futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}>> as futures_core::stream::Stream>::poll_next
+100.0 <std::sys::thread::unix::Thread>::new::thread_start
+0.31 arrow_array::array::new_empty_array
+0.24 arrow_array::array::make_array
+0.24 0x35214
+0.07 0x33d30
+0.07 <arrow_data::data::ArrayData>::new_null
+0.02 0x3b410
+0.02 core::ptr::drop_glue::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Date32Type>>
+0.02 <alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow
+0.02 <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::into_builder
+0.01 <arrow_array::builder::primitive_builder::PrimitiveBuilder<arrow_array::types::Int64Type>>::finish
+0.01 <arrow_data::data::ArrayDataBuilder>::build_unchecked
+0.0 0x3bfac
