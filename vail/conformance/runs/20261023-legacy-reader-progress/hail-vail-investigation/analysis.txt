@@ -1,0 +1,94 @@
+The remaining performance difference is not established as exclusively code generation.
+
+Measured query CPU and wall time, latest warm comparison:
+                         Vail wall / core-s     Hail Java 11 wall / core-s
+Full matrix read         0.572 / 5.331          0.478 / 4.083
+GT-only read             0.329 / 3.054          0.432 / 3.491
+DP sum                   0.531 / 3.025          0.527 / 4.403
+Vail figures pool two runs; six warmups and seven measurements per case/run.
+Hail uses Spark local[14], Vail has 16 file partitions and a 32-worker ceiling;
+the host has 14 cores (10 performance, 4 efficiency). Core-seconds count all
+native worker CPU for Vail, and Python plus the exact gateway JVM CPU for Hail.
+The host is shared: Rust compiler overlaps were rejected, other host load and
+clock variation remain. Java 21 controls have the same qualitative distinction.
+Thus full reads are slower and use more CPU in these runs; DP sum uses less CPU
+but has similar wall time. Do not infer CPU efficiency from wall time alone.
+
+What the controlled decoder experiment proves:
+Across all 16 real entry partitions, normal-plan decoder medians sum to
+2.557980s for full reads versus 2.162922s for a straight-line decoder (15.44%
+less time). DP projection is 1.267253s versus 0.705059s (44.36% less time).
+Both use identical resident input, ordinary Arrow builders, raw Call handling,
+missingness and framing checks. Exact output/error/byte-count differential
+checks precede timings. Setup, decompression, finishing and destruction are
+outside the timer. This isolates schema machinery including repeated binding
+and dynamic dispatch, not conditionals alone. It is not an end-to-end speedup,
+and the test-only decoder is not a hardcoded production benchmark fast path.
+
+Actual non-codegen pipeline difference:
+The public DP query physically executes:
+Partial Aggregate(sum(row-list kernel(cells)))
+  Projection(cells)
+    ConsumerScope
+      ProtectedRoundRobinRepartition(32)
+        LegacySources(16)
+Nested entry lists cross the exchange before row sums are computed. Runtime
+stacks show RepartitionExec::pull_from_input -> SharedCoalescer::finalize ->
+BatchCoalescer -> concat_lists, corroborating the planned execution. Hail reduces
+in partition streams and combines aggregate state. Projecting pure deterministic
+row-local sums before fanout would transfer scalar sums instead of nested
+payload. Preserve consumer scopes, filter/explode laziness, fallible expressions,
+RNG and aggregate order. Full-count profiles have no matching exchange/list
+concatenation cost, so this does not explain their remaining CPU difference.
+Reproducible physical plan and script are saved alongside this report.
+
+Profiles and hardware counters:
+Latest native full-read self samples: 4040 decode_arrow_list, 3231 BoundOp::append,
+1231 Node::append_list, 873 varint_long, 2206 Zstd sequence decompression, out of
+14193 native self samples. DP: 4128 buffered probe, 2153 scalar output commit,
+2456 Zstd sequences, 147 integer-list sum, out of 11097. Waiting threads are not
+CPU percentages. Actual Hail JVM profiles show generated array decoders hot for
+full reads; InputBuffer.skipVarint dominates DP Java execution samples. Installed
+JAR bytecode confirms byte-by-byte varint walking. Local Hail reference source
+is a different commit, so code claims were checked against actual installed
+bytecode and JFR where possible. Hail has compilation/decoder caches; distinct
+classes in samples do not prove every identical query recompiles.
+
+CPU Counters, performance cores, Vail versus Hail:
+Useful instruction bandwidth          57.96% vs 39.59%
+Instruction-delivery bottleneck       20.20% vs  5.82%
+Instruction-processing bottleneck     14.82% vs 39.31%
+Discarded work                         7.03% vs 15.29%
+These are Apple's sustainable instruction-bandwidth categories, not ordinary
+IPC or wall-time shares. Core mix is similar (~77% performance-core CPU time).
+Reported cycles per CPU interval differ, so do not compare absolute throughput
+from these captures. Vail has greater front-end delivery pressure, consistent
+with a less compact hot path; Hail has greater back-end/discard pressure. Neither
+capture records cache-miss events. DRAM bandwidth saturation or worse Vail data
+cache behavior is NOT established. Definitions and aggregation script are saved.
+
+Implemented and validated:
+- Hoisted entry requiredness into const-generic loops; prebound selected outputs,
+  typed list parsers and codecs; word-based skips. Prior controlled CPU comparison
+  found ~17% less GT CPU, ~16% less DP CPU, smaller full/entry-count gains.
+- One Zstd context per reader; isolated context-reuse benchmark is essentially flat.
+- Reusable compressed and decoded buffers; direct borrowed parsing eliminates
+  the decompressed BufReader copy. Against context-only baseline, full CPU
+  4.4814->4.2992 core-s, wall .4638->.4227s, minor faults 49495.5->45216.
+  GT/DP CPU were effectively flat. Stored-uncompressed frames retain one copy;
+  framing now uses unbuffered header reads, a possible syscall tradeoff.
+- Lazy AD/PL payload capture regressed full reads and is disabled by default.
+  Grouped numeric array prototypes also regressed and were rejected.
+- Explicit aggregate widening fixes Int32 overflow. Fused sum reads Int32 into
+  an Int64 scalar, without a widened per-entry array.
+55 Rust tests, 262 Python tests, two real Hail corpus cases, and all 16 controlled
+partition comparisons pass. Hardware-counter collection initially failed while
+disk was full, then succeeded after obsolete experiment binaries were removed.
+
+Conclusion:
+Code generation and specialization offer a real advantage, especially compact
+hot paths, but are not a complete diagnosis. Reader runtime machinery is a
+measured cost; raw-list repartition before reduction is a separate demonstrated
+pipeline cost; allocation/copy cleanup is a modest improvement. The exclusive
+cause of the full-read gap is not proved. Do not claim all benchmarks are now
+substantially faster than Hail or that data-cache misses explain the difference.

@@ -1,0 +1,254 @@
+Compiled from "InputBuffers.scala"
+public interface is.hail.io.InputBuffer extends java.io.Closeable {
+  public abstract void close();
+
+  public abstract void seek(long);
+
+  public abstract byte readByte();
+
+  public static void read$(is.hail.io.InputBuffer, byte[], int, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: iload_3
+       4: invokespecial #27                 // InterfaceMethod read:([BII)V
+       7: return
+
+  public default void read(byte[], int, int);
+    Code:
+       0: iconst_0
+       1: istore        4
+       3: iload         4
+       5: iload_3
+       6: if_icmpge     30
+       9: aload_1
+      10: iload_2
+      11: iload         4
+      13: iadd
+      14: aload_0
+      15: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+      20: bastore
+      21: iload         4
+      23: iconst_1
+      24: iadd
+      25: istore        4
+      27: goto          3
+      30: return
+
+  public abstract int readInt();
+
+  public abstract long readLong();
+
+  public abstract float readFloat();
+
+  public abstract double readDouble();
+
+  public abstract void readBytes(is.hail.annotations.Region, long, int);
+
+  public abstract byte[] readBytesArray(int);
+
+  public static void skipBoolean$(is.hail.io.InputBuffer);
+    Code:
+       0: aload_0
+       1: invokespecial #52                 // InterfaceMethod skipBoolean:()V
+       4: return
+
+  public default void skipBoolean();
+    Code:
+       0: aload_0
+       1: invokeinterface #55,  1           // InterfaceMethod skipByte:()V
+       6: return
+
+  public abstract void skipByte();
+
+  public abstract void skipInt();
+
+  public abstract void skipLong();
+
+  public abstract void skipFloat();
+
+  public abstract void skipDouble();
+
+  public abstract void skipBytes(int);
+
+  public abstract void readDoubles(double[], int, int);
+
+  public static void readDoubles$(is.hail.io.InputBuffer, double[]);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #70                 // InterfaceMethod readDoubles:([D)V
+       5: return
+
+  public default void readDoubles(double[]);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iconst_0
+       3: aload_1
+       4: arraylength
+       5: invokeinterface #73,  4           // InterfaceMethod readDoubles:([DII)V
+      10: return
+
+  public static boolean readBoolean$(is.hail.io.InputBuffer);
+    Code:
+       0: aload_0
+       1: invokespecial #79                 // InterfaceMethod readBoolean:()Z
+       4: ireturn
+
+  public default boolean readBoolean();
+    Code:
+       0: aload_0
+       1: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+       6: iconst_0
+       7: if_icmpeq     12
+      10: iconst_1
+      11: ireturn
+      12: iconst_0
+      13: ireturn
+
+  public static int readVarint$(is.hail.io.InputBuffer);
+    Code:
+       0: aload_0
+       1: invokespecial #84                 // InterfaceMethod readVarint:()I
+       4: ireturn
+
+  public default int readVarint();
+    Code:
+       0: aload_0
+       1: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+       6: istore_1
+       7: iload_1
+       8: bipush        127
+      10: iand
+      11: istore_2
+      12: bipush        7
+      14: istore_3
+      15: iload_1
+      16: sipush        128
+      19: iand
+      20: iconst_0
+      21: if_icmpeq     54
+      24: iload_3
+      25: bipush        35
+      27: if_icmpgt     54
+      30: aload_0
+      31: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+      36: istore_1
+      37: iload_2
+      38: iload_1
+      39: bipush        127
+      41: iand
+      42: iload_3
+      43: ishl
+      44: ior
+      45: istore_2
+      46: iload_3
+      47: bipush        7
+      49: iadd
+      50: istore_3
+      51: goto          15
+      54: iload_3
+      55: bipush        35
+      57: if_icmpgt     62
+      60: iload_2
+      61: ireturn
+      62: new           #86                 // class java/lang/RuntimeException
+      65: dup
+      66: ldc           #88                 // String Invalid variable length int, longer than 5 bytes
+      68: invokespecial #92                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+      71: athrow
+
+  public static long readVarintLong$(is.hail.io.InputBuffer);
+    Code:
+       0: aload_0
+       1: invokespecial #101                // InterfaceMethod readVarintLong:()J
+       4: lreturn
+
+  public default long readVarintLong();
+    Code:
+       0: aload_0
+       1: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+       6: istore_1
+       7: iload_1
+       8: i2l
+       9: ldc2_w        #102                // long 127l
+      12: land
+      13: lstore_2
+      14: bipush        7
+      16: istore        4
+      18: iload_1
+      19: sipush        128
+      22: iand
+      23: iconst_0
+      24: if_icmpeq     63
+      27: iload         4
+      29: bipush        70
+      31: if_icmpgt     63
+      34: aload_0
+      35: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+      40: istore_1
+      41: lload_2
+      42: iload_1
+      43: i2l
+      44: ldc2_w        #102                // long 127l
+      47: land
+      48: iload         4
+      50: lshl
+      51: lor
+      52: lstore_2
+      53: iload         4
+      55: bipush        7
+      57: iadd
+      58: istore        4
+      60: goto          18
+      63: iload         4
+      65: bipush        70
+      67: if_icmpgt     72
+      70: lload_2
+      71: lreturn
+      72: new           #86                 // class java/lang/RuntimeException
+      75: dup
+      76: ldc           #105                // String Invalid variable length long, longer than 10 bytes
+      78: invokespecial #92                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+      81: athrow
+
+  public static void skipVarint$(is.hail.io.InputBuffer);
+    Code:
+       0: aload_0
+       1: invokespecial #110                // InterfaceMethod skipVarint:()V
+       4: return
+
+  public default void skipVarint();
+    Code:
+       0: iconst_1
+       1: istore_1
+       2: aload_0
+       3: invokeinterface #32,  1           // InterfaceMethod readByte:()B
+       8: sipush        128
+      11: iand
+      12: iconst_0
+      13: if_icmpeq     29
+      16: iload_1
+      17: bipush        10
+      19: if_icmpge     29
+      22: iload_1
+      23: iconst_1
+      24: iadd
+      25: istore_1
+      26: goto          2
+      29: iload_1
+      30: bipush        10
+      32: if_icmple     45
+      35: new           #86                 // class java/lang/RuntimeException
+      38: dup
+      39: ldc           #112                // String Invalid variable length number, longer than 10 bytes
+      41: invokespecial #92                 // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+      44: athrow
+      45: return
+
+  public static void $init$(is.hail.io.InputBuffer);
+    Code:
+       0: return
+}

@@ -15,12 +15,13 @@ p.add_argument('--warmup', type=int, default=2)
 p.add_argument('--runs', type=int, default=5)
 p.add_argument('--reject-compilers', action='store_true', help='Wait for Rust builds and retry measurements that overlap one.')
 p.add_argument('--cases', nargs='+', default=['table_force_count', 'table_scalar_sum', 'matrix_decode_count', 'matrix_decode_count_gt', 'matrix_entries_count', 'matrix_sum_dp'])
+p.add_argument('--hail-threads', type=int, default=14)
 p.add_argument('--matrix', default='/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt')
 p.add_argument('--table', default='/private/tmp/vail-legacy-native-benchmark.ht')
 a = p.parse_args()
 if a.engine == 'hail':
     import hail as hl
-    hl.init(master='local[14]', quiet=True, log=a.output + '.hail.log')
+    hl.init(master=f'local[{a.hail_threads}]', quiet=True, log=a.output + '.hail.log')
     read_table, read_matrix = hl.read_table, hl.read_matrix_table
 else:
     import vail as hl
@@ -113,6 +114,6 @@ for case in a.cases:
     except Exception as e:
         results[case] = dict(error=repr(e))
         print(case, repr(e), flush=True)
-    Path(a.output).write_text(json.dumps(dict(engine=a.engine, warmup=a.warmup, runs=a.runs, reject_compilers=a.reject_compilers, matrix=matrix, table=table, results=results), indent=2)+'\n')
+    Path(a.output).write_text(json.dumps(dict(engine=a.engine, hail_threads=a.hail_threads if a.engine == "hail" else None, warmup=a.warmup, runs=a.runs, reject_compilers=a.reject_compilers, matrix=matrix, table=table, results=results), indent=2)+'\n')
 if a.engine == 'hail':
     hl.stop()

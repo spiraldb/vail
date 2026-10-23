@@ -1,0 +1,32 @@
+
+running 1 test
+test legacy::decode::schema_bench::real_entries_schema_dispatch_cost ... schema_bench full=true compiled=false rows=1376 seconds=0.143709
+schema_bench full=true compiled=true rows=1376 seconds=0.122995
+schema_bench full=true compiled=true rows=1376 seconds=0.122051
+schema_bench full=true compiled=false rows=1376 seconds=0.140265
+schema_bench full=true compiled=false rows=1376 seconds=0.140873
+schema_bench full=true compiled=true rows=1376 seconds=0.123550
+schema_bench full=true compiled=true rows=1376 seconds=0.122265
+schema_bench full=true compiled=false rows=1376 seconds=0.139737
+schema_bench full=true compiled=false rows=1376 seconds=0.141535
+schema_bench full=true compiled=true rows=1376 seconds=0.122560
+schema_bench full=true compiled=true rows=1376 seconds=0.122982
+schema_bench full=true compiled=false rows=1376 seconds=0.145194
+schema_bench MEDIAN full=true interpreted=0.140873 monomorphic=0.122560 ratio=1.149 bytes=41324022 (decompression, setup, finish/drop excluded)
+schema_bench full=false compiled=false rows=1376 seconds=0.065320
+schema_bench full=false compiled=true rows=1376 seconds=0.038235
+schema_bench full=false compiled=true rows=1376 seconds=0.039565
+schema_bench full=false compiled=false rows=1376 seconds=0.061428
+schema_bench full=false compiled=false rows=1376 seconds=0.061847
+schema_bench full=false compiled=true rows=1376 seconds=0.038659
+schema_bench full=false compiled=true rows=1376 seconds=0.039805
+schema_bench full=false compiled=false rows=1376 seconds=0.066119
+schema_bench full=false compiled=false rows=1376 seconds=0.068505
+schema_bench full=false compiled=true rows=1376 seconds=0.039331
+schema_bench full=false compiled=true rows=1376 seconds=0.039788
+schema_bench full=false compiled=false rows=1376 seconds=0.065062
+schema_bench MEDIAN full=false interpreted=0.065062 monomorphic=0.039565 ratio=1.644 bytes=41324022 (decompression, setup, finish/drop excluded)
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 4.66s
+

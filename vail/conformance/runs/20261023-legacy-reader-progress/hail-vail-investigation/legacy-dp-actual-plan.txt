@@ -1,0 +1,63 @@
+UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+  ProjectionExec: expr=[__vail_aggregate@0 as value]
+    CrossJoinExec
+      DataSourceExec: partitions=1, partition_sizes=[1]
+      CrossJoinExec
+        PlaceholderRowExec
+        ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE 0 END as __vail_aggregate]
+          AggregateExec: mode=Final, gby=[], aggr=[sum(vail_semantic_kernel_array_reduce_508a328983b0d974(vail_source.__vail_matrix_cells)) RESPECT NULLS as __vail_aggregate]
+            CoalescePartitionsExec
+              AggregateExec: mode=Partial, gby=[], aggr=[sum(vail_semantic_kernel_array_reduce_508a328983b0d974(vail_source.__vail_matrix_cells)) RESPECT NULLS as __vail_aggregate]
+                ProjectionExec: expr=[__vail_matrix_cells@1 as __vail_matrix_cells]
+                  VailConsumerScopeExec: consumer=1
+                    VailProtectedRoundRobinRepartitionExec: 32
+                      VailSourcePartitions: 16
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 0 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-00-094762f2-924f-4110-af66-e06fc7b4e0cd]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=0, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 1 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-01-ead1a0f3-f55d-4fa0-961b-cb64b0ba5aa1]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=1, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 2 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-02-ef9f7c7a-051d-44fd-89de-2b7016b1e1a5]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=2, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 3 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-03-30652861-08ee-4707-a1f1-9ed560045fd8]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=3, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 4 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-04-860446a1-4ca8-4f6c-8cda-8eed0a883ea5]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=4, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 5 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-05-b0d80157-8261-4200-9482-39d0b27acce0]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=5, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 6 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-06-233d7b9e-ef6f-458e-8f20-39b62f640d37]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=6, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 7 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-07-beb50899-2b99-419e-ac51-9abb43e534c7]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=7, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 8 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-08-09e309a5-e8a6-45c7-896c-c05985f57616]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=8, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 9 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-09-05e12be9-2bd3-4c07-8676-53826994fa25]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=9, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 10 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-10-f07108d3-3d5e-4c3f-bd34-b60d599d5894]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=10, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 11 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-11-a41c1bab-08bb-4e96-9e85-d56d1d9f0cd0]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=11, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 12 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-12-1d3da7e0-3dc5-4c26-b73d-24a02a669646]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=12, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 13 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-13-788e8f6b-885a-4731-bb2a-d438c2168d4a]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=13, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 14 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-14-b2e5d10b-aba8-4d9c-9f6e-6f3dc14cd2ba]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=14, pruned=false, filter_pushdown=false
+                        ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 15 as __vail_partition]
+                          VailSourceLineageExec
+                            DataSourceExec: file_groups={1 group: [[Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt/rows/rows/parts/part-15-1a1f8b87-efcc-4ead-82bf-a1c235daa692]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=legacy, legacy_part=15, pruned=false, filter_pushdown=false
+

@@ -1,0 +1,61 @@
+{
+  "window_seconds": [
+    2,
+    5
+  ],
+  "recorded_events": [
+    "cycle",
+    "delivery",
+    "discarded",
+    "processing",
+    "useful"
+  ],
+  "by_coretype": {
+    "P": {
+      "cycles": 49316408554.0,
+      "cpu_seconds": 24.516116343,
+      "fractions_cycle_weighted": {
+        "delivery": 0.20196295730800354,
+        "discarded": 0.07030049881479038,
+        "processing": 0.14815865545565624,
+        "useful": 0.5795778864159732
+      },
+      "cycles_per_reported_cpu_ns": 2.01159139008904,
+      "average_scheduled_cores": 8.172038781,
+      "cpu_time_share": 0.7680126876033699
+    },
+    "E": {
+      "cycles": 17553650616.0,
+      "cpu_seconds": 7.405382792,
+      "fractions_cycle_weighted": {
+        "delivery": 0.06001481637226337,
+        "discarded": 0.04872682920064084,
+        "processing": 0.19831753367695087,
+        "useful": 0.6929408187494994
+      },
+      "cycles_per_reported_cpu_ns": 2.370390715651205,
+      "average_scheduled_cores": 2.4684609306666667,
+      "cpu_time_share": 0.23198731239663
+    },
+    "all": {
+      "cycles": 66870059170.0,
+      "cpu_seconds": 31.921499135,
+      "fractions_cycle_weighted": {
+        "delivery": 0.16470101822040412,
+        "discarded": 0.06463732663261752,
+        "processing": 0.16132555607628712,
+        "useful": 0.609336097066409
+      },
+      "cycles_per_reported_cpu_ns": 2.0948282813159302,
+      "average_scheduled_cores": 10.640499711666667,
+      "cpu_time_share": 1.0
+    }
+  },
+  "definitions": {
+    "delivery": "Instruction Delivery Bottleneck The fraction of instruction bandwidth lost because the Instruction Delivery component did not deliver instructions at an adequate rate for the Instruction Processing component.\n\nMore specifically, the Instruction Delivery component reads bytes from memory, decodes them into instructions, and delivers them as \u00b5ops into the Instruction Processing component's instruction window. This fraction represents lost bandwidth when the processing component has room in the instruction window, but new \u00b5ops are not available from the predicted instruction stream. A high fraction indicates a higher Instruction Processing bandwidth might be possible if the Instruction Delivery component delivers new instructions faster.\n\nTo improve performance, reduce instruction memory delays by improving the locality of hot functions, and inline, unroll, and straighten common code sequences to create longer streams of sequentially fetched instructions. For less common code, optimize for smaller code size to improve cache performance using `-Os` with C-based languages or `-Osize` for Swift.",
+    "discarded": "Discarded Bottleneck The fraction of sustainable instruction bandwidth wasted due to the effects of a branch misprediction or a pipeline restart.\n\nMore specifically, this fraction represents \u00b5op bandwidth wasted while processing down the wrong predicted path, as well as lost bandwidth required to recover from the misprediction. A high fraction indicates that the control flow or memory dependencies or both are difficult to predict and the CPU is throwing away a significant amount of predicted work.\n\nBecause the instruction window and overall speculative execution capability of the CPU tends to increase from family to family, the amount of discarded work due to similar misprediction rates may also increase.\n\nTo improve performance, focus on removing branches through conditional moves or altering data structures and decision trees for a more stable path through the code.",
+    "processing": "Instruction Processing Bottleneck The fraction of instruction bandwidth lost because the Instruction Processing component is executing instructions at a rate lower than the sustainable bandwidth.\n\nMore specifically, this component maintains a forward-looking set of \u00b5ops, called the instruction window, that the CPU collects from along a predicted instruction path and executes those \u00b5ops as they become ready. This fraction represents \u00b5op bandwidth lost when the instruction window becomes full due to slow processing. A high fraction indicates insufficient instruction-level parallelism in the code, and that the Instruction Delivery component is inserting instructions into the instruction window faster than they are completed.\n\nTo improve performance, reduce memory delays and improve available instruction-level parallelism. For example, make data structure locality improvements, prefetch data from other cache lines, and unroll loops to create additional parallel computational sequences.",
+    "useful": "Useful The fraction of sustainable instruction bandwidth that retired, meaning it was on the correct path through the code, and therefore contributed to forward progress of the application.\n\nMore specifically, this fraction directly relates to \u00b5ops per cycle (\u00b5PC) and largely to instructions per cycle (IPC). Rather than presenting the measured \u00b5PC directly, this category shows the measured \u00b5PC divided by the maximum \u00b5PC for the particular core in order to provide a fraction of achievable \u00b5PC. A high fraction indicates that the code is executing in the CPU at a high rate.\n\nTo improve performance, improve the efficiency of the algorithm or the instruction sequences you use to implement the algorithm."
+  },
+  "comparison_caveat": "Cycle/CPU-interval ratios differ across traces, especially P cores. Compare bottleneck ratios within each core type; do not equate Useful to wall-time efficiency or cycles to equal-frequency throughput."
+}
