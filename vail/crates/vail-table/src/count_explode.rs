@@ -72,6 +72,31 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
         }
         return Ok(None);
     }
+    if plan.is::<crate::partitioned::PartitionSetExec>() {
+        let schema = plan.schema();
+        if plan.children().iter().any(|child| {
+            let child = child.schema();
+            child.fields().len() != schema.fields().len()
+                || child
+                    .fields()
+                    .iter()
+                    .zip(schema.fields())
+                    .any(|(left, right)| left.data_type() != right.data_type())
+        }) {
+            return Ok(None);
+        }
+        let mut parts = Vec::new();
+        for child in plan.children() {
+            let Some(part) = optimize(child.clone())? else {
+                return Ok(None);
+            };
+            parts.push(part);
+        }
+        return Ok(Some(Arc::new(crate::partitioned::PartitionSetExec::new(
+            parts,
+            Arc::new(Schema::empty()),
+        ))));
+    }
     if plan.is::<datafusion_physical_plan::union::UnionExec>() {
         let mut parts = Vec::new();
         for child in plan.children() {
@@ -121,7 +146,8 @@ pub(crate) fn optimize(plan: PhysicalPlan) -> Result<Option<PhysicalPlan>> {
         }
         return Ok(None);
     }
-    if plan.is::<crate::partitioned::PartitionViewExec>()
+    if plan.is::<datafusion_physical_plan::coop::CooperativeExec>()
+        || plan.is::<crate::partitioned::PartitionViewExec>()
         || plan.is::<ScalarSubqueryExec>()
         || crate::action_parameters::repeatable_node(&plan)
         || plan.is::<crate::rng_context::ConsumerScopeExec>()
