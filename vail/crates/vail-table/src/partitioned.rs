@@ -963,7 +963,7 @@ impl ExecutionPlan for PartitionViewExec {
 /// DataFusion exposes each child as a real output partition. Executing partition
 /// i never starts any other child. All row transforms remain library plans.
 #[derive(Debug)]
-struct PartitionSetExec {
+pub(crate) struct PartitionSetExec {
     parts: Vec<PhysicalPlan>,
     cache: Arc<PlanProperties>,
     requirements: Vec<Option<OrderingRequirements>>,
@@ -971,7 +971,7 @@ struct PartitionSetExec {
     tag_index: Option<usize>,
 }
 impl PartitionSetExec {
-    fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
+    pub(crate) fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
         Self::with_tag(parts, schema, None)
     }
     fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
@@ -1088,7 +1088,8 @@ impl ExecutionPlan for PartitionSetExec {
                     .zip(schema.fields())
                     .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
                     .collect::<std::result::Result<Vec<_>, _>>()?;
-                yield RecordBatch::try_new(schema, columns)?;
+                yield RecordBatch::try_new_with_options(schema, columns,
+                    &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
             }
         };
         Ok(Box::pin(RecordBatchStreamAdapter::new(schema, stream)))
@@ -1187,7 +1188,8 @@ impl ExecutionPlan for OrderedConcatExec {
                         let columns = columns.iter().zip(schema.fields())
                             .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
                             .collect::<std::result::Result<Vec<_>, _>>()?;
-                        yield RecordBatch::try_new(schema.clone(),columns)?;
+                        yield RecordBatch::try_new_with_options(schema.clone(), columns,
+                            &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
                     }
                 }
             },
@@ -1708,6 +1710,10 @@ pub async fn count(table: TableRef) -> Result<usize> {
 /// soon as they have been counted. Unlike ordered row execution, no consumer
 /// waits for an earlier partition before it can drain a later one.
 pub async fn force_count(table: TableRef) -> Result<usize> {
+    if let Some(plan) = crate::count_explode::matrix_plan(&table).await? {
+        let count = plan.output_partitioning().partition_count();
+        return count_parts(partition_views(plan, count), Arc::new(TaskContext::default())).await;
+    }
     let physical = crate::logical::physical(&table).await?;
     let physical = crate::count_explode::optimize(physical.clone())?.unwrap_or(physical);
     let parts = if table.known_n_partitions() == Some(0) {

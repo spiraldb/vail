@@ -200,3 +200,41 @@ async fn forced_expansion_count_still_evaluates_computed_errors() {
         );
     }
 }
+
+#[tokio::test]
+async fn sliced_lists_combine_ancestor_validity_and_ignore_null_owner_ranges() {
+    let entries = Arc::new(StructArray::new(
+        vec![Arc::new(Field::new("payload", DataType::Int32, true))].into(),
+        vec![Arc::new(Int32Array::from(vec![None; 7]))],
+        Some(NullBuffer::from(vec![
+            true, true, true, false, true, true, true,
+        ])),
+    )) as ArrayRef;
+    let cells = Arc::new(StructArray::new(
+        vec![Arc::new(Field::new(
+            "value",
+            entries.data_type().clone(),
+            true,
+        ))]
+        .into(),
+        vec![entries],
+        Some(NullBuffer::from(vec![
+            true, true, false, true, true, true, true,
+        ])),
+    )) as ArrayRef;
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", cells.data_type().clone(), true)),
+        OffsetBuffer::new(vec![0, 2, 5, 7].into()),
+        cells,
+        Some(NullBuffer::from(vec![true, true, false])),
+    )
+    .slice(1, 2);
+    let table = TableIR::parallelize(
+        RecordBatch::try_from_iter([("items", Arc::new(lists) as ArrayRef)]).unwrap(),
+        2,
+    )
+    .unwrap()
+    .explode(vec!["items".into()])
+    .unwrap();
+    assert_count(filtered(table, field(col("items"), "value")), 1).await;
+}

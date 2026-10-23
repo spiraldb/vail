@@ -2759,6 +2759,9 @@ class MatrixTable:
                 "row_key": list(self._mir.row_key),
                 "col_key": list(self._mir.col_key),
                 "row_index_keys": row_index_keys,
+                # Preserve established proofs; do not infer uniqueness from keys.
+                "row_key_unique": self._mir.row_key_unique,
+                "column_ordering": self._mir.column_ordering,
             }
             temp = root / (".matrix-" + uuid4().hex + ".json")
             with open(temp, "w") as stream:
@@ -2943,6 +2946,8 @@ def read_matrix_table(
             # operators maintain entry/column positional alignment. Trust that
             # invariant instead of rescanning every stored column identity.
             _aligned=True,
+            _row_key_unique=descriptor.get("row_key_unique", False),
+            _column_ordering=descriptor.get("column_ordering"),
         )
     )
     if _assert_type is not None:

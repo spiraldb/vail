@@ -1,0 +1,60 @@
+16.33% <arrow_array[56b790943cd456b]::array::primitive_array::PrimitiveArray<arrow_array[56b790943cd456b]::types::UInt32Type>>::unary_opt::<arrow_cast[a45c1c8279e376e7]::cast::num_cast<u32, u16>, arrow_array[56b790943cd456b]::types::UInt16Type>
+10.76% <core[8c5ac2f034688f9a]::iter::adapters::map::Map<core[8c5ac2f034688f9a]::iter::adapters::enumerate::Enumerate<core[8c5ac2f034688f9a]::slice::iter::Iter<i32>>, <arrow_data[b8ff059f052b8323]::data::ArrayData>::validate_each_offset<i32, <arrow_data[b8ff059f052b8323]::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#0}> as core[8c5ac2f034688f9a]::iter::traits::iterator::Iterator>::try_fold::<(), <core[8c5ac2f034688f9a]::iter::adapters::scan::Scan<_, _, _> as core[8c5ac2f034688f9a]::iter::traits::iterator::Iterator>::try_fold::scan<core[8c5ac2f034688f9a]::result::Result<(usize, usize), arrow_schema[33c6a04ab62ff3d9]::error::ArrowError>, usize, core[8c5ac2f034688f9a]::result::Result<(usize, core[8c5ac2f034688f9a]::ops::range::Range<usize>), arrow_schema[33c6a04ab62ff3d9]::error::ArrowError>, (), core[8c5ac2f034688f9a]::result::Result<(), arrow_schema[33c6a04ab62ff3d9]::error::ArrowError>, <arrow_data[b8ff059f052b8323]::data::ArrayData>::validate_each_offset<i32, <arrow_data[b8ff059f052b8323]::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#1}, core[8c5ac2f034688f9a]::iter::traits::iterator::Iterator::try_for_each::call<core[8c5ac2f034688f9a]::result::Result<(usize, core[8c5ac2f034688f9a]::ops::range::Range<usize>), arrow_schema[33c6a04ab62ff3d9]::error::ArrowError>, core[8c5ac2f034688f9a]::result::Result<(), arrow_schema[33c6a04ab62ff3d9]::error::ArrowError>, <arrow_data[b8ff059f052b8323]::data::ArrayData>::validate_each_offset<i32, <arrow_data[b8ff059f052b8323]::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#2}>::{closure#0}>::{closure#0}, core[8c5ac2f034688f9a]::ops::control_flow::ControlFlow<core[8c5ac2f034688f9a]::result::Result<(), arrow_schema[33c6a04ab62ff3d9]::error::ArrowError>>>
+7.67% <arrow_array[56b790943cd456b]::array::primitive_array::PrimitiveArray<arrow_array[56b790943cd456b]::types::UInt32Type>>::unary_opt::<arrow_cast[a45c1c8279e376e7]::cast::num_cast<u32, u8>, arrow_array[56b790943cd456b]::types::UInt8Type>
+3.38% _copy_to_iter
+3.28% 0x00000000001a110a
+3.03% <u32 as fastlanes[8b313c876b987c3f]::bitpacking::BitPacking>::unpack::<8: usize, 256: usize>
+3.03% 0x00000000001a0b8a
+2.96% blas_thread_server
+2.35% vortex_array[bf5a5beeeefe19b0]::arrays::primitive::compute::cast::cast_values::<u64, i32>
+2.33% <vortex_array[bf5a5beeeefe19b0]::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::row::NumericBinary> as vortex_array[bf5a5beeeefe19b0]::scalar_fn::unstable::row::visitor::row_visitor::RowVisitor>::visit_deferred::<(u64, u64), u64, bool, vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array[bf5a5beeeefe19b0]::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#0}, vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array[bf5a5beeeefe19b0]::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array[bf5a5beeeefe19b0]::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#1}>
+1.62% vail_execution[a10278f73fd5d5d7]::matrix_arrays::gather
+1.51% vortex_array[bf5a5beeeefe19b0]::arrays::fixed_width::take::take_values::<[u8; 4: usize], u16>
+1.43% <u64 as fastlanes[8b313c876b987c3f]::ffor::FoR>::unfor_pack::<18: usize, 288: usize>
+1.35% <u64 as fastlanes[8b313c876b987c3f]::ffor::FoR>::unfor_pack::<19: usize, 304: usize>
+1.24% <u32 as fastlanes[8b313c876b987c3f]::bitpacking::BitPacking>::unpack::<1: usize, 32: usize>
+1.13% clear_page_erms
+1.09% malloc
+1.03% <u32 as fastlanes[8b313c876b987c3f]::bitpacking::BitPacking>::unpack::<7: usize, 224: usize>
+0.90% vortex_array[bf5a5beeeefe19b0]::arrays::bool::compute::take::take_valid_indices::<u16>
+0.88% _raw_spin_unlock_irqrestore
+0.71% do_user_addr_fault
+0.71% 0x00000000001a0b24
+0.67% cfree
+0.61% filemap_get_read_batch
+0.44% _RINvNtNtNtCs4AK38YU2lDo_16vortex_fastlanes10bitpacking5array18bitpack_decompress24unpack_into_builder_withllNCINvB2_29unpack_into_primitive_builderlE0NCB1K_s_0EB8_.llvm.5464638662676093697
+0.44% <vortex_buffer[46f6c9abb3ed37a3]::buffer_mut::BufferMut<i32>>::full_in
+0.42% vortex_buffer[46f6c9abb3ed37a3]::bit::count_ones::count_ones_aligned_avx2_any_len
+0.38% 0x00000000000a288a
+0.36% 0x00000000000a1806
+0.32% <u16 as fastlanes[8b313c876b987c3f]::bitpacking::BitPacking>::unpack::<7: usize, 448: usize>
+0.31% zap_pte_range
+0.27% <u64 as fastlanes[8b313c876b987c3f]::bitpacking::BitPacking>::unpack::<18: usize, 288: usize>
+0.25% <vortex_array[bf5a5beeeefe19b0]::stats::stats_set::StatsSet>::from_flatbuffer
+0.23% <vortex_array[bf5a5beeeefe19b0]::array::erased::ArrayRef>::apply_bound
+0.23% <alloc[93e694a8365d93dd]::sync::Arc<vortex_array[bf5a5beeeefe19b0]::array::typed::ArrayInner<dyn vortex_array[bf5a5beeeefe19b0]::array::DynArrayData>>>::drop_slow
+0.23% _RNvXs3_NtNtCsc36rpYXAlPq_4core4hash3sipINtB5_6HasherNtB5_11Sip13RoundsENtB7_6Hasher5writeCs9C9fPvZfOJO_7iceberg.llvm.14961876284420988813
+0.23% 0x00000000000a1707
+0.23% 0x00000000000a3ed6
+0.21% 0x00000000000a16e3
+0.19% <vortex_array[bf5a5beeeefe19b0]::dtype::DType as core[8c5ac2f034688f9a]::cmp::PartialEq>::eq
+0.19% do_anonymous_page
+0.19% 0x00000000000a2721
+0.17% <smallvec[9208ddc65da37903]::SmallVec<[core[8c5ac2f034688f9a]::option::Option<vortex_array[bf5a5beeeefe19b0]::array::erased::ArrayRef>; 4: usize]> as core[8c5ac2f034688f9a]::ops::drop::Drop>::drop
+0.17% __rmqueue_pcplist
+0.15% <vortex_array[bf5a5beeeefe19b0]::array::erased::ArrayRef>::execute_until::<vortex_array[bf5a5beeeefe19b0]::canonical::AnyCanonical>
+0.15% <u64 as fastlanes[8b313c876b987c3f]::bitpacking::BitPacking>::unpack::<19: usize, 304: usize>
+0.15% __handle_mm_fault
+0.13% <vortex_array[bf5a5beeeefe19b0]::array::typed::Array<vortex_array[bf5a5beeeefe19b0]::arrays::scalar_fn::vtable::ScalarFn>>::try_new_with_len
+0.13% <alloc[93e694a8365d93dd]::sync::Arc<vortex_array[bf5a5beeeefe19b0]::dtype::struct_::StructFieldsInner>>::drop_slow
+0.13% vortex_array[bf5a5beeeefe19b0]::executor::execute_parent_for_child
+0.13% __next_zones_zonelist
+0.13% copy_page_to_iter
+0.13% filemap_read
+0.13% llseek
+0.13% 0x00000000000a281b
+0.11% _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtNtCs9C9fPvZfOJO_7iceberg4spec6schema6SchemaEBH_.llvm.14961876284420988813
+0.11% _RNCINvMs0_NtCsgqgqKp6qdKT_8arc_swap4debtNtB8_4Debt7pay_allINtNtCscHgRw1M2fX5_5alloc4sync3ArcINtNtCskA7ULFZXI2g_9hashbrown3map7HashMapNtNtCsfmrWOJH0iJO_14vortex_session8registry2IdIBV_DNtNtNtNtCsgqzaRZKgWQK_12vortex_array5dtype9extension6plugin14ExtDTypePluginEL_EEENCNvXs3_NtNtBa_8strategy6hybridINtB4n_14HybridStrategyNtB4n_13DefaultConfigEINtNtB4p_6sealed13InnerStrategyBU_E16wait_for_readers0E0B34_.llvm.1061556096165891431
+0.11% <vortex_layout[49d12fe55636c77]::layouts::list::reader::ListReader>::project_all_bounded::{closure#1}
+0.11% __rustc[4b1ee1ef74718a7b]::__rdl_alloc
+0.11% __rustc[4b1ee1ef74718a7b]::__rdl_dealloc

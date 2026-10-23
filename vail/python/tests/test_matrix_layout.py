@@ -302,3 +302,61 @@ def test_forced_entry_count_executes_computed_errors(stage):
         entries = entries.annotate(value=hl.int32(hl.str(entries.col_idx) + 'invalid'))
     with pytest.raises(hl.utils.FatalError, match='(?i)invalid|parse|cast|digit'):
         entries._force_count()
+
+
+@pytest.mark.parametrize('duplicates', [False, True])
+@pytest.mark.parametrize('empty_entry', [False, True])
+def test_native_entry_count_preserves_filtered_slots_and_key_occurrences(tmp_path, duplicates, empty_entry):
+    matrix = hl.range_matrix_table(7, 5, 3)
+    matrix = matrix.annotate_entries(value=hl.or_missing(matrix.col_idx != 0, matrix.row_idx))
+    matrix = matrix.filter_entries((matrix.row_idx + matrix.col_idx) % 3 != 0)
+    if duplicates:
+        matrix = matrix.key_rows_by(k=matrix.row_idx // 2).choose_cols([4, 0, 4, 2, 1])
+    if empty_entry:
+        matrix = matrix.select_entries()
+    expected = matrix.entries().collect()
+    path = tmp_path / 'matrix.mt'
+    matrix.write(path)
+    restored = hl.read_matrix_table(path)
+    assert restored.entries().collect() == expected
+    assert restored.entries()._force_count() == len(expected)
+    # A post-expansion filter/head is a cardinality barrier, not a validity count.
+    assert restored.entries().head(3)._force_count() == min(3, len(expected))
+    # Existing snapshots without the optional proofs still count correctly.
+    import json
+    manifest = path / '_vail_matrix.json'
+    descriptor = json.loads(manifest.read_text())
+    descriptor.pop('row_key_unique', None)
+    descriptor.pop('column_ordering', None)
+    manifest.write_text(json.dumps(descriptor))
+    assert hl.read_matrix_table(path).entries()._force_count() == len(expected)
+
+
+@pytest.mark.parametrize('dimensions', [(0, 3), (3, 0), (0, 0)])
+def test_native_entry_count_empty_axes(tmp_path, dimensions):
+    matrix = hl.range_matrix_table(*dimensions)
+    path = tmp_path / 'empty.mt'
+    matrix.write(path)
+    assert hl.read_matrix_table(path).entries()._force_count() == 0
+
+
+def test_forced_entry_count_keeps_column_expression_errors():
+    matrix = hl.range_matrix_table(3, 4, 2)
+    matrix = matrix.key_rows_by(k=matrix.row_idx // 2)
+    matrix = matrix.annotate_cols(bad=hl.int32(hl.str(matrix.col_idx) + 'invalid'))
+    with pytest.raises(hl.utils.FatalError, match='(?i)invalid|parse|cast|digit'):
+        matrix.entries()._force_count()
+
+
+@pytest.mark.parametrize('seed', [13, 27])
+def test_forced_entry_count_preserves_seeded_entry_and_column_masks(seed):
+    matrix = hl.range_matrix_table(12, 9, 3)
+    matrix = matrix.key_rows_by(group=matrix.row_idx // 2)
+    matrix = matrix.annotate_entries(score=hl.rand_int32(0, 11, seed=seed))
+    matrix = matrix.filter_entries(matrix.score % 3 != 0)
+    matrix = matrix.annotate_cols(keep=hl.rand_bool(0.6, seed=seed + 1))
+    matrix = matrix.filter_cols(matrix.keep)
+    entries = matrix.entries()
+    expected = len(entries.collect())
+    assert entries._force_count() == expected
+    assert entries._force_count() == expected
