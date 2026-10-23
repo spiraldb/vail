@@ -826,19 +826,20 @@ impl Coordinates {
         input: DataType,
         aggregate_input: DataType,
     ) -> Result<Self> {
-        let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(aggregate.fun()) {
+        let native = crate::reducer::native_reducer(aggregate.fun());
+        let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(native) {
             Kernels::Sum(DenseNumeric::new(&dtype))
-        } else if crate::aggregates::coordinate_count(aggregate.fun()) {
+        } else if crate::aggregates::coordinate_count(native) {
             Kernels::Count(DenseNumeric::new(&DataType::Int64))
-        } else if crate::native_mean::coordinate_mean(aggregate.fun()) {
+        } else if crate::native_mean::coordinate_mean(native) {
             Kernels::Ratio(DenseRatio::new(false))
-        } else if crate::fraction::coordinate_fraction(aggregate.fun()) {
+        } else if crate::fraction::coordinate_fraction(native) {
             Kernels::Ratio(DenseRatio::new(true))
-        } else if let Some(dtype) = crate::aggregates::coordinate_product_type(aggregate.fun()) {
+        } else if let Some(dtype) = crate::aggregates::coordinate_product_type(native) {
             Kernels::Product(DenseProduct::new(&dtype))
-        } else if let Some(all) = crate::native_bool::coordinate_bool(aggregate.fun()) {
+        } else if let Some(all) = crate::native_bool::coordinate_bool(native) {
             Kernels::Bool(DenseBool::new(all))
-        } else if let Some(extrema) = crate::coordinate_extrema::native_minimum(aggregate.fun())
+        } else if let Some(extrema) = crate::coordinate_extrema::native_minimum(native)
             .and_then(|minimum| crate::coordinate_extrema::DenseExtrema::new(&aggregate_input, minimum))
         {
             Kernels::Extrema(extrema)
