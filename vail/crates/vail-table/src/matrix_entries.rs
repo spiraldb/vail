@@ -15,7 +15,7 @@ use arrow_schema::{DataType, Field, Schema, SchemaRef, SortOptions};
 use datafusion_common::{DataFusionError, tree_node::TreeNodeRecursion};
 use datafusion_execution::TaskContext;
 use datafusion_physical_expr::{
-    EquivalenceProperties, LexOrdering, OrderingRequirements, PhysicalExpr, PhysicalSortExpr, expressions::Column,
+    EquivalenceProperties, LexOrdering, PhysicalExpr, PhysicalSortExpr, expressions::Column,
 };
 use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
@@ -368,15 +368,6 @@ impl ExecutionPlan for MatrixEntriesExec {
             datafusion_physical_plan::Distribution::SinglePartition,
             datafusion_physical_plan::Distribution::SinglePartition,
         ]
-    }
-
-    fn required_input_ordering(&self) -> Vec<Option<OrderingRequirements>> {
-        if self.count_only { return vec![None, None]; }
-        let keys = self.config.key_indices.iter().map(|&index| PhysicalSortExpr::new(
-            Arc::new(Column::new(self.rows.schema().field(index).name(), index)),
-            SortOptions { descending: false, nulls_first: false },
-        )).collect::<Vec<_>>();
-        vec![LexOrdering::new(keys).map(OrderingRequirements::from), None]
     }
 
     fn with_new_children(
