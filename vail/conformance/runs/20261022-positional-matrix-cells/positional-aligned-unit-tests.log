@@ -1,0 +1,21 @@
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/implicit-cell-positions/vail/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib test) generated 1 warning (run `cargo fix --lib -p vail-execution --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 25.86s
+     Running unittests src/lib.rs (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/target/release/deps/vail_execution-b6242a522ae416d9)
+
+running 5 tests
+test aligned_matrix_map::runend_experiment_tests::native_numeric_kernel_does_not_accept_runend_input ... ok
+test aligned_matrix_map::runend_experiment_tests::decode_once_supports_nested_structs_and_null_values ... ok
+test aligned_matrix_map::runend_experiment_tests::flattened_map_preserves_sliced_offsets_short_empty_lists_and_null_slots ... ok
+test aligned_matrix_map::runend_experiment_tests::public_aligned_maps_keep_same_schema_generated_bodies_distinct ... ok
+test aligned_matrix_map::runend_experiment_tests::public_aligned_map_normalizes_nested_row_capture_descriptors ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 53 filtered out; finished in 0.01s

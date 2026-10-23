@@ -892,24 +892,14 @@ fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> 
         .ok_or_else(|| {
             DataFusionError::Execution("aligned entry slots must be StructArray".into())
         })?;
-    let id = entries
-        .column_by_name("__vail_matrix_col_id")
-        .ok_or_else(|| DataFusionError::Execution("aligned entry slot lacks column id".into()))?;
     let input_values = entry_values(entries)?;
     let mapped = inherit_parent_validity(mapped, input_values.as_ref())?;
     let fields = match mapped.data_type() {
-        DataType::Struct(_) => vec![
-            Arc::new(arrow_schema::Field::new(
-                "__vail_matrix_col_id",
-                id.data_type().clone(),
-                true,
-            )),
-            Arc::new(arrow_schema::Field::new(
-                "value",
-                mapped.data_type().clone(),
-                true,
-            )),
-        ]
+        DataType::Struct(_) => vec![Arc::new(arrow_schema::Field::new(
+            "value",
+            mapped.data_type().clone(),
+            true,
+        ))]
         .into_iter()
         .map(|field| field as FieldRef)
         .collect::<Vec<_>>(),
@@ -921,7 +911,7 @@ fn preserve_cell_slots(entries: ArrayRef, mapped: ArrayRef) -> Result<ArrayRef> 
     };
     Ok(Arc::new(StructArray::try_new(
         fields.into(),
-        vec![id.clone(), mapped],
+        vec![mapped],
         entries.nulls().cloned(),
     )?))
 }
@@ -997,24 +987,14 @@ mod runend_experiment_tests {
             vec![Arc::new(Int32Array::from(vec![1, 2, 3, 4, 5]))],
             Some(NullBuffer::from(vec![true, false, true, true, true])),
         );
-        let slots = StructArray::from(vec![
-            (
-                Arc::new(arrow_schema::Field::new(
-                    "__vail_matrix_col_id",
-                    DataType::Int32,
-                    true,
-                )),
-                Arc::new(Int32Array::from(vec![0, 1, 0, 0, 1])) as ArrayRef,
-            ),
-            (
-                Arc::new(arrow_schema::Field::new(
-                    "value",
-                    entry_values.data_type().clone(),
-                    true,
-                )),
-                Arc::new(entry_values) as ArrayRef,
-            ),
-        ]);
+        let slots = StructArray::from(vec![(
+            Arc::new(arrow_schema::Field::new(
+                "value",
+                entry_values.data_type().clone(),
+                true,
+            )),
+            Arc::new(entry_values) as ArrayRef,
+        )]);
         let entries = ListArray::new(
             Arc::new(arrow_schema::Field::new(
                 "item",
@@ -1226,20 +1206,14 @@ mod runend_experiment_tests {
                 )),
                 Arc::new(bundle) as ArrayRef,
             )]);
-            let slots = StructArray::from(vec![
-                (
-                    Arc::new(Field::new("__vail_matrix_col_id", DataType::Int32, true)),
-                    Arc::new(Int32Array::from(vec![0, 0])) as ArrayRef,
-                ),
-                (
-                    Arc::new(Field::new(
-                        "value",
-                        DataType::Struct(Default::default()),
-                        true,
-                    )),
-                    Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef,
-                ),
-            ]);
+            let slots = StructArray::from(vec![(
+                Arc::new(Field::new(
+                    "value",
+                    DataType::Struct(Default::default()),
+                    true,
+                )),
+                Arc::new(StructArray::new_empty_fields(2, None)) as ArrayRef,
+            )]);
             let entries = ListArray::new(
                 Arc::new(Field::new_list_field(slots.data_type().clone(), true)),
                 OffsetBuffer::from_lengths([1, 1]),

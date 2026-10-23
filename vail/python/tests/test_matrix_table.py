@@ -1159,7 +1159,7 @@ def test_row_aligned_views_and_transformations_do_not_index_rows(monkeypatch, tm
     assert reopened._same(restored)
     descriptor = json.loads((tmp_path / "aligned" / "_vail_matrix.json").read_text())
     generation = tmp_path / "aligned" / descriptor["generation"]
-    assert descriptor["version"] == 3
+    assert descriptor["version"] == 4
     assert (generation / "core").is_dir()
     assert not (generation / "entries").exists()
     assert not (generation / "rows").exists()

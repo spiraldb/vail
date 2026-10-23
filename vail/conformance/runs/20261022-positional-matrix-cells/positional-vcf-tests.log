@@ -1,0 +1,40 @@
+    Blocking waiting for file lock on build directory
+   Compiling tokio v1.53.1
+   Compiling crc32fast v1.5.2
+   Compiling object_store v0.13.2
+   Compiling tokio-util v0.7.19
+   Compiling datafusion-common-runtime v55.0.0
+   Compiling datafusion-common v55.0.0 (/Users/danielking/.codex/worktrees/implicit-cell-positions/vail/vail/patches/datafusion-common)
+   Compiling flate2 v1.1.10
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling datafusion-functions v55.0.0
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0 (/Users/danielking/.codex/worktrees/implicit-cell-positions/vail/vail/patches/datafusion-functions-aggregate)
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling datafusion-session v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/implicit-cell-positions/vail/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+   Compiling vail-vcf v0.1.0 (/Users/danielking/.codex/worktrees/implicit-cell-positions/vail/vail/crates/vail-vcf)
+    Finished `release` profile [optimized] target(s) in 4m 40s
+     Running unittests src/lib.rs (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/target/release/deps/vail_vcf-e47bc85210059f1c)
+
+running 1 test
+test tests::matrix_slots_use_list_positions_without_column_ids ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

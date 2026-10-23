@@ -551,7 +551,7 @@ def read_matrix_legacy(path):
         if cells is None or len(cells) != len(cols):
             raise ValueError('Hail entry array length differs from column count')
         rows[row_index] = {_ROW: row, _CELLS: [
-            {_CID: i, _VALUE: cell} for i, cell in enumerate(cells)
+            {_VALUE: cell} for cell in cells
         ]}
         # Release each source entry array as its slots acquire their owning
         # core record. Do not retain both complete layouts during Arrow input.
@@ -564,10 +564,10 @@ def read_matrix_legacy(path):
     )
     schema = t.tstruct(**{
         _ROW: row_type,
-        _CELLS: t.tarray(t.tstruct(**{_CID: t.tint64, _VALUE: relation['entry'][0]})),
+        _CELLS: t.tarray(t.tstruct(**{_VALUE: relation['entry'][0]})),
     })
     table = Table.parallelize(rows_to_arrow(rows, schema), schema=schema, globals=globals)
-    # The two physical partition streams have been checked above. Slot IDs
+    # The two physical partition streams have been checked above. List positions
     # preserve column occurrences, including duplicate keys and filtered cells.
     return MatrixTable(MatrixIR(table, row_key=relation['row_key'],
                                col_key=relation['col_key'], _aligned=True))

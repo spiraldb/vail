@@ -224,10 +224,9 @@ fn dense_type(value_field: &arrow_schema::Field) -> DataType {
     DataType::List(Arc::new(Field::new(
         "item",
         DataType::Struct(
-            vec![
-                Arc::new(Field::new(CID, DataType::Int64, true)),
-                Arc::new(value_field.clone().with_name("value").with_nullable(true)),
-            ]
+            vec![Arc::new(
+                value_field.clone().with_name("value").with_nullable(true),
+            )]
             .into(),
         ),
         true,
@@ -266,7 +265,6 @@ fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
         .column_by_name("value")
         .ok_or_else(|| datafusion_common::exec_datafusion_err!("sparse entries require values"))?;
     let mut indices = vec![None; total];
-    let mut output_ids = Vec::with_capacity(total);
     let mut offset = 0;
     for (row, &width) in lengths.iter().enumerate() {
         let start = entries.value_offsets()[row] as usize;
@@ -281,7 +279,6 @@ fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
                 return exec_err!("sparse entry positions must be unique");
             }
         }
-        output_ids.extend((0..width).map(|column| column as i64));
         offset += width;
     }
     let selected = take(values.as_ref(), &UInt32Array::from(indices), None)?;
@@ -297,11 +294,7 @@ fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
     let DataType::Struct(fields) = field.data_type() else {
         unreachable!()
     };
-    let records = Arc::new(StructArray::try_new(
-        fields.clone(),
-        vec![Arc::new(Int64Array::from(output_ids)), selected],
-        None,
-    )?);
+    let records = Arc::new(StructArray::try_new(fields.clone(), vec![selected], None)?);
     Ok(Arc::new(ListArray::try_new(
         field,
         OffsetBuffer::from_lengths(lengths),
@@ -317,57 +310,32 @@ fn aligned(cells: &ListArray, columns: &ListArray, scalar_columns: bool) -> Resu
     if cells.null_count() != 0 {
         return exec_err!("matrix entry arrays must not be missing");
     }
-    let cell_ids = ids(cells)?;
-    let column_ids = ids(columns)?;
+    // Column identity belongs to the shared descriptor. Dense slots are
+    // aligned by position and never repeat a column ID for each entry.
+    check_columns(columns)?;
     let records = cells
         .values()
         .as_any()
         .downcast_ref::<StructArray>()
-        .unwrap();
-    // When list, entry-record and identity arrays have no nulls,
-    // including explicit all-valid bitmaps, Arrow's
-    // primitive value slices can check each row's complete identity span with
-    // a single slice comparison instead of repeated per-value null checks.
-    // Keep the element-wise path for nullable arrays so malformed nulls retain
-    // their existing errors.
-    let all_valid = cells.null_count() == 0
-        && columns.null_count() == 0
-        && records.null_count() == 0
-        && cell_ids.null_count() == 0
-        && column_ids.null_count() == 0;
+        .ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("matrix entry slots must be structs")
+        })?;
+    if records.column_by_name("value").is_none() {
+        return exec_err!("matrix entry slots require a value field");
+    }
+    let all_valid = records.null_count() == 0;
     for row in 0..cells.len() {
         let column_row = if scalar_columns { 0 } else { row };
-        let a = cells.value_offsets()[row] as usize;
-        let b = columns.value_offsets()[column_row] as usize;
         let count = cells.value_length(row) as usize;
-        if (!all_valid && columns.is_null(column_row))
-            || count != columns.value_length(column_row) as usize
-        {
+        if count != columns.value_length(column_row) as usize {
             return exec_err!(
                 "matrix alignment violation: entry array length differs from column count"
             );
         }
-        if all_valid {
-            if cell_ids.values()[a..a + count] != column_ids.values()[b..b + count] {
-                return exec_err!(
-                    "matrix alignment violation: entry column identity differs from column at the same position"
-                );
-            }
-            continue;
-        }
-        for position in 0..count {
-            let left = a + position;
-            let right = b + position;
-            if records.is_null(left) {
+        if !all_valid {
+            let start = cells.value_offsets()[row] as usize;
+            if (start..start + count).any(|position| records.is_null(position)) {
                 return exec_err!("matrix entry records must not be missing");
-            }
-            if cell_ids.is_null(left)
-                || column_ids.is_null(right)
-                || cell_ids.value(left) != column_ids.value(right)
-            {
-                return exec_err!(
-                    "matrix alignment violation: entry column identity differs from column at the same position"
-                );
             }
         }
     }

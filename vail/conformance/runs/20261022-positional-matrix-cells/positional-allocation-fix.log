@@ -1,0 +1,16 @@
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:3706:14
+     |
+3706 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.29s
+     Running tests/call_allocations.rs (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/target/release/deps/call_allocations-c144607b98190d4f)
+
+running 1 test
+test aligned_map_column_metadata_allocations_do_not_scale_with_payload_bytes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.01s

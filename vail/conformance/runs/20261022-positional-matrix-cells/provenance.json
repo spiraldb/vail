@@ -1,0 +1,32 @@
+{
+  "tested_base": "d5343fc500ccaf724ee8d52d2969b623d413ba2c",
+  "native_sha256": "110f93ff817038889933bd74c7263497c783056c5de154e1f0583b411bbcba02",
+  "native_build": "CARGO_TARGET_DIR=/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/target CARGO_PROFILE_RELEASE_DEBUG=0 CARGO_INCREMENTAL=0 cargo rustc --release -p vail-python --lib --features pyo3/extension-module -- -C strip=debuginfo -C link-arg=-undefined -C link-arg=dynamic_lookup",
+  "schema": "cells: array<struct<value: nullable entry struct>>; column IDs occur only in shared column records; no explicit presence flag",
+  "snapshot_version": 4,
+  "readable_snapshot_versions": [
+    3,
+    4
+  ],
+  "baseline_failures": 23,
+  "baseline_scope": "Failures rerun against pre-positional native legacy worktree at dec4b8db plus native legacy changes, using current test bodies. All23fail; baseline is not an exact build of tested_base.",
+  "commands": [
+    "PYTHONPATH=python python -m pytest [44 files listed in positional-test-files.txt] -n 4 --dist worksteal -q --deselect [23 baseline failing nodeids]",
+    "cargo test --release -p vail-execution --test matrix_layout",
+    "cargo test --release -p vail-execution --test call_allocations",
+    "cargo test --release -p vail-vcf --lib"
+  ],
+  "python_result": {
+    "passed": 807,
+    "baseline_failing_cases_excluded": 23,
+    "seconds": 187.3
+  },
+  "rust_results": {
+    "matrix_layout": 9,
+    "call_allocations": 5,
+    "call_allocations_ignored": 1,
+    "vcf": 1,
+    "aligned_map_unit": 5
+  },
+  "text_logs": "Trailing whitespace and final blank lines normalized; original logs remain in /private/tmp."
+}
