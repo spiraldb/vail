@@ -2,7 +2,9 @@
 //! values have independent native cursors; list offsets come from the shared
 //! column dimension and never require opening an entry file.
 use super::{Component, Result, decode, index};
-use arrow_array::{Array, ListArray, StructArray, UInt64Array};
+use arrow_array::UInt64Array;
+#[cfg(test)]
+use arrow_array::{Array, ListArray, StructArray};
 use arrow_schema::{DataType, Field, SchemaRef};
 use futures::{
     FutureExt,

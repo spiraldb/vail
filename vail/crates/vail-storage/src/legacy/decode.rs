@@ -1,8 +1,5 @@
 use super::input::Input;
 use super::*;
-#[cfg(test)]
-#[path = "schema_bench.rs"]
-mod schema_bench;
 use arrow_array::{builder::*, *};
 use arrow_buffer::{BooleanBufferBuilder, NullBufferBuilder, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, FieldRef, Fields};
@@ -2861,11 +2858,3 @@ impl PartReader {
         Ok(Some((n, columns)))
     }
 }
-
-#[cfg(test)]
-#[path = "decode_bench.rs"]
-mod decode_bench;
-
-#[cfg(test)]
-#[path = "numeric_array_bench.rs"]
-mod numeric_array_bench;

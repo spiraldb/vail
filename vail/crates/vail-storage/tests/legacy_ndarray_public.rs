@@ -28,12 +28,13 @@ fn check(batch: &RecordBatch, shapes: &[Option<[usize; 2]>], primitive: &str) {
         .as_any()
         .downcast_ref::<ListArray>()
         .unwrap();
+    let nulls = arrays.logical_nulls();
     for (row, shape) in shapes.iter().enumerate() {
         let Some(shape) = shape else {
-            assert!(arrays.is_null(row));
+            assert!(nulls.as_ref().is_some_and(|nulls| nulls.is_null(row)));
             continue;
         };
-        assert!(arrays.is_valid(row));
+        assert!(nulls.as_ref().is_none_or(|nulls| nulls.is_valid(row)));
         let actual_shape = dimensions.value(row);
         assert_eq!(
             actual_shape

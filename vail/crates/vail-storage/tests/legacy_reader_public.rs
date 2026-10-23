@@ -9,11 +9,16 @@ use datafusion_common::utils::memory::{RecordBatchMemoryCounter, get_record_batc
 use std::{collections::HashMap, sync::Arc};
 use tempfile::TempDir;
 use vail_storage::legacy::{Component, Parser, Result, layout::arrow_batch};
-use vortex::{VortexSessionDefault, array::builtins::ArrayBuiltins};
+use vortex::VortexSessionDefault;
 
 struct Fixture {
     _dir: TempDir,
     component: Component,
+}
+fn missing(array: &dyn Array, row: usize) -> bool {
+    array
+        .logical_nulls()
+        .is_some_and(|nulls| nulls.is_null(row))
 }
 fn leb(mut value: u64, out: &mut Vec<u8>) {
     loop {
@@ -174,8 +179,8 @@ fn public_scalar_widths_strings_calls_compression_and_reordered_projection() -> 
                 .as_any()
                 .downcast_ref::<StructArray>()
                 .unwrap();
-            assert!(!calls.is_null(0));
-            assert!(calls.is_null(1));
+            assert!(!missing(calls, 0));
+            assert!(missing(calls, 1));
             let projected = combined(&batches(&f, size, &[5, 0], None)?);
             assert_eq!(projected.column(0).to_data(), all.column(5).to_data());
             assert_eq!(projected.column(1).to_data(), all.column(0).to_data());
@@ -230,7 +235,7 @@ fn public_vortex_call_slice_memory_and_ipc_preserve_arrow_contract() -> Result<(
             .value(0),
         1
     );
-    assert!(gt.is_null(1));
+    assert!(missing(gt, 1));
     Ok(())
 }
 fn array_length(n: usize, mode: u8, b: &mut Vec<u8>) {
@@ -290,7 +295,7 @@ fn public_mixed_entries_cover_chunk_caps_missingness_lengths_and_batches() -> Re
             let all = combined(&batches(&f, size, &[0], None)?);
             let lists = all.column(0).as_any().downcast_ref::<ListArray>().unwrap();
             assert_eq!(lists.len(), 7);
-            assert!(lists.is_null(6));
+            assert!(missing(lists, 6));
             for (row, n) in counts.into_iter().enumerate() {
                 let values = lists.value(row);
                 let entries = values.as_any().downcast_ref::<StructArray>().unwrap();
@@ -309,15 +314,15 @@ fn public_mixed_entries_cover_chunk_caps_missingness_lengths_and_batches() -> Re
                     .unwrap();
                 for i in 0..n {
                     if i % 11 == 0 {
-                        assert!(entries.is_null(i));
+                        assert!(missing(entries, i));
                         continue;
                     }
-                    assert!(!entries.is_null(i));
-                    assert_eq!(dp.is_null(i), i % 3 == 0);
+                    assert!(!missing(entries, i));
+                    assert_eq!(missing(dp, i), i % 3 == 0);
                     if i % 3 != 0 {
                         assert_eq!(dp.value(i), (200 + i) as i32);
                     }
-                    assert_eq!(ad.is_null(i), i % 7 == 0);
+                    assert_eq!(missing(ad, i), i % 7 == 0);
                     if i % 7 != 0 {
                         let a = ad.value(i);
                         let a = a.as_any().downcast_ref::<Int32Array>().unwrap();
@@ -471,16 +476,15 @@ fn public_vortex_nested_entry_validity_distinguishes_absent_from_all_null() -> R
         .unwrap();
     let entries = lists.value(0);
     let entries = entries.as_any().downcast_ref::<StructArray>().unwrap();
-    assert!(!entries.is_null(0));
-    assert!(entries.is_null(1));
-    assert!(!entries.is_null(2));
+    assert!(!missing(entries, 0));
+    assert!(missing(entries, 1));
+    assert!(!missing(entries, 2));
     let x = entries
         .column(0)
         .as_any()
         .downcast_ref::<Int32Array>()
         .unwrap();
-    assert!(x.is_null(0));
-    assert!(x.is_null(1));
+    assert!(missing(x, 0));
     assert_eq!(x.value(2), 8);
     Ok(())
 }
@@ -503,25 +507,25 @@ fn public_nested_struct_lists_reuse_builders_across_rows_and_batch_splits() -> R
         .downcast_ref::<StructArray>()
         .unwrap();
     assert_eq!(wrapper.len(), 3);
-    assert!(wrapper.is_null(1));
+    assert!(missing(wrapper, 1));
     let items = wrapper
         .column(0)
         .as_any()
         .downcast_ref::<ListArray>()
         .unwrap();
     assert_eq!(items.value_length(0), 2);
-    assert!(items.is_null(1));
     assert_eq!(items.value_length(2), 0);
-    assert!(!items.is_null(2));
+    assert!(!missing(items, 2));
     let entries = items.value(0);
     let entries = entries.as_any().downcast_ref::<StructArray>().unwrap();
+    assert!((0..entries.len()).all(|row| !missing(entries, row)));
     let numbers = entries
         .column(0)
         .as_any()
         .downcast_ref::<ListArray>()
         .unwrap();
     assert_eq!(numbers.value_length(0), 2);
-    assert!(numbers.is_null(1));
+    assert!(missing(numbers, 1));
     let flags = entries
         .column(1)
         .as_any()
@@ -607,13 +611,10 @@ fn public_calls_cover_phase_ploidy_allele_width_nulls_and_invalid_words() -> Res
             .unwrap();
         for row in 0..gt.len() {
             if rows == 7 {
-                assert!(gt.is_null(row));
-                for child in gt.columns() {
-                    assert!(child.is_null(row));
-                }
+                assert!(missing(gt, row));
             } else {
                 let (a, b, p, phase) = expected[rows];
-                assert!(!gt.is_null(row));
+                assert!(!missing(gt, row));
                 assert_eq!(
                     gt.column(0)
                         .as_any()
@@ -730,7 +731,7 @@ fn public_wide_missingness_bitmap_and_invalid_boolean() -> Result<()> {
             .value(0),
         63
     );
-    assert!(batch.column(2).is_null(0));
+    assert!(missing(batch.column(2).as_ref(), 0));
     let f = fixture(
         "Struct{b:Boolean}",
         "+EBaseStruct{b:+EBoolean}",

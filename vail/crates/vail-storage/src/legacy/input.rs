@@ -156,10 +156,6 @@ impl BlockStream {
             eof: false,
         }
     }
-    #[cfg(test)]
-    fn with_capacity(capacity: usize, source: Stream) -> Self {
-        Self::raw(source, capacity)
-    }
     fn raw(source: Stream, capacity: usize) -> Self {
         Self::new(Box::new(RawBlocks {
             source,
@@ -250,14 +246,6 @@ impl Input {
         self.source.consume(consumed);
         self.bytes += consumed as u64;
         Ok(value)
-    }
-    #[cfg(test)]
-    pub(super) fn from_memory(bytes: std::sync::Arc<[u8]>, leb: bool) -> Self {
-        Self {
-            source: BlockStream::with_capacity(65536, Box::new(Cursor::new(bytes)) as Stream),
-            leb,
-            bytes: 0,
-        }
     }
     pub fn open(path: &Path, spec: &Value) -> Result<Self> {
         Self::open_raw(path, spec, 0)
