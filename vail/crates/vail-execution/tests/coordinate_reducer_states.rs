@@ -391,3 +391,91 @@ fn histogram_coordinate_matches_native_groups_and_partial_state_protocol() {
         .unwrap();
     assert_eq!(counts.values(), &[0, 1, 1, 0, 0, 0, 1, 0]);
 }
+
+#[test]
+fn take_coordinate_bounded_snapshots_and_native_partial_state() {
+    let native =
+        configured_udaf("take", Some(&DataType::Int32), &serde_json::json!({"n":2})).unwrap();
+    let item = Arc::new(Field::new_list_field(DataType::Int32, true));
+    let empty = ScalarValue::List(Arc::new(ListArray::new(
+        item.clone(),
+        OffsetBuffer::from_lengths([0]),
+        Arc::new(arrow_array::Int32Array::from(Vec::<i32>::new())),
+        None,
+    )));
+    let udf = coordinate_udaf(native.clone(), DataType::Int32, empty).unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(item.clone()),
+            true,
+        )])))
+        .alias("taken")
+        .build()
+        .unwrap();
+    let mut accumulator = aggregate.create_accumulator().unwrap();
+    accumulator.state().unwrap();
+    accumulator
+        .update_batch(&[list(Arc::new(arrow_array::Int32Array::from(vec![
+            Some(1),
+            None,
+        ])))])
+        .unwrap();
+    let first = accumulator.evaluate().unwrap();
+    let published = accumulator.state().unwrap();
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|v| v.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    let next: ArrayRef = Arc::new(ListArray::new(
+        item.clone(),
+        OffsetBuffer::from_lengths([2, 2]),
+        Arc::new(arrow_array::Int32Array::from(vec![3, 4, 5, 6])),
+        None,
+    ));
+    accumulator.update_batch(&[next.clone()]).unwrap();
+    restored.update_batch(&[next]).unwrap();
+    let result = accumulator.evaluate().unwrap();
+    assert_eq!(restored.evaluate().unwrap(), result);
+    assert_eq!(accumulator.evaluate().unwrap(), result);
+    let ScalarValue::List(outer) = result else {
+        panic!("list")
+    };
+    let columns = outer.values().as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(
+        columns.value(0).to_data(),
+        arrow_array::Int32Array::from(vec![1, 3]).to_data()
+    );
+    assert_eq!(
+        columns.value(1).to_data(),
+        arrow_array::Int32Array::from(vec![None, Some(4)]).to_data()
+    );
+    let ScalarValue::List(first) = first else {
+        panic!("list")
+    };
+    let first = first.values().as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(first.value_length(0), 1);
+    // Consume coordinate wire values with the unchanged public native TAKE factory.
+    let native_expr = AggregateExprBuilder::new(native, vec![Arc::new(Column::new("x", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new(
+            "x",
+            DataType::Int32,
+            true,
+        )])))
+        .alias("native")
+        .build()
+        .unwrap();
+    let mut native_state = native_expr.create_accumulator().unwrap();
+    native_state
+        .merge_batch(&[Arc::new(columns.slice(0, 1))])
+        .unwrap();
+    let ScalarValue::List(native_values) = native_state.evaluate().unwrap() else {
+        panic!("list")
+    };
+    assert_eq!(native_values.values().to_data(), columns.value(0).to_data());
+}
