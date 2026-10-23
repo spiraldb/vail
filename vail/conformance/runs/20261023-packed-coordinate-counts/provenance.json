@@ -1,0 +1,12 @@
+{
+  "baseline_commit": "5b2c933c48f61bcfff9fffd6335d70561445e7f0",
+  "candidate_commit": "e6faf320a551426b6b29b901b03c73c4da9cc5d4",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "execution_concurrency": 32,
+  "timing_scope": "query action only; self process CPU includes execution threads; fresh-paired adds 10Hz process-tree telemetry",
+  "baseline_env": "/tmp/packed-count-baseline-env",
+  "candidate_env": "/tmp/shared-annotation-env",
+  "fixture": "/tmp/entries-profile25.mt",
+  "fixture_metadata_sha256": "4769716ee122cc33f560069b15bc90d37f92bf70ca0cc007c65ff21b5b8c7b23",
+  "note": "Ambient laptop activity uncontrolled; alternating baseline/candidate; profiles separate from unprofiled runs. kache normal release installs, isolated Cargo targets."
+}

@@ -1,0 +1,20 @@
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/shared-annotation-aggregates/vail/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 32.54s
+     Running tests/packed_coordinate_counts.rs (target/release/deps/packed_coordinate_counts-8198345770b04653)
+
+running 3 tests
+test packed_counts_keep_signed64_partial_state_wrapping ... ok
+test coordinate_count_respects_logical_nulls_of_encoded_arrays ... ok
+test sliced_predicate_validity_filter_and_parent_masks_keep_column_positions ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
