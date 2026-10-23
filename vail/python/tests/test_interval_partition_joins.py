@@ -295,3 +295,31 @@ def test_annotated_join_clipping_preserves_scan_prefix_and_seeded_random_context
         rows = joined.collect()
         assert [(r.idx, r.prefix, r.random) for r in rows] == [(r.idx, r.prefix, r.random) for r in expected]
         assert [r.label for r in rows] == [7] * 30
+
+
+def test_join_partition_bounds_cover_whole_and_partial_cells():
+    # Equal boundaries cover whole partitions; differing boundaries also need
+    # residual clipping. Both routes must preserve boundary keys exactly once.
+    for left_parts, right_parts in [(4, 4), (3, 5), (1, 7)]:
+        left = hl.range_table(31, n_partitions=left_parts)
+        left = left.annotate(lv=left.idx * 2)
+        right = hl.range_table(37, n_partitions=right_parts)
+        right = right.filter((right.idx >= 4) & (right.idx < 27))
+        right = right.annotate(rv=right.idx * 3)
+        assert [(r.idx, r.lv, r.rv) for r in left.join(right).collect()] == [
+            (i, i * 2, i * 3) for i in range(4, 27)
+        ]
+
+    # Sorted materialized tables use observed/certified bounds too; this is
+    # not confined to arithmetic range sources.
+    left = _partitioned(
+        [{"k": i, "lv": str(i)} for i in (0, 2, 4, 6, 8, 10)],
+        hl.tstruct(k=hl.tint32, lv=hl.tstr), key="k", partitions=3,
+    )
+    right = _partitioned(
+        [{"k": i, "rv": str(i)} for i in (2, 4, 6, 8, 12)],
+        hl.tstruct(k=hl.tint32, rv=hl.tstr), key="k", partitions=3,
+    )
+    assert _row_tuples(left.join(right)) == [
+        (i, str(i), str(i)) for i in (2, 4, 6, 8)
+    ]

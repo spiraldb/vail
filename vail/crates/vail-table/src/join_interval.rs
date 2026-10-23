@@ -37,7 +37,6 @@ enum Cell {
     Span(Vec<ArrayRef>, Vec<ArrayRef>),
 }
 
-
 // A forwarding proof permits moving key demand below value-only projections.
 // Scan expressions change with their input scope, so they are never crossed.
 pub(crate) fn forwards_keys(
@@ -162,6 +161,13 @@ impl ClipSource {
             ranges,
         }))
     }
+    // Integer range clipping changes the generator's bounds, so it produces
+    // exactly the requested interval. Indexed reads retain their residual.
+    fn exact_range(&self, arity: usize) -> bool {
+        arity == 1
+            && matches!(self.source.node(), TableNode::Range { .. })
+            && self.source.keys().first().is_some_and(|key| key == "idx")
+    }
     fn clip(&self, index: usize, cell: &Cell, arity: usize) -> Result<Option<PhysicalPlan>> {
         let (lower, upper, lower_inclusive, upper_inclusive) = match cell {
             Cell::Point(point) => (point.as_slice(), point.as_slice(), true, true),
@@ -256,12 +262,15 @@ const MAX_RANGE_JOIN_ROWS: usize = 8 * 1024 * 1024;
 fn full_range_source(table: &TableRef) -> Option<&TableRef> {
     match table.node() {
         TableNode::Range { .. } => Some(table),
-        TableNode::Prepared { count: Some(count), .. } => {
+        TableNode::Prepared {
+            count: Some(count), ..
+        } => {
             let source = table.partition_metadata.as_ref()?;
             // Clipped action-local inputs deliberately have no count. Only
             // bypass a prepared plan certified to represent the full source.
             (source.known_count() == Some(*count))
-                .then(|| full_range_source(source)).flatten()
+                .then(|| full_range_source(source))
+                .flatten()
         }
         _ => None,
     }
@@ -276,7 +285,10 @@ fn add_range_split_points(table: &TableRef, join_key: usize, bounds: &mut Vec<Op
     {
         for split in (MAX_RANGE_JOIN_ROWS..*n).step_by(MAX_RANGE_JOIN_ROWS) {
             let key = vec![Arc::new(Int32Array::from(vec![split as i32])) as ArrayRef];
-            bounds.push(Some(Bound { first: key.clone(), last: key }));
+            bounds.push(Some(Bound {
+                first: key.clone(),
+                last: key,
+            }));
         }
     }
 }
@@ -302,7 +314,6 @@ pub(crate) async fn prepare(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<PreparedTable> {
-
     let left_input = crate::partitioned::prepared_input(left)?;
     let right_input = crate::partitioned::prepared_input(right)?;
     let left_bounds = bounds(left, &left_input, join_key, true).await?;
@@ -725,12 +736,12 @@ fn clipped_parts(
             });
             continue;
         }
-        let rows = match clip
+        let clipped = clip
             .map(|clip| clip.clip(index, cell, join_key))
             .transpose()?
-            .flatten()
-        {
-
+            .flatten();
+        let exact = clipped.is_some() && clip.is_some_and(|clip| clip.exact_range(join_key));
+        let rows = match clipped {
             Some(rows) => rows,
             None => {
                 if fresh {
@@ -740,6 +751,12 @@ fn clipped_parts(
                 }
             }
         };
+        // Bounds certify all rows of this partition. A cell containing that
+        // entire interval needs no residual row-by-row key predicate.
+        if exact || contains_bound(cell, bound)? {
+            selected.push(rows);
+            continue;
+        }
         let key = key_expressions(&rows, &table.keys()[..join_key])?;
 
         let predicate = match cell {
@@ -760,6 +777,23 @@ fn clipped_parts(
         selected.push(Arc::new(FilterExec::try_new(predicate, rows)?) as PhysicalPlan);
     }
     Ok(selected)
+}
+
+fn contains_bound(cell: &Cell, bound: &Bound) -> Result<bool> {
+    Ok(match cell {
+        Cell::Point(key) => {
+            compare_keys(&bound.first, key)? == Ordering::Equal
+                && compare_keys(&bound.last, key)? == Ordering::Equal
+        }
+        Cell::Between(lower, upper) => {
+            compare_keys(&bound.first, lower)? == Ordering::Greater
+                && compare_keys(&bound.last, upper)? == Ordering::Less
+        }
+        Cell::Span(lower, upper) => {
+            compare_keys(&bound.first, lower)? != Ordering::Less
+                && compare_keys(&bound.last, upper)? != Ordering::Greater
+        }
+    })
 }
 
 fn read_query_for_span(
@@ -882,14 +916,22 @@ fn clipped_bounds_parts(
         if join_key == 0 {
             selected.push(reset(part.clone())?);
         } else {
-            let rows = match clip
+            let clipped = clip
                 .map(|clip| clip.clip_span(index, lower, upper, true, true, join_key))
                 .transpose()?
-                .flatten()
-            {
+                .flatten();
+            let exact = clipped.is_some() && clip.is_some_and(|clip| clip.exact_range(join_key));
+            let rows = match clipped {
                 Some(rows) => rows,
                 None => reset(part.clone())?,
             };
+            if exact
+                || (compare_keys(&bound.first, lower)? != Ordering::Less
+                    && compare_keys(&bound.last, upper)? != Ordering::Greater)
+            {
+                selected.push(rows);
+                continue;
+            }
             let key = key_expressions(&rows, &table.keys()[..join_key])?;
             let predicate: Arc<dyn PhysicalExpr> = Arc::new(BinaryExpr::new(
                 crate::join_key::predicate(&key, lower, Operator::GtEq, rows.schema().as_ref())?,
@@ -1233,7 +1275,10 @@ async fn bounds(
     scan_bounds(prepared, &table.keys()[..join_key], fresh).await
 }
 
-pub(crate) fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Option<Bound>>>> {
+pub(crate) fn inherited_bounds(
+    table: &TableRef,
+    join_key: usize,
+) -> Result<Option<Vec<Option<Bound>>>> {
     match table.node() {
         TableNode::Prepared { .. } => match &table.partition_metadata {
             Some(source) => inherited_bounds(source, join_key),
