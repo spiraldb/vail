@@ -364,7 +364,7 @@ def reduce_list(
     rewritten_nodes, retained_nodes = {}, {}
 
     def walk(node, items, fixed):
-        if not isinstance(node, IR_NODE_TYPES):
+        if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
             return walk_uncached(node, items, fixed)
         item_node, fixed_node = items.to_ir(), fixed.to_ir()
         identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
@@ -373,7 +373,7 @@ def reduce_list(
             return rewritten_nodes[key]
         retained_nodes[key] = (node, item_node, fixed_node)
         result = walk_uncached(node, items, fixed)
-        if isinstance(result, dict):
+        if isinstance(result, dict) and "op" in result:
             result = NativeExpr(result)
         rewritten_nodes[key] = result
         return result

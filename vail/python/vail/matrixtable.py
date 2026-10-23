@@ -683,14 +683,14 @@ class MatrixTable:
         rewritten, retained = {}, {}
 
         def rewrite(node):
-            if not isinstance(node, IR_NODE_TYPES):
+            if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
                 return rewrite_uncached(node)
             identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
             if identity in rewritten:
                 return rewritten[identity]
             retained[identity] = node
             result = rewrite_uncached(node)
-            if isinstance(result, dict):
+            if isinstance(result, dict) and "op" in result:
                 result = NativeExpr(result)
             rewritten[identity] = result
             return result
@@ -751,14 +751,14 @@ class MatrixTable:
         rewritten, retained = {}, {}
 
         def rewrite(node):
-            if not isinstance(node, IR_NODE_TYPES):
+            if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
                 return rewrite_uncached(node)
             identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
             if identity in rewritten:
                 return rewritten[identity]
             retained[identity] = node
             result = rewrite_uncached(node)
-            if isinstance(result, dict):
+            if isinstance(result, dict) and "op" in result:
                 result = NativeExpr(result)
             rewritten[identity] = result
             return result
@@ -2205,7 +2205,24 @@ class MatrixTable:
 
             visit(expr.to_ir())
 
+        if not replacements:
+            return base, expressions
+        rewritten, retained = {}, {}
+
         def rewrite(node):
+            if not isinstance(node, IR_NODE_TYPES) or isinstance(node, dict) and "op" not in node:
+                return rewrite_uncached(node)
+            identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+            if identity in rewritten:
+                return rewritten[identity]
+            retained[identity] = node
+            result = rewrite_uncached(node)
+            if isinstance(result, dict) and "op" in result:
+                result = NativeExpr(result)
+            rewritten[identity] = result
+            return result
+
+        def rewrite_uncached(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
