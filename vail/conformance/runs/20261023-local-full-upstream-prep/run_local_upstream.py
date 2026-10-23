@@ -37,7 +37,7 @@ def main():
   if {c['id'] for c in cases}!=requested:raise ValueError('unknownselectedcase')
  versions={e:subprocess.check_output([getattr(a,e+'_python'),'-c',f'import importlib.metadata;print(importlib.metadata.version("{e}"))'],env=env,text=True).strip() for e in ['vail','hail']}
  native_receipt=subprocess.check_output([a.vail_python,'-c','import vail._native as n,hashlib,json;print(json.dumps(dict(path=n.__file__,sha256=hashlib.sha256(open(n.__file__,"rb").read()).hexdigest())))'],env=env,text=True)
- files=[Path(__file__),*sorted((HERE/'harness').glob('*.py')),Path(a.fixture_manifest)]
+ files=[*sorted(HERE.glob('*.py')),*sorted((HERE/'harness').glob('*.py')),Path(a.fixture_manifest)]
  settings=dict(vars(a));settings.pop('resume')
  provenance=dict(native=json.loads(native_receipt),settings=settings,background_builds=builds,platform=platform.platform(),logical_cpus=os.cpu_count(),memory=psutil.virtual_memory().total,versions=versions,
   hashes={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in files},
