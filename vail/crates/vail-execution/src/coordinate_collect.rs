@@ -178,7 +178,7 @@ impl CoordinateCollect {
                                 if filter.as_ref().is_none_or(|filter| {
                                     filter.is_valid(index) && filter.value(index)
                                 }) {
-                                    output.extend(source_index, index, index + 1);
+                                    output.try_extend(source_index, index, index + 1)?;
                                 }
                             }
                         }
@@ -186,11 +186,11 @@ impl CoordinateCollect {
                             let lists = state.as_any().downcast_ref::<ListArray>().unwrap();
                             if lists.is_valid(column) {
                                 let offsets = lists.value_offsets();
-                                output.extend(
+                                output.try_extend(
                                     source_index,
                                     offsets[column] as usize,
                                     offsets[column + 1] as usize,
-                                );
+                                )?;
                             }
                         }
                     }
