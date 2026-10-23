@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "/Users/danielking/.codex/worktrees/ordered-prefetch-cores/vail/vail/python/vail/__init__.py", line 1177, in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues

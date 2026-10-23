@@ -1,0 +1,29 @@
+native /Users/danielking/.codex/worktrees/shared-annotation-aggregates/vail/vail/python/vail/_native.abi3.so 8e85c492309e290f5cb273a553d6b6a8be0bde3af210e17709ba3d822d1461a5
+ProjectionExec: expr=[__common_expr_1@0 as locus, __common_expr_2@1 as alleles, vail_semantic_kernel_get_field_e51d50c5a43d164d(named_struct(locus, __common_expr_1@0, alleles, __common_expr_2@1, rsid, vail_semantic_kernel_get_field_8ac35617935e8f6c(__vail_matrix_row@2), varid, vail_semantic_kernel_get_field_9c11be0b01a79931(__vail_matrix_row@2), info_score, vail_semantic_kernel_array_index_be99dc023ec0d785(__vail_matrix_cells@3))) as info_score, __vail_partition@4 as __vail_partition]
+  ProjectionExec: expr=[vail_semantic_kernel_get_field_46055d204dbd179e(__vail_matrix_row@0) as __common_expr_1, vail_semantic_kernel_get_field_5ad53f161577035b(__vail_matrix_row@0) as __common_expr_2, __vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+    VailSourcePartitions: 8
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 0 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 1 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 2 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 3 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 4 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 5 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 6 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+      ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, 7 as __vail_partition]
+        VailSourceLineageExec
+          DataSourceExec: file_groups={1 group: [[tmp/full-local-upstream-cache-20261022/sim_ukb/sim_ukb.bgen]]}, projection=[__vail_matrix_row, __vail_matrix_cells], file_type=bgen
+
