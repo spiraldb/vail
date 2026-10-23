@@ -20,6 +20,7 @@ use datafusion_physical_expr::{
 use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
     PlanProperties, SendableRecordBatchStream,
+    coalesce_partitions::CoalescePartitionsExec,
     execution_plan::EmissionType,
     limit::GlobalLimitExec,
     projection::ProjectionExec,
@@ -1642,13 +1643,19 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
         }
         let input = merge.input().clone();
         let count = input.properties().output_partitioning().partition_count();
-        // `count_parts` intentionally bounds active streams. A DF exchange
-        // may need every output partition to be polled to make progress, so
-        // keep the merge path for wider fan-outs that exceed this bound.
-        if count <= 1 || count > crate::EXECUTION_CONCURRENCY {
+        if count <= 1 {
             return Ok(None);
         }
-        let mut parts = partition_views(input, count);
+        // An exchange may require every output to be polled. For wider fan-out,
+        // native coalescing drives all inputs with bounded receiver channels,
+        // without the ordered merge's comparisons/interleaving of wide rows.
+        // Count has no ordering requirement, but still evaluates every safe
+        // projection above the former merge.
+        let mut parts = if count > crate::EXECUTION_CONCURRENCY {
+            vec![Arc::new(CoalescePartitionsExec::new(input)) as PhysicalPlan]
+        } else {
+            partition_views(input, count)
+        };
         for part in &mut parts {
             for wrapper in wrappers.iter().rev() {
                 if let Some(projection) = wrapper.as_ref().downcast_ref::<ProjectionExec>() {
