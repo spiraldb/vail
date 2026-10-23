@@ -2,6 +2,8 @@
 import argparse
 import json
 import statistics
+import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -10,6 +12,7 @@ p.add_argument('engine', choices=['hail', 'vail'])
 p.add_argument('--output', required=True)
 p.add_argument('--warmup', type=int, default=2)
 p.add_argument('--runs', type=int, default=5)
+p.add_argument('--reject-compilers', action='store_true', help='Wait for Rust builds and retry measurements that overlap one.')
 p.add_argument('--cases', nargs='+', default=['table_force_count', 'table_scalar_sum', 'matrix_decode_count', 'matrix_decode_count_gt', 'matrix_entries_count', 'matrix_sum_dp'])
 p.add_argument('--matrix', default='/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt')
 p.add_argument('--table', default='/private/tmp/vail-legacy-native-benchmark.ht')
@@ -35,22 +38,56 @@ def run(case):
         return m.entries()._force_count()
     return m.aggregate_entries(hl.agg.sum(m.DP))
 results = {}
-for case in a.cases:
-    times, values = [], []
+def compiler_active():
+    return any(line.rstrip().endswith('/rustc') for line in subprocess.check_output(['ps', '-axo', 'comm'], text=True).splitlines())
+
+def measure(case):
+    if not a.reject_compilers:
+        start = time.perf_counter()
+        value = run(case)
+        return value, time.perf_counter() - start, False
+    waiting = False
+    while compiler_active():
+        if not waiting:
+            print(case, 'waiting for Rust compilation', flush=True)
+            waiting = True
+        time.sleep(.5)
+    stop, interference = threading.Event(), threading.Event()
+    def monitor():
+        while not stop.wait(.1):
+            if compiler_active():
+                interference.set()
+    thread = threading.Thread(target=monitor, daemon=True)
+    thread.start()
     try:
-        for i in range(a.warmup + a.runs):
-            start = time.perf_counter()
-            value = run(case)
-            elapsed = time.perf_counter() - start
+        start = time.perf_counter()
+        value = run(case)
+        elapsed = time.perf_counter() - start
+    finally:
+        stop.set()
+        thread.join()
+    return value, elapsed, interference.is_set() or compiler_active()
+
+for case in a.cases:
+    times, values, attempts = [], [], []
+    try:
+        i = 0
+        while i < a.warmup + a.runs:
+            value, elapsed, interference = measure(case)
             values.append(value)
             assert all(v == value for v in values)
+            attempts.append(dict(seconds=elapsed, compiler_interference=interference, warmup=i < a.warmup))
+            if interference:
+                print(case, 'retrying measurement overlapping Rust compilation', elapsed, value, flush=True)
+                continue
             if i >= a.warmup:
                 times.append(elapsed)
             print(case, i, elapsed, value, flush=True)
-        results[case] = dict(seconds=times, median=statistics.median(times), value=value)
+            i += 1
+        results[case] = dict(seconds=times, median=statistics.median(times), value=value, attempts=attempts)
     except Exception as e:
         results[case] = dict(error=repr(e))
         print(case, repr(e), flush=True)
-    Path(a.output).write_text(json.dumps(dict(engine=a.engine, warmup=a.warmup, runs=a.runs, matrix=matrix, table=table, results=results), indent=2)+'\n')
+    Path(a.output).write_text(json.dumps(dict(engine=a.engine, warmup=a.warmup, runs=a.runs, reject_compilers=a.reject_compilers, matrix=matrix, table=table, results=results), indent=2)+'\n')
 if a.engine == 'hail':
     hl.stop()

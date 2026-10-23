@@ -297,6 +297,27 @@ impl Input {
         }
         Err("invalid Hail variable length integer".into())
     }
+    /// Borrow a short run of complete one-byte varints without consuming
+    /// continuations or a partial buffered run. The caller retains fallback.
+    #[inline(always)]
+    pub fn try_small_varints(&mut self, count: usize) -> Result<Option<[u8; 8]>> {
+        if count == 0 {
+            return Ok(Some([0; 8]));
+        }
+        if count > 8 {
+            return Ok(None);
+        }
+        let available = self.source.fill_buf()?;
+        if available.len() < count || available[..count].iter().any(|byte| byte & 128 != 0) {
+            return Ok(None);
+        }
+        let mut values = [0; 8];
+        values[..count].copy_from_slice(&available[..count]);
+        self.source.consume(count);
+        self.bytes += count as u64;
+        Ok(Some(values))
+    }
+
     /// Skip a run of LEB128 values without constructing intermediate integers.
     /// Retain the same width/termination validation as `varint`.
     pub fn skip_varints(&mut self, count: usize, bits: u32) -> Result<()> {
@@ -425,6 +446,27 @@ mod tests {
         assert_eq!(input.byte()?, 13);
         assert_eq!(input.bytes, 7);
         assert!(input.skip(1).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn short_varint_probe_preserves_fallback_position() -> Result<()> {
+        let mut input = buffered(vec![1, 2, 128, 1, 42]);
+        assert!(input.try_small_varints(3)?.is_none());
+        assert_eq!(input.bytes, 0);
+        assert_eq!(input.try_small_varints(2)?.unwrap()[..2], [1, 2]);
+        assert_eq!(input.bytes, 2);
+        assert!(input.try_small_varints(1)?.is_none());
+        assert_eq!(input.varint(32)?, 128);
+        assert_eq!(input.byte()?, 42);
+        let mut input = buffered(vec![1, 2, 3, 4]);
+        // The tiny test buffer cannot hold the complete requested run.
+        assert!(input.try_small_varints(4)?.is_none());
+        assert_eq!(input.bytes, 0);
+        assert_eq!(input.varint(32)?, 1);
+        assert!(input.try_small_varints(9)?.is_none());
+        let mut empty = buffered(vec![]);
+        assert_eq!(empty.try_small_varints(0)?, Some([0; 8]));
         Ok(())
     }
 

@@ -516,6 +516,8 @@ struct FieldOp {
     missing_bit: usize,
     project: bool,
     invert_boolean: bool,
+    varint_run: u8,
+    run_requires_leb: bool,
 }
 
 /// Compile physical destination mapping once, outside the row loop.
@@ -564,7 +566,7 @@ impl Node {
             children.push(Self::new(&e.fields[0].1, &ndarray.0));
         }
         let mut optional_count = 0;
-        let fields = children
+        let mut fields = children
             .iter()
             .enumerate()
             .map(|(i, child)| {
@@ -581,9 +583,38 @@ impl Node {
                     project: true,
                     invert_boolean: matches!(t, Type::Interval { .. })
                         && e.fields[i].0 == "includesStart",
+                    varint_run: 0,
+                    run_requires_leb: false,
                 }
             })
-            .collect();
+            .collect::<Vec<_>>();
+        // Group only contiguous integer/call wire values. Optional fields
+        // use the ordinary decoder unless the complete group is present.
+        if e.kind == "EBaseStruct" {
+            let eligible = |child: &Node| {
+                matches!(
+                    child.append_kind,
+                    AppendKind::Int32 | AppendKind::Int64 | AppendKind::Call
+                ) && matches!(child.wire, Wire::Int32 | Wire::Int64 | Wire::Varint)
+            };
+            let mut i = 0;
+            while i < children.len() {
+                if !eligible(&children[i]) {
+                    i += 1;
+                    continue;
+                }
+                let start = i;
+                let mut requires_leb = false;
+                while i < children.len() && i - start < 8 && eligible(&children[i]) {
+                    requires_leb |= !matches!(children[i].wire, Wire::Varint);
+                    i += 1;
+                }
+                if i - start >= 2 {
+                    fields[start].varint_run = (i - start) as u8;
+                    fields[start].run_requires_leb = requires_leb;
+                }
+            }
+        }
         let array_skip = if e.kind.starts_with("EArray") {
             let child = &children[0];
             match child.wire {
@@ -810,7 +841,9 @@ impl Node {
         Ok(())
     }
     fn append_call(&self, input: &mut Input, out: &mut Column) -> Result<()> {
-        let v = self.integer(input, 32)? as u32;
+        self.append_call_value(self.integer(input, 32)? as u32, out)
+    }
+    fn append_call_value(&self, v: u32, out: &mut Column) -> Result<()> {
         let ploidy = ((v >> 1) & 3) as u8;
         let phased = v & 1 != 0;
         let allele = (v >> 3) as u64;
@@ -851,12 +884,61 @@ impl Node {
         }
         Ok(())
     }
+    #[inline(never)]
+    fn try_append_varint_run(
+        &self,
+        start: usize,
+        input: &mut Input,
+        outputs: &mut [Column],
+        bits: &Bitmap,
+    ) -> Result<bool> {
+        let first = &self.fields[start];
+        let count = first.varint_run as usize;
+        if first.run_requires_leb && !input.leb {
+            return Ok(false);
+        }
+        let fields = &self.fields[start..start + count];
+        if fields
+            .iter()
+            .any(|op| op.missing_bit != usize::MAX && absent(bits, op.missing_bit))
+        {
+            return Ok(false);
+        }
+        let Some(values) = input.try_small_varints(count)? else {
+            return Ok(false);
+        };
+        for ((op, child), value) in fields
+            .iter()
+            .zip(&self.children[start..start + count])
+            .zip(values)
+        {
+            if !op.project {
+                continue;
+            }
+            let output = &mut outputs[op.dest];
+            match child.append_kind {
+                AppendKind::Int32 => output.int32().append_value(i32::from(value)),
+                AppendKind::Int64 => output.int64().append_value(i64::from(value)),
+                AppendKind::Call => child.append_call_value(u32::from(value), output)?,
+                _ => unreachable!("compiled adjacent varint fields"),
+            }
+        }
+        Ok(true)
+    }
     fn append_struct(&self, input: &mut Input, out: &mut Column) -> Result<()> {
         let bits = bitmap(input, self.optional_count)?;
         let Column::Struct(_, outputs, validity) = out else {
             unreachable!("compiled struct output")
         };
-        for (op, c) in self.fields.iter().zip(&self.children) {
+        let mut i = 0;
+        while i < self.fields.len() {
+            let op = &self.fields[i];
+            if op.varint_run != 0 && self.try_append_varint_run(i, input, outputs, &bits)? {
+                i += op.varint_run as usize;
+                continue;
+            }
+            let c = &self.children[i];
+            i += 1;
             let bit = op.missing_bit;
             let missing = bit != usize::MAX && absent(&bits, bit);
             if !op.project {
@@ -1160,6 +1242,139 @@ impl PartReader {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn adjacent_varint_runs_match_scalar_fields_with_projection_and_missingness() -> Result<()> {
+        fn leb(mut value: u64, bytes: &mut Vec<u8>) {
+            loop {
+                let byte = (value & 127) as u8;
+                value >>= 7;
+                bytes.push(byte | if value != 0 { 128 } else { 0 });
+                if value == 0 {
+                    break;
+                }
+            }
+        }
+        let ty = Type::Struct {
+            r#struct: vec![
+                ("a".into(), Type::Primitive(P::Int32)),
+                ("call".into(), Type::Primitive(P::Call)),
+                ("z".into(), Type::Primitive(P::Int64)),
+            ],
+        };
+        let path =
+            std::env::temp_dir().join(format!("vail-adjacent-varints-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            for mode in 0..3 {
+                for optional in [false, true] {
+                    for mask in 0..8u8 {
+                        if !optional && mask != 0 {
+                            continue;
+                        }
+                        for selection in 0..4 {
+                            for values in [[3i64, 12, 5], [-1, 12, -2], [128, 20, 129], [3, 6, 5]] {
+                                for prefix in [0usize, 65534] {
+                                    let field = |width| Encoding {
+                                        kind: if mode == 0 {
+                                            "EVarint"
+                                        } else if width == 64 {
+                                            "EInt64"
+                                        } else {
+                                            "EInt32"
+                                        }
+                                        .into(),
+                                        required: !optional,
+                                        fields: vec![],
+                                        rank: 0,
+                                    };
+                                    let encoding = Encoding {
+                                        kind: "EBaseStruct".into(),
+                                        required: true,
+                                        fields: vec![
+                                            ("z".into(), field(64)),
+                                            ("call".into(), field(32)),
+                                            ("a".into(), field(32)),
+                                        ],
+                                        rank: 0,
+                                    };
+                                    let paths = match selection {
+                                        0 => vec![vec![]],
+                                        1 => vec![vec!["a".into()]],
+                                        2 => vec![vec!["call".into()]],
+                                        _ => vec![],
+                                    };
+                                    let mut fast = Node::new(&encoding, &ty);
+                                    fast.demand(&paths);
+                                    assert_eq!(fast.fields[0].varint_run, 3);
+                                    let mut slow = Node::new(&encoding, &ty);
+                                    slow.demand(&paths);
+                                    for field in &mut slow.fields {
+                                        field.varint_run = 0;
+                                    }
+                                    let mut bytes = vec![0; prefix];
+                                    if optional {
+                                        bytes.push(mask | 0b1111_1000);
+                                    }
+                                    for (i, value) in values.into_iter().enumerate() {
+                                        if optional && mask & (1 << i) != 0 {
+                                            continue;
+                                        }
+                                        let width = if i == 0 { 64 } else { 32 };
+                                        if mode != 2 {
+                                            leb(
+                                                if width == 32 {
+                                                    value as u32 as u64
+                                                } else {
+                                                    value as u64
+                                                },
+                                                &mut bytes,
+                                            );
+                                        } else if width == 32 {
+                                            bytes.extend((value as i32).to_le_bytes());
+                                        } else {
+                                            bytes.extend(value.to_le_bytes());
+                                        }
+                                    }
+                                    std::fs::write(&path, &bytes)?;
+                                    let spec = if mode == 1 {
+                                        serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
+                                    } else {
+                                        serde_json::json!({"name":"StreamBufferSpec"})
+                                    };
+                                    let mut fast_input = Input::open(&path, &spec)?;
+                                    let mut slow_input = Input::open(&path, &spec)?;
+                                    fast_input.skip(prefix)?;
+                                    slow_input.skip(prefix)?;
+                                    let mut fast_column = Column::projected(&fast, &ty.to_arrow()?);
+                                    let mut slow_column = Column::projected(&slow, &ty.to_arrow()?);
+                                    let fast_result =
+                                        fast.append(&mut fast_input, &mut fast_column);
+                                    let slow_result =
+                                        slow.append(&mut slow_input, &mut slow_column);
+                                    assert_eq!(fast_result.is_ok(), slow_result.is_ok());
+                                    if fast_result.is_err() {
+                                        continue;
+                                    }
+                                    assert_eq!(fast_input.bytes, bytes.len() as u64);
+                                    assert_eq!(slow_input.bytes, fast_input.bytes);
+                                    fast_column.null()?;
+                                    slow_column.null()?;
+                                    assert_eq!(
+                                        fast_column.finish()?.as_ref(),
+                                        slow_column.finish()?.as_ref(),
+                                        "mode={mode} optional={optional} mask={mask} selection={selection} values={values:?} prefix={prefix}"
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
 
     #[test]
     fn typed_call_builder_matches_generic_schema_and_child_validity() -> Result<()> {
