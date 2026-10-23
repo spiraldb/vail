@@ -37,6 +37,7 @@ mod expression_effects;
 mod expression_identity;
 pub mod expressions;
 mod kernel_identity;
+mod local_cse;
 pub mod logical_expr;
 mod matrix_arrays;
 mod native_bool;

@@ -179,6 +179,32 @@ fn fingerprint(expr: &Expr, memo: &mut HashMap<usize, u64>) -> u64 {
     memo.insert(address, value);
     value
 }
+
+/// Collision-safe structural classes for every node in a retained expression
+/// DAG. Intern shallow properties plus child classes, rather than hashing each
+/// descendant tree again for every ancestor.
+pub(crate) fn canonical_nodes(root: &Expr) -> HashMap<usize, usize> {
+    fn visit<'a>(
+        node: &'a Expr,
+        seen: &mut HashMap<usize, usize>,
+        classes: &mut HashMap<(Discriminant<Expr>, Properties<'a>, Vec<usize>), usize>,
+    ) -> usize {
+        let address = node as *const Expr as usize;
+        if let Some(&id) = seen.get(&address) {
+            return id;
+        }
+        let mut children = Vec::new();
+        node.for_each_child(&mut |child| children.push(visit(child, seen, classes)));
+        let (kind, properties) = properties(node);
+        let next = classes.len();
+        let id = *classes.entry((kind, properties, children)).or_insert(next);
+        seen.insert(address, id);
+        id
+    }
+    let mut seen = HashMap::new();
+    visit(root, &mut seen, &mut HashMap::new());
+    seen
+}
 fn equal(left: &Expr, right: &Expr, memo: &mut HashSet<(usize, usize)>) -> bool {
     if std::ptr::eq(left, right) {
         return true;
