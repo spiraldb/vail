@@ -1,0 +1,582 @@
+{
+  "total_cpu_us": 9240208,
+  "leaf": [
+    [
+      "arrow_arith::arity::try_binary::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+      784666,
+      8.491865118187816
+    ],
+    [
+      "vail_execution::expressions::array_index_rows",
+      719091,
+      7.782194946260949
+    ],
+    [
+      "<core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<i32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<i32>>>::from_iter<core::slice::iter::Iter<core::option::Option<i32>>>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<i32, <alloc::vec::Vec<i32>>::extend_trusted<core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<i32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<i32>>>::from_iter<core::slice::iter::Iter<core::option::Option<i32>>>::{closure#0}>>::{closure#0}>::{closure#0}>",
+      664082,
+      7.186872849615507
+    ],
+    [
+      "vortex_array::arrays::chunked::compute::take::take_piecewise_chunked",
+      437006,
+      4.729395701914935
+    ],
+    [
+      "_platform_memmove",
+      421959,
+      4.566553047290711
+    ],
+    [
+      "vortex_array::arrays::list::compute::take::gather_valid_piece::<u64, u32>",
+      363908,
+      3.938309613809559
+    ],
+    [
+      "vail_execution::packed_count::accumulate::<i64>",
+      341987,
+      3.7010746944224633
+    ],
+    [
+      "vortex_array::patches::take_map::<u32, u64>",
+      273257,
+      2.9572602694657957
+    ],
+    [
+      "vortex_array::arrays::list::compute::take::valid_piece_elements_len::<u64>",
+      246355,
+      2.6661196371337095
+    ],
+    [
+      "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::from_value",
+      220430,
+      2.3855523598602977
+    ],
+    [
+      "__psynch_cvwait",
+      214059,
+      2.316603695501227
+    ],
+    [
+      "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<u32>>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#1}>>>::from_iter",
+      176552,
+      1.910692919466748
+    ],
+    [
+      "<arrow_buffer::buffer::offset::OffsetBuffer<i32>>::from_lengths::<core::iter::adapters::flatten::FlatMap<core::slice::iter::Iter<&arrow_array::array::list_array::GenericListArray<i32>>, core::iter::adapters::map::Map<core::slice::iter::Windows<i32>, <arrow_buffer::buffer::offset::OffsetBuffer<i32>>::lengths::{closure#0}>, arrow_select::concat::concat_lists<i32>::{closure#5}>>",
+      164205,
+      1.7770703862943344
+    ],
+    [
+      "<vortex_buffer::buffer_mut::BufferMut<u64>>::extend_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vortex_array::arrays::piecewise_sequence::materialize_ranges<u64, u64, u16>::{closure#3}>>",
+      163908,
+      1.7738561729346354
+    ],
+    [
+      "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<i32>>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::scan::Scan<_, _, _> as core::iter::traits::iterator::Iterator>::try_fold::scan<core::result::Result<(usize, usize), arrow_schema::error::ArrowError>, usize, core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, (), core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#1}, core::iter::traits::iterator::Iterator::try_for_each::call<core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#2}>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::result::Result<(), arrow_schema::error::ArrowError>>>",
+      163217,
+      1.7663779862964124
+    ],
+    [
+      "datafusion_common::utils::normalize_float_zero",
+      150372,
+      1.6273659640562204
+    ],
+    [
+      "arrow_ord::cmp::apply_op::<&[i32], <&[i32] as arrow_ord::cmp::ArrayOrd>::is_lt>",
+      148225,
+      1.6041305563684283
+    ],
+    [
+      "read",
+      138945,
+      1.5036999167118317
+    ],
+    [
+      "arrow_ord::cmp::apply_op::<&[f64], <&[f64] as arrow_ord::cmp::ArrayOrd>::is_lt>",
+      120191,
+      1.30073911756099
+    ],
+    [
+      "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int32Type, arrow_array::types::Float64Type>::{closure#0}, arrow_array::types::Float64Type, arrow_schema::error::ArrowError>",
+      102268,
+      1.1067716224569837
+    ],
+    [
+      "__ulock_wait2",
+      101365,
+      1.0969991151714333
+    ],
+    [
+      "arrow_ord::cmp::apply_op::<&[i32], <&[i32] as arrow_ord::cmp::ArrayOrd>::is_eq>",
+      89013,
+      0.9633224706629981
+    ],
+    [
+      "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::unary::<arrow_arith::numeric::float_op<arrow_array::types::Float64Type>::{closure#19}, arrow_array::types::Float64Type>",
+      88477,
+      0.9575217354414532
+    ],
+    [
+      "sha256_block_armv8",
+      85677,
+      0.9272193872692044
+    ],
+    [
+      "vortex_array::arrays::piecewise_sequence::materialize_ranges::<u64, u64, u64>",
+      75517,
+      0.8172651524727582
+    ],
+    [
+      "__bzero",
+      71081,
+      0.7692575751541524
+    ],
+    [
+      "<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<vail_execution::calls::access::{closure#6}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<vail_execution::calls::access::{closure#6}>::{closure#0}>>::{closure#0}>::{closure#0}>",
+      70859,
+      0.7668550318347812
+    ],
+    [
+      "vortex_array::arrays::fixed_width::take::records::take_byte_records::<u64>",
+      69515,
+      0.7523099047121017
+    ],
+    [
+      "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::calls::access::{closure#1}>>>::from_iter",
+      67241,
+      0.7277000690893538
+    ],
+    [
+      "0x3c168",
+      62857,
+      0.6802552496653755
+    ],
+    [
+      "__ulock_wait",
+      62229,
+      0.6734588658610282
+    ],
+    [
+      "<vortex_array::array::view::ArrayView<vortex_array::arrays::struct_::vtable::Struct> as vortex_array::arrays::struct_::array::StructArrayExt>::struct_validity",
+      60017,
+      0.6495200108049516
+    ],
+    [
+      "<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<vail_execution::calls::access::{closure#4}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<vail_execution::calls::access::{closure#4}>::{closure#0}>>::{closure#0}>::{closure#0}>",
+      56412,
+      0.610505737533181
+    ],
+    [
+      "<u64 as fastlanes::ffor::FoR>::unfor_pack::<18, 288>",
+      53603,
+      0.5801059889560928
+    ],
+    [
+      "vortex_array::scalar_fn::unstable::row::execute::owned::execute_owned::<(u64, u64), u64, (), bool, <vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary> as vortex_array::scalar_fn::unstable::row::visitor::row_visitor::RowVisitor>::visit_deferred<(u64, u64), u64, bool, vortex_array::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#0}, vortex_array::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#1}>::{closure#0}, <vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary> as vortex_array::scalar_fn::unstable::row::visitor::row_visitor::RowVisitor>::visit_deferred<(u64, u64), u64, bool, vortex_array::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#0}, vortex_array::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#1}>::{closure#1}, vortex_array::scalar_fn::fns::binary::numeric::row::visit_checked<u64, vortex_array::scalar_fn::fns::binary::numeric::primitive::CheckedSub, vortex_array::scalar_fn::unstable::row::visitor::execute::ExecuteRows<vortex_array::scalar_fn::fns::binary::numeric::row::NumericBinary>>::{closure#1}>",
+      51224,
+      0.5543598152768855
+    ]
+  ],
+  "inclusive": [
+    [
+      "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<tokio::runtime::blocking::pool::Inner>::run",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "_pthread_start",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<std::sys::thread::unix::Thread>::new::thread_start",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "tokio::runtime::scheduler::multi_thread::worker::run",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      8822904,
+      95.48382460654565
+    ],
+    [
+      "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+      8586520,
+      92.92561379570677
+    ],
+    [
+      "<tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+      7939352,
+      85.92178877358604
+    ],
+    [
+      "<futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}> as futures_core::stream::Stream>::poll_next",
+      4311314,
+      46.65819210996116
+    ],
+    [
+      "<futures_util::stream::stream::fuse::Fuse<futures_util::stream::unfold::Unfold<datafusion_physical_plan::aggregates::aggregate_stream::AggregateStreamInner, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}, <datafusion_physical_plan::aggregates::aggregate_stream::AggregateStream>::new::{closure#0}::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+      4311314,
+      46.65819210996116
+    ],
+    [
+      "datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#0}",
+      4310081,
+      46.644848254498164
+    ],
+    [
+      "<futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::stream::RecordBatchReceiverStreamBuilder>::run_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll",
+      4310081,
+      46.644848254498164
+    ],
+    [
+      "datafusion_physical_plan::aggregates::aggregate_stream::aggregate_batch",
+      4273989,
+      46.25425098655788
+    ],
+    [
+      "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      3730208,
+      40.36930770389584
+    ],
+    [
+      "vail_execution::logical_expr::logical_kernel::{closure#2}",
+      3730208,
+      40.36930770389584
+    ],
+    [
+      "<vail_execution::kernel_identity::Scalar<(vail_execution::expression_identity::Identity, alloc::sync::Arc<arrow_schema::schema::Schema>)> as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      3730208,
+      40.36930770389584
+    ],
+    [
+      "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+      3730208,
+      40.36930770389584
+    ],
+    [
+      "<datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      3730080,
+      40.36792245369368
+    ],
+    [
+      "<datafusion_functions_nested::array_transform::ArrayTransform as datafusion_expr::higher_order_function::HigherOrderUDFImpl>::invoke_with_args",
+      3728105,
+      40.346548475965044
+    ],
+    [
+      "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<&alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<&alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+      3728105,
+      40.346548475965044
+    ],
+    [
+      "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<&alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<&alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+      3728105,
+      40.346548475965044
+    ],
+    [
+      "<datafusion_expr::higher_order_function::LambdaArgument>::evaluate::<datafusion_functions_nested::lambda_utils::evaluate_single_list_lambda::{closure#1}>",
+      3728105,
+      40.346548475965044
+    ],
+    [
+      "<vail_execution::conditionals::ScopedSwitch as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      3728105,
+      40.346548475965044
+    ],
+    [
+      "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<&alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      3728105,
+      40.346548475965044
+    ],
+    [
+      "<futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::repartition::RepartitionExec>::pull_from_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll",
+      3571668,
+      38.653545461314295
+    ],
+    [
+      "datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::repartition::RepartitionExec>::pull_from_input::{closure#0}>::{closure#0}",
+      3571668,
+      38.653545461314295
+    ],
+    [
+      "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      3483200,
+      37.696121126277674
+    ],
+    [
+      "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+      3255821,
+      35.23536483161418
+    ],
+    [
+      "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+      3188163,
+      34.5031518771006
+    ],
+    [
+      "<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, vail_table::partitioned::limited_input::{closure#0}> as futures_core::stream::Stream>::poll_next",
+      3188163,
+      34.5031518771006
+    ],
+    [
+      "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, vail_table::partitioned::limited_input::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+      3188163,
+      34.5031518771006
+    ],
+    [
+      "<datafusion_physical_plan::stream::BatchSplitStream as futures_core::stream::Stream>::poll_next",
+      3188163,
+      34.5031518771006
+    ],
+    [
+      "<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::plan::SourceExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}> as futures_core::stream::Stream>::poll_next",
+      3188163,
+      34.5031518771006
+    ],
+    [
+      "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::plan::SourceExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+      3188163,
+      34.5031518771006
+    ],
+    [
+      "<async_stream::async_stream::AsyncStream<core::result::Result<vail_storage::local_table::PartitionEvent, vail_storage::StorageError>, <vail_storage::local_table::LocalRead>::projected_partition_batches::{closure#0}> as futures_core::stream::Stream>::poll_next",
+      3112395,
+      33.683170335559545
+    ],
+    [
+      "<async_stream::async_stream::AsyncStream<core::result::Result<(u64, arrow_array::record_batch::RecordBatch), vail_storage::StorageError>, vail_storage::stream_from_plan_with_nested_projection::{closure#12}> as futures_core::stream::Stream>::poll_next",
+      3106317,
+      33.61739259549136
+    ],
+    [
+      "<futures_util::stream::try_stream::try_flatten::TryFlatten<futures_util::stream::try_stream::MapErr<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn futures_core::stream::Stream<Item = core::result::Result<iceberg::scan::task::FileScanTask, iceberg::error::Error>> + core::marker::Send>>, <iceberg::arrow::reader::pipeline::FileScanTaskReader>::process::{closure#0}, <iceberg::arrow::reader::ArrowReader>::read::{closure#0}>, <iceberg::arrow::reader::ArrowReader>::read::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+      3089940,
+      33.44015632548532
+    ],
+    [
+      "<iceberg::arrow::reader::vortex::read_vortex_task::{closure#0}::{closure#6} as futures_util::fns::FnMut1<core::result::Result<vortex_array::array::erased::ArrayRef, vortex_error::VortexError>>>::call_mut",
+      3089940,
+      33.44015632548532
+    ],
+    [
+      "<futures_util::stream::stream::map::Map<vortex_array::stream::adapter::ArrayStreamAdapter<vortex_layout::scan::scan_builder::LazyScanStream<vortex_array::array::erased::ArrayRef>>, iceberg::arrow::reader::vortex::read_vortex_task::{closure#0}::{closure#6}> as futures_core::stream::Stream>::poll_next",
+      3089940,
+      33.44015632548532
+    ],
+    [
+      "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#8}",
+      2723207,
+      29.471273806823394
+    ],
+    [
+      "vortex_arrow::executor::struct_::to_arrow_struct",
+      2694325,
+      29.15870508542665
+    ],
+    [
+      "vortex_arrow::executor::execute_arrow_naive",
+      2694325,
+      29.15870508542665
+    ],
+    [
+      "<vortex_arrow::session::ArrowSession>::execute_arrow",
+      2694325,
+      29.15870508542665
+    ],
+    [
+      "<datafusion_physical_expr::expressions::binary::BinaryExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      2665351,
+      28.845140715447098
+    ],
+    [
+      "vortex_arrow::executor::struct_::create_from_fields",
+      2638842,
+      28.55825323412633
+    ],
+    [
+      "vortex_arrow::executor::list::to_arrow_list::<i32>",
+      2549424,
+      27.590547745245566
+    ],
+    [
+      "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      2444620,
+      26.456330853158285
+    ],
+    [
+      "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#2}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#2}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+      2444620,
+      26.456330853158285
+    ],
+    [
+      "vortex_arrow::executor::list::list_view_zctl::<i32>",
+      2397932,
+      25.95106084192044
+    ],
+    [
+      "vortex_array::executor::execute_parent_for_child",
+      1993497,
+      21.574157205119192
+    ],
+    [
+      "<vortex_array::canonical::Canonical as vortex_array::executor::Executable>::execute",
+      1742749,
+      18.860495348156665
+    ],
+    [
+      "<vortex_array::array::typed::Array<vortex_array::arrays::primitive::vtable::Primitive> as vortex_array::executor::Executable>::execute",
+      1627076,
+      17.60865123382504
+    ],
+    [
+      "vortex_array::executor::try_execute_parent",
+      1626142,
+      17.598543236256152
+    ],
+    [
+      "vail_execution::expressions::array_index_rows",
+      1624975,
+      17.585913650428648
+    ],
+    [
+      "vortex_arrow::executor::primitive::to_arrow_primitive::<arrow_array::types::Int32Type>",
+      1505538,
+      16.293334522339755
+    ],
+    [
+      "vortex_arrow::executor::list::list_to_list::<i32>",
+      994932,
+      10.76741995418285
+    ],
+    [
+      "<vortex_array::array::erased::ArrayRef>::execute_until::<vortex_arrow::executor::list::ArrowListExportable>",
+      858125,
+      9.28685804475397
+    ],
+    [
+      "<vortex_array::optimizer::kernels::RegisteredExecuteParentKernel<vortex_array::arrays::list::vtable::List, vortex_array::arrays::dict::take::TakeExecuteAdaptor<vortex_array::arrays::list::vtable::List>> as vortex_array::optimizer::kernels::DynExecuteParentKernel>::execute_parent",
+      832242,
+      9.006745302703143
+    ],
+    [
+      "vortex_array::arrays::list::compute::take::take_slices",
+      832242,
+      9.006745302703143
+    ],
+    [
+      "<vortex_array::arrays::list::vtable::List as vortex_array::arrays::dict::take::TakeExecute>::take",
+      832242,
+      9.006745302703143
+    ],
+    [
+      "<vortex_array::arrays::dict::take::TakeExecuteAdaptor<vortex_array::arrays::list::vtable::List> as vortex_array::kernel::ExecuteParentKernel<vortex_array::arrays::list::vtable::List>>::execute_parent",
+      832242,
+      9.006745302703143
+    ],
+    [
+      "arrow_arith::arity::try_binary::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+      805063,
+      8.712606902355445
+    ],
+    [
+      "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt32Type> as core::convert::From<alloc::vec::Vec<core::option::Option<u32>>>>::from",
+      720754,
+      7.800192376621825
+    ],
+    [
+      "<core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<i32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<i32>>>::from_iter<core::slice::iter::Iter<core::option::Option<i32>>>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<i32, <alloc::vec::Vec<i32>>::extend_trusted<core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<i32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<i32>>>::from_iter<core::slice::iter::Iter<core::option::Option<i32>>>::{closure#0}>>::{closure#0}>::{closure#0}>",
+      718870,
+      7.7798032252087825
+    ],
+    [
+      "<alloc::vec::Vec<u32> as alloc::vec::spec_from_iter::SpecFromIter<u32, core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<u32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<u32>>>::from_iter<core::slice::iter::Iter<core::option::Option<u32>>>::{closure#0}>>>::from_iter",
+      718870,
+      7.7798032252087825
+    ],
+    [
+      "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u32>>::from_iter::<core::iter::adapters::map::Map<core::slice::iter::Iter<core::option::Option<u32>>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt32Type> as core::iter::traits::collect::FromIterator<&core::option::Option<u32>>>::from_iter<core::slice::iter::Iter<core::option::Option<u32>>>::{closure#0}>>",
+      718870,
+      7.7798032252087825
+    ],
+    [
+      "vortex_array::arrays::list::compute::take::take_slices_constant_start_dispatch",
+      657772,
+      7.118584343555903
+    ],
+    [
+      "<tokio::runtime::task::harness::Harness<custom_labels::asynchronous::Labeled<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = ()> + core::marker::Send>>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+      642762,
+      6.956142112818239
+    ],
+    [
+      "<tokio::runtime::task::core::Core<custom_labels::asynchronous::Labeled<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = ()> + core::marker::Send>>>, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+      642762,
+      6.956142112818239
+    ],
+    [
+      "<vail_execution::array_aggregate::CoordinateBundle as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+      533394,
+      5.772532393210196
+    ],
+    [
+      "<vail_execution::array_aggregate::DenseNumeric>::update_masks",
+      530267,
+      5.738691163662116
+    ],
+    [
+      "vail_execution::packed_count::accumulate::<i64>",
+      530267,
+      5.738691163662116
+    ],
+    [
+      "<vail_execution::array_aggregate::Coordinates>::update_flat",
+      530267,
+      5.738691163662116
+    ],
+    [
+      "datafusion_physical_expr_common::datum::apply_cmp",
+      507801,
+      5.495558108648637
+    ]
+  ]
+}

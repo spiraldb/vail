@@ -1,0 +1,12 @@
+{
+  "main_commit": "eaeb0bc12f7aa8323f0f444f01bbc57f22e88d68",
+  "reviewed_candidate": "e92caa7636d6cbd387e3bd3aed210d66366a5791",
+  "review_chat": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "review": "Final gate approved, no remaining findings. Root merged exact source plus checksum-only child.",
+  "rust": "1.98.0",
+  "normal_release_rebuild_seconds": 56.48,
+  "native_sha256": "bd6568ab06f50a5d001c570bed0a83e10bd47497f621215d1c339a453ac7f26e",
+  "python_tests_after_installed_rebuild": 199,
+  "native_tests": 7,
+  "notes": "Normal merged rebuild has different binary hash from candidate with identical production sources. Repeated full affected Python tests after install, N3 alternating exact baseline/main queries and separate main profile retained under integration-check. No manual SO cache/copy."
+}

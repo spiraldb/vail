@@ -14,3 +14,7 @@ Validation:199Python public expression/integration tests and7native public tests
 
 Original and symbolized profiles, weighted stacks, full build/test logs, independent N3 raw receipts, driver and source/native provenance retained. Reviewer source-clear805fcbef plus scalar refinement9a6a360e; final evidence/integration receipts follow separately.
 
+
+## Merged-main validation
+
+Reviewed source merged in416c633d, checksums child eaeb0bc1. Exact-main normal release build56.48s yields native bd6568ab...; production sources match reviewed candidate, but binary hash differs. Repeated199Python checks after installation and7native checks pass. Independent N3 alternating baseline/main confirmation (integration-check): wall1.7070→1.1213s, CPU13.0067→7.8473core-s, lifetimeRSS8.217→6.556GB. These are additional samples, not combined with original candidate samples. Ambient wall variation persists while CPU improvement remains about40%. Main profile sampled9.2402core-s; former general_array_length remains absent from dominant inclusive stacks. Original profiles/receipts retained separately.

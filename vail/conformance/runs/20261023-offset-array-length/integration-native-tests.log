@@ -1,0 +1,30 @@
+    Blocking waiting for file lock on build directory
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 29.41s
+     Running tests/array_methods.rs (target/release/deps/array_methods-338315d391e91155)
+
+running 5 tests
+test list_any_uses_native_reducer_empty_and_missing_identity ... ok
+test any_array_aggregate_scan_is_exclusive_for_empty_and_missing_lists ... ok
+test ndarray_constructor_checks_numeric_input_and_declared_rank ... ok
+test list_scan_builds_primitive_and_collection_prefixes_with_masks ... ok
+test fold_and_scan_accept_alternate_string_storage ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/outer_array_length.rs (target/release/deps/outer_array_length-934048563f6d9954)
+
+running 2 tests
+test scalar_lengths_stay_scalar_and_large_lengths_are_checked ... ok
+test outer_lengths_preserve_slices_nulls_empty_and_nested_lists ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
