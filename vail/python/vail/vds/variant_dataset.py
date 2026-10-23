@@ -24,7 +24,7 @@ def read_vds(
     _warn_no_ref_block_max_length=True,
     _drop_end=False,
 ) -> "VariantDataset":
-    """Read in a :class:`.VariantDataset` written with :meth:`.VariantDataset.write`.
+    """Read a :class:`.VariantDataset` written by Hail or Vail.
 
     Parameters
     ----------
@@ -44,16 +44,16 @@ def read_vds(
         )
     fs = hl.current_backend().fs
     reference_path = VariantDataset._reference_path(path)
-    if fs.exists(os.path.join(reference_path, "metadata.json.gz")) and not fs.exists(
-        os.path.join(reference_path, "_vail_matrix.json")
-    ):
-        raise NotImplementedError(
-            "Reading Hail-native VDS storage requires a Hail MatrixTable storage reader; only Vail-native VDS storage is supported"
-        )
-    reference_data = hl.read_matrix_table(reference_path, _intervals=intervals)
-    variant_data = hl.read_matrix_table(
-        VariantDataset._variants_path(path), _intervals=intervals
-    )
+
+    def read_component(component_path):
+        # A VDS is two ordinary MatrixTables. Prefer the Vail descriptor when
+        # present; Hail's components use the existing native legacy scan.
+        if fs.exists(os.path.join(component_path, "_vail_matrix.json")):
+            return hl.read_matrix_table(component_path)
+        return MatrixTable.read_legacy(component_path)
+
+    reference_data = read_component(reference_path)
+    variant_data = read_component(VariantDataset._variants_path(path))
 
     # if LEN is missing, add it, _add_len is a no-op if LEN is already present
     reference_data = VariantDataset._add_len(reference_data)
