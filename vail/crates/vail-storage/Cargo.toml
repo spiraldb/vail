@@ -11,6 +11,7 @@ async-stream = "0.3"
 arrow-cast = "=59.2.0"
 tempfile = "3"
 arrow-array = "=59.2.0"
+arrow-data = "=59.2.0"
 arrow-schema = { version = "=59.2.0", features = ["serde"] }
 arrow-ord = "=59.2.0"
 futures = "0.3"
@@ -31,4 +32,5 @@ lz4_flex = "0.13"
 zstd = "0.13"
 
 [dev-dependencies]
+datafusion-common.workspace = true
 vail-ordering = { path = "../vail-ordering" }

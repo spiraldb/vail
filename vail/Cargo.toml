@@ -36,6 +36,7 @@ tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 
 [patch.crates-io]
+arrow-array = { path = "patches/arrow-array" }
 arrow-data = { path = "patches/arrow-data" }
 datafusion-common = { path = "patches/datafusion-common" }
 datafusion-functions-aggregate = { path = "patches/datafusion-functions-aggregate" }

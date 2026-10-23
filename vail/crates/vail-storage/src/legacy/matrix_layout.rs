@@ -2,9 +2,7 @@
 //! values have independent native cursors; list offsets come from the shared
 //! column dimension and never require opening an entry file.
 use super::{Component, Result, decode, index};
-use arrow_array::{
-    Array, ArrayRef as ArrowArrayRef, ListArray, RecordBatch, StructArray, UInt64Array,
-};
+use arrow_array::{Array, ListArray, StructArray, UInt64Array};
 use arrow_schema::{DataType, Field, SchemaRef};
 use futures::{
     FutureExt,
@@ -20,7 +18,12 @@ use std::{
 use vortex::{
     array::{
         ArrayRef, Canonical, EmptyMetadata, IntoArray, MaskFuture, VortexSessionExecute,
-        arrays::ConstantArray,
+        arrays::{
+            ChunkedArray, ConstantArray, List as VortexList, StructArray as VortexStructArray,
+            list::{ListArrayExt, ListArraySlotsExt},
+            struct_::StructArrayExt,
+        },
+        validity::Validity,
     },
     arrow::ArrowSessionExt,
     dtype::{DType, FieldMask, Nullability, PType},
@@ -269,14 +272,13 @@ struct NativeFile {
     shape: FileShape,
     projection: Vec<usize>,
     decode_paths: Option<Vec<Vec<String>>>,
-    output_field: Field,
     cursor: Mutex<Cursor>,
 }
 struct Cursor {
     reader: Option<decode::PartReader>,
     index: Option<index::IndexReader>,
     range: Range<u64>,
-    cached: Option<RecordBatch>,
+    cached: Option<Vec<ArrayRef>>,
 }
 struct NativeReader {
     name: Arc<str>,
@@ -316,7 +318,6 @@ impl NativeReader {
             shape,
             projection,
             decode_paths,
-            output_field,
             cursor: Mutex::new(Cursor {
                 reader: None,
                 index: None,
@@ -400,8 +401,8 @@ impl NativeReader {
                     session.arrow().from_arrow_array(Arc::new(values), false)
                 }
                 Source::File { file, shape } => {
-                    let output_field = file.output_field.clone();
-                    let array = tokio::task::spawn_blocking(move || -> Result<ArrowArrayRef> {
+                    let decode_session = session.clone();
+                    tokio::task::spawn_blocking(move || -> Result<ArrayRef> {
                         let row_range = match shape {
                             FileShape::Rows => range.clone(),
                             FileShape::Elements { ncols } => {
@@ -411,46 +412,75 @@ impl NativeReader {
                                 range.start / ncols..range.end.div_ceil(ncols)
                             }
                         };
-                        let batch = file.read_range(row_range.clone())?;
-                        match shape {
-                            FileShape::Rows => Ok(Arc::new(StructArray::from(batch))),
-                            FileShape::Elements { ncols } => {
-                                let entries = batch
-                                    .column(0)
-                                    .as_any()
-                                    .downcast_ref::<ListArray>()
-                                    .ok_or("invalid Hail matrix entry array")?;
-                                for row in 0..batch.num_rows() {
-                                    if entries.is_null(row)
-                                        || entries.value_length(row) as u64 != ncols
-                                    {
-                                        return Err(
-                                            "Hail entry array length differs from column count"
-                                                .into(),
-                                        );
+                        let batches = file.read_range(row_range.clone(), &decode_session)?;
+                        let mut ctx = decode_session.create_execution_ctx();
+                        let mut chunks = Vec::with_capacity(batches.len());
+                        let mut batch_start = row_range.start;
+                        for batch in batches {
+                            let batch_rows = batch.len();
+                            let root = batch.execute::<VortexStructArray>(&mut ctx)?;
+                            let validity = if dtype.is_nullable() {
+                                Validity::AllValid
+                            } else {
+                                Validity::NonNullable
+                            };
+                            let chunk = match shape {
+                                FileShape::Rows => VortexStructArray::try_new_with_dtype(
+                                    root.iter_unmasked_fields().cloned(),
+                                    dtype.as_struct_fields().clone(),
+                                    batch_rows,
+                                    validity,
+                                )?
+                                .into_array(),
+                                FileShape::Elements { ncols } => {
+                                    let entries = root
+                                        .unmasked_field(0)
+                                        .as_opt::<VortexList>()
+                                        .ok_or("invalid Hail matrix entry array")?;
+                                    let entry_validity = entries.as_ref().validity()?;
+                                    for row in 0..batch_rows {
+                                        if !entry_validity.execute_is_valid(row, &mut ctx)?
+                                            || (entries.offset_at(row + 1)?
+                                                - entries.offset_at(row)?)
+                                                as u64
+                                                != ncols
+                                        {
+                                            return Err(
+                                                "Hail entry array length differs from column count"
+                                                    .into(),
+                                            );
+                                        }
                                     }
+                                    let chunk_start = (batch_start * ncols).max(range.start);
+                                    let chunk_end =
+                                        ((batch_start + batch_rows as u64) * ncols).min(range.end);
+                                    let first = entries.offset_at(0)?
+                                        + usize::try_from(chunk_start - batch_start * ncols)?;
+                                    let count = usize::try_from(chunk_end - chunk_start)?;
+                                    let values = entries.elements().slice(first..first + count)?;
+                                    // The payload keeps its own validity; an all-null
+                                    // but defined entry remains a present slot.
+                                    VortexStructArray::try_new_with_dtype(
+                                        vec![values],
+                                        dtype.as_struct_fields().clone(),
+                                        count,
+                                        validity,
+                                    )?
+                                    .into_array()
                                 }
-                                let first = entries.value_offsets()[0] as u64 + range.start
-                                    - row_range.start * ncols;
-                                let values = entries.values().slice(usize::try_from(first)?, len);
-                                let DataType::Struct(fields) = file.output_field.data_type() else {
-                                    return Err("invalid Hail slot type".into());
-                                };
-                                // The payload keeps the Hail entry struct's validity;
-                                // a valid all-null payload remains a present entry.
-                                Ok(Arc::new(StructArray::try_new_with_length(
-                                    fields.clone(),
-                                    vec![values],
-                                    None,
-                                    len,
-                                )?))
-                            }
+                            };
+                            batch_start += batch_rows as u64;
+                            chunks.push(chunk);
+                        }
+                        if chunks.len() == 1 {
+                            Ok(chunks.pop().unwrap())
+                        } else {
+                            Ok(ChunkedArray::try_new(chunks, dtype)?.into_array())
                         }
                     })
                     .await
                     .map_err(|e| vortex_err!("Hail matrix decoder task failed: {e}"))?
-                    .map_err(|e| vortex_err!("{e}"))?;
-                    session.arrow().from_arrow_array(array, &output_field)
+                    .map_err(|e| vortex_err!("{e}"))
                 }
             }
         }
@@ -458,7 +488,7 @@ impl NativeReader {
     }
 }
 impl NativeFile {
-    fn read_range(&self, range: Range<u64>) -> Result<RecordBatch> {
+    fn read_range(&self, range: Range<u64>, session: &VortexSession) -> Result<Vec<ArrayRef>> {
         let mut cursor = self
             .cursor
             .lock()
@@ -504,30 +534,25 @@ impl NativeFile {
         let reader = cursor.reader.as_mut().unwrap();
         while reader.rows < range.start {
             let n = usize::try_from((range.start - reader.rows).min(8192))?;
-            if reader.next_batch(n)?.is_none() {
+            if reader.next_vortex_batch(n, session)?.is_none() {
                 return Err(short_count.into());
             }
         }
         let mut batches = vec![];
         while reader.rows < range.end {
             let n = usize::try_from((range.end - reader.rows).min(8192))?;
-            batches.push(reader.next_batch(n)?.ok_or(short_count)?);
+            batches.push(reader.next_vortex_batch(n, session)?.ok_or(short_count)?);
         }
-        if range.end == self.row_count && reader.next_batch(1)?.is_some() {
+        if range.end == self.row_count && reader.next_vortex_batch(1, session)?.is_some() {
             return Err(match self.shape {
                 FileShape::Rows => "Hail matrix file contains more rows than partition metadata",
                 FileShape::Elements { .. } => "Hail row and entry partition counts differ",
             }
             .into());
         }
-        let batch = if batches.len() == 1 {
-            batches.pop().unwrap()
-        } else {
-            arrow_select::concat::concat_batches(&self.component.schema, batches.iter())?
-        };
         cursor.range = range;
-        cursor.cached = Some(batch.clone());
-        Ok(batch)
+        cursor.cached = Some(batches.clone());
+        Ok(batches)
     }
 }
 impl LayoutReader for NativeReader {

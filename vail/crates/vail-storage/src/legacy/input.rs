@@ -188,6 +188,14 @@ pub struct Input {
     pub bytes: u64,
 }
 impl Input {
+    #[cfg(test)]
+    pub(super) fn from_memory(bytes: std::sync::Arc<[u8]>, leb: bool) -> Self {
+        Self {
+            source: BufReader::with_capacity(65536, Box::new(Cursor::new(bytes)) as Stream),
+            leb,
+            bytes: 0,
+        }
+    }
     pub fn open(path: &Path, spec: &Value) -> Result<Self> {
         Self::open_raw(path, spec, 0)
     }
@@ -331,47 +339,43 @@ impl Input {
         Ok(Some(values))
     }
 
-    /// Skip a run of LEB128 values without constructing intermediate integers.
-    /// Retain the same width/termination validation as `varint`.
-    pub fn skip_varints(&mut self, count: usize, bits: u32) -> Result<()> {
+    /// Skip encoded values by their terminators. Projection does not need
+    /// numeric width validation or intermediate integer values.
+    pub fn skip_varints(&mut self, count: usize, _bits: u32) -> Result<()> {
         let mut remaining = count;
-        let mut shift = 0;
         while remaining != 0 {
             let available = self.source.fill_buf()?;
             if available.is_empty() {
                 return Err("truncated Hail data".into());
             }
-            // Most small numeric arrays have one-byte values. Check eight
-            // terminators at a time, or a short prefix, without decoding any
-            // values. Continuations and narrow integer widths retain the fully
-            // validated path below.
-            if shift == 0 && bits >= 7 && available.len() >= 8 {
-                let count = remaining.min(8);
-                let mask = u64::MAX >> ((8 - count) * 8);
-                let word = u64::from_le_bytes(available[..8].try_into().unwrap());
-                if word & mask & 0x8080_8080_8080_8080 == 0 {
-                    self.source.consume(count);
-                    self.bytes += count as u64;
+            let mut consumed = 0;
+            while available.len() - consumed >= 8 {
+                let word =
+                    u64::from_le_bytes(available[consumed..consumed + 8].try_into().unwrap());
+                let mut terminators = !word & 0x8080_8080_8080_8080;
+                let count = terminators.count_ones() as usize;
+                if count < remaining {
                     remaining -= count;
-                    continue;
+                    consumed += 8;
+                } else {
+                    // The final word can include bytes from the next field.
+                    // Select the Nth terminator and consume its exact prefix.
+                    for _ in 1..remaining {
+                        terminators &= terminators - 1;
+                    }
+                    consumed += terminators.trailing_zeros() as usize / 8 + 1;
+                    remaining = 0;
+                    break;
                 }
             }
-            let mut consumed = 0;
-            for &byte in available {
-                consumed += 1;
-                if shift + 7 > bits && u64::from(byte & 127) >= 1u64 << (bits - shift) {
-                    return Err("overflow in Hail variable length integer".into());
-                }
-                if byte & 128 == 0 {
-                    remaining -= 1;
-                    shift = 0;
-                    if remaining == 0 {
-                        break;
-                    }
-                } else {
-                    shift += 7;
-                    if shift >= bits {
-                        return Err("invalid Hail variable length integer".into());
+            if remaining != 0 {
+                for &byte in &available[consumed..] {
+                    consumed += 1;
+                    if byte & 128 == 0 {
+                        remaining -= 1;
+                        if remaining == 0 {
+                            break;
+                        }
                     }
                 }
             }
@@ -516,13 +520,32 @@ mod tests {
         input.skip_varints(3, 32)?;
         assert_eq!(input.bytes, 5);
         assert_eq!(input.byte()?, 42);
-        assert!(
-            buffered(vec![0xff, 0xff, 0xff, 0xff, 0x1f])
-                .skip_varints(1, 32)
-                .is_err()
-        );
+        let mut wider_than_int32 = buffered(vec![0xff, 0xff, 0xff, 0xff, 0x1f, 42]);
+        wider_than_int32.skip_varints(1, 32)?;
+        assert_eq!(wider_than_int32.bytes, 5);
+        assert_eq!(wider_than_int32.byte()?, 42);
         assert!(buffered(vec![0x80]).skip_varints(1, 32).is_err());
         assert!(buffered(vec![0x80; 10]).skip_varints(1, 64).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn projected_varint_skip_accepts_long_values_and_stops_at_exact_terminator() -> Result<()> {
+        for capacity in [1usize, 2, 7, 8, 32, 65536] {
+            let mut bytes = vec![128u8; 37];
+            bytes.extend([255, 127, 1, 128, 0, 42, 43, 44, 45, 46, 47, 48, 49]);
+            let mut input = Input {
+                source: BufReader::with_capacity(capacity, Box::new(Cursor::new(bytes)) as Stream),
+                leb: true,
+                bytes: 0,
+            };
+            input.skip_varints(3, 32)?;
+            assert_eq!(input.bytes, 42);
+            assert_eq!(input.byte()?, 42);
+        }
+        let mut input = buffered(vec![128; 19]);
+        assert!(input.skip_varints(1, 32).is_err());
+        assert_eq!(input.bytes, 19);
         Ok(())
     }
 
@@ -556,6 +579,95 @@ mod tests {
             buffered(vec![0xff, 0xff, 0xff, 0xff, 0x1f])
                 .varint(32)
                 .is_err()
+        );
+        Ok(())
+    }
+    #[test]
+    #[ignore = "manual real-file read/decompression benchmark"]
+    fn benchmark_real_entry_part_read_and_decompression() -> Result<()> {
+        use std::time::Instant;
+        let matrix = std::env::var("VAIL_LEGACY_PROFILE_MATRIX").unwrap_or_else(|_| {
+            "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt".into()
+        });
+        let dataset = Dataset::open(&matrix, "MatrixTableSpec")?;
+        let entries = dataset.component("entries")?;
+        let part = std::env::var("VAIL_LEGACY_PROFILE_PART")
+            .ok()
+            .map(|value| value.parse::<usize>())
+            .transpose()?
+            .unwrap_or(0);
+        let path = entries
+            .paths
+            .get(part)
+            .ok_or("profile partition out of bounds")?;
+        // Keep compressed bytes owned outside the timers. This stage isolates
+        // framing/decompression from filesystem reads and numeric decoding.
+        let compressed: Arc<[u8]> = std::fs::read(path)?.into();
+        let mut read_seconds = Vec::new();
+        let mut decompress_seconds = Vec::new();
+        let mut memory_decompress_seconds = Vec::new();
+        let mut uncompressed = None;
+        for iteration in 0..6 {
+            let mut file = std::fs::File::open(path)?;
+            let start = Instant::now();
+            let count = io::copy(&mut file, &mut io::sink())?;
+            let elapsed = start.elapsed().as_secs_f64();
+            assert_eq!(count, compressed.len() as u64);
+            if iteration != 0 {
+                read_seconds.push(elapsed);
+            }
+
+            let mut input = Input::open(path, &entries.buffer)?;
+            let start = Instant::now();
+            let count = io::copy(&mut input.source, &mut io::sink())?;
+            let elapsed = start.elapsed().as_secs_f64();
+            if let Some(expected) = uncompressed {
+                assert_eq!(count, expected);
+            } else {
+                uncompressed = Some(count);
+            }
+            if iteration != 0 {
+                decompress_seconds.push(elapsed);
+            }
+
+            let spec = if entries.buffer["name"] == "LEB128BufferSpec" {
+                &entries.buffer["child"]
+            } else {
+                &entries.buffer
+            };
+            let source: Stream = Box::new(Cursor::new(compressed.clone()));
+            let source: Stream = if spec["name"] == "BlockingBufferSpec" {
+                Box::new(BlockStream {
+                    blocks: blocks(source, &spec["child"])?,
+                    current: Cursor::new(vec![]),
+                })
+            } else {
+                source
+            };
+            let mut source = BufReader::with_capacity(65536, source);
+            let start = Instant::now();
+            let count = io::copy(&mut source, &mut io::sink())?;
+            let elapsed = start.elapsed().as_secs_f64();
+            assert_eq!(Some(count), uncompressed);
+            if iteration != 0 {
+                memory_decompress_seconds.push(elapsed);
+            }
+        }
+        fn stage(mut samples: Vec<f64>, bytes: u64) -> Value {
+            let original = samples.clone();
+            samples.sort_by(f64::total_cmp);
+            let median = samples[samples.len() / 2];
+            serde_json::json!({"seconds":original, "median_seconds":median,
+                "median_mib_per_second":bytes as f64 / (1024.0 * 1024.0) / median})
+        }
+        let uncompressed = uncompressed.unwrap();
+        println!(
+            "{}",
+            serde_json::json!({"benchmark":"legacy_entry_part_stages", "path":path,
+            "compressed_bytes":compressed.len(), "uncompressed_bytes":uncompressed,
+            "cached_file_read":stage(read_seconds, compressed.len() as u64),
+            "file_read_and_decompress":stage(decompress_seconds, uncompressed),
+            "memory_decompress":stage(memory_decompress_seconds, uncompressed)})
         );
         Ok(())
     }

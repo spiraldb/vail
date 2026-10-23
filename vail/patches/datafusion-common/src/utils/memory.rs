@@ -19,7 +19,6 @@
 
 use crate::error::_exec_datafusion_err;
 use crate::{HashSet, Result};
-use arrow::array::ArrayData;
 use arrow::record_batch::RecordBatch;
 use std::mem::size_of;
 use std::num::NonZero;
@@ -167,12 +166,11 @@ impl RecordBatchMemoryCounter {
         let mut total_size = 0;
 
         for array in batch.columns() {
-            let array_data = array.to_data();
-            count_array_data_memory_size(
-                &array_data,
-                &mut self.counted_buffers,
-                &mut total_size,
-            );
+            array.visit_buffers(&mut |buffer| {
+                if self.counted_buffers.insert(buffer.data_ptr().addr()) {
+                    total_size += buffer.capacity();
+                }
+            });
         }
 
         self.memory_usage += total_size;
@@ -182,31 +180,6 @@ impl RecordBatchMemoryCounter {
     /// Total memory of the unique buffers of all batches counted so far.
     pub fn memory_usage(&self) -> usize {
         self.memory_usage
-    }
-}
-
-/// Count the memory usage of `array_data` and its children recursively.
-fn count_array_data_memory_size(
-    array_data: &ArrayData,
-    counted_buffers: &mut HashSet<NonZero<usize>>,
-    total_size: &mut usize,
-) {
-    // Count memory usage for `array_data`
-    for buffer in array_data.buffers() {
-        if counted_buffers.insert(buffer.data_ptr().addr()) {
-            *total_size += buffer.capacity();
-        } // Otherwise the buffer's memory is already counted
-    }
-
-    if let Some(null_buffer) = array_data.nulls()
-        && counted_buffers.insert(null_buffer.inner().inner().data_ptr().addr())
-    {
-        *total_size += null_buffer.inner().inner().capacity();
-    }
-
-    // Count all children `ArrayData` recursively
-    for child in array_data.child_data() {
-        count_array_data_memory_size(child, counted_buffers, total_size);
     }
 }
 

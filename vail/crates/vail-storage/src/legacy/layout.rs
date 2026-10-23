@@ -302,9 +302,7 @@ pub fn arrow_batch(
         arrow_schema::DataType::Struct(schema.fields().clone()),
         false,
     );
-    let arrow = session
-        .arrow()
-        .execute_arrow(array, Some(&field), &mut ctx)?;
+    let arrow = super::packed_call::export(array, Some(&field), &mut ctx)?;
     let s = arrow
         .as_any()
         .downcast_ref::<StructArray>()

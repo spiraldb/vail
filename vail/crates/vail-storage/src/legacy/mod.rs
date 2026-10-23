@@ -5,6 +5,7 @@ pub mod index;
 mod input;
 pub mod layout;
 pub mod matrix_layout;
+mod packed_call;
 mod schema;
 use arrow_schema::{Schema, SchemaRef};
 pub use schema::{Encoding, Parser, Relation};

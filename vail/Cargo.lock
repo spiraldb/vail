@@ -225,8 +225,6 @@ dependencies = [
 [[package]]
 name = "arrow-array"
 version = "59.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc9a4a4b2b5ecd0e04df03471661cb61f28bed3c7fd50994715129b01b2edb97"
 dependencies = [
  "ahash",
  "arrow-buffer",
@@ -5787,11 +5785,13 @@ dependencies = [
  "arrow-array",
  "arrow-buffer",
  "arrow-cast",
+ "arrow-data",
  "arrow-ipc",
  "arrow-ord",
  "arrow-schema",
  "arrow-select",
  "async-stream",
+ "datafusion-common",
  "flate2",
  "futures",
  "iceberg",

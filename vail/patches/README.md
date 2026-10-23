@@ -119,3 +119,18 @@ empty slices, and C Data imports with nonzero parent and independent child
 buffer offsets against concrete Arrow array slices. The public PyArrow C Stream
 storage test remains unchanged: its input passes PyArrow full validation and a
 PyArrow C Stream export/import round trip.
+
+# Arrow buffer visitation for lazy arrays
+
+`arrow-array/` vendors the published Apache Arrow `arrow-array` 59.2.0
+crate, retaining its licenses and NOTICE. Packaging-only `.cargo-ok`,
+`Cargo.lock`, and `Cargo.toml.orig` are omitted. `arrow-array-vail.patch`
+contains the source changes: an object-safe buffer visitor with the usual
+ArrayData fallback, plus Struct and List overrides that recurse through live
+children. This permits lazy arrays to report retained physical buffers without
+materializing their logical Arrow representation. DataFusion memory accounting
+uses that visitor and retains allocation-address deduplication across columns,
+slices and batches. The legacy packed Call implementation reports its packed
+buffer and any already-materialized cache. A storage regression invokes actual
+DataFusion accounting on nested shared/sliced Calls and checks both laziness
+and exact allocation deduplication.

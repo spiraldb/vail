@@ -1,0 +1,85 @@
+--- a/src/array/mod.rs
++++ b/src/array/mod.rs
+@@ -125,6 +125,25 @@
+     /// Returns the underlying data of this array
+     fn to_data(&self) -> ArrayData;
+ 
++    /// Visits retained buffers for physical memory accounting without requiring
++    /// a materialized logical representation. Visitors may observe shared buffers
++    /// more than once and should deduplicate allocations when appropriate.
++    fn visit_buffers(&self, visitor: &mut dyn FnMut(&Buffer)) {
++        fn visit(data: &ArrayData, visitor: &mut dyn FnMut(&Buffer)) {
++            for buffer in data.buffers() {
++                visitor(buffer);
++            }
++            if let Some(nulls) = data.nulls() {
++                visitor(nulls.inner().inner());
++            }
++            for child in data.child_data() {
++                visit(child, visitor);
++            }
++        }
++        visit(&self.to_data(), visitor);
++    }
++
++
+     /// Returns the underlying data of this array
+     ///
+     /// Unlike [`Array::to_data`] this consumes self, allowing it avoid unnecessary clones
+@@ -434,6 +453,10 @@
+         self.as_ref().as_any()
+     }
+ 
++    fn visit_buffers(&self, visitor: &mut dyn FnMut(&Buffer)) {
++        self.as_ref().visit_buffers(visitor);
++    }
++
+     fn to_data(&self) -> ArrayData {
+         self.as_ref().to_data()
+     }
+@@ -514,6 +537,10 @@
+ }
+ 
+ unsafe impl<T: Array> Array for &T {
++    fn visit_buffers(&self, visitor: &mut dyn FnMut(&Buffer)) {
++        T::visit_buffers(*self, visitor);
++    }
++
+     fn as_any(&self) -> &dyn Any {
+         T::as_any(self)
+     }
+--- a/src/array/struct_array.rs
++++ b/src/array/struct_array.rs
+@@ -485,6 +485,15 @@
+         self
+     }
+ 
++    fn visit_buffers(&self, visitor: &mut dyn FnMut(&arrow_buffer::Buffer)) {
++        if let Some(nulls) = &self.nulls {
++            visitor(nulls.inner().inner());
++        }
++        for field in &self.fields {
++            field.visit_buffers(visitor);
++        }
++    }
++
+     fn to_data(&self) -> ArrayData {
+         self.clone().into()
+     }
+--- a/src/array/list_array.rs
++++ b/src/array/list_array.rs
+@@ -581,6 +581,14 @@
+         self
+     }
+ 
++    fn visit_buffers(&self, visitor: &mut dyn FnMut(&arrow_buffer::Buffer)) {
++        visitor(self.value_offsets.inner().inner());
++        if let Some(nulls) = &self.nulls {
++            visitor(nulls.inner().inner());
++        }
++        self.values.visit_buffers(visitor);
++    }
++
+     fn to_data(&self) -> ArrayData {
+         self.clone().into()
+     }

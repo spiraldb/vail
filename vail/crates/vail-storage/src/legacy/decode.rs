@@ -5,61 +5,97 @@ use arrow_buffer::{BooleanBufferBuilder, NullBufferBuilder, OffsetBuffer, Scalar
 use arrow_schema::{DataType, FieldRef, Fields};
 use vail_execution::expressions::PrimitiveType as P;
 
-// Calls retain their public Arrow struct and all child null semantics, while
-// their hot append path binds the four physical builders without enum lookups.
+// Keep Hail's packed Call until an Arrow consumer requests its public struct.
 struct CallColumn {
     fields: Fields,
-    first: Vec<u16>,
-    second: Vec<u16>,
-    ploidy: Vec<u8>,
-    phased: BooleanBufferBuilder,
+    packed: Vec<u32>,
     valid: NullBufferBuilder,
 }
 impl CallColumn {
     fn new(fields: Fields) -> Self {
         Self {
             fields,
-            first: Vec::with_capacity(8192),
-            second: Vec::with_capacity(8192),
-            ploidy: Vec::with_capacity(8192),
-            phased: BooleanBufferBuilder::new(8192),
+            packed: Vec::with_capacity(8192),
             valid: NullBufferBuilder::new(8192),
         }
     }
     fn null(&mut self) {
-        self.first.push(0);
-        self.second.push(0);
-        self.ploidy.push(0);
-        self.phased.append(false);
+        self.packed.push(0);
         self.valid.append_null();
     }
+    fn take_packed(&mut self) -> UInt32Array {
+        UInt32Array::new(
+            ScalarBuffer::from(std::mem::take(&mut self.packed)),
+            self.valid.finish(),
+        )
+    }
     fn finish(&mut self) -> Result<ArrayRef> {
-        let len = self.valid.len();
-        // Hail Call children share exactly their parent's missingness. Clone
-        // this immutable Arrow bitmap instead of appending/materializing five
-        // independent validity buffers for every call.
-        let nulls = self.valid.finish();
+        let packed = self.take_packed();
+        let nulls = packed.nulls().cloned();
+        let mut first = Vec::with_capacity(packed.len());
+        let mut second = Vec::with_capacity(packed.len());
+        let mut ploidies = Vec::with_capacity(packed.len());
+        let mut phased = BooleanBufferBuilder::new(packed.len());
+        for i in 0..packed.len() {
+            let (a, b, p, phase) = if packed.is_null(i) {
+                (0, 0, 0, false)
+            } else {
+                call_parts(packed.value(i))?
+            };
+            first.push(a);
+            second.push(b);
+            ploidies.push(p);
+            phased.append(phase);
+        }
         Ok(Arc::new(StructArray::try_new_with_length(
             self.fields.clone(),
             vec![
-                Arc::new(UInt16Array::new(
-                    ScalarBuffer::from(std::mem::take(&mut self.first)),
-                    nulls.clone(),
-                )),
-                Arc::new(UInt16Array::new(
-                    ScalarBuffer::from(std::mem::take(&mut self.second)),
-                    nulls.clone(),
-                )),
-                Arc::new(UInt8Array::new(
-                    ScalarBuffer::from(std::mem::take(&mut self.ploidy)),
-                    nulls.clone(),
-                )),
-                Arc::new(BooleanArray::new(self.phased.finish(), nulls.clone())),
+                Arc::new(UInt16Array::new(ScalarBuffer::from(first), nulls.clone())),
+                Arc::new(UInt16Array::new(ScalarBuffer::from(second), nulls.clone())),
+                Arc::new(UInt8Array::new(ScalarBuffer::from(ploidies), nulls.clone())),
+                Arc::new(BooleanArray::new(phased.finish(), nulls.clone())),
             ],
             nulls,
-            len,
+            packed.len(),
         )?))
     }
+}
+
+fn validate_packed_call(v: u32) -> Result<()> {
+    match (v >> 1) & 3 {
+        3 => Err("invalid Hail call ploidy".into()),
+        1 => {
+            u16::try_from(v >> 3)?;
+            Ok(())
+        }
+        // The diploid payload is at most 2^29-1, so its triangular
+        // inverse k is at most 32767. Both j and k-j lie in 0..=k;
+        // both phased and unphased alleles therefore fit UInt16.
+        // Ploidy zero intentionally ignores its payload, like call_parts.
+        _ => Ok(()),
+    }
+}
+
+fn call_parts(v: u32) -> Result<(u16, u16, u8, bool)> {
+    let ploidy = ((v >> 1) & 3) as u8;
+    let phased = v & 1 != 0;
+    let allele = (v >> 3) as u64;
+    let (a, b) = match ploidy {
+        0 => (0, 0),
+        1 => (allele, 0),
+        2 if !phased && allele <= 2 => match allele {
+            0 => (0, 0),
+            1 => (0, 1),
+            _ => (1, 1),
+        },
+        2 => {
+            let k = ((8 * allele + 1).isqrt() - 1) / 2;
+            let j = allele - k * (k + 1) / 2;
+            (j, if phased { k - j } else { k })
+        }
+        _ => return Err("invalid Hail call ploidy".into()),
+    };
+    Ok((u16::try_from(a)?, u16::try_from(b)?, ploidy, phased))
 }
 
 // Column builders own values directly. No intermediate row maps, JSON values,
@@ -256,6 +292,67 @@ impl Column {
         o.push(i32::try_from(c.len())?);
         v.append_non_null();
         Ok(())
+    }
+    fn finish_vortex(
+        &mut self,
+        field: &arrow_schema::Field,
+        session: &vortex::session::VortexSession,
+    ) -> Result<vortex::array::ArrayRef> {
+        use vortex::array::IntoArray;
+        use vortex::array::validity::Validity;
+        use vortex::arrow::ArrowSessionExt;
+        fn validity(
+            v: &mut NullBufferBuilder,
+            nullable: bool,
+            session: &vortex::session::VortexSession,
+        ) -> Result<Validity> {
+            Ok(match v.finish() {
+                Some(nulls) => Validity::Array(session.arrow().from_arrow_array(
+                    Arc::new(BooleanArray::new(nulls.inner().clone(), None)),
+                    false,
+                )?),
+                None if nullable => Validity::AllValid,
+                None => Validity::NonNullable,
+            })
+        }
+        Ok(match self {
+            Self::Call(c) => super::packed_call::array(c.take_packed(), field, session)?,
+            Self::Struct(fs, children, valid) => {
+                let n = valid.len();
+                let arrays = children
+                    .iter_mut()
+                    .zip(fs.iter())
+                    .map(|(child, f)| {
+                        if let Self::Skipped(_, len, _) = child {
+                            *len = n;
+                        }
+                        child.finish_vortex(f, session)
+                    })
+                    .collect::<Result<Vec<_>>>()?;
+                vortex::array::arrays::StructArray::try_new_with_dtype(
+                    arrays,
+                    session.arrow().from_arrow_fields(fs)?,
+                    n,
+                    validity(valid, field.is_nullable(), session)?,
+                )?
+                .into_array()
+            }
+            Self::List(element, child, offsets, valid) => {
+                let values = child.finish_vortex(element, session)?;
+                let offsets = Int32Array::new(
+                    ScalarBuffer::from(std::mem::replace(offsets, vec![0])),
+                    None,
+                );
+                let offsets = session.arrow().from_arrow_array(Arc::new(offsets), false)?;
+                vortex::array::arrays::ListArray::try_new(
+                    values,
+                    offsets,
+                    validity(valid, field.is_nullable(), session)?,
+                )?
+                .into_array()
+            }
+            _ => session.arrow().from_arrow_array(self.finish()?, field)?,
+        })
     }
     fn finish(&mut self) -> Result<ArrayRef> {
         Ok(match self {
@@ -535,6 +632,13 @@ struct FieldOp {
     run_output_mask: u8,
 }
 
+#[derive(Clone, Copy)]
+enum StructPostlude {
+    Plain,
+    Locus,
+    EmptyTuple,
+}
+
 /// Compile physical destination mapping once, outside the row loop.
 struct Node {
     e: Encoding,
@@ -545,6 +649,8 @@ struct Node {
     ty: Type,
     children: Vec<Node>,
     optional_count: usize,
+    all_present_mask: Option<u64>,
+    struct_postlude: StructPostlude,
     varint_length: bool,
 }
 impl Node {
@@ -674,6 +780,18 @@ impl Node {
             ty: t.clone(),
             children,
             optional_count,
+            all_present_mask: (optional_count <= 64).then(|| {
+                if optional_count == 64 {
+                    u64::MAX
+                } else {
+                    (1u64 << optional_count) - 1
+                }
+            }),
+            struct_postlude: match t {
+                Type::Locus { .. } => StructPostlude::Locus,
+                Type::Tuple { tuple } if tuple.is_empty() => StructPostlude::EmptyTuple,
+                _ => StructPostlude::Plain,
+            },
             varint_length: e.kind.ends_with('2'),
         }
     }
@@ -892,35 +1010,12 @@ impl Node {
         self.append_call_value(self.integer(input, 32)? as u32, out)
     }
     fn append_call_value(&self, v: u32, out: &mut Column) -> Result<()> {
-        let ploidy = ((v >> 1) & 3) as u8;
-        let phased = v & 1 != 0;
-        let allele = (v >> 3) as u64;
-        let (a, b) = match ploidy {
-            0 => (0, 0),
-            1 => (allele, 0),
-            // Common unphased biallelic calls avoid integer square root
-            // for every GT in dense genotype datasets.
-            2 if !phased && allele <= 2 => match allele {
-                0 => (0, 0),
-                1 => (0, 1),
-                _ => (1, 1),
-            },
-            2 => {
-                let k = ((8 * allele + 1).isqrt() - 1) / 2;
-                let j = allele - k * (k + 1) / 2;
-                (j, if phased { k - j } else { k })
-            }
-            _ => return Err("invalid Hail call ploidy".into()),
-        };
-        let first = u16::try_from(a)?;
-        let second = u16::try_from(b)?;
         if let Column::Call(c) = out {
-            c.first.push(first);
-            c.second.push(second);
-            c.ploidy.push(ploidy);
-            c.phased.append(phased);
+            validate_packed_call(v)?;
+            c.packed.push(v);
             c.valid.append_non_null();
         } else {
+            let (first, second, ploidy, phased) = call_parts(v)?;
             // Generic Arrow builders are retained for record helpers and
             // differential tests, without guessing Call identity from names.
             let c = out.children();
@@ -933,7 +1028,7 @@ impl Node {
         Ok(())
     }
     #[inline(never)]
-    fn try_append_varint_run(
+    fn try_append_varint_run<const ALL_PRESENT: bool>(
         &self,
         start: usize,
         input: &mut Input,
@@ -945,14 +1040,14 @@ impl Node {
         if first.run_requires_leb && !input.leb {
             return Ok(false);
         }
-        if first.run_wide_missingness {
+        if !ALL_PRESENT && first.run_wide_missingness {
             if self.fields[start..start + count]
                 .iter()
                 .any(|op| op.missing_bit != usize::MAX && absent(bits, op.missing_bit))
             {
                 return Ok(false);
             }
-        } else if bits.low_word() & first.run_missing_mask != 0 {
+        } else if !ALL_PRESENT && bits.low_word() & first.run_missing_mask != 0 {
             return Ok(false);
         }
         let Some(values) = input.try_small_varints(count)? else {
@@ -980,17 +1075,58 @@ impl Node {
         let Column::Struct(_, outputs, validity) = out else {
             unreachable!("compiled struct output")
         };
+        if self
+            .all_present_mask
+            .is_some_and(|mask| bits.low_word() & mask == 0)
+        {
+            self.append_struct_fields::<true>(input, outputs, &bits)?;
+        } else {
+            self.append_struct_fields::<false>(input, outputs, &bits)?;
+        }
+        if matches!(self.struct_postlude, StructPostlude::Locus) {
+            let Type::Locus { locus } = &self.ty else {
+                unreachable!()
+            };
+            let c = &mut *outputs;
+            let builder = c[1].string();
+            let bytes = builder.values_slice();
+            let offsets = builder.offsets_slice();
+            let n = offsets.len();
+            let contig =
+                std::str::from_utf8(&bytes[offsets[n - 2] as usize..offsets[n - 1] as usize])?;
+            let ordinal = locus.ordinal(contig).ok_or("invalid Hail locus contig")?;
+            c[0].int32().append_value(ordinal);
+        }
+        if matches!(self.struct_postlude, StructPostlude::EmptyTuple) {
+            outputs[0].bool_builder().append_value(true)
+        }
+        validity.append_non_null();
+
+        Ok(())
+    }
+
+    // Keep the two small missingness variants outlined; do not duplicate the
+    // struct decoder into every primitive/container call site.
+    #[inline(never)]
+    fn append_struct_fields<const ALL_PRESENT: bool>(
+        &self,
+        input: &mut Input,
+        outputs: &mut [Column],
+        bits: &Bitmap,
+    ) -> Result<()> {
         let mut i = 0;
         while i < self.fields.len() {
             let op = &self.fields[i];
-            if op.varint_run != 0 && self.try_append_varint_run(i, input, outputs, &bits)? {
+            if op.varint_run != 0
+                && self.try_append_varint_run::<ALL_PRESENT>(i, input, outputs, bits)?
+            {
                 i += op.varint_run as usize;
                 continue;
             }
             let c = &self.children[i];
             i += 1;
             let bit = op.missing_bit;
-            let missing = bit != usize::MAX && absent(&bits, bit);
+            let missing = !ALL_PRESENT && bit != usize::MAX && absent(bits, bit);
             if !op.project {
                 if !missing {
                     c.skip(input)?
@@ -1008,22 +1144,6 @@ impl Node {
                 c.append(input, target)?
             }
         }
-        if let Type::Locus { locus } = &self.ty {
-            let c = &mut *outputs;
-            let builder = c[1].string();
-            let bytes = builder.values_slice();
-            let offsets = builder.offsets_slice();
-            let n = offsets.len();
-            let contig =
-                std::str::from_utf8(&bytes[offsets[n - 2] as usize..offsets[n - 1] as usize])?;
-            let ordinal = locus.ordinal(contig).ok_or("invalid Hail locus contig")?;
-            c[0].int32().append_value(ordinal);
-        }
-        if matches!(&self.ty,Type::Tuple{tuple}if tuple.is_empty()) {
-            outputs[0].bool_builder().append_value(true)
-        }
-        validity.append_non_null();
-
         Ok(())
     }
 
@@ -1074,6 +1194,24 @@ impl Node {
             }
             Type::Primitive(P::Bool) => {
                 primitive_elements!(child.bool_builder(), boolean(input)?)
+            }
+            Type::Struct { .. }
+            | Type::Tuple { .. }
+            | Type::Locus { .. }
+            | Type::Interval { .. } => {
+                if c.e.required {
+                    for _ in 0..n {
+                        c.append_struct(input, child)?;
+                    }
+                } else {
+                    for i in 0..n {
+                        if absent(&bits, i) {
+                            child.null()?;
+                        } else {
+                            c.append_struct(input, child)?;
+                        }
+                    }
+                }
             }
             _ => {
                 for i in 0..n {
@@ -1211,7 +1349,58 @@ impl PartReader {
         self.read_batch(size)
             .map_err(|e| format!("cannot read Hail partition {}: {e}", self.path.display()).into())
     }
+    pub fn next_vortex_batch(
+        &mut self,
+        size: usize,
+        session: &vortex::session::VortexSession,
+    ) -> Result<Option<vortex::array::ArrayRef>> {
+        self.read_vortex_batch(size, session)
+            .map_err(|e| format!("cannot read Hail partition {}: {e}", self.path.display()).into())
+    }
+    fn read_vortex_batch(
+        &mut self,
+        size: usize,
+        session: &vortex::session::VortexSession,
+    ) -> Result<Option<vortex::array::ArrayRef>> {
+        use vortex::{
+            array::{IntoArray, validity::Validity},
+            arrow::ArrowSessionExt,
+        };
+        let Some((n, mut columns)) = self.read_columns(size)? else {
+            return Ok(None);
+        };
+        let arrays = columns
+            .iter_mut()
+            .zip(self.schema.fields())
+            .map(|(column, field)| column.finish_vortex(field, session))
+            .collect::<Result<Vec<_>>>()?;
+        self.columns = Some(columns);
+        Ok(Some(
+            vortex::array::arrays::StructArray::try_new_with_dtype(
+                arrays,
+                session.arrow().from_arrow_fields(self.schema.fields())?,
+                n,
+                Validity::NonNullable,
+            )?
+            .into_array(),
+        ))
+    }
     fn read_batch(&mut self, size: usize) -> Result<Option<RecordBatch>> {
+        let Some((n, mut columns)) = self.read_columns(size)? else {
+            return Ok(None);
+        };
+        let arrays = columns
+            .iter_mut()
+            .map(Column::finish)
+            .collect::<Result<_>>()?;
+        self.columns = Some(columns);
+        Ok(Some(RecordBatch::try_new_with_options(
+            self.schema.clone(),
+            arrays,
+            &RecordBatchOptions::new().with_row_count(Some(n)),
+        )?))
+    }
+    fn read_columns(&mut self, size: usize) -> Result<Option<(usize, Vec<Column>)>> {
         if self.ended {
             return Ok(None);
         }
@@ -1277,22 +1466,100 @@ impl PartReader {
         if n == 0 {
             return Ok(None);
         }
-        let arrays = columns
-            .iter_mut()
-            .map(Column::finish)
-            .collect::<Result<_>>()?;
-        self.columns = Some(columns);
-        Ok(Some(RecordBatch::try_new_with_options(
-            self.schema.clone(),
-            arrays,
-            &RecordBatchOptions::new().with_row_count(Some(n)),
-        )?))
+        Ok(Some((n, columns)))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dense_struct_array_matches_missing_aware_loop_with_projection() -> Result<()> {
+        let path =
+            std::env::temp_dir().join(format!("vail-dense-struct-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            for required_fields in [false, true] {
+                for required_elements in [false, true] {
+                    for projection in [None, Some("x"), Some("flag")] {
+                        let fields = vec![
+                            ("x".into(), Type::Primitive(P::Int32)),
+                            ("y".into(), Type::Primitive(P::Int64)),
+                            ("flag".into(), Type::Primitive(P::Bool)),
+                        ];
+                        let ty = Type::Array {
+                            array: Box::new(Type::Struct { r#struct: fields }),
+                        };
+                        let scalar = |kind: &str| Encoding {
+                            kind: kind.into(),
+                            required: required_fields,
+                            fields: vec![],
+                            rank: 0,
+                        };
+                        let encoding = Encoding {
+                            kind: "EArray2".into(),
+                            required: true,
+                            fields: vec![(
+                                "element".into(),
+                                Encoding {
+                                    kind: "EBaseStruct".into(),
+                                    required: required_elements,
+                                    fields: vec![
+                                        ("y".into(), scalar("EInt64")),
+                                        ("x".into(), scalar("EInt32")),
+                                        ("flag".into(), scalar("EBoolean")),
+                                    ],
+                                    rank: 0,
+                                },
+                            )],
+                            rank: 0,
+                        };
+                        let mut fast = Node::new(&encoding, &ty);
+                        if let Some(field) = projection {
+                            fast.demand(&[vec![field.into()]]);
+                        }
+                        let mut slow = Node::new(&encoding, &ty);
+                        if let Some(field) = projection {
+                            slow.demand(&[vec![field.into()]]);
+                        }
+                        slow.children[0].all_present_mask = None;
+                        let mut bytes = vec![if required_elements { 3 } else { 4 }];
+                        if !required_elements {
+                            bytes.push(8);
+                        }
+                        for row in 0..3 {
+                            let missing = if required_fields { 0 } else { [0, 2, 4][row] };
+                            // High padding bits must not reject the dense path.
+                            if !required_fields {
+                                bytes.push(0xf8 | missing);
+                            }
+                            bytes.push(13 + row as u8);
+                            if missing & 2 == 0 {
+                                bytes.push(7 + row as u8);
+                            }
+                            if missing & 4 == 0 {
+                                bytes.push(1);
+                            }
+                        }
+                        std::fs::write(&path, bytes)?;
+                        let spec = serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}});
+                        let mut expected = Column::projected(&slow, &ty.to_arrow()?);
+                        let mut actual = Column::projected(&fast, &ty.to_arrow()?);
+                        slow.append(&mut Input::open(&path, &spec)?, &mut expected)?;
+                        fast.append(&mut Input::open(&path, &spec)?, &mut actual)?;
+                        assert_eq!(
+                            expected.finish()?.as_ref(),
+                            actual.finish()?.as_ref(),
+                            "required fields {required_fields}, elements {required_elements}, projection {projection:?}"
+                        );
+                    }
+                }
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
 
     #[test]
     fn adjacent_varint_run_masks_handle_high_and_wide_missingness() -> Result<()> {
@@ -1509,6 +1776,156 @@ mod tests {
         })();
         let _ = std::fs::remove_file(path);
         result
+    }
+
+    #[test]
+    fn packed_calls_nested_vortex_export_matches_arrow_across_batches() -> Result<()> {
+        use vortex::{VortexSessionDefault, arrow::ArrowSessionExt};
+        let session = vortex::session::VortexSession::default();
+        let call_type = Type::Primitive(P::Call).to_arrow()?;
+        let DataType::Struct(call_fields) = &call_type else {
+            unreachable!()
+        };
+        let element = Arc::new(arrow_schema::Field::new("item", call_type.clone(), true));
+        let lists = Arc::new(arrow_schema::Field::new(
+            "calls",
+            DataType::List(element.clone()),
+            true,
+        ));
+        let fields: Fields = vec![lists.clone()].into();
+        let field = arrow_schema::Field::new("root", DataType::Struct(fields.clone()), true);
+        let make = || {
+            Column::Struct(
+                fields.clone(),
+                vec![Column::List(
+                    element.clone(),
+                    Box::new(Column::Call(Box::new(CallColumn::new(call_fields.clone())))),
+                    vec![0],
+                    NullBufferBuilder::new(8),
+                )],
+                NullBufferBuilder::new(8),
+            )
+        };
+        let node = Node::new(
+            &Encoding {
+                kind: "EInt32".into(),
+                required: false,
+                fields: vec![],
+                rank: 0,
+            },
+            &Type::Primitive(P::Call),
+        );
+        let mut arrow = make();
+        let mut vortex = make();
+        for values in [
+            vec![0, 4, 5, 12, 13, 20, 21, u32::MAX - 2],
+            vec![2, 65535 << 3 | 2],
+        ] {
+            for column in [&mut arrow, &mut vortex] {
+                let list = &mut column.children()[0];
+                let Column::List(_, child, _, _) = list else {
+                    unreachable!()
+                };
+                for value in &values {
+                    node.append_call_value(*value, child)?;
+                    child.null()?;
+                }
+                list.end_list()?;
+                column.valid(true);
+                column.children()[0].null()?;
+                column.valid(true);
+                column.null()?;
+            }
+            let expected = arrow.finish()?;
+            let packed = vortex.finish_vortex(&field, &session)?;
+            assert_eq!(packed.dtype(), &session.arrow().from_arrow_field(&field)?);
+            let actual = super::super::packed_call::export(
+                packed,
+                Some(&field),
+                &mut vortex::array::ExecutionCtx::new(session.clone()),
+            )?;
+            assert_eq!(expected.as_ref(), actual.as_ref());
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn packed_call_validation_matches_expansion_at_boundaries() {
+        let payloads = [
+            0u32,
+            1,
+            2,
+            3,
+            65534,
+            65535,
+            65536,
+            65537,
+            (1 << 28) - 1,
+            (1 << 29) - 2,
+            (1 << 29) - 1,
+        ];
+        for payload in payloads {
+            for tag in 0..8 {
+                let value = (payload << 3) | tag;
+                assert_eq!(
+                    validate_packed_call(value).is_ok(),
+                    call_parts(value).is_ok(),
+                    "{value}"
+                );
+            }
+        }
+        for value in [
+            u32::MAX,
+            i32::MIN as u32,
+            (-8i32) as u32,
+            (-6i32) as u32,
+            (-4i32) as u32,
+        ] {
+            assert_eq!(
+                validate_packed_call(value).is_ok(),
+                call_parts(value).is_ok(),
+                "{value}"
+            );
+        }
+        // Deterministic samples include the entire UInt32 domain, both phases,
+        // all ploidies, and the original signed-wire-to-UInt32 interpretation.
+        let mut value = 0u32;
+        for _ in 0..16384 {
+            value = value.wrapping_mul(1664525).wrapping_add(1013904223);
+            assert_eq!(
+                validate_packed_call(value).is_ok(),
+                call_parts(value).is_ok(),
+                "{value}"
+            );
+        }
+    }
+
+    #[test]
+    fn packed_calls_validate_before_materialization() -> Result<()> {
+        let ty = Type::Primitive(P::Call);
+        let node = Node::new(
+            &Encoding {
+                kind: "EInt32".into(),
+                required: false,
+                fields: vec![],
+                rank: 0,
+            },
+            &ty,
+        );
+        let mut column = Column::projected(&node, &ty.to_arrow()?);
+        // Invalid ploidy, and a haploid allele exceeding the public UInt16.
+        for packed in [6, (65536 << 3) | 2] {
+            assert!(node.append_call_value(packed, &mut column).is_err());
+            assert_eq!(column.len(), 0);
+        }
+        node.append_call_value(12, &mut column)?;
+        column.null()?;
+        let Column::Call(call) = &column else {
+            panic!("expected packed Call builder")
+        };
+        assert_eq!(call.packed, vec![12, 0]);
+        assert_eq!(call.valid.len(), 2);
+        Ok(())
     }
 
     #[test]
@@ -2065,3 +2482,7 @@ mod tests {
         result
     }
 }
+
+#[cfg(test)]
+#[path = "decode_bench.rs"]
+mod decode_bench;
