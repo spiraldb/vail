@@ -1348,7 +1348,17 @@ pub(crate) fn lower_logical_total(
         } else {
             child
         };
-        let mut child = crate::logical_globals::bind_globals(child, table, context)?;
+        // Bind only globals read by this aggregate. The independent-consumer
+        // boundary retains its input schema, so an unused singleton list joined
+        // here would otherwise be copied onto every row before pruning.
+        // Fold packing still uses its existing positional globals contract.
+        let mut needs_globals = false;
+        expression.visit_unique(&mut |node| {
+            needs_globals |= matches!(node, Expr::Global { .. } | Expr::AggregateFold { .. });
+        });
+        let mut child = if needs_globals {
+            crate::logical_globals::bind_globals(child, table, context)?
+        } else { child };
         let (bound_child, indices) =
             crate::logical_globals::bind_external(child, bindings, context)?;
         child = bound_child;
