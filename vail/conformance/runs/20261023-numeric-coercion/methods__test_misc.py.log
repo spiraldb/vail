@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________________ Tests.test_summarize_variants _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-gorkggei/upstream_hail/methods/test_misc.py:133: in test_summarize_variants
+    r = hl.summarize_variants(mt, show=False)
+        ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'summarize_variants'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-gorkggei/upstream_hail/methods/test_misc.py::Tests::test_summarize_variants
+1 failed, 18 deselected in 0.27s

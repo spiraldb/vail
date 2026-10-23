@@ -148,9 +148,9 @@ def _infer_type(values):
     present = [v for v in values if v is not None]
     if not present:
         raise ValueError("cannot infer a type from only missing values; provide schema")
-    result = infer_type(present[0])
+    result = infer_type(present[0], _mapping_as_struct=True)
     for value in present[1:]:
-        inferred = infer_type(value)
+        inferred = infer_type(value, _mapping_as_struct=True)
         if inferred != result:
             from .types import unify_types
 

@@ -640,7 +640,10 @@ def type_from_wire(value):
     raise ValueError(f"invalid Vail type encoding: {value!r}")
 
 
-def infer_type(value):
+def infer_type(value, *, _mapping_as_struct=False):
+    from .expressions import Expression
+    if isinstance(value, Expression):
+        return value.dtype
     from .reference_genome import Locus
     if isinstance(value, Locus):
         return tlocus(value.reference_genome)
@@ -668,10 +671,25 @@ def infer_type(value):
         return tfloat64
     if isinstance(value, str):
         return tstr
-    if isinstance(value, Mapping):
+    if isinstance(value, Struct) or _mapping_as_struct and isinstance(value, Mapping):
         if any(field is None for field in value.values()):
             raise ValueError("cannot infer a struct field type from a missing value; provide a type")
-        return tstruct(**{name: infer_type(field) for name, field in value.items()})
+        return tstruct(**{name: infer_type(field, _mapping_as_struct=_mapping_as_struct)
+                          for name, field in value.items()})
+    if isinstance(value, Mapping):
+        def infer_items(items, label):
+            result = None
+            for item in items:
+                if item is None:
+                    continue
+                current = infer_type(item)
+                result = current if result is None else unify_types(result, current)
+                if result is None:
+                    raise TypeError(f"dictionary {label} have incompatible types")
+            if result is None:
+                raise ValueError(f"cannot infer dictionary {label} from empty or missing values; provide a type")
+            return result
+        return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
     if isinstance(value, (list, set, frozenset)):
         kind = 'array' if isinstance(value, list) else 'set'
         if not value:
@@ -680,7 +698,7 @@ def infer_type(value):
         for item in value:
             if item is None:
                 continue
-            inferred = infer_type(item)
+            inferred = infer_type(item, _mapping_as_struct=_mapping_as_struct)
             element = inferred if element is None else unify_types(element, inferred)
             if element is None:
                 raise TypeError(f"{kind} elements have incompatible types")
@@ -688,7 +706,7 @@ def infer_type(value):
             raise ValueError(f"cannot infer an {kind} element type from only missing values")
         return tarray(element) if kind == 'array' else tset(element)
     if isinstance(value, tuple):
-        return ttuple(*(infer_type(v) for v in value))
+        return ttuple(*(infer_type(v, _mapping_as_struct=_mapping_as_struct) for v in value))
     raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
 
 

@@ -17,7 +17,9 @@ def test_globals_are_a_typed_singleton_on_empty_tables():
     assert t.globals.dtype['wide'] == hl.tint64
     assert hl.eval(t.select_globals().globals) == hl.Struct()
     assert hl.eval(hl.struct()) == hl.Struct()
-    assert hl.eval(hl.literal({})) == hl.Struct()
+    assert hl.eval(hl.literal(hl.Struct())) == hl.Struct()
+    with pytest.raises(ValueError, match="cannot infer dictionary"):
+        hl.literal({})
     assert hl.eval(hl.literal(3) + 1) == 4
 
 

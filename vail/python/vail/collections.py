@@ -2,6 +2,7 @@
 
 from .expressions import IR_NODE_TYPES
 import builtins
+from collections.abc import Mapping
 import uuid
 
 from .expressions import (Expression, _merge_sources, as_expr, if_else, is_missing, coalesce,
@@ -152,11 +153,12 @@ def empty_array(element_type):
 
 
 def dict_(collection):
-    if isinstance(collection, IR_NODE_TYPES):
-        from .expressions import array
-        key_type = array(list(collection.keys())).dtype.element_type
-        value_type = array(list(collection.values())).dtype.element_type
-        if not builtins.any(isinstance(item, Expression) for pair in collection.items() for item in pair):
+    if isinstance(collection, Mapping) and not isinstance(collection, Expression):
+        from .expressions import array, _contains_expression
+        from .types import infer_type
+        inferred = infer_type(builtins.dict(collection))
+        key_type, value_type = inferred.key_type, inferred.value_type
+        if not _contains_expression(collection):
             _ensure_key_supported(key_type)
             return literal(collection, tdict(key_type, value_type))
         entries = array([struct(key=_coerce(key, key_type), value=_coerce(value, value_type))
@@ -244,9 +246,13 @@ def length(value):
 def _coerce(value, dtype):
     value = missing(dtype) if value is None else as_expr(value)
     if value.dtype != dtype:
-        from .expressions import cast
+        from .expressions import cast, _cast_compatible
+        from .types import unify_types
         numeric = (tbool, tint32, tint64, tfloat32, tfloat64)
-        if dtype not in numeric or value.dtype not in numeric or numeric.index(value.dtype) > numeric.index(dtype):
+        primitive_promotion = (dtype in numeric and value.dtype in numeric
+                               and numeric.index(value.dtype) <= numeric.index(dtype))
+        nested_promotion = unify_types(value.dtype, dtype) == dtype and _cast_compatible(value.dtype, dtype)
+        if not primitive_promotion and not nested_promotion:
             raise TypeError(f"expected {dtype}, found {value.dtype}")
         value = cast(value, dtype)
     return value

@@ -98,8 +98,11 @@ def as_expr(value):
     from .streams import StreamExpression
     if isinstance(value, StreamExpression):
         return value.to_array()
-    if isinstance(value, Mapping):
+    if isinstance(value, Struct):
         return StructExpression(value)
+    if isinstance(value, Mapping):
+        from .collections import dict_
+        return dict_(value)
     if isinstance(value, list):
         return array(value)
     if isinstance(value, tuple):
@@ -323,11 +326,9 @@ class Expression:
                 left = _native_equality_value(self)
                 right = _native_equality_value(other)
                 return left._compare(right, operator)
-        if isinstance(self.dtype, tarray) and isinstance(other.dtype, tarray) and self.dtype != other.dtype:
-            numeric = (tint32, tint64, tfloat32, tfloat64)
-            if self.dtype.element_type in numeric and other.dtype.element_type in numeric:
-                common = unify_types(self.dtype.element_type, other.dtype.element_type)
-                return self.map(lambda x: cast(x, common))._compare(other.map(lambda x: cast(x, common)), operator)
+        common = _comparison_type(self.dtype, other.dtype)
+        if common is not None and self.dtype != other.dtype:
+            return cast(self, common)._compare(cast(other, common), operator)
         _check_comparable(self.dtype, other.dtype, operator)
         return Expression(
             tbool,
@@ -1090,6 +1091,16 @@ def column(source, name, dtype):
     return Field(source, name, dtype)
 
 
+def _contains_expression(value):
+    if isinstance(value, Expression):
+        return True
+    if isinstance(value, Mapping):
+        return any(_contains_expression(k) or _contains_expression(v) for k, v in value.items())
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(_contains_expression(v) for v in value)
+    return False
+
+
 def literal(value, dtype=None):
     if dtype is None:
         dtype = infer_type(value)
@@ -1098,6 +1109,35 @@ def literal(value, dtype=None):
         dtype = parse_dtype(dtype)
     elif not _valid_type(dtype):
         raise TypeError(f"literal dtype must be a Vail type, found {dtype!r}")
+    def capture(item, expected):
+        if isinstance(item, Expression):
+            if item.dtype != expected:
+                raise TypeError(f"literal expected {expected}, found {item.dtype}")
+            if item._indices.axes:
+                raise ExpressionException("literal can only accept scalar or global expression arguments")
+            if item._lexical_types:
+                raise ValueError("literal cannot be used with expressions that depend on other expressions (free variables)")
+            from . import eval
+            return eval(item)
+        if item is None:
+            return None
+        if isinstance(expected, tstruct):
+            return Struct(**{name: capture(item[name], ty) for name, ty in expected.items()})
+        if isinstance(expected, ttuple):
+            if len(item) != len(expected.types):
+                raise TypeError(f"literal expected {len(expected.types)} tuple elements, found {len(item)}")
+            return tuple(capture(v, ty) for v, ty in zip(item, expected.types))
+        if isinstance(expected, tarray):
+            return [capture(v, expected.element_type) for v in item]
+        if isinstance(expected, tset):
+            return {capture(v, expected.element_type) for v in item}
+        if isinstance(expected, tdict):
+            return {capture(k, expected.key_type): capture(v, expected.value_type) for k, v in item.items()}
+        return item
+
+    # Capture expression leaves once at literal construction, never per row.
+    if _contains_expression(value):
+        value = capture(value, dtype)
     native_type = type_to_wire(dtype)
     if value is not None and isinstance(dtype, tndarray):
         import numpy as np
@@ -1418,7 +1458,9 @@ def _numeric_result_type(left, right, operator):
         return tfloat64
     _require_numeric(left, "arithmetic")
     _require_numeric(right, "arithmetic")
-    result = unify_types(left, right)
+    # Arithmetic follows Hail numeric coercion, while schema unions retain
+    # their existing lossless int64/float32 -> float64 policy.
+    result = tfloat32 if {left, right} == {tint64, tfloat32} else unify_types(left, right)
     if result is None:
         raise TypeError(f"incompatible arithmetic types: {left} and {right}")
     if operator == "div":
@@ -1439,6 +1481,11 @@ def _array_arithmetic(left, right, operator):
     element_type = _numeric_result_type(left_type, right_type, operator)
 
     if left_array and right_array:
+        # Zip requires equal element types. Cast whole arrays with Arrow kernels
+        # before building the element callback; preserve parent/child missingness.
+        operand_type = _numeric_result_type(left_type, right_type, "add")
+        left = cast(left, tarray(operand_type))
+        right = cast(right, tarray(operand_type))
         from .collection_functions import zip
         result_type = tarray(element_type)
         error = Expression(
@@ -1473,6 +1520,26 @@ def _array_arithmetic(left, right, operator):
         bind(lambda scalar: mapped(array, scalar), scalar_expr),
         literal([], tarray(element_type)),
     ), array_expr)
+
+
+def _comparison_type(left, right):
+    """Promote numeric leaves while preserving composite shape and field order."""
+    if left == right:
+        return left
+    numeric = (tbool, tint32, tint64, tfloat32, tfloat64)
+    if left in numeric and right in numeric:
+        return _numeric_result_type(tint32 if left == tbool else left,
+                                    tint32 if right == tbool else right, "add")
+    if isinstance(left, tarray) and isinstance(right, tarray):
+        element = _comparison_type(left.element_type, right.element_type)
+        return None if element is None else tarray(element)
+    if isinstance(left, ttuple) and isinstance(right, ttuple) and len(left.types) == len(right.types):
+        elements = [_comparison_type(a, b) for a, b in zip(left.types, right.types)]
+        return None if any(t is None for t in elements) else ttuple(*elements)
+    if isinstance(left, tstruct) and isinstance(right, tstruct) and list(left) == list(right):
+        fields = {name: _comparison_type(left[name], right[name]) for name in left}
+        return None if any(t is None for t in fields.values()) else tstruct(**fields)
+    return None
 
 
 def _check_comparable(left, right, operator):
