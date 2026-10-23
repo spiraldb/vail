@@ -1,7 +1,7 @@
 //! Lift a DataFusion aggregate over array coordinates without unnesting rows.
 //! Arithmetic, null handling, partial states and merges remain owned by the
-//! underlying aggregate. A native GroupsAccumulator processes all coordinates
-//! in one batch; other UDAFs receive one Arrow batch per coordinate.
+//! underlying aggregate. SUM uses reusable typed Arrow vectors; other native
+//! reducers use GroupsAccumulator or one Arrow batch per coordinate.
 use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{

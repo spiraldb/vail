@@ -612,7 +612,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             dtype: self.dtype.clone(),
             body_dtype: self.body_dtype.clone(),
             preserve_cell: self.preserve_cell,
-            scalar_rows: self.scalar_rows,
+            scalar_rows: self.scalar_rows && children[4].as_ref() == self.body.as_ref(),
         }))
     }
 
