@@ -1626,12 +1626,8 @@ class MatrixTable:
                 "__vail_entries_row_key_" + uuid4().hex
                 for _ in self._mir.row_key
             )
-            # Persisted row index columns are exactly these row-key values.
-            # Direct aliases preserve their physical ordering equivalence;
-            # opaque nested-field kernels otherwise hide that proof from DF.
-            indexed_keys = dict(zip(self._mir.row_key, self._mir.row_index_keys))
             base = base.annotate(**{
-                alias: (base[indexed_keys[name]] if name in indexed_keys else base[_ROW][name])
+                alias: base[_ROW][name]
                 for alias, name in zip(aliases, self._mir.row_key)
             })
             if self._mir.column_ordering == self._mir.col_key:
