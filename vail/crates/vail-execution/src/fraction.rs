@@ -49,6 +49,13 @@ fn count_inputs(values: &[ArrayRef]) -> Result<(ArrayRef, ArrayRef)> {
     Ok((denominator, numerator))
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct FractionIdentity;
+
+pub(crate) fn coordinate_fraction(udf: &AggregateUDF) -> bool {
+    crate::kernel_identity::aggregate_key::<FractionIdentity>(udf).is_some()
+}
+
 pub(crate) fn udf(
     input: Option<&DataType>,
 ) -> std::result::Result<Arc<AggregateUDF>, crate::expressions::ExprError> {
@@ -75,7 +82,7 @@ pub(crate) fn udf(
     );
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         "fraction",
-        ("fraction".to_owned(), DataType::Boolean, DataType::Float64),
+        FractionIdentity,
         vec![DataType::Boolean],
         DataType::Float64,
         vec![DataType::Int64, DataType::Int64],
