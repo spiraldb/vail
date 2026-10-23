@@ -1,0 +1,144 @@
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-storage v0.1.0 (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/crates/vail-storage)
+warning: unused imports: `ListArray` and `StructArray`
+ --> crates/vail-storage/src/legacy/matrix_layout.rs:5:26
+  |
+5 | use arrow_array::{Array, ListArray, StructArray, UInt64Array};
+  |                          ^^^^^^^^^  ^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Array`
+ --> crates/vail-storage/src/legacy/matrix_layout.rs:5:19
+  |
+5 | use arrow_array::{Array, ListArray, StructArray, UInt64Array};
+  |                   ^^^^^
+
+warning: `vail-storage` (lib) generated 2 warnings (run `cargo fix --lib -p vail-storage` to apply 1 suggestion)
+warning: unused import: `array::builtins::ArrayBuiltins`
+  --> crates/vail-storage/tests/legacy_reader_public.rs:12:36
+   |
+12 | use vortex::{VortexSessionDefault, array::builtins::ArrayBuiltins};
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-storage` (test "legacy_reader_public") generated 1 warning
+    Finished `release` profile [optimized] target(s) in 10.93s
+     Running unittests src/lib.rs (target/release/deps/vail_storage-6ce945266553fee8)
+
+running 31 tests
+test fragment_index::tests::hail_filtered_boundaries_are_candidate_only ... ok
+test fragment_index::tests::same_start_sorts_point_run_before_wider_run_regardless_of_name ... ok
+test fragment_index::tests::hail_indexed_read_boundary_shapes_retain_touching_duplicates ... ok
+test fragment_index::tests::rejects_interior_overlap_duplicate_identity_and_invalid_keys ... ok
+test fragment_index::tests::select_many_preserves_unbounded_and_exclusive_boundary_semantics ... ok
+test fragment_index::tests::select_many_unions_sorted_intervals_with_one_candidate_sweep ... ok
+test legacy::tests::hail_compatibility_corpus_decodes_in_native_columns ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test fragment_index::tests::retired_hail_comparator_is_not_a_total_order_certificate ... ok
+test legacy::tests::indexed_row_slices_match_full_reads ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test fragment_index::tests::missing_position_is_independent_of_descending_value_direction ... ok
+test fragment_index::tests::empty_unbounded_and_reversed_queries ... ok
+test local_table::tests::candidate_partition_ranges_skip_empty_partitions_and_deduplicate ... ok
+test fragment_index::tests::compound_mixed_direction_missing_and_ascii_are_lexicographic ... ok
+test local_table::tests::reference_definitions_are_collected_from_nested_rows_and_globals ... ok
+test storage_key_search_tests::certification_and_range_search_handle_duplicates_nulls_and_batch_edges ... ok
+test storage_key_search_tests::descending_ranges_and_unsorted_rejection ... ok
+test storage_key_search_tests::nested_list_key_uses_arrow_comparator ... ok
+test fragment_index::tests::certification_rejects_unordered_or_mismatched_logical_key_types ... ok
+test storage_key_search_tests::nested_struct_key_uses_arrow_comparator ... ok
+test fragment_index::tests::typed_ipc_bounds_compare_as_arrow_values_and_validate_physical_type ... ok
+test globals::tests::globals_roundtrip_without_checksum_and_ignores_legacy_checksum ... ok
+test legacy::layout::tests::rejected_mask_does_not_open_file ... ok
+test legacy::matrix_layout::tests::list_length_uses_metadata_without_opening_either_file ... ok
+test legacy::matrix_layout::tests::entry_projection_keeps_validity_and_never_opens_rows ... ok
+test legacy::matrix_layout::tests::value_projection_rejects_wrong_entry_array_length ... ok
+test legacy::matrix_layout::tests::bounded_sparse_scan_rebases_entries_across_splits ... ok
+test legacy::matrix_layout::tests::entry_partition_count_errors_keep_legacy_diagnostic ... ok
+test local_table::tests::empty_snapshot_has_one_empty_execution_partition ... ok
+test local_table::tests::file_partitions_discard_empty_writer_partitions ... ok
+test local_table::tests::certification_failure_preserves_published_snapshot_and_cleans_new_output ... ok
+test local_table::tests::file_partitions_split_one_writer_partition_and_prune_unrelated_files ... ok
+
+test result: ok. 29 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/legacy_ndarray_public.rs (target/release/deps/legacy_ndarray_public-628a14ac993a9638)
+
+running 1 test
+test ndarray_public_readers_preserve_types_transposition_missing_shapes_and_batches ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/legacy_reader_public.rs (target/release/deps/legacy_reader_public-e4562b82788c254e)
+
+running 11 tests
+test public_skipped_scalar_framing_is_independent_of_numeric_width ... ok
+test public_wide_missingness_bitmap_and_invalid_boolean ... ok
+test public_nested_struct_lists_reuse_builders_across_rows_and_batch_splits ... ok
+test public_mixed_errors_after_staged_prefix_and_second_outer_row ... ok
+test public_scalar_widths_strings_calls_compression_and_reordered_projection ... ok
+test public_mixed_entries_cover_chunk_caps_missingness_lengths_and_batches ... ok
+test public_vortex_call_slice_memory_and_ipc_preserve_arrow_contract ... ok
+test public_vortex_nested_entry_validity_distinguishes_absent_from_all_null ... ok
+test public_calls_cover_phase_ploidy_allele_width_nulls_and_invalid_words ... ok
+test public_compressed_reader_rejects_truncated_and_invalid_block_frames ... ok
+test public_required_array_and_string_boundaries_and_errors ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

@@ -1,0 +1,23 @@
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib test) generated 1 warning (run `cargo fix --lib -p vail-execution --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 17.79s
+     Running unittests src/lib.rs (target/release/deps/vail_execution-d4a6bdeceff26c64)
+
+running 6 tests
+test expressions::integer_list_sum::tests::captured_public_entry_sum_without_cast_uses_int32_row_semantics ... ok
+test expressions::integer_list_sum::tests::int64_sum_wraps_at_public_expression_boundary ... ok
+test expressions::integer_list_sum::tests::nested_map_cast_sum_returns_wide_values ... ok
+test expressions::integer_list_sum::tests::public_sums_preserve_null_outer_lists_slices_and_nullable_leaves ... ok
+test expressions::integer_list_sum::tests::null_entries_empty_all_null_and_slices_preserve_sum_semantics ... ok
+test expressions::integer_list_sum::tests::computed_map_bodies_preserve_narrowing_and_division_errors ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 58 filtered out; finished in 0.01s
+
