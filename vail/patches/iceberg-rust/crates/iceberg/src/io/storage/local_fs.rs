@@ -22,7 +22,7 @@
 //! scenarios where tests need to read/write files on the local filesystem.
 
 use std::fs;
-use std::io::{Read, Seek, SeekFrom, Write};
+use std::io::{BufWriter, Read, Seek, SeekFrom, Write};
 use std::ops::Range;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -267,13 +267,18 @@ impl FileRead for LocalFsFileRead {
 /// This struct implements `FileWrite` for writing to local files.
 #[derive(Debug)]
 pub struct LocalFsFileWrite {
-    file: Option<fs::File>,
+    file: Option<BufWriter<fs::File>>,
 }
 
 impl LocalFsFileWrite {
     /// Create a new `LocalFsFileWrite` for the given file.
     pub fn new(file: fs::File) -> Self {
-        Self { file: Some(file) }
+        // Vortex emits many small alignment/metadata buffers alongside larger
+        // payloads. Coalesce those writes before crossing into the kernel;
+        // BufWriter forwards payloads larger than its capacity directly.
+        Self {
+            file: Some(BufWriter::with_capacity(1024 * 1024, file)),
+        }
     }
 }
 
@@ -296,12 +301,17 @@ impl FileWrite for LocalFsFileWrite {
     }
 
     async fn close(&mut self) -> Result<()> {
-        let file = self
+        let mut file = self
             .file
             .take()
             .ok_or_else(|| Error::new(ErrorKind::DataInvalid, "File already closed"))?;
 
-        file.sync_all()
+        // Drain the userspace buffer before fsync; returning successfully from
+        // close still means all accepted bytes reached the durable file.
+        file.flush()
+            .map_err(|e| Error::new(ErrorKind::Unexpected, format!("Failed to flush file: {e}")))?;
+        file.get_ref()
+            .sync_all()
             .map_err(|e| Error::new(ErrorKind::Unexpected, format!("Failed to sync file: {e}")))?;
 
         Ok(())
@@ -487,6 +497,52 @@ mod tests {
 
         let content = storage.read(path_str).await.unwrap();
         assert_eq!(content, Bytes::from("Hello, World!"));
+    }
+
+    #[tokio::test]
+    async fn test_local_fs_writer_mixed_chunk_sizes_roundtrip() {
+        let directory = TempDir::new().unwrap();
+        let path = directory.path().join("chunks.bin");
+        let storage = LocalFsStorage::new();
+        let mut writer = storage.writer(path.to_str().unwrap()).await.unwrap();
+        let mut expected = Vec::new();
+        for (index, length) in [0, 7, 1023, 65537, 1_048_577, 3, 8191, 0]
+            .into_iter()
+            .enumerate()
+        {
+            let chunk = (0..length)
+                .map(|i| ((i + index) % 251) as u8)
+                .collect::<Vec<_>>();
+            expected.extend_from_slice(&chunk);
+            writer.write(Bytes::from(chunk)).await.unwrap();
+        }
+        writer.close().await.unwrap();
+        assert_eq!(
+            storage.read(path.to_str().unwrap()).await.unwrap().as_ref(),
+            expected.as_slice()
+        );
+        assert_eq!(
+            storage.metadata(path.to_str().unwrap()).await.unwrap().size,
+            expected.len() as u64
+        );
+    }
+
+    #[tokio::test]
+    async fn test_local_fs_writer_reports_write_or_flush_failure() {
+        let directory = TempDir::new().unwrap();
+        let path = directory.path().join("read-only-handle.bin");
+        fs::write(&path, b"original").unwrap();
+        let mut writer = LocalFsFileWrite::new(fs::File::open(&path).unwrap());
+        // A real read-only descriptor can reject the bytes during write or
+        // when close drains buffered data; neither stage may hide that error.
+        if writer
+            .write(Bytes::from_static(b"replacement"))
+            .await
+            .is_ok()
+        {
+            assert!(writer.close().await.is_err());
+        }
+        assert_eq!(fs::read(&path).unwrap(), b"original");
     }
 
     #[tokio::test]
