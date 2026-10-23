@@ -535,3 +535,119 @@ fn take_coordinate_sparse_partial_states_have_linear_retained_memory() {
     // Four times as many retained values must not require quadratic metadata.
     assert!(retained_size(1024) < retained_size(256) * 6);
 }
+
+#[test]
+fn correlation_coordinate_uses_native_wire_full_uint64_domain_and_snapshots() {
+    let packed = DataType::Struct(
+        vec![
+            Field::new("x", DataType::Float64, true),
+            Field::new("y", DataType::Float64, true),
+        ]
+        .into(),
+    );
+    let native = configured_udaf("corr", Some(&packed), &serde_json::json!({})).unwrap();
+    let udf = coordinate_udaf(native.clone(), packed.clone(), ScalarValue::Float64(None)).unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            DataType::List(Arc::new(Field::new_list_field(packed.clone(), true))),
+            true,
+        )])))
+        .alias("corr")
+        .build()
+        .unwrap();
+    let mut state = aggregate.create_accumulator().unwrap();
+    let count = 1_u64 << 63;
+    let partial = vec![
+        list(Arc::new(UInt64Array::from(vec![count]))),
+        list(Arc::new(Float64Array::from(vec![0.]))),
+        list(Arc::new(Float64Array::from(vec![0.]))),
+        list(Arc::new(Float64Array::from(vec![count as f64 * 2.]))),
+        list(Arc::new(Float64Array::from(vec![count as f64]))),
+        list(Arc::new(Float64Array::from(vec![count as f64 * 4.]))),
+        Arc::new(Int64Array::from(vec![1])) as ArrayRef,
+    ];
+    state.merge_batch(&partial).unwrap();
+    let snapshot = state.evaluate().unwrap();
+    assert_eq!(state.evaluate().unwrap(), snapshot);
+    let ScalarValue::List(output) = &snapshot else {
+        panic!("list")
+    };
+    assert_eq!(
+        output
+            .values()
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .value(0),
+        1.
+    );
+    let published = state.state().unwrap();
+    let native_expr = AggregateExprBuilder::new(native, vec![Arc::new(Column::new("xy", 0))])
+        .schema(Arc::new(Schema::new(vec![Field::new("xy", packed, true)])))
+        .alias("native_corr")
+        .build()
+        .unwrap();
+    let mut native_groups = native_expr.create_groups_accumulator().unwrap();
+    let native_states = published[..6]
+        .iter()
+        .map(|s| {
+            let ScalarValue::List(v) = s else {
+                panic!("list")
+            };
+            v.values().clone()
+        })
+        .collect::<Vec<_>>();
+    native_groups.merge_batch(&native_states, &[0], 1).unwrap();
+    assert_eq!(
+        native_groups
+            .evaluate(datafusion_expr::EmitTo::All)
+            .unwrap()
+            .to_data(),
+        output.values().to_data()
+    );
+    let mut restored = aggregate.create_accumulator().unwrap();
+    restored
+        .merge_batch(
+            &published
+                .iter()
+                .map(|s| s.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>(),
+        )
+        .unwrap();
+    assert_eq!(restored.evaluate().unwrap(), snapshot);
+    let extra = vec![
+        list(Arc::new(UInt64Array::from(vec![1]))),
+        list(Arc::new(Float64Array::from(vec![0.]))),
+        list(Arc::new(Float64Array::from(vec![0.]))),
+        list(Arc::new(Float64Array::from(vec![2.]))),
+        list(Arc::new(Float64Array::from(vec![1.]))),
+        list(Arc::new(Float64Array::from(vec![4.]))),
+        Arc::new(Int64Array::from(vec![1])) as ArrayRef,
+    ];
+    restored.merge_batch(&extra).unwrap();
+    let ScalarValue::List(counts) = &restored.state().unwrap()[0] else {
+        panic!("list")
+    };
+    assert_eq!(
+        counts
+            .values()
+            .as_any()
+            .downcast_ref::<UInt64Array>()
+            .unwrap()
+            .value(0),
+        count + 1
+    );
+    let ScalarValue::List(counts) = &published[0] else {
+        panic!("list")
+    };
+    assert_eq!(
+        counts
+            .values()
+            .as_any()
+            .downcast_ref::<UInt64Array>()
+            .unwrap()
+            .value(0),
+        count
+    );
+}
