@@ -680,7 +680,22 @@ class MatrixTable:
         glob = self.index_globals()
         refs = dict(expr._global_refs) | dict(glob._global_refs)
 
+        rewritten, retained = {}, {}
+
         def rewrite(node):
+            if not isinstance(node, IR_NODE_TYPES):
+                return rewrite_uncached(node)
+            identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+            if identity in rewritten:
+                return rewritten[identity]
+            retained[identity] = node
+            result = rewrite_uncached(node)
+            if isinstance(result, dict):
+                result = NativeExpr(result)
+            rewritten[identity] = result
+            return result
+
+        def rewrite_uncached(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
@@ -733,7 +748,22 @@ class MatrixTable:
         }
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)
 
+        rewritten, retained = {}, {}
+
         def rewrite(node):
+            if not isinstance(node, IR_NODE_TYPES):
+                return rewrite_uncached(node)
+            identity = node.node_identity() if isinstance(node, NativeExpr) else id(node)
+            if identity in rewritten:
+                return rewritten[identity]
+            retained[identity] = node
+            result = rewrite_uncached(node)
+            if isinstance(result, dict):
+                result = NativeExpr(result)
+            rewritten[identity] = result
+            return result
+
+        def rewrite_uncached(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
