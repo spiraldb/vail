@@ -697,66 +697,7 @@ impl Node {
             }
             Wire::Float32 => input.skip(4)?,
             Wire::Float64 => input.skip(8)?,
-            Wire::Array => return self.skip_array(input),
             _ => return self.skip_container(input),
-        }
-        Ok(())
-    }
-    #[inline(always)]
-    fn skip_array(&self, input: &mut Input) -> Result<()> {
-        let n = self.length(input)?;
-        let c = &self.children[0];
-        let bits = if c.e.required {
-            Bitmap::Inline([0; 8])
-        } else {
-            bitmap(input, n)?
-        };
-        let (varint_bits, fixed_width) = match self.array_skip {
-            ArraySkip::Int32 if input.leb => (Some(32), None),
-            ArraySkip::Int32 => (None, Some(4)),
-            ArraySkip::Int64 if input.leb => (Some(64), None),
-            ArraySkip::Int64 => (None, Some(8)),
-            ArraySkip::Varint => (Some(64), None),
-            ArraySkip::Fixed { raw, leb } => (None, if input.leb { leb } else { raw }),
-        };
-        if let Some(bits_per_value) = varint_bits {
-            let count = if c.e.required {
-                n
-            } else {
-                bits.present_count(n)
-            };
-            if count <= 4 {
-                // Short primitive arrays stay on the inlined varint
-                // fast path; longer arrays use the validated bulk skip.
-                for _ in 0..count {
-                    input.varint(bits_per_value)?;
-                }
-            } else {
-                input.skip_varints(count, bits_per_value)?;
-            }
-        } else if let Some(width) = fixed_width {
-            let count = if c.e.required {
-                n
-            } else {
-                bits.present_count(n)
-            };
-            input.skip(
-                count
-                    .checked_mul(width)
-                    .ok_or("Hail array byte length overflow")?,
-            )?
-        } else {
-            self.skip_array_elements(input, n, &bits)?;
-        }
-
-        Ok(())
-    }
-    fn skip_array_elements(&self, input: &mut Input, n: usize, bits: &Bitmap) -> Result<()> {
-        let child = &self.children[0];
-        for i in 0..n {
-            if child.e.required || !absent(bits, i) {
-                child.skip(input)?;
-            }
         }
         Ok(())
     }
@@ -776,7 +717,48 @@ impl Node {
                     }
                 }
             }
-
+            Wire::Array => {
+                let n = self.length(input)?;
+                let c = &self.children[0];
+                let bits = if c.e.required {
+                    Bitmap::Inline([0; 8])
+                } else {
+                    bitmap(input, n)?
+                };
+                let (varint_bits, fixed_width) = match self.array_skip {
+                    ArraySkip::Int32 if input.leb => (Some(32), None),
+                    ArraySkip::Int32 => (None, Some(4)),
+                    ArraySkip::Int64 if input.leb => (Some(64), None),
+                    ArraySkip::Int64 => (None, Some(8)),
+                    ArraySkip::Varint => (Some(64), None),
+                    ArraySkip::Fixed { raw, leb } => (None, if input.leb { leb } else { raw }),
+                };
+                if let Some(bits_per_value) = varint_bits {
+                    let count = if c.e.required {
+                        n
+                    } else {
+                        bits.present_count(n)
+                    };
+                    input.skip_varints(count, bits_per_value)?;
+                } else if let Some(width) = fixed_width {
+                    let count = if c.e.required {
+                        n
+                    } else {
+                        bits.present_count(n)
+                    };
+                    input.skip(
+                        count
+                            .checked_mul(width)
+                            .ok_or("Hail array byte length overflow")?,
+                    )?
+                } else {
+                    for i in 0..n {
+                        if c.e.required || !absent(&bits, i) {
+                            c.skip(input)?
+                        }
+                    }
+                }
+            }
             Wire::Ndarray => {
                 let mut n = 1usize;
                 for _ in 0..self.e.rank {
@@ -917,37 +899,6 @@ impl Node {
         let Column::List(_, child, _, _) = out else {
             unreachable!()
         };
-        if c.e.required
-            && n <= 8
-            && matches!(c.ty, Type::Primitive(P::Int32 | P::Int64))
-            && (matches!(c.wire, Wire::Varint)
-                || (input.leb && matches!(c.wire, Wire::Int32 | Wire::Int64)))
-        {
-            if let Some(bytes) = input.try_small_varints(n)? {
-                // A complete run of one-byte integers can share one buffered
-                // read and one builder validity append. Continued/negative
-                // values and buffer boundaries retain the ordinary decoder.
-                match c.ty {
-                    Type::Primitive(P::Int32) => {
-                        let mut values = [0i32; 8];
-                        for (value, byte) in values.iter_mut().zip(bytes).take(n) {
-                            *value = i32::from(byte);
-                        }
-                        child.int32().append_slice(&values[..n]);
-                    }
-                    Type::Primitive(P::Int64) => {
-                        let mut values = [0i64; 8];
-                        for (value, byte) in values.iter_mut().zip(bytes).take(n) {
-                            *value = i64::from(byte);
-                        }
-                        child.int64().append_slice(&values[..n]);
-                    }
-                    _ => unreachable!("compiled short integer array"),
-                }
-                out.end_list()?;
-                return Ok(());
-            }
-        }
         // Bind primitive builders once per array. AD/PL-style integer
         // arrays avoid recursive Node dispatch and builder selection
         // for every value while retaining element missingness.
@@ -1202,166 +1153,6 @@ impl PartReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn short_integer_arrays_match_scalar_decode_at_boundaries() -> Result<()> {
-        fn leb(mut value: u64, bytes: &mut Vec<u8>) {
-            loop {
-                let byte = (value & 127) as u8;
-                value >>= 7;
-                bytes.push(byte | if value != 0 { 128 } else { 0 });
-                if value == 0 {
-                    break;
-                }
-            }
-        }
-        let path = std::env::temp_dir().join(format!(
-            "vail-short-array-decode-{}.bin",
-            std::process::id()
-        ));
-        let result = (|| -> Result<()> {
-            for n in 0..=9 {
-                for width in [32, 64] {
-                    for explicit_varint in [false, true] {
-                        for prefix in [0usize, 65534] {
-                            for mode in 0..3 {
-                                let child = Encoding {
-                                    kind: if explicit_varint {
-                                        "EVarint"
-                                    } else if width == 32 {
-                                        "EInt32"
-                                    } else {
-                                        "EInt64"
-                                    }
-                                    .into(),
-                                    required: true,
-                                    fields: vec![],
-                                    rank: 0,
-                                };
-                                let encoding = Encoding {
-                                    kind: "EArray2".into(),
-                                    required: true,
-                                    fields: vec![("element".into(), child)],
-                                    rank: 0,
-                                };
-                                let ty = Type::Array {
-                                    array: Box::new(Type::Primitive(if width == 32 {
-                                        P::Int32
-                                    } else {
-                                        P::Int64
-                                    })),
-                                };
-                                let node = Node::new(&encoding, &ty);
-                                let mut values = (0..n).map(|i| i as i64 + 1).collect::<Vec<_>>();
-                                if n != 0 && mode != 0 {
-                                    values[n / 2] = if mode == 1 { 128 } else { -1 };
-                                }
-                                let mut bytes = vec![0; prefix];
-                                leb(n as u64, &mut bytes);
-                                for value in values {
-                                    leb(
-                                        if width == 32 {
-                                            value as u32 as u64
-                                        } else {
-                                            value as u64
-                                        },
-                                        &mut bytes,
-                                    );
-                                }
-                                std::fs::write(&path, &bytes)?;
-                                let spec = if explicit_varint {
-                                    serde_json::json!({"name":"StreamBufferSpec"})
-                                } else {
-                                    serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}})
-                                };
-                                let mut input = Input::open(&path, &spec)?;
-                                input.skip(prefix)?;
-                                let mut specialized = Column::new(&ty.to_arrow()?);
-                                node.append(&mut input, &mut specialized)?;
-                                assert_eq!(input.bytes, bytes.len() as u64);
-                                let mut input = Input::open(&path, &spec)?;
-                                input.skip(prefix)?;
-                                let count = node.length(&mut input)?;
-                                let mut generic = Column::new(&ty.to_arrow()?);
-                                let Column::List(_, child, _, _) = &mut generic else {
-                                    unreachable!()
-                                };
-                                for _ in 0..count {
-                                    node.children[0].append(&mut input, child)?;
-                                }
-                                generic.end_list()?;
-                                assert_eq!(
-                                    specialized.finish()?.as_ref(),
-                                    generic.finish()?.as_ref(),
-                                    "n={n} width={width} varint={explicit_varint} prefix={prefix} mode={mode}"
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
-
-    #[test]
-    fn primitive_array_inline_skip_keeps_short_and_bulk_varint_validation() -> Result<()> {
-        let path =
-            std::env::temp_dir().join(format!("vail-inline-array-skip-{}.bin", std::process::id()));
-        let result = (|| -> Result<()> {
-            for count in [1u8, 2, 4, 5, 8] {
-                for optional in [false, true] {
-                    for width in [32, 64] {
-                        let child = Encoding {
-                            kind: if width == 32 { "EInt32" } else { "EInt64" }.into(),
-                            required: !optional,
-                            fields: vec![],
-                            rank: 0,
-                        };
-                        let encoding = Encoding {
-                            kind: "EArray".into(),
-                            required: true,
-                            fields: vec![("element".into(), child)],
-                            rank: 0,
-                        };
-                        let ty = Type::Array {
-                            array: Box::new(Type::Primitive(if width == 32 {
-                                P::Int32
-                            } else {
-                                P::Int64
-                            })),
-                        };
-                        let node = Node::new(&encoding, &ty);
-                        for truncated in [false, true] {
-                            let mut bytes = vec![count];
-                            if optional {
-                                bytes.push(0);
-                            }
-                            bytes.extend(std::iter::repeat_n(0, count as usize - 1));
-                            if truncated {
-                                bytes.push(128);
-                            } else if width == 32 {
-                                bytes.extend([255, 255, 255, 255, 16]);
-                            } else {
-                                bytes.extend([255, 255, 255, 255, 255, 255, 255, 255, 255, 2]);
-                            }
-                            std::fs::write(&path, bytes)?;
-                            let spec = serde_json::json!({"name":"LEB128BufferSpec", "child":{"name":"StreamBufferSpec"}});
-                            assert!(
-                                node.skip(&mut Input::open(&path, &spec)?).is_err(),
-                                "count={count} optional={optional} width={width} truncated={truncated}"
-                            );
-                        }
-                    }
-                }
-            }
-            Ok(())
-        })();
-        let _ = std::fs::remove_file(path);
-        result
-    }
 
     #[test]
     fn typed_call_builder_matches_generic_schema_and_child_validity() -> Result<()> {
