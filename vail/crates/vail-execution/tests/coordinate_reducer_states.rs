@@ -479,3 +479,59 @@ fn take_coordinate_bounded_snapshots_and_native_partial_state() {
     };
     assert_eq!(native_values.values().to_data(), columns.value(0).to_data());
 }
+
+#[test]
+fn take_coordinate_sparse_partial_states_have_linear_retained_memory() {
+    fn retained_size(width: usize) -> usize {
+        let native =
+            configured_udaf("take", Some(&DataType::Int32), &serde_json::json!({"n":1})).unwrap();
+        let item = Arc::new(Field::new_list_field(DataType::Int32, true));
+        let empty = ScalarValue::List(Arc::new(ListArray::new(
+            item.clone(),
+            OffsetBuffer::from_lengths([0]),
+            Arc::new(arrow_array::Int32Array::from(Vec::<i32>::new())),
+            None,
+        )));
+        let udf = coordinate_udaf(native, DataType::Int32, empty).unwrap();
+        let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new(
+                "xs",
+                DataType::List(item.clone()),
+                true,
+            )])))
+            .alias("take")
+            .build()
+            .unwrap();
+        let mut state = aggregate.create_accumulator().unwrap();
+        for coordinate in 0..width {
+            let lists = ListArray::new(
+                item.clone(),
+                OffsetBuffer::from_lengths((0..width).map(|i| usize::from(i == coordinate))),
+                Arc::new(arrow_array::Int32Array::from(vec![coordinate as i32])),
+                Some(arrow_buffer::NullBuffer::from(
+                    (0..width).map(|i| i == coordinate).collect::<Vec<_>>(),
+                )),
+            );
+            state
+                .merge_batch(&[
+                    list(Arc::new(lists)),
+                    Arc::new(Int64Array::from(vec![width as i64])),
+                ])
+                .unwrap();
+        }
+        let size = state.size();
+        let ScalarValue::List(result) = state.evaluate().unwrap() else {
+            panic!("list")
+        };
+        let lists = result
+            .values()
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        assert_eq!(lists.len(), width);
+        assert_eq!(lists.values().len(), width);
+        size
+    }
+    // Four times as many retained values must not require quadratic metadata.
+    assert!(retained_size(1024) < retained_size(256) * 6);
+}
