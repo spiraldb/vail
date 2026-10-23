@@ -292,6 +292,11 @@ class Call:
         return result
 
     def unphased_diploid_gt_index(self):
+        """Return a Python integer index, without the expression Int32 limit.
+
+        Like Hail Python Call values, localized calls use unbounded arithmetic;
+        this value API does not wrap large indices to the native Int32 type.
+        """
         if self.ploidy != 2 or self.phased:
             from .utils import FatalError
             raise FatalError("'unphased_diploid_gt_index' is only valid for unphased, diploid calls. Found " + repr(self))

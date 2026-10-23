@@ -74,3 +74,38 @@ def test_python_call_display_and_errors():
         hl.Call([-1])
     with pytest.raises(TypeError):
         hl.Call([0]).one_hot_alleles(2.0)
+
+
+@pytest.mark.parametrize('values', [[], [1, 2]])
+def test_array_windows_rejects_nan_radius(values):
+    with pytest.raises(ValueError, match='radius.*nan'):
+        hl.linalg.utils.array_windows(np.array(values, dtype=np.int64), float('nan'))
+
+
+@pytest.mark.parametrize('radius,starts,stops', [
+    (0.0, [0, 1, 2], [1, 2, 3]),
+    (0.75, [0, 1, 2], [1, 2, 3]),
+    (1.0, [0, 0, 1], [2, 3, 3]),
+])
+def test_array_windows_exact_int64_float_radius(radius, starts, stops):
+    actual = hl.linalg.utils.array_windows(np.array([2**53, 2**53 + 1, 2**53 + 2], dtype=np.int64), radius)
+    np.testing.assert_equal(actual[0], starts)
+    np.testing.assert_equal(actual[1], stops)
+
+
+def test_array_windows_integer_domain_and_unbounded_radius():
+    bounds = np.iinfo(np.int64)
+    for value in (bounds.min, bounds.max):
+        a = np.array([value], dtype=np.int64)
+        np.testing.assert_equal(hl.linalg.utils.array_windows(a, 0.0), ([0], [1]))
+        with pytest.raises(ValueError, match='underflow|overflow'):
+            hl.linalg.utils.array_windows(a, 1.0)
+    np.testing.assert_equal(hl.linalg.utils.array_windows(np.array([bounds.min, bounds.max]), float('inf')), ([0, 0], [2, 2]))
+
+
+def test_python_call_genotype_index_uses_unbounded_python_integer():
+    # This localized-value contract matches upstream Hail, rather than wrapping
+    # to the native expression API's Int32 result type.
+    value = hl.Call([65535, 65535]).unphased_diploid_gt_index()
+    assert type(value) is int
+    assert value == 2147516415

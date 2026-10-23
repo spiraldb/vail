@@ -1,4 +1,6 @@
 # Adapted from Hail (MIT); see licenses/HAIL.txt.
+import math
+
 import numpy as np
 
 
@@ -41,6 +43,8 @@ def array_windows(a, radius):
         raise TypeError("array_windows: a must be a numpy.ndarray")
     if not isinstance(radius, (int, float)):
         raise TypeError("array_windows: radius must be an int or float")
+    if isinstance(radius, float) and math.isnan(radius):
+        raise ValueError("array_windows: radius must not be nan")
     if radius < 0:
         raise ValueError(f'array_windows: radius must be non-negative, found {radius}')
     if a.ndim != 1:
@@ -56,6 +60,29 @@ def array_windows(a, radius):
 
     if (not np.all(a[:-1] <= a[1:])) or np.isnan(a[0]):
         raise ValueError("array_windows: 'a' must be in ascending order with no nan elements")
+    if isinstance(radius, float) and math.isinf(radius):
+        return np.zeros(size, dtype=np.int64), np.full(size, size, dtype=np.int64)
+    if np.issubdtype(a.dtype, np.signedinteger):
+        # Integer distances can be compared to floor(radius) exactly. Never
+        # promote int64 coordinates to float64: adjacent values above 2**53
+        # would become indistinguishable. Python integers avoid overflow.
+        distance = math.floor(radius)
+        limits = np.iinfo(a.dtype)
+        if int(a[0]) - distance < limits.min:
+            raise ValueError('array_windows: underflow for a[0] - radius')
+        if int(a[-1]) + distance > limits.max:
+            raise ValueError('array_windows: overflow for a[-1] + radius')
+        starts, stops = np.zeros(size, dtype=np.int64), np.zeros(size, dtype=np.int64)
+        j, k = 0, 0
+        for i in range(size):
+            center = int(a[i])
+            while j < size and center - int(a[j]) > distance:
+                j += 1
+            starts[i] = j
+            while k < size and int(a[k]) - center <= distance:
+                k += 1
+            stops[i] = k
+        return starts, stops
     if a[0] - radius > a[0]:
         raise ValueError('array_windows: underflow for a[0] - radius')
     if a[-1] + radius < a[-1]:
