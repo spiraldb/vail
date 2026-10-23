@@ -30,6 +30,60 @@ use vortex::{
 };
 const STRIDE: usize = 128;
 
+/// Captures wire bytes and sparse offsets together, without a publication rescan.
+#[derive(Default)]
+pub(super) struct EncodedI32Builder {
+    bytes: Vec<u8>,
+    checkpoints: Vec<u64>,
+    count: usize,
+    failed: bool,
+}
+impl EncodedI32Builder {
+    pub(super) fn new() -> Self {
+        Self::default()
+    }
+    pub(super) fn len(&self) -> usize {
+        self.count
+    }
+    pub(super) fn capture(
+        &mut self,
+        input: &mut super::input::Input,
+        count: usize,
+    ) -> super::Result<()> {
+        if self.failed {
+            return Err("previous encoded capture failed".into());
+        }
+        let result = input.capture_indexed_varints(
+            count,
+            &mut self.bytes,
+            &mut self.checkpoints,
+            &mut self.count,
+        );
+        self.failed = result.is_err();
+        result
+    }
+    pub(super) fn finish_vortex(
+        &mut self,
+        field: &Field,
+        session: &VortexSession,
+    ) -> VortexResult<ArrayRef> {
+        vortex_ensure!(!self.failed, "incomplete encoded capture");
+        let bytes = std::mem::take(&mut self.bytes);
+        let mut checkpoints = std::mem::take(&mut self.checkpoints);
+        let count = std::mem::take(&mut self.count);
+        checkpoints.truncate(count.div_ceil(STRIDE));
+        publish(bytes, checkpoints, count, field, session)
+    }
+    pub(super) fn finish_arrow(&mut self) -> VortexResult<ArrowArrayRef> {
+        vortex_ensure!(!self.failed, "incomplete encoded capture");
+        let result = to_arrow(&self.bytes, self.count)?;
+        self.bytes.clear();
+        self.checkpoints.clear();
+        self.count = 0;
+        Ok(result)
+    }
+}
+
 /// Validate framing once and retain one sparse byte-offset checkpoint per 128 values.
 /// Payload width is intentionally not validated; expansion keeps its low 32 bits.
 pub fn array(
@@ -59,6 +113,20 @@ pub fn array(
     vortex_ensure!(
         values == count && beginning == bytes.len(),
         "truncated LEB array framing"
+    );
+    publish(bytes, checkpoints, count, field, session)
+}
+
+fn publish(
+    bytes: Vec<u8>,
+    checkpoints: Vec<u64>,
+    count: usize,
+    field: &Field,
+    session: &VortexSession,
+) -> VortexResult<ArrayRef> {
+    vortex_ensure!(
+        field.data_type() == &DataType::Int32,
+        "LEB array requires Int32 field"
     );
     let raw = session
         .arrow()
@@ -505,6 +573,38 @@ unsafe impl ArrowArray for LazyArrowI32 {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn fused_capture_publishes_and_reuses_batches() {
+        let session = VortexSession::default();
+        let field = Field::new("item", DataType::Int32, true);
+        let bytes = (0..384)
+            .flat_map(|i| {
+                if i % 3 == 0 {
+                    vec![255, 255, 255, 255, 15]
+                } else {
+                    vec![(i % 128) as u8]
+                }
+            })
+            .collect::<Vec<_>>();
+        let mut input = super::super::input::Input::from_memory(bytes.into(), true);
+        let mut builder = EncodedI32Builder::new();
+        for _ in 0..3 {
+            builder.capture(&mut input, 1).unwrap();
+            builder.capture(&mut input, 127).unwrap();
+            assert_eq!(builder.len(), 128);
+            let expected = to_arrow(&builder.bytes, 128).unwrap();
+            let array = builder.finish_vortex(&field, &session).unwrap();
+            let mut ctx = session.create_execution_ctx();
+            let actual = try_export(&array, &mut ctx).unwrap().unwrap();
+            assert_eq!(actual.to_data(), expected.to_data());
+            assert_eq!(builder.len(), 0);
+        }
+        let mut truncated = super::super::input::Input::from_memory(vec![128u8; 30].into(), true);
+        assert!(builder.capture(&mut truncated, 1).is_err());
+        assert!(builder.finish_vortex(&field, &session).is_err());
+        assert!(builder.finish_arrow().is_err());
+    }
+
     use super::*;
     use arrow_array::UInt32Array;
     use vortex::{

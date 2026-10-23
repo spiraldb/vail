@@ -208,13 +208,80 @@ impl Input {
                     consumed += 1;
                     if byte & 128 == 0 {
                         remaining -= 1;
-                        if remaining == 0 { break; }
+                        if remaining == 0 {
+                            break;
+                        }
                     }
                 }
                 out.extend_from_slice(&available[..consumed]);
                 (consumed, consumed)
             })?;
-            if consumed == 0 { return Err("truncated Hail data".into()); }
+            if consumed == 0 {
+                return Err("truncated Hail data".into());
+            }
+        }
+        Ok(())
+    }
+    /// Copy framed values and record starts of each 128-value group in one scan.
+    /// The final group-start sentinel is retained for the next capture call.
+    pub(super) fn capture_indexed_varints(
+        &mut self,
+        count: usize,
+        out: &mut Vec<u8>,
+        checkpoints: &mut Vec<u64>,
+        total: &mut usize,
+    ) -> Result<()> {
+        const HIGH: u64 = 0x8080_8080_8080_8080;
+        if count == 0 {
+            return Ok(());
+        }
+        if *total == 0 && checkpoints.is_empty() {
+            checkpoints.push(out.len() as u64);
+        }
+        let mut remaining = count;
+        while remaining != 0 {
+            let consumed = self.with_buffer(|available| {
+                let base = out.len();
+                let mut offset = 0;
+                while remaining != 0 && offset < available.len() {
+                    let (used, values, terminators) = if available.len() - offset >= 8 {
+                        let word =
+                            u64::from_le_bytes(available[offset..offset + 8].try_into().unwrap());
+                        let ends = (!word) & HIGH;
+                        let found = ends.count_ones() as usize;
+                        if remaining <= 8 && word & (HIGH >> ((8 - remaining) * 8)) == 0 {
+                            (remaining, remaining, HIGH)
+                        } else if found < remaining {
+                            (8, found, ends)
+                        } else {
+                            let mut nth = ends;
+                            for _ in 1..remaining {
+                                nth &= nth - 1;
+                            }
+                            ((nth.trailing_zeros() as usize / 8) + 1, remaining, ends)
+                        }
+                    } else {
+                        (1, usize::from(available[offset] & 128 == 0), HIGH)
+                    };
+                    let until_checkpoint = 128 - (*total % 128);
+                    if values >= until_checkpoint {
+                        let mut nth = terminators;
+                        for _ in 1..until_checkpoint {
+                            nth &= nth - 1;
+                        }
+                        checkpoints
+                            .push((base + offset + nth.trailing_zeros() as usize / 8 + 1) as u64);
+                    }
+                    *total += values;
+                    remaining -= values;
+                    offset += used;
+                }
+                out.extend_from_slice(&available[..offset]);
+                (offset, offset)
+            })?;
+            if consumed == 0 {
+                return Err("truncated Hail data".into());
+            }
         }
         Ok(())
     }
@@ -494,6 +561,77 @@ mod tests {
             leb: true,
             bytes: 0,
         }
+    }
+
+    #[test]
+    fn indexed_capture_stops_before_following_continuation_bytes() -> Result<()> {
+        for count in 1..=7 {
+            let mut wire = vec![128u8, 1];
+            wire.extend(std::iter::repeat_n(2, count - 1));
+            let expected = wire.clone();
+            wire.extend(std::iter::repeat_n(128, 16));
+            wire.push(3);
+            let mut input = Input {
+                source: BufReader::with_capacity(64, Box::new(Cursor::new(wire)) as Stream),
+                leb: true,
+                bytes: 0,
+            };
+            let (mut bytes, mut checkpoints, mut total) = (vec![], vec![], 0);
+            input.capture_indexed_varints(count, &mut bytes, &mut checkpoints, &mut total)?;
+            assert_eq!(bytes, expected);
+            assert_eq!(input.bytes as usize, expected.len());
+            assert_eq!(input.byte()?, 128);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn indexed_capture_matches_framing_across_buffers() -> Result<()> {
+        let values = (0..600)
+            .map(|i| {
+                if i % 11 == 0 {
+                    vec![128; 37].into_iter().chain([1]).collect::<Vec<u8>>()
+                } else if i % 3 == 0 {
+                    vec![129, 2]
+                } else {
+                    vec![7]
+                }
+            })
+            .collect::<Vec<_>>();
+        let bytes = values.concat();
+        let starts = values
+            .iter()
+            .scan(0usize, |position, value| {
+                let start = *position;
+                *position += value.len();
+                Some(start as u64)
+            })
+            .step_by(128)
+            .collect::<Vec<_>>();
+        for capacity in [1, 2, 7, 8, 32, 65536] {
+            let mut wire = bytes.clone();
+            wire.push(99);
+            let mut input = Input {
+                source: BufReader::with_capacity(capacity, Box::new(Cursor::new(wire)) as Stream),
+                leb: true,
+                bytes: 0,
+            };
+            let (mut captured, mut checkpoints, mut count) = (vec![], vec![], 0);
+            for chunk in [0, 1, 127, 2, 128, 5, 337] {
+                input.capture_indexed_varints(
+                    chunk,
+                    &mut captured,
+                    &mut checkpoints,
+                    &mut count,
+                )?;
+            }
+            assert_eq!(count, 600);
+            assert_eq!(captured, bytes);
+            assert_eq!(checkpoints, starts);
+            assert_eq!(input.bytes as usize, bytes.len());
+            assert_eq!(input.byte()?, 99);
+        }
+        Ok(())
     }
 
     #[test]
