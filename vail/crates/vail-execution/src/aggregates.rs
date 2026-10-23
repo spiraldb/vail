@@ -47,6 +47,12 @@ pub(crate) fn coordinate_count(udf: &AggregateUDF) -> bool {
         .is_some_and(|(kind, _)| *kind == Kind::Count)
 }
 
+pub(crate) fn coordinate_product_type(udf: &AggregateUDF) -> Option<DataType> {
+    crate::kernel_identity::aggregate_key::<(Kind, DataType)>(udf)
+        .filter(|(kind, _)| *kind == Kind::Product)
+        .and_then(|(_, input)| sum_type(input))
+}
+
 fn sum_type(input: &DataType) -> Option<DataType> {
     match input {
         DataType::Boolean | DataType::Int32 | DataType::Int64 => Some(DataType::Int64),
@@ -575,7 +581,7 @@ fn product_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF
     let group_output = output.clone();
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         "product",
-        ("product".to_owned(), input.clone()),
+        (Kind::Product, input.clone()),
         vec![input.clone()],
         output.clone(),
         vec![DataType::Int64, output.clone()],

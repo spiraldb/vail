@@ -432,16 +432,32 @@ pub fn coordinate_udaf(
 
 /// SUM has no per-coordinate null state: its language identity is zero.
 #[derive(Debug)]
-struct DenseSum {
+struct DenseNumeric {
     values: ArrayRef,
 }
-impl DenseSum {
+impl DenseNumeric {
     fn new(dtype: &DataType) -> Self {
         Self {
             values: new_empty_array(dtype),
         }
     }
     fn update(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        self.update_inner::<false>(flat, filter, width)
+    }
+    fn product(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        self.update_inner::<true>(flat, filter, width)
+    }
+    fn update_inner<const PRODUCT: bool>(
         &mut self,
         flat: &ArrayRef,
         filter: Option<&BooleanArray>,
@@ -464,12 +480,12 @@ impl DenseSum {
         if input.null_count() != 0 {
             let mask = arrow_arith::boolean::is_null(input.as_ref())?;
             let zero = match input.data_type() {
-                DataType::Int32 => ScalarValue::Int32(Some(0)),
-                DataType::Int64 => ScalarValue::Int64(Some(0)),
-                DataType::UInt8 => ScalarValue::UInt8(Some(0)),
-                DataType::UInt64 => ScalarValue::UInt64(Some(0)),
-                DataType::Float32 => ScalarValue::Float32(Some(0.0)),
-                DataType::Float64 => ScalarValue::Float64(Some(0.0)),
+                DataType::Int32 => ScalarValue::Int32(Some(if PRODUCT { 1 } else { 0 })),
+                DataType::Int64 => ScalarValue::Int64(Some(if PRODUCT { 1 } else { 0 })),
+                DataType::UInt8 => ScalarValue::UInt8(Some(if PRODUCT { 1 } else { 0 })),
+                DataType::UInt64 => ScalarValue::UInt64(Some(if PRODUCT { 1 } else { 0 })),
+                DataType::Float32 => ScalarValue::Float32(Some(if PRODUCT { 1.0 } else { 0.0 })),
+                DataType::Float64 => ScalarValue::Float64(Some(if PRODUCT { 1.0 } else { 0.0 })),
                 _ => unreachable!(),
             }
             .to_scalar()?;
@@ -481,7 +497,7 @@ impl DenseSum {
                 let empty = new_empty_array(self.values.data_type());
                 let old = std::mem::replace(&mut self.values, empty);
                 let mut values = if old.is_empty() {
-                    <$array>::from(vec![$zero; width])
+                    <$array>::from(vec![if PRODUCT { 1 as _ } else { $zero }; width])
                 } else {
                     old.as_any().downcast_ref::<$array>().unwrap().clone()
                 };
@@ -497,50 +513,123 @@ impl DenseSum {
                 self.values = Arc::new(values);
             }};
         }
+        macro_rules! integer_op {
+            ($a:expr, $b:expr) => {
+                if PRODUCT {
+                    $a.wrapping_mul($b)
+                } else {
+                    $a.wrapping_add($b)
+                }
+            };
+        }
+        macro_rules! float_op {
+            ($a:expr, $b:expr) => {
+                if PRODUCT { $a * $b } else { $a + $b }
+            };
+        }
         match input.data_type() {
-            DataType::Int32 if self.values.data_type() == &DataType::Float64 => {
-                add!(Float64Array, Int32Array, 0.0f64, |a: f64, b: i32| a
-                    + f64::from(b))
-            }
-            DataType::Int64 if self.values.data_type() == &DataType::Float64 => {
-                add!(Float64Array, Int64Array, 0.0f64, |a: f64, b: i64| a + b
-                    as f64)
-            }
-            DataType::Int32 => add!(Int64Array, Int32Array, 0i64, |a: i64, b: i32| a
-                .wrapping_add(i64::from(b))),
+            DataType::Int32 if self.values.data_type() == &DataType::Float64 => add!(
+                Float64Array,
+                Int32Array,
+                0.0f64,
+                |a: f64, b: i32| float_op!(a, f64::from(b))
+            ),
+            DataType::Int64 if self.values.data_type() == &DataType::Float64 => add!(
+                Float64Array,
+                Int64Array,
+                0.0f64,
+                |a: f64, b: i64| float_op!(a, b as f64)
+            ),
+            DataType::Int32 => add!(Int64Array, Int32Array, 0i64, |a: i64, b: i32| integer_op!(
+                a,
+                i64::from(b)
+            )),
             DataType::UInt8 if self.values.data_type() == &DataType::UInt64 => {
-                add!(UInt64Array, UInt8Array, 0u64, |a: u64, b: u8| a
-                    .wrapping_add(u64::from(b)))
+                add!(UInt64Array, UInt8Array, 0u64, |a: u64, b: u8| integer_op!(
+                    a,
+                    u64::from(b)
+                ))
             }
-            DataType::UInt64 => add!(UInt64Array, UInt64Array, 0u64, u64::wrapping_add),
-            DataType::UInt8 => add!(Int64Array, UInt8Array, 0i64, |a: i64, b: u8| a
-                .wrapping_add(i64::from(b))),
-            DataType::Int64 => add!(Int64Array, Int64Array, 0i64, i64::wrapping_add),
-            DataType::Float32 => add!(Float64Array, Float32Array, 0.0f64, |a: f64, b: f32| a
-                + f64::from(b)),
-            DataType::Float64 => add!(Float64Array, Float64Array, 0.0f64, |a, b| a + b),
+            DataType::UInt64 => add!(
+                UInt64Array,
+                UInt64Array,
+                0u64,
+                |a: u64, b: u64| integer_op!(a, b)
+            ),
+            DataType::UInt8 => add!(Int64Array, UInt8Array, 0i64, |a: i64, b: u8| integer_op!(
+                a,
+                i64::from(b)
+            )),
+            DataType::Int64 => add!(Int64Array, Int64Array, 0i64, |a: i64, b: i64| integer_op!(
+                a, b
+            )),
+            DataType::Float32 => add!(
+                Float64Array,
+                Float32Array,
+                0.0f64,
+                |a: f64, b: f32| float_op!(a, f64::from(b))
+            ),
+            DataType::Float64 => add!(
+                Float64Array,
+                Float64Array,
+                0.0f64,
+                |a: f64, b: f64| float_op!(a, b)
+            ),
             _ => unreachable!(),
         }
         Ok(())
     }
 }
 
+/// Native product state is (defined count, widened product).
+#[derive(Debug)]
+struct DenseProduct {
+    count: DenseNumeric,
+    values: DenseNumeric,
+}
+impl DenseProduct {
+    fn new(dtype: &DataType) -> Self {
+        Self {
+            count: DenseNumeric::new(&DataType::Int64),
+            values: DenseNumeric::new(dtype),
+        }
+    }
+    fn update(
+        &mut self,
+        flat: &ArrayRef,
+        filter: Option<&BooleanArray>,
+        width: usize,
+    ) -> Result<()> {
+        let mut present = arrow_arith::boolean::is_not_null(flat.as_ref())?;
+        if let Some(filter) = filter {
+            present = arrow_arith::boolean::and(&present, filter)?;
+        }
+        let present: ArrayRef = Arc::new(present);
+        self.count.update(&present, None, width)?;
+        self.values.product(flat, filter, width)
+    }
+    fn merge(&mut self, states: &[ArrayRef], width: usize) -> Result<()> {
+        self.count.update(&states[0], None, width)?;
+        self.values.product(&states[1], None, width)
+    }
+}
+
 /// Two vector states preserve native AVG/fraction wire types at emission.
 #[derive(Debug)]
 struct DenseRatio {
-    count: DenseSum,
-    sum: DenseSum,
+    count: DenseNumeric,
+    sum: DenseNumeric,
     fraction: bool,
 }
 impl DenseRatio {
     fn new(fraction: bool) -> Self {
         Self {
-            count: DenseSum::new(if fraction {
+            count: DenseNumeric::new(if fraction {
                 &DataType::Int64
             } else {
                 &DataType::UInt64
             }),
-            sum: DenseSum::new(if fraction {
+            sum: DenseNumeric::new(if fraction {
                 &DataType::Int64
             } else {
                 &DataType::Float64
@@ -627,9 +716,10 @@ impl DenseRatio {
 }
 
 enum Kernels {
-    Sum(DenseSum),
-    Count(DenseSum),
+    Sum(DenseNumeric),
+    Count(DenseNumeric),
     Ratio(DenseRatio),
+    Product(DenseProduct),
     Groups(std::sync::Mutex<Box<dyn GroupsAccumulator>>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -638,6 +728,7 @@ impl std::fmt::Debug for Kernels {
         match self {
             Self::Sum(sum) | Self::Count(sum) => sum.fmt(f),
             Self::Ratio(ratio) => ratio.fmt(f),
+            Self::Product(product) => product.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -664,13 +755,15 @@ impl Coordinates {
         aggregate_input: DataType,
     ) -> Result<Self> {
         let kernels = if let Some(dtype) = crate::aggregates::coordinate_sum_type(aggregate.fun()) {
-            Kernels::Sum(DenseSum::new(&dtype))
+            Kernels::Sum(DenseNumeric::new(&dtype))
         } else if crate::aggregates::coordinate_count(aggregate.fun()) {
-            Kernels::Count(DenseSum::new(&DataType::Int64))
+            Kernels::Count(DenseNumeric::new(&DataType::Int64))
         } else if crate::native_mean::coordinate_mean(aggregate.fun()) {
             Kernels::Ratio(DenseRatio::new(false))
         } else if crate::fraction::coordinate_fraction(aggregate.fun()) {
             Kernels::Ratio(DenseRatio::new(true))
+        } else if let Some(dtype) = crate::aggregates::coordinate_product_type(aggregate.fun()) {
+            Kernels::Product(DenseProduct::new(&dtype))
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
@@ -710,6 +803,10 @@ impl Coordinates {
         match &mut self.kernels {
             Kernels::Sum(sum) | Kernels::Count(sum) => Ok(vec![Arc::clone(&sum.values)]),
             Kernels::Ratio(ratio) => ratio.states(),
+            Kernels::Product(product) => Ok(vec![
+                Arc::clone(&product.count.values),
+                Arc::clone(&product.values.values),
+            ]),
             Kernels::Groups(kernel) => {
                 let kernel = kernel
                     .get_mut()
@@ -751,6 +848,9 @@ impl Coordinates {
     ) -> Result<()> {
         if let Kernels::Sum(sum) = &mut self.kernels {
             return sum.update(&flat, filter, width);
+        }
+        if let Kernels::Product(product) = &mut self.kernels {
+            return product.update(&flat, filter, width);
         }
         if let Kernels::Ratio(ratio) = &mut self.kernels {
             return ratio.update(&flat, filter, width);
@@ -812,6 +912,7 @@ impl Coordinates {
         let mut values = match &mut self.kernels {
             Kernels::Sum(sum) | Kernels::Count(sum) => Arc::clone(&sum.values),
             Kernels::Ratio(ratio) => ratio.evaluate()?,
+            Kernels::Product(product) => Arc::clone(&product.values.values),
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -871,7 +972,10 @@ impl Accumulator for Coordinates {
             }
             concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
         };
-        if matches!(self.kernels, Kernels::Count(_) | Kernels::Ratio(_)) {
+        if matches!(
+            self.kernels,
+            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_)
+        ) {
             return self.update_flat(flat, None, width);
         }
         let flat = if self.input == self.aggregate_input {
@@ -912,6 +1016,10 @@ impl Accumulator for Coordinates {
                 Kernels::Ratio(ratio) => {
                     ratio.count.values.get_array_memory_size()
                         + ratio.sum.values.get_array_memory_size()
+                }
+                Kernels::Product(product) => {
+                    product.count.values.get_array_memory_size()
+                        + product.values.values.get_array_memory_size()
                 }
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
@@ -956,6 +1064,7 @@ impl Accumulator for Coordinates {
             match &mut self.kernels {
                 Kernels::Sum(sum) | Kernels::Count(sum) => sum.update(&values[0], None, width)?,
                 Kernels::Ratio(ratio) => ratio.merge(&values, width)?,
+                Kernels::Product(product) => product.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
