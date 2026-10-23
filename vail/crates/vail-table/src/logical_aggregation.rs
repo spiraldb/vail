@@ -764,6 +764,7 @@ fn contains_collect(expression: &Expr) -> bool {
 pub(crate) fn scope_plan(
     mut input: LogicalPlan,
     table: &TableRef,
+    globals_schema: &Schema,
     group: &Group,
     key_names: &[String],
     group_names: &[String],
@@ -792,7 +793,7 @@ pub(crate) fn scope_plan(
             Step::Filter(predicate) => {
                 let predicate = resolve(predicate, &scope)?;
                 if predicate
-                    .dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?
+                    .dtype_with_globals(input.schema().as_arrow(), globals_schema)?
                     != vail_execution::expressions::Type::Primitive(
                         vail_execution::expressions::PrimitiveType::Bool,
                     )
@@ -804,7 +805,7 @@ pub(crate) fn scope_plan(
                 let value = lower_logical_with_bindings(
                     &predicate,
                     input.schema(),
-                    table.globals().schema(),
+                    globals_schema,
                     bindings,
                 )?;
                 input = LogicalPlanBuilder::from(input).filter(value)?.build()?;
@@ -813,7 +814,7 @@ pub(crate) fn scope_plan(
                 let name = unique(used, "__vail_agg_explode");
                 let expr = resolve(value, &scope)?;
                 if !matches!(
-                    expr.dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?,
+                    expr.dtype_with_globals(input.schema().as_arrow(), globals_schema)?,
                     vail_execution::expressions::Type::Array { .. }
                         | vail_execution::expressions::Type::Set { .. }
                 ) {
@@ -824,7 +825,7 @@ pub(crate) fn scope_plan(
                 let value = lower_logical_with_bindings(
                     &expr,
                     input.schema(),
-                    table.globals().schema(),
+                    globals_schema,
                     bindings,
                 )?;
                 let mut fields = columns(&input);
@@ -861,7 +862,7 @@ pub(crate) fn scope_plan(
                 &value,
                 input.schema().as_arrow(),
                 input.schema().as_arrow(),
-                table.globals().schema(),
+                globals_schema,
                 bindings,
                 &scope,
             )?;
@@ -884,9 +885,9 @@ pub(crate) fn scope_plan(
                     .map(|(i, f)| {
                         (
                             f.name().clone(),
-                            if i < table.globals().schema().fields().len() {
+                            if i < globals_schema.fields().len() {
                                 Expr::Global {
-                                    name: table.globals().schema().field(i).name().clone(),
+                                    name: globals_schema.field(i).name().clone(),
                                 }
                             } else {
                                 Expr::Column {
@@ -907,13 +908,13 @@ pub(crate) fn scope_plan(
         };
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
-            lower_logical_with_bindings(value, input.schema(), table.globals().schema(), bindings)?;
+            lower_logical_with_bindings(value, input.schema(), globals_schema, bindings)?;
         let dtype = if matches!(reducer.function.as_str(), "count" | "count_where") {
             None
         } else {
             Some(
                 value
-                    .dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?
+                    .dtype_with_globals(input.schema().as_arrow(), globals_schema)?
                     .to_arrow()?,
             )
         };
@@ -1209,6 +1210,7 @@ pub(crate) fn lower_grouped_fields(
     let (mut result, _, _) = scope_plan(
         projected.clone(),
         table,
+        table.globals().schema(),
         &anchor,
         &key_names,
         &group_names,
@@ -1222,6 +1224,7 @@ pub(crate) fn lower_grouped_fields(
         let (right, defaults, presence) = scope_plan(
             projected.clone(),
             table,
+        table.globals().schema(),
             &group,
             &key_names,
             &group_names,
@@ -1371,10 +1374,13 @@ pub(crate) fn lower_logical_total(
         {
             child = crate::logical::protect_round_robin(child, crate::EXECUTION_CONCURRENCY);
         }
+        let empty_globals = Schema::empty();
+        let input_globals = if needs_globals { table.globals().schema().as_ref() } else { &empty_globals };
         for group in groups {
             let (right, _, _) = scope_plan(
                 child.clone(),
                 table,
+                input_globals,
                 &group,
                 &[],
                 &[],
@@ -1480,6 +1486,7 @@ pub(crate) fn body_plan(
     let (mut result, _, _) = scope_plan(
         input.clone(),
         table,
+        table.globals().schema(),
         &anchor,
         key_names,
         group_names,
@@ -1493,6 +1500,7 @@ pub(crate) fn body_plan(
         let (right, defaults, presence) = scope_plan(
             input.clone(),
             table,
+        table.globals().schema(),
             &group,
             key_names,
             group_names,
