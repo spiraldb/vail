@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    StructArray, UInt8Array, UInt32Array, new_empty_array,
+    StructArray, UInt8Array, UInt32Array, UInt64Array, new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_cast::cast;
@@ -467,6 +467,7 @@ impl DenseSum {
                 DataType::Int32 => ScalarValue::Int32(Some(0)),
                 DataType::Int64 => ScalarValue::Int64(Some(0)),
                 DataType::UInt8 => ScalarValue::UInt8(Some(0)),
+                DataType::UInt64 => ScalarValue::UInt64(Some(0)),
                 DataType::Float32 => ScalarValue::Float32(Some(0.0)),
                 DataType::Float64 => ScalarValue::Float64(Some(0.0)),
                 _ => unreachable!(),
@@ -507,6 +508,11 @@ impl DenseSum {
             }
             DataType::Int32 => add!(Int64Array, Int32Array, 0i64, |a: i64, b: i32| a
                 .wrapping_add(i64::from(b))),
+            DataType::UInt8 if self.values.data_type() == &DataType::UInt64 => {
+                add!(UInt64Array, UInt8Array, 0u64, |a: u64, b: u8| a
+                    .wrapping_add(u64::from(b)))
+            }
+            DataType::UInt64 => add!(UInt64Array, UInt64Array, 0u64, u64::wrapping_add),
             DataType::UInt8 => add!(Int64Array, UInt8Array, 0i64, |a: i64, b: u8| a
                 .wrapping_add(i64::from(b))),
             DataType::Int64 => add!(Int64Array, Int64Array, 0i64, i64::wrapping_add),
@@ -529,7 +535,11 @@ struct DenseRatio {
 impl DenseRatio {
     fn new(fraction: bool) -> Self {
         Self {
-            count: DenseSum::new(&DataType::Int64),
+            count: DenseSum::new(if fraction {
+                &DataType::Int64
+            } else {
+                &DataType::UInt64
+            }),
             sum: DenseSum::new(if fraction {
                 &DataType::Int64
             } else {
@@ -557,26 +567,23 @@ impl DenseRatio {
         self.sum.update(flat, filter, width)
     }
     fn states(&self) -> Result<Vec<ArrayRef>> {
-        let count = if self.fraction {
-            Arc::clone(&self.count.values)
-        } else {
-            cast(self.count.values.as_ref(), &DataType::UInt64)?
-        };
-        Ok(vec![count, Arc::clone(&self.sum.values)])
+        Ok(vec![
+            Arc::clone(&self.count.values),
+            Arc::clone(&self.sum.values),
+        ])
     }
     fn merge(&mut self, values: &[ArrayRef], width: usize) -> Result<()> {
-        let count = cast(values[0].as_ref(), &DataType::Int64)?;
-        self.count.update(&count, None, width)?;
+        self.count.update(&values[0], None, width)?;
         self.sum.update(&values[1], None, width)
     }
     fn evaluate(&self) -> Result<ArrayRef> {
-        let count = self
-            .count
-            .values
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .unwrap();
         if self.fraction {
+            let count = self
+                .count
+                .values
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap();
             let sum = self
                 .sum
                 .values
@@ -587,6 +594,12 @@ impl DenseRatio {
                 |i| (count.value(i) != 0).then(|| sum.value(i) as f64 / count.value(i) as f64),
             ))))
         } else {
+            let count = self
+                .count
+                .values
+                .as_any()
+                .downcast_ref::<UInt64Array>()
+                .unwrap();
             let sum = self
                 .sum
                 .values
@@ -601,7 +614,7 @@ impl DenseRatio {
             >(
                 sum,
                 count,
-                |sum: f64, count: i64| {
+                |sum: f64, count: u64| {
                     if count == 0 {
                         f64::NAN
                     } else {
@@ -991,6 +1004,69 @@ mod tests {
             vec![reducer(value_index, aggregate)],
         )
         .unwrap()
+    }
+
+    #[test]
+    fn public_coordinate_mean_merge_preserves_full_uint64_count_domain() {
+        let mean = crate::native_mean::udf(Some(&DataType::Float64)).unwrap();
+        let aggregate = coordinate_udaf(
+            mean,
+            DataType::Float64,
+            ScalarValue::Float64(Some(f64::NAN)),
+        )
+        .unwrap();
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            list_type(DataType::Float64),
+            true,
+        )]));
+        let expression = AggregateExprBuilder::new(aggregate, vec![Arc::new(Column::new("xs", 0))])
+            .schema(schema)
+            .alias("means")
+            .build()
+            .unwrap();
+        let mut accumulator = expression.create_accumulator().unwrap();
+        let count = 1u64 << 63;
+        let state_list = |values: ArrayRef| -> ArrayRef {
+            Arc::new(ListArray::new(
+                Arc::new(Field::new_list_field(values.data_type().clone(), true)),
+                OffsetBuffer::from_lengths([1]),
+                values,
+                None,
+            ))
+        };
+        accumulator
+            .merge_batch(&[
+                state_list(Arc::new(UInt64Array::from(vec![count]))),
+                state_list(Arc::new(Float64Array::from(vec![count as f64 * 2.0]))),
+                Arc::new(Int64Array::from(vec![1])),
+            ])
+            .unwrap();
+        let ScalarValue::List(result) = accumulator.evaluate().unwrap() else {
+            panic!("list result");
+        };
+        assert_eq!(
+            result
+                .values()
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap()
+                .value(0),
+            2.0
+        );
+        let state = accumulator.state().unwrap();
+        let ScalarValue::List(counts) = &state[0] else {
+            panic!("list state");
+        };
+        assert_eq!(
+            counts
+                .values()
+                .as_any()
+                .downcast_ref::<UInt64Array>()
+                .unwrap()
+                .value(0),
+            count
+        );
     }
 
     #[test]
