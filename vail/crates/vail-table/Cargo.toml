@@ -53,6 +53,8 @@ vail-ordering = { path = "../vail-ordering" }
 vail-storage = { path = "../vail-storage" }
 vail-vcf = { path = "../vail-vcf" }
 
+vortex = { version = "=0.86.1", features = ["tokio"] }
+
 [dev-dependencies]
 tokio.workspace = true
 uuid.workspace = true

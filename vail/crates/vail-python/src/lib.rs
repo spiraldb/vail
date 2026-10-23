@@ -244,6 +244,15 @@ impl NativeSession {
         ))
     }
 
+    fn read_legacy(&self, py: Python<'_>, path: String) -> PyResult<NativeTable> {
+        let ir = py.detach(|| vail_table::legacy::read_table(&path)).map_err(table_error)?;
+        Ok(NativeTable { runtime: self.runtime.clone(), ir })
+    }
+    fn read_matrix_legacy(&self, py: Python<'_>, path: String) -> PyResult<(NativeTable, Vec<String>, Vec<String>, bool)> {
+        let (ir, row_keys, col_keys, row_key_unique) = py.detach(|| vail_table::legacy::read_matrix(&path)).map_err(table_error)?;
+        Ok((NativeTable { runtime: self.runtime.clone(), ir }, row_keys, col_keys, row_key_unique))
+    }
+
     /// Build a lazy DataFusion CSV/JSON scan. `schema` is an explicit
     /// list of `(field_name, NativeType)` pairs; input rows are never decoded in
     /// Python and no data batches are read during construction.

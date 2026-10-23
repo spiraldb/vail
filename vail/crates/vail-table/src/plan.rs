@@ -308,14 +308,17 @@ pub(crate) fn source_partition_projected_with_nested_paths(
     projection: Option<&Vec<usize>>,
     nested_paths: Vec<Vec<String>>,
 ) -> Result<PhysicalPlan> {
-    source_partition_with_selection(table, part, projection, nested_paths, None)
+    source_partition_with_selection(table, part, projection, nested_paths, None, Vec::new())
 }
 pub(crate) fn bgen_source_partition(
     table: &Arc<TableIR>,
     part: usize,
     selection: Arc<crate::bgen_select::Selection>,
 ) -> Result<PhysicalPlan> {
-    source_partition_with_selection(table, part, None, Vec::new(), Some(selection))
+    source_partition_with_selection(table, part, None, Vec::new(), Some(selection), Vec::new())
+}
+pub(crate) fn legacy_source_partition(table: &Arc<TableIR>, part: usize, projection: Option<&Vec<usize>>, filters: Vec<Arc<dyn PhysicalExpr>>) -> Result<PhysicalPlan> {
+    source_partition_with_selection(table, part, projection, Vec::new(), None, filters)
 }
 fn source_partition_with_selection(
     table: &Arc<TableIR>,
@@ -323,6 +326,7 @@ fn source_partition_with_selection(
     projection: Option<&Vec<usize>>,
     nested_paths: Vec<Vec<String>>,
     bgen_selection: Option<Arc<crate::bgen_select::Selection>>,
+    legacy_filters: Vec<Arc<dyn PhysicalExpr>>,
 ) -> Result<PhysicalPlan> {
     let row_schema = table.schema().clone();
     let name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
@@ -331,13 +335,15 @@ fn source_partition_with_selection(
         paths,
         format,
         options_json,
+        legacy,
     } = table.node()
     {
         let path = paths
             .get(part)
             .ok_or_else(|| TableError::Invalid("text source partition out of range".into()))?;
-        let metadata = std::fs::metadata(path)
-            .map_err(|e| TableError::Invalid(format!("cannot stat text input {path:?}: {e}")))?;
+        let file_size = if format == "legacy" { 0 } else {
+            std::fs::metadata(path).map_err(|e| TableError::Invalid(format!("cannot stat text input {path:?}: {e}")))?.len()
+        };
         let options: serde_json::Map<String, serde_json::Value> =
             serde_json::from_value(options_json.clone())
                 .map_err(|e| TableError::Invalid(e.to_string()))?;
@@ -349,6 +355,10 @@ fn source_partition_with_selection(
                         row_schema.clone(),
                         options_json,
                     )?),
+                ),
+                "legacy" => (
+                    row_schema.clone(),
+                    Arc::new(crate::legacy_source::LegacySource::new(row_schema.clone(), legacy.as_ref().ok_or_else(||TableError::Invalid("missing legacy source descriptor".into()))?.clone(), part).with_decode_paths(options_json).with_predicates(&legacy_filters)),
                 ),
                 "avro" => (
                     row_schema.clone(),
@@ -441,7 +451,7 @@ fn source_partition_with_selection(
                 .collect::<Vec<_>>()
         });
         let mut builder = FileScanConfigBuilder::new(ObjectStoreUrl::local_filesystem(), source)
-            .with_file(PartitionedFile::new(file_path, metadata.len()))
+            .with_file(PartitionedFile::new(file_path, file_size))
             .with_preserve_order(true);
         if format != "lines" {
             builder = builder.with_projection(file_projection.clone());

@@ -1,0 +1,108 @@
+2026-10-22 23:09:14.710 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+/private/tmp/linreg-hail-pypi-latest/lib/python3.12/site-packages/hail/backend/py4j_backend.py:75: UserWarning: Hail was built and tested with Java 11. You are using Java 21.0.9 which is not supported. This may lead to errors. Consider installing Java 11 and setting the JAVA_HOME environment variable.
+  warnings.warn(
+2026-10-22 23:09:15.086 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+table_force_count 0 1.4109466669615358 1000000
+table_force_count 1 0.21137333405204117 1000000
+table_force_count 2 0.27990416693501174 1000000
+table_force_count 3 0.17099070898257196 1000000
+table_force_count 4 0.1541047499049455 1000000
+table_force_count 5 0.1745855420595035 1000000
+table_force_count 6 0.15097312501166016 1000000
+table_scalar_sum 0 0.23046591691672802 1499998500000
+table_scalar_sum 1 0.17783325002528727 1499998500000
+table_scalar_sum 2 0.1816305830143392 1499998500000
+table_scalar_sum 3 0.14704312500543892 1499998500000
+table_scalar_sum 4 0.1525580839952454 1499998500000
+table_scalar_sum 5 0.15678745799232274 1499998500000
+table_scalar_sum 6 0.16906400001607835 1499998500000
+matrix_decode_count 0 0.47987462498713285 24885
+matrix_decode_count 1 0.4065607920056209 24885
+matrix_decode_count 2 0.4307980419835076 24885
+matrix_decode_count 3 0.41053129197098315 24885
+matrix_decode_count 4 0.38935279194265604 24885
+matrix_decode_count 5 0.38368712505325675 24885
+matrix_decode_count 6 0.4062535000266507 24885
+matrix_decode_count_gt 0 0.34876816696487367 24885
+matrix_decode_count_gt 1 0.3838007500162348 24885
+matrix_decode_count_gt 2 0.33667412505019456 24885
+matrix_decode_count_gt 3 0.34582091600168496 24885
+matrix_decode_count_gt 4 0.34264074999373406 24885
+matrix_decode_count_gt 5 0.3351856659865007 24885
+matrix_decode_count_gt 6 0.35663583304267377 24885
+
+[Stage 28:>                                                       (0 + 14) / 16]
+
+[Stage 28:=======>                                                (2 + 14) / 16]
+
+[Stage 28:==========================================>             (12 + 4) / 16]
+
+[Stage 28:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 0 1.4724217499606311 63083475
+
+[Stage 29:>                                                       (0 + 14) / 16]
+
+[Stage 29:==========================================>             (12 + 4) / 16]
+
+[Stage 29:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 1 1.319241915945895 63083475
+
+[Stage 30:>                                                       (0 + 14) / 16]
+
+[Stage 30:======================================>                 (11 + 5) / 16]
+
+[Stage 30:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 2 1.2544466250110418 63083475
+
+[Stage 31:>                                                       (0 + 14) / 16]
+
+[Stage 31:===================================>                    (10 + 6) / 16]
+
+[Stage 31:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 3 1.3028870829148218 63083475
+
+[Stage 32:>                                                       (0 + 14) / 16]
+
+[Stage 32:========================>                                (7 + 9) / 16]
+
+[Stage 32:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 4 1.281187167041935 63083475
+
+[Stage 33:>                                                       (0 + 14) / 16]
+
+[Stage 33:===>                                                    (1 + 14) / 16]
+
+[Stage 33:=============================================>          (13 + 3) / 16]
+
+[Stage 33:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 5 1.3101331249345094 63083475
+
+[Stage 34:>                                                       (0 + 16) / 16]
+
+[Stage 34:==========================================>             (12 + 4) / 16]
+
+[Stage 34:=================================================>      (14 + 2) / 16]
+
+
+matrix_entries_count 6 1.2345666660694405 63083475
+matrix_sum_dp 0 0.4106510409619659 353709503
+matrix_sum_dp 1 0.4111803750274703 353709503
+matrix_sum_dp 2 0.3709168329369277 353709503
+matrix_sum_dp 3 0.3790929999668151 353709503
+matrix_sum_dp 4 0.37492416705936193 353709503
+matrix_sum_dp 5 0.37767891702242196 353709503
+matrix_sum_dp 6 0.3901174169732258 353709503

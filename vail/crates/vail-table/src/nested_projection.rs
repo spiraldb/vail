@@ -851,10 +851,13 @@ fn vcf_source(table: &crate::TableRef) -> bool {
             | TableNode::OrderBy { child, .. }
             | TableNode::Explode { child, .. }
             | TableNode::Head { child, .. }
-            | TableNode::Tail { child, .. } => source = child,
+            | TableNode::Tail { child, .. }
+            | TableNode::MatrixEntriesByKeyRuns { child, .. } => source = child,
             TableNode::BgenSelect { source: child, .. } => source = child,
             TableNode::Union { children } => return children.iter().all(vcf_source),
-            TableNode::TextRead { format, .. } => return matches!(format.as_str(), "vcf" | "bgen"),
+            TableNode::TextRead { format, .. } => {
+                return matches!(format.as_str(), "vcf" | "bgen" | "legacy");
+            }
             _ => return false,
         }
     }
@@ -903,13 +906,15 @@ fn narrow_vcf_paths<'a>(
             paths: files,
             format,
             options_json,
-        } if matches!(format.as_str(), "vcf" | "bgen") => {
+            legacy,
+        } if matches!(format.as_str(), "vcf" | "bgen" | "legacy") => {
             let mut options = options_json.clone();
             options["decode_paths"] = serde_json::json!(paths);
             TableNode::TextRead {
                 paths: files.clone(),
                 format: format.clone(),
                 options_json: options,
+                legacy: legacy.clone(),
             }
         }
         TableNode::MapRows {
@@ -940,6 +945,26 @@ fn narrow_vcf_paths<'a>(
                 bindings: bindings.clone(),
             }
         }
+        TableNode::MatrixEntriesByKeyRuns {
+            child,
+            row_field,
+            cells_field,
+            columns_global,
+            row_key_aliases,
+            col_struct_field,
+            value_field,
+        } => TableNode::MatrixEntriesByKeyRuns {
+            // Entry expansion consumes the child's complete output, but that
+            // output may already project selected entry fields. Keep analyzing
+            // that upstream projection rather than disabling source demand.
+            child: prepare_vcf(child),
+            row_field: row_field.clone(),
+            cells_field: cells_field.clone(),
+            columns_global: columns_global.clone(),
+            row_key_aliases: row_key_aliases.clone(),
+            col_struct_field: col_struct_field.clone(),
+            value_field: value_field.clone(),
+        },
         TableNode::KeyBy { child, keys } => {
             paths.extend(keys.iter().map(|key| DecodePath {
                 fields: vec![key.clone()],
@@ -1003,7 +1028,8 @@ fn narrow_vcf_paths<'a>(
             variants: variants.clone(),
         },
         TableNode::Union { children } => TableNode::Union {
-            children: children.iter()
+            children: children
+                .iter()
                 .map(|child| narrow_vcf_paths(child, paths.clone(), analyzer))
                 .collect(),
         },

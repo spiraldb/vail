@@ -83,7 +83,7 @@ impl TableProvider for VailSourceProvider {
 
     async fn scan(
         &self,
-        _state: &dyn Session,
+        state: &dyn Session,
         projection: Option<&Vec<usize>>,
         filters: &[Expr],
         _limit: Option<usize>, // Limits remain as DataFusion operators above the scan.
@@ -100,9 +100,17 @@ impl TableProvider for VailSourceProvider {
             let mut internal = projection.cloned().unwrap_or_else(|| (0..tag).collect());
             internal.retain(|&index| index != tag);
             internal.push(tag);
+            let legacy_filters = if format == "legacy" {
+                let df_schema = datafusion_common::DFSchema::try_from(self.schema.as_ref().clone())?;
+                filters.iter().map(|f| state.create_physical_expr(f.clone(), &df_schema)).collect::<DFResult<Vec<_>>>()?
+            } else { Vec::new() };
             let partitions = (0..count)
                 .map(|part| {
-                    plan::source_partition_projected(&self.table, part, Some(&internal))
+                    if format == "legacy" {
+                        plan::legacy_source_partition(&self.table, part, Some(&internal), legacy_filters.clone())
+                    } else {
+                        plan::source_partition_projected(&self.table, part, Some(&internal))
+                    }
                         .map_err(to_df_error)
                 })
                 .collect::<DFResult<Vec<_>>>()?;
@@ -301,7 +309,7 @@ impl TableProvider for VailSourceProvider {
     ) -> DFResult<Vec<TableProviderFilterPushDown>> {
         let mut statuses = Vec::with_capacity(filters.len());
         for filter in filters {
-            statuses.push(if intervals_for_filter(filter, &self.table)?.is_some() {
+            statuses.push(if matches!(self.table.node(), TableNode::TextRead {format, ..} if format == "legacy") || intervals_for_filter(filter, &self.table)?.is_some() {
                 TableProviderFilterPushDown::Inexact
             } else {
                 TableProviderFilterPushDown::Unsupported

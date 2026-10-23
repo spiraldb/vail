@@ -24,5 +24,11 @@ uuid = { version = "1", features = ["v7"] }
 vail-execution = { path = "../vail-execution" }
 vortex = { version = "=0.86.1", features = ["tokio"] }
 
+arrow-select = "=59.2.0"
+arrow-buffer = "=59.2.0"
+flate2 = "1"
+lz4_flex = "0.13"
+zstd = "0.13"
+
 [dev-dependencies]
 vail-ordering = { path = "../vail-ordering" }

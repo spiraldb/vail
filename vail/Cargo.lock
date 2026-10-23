@@ -314,7 +314,7 @@ dependencies = [
  "arrow-schema",
  "arrow-select",
  "flatbuffers",
- "lz4_flex",
+ "lz4_flex 0.14.0",
  "zstd 0.13.3",
 ]
 
@@ -3561,6 +3561,15 @@ checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 
 [[package]]
 name = "lz4_flex"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ef0d4ed8669f8f8826eb00dc878084aa8f253506c4fd5e8f58f5bce72ddb97e"
+dependencies = [
+ "twox-hash",
+]
+
+[[package]]
+name = "lz4_flex"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ecbdfe44b1bd960b68170b417450a628c43f7cf56bb3c5317e61cb230ee7f226"
@@ -4067,7 +4076,7 @@ dependencies = [
  "futures",
  "half",
  "hashbrown 0.17.1",
- "lz4_flex",
+ "lz4_flex 0.14.0",
  "num-bigint 0.5.1",
  "num-integer",
  "num-traits",
@@ -5776,13 +5785,17 @@ name = "vail-storage"
 version = "0.1.0"
 dependencies = [
  "arrow-array",
+ "arrow-buffer",
  "arrow-cast",
  "arrow-ipc",
  "arrow-ord",
  "arrow-schema",
+ "arrow-select",
  "async-stream",
+ "flate2",
  "futures",
  "iceberg",
+ "lz4_flex 0.13.1",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -5793,6 +5806,7 @@ dependencies = [
  "vail-execution",
  "vail-ordering",
  "vortex",
+ "zstd 0.13.3",
 ]
 
 [[package]]
@@ -5845,6 +5859,7 @@ dependencies = [
  "vail-ordering",
  "vail-storage",
  "vail-vcf",
+ "vortex",
  "zstd 0.13.3",
 ]
 

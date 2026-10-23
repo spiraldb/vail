@@ -20,6 +20,8 @@ mod join_interval;
 mod join_key;
 mod joins;
 pub mod line_source;
+mod legacy_source;
+pub mod legacy;
 mod logical;
 mod logical_aggregate_init;
 mod logical_aggregation;
@@ -233,6 +235,7 @@ pub enum TableNode {
         paths: Vec<String>,
         format: String,
         options_json: Value,
+        legacy: Option<Arc<crate::legacy::Read>>,
     },
     BgenSelect {
         source: TableRef,
@@ -811,6 +814,7 @@ impl TableIR {
                 paths,
                 format: format.to_owned(),
                 options_json: native_options,
+                legacy: None,
             },
         ))
     }
@@ -1734,6 +1738,7 @@ impl TableIR {
                 paths,
                 format,
                 options_json,
+                ..
             } => {
                 json!({"node":"DataFusionTextRead", "paths":paths, "format":format, "options":options_json.clone()})
             }
@@ -1827,6 +1832,7 @@ impl TableIR {
             }
             TableNode::IntervalRead { .. } => None,
             TableNode::Read { source } => Some(source.partition_rows().to_vec()),
+            TableNode::TextRead {legacy:Some(read),..} => read.counts.as_ref().as_ref()?.iter().map(|&n|usize::try_from(n).ok()).collect(),
             TableNode::BgenSelect { .. } | TableNode::TextRead { .. } => None,
             TableNode::Parallelize { rows, n_partitions } => Some(
                 (0..*n_partitions)
@@ -1924,6 +1930,7 @@ impl TableIR {
             } => count.or_else(|| partition_counts.as_ref().map(|counts| counts.iter().sum())),
             TableNode::IntervalRead { .. } => None,
             TableNode::Read { source } => Some(source.partition_rows().iter().sum()),
+            TableNode::TextRead {legacy:Some(read),..} => read.counts.as_ref().as_ref()?.iter().try_fold(0usize,|sum,&n|sum.checked_add(usize::try_from(n).ok()?)),
             TableNode::BgenSelect { .. } | TableNode::TextRead { .. } => None,
             TableNode::Parallelize { rows, .. } => Some(rows.num_rows()),
             TableNode::Expression { .. } => None,

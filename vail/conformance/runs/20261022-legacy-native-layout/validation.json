@@ -1,0 +1,186 @@
+{
+  "base_commit": "dec4b8dbd48bddaff55b134c90ecef74f905f808",
+  "native_sha256": "31033d50dae86ef4c7d6fa613fc2e3a2547d028136636d5c3755aaa7102fbd3d",
+  "build_command": "CARGO_PROFILE_RELEASE_DEBUG=0 CARGO_INCREMENTAL=0 cargo rustc --release -p vail-python --lib --features pyo3/extension-module -- -C strip=debuginfo -C link-arg=-undefined -C link-arg=dynamic_lookup",
+  "validation": {
+    "public_tests": {
+      "passed": 153,
+      "command": "VAIL_HAIL_RESOURCES=/path/to/hail/test/resources PYTHONPATH=python python -m pytest python/tests/test_legacy.py -n 4 --dist worksteal -q"
+    },
+    "rust_tests": {
+      "passed": 2,
+      "command": "VAIL_HAIL_RESOURCES=/path/to/hail/test/resources CARGO_PROFILE_RELEASE_DEBUG=0 CARGO_INCREMENTAL=0 cargo test --release -p vail-storage --lib legacy::tests -- --ignored"
+    },
+    "checks": [
+      "git diff --check",
+      "rustfmt --check --edition 2024 crates/vail-storage/src/legacy/*.rs crates/vail-table/src/legacy.rs crates/vail-table/src/legacy_source.rs"
+    ]
+  },
+  "benchmark": {
+    "fixture_rows": 1000000,
+    "fixture_partitions": 16,
+    "hail": {
+      "engine": "hail",
+      "rows": 1000000,
+      "partitions": 16,
+      "results": {
+        "count": {
+          "seconds": [
+            0.25407129107043147,
+            0.14207725005690008,
+            0.16225608403328806,
+            0.1435628749895841,
+            0.17807204206474125
+          ],
+          "median": 0.16225608403328806,
+          "value": 1000000
+        },
+        "sum": {
+          "seconds": [
+            0.15765716694295406,
+            0.1339257910149172,
+            0.12798083305824548,
+            0.1402821249794215,
+            0.13075745792593807
+          ],
+          "median": 0.1339257910149172,
+          "value": 1499998500000
+        },
+        "filter": {
+          "seconds": [
+            0.08793237491045147,
+            0.07698291691485792,
+            0.0720227500423789,
+            0.07277658290695399,
+            0.07317079196218401
+          ],
+          "median": 0.07317079196218401,
+          "value": 138749925000
+        },
+        "array": {
+          "seconds": [
+            0.1530285000335425,
+            0.1297953330213204,
+            0.11867545801214874,
+            0.1229065409861505,
+            0.14052354195155203
+          ],
+          "median": 0.1297953330213204,
+          "value": 4000024000000
+        }
+      }
+    },
+    "hail_master": "local[*]",
+    "logical_cpu_count": 14,
+    "warmup": 2,
+    "measured_runs": 5,
+    "timing": "Seconds include opening the dataset and executing the action, excluding interpreter/JVM startup. Engines ran sequentially. The host was shared with other development work. These four cases do not establish universal performance parity.",
+    "generate": "python benchmarks/legacy_read.py generate /new/path.ht --rows 1000000 --partitions 16",
+    "measure": "python benchmarks/legacy_read.py ENGINE /path.ht --runs 5 --warmup 2",
+    "vail": {
+      "engine": "vail",
+      "rows": 1000000,
+      "partitions": 16,
+      "results": {
+        "count": {
+          "seconds": [
+            0.05053179198876023,
+            0.054323584074154496,
+            0.05208012496586889,
+            0.07249833294190466,
+            0.05467395798768848
+          ],
+          "median": 0.054323584074154496,
+          "value": 1000000
+        },
+        "sum": {
+          "seconds": [
+            0.05341020901687443,
+            0.06124412501230836,
+            0.06404204200953245,
+            0.07587004103697836,
+            0.06849570805206895
+          ],
+          "median": 0.06404204200953245,
+          "value": 1499998500000
+        },
+        "filter": {
+          "seconds": [
+            0.027637875056825578,
+            0.028214708901941776,
+            0.023977583972737193,
+            0.023416416021063924,
+            0.024924000026658177
+          ],
+          "median": 0.024924000026658177,
+          "value": 138749925000
+        },
+        "array": {
+          "seconds": [
+            0.0739840839523822,
+            0.09154379100073129,
+            0.07934050005860627,
+            0.08894766599405557,
+            0.09316595806740224
+          ],
+          "median": 0.08894766599405557,
+          "value": 4000024000000
+        }
+      }
+    },
+    "hail_seconds_divided_by_vail_seconds": {
+      "count": 2.9868442371512183,
+      "sum": 2.091216750942807,
+      "filter": 2.9357563747360818,
+      "array": 1.4592325899815597
+    }
+  },
+  "resource_cases": [
+    {
+      "case": "array-100000.ht",
+      "cpu_seconds": 0.107927,
+      "import_wall_seconds": 0.01892837497871369,
+      "peak_rss_bytes_macos": 95715328,
+      "status": "passed",
+      "wall_seconds": 0.32423137489240617
+    },
+    {
+      "case": "array-400000.ht",
+      "cpu_seconds": 0.08575500000000001,
+      "import_wall_seconds": 0.003526707994751632,
+      "peak_rss_bytes_macos": 116457472,
+      "status": "passed",
+      "wall_seconds": 0.08805345802102238
+    },
+    {
+      "case": "scale.mt",
+      "cpu_seconds": 0.11916700000000001,
+      "import_wall_seconds": 0.006066665984690189,
+      "peak_rss_bytes_macos": 112820224,
+      "status": "passed",
+      "wall_seconds": 0.12613870797213167
+    }
+  ],
+  "implementation": {
+    "python": "API wrappers only; no Python row decoding or row/entry materialization.",
+    "rust": [
+      "Metadata and reference schemas, compressed block streaming, direct Arrow column builders.",
+      "Independent DataFusion file partitions with backpressure, cancellation and surfaced worker errors.",
+      "Vortex LayoutReader with filter/projection evaluation and live-range decoding reuse.",
+      "Separate Hail B-tree index readers for directory metadata and inline metadata footers.",
+      "Generic indexed row-ordinal slices seek directly to virtual block offsets.",
+      "Single integer-key filters prune partition bounds and seek indexed sub-file ranges.",
+      "Metadata-backed counts preserve original Hail partition counts.",
+      "Matrix rows and entries align as bounded native batches; globals and column axes materialize in Rust."
+    ],
+    "scope": [
+      "Only local paths and file URIs, as in the previous migration reader.",
+      "Automatic key-index predicate pushdown currently supports single Int32/Int64 keys. Unsupported predicates retain residual DataFusion filtering and streaming reads.",
+      "Row-ordinal index slices support other decoded key types without comparing keys.",
+      "Files without usable indexes scan sequentially to find row boundaries.",
+      "Original observable Hail partitions are preserved; the reader exposes independent row slices but does not introduce a distributed scheduler or automatically change public partition counts.",
+      "Batches have row limits and the streaming decoder has an advisory byte target. Exact Vortex row-range batches can exceed that byte target for wide rows.",
+      "Nested demand analysis skips unused root columns; it conservatively decodes complete selected nested columns."
+    ]
+  }
+}

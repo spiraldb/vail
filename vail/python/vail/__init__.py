@@ -250,8 +250,7 @@ class Table:
     def read_legacy(cls, path):
         """Import a local Hail 0.2 native ``.ht`` directory without Hail/JVM.
 
-        This eager migration reader materializes the dataset in memory. Use
-        ``write`` afterward to save it in Vail's native storage format.
+        Rows stream through independent native file scans when an action runs.
         """
         from .legacy import read_table_legacy
         return read_table_legacy(path)

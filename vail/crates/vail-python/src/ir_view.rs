@@ -56,6 +56,7 @@ pub fn table<'py>(py: Python<'py>, t: &TableIR) -> PyResult<Bound<'py, PyDict>> 
             paths,
             format,
             options_json,
+            ..
         } => {
             d.set_item("paths", paths)?;
             d.set_item("format", format)?;

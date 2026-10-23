@@ -1140,7 +1140,7 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
             TableNode::MultiWayZipJoin {tables,data_field_name} =>
                 crate::join_interval::prepare_zip(&table,tables,data_field_name).await,
             TableNode::Read {source}=>Ok(PreparedTable {parts:(0..source.partition_rows().len()).map(|p|plan::source_partition(&table,p)).collect::<Result<Vec<_>>>()?,counts:source.partition_rows().iter().copied().map(Some).collect(),schema}),
-            TableNode::TextRead {paths,..}=>Ok(PreparedTable {parts:(0..paths.len()).map(|p|plan::source_partition(&table,p)).collect::<Result<Vec<_>>>()?,counts:vec![None;paths.len()],schema}),
+            TableNode::TextRead {paths,..}=>Ok(PreparedTable {parts:(0..paths.len()).map(|p|plan::source_partition(&table,p)).collect::<Result<Vec<_>>>()?,counts:table.partition_rows().map(|c|c.into_iter().map(Some).collect()).unwrap_or_else(||vec![None;paths.len()]),schema}),
             TableNode::Range {n_partitions,..}|TableNode::Parallelize {n_partitions,..}=>Ok(PreparedTable {parts:(0..*n_partitions).map(|p|plan::source_partition(&table,p)).collect::<Result<Vec<_>>>()?,counts:table.partition_rows().unwrap().into_iter().map(Some).collect(),schema}),
             TableNode::Expression { expression, bindings, n_partitions } => {
                 let input = plan::expression_array(expression, bindings)?;

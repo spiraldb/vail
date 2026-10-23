@@ -1,0 +1,82 @@
+{
+  "comparisons": [
+    {
+      "case": "table_force_count",
+      "hail_seconds": 0.17099070898257196,
+      "vail_seconds": 0.05084704200271517,
+      "hail_over_vail": 3.362844764370782,
+      "value": 1000000
+    },
+    {
+      "case": "table_scalar_sum",
+      "hail_seconds": 0.15678745799232274,
+      "vail_seconds": 0.04996070801280439,
+      "hail_over_vail": 3.1382152941495507,
+      "value": 1499998500000
+    },
+    {
+      "case": "matrix_decode_count",
+      "hail_seconds": 0.4062535000266507,
+      "vail_seconds": 2.0897799590602517,
+      "hail_over_vail": 0.19440013206430495,
+      "value": 24885
+    },
+    {
+      "case": "matrix_decode_count_gt",
+      "hail_seconds": 0.34264074999373406,
+      "vail_seconds": 1.9703219170914963,
+      "hail_over_vail": 0.1739008976256659,
+      "value": 24885
+    },
+    {
+      "case": "matrix_entries_count",
+      "hail_seconds": 1.281187167041935,
+      "vail_seconds": 5.287652541999705,
+      "hail_over_vail": 0.24229791138231838,
+      "value": 63083475
+    },
+    {
+      "case": "matrix_sum_dp",
+      "hail_seconds": 0.37767891702242196,
+      "vail_seconds": 2.0209447500528768,
+      "hail_over_vail": 0.18688235638927794,
+      "value": 353709503
+    }
+  ],
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "cpu": "Apple M3 Max",
+  "logical_cpus": 14,
+  "memory_bytes": 103079215104,
+  "hail_version": "0.2.139-5e5eedb87ff8",
+  "vail_base": "dec4b8db plus uncommitted native legacy reader changes",
+  "native_sha256": "31033d50dae86ef4c7d6fa613fc2e3a2547d028136636d5c3755aaa7102fbd3d",
+  "script_sha256": "4234214b4153e16eff0ef433a5d92e8866cad9e0288d118db9087f63493152de",
+  "method": "Sequential engine processes; two warmups and five measured runs per case; medians; same Hail-written files; dataset open plus action; startup excluded; warm local filesystem cache on shared laptop.",
+  "matrix_provenance": {
+    "hail_version": "0.2.139",
+    "hail_runtime_version": "0.2.139-5e5eedb87ff8",
+    "python": "3.12.12",
+    "input_vcf": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-laptop-hail-paired/data/profile.vcf.bgz",
+    "input_vcf_sha256": "cdacd409124e0f647e08b2eff0dda7705759e971d88d6c9b054dc252c91d4b93",
+    "import_call": "hl.import_vcf(str(profile25_vcf), min_partitions=16)",
+    "output_mt": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+    "spark_master": "local[14]",
+    "spark_heap": "48g",
+    "row_count": 24885,
+    "column_count": 2535,
+    "actual_row_partitions": 16,
+    "partition_count_verification": "Hail MatrixTable.n_partitions() metadata query"
+  },
+  "table": {
+    "rows": 1000000,
+    "partitions": 16,
+    "generator": "benchmarks/legacy_read.py generate (Hail)"
+  },
+  "limitations": [
+    "Targeted six-case comparison, not the full upstream suite.",
+    "Table cases use synthetic Hail-written fixture; matrix read/count/GT/entries cases match upstream benchmark actions on original profile25 fixture.",
+    "Upstream many_ints/many_strings fixtures not run: published compressed inputs total about 1.06 GB, with only 2.2 GiB disk free before table materialization.",
+    "No cold-cache, distributed, or peak-memory comparison.",
+    "Hail Spark local[14], Java 21 (runtime warns tested Java is 11); Vail default native concurrency."
+  ]
+}

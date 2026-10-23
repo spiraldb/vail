@@ -358,8 +358,8 @@ class MatrixTable:
     def read_legacy(cls, path):
         """Import a local Hail 0.2 native ``.mt`` directory without Hail/JVM.
 
-        This eager migration reader materializes all axes and entries in
-        memory, preserving column order and missing (filtered) entry structs.
+        Rows and entries stream through native file scans, preserving column
+        order and missing (filtered) entry structs.
         """
         from .legacy import read_matrix_legacy
         return read_matrix_legacy(path)

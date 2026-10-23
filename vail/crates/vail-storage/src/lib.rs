@@ -4,6 +4,7 @@
 //! Iceberg's real catalog transaction, manifest, and snapshot implementation.
 //! Vortex file writing and reading are delegated to the pinned Iceberg PR.
 
+pub mod legacy;
 pub mod fragment_index;
 pub mod globals;
 pub mod local_table;
