@@ -585,6 +585,9 @@ def type_from_wire(value):
 
 
 def infer_type(value):
+    from .expressions import Expression
+    if isinstance(value, Expression):
+        return value.dtype
     from .reference_genome import Locus
     if isinstance(value, Locus):
         return tlocus(value.reference_genome)
@@ -612,10 +615,24 @@ def infer_type(value):
         return tfloat64
     if isinstance(value, str):
         return tstr
-    if isinstance(value, Mapping):
+    if isinstance(value, Struct):
         if any(field is None for field in value.values()):
             raise ValueError("cannot infer a struct field type from a missing value; provide a type")
         return tstruct(**{name: infer_type(field) for name, field in value.items()})
+    if isinstance(value, Mapping):
+        def infer_items(items, label):
+            result = None
+            for item in items:
+                if item is None:
+                    continue
+                current = infer_type(item)
+                result = current if result is None else unify_types(result, current)
+                if result is None:
+                    raise TypeError(f"dictionary {label} have incompatible types")
+            if result is None:
+                raise ValueError(f"cannot infer dictionary {label} from empty or missing values; provide a type")
+            return result
+        return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
     if isinstance(value, (list, set, frozenset)):
         kind = 'array' if isinstance(value, list) else 'set'
         if not value:

@@ -71,8 +71,9 @@ pub enum Type {
 
 impl Type {
     /// Casts preserve logical shape and parameters. Primitive conversions and
-    /// recursively numeric array conversions use Arrow's checked cast kernels;
-    /// Call construction is the sole explicit structural conversion.
+    /// recursively compatible array/tuple/struct conversions use Arrow's checked
+    /// batch cast kernels. Tuple positions and struct field names stay fixed;
+    /// Call construction is the sole explicit shape-changing conversion.
     pub fn ensure_castable_to(&self, target: &Type) -> Result<(), ExprError> {
         if self == target {
             return Ok(());
@@ -82,6 +83,14 @@ impl Type {
             arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
         } else if let (Type::Array { array: left }, Type::Array { array: right }) = (self, target) {
             left.ensure_castable_to(right).is_ok()
+                && arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
+        } else if let (Type::Tuple { tuple: left }, Type::Tuple { tuple: right }) = (self, target) {
+            left.len() == right.len()
+                && left.iter().zip(right).all(|(a, b)| a.ensure_castable_to(b).is_ok())
+                && arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
+        } else if let (Type::Struct { r#struct: left }, Type::Struct { r#struct: right }) = (self, target) {
+            left.len() == right.len()
+                && left.iter().zip(right).all(|((an, a), (bn, b))| an == bn && a.ensure_castable_to(b).is_ok())
                 && arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
         } else if let (Type::Struct { r#struct: fields }, Type::Primitive(PrimitiveType::Call)) =
             (self, target)

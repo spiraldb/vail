@@ -8,7 +8,8 @@ import vail as hl
     ('value', hl.tstr),
     (True, hl.tbool),
     ([1, None, 3], hl.tarray(hl.tint32)),
-    ({'a': [1, 2]}, hl.tstruct(a=hl.tarray(hl.tint32))),
+    ({'a': [1, 2]}, hl.tdict(hl.tstr, hl.tarray(hl.tint32))),
+    (hl.Struct(a=[1, 2]), hl.tstruct(a=hl.tarray(hl.tint32))),
 ])
 def test_eval_typed_python_values(value, dtype):
     result, result_type = hl.eval_typed(value)
