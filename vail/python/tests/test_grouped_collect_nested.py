@@ -76,7 +76,7 @@ def test_grouped_collect_referenced_globals_in_keys_inputs_and_fold():
 
 
 def test_grouped_collect_many_partitions_force_count_and_values():
-    table = hl.range_table(128, n_partitions=32)
+    table = hl.range_table(128, n_partitions=64)
     table = table.annotate(payload=hl.range(table.idx % 7).map(lambda j: hl.struct(x=j)))
     grouped = table.group_by(key=table.idx % 64).aggregate(values=hl.agg.collect(table.payload))
     assert grouped._force_count() == 64

@@ -1593,8 +1593,8 @@ pub async fn force_count(table: TableRef) -> Result<usize> {
 }
 
 /// For a count action, a terminal sort-preserving merge only establishes row
-/// order for the stream consumer. Split its already-sorted inputs into count
-/// streams and replay only transparent projections above it. This still
+/// order for the stream consumer. Coalesce its inputs without ordering and
+/// replay transparent singleton wrappers and projections above it. This still
 /// executes every projection and every child operator, including per-partition
 /// sorts, while avoiding comparisons and copies of wide rows in the terminal
 /// merge. Any non-projection operator blocks this optimization.
@@ -1602,7 +1602,15 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
     let mut node = plan;
     let mut wrappers = Vec::new();
     loop {
-        if crate::action_parameters::repeatable_node(&node) {
+        let singleton_view = node
+            .as_ref()
+            .downcast_ref::<PartitionViewExec>()
+            .is_some_and(|view| view.index == 0
+                && view.input.output_partitioning().partition_count() == 1);
+        if crate::action_parameters::repeatable_node(&node)
+            || node.as_ref().is::<crate::rng_context::ConsumerScopeExec>()
+            || singleton_view
+        {
             let children = node.children();
             if children.len() != 1 {
                 return Ok(None);
@@ -1646,16 +1654,12 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
         if count <= 1 {
             return Ok(None);
         }
-        // An exchange may require every output to be polled. For wider fan-out,
-        // native coalescing drives all inputs with bounded receiver channels,
-        // without the ordered merge's comparisons/interleaving of wide rows.
-        // Count has no ordering requirement, but still evaluates every safe
-        // projection above the former merge.
-        let mut parts = if count > crate::EXECUTION_CONCURRENCY {
-            vec![Arc::new(CoalescePartitionsExec::new(input)) as PhysicalPlan]
-        } else {
-            partition_views(input, count)
-        };
+        // An exchange may require every output to be polled. Native coalescing
+        // drives all inputs with bounded receiver channels, without the ordered
+        // merge's comparisons/interleaving of wide rows. Keep one result stream
+        // so singleton views and consumer ownership are replayed without forks.
+        // Count still evaluates every safe projection above the former merge.
+        let mut parts = vec![Arc::new(CoalescePartitionsExec::new(input)) as PhysicalPlan];
         for part in &mut parts {
             for wrapper in wrappers.iter().rev() {
                 if let Some(projection) = wrapper.as_ref().downcast_ref::<ProjectionExec>() {
