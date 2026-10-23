@@ -1,0 +1,60 @@
+{
+  "runner_sha256": "3ae72c331129c9985b94a2ae7cf01b9bd213c907089ffd694403c67d988a8b58",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "hail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/tmp/full-local-upstream-cache-20261022",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[100]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.8444802499143407,
+      "telemetry": {
+        "cpu_seconds": 8.820734291666666,
+        "average_cores": 4.782071160225791,
+        "peak_rss_gib": 1.108154296875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 194646926,
+          "system_time": 17050697,
+          "instructions": 56307221784,
+          "cycles": 29766870748,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-gapfill/rep-03/telemetry/hail/benchmark_table--test_read_force_count_partitions[100]"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.156,
+      "elapsed_seconds": 5.537
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

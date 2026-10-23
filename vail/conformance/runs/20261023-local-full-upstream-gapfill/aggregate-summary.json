@@ -1,0 +1,102 @@
+{
+  "repetitions": [
+    {
+      "repetition": "rep-01",
+      "selected": 54,
+      "vail_attempts": 54,
+      "hail_attempts_or_gated_entries": 54,
+      "common_passes": 52,
+      "vail_wall_sum_seconds": 154.7609123759903,
+      "hail_wall_sum_seconds": 195.00756987265777,
+      "vail_cpu_sum_seconds": 692.2807515416666,
+      "hail_cpu_sum_seconds": 1211.70261325,
+      "vail_status_counts": {
+        "passed": 54
+      },
+      "hail_status_counts": {
+        "failed": 2,
+        "passed": 52
+      },
+      "wall_ratio_geomean": 4.346172275935502,
+      "cpu_ratio_geomean": 3.8868188494497518,
+      "wall_sum_ratio": 1.2600569929368766,
+      "cpu_sum_ratio": 1.7503052201749258
+    },
+    {
+      "repetition": "rep-02",
+      "selected": 54,
+      "vail_attempts": 54,
+      "hail_attempts_or_gated_entries": 54,
+      "common_passes": 52,
+      "vail_wall_sum_seconds": 153.47543824545573,
+      "hail_wall_sum_seconds": 202.08869200118352,
+      "vail_cpu_sum_seconds": 702.8241824583333,
+      "hail_cpu_sum_seconds": 1281.6658869999999,
+      "vail_status_counts": {
+        "passed": 54
+      },
+      "hail_status_counts": {
+        "failed": 2,
+        "passed": 52
+      },
+      "wall_ratio_geomean": 4.6399828476738625,
+      "cpu_ratio_geomean": 4.190626088317618,
+      "wall_sum_ratio": 1.3167494050610224,
+      "cpu_sum_ratio": 1.823593893023143
+    },
+    {
+      "repetition": "rep-03",
+      "selected": 54,
+      "vail_attempts": 54,
+      "hail_attempts_or_gated_entries": 54,
+      "common_passes": 52,
+      "vail_wall_sum_seconds": 152.05789066525176,
+      "hail_wall_sum_seconds": 194.59118712414056,
+      "vail_cpu_sum_seconds": 692.7898710833333,
+      "hail_cpu_sum_seconds": 1196.4762778333334,
+      "vail_status_counts": {
+        "passed": 54
+      },
+      "hail_status_counts": {
+        "failed": 2,
+        "passed": 52
+      },
+      "wall_ratio_geomean": 4.518037546325646,
+      "cpu_ratio_geomean": 3.8879164345476442,
+      "wall_sum_ratio": 1.279717785593408,
+      "cpu_sum_ratio": 1.7270406623618395
+    }
+  ],
+  "paired_cases_with_at_least_one_successful_pair": 52,
+  "all_rep_paired_cases": 52,
+  "common_paired_case_count": 52,
+  "variable_paired_case_count": 0,
+  "paired_case_outcomes": {
+    "wall_vail_faster_gt_10pct": 50,
+    "wall_within_10pct": 0,
+    "wall_hail_faster_gt_10pct": 2,
+    "cpu_vail_faster_gt_10pct": 46,
+    "cpu_within_10pct": 3,
+    "cpu_hail_faster_gt_10pct": 3
+  },
+  "case_medians": {
+    "wall_ratio_geomean": 4.49400152768135,
+    "cpu_ratio_geomean": 3.936200734505735,
+    "vail_wall_sum_seconds": 153.2189835786121,
+    "hail_wall_sum_seconds": 195.30290700332262,
+    "vail_cpu_sum_seconds": 695.8187905,
+    "hail_cpu_sum_seconds": 1214.3917929166666,
+    "wall_sum_ratio": 1.2746652042833746,
+    "cpu_sum_ratio": 1.7452701903092205,
+    "median_repetition_wall_geomean": 4.518037546325646,
+    "median_repetition_cpu_geomean": 3.8879164345476442,
+    "median_repetition_wall_sum_ratio": 1.279717785593408,
+    "median_repetition_cpu_sum_ratio": 1.7503052201749258
+  },
+  "metric_definitions": {
+    "wall_seconds": "benchmark_seconds, per fresh worker/query; excludes startup and fixture preparation",
+    "cpu_seconds": "sum of user+system process-tree counters; exited descendants retained by PID+creation time; 10 Hz sample lower-bound for very short children",
+    "ratios": "Hail / Vail; geomean over per-case ratios; sum ratio is sum of per-case times divided by sum of per-case times",
+    "case_medians": "independent per-engine successful samples: three fresh repetitions per engine; observed minimum and maximum are descriptive ranges, not confidence intervals; ratios computed from medians"
+  }
+}

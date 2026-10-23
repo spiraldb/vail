@@ -1,0 +1,1950 @@
+2026-10-23 03:31:42.880 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:31:43.097 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:31:43.305 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.345 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen returned 1 files: sim_ukb.bgen
+2026-10-23 03:31:43.712 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 391.8K allocated (131.8K blocks / 260.0K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.716 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.723 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (507.8K blocks / 516.3K chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.810 MatrixBGENReader$: INFO: Number of BGEN files parsed: 1
+Number of samples in BGEN files: 50000
+Number of variants across all BGEN files: 249115
+2026-10-23 03:31:43.855 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (1019.8K blocks / 1.0M chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.859 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.2M allocated (1.9M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.897 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.897 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:43.897 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.897 RegionPool: INFO: RegionPool: FREE: 4.4M allocated (2.1M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.925 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.944 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen returned 1 files: sim_ukb.bgen
+2026-10-23 03:31:43.968 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 391.8K allocated (131.8K blocks / 260.0K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.970 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:43.971 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (507.8K blocks / 516.3K chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.014 MatrixBGENReader$: INFO: Number of BGEN files parsed: 1
+Number of samples in BGEN files: 50000
+Number of variants across all BGEN files: 249115
+2026-10-23 03:31:44.033 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (1019.8K blocks / 1.0M chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.037 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.2M allocated (1.9M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.058 RelationalFunctions$: INFO: JSON: JObject(List((name,JString(ForceCountTable))))
+2026-10-23 03:31:44.168 LoweringPipeline: INFO: initial IR: IR size 135: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,offset:Int64,file_idx:Int32},entry:Struct{GT:Call,GP:Array[Float64],dosage:Float64}}, False, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!mt2 = MatrixMapRows(!mt) {
+(%global, %sa, %va, %g, %n_cols) =>
+  !1 = GetField(%va) [locus] 
+  !2 = GetField(%va) [alleles] 
+  !3 = GetField(%va) [rsid] 
+  !4 = GetField(%va) [varid] 
+  !5 = GetField(%va) [offset] 
+  !6 = GetField(%va) [file_idx]
+  !7 = MakeStruct(locus: !1, alleles: !2, rsid: !3, varid: !4, offset: !5, file_idx: !6)
+  SelectFields(!7) [(locus alleles rsid varid)]
+}
+!mt3 = MatrixMapEntries(!mt2) {
+(%global, %sa, %va, %g) =>
+  !8 = SelectFields(%g) [(GT GP dosage)]
+  SelectFields(!8) [(GP)]
+}
+!mt4 = MatrixMapRows(!mt3) {
+(%global, %sa, %va, %g, %n_cols) =>
+  !9 = SelectFields(%va) [
+  (locus alleles rsid varid)] 
+  %__norm_2 =(agg) GetField(%g) [GP]
+  !10 = IsNA(%__norm_2)
+  !11 = ApplyUnaryPrimOp(!10) [Bang]
+  !46 = AggFilter(!11) [False] {
+    !12 = CastToArray(%__norm_2)
+    !13 = ArrayLen(!12) 
+    !c3 = I32 [3]
+    !14 = ApplyComparisonOp(!13, !c3) [EQ]
+    %__norm_3 =(agg) If !14 then { %__norm_2 } else {
+      !15 = Str ["'info_scor..."]
+      Die(!15) [Array[Float64], 2]
+    }
+    !c2 = I32 [2]
+    %__norm_4 =(agg) ApplyIR(%__norm_3, !c2) [4, indexArray, 
+    (), Float64]
+    !c1 = I32 [1]
+    %__norm_5 =(agg) ApplyIR(%__norm_3, !c1) [3, indexArray, 
+    (), Float64]
+    !c2_2 = I32 [2]
+    !16 = ApplyIR(!c2_2) [5, toFloat64, (), Float64]
+    !17 = ApplyBinaryPrimOp(!16, %__norm_4) [Multiply]
+    %__norm_6 =(agg) ApplyBinaryPrimOp(%__norm_5, !17) [Add]
+    %__norm_7 = ApplyAggOp [Count]
+    !18 = ApplyBinaryPrimOp(%__norm_5, %__norm_4) [Add] 
+    !c0 = I32 [0]
+    !19 = ApplyIR(%__norm_3, !c0) [7, indexArray, 
+    (), Float64]
+    !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+    %__norm_8 = ApplyAggOp(!20) [Sum]
+    %__norm_9 = ApplyAggOp(%__norm_6) [Sum]
+    !c4 = I32 [4]
+    !21 = ApplyIR(!c4) [6, toFloat64, (), Float64]
+    !22 = ApplyBinaryPrimOp(!21, %__norm_4) [Multiply]
+    !23 = ApplyBinaryPrimOp(%__norm_5, !22) [Add] 
+    !24 = ApplyBinaryPrimOp(%__norm_6, %__norm_6) [Multiply]
+    !25 = ApplyBinaryPrimOp(!23, !24) [Subtract]
+    %__norm_10 = ApplyAggOp(!25) [Sum]
+    !c0_2 = I32 [0]
+    !26 = ApplyIR(!c0_2) [8, toFloat64, (), Float64]
+    !27 = ApplyComparisonOp(%__norm_8, !26) [NEQ]
+    %__norm_11 = If !27 then {
+      ApplyBinaryPrimOp(%__norm_9, %__norm_8) [FloatingPointDivide]
+    } else {
+      NA [Float64]
+    }
+    !c0_3 = I32 [0]
+    !28 = ApplyIR(!c0_3) [9, toInt64, (), Int64]
+    !29 = ApplyComparisonOp(%__norm_7, !28) [EQ]
+    !44 = If !29 then {
+      NA [Float64]
+    } else {
+      !30 = F64 [0.0]
+      !31 = ApplyComparisonOp(%__norm_11, !30) [EQ] 
+      !32 = F64 [1.0]
+      !33 = ApplyComparisonOp(%__norm_11, !32) [EQ]
+      !34 = ApplySpecial(!31, !33) [10, lor, 
+      (), Boolean]
+      If !34 then {
+        F64 [1.0]
+      } else {
+        !35 = F64 [1.0] 
+        !36 = ApplyIR(%__norm_7) [11, toFloat64, 
+        (), Float64]
+        !37 = ApplyBinaryPrimOp(%__norm_10, !36) [FloatingPointDivide] 
+        !c2_3 = I32 [2]
+        !38 = ApplyIR(!c2_3) [12, toFloat64, (), Float64]
+        !39 = ApplyBinaryPrimOp(!38, %__norm_11) [Multiply] 
+        !c1_2 = I32 [1]
+        !40 = ApplyIR(!c1_2) [13, toFloat64, (), Float64]
+        !41 = ApplyBinaryPrimOp(!40, %__norm_11) [Subtract]
+        !42 = ApplyBinaryPrimOp(!39, !41) [Multiply]
+        !43 = ApplyBinaryPrimOp(!37, !42) [FloatingPointDivide]
+        ApplyBinaryPrimOp(!35, !43) [Subtract]
+      }
+    } 
+    !45 = ApplyIR(%__norm_7) [14, toInt32, (), Int32]
+    MakeStruct(score: !44, n_included: !45)
+  }
+  InsertFields !9 (info_score: !46)
+}
+!ht = MatrixRowsTable(!mt4)
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !47 = SelectFields(%row) [
+  (locus alleles rsid varid info_score)]
+  !48 = SelectFields(!47) [
+  (locus alleles info_score)]
+  InsertFields !48 ()
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.216 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.216 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.216 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.217 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.217 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.217 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.217 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.217 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.217 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.217 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.217 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.218 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.218 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.218 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.218 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.218 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.218 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.218 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.219 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.219 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.219 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.263 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:31:44.284 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.284 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.284 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.294 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.294 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.294 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.302 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 93: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String]},entry:Struct{GP:Array[Float64]}}, False, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!mt2 = MatrixMapRows(!mt) {
+(%global, %sa, %va, %g, %n_cols) =>
+  %__norm_2 =(agg) GetField(%g) [GP]
+  !1 = IsNA(%__norm_2)
+  !2 = ApplyUnaryPrimOp(!1) [Bang]
+  !36 = AggFilter(!2) [False] {
+    !3 = ArrayLen(%__norm_2) 
+    !c3 = I32 [3]
+    !4 = ApplyComparisonOp(!3, !c3) [EQ]
+    %__norm_3 =(agg) If !4 then { %__norm_2 } else {
+      !5 = Str ["'info_scor..."]
+      Die(!5) [Array[Float64], 2]
+    }
+    !c2 = I32 [2]
+    %__norm_4 =(agg) ArrayRef(%__norm_3, !c2) [4]
+    !c1 = I32 [1]
+    %__norm_5 =(agg) ArrayRef(%__norm_3, !c1) [3]
+    !6 = F64 [2.0]
+    !7 = ApplyBinaryPrimOp(!6, %__norm_4) [Multiply]
+    %__norm_6 =(agg) ApplyBinaryPrimOp(%__norm_5, !7) [Add]
+    %__norm_7 = ApplyAggOp [Count]
+    !8 = ApplyBinaryPrimOp(%__norm_5, %__norm_4) [Add] 
+    !c0 = I32 [0]
+    !9 = ArrayRef(%__norm_3, !c0) [7]
+    !10 = ApplyBinaryPrimOp(!8, !9) [Add]
+    %__norm_8 = ApplyAggOp(!10) [Sum]
+    %__norm_9 = ApplyAggOp(%__norm_6) [Sum]
+    !11 = F64 [4.0]
+    !12 = ApplyBinaryPrimOp(!11, %__norm_4) [Multiply]
+    !13 = ApplyBinaryPrimOp(%__norm_5, !12) [Add] 
+    !14 = ApplyBinaryPrimOp(%__norm_6, %__norm_6) [Multiply]
+    !15 = ApplyBinaryPrimOp(!13, !14) [Subtract]
+    %__norm_10 = ApplyAggOp(!15) [Sum]
+    !16 = F64 [0.0]
+    !17 = ApplyComparisonOp(%__norm_8, !16) [NEQ]
+    %__norm_11 = If !17 then {
+      ApplyBinaryPrimOp(%__norm_9, %__norm_8) [FloatingPointDivide]
+    } else {
+      NA [Float64]
+    }
+    !18 = I64 [0]
+    !19 = ApplyComparisonOp(%__norm_7, !18) [EQ]
+    !34 = If !19 then {
+      NA [Float64]
+    } else {
+      !20 = F64 [0.0]
+      !21 = ApplyComparisonOp(%__norm_11, !20) [EQ] 
+      !22 = F64 [1.0]
+      !23 = ApplyComparisonOp(%__norm_11, !22) [EQ]
+      !24 = ApplySpecial(!21, !23) [10, lor, 
+      (), Boolean]
+      If !24 then {
+        F64 [1.0]
+      } else {
+        !25 = F64 [1.0] 
+        !26 = ApplyIR(%__norm_7) [11, toFloat64, 
+        (), Float64]
+        !27 = ApplyBinaryPrimOp(%__norm_10, !26) [FloatingPointDivide] 
+        !28 = F64 [2.0]
+        !29 = ApplyBinaryPrimOp(!28, %__norm_11) [Multiply] 
+        !30 = F64 [1.0]
+        !31 = ApplyBinaryPrimOp(!30, %__norm_11) [Subtract]
+        !32 = ApplyBinaryPrimOp(!29, !31) [Multiply]
+        !33 = ApplyBinaryPrimOp(!27, !32) [FloatingPointDivide]
+        ApplyBinaryPrimOp(!25, !33) [Subtract]
+      }
+    } 
+    !35 = ApplyIR(%__norm_7) [14, toInt32, (), Int32]
+    MakeStruct(score: !34, n_included: !35)
+  }
+  InsertFields %va (info_score: !36)
+}
+!ht = MatrixRowsTable(!mt2)
+TableToValueApply(!ht) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.400 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 138: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  %__norm_2 = GetField(%global) [__cols]
+  %__norm_3 = ArrayLen(%__norm_2)
+  %__norm_4 = SelectFields(%global) [()]
+  %__norm_5 = SelectFields(%row) [(locus alleles)]
+  %__norm_6 =(scan) SelectFields(%global) [()]
+  %__norm_7 =(scan) SelectFields(%row) [
+  (locus alleles)]
+  !s = ToStream(%__norm_2) [False] 
+  !s2 = ToStream(%__norm_1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_8, %__norm_9) =>
+    !1 = IsNA(%__norm_9)
+    If !1 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_8, %__norm_9) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_10) =>
+    !2 = IsNA(%__norm_10)
+    ApplyUnaryPrimOp(!2) [Bang]
+  }
+  %__norm_24 = StreamAgg(!s4) { (%__norm_11) =>
+    %__norm_12 =(agg) GetTupleElement(%__norm_11) [0]
+    %__norm_13 =(agg) GetTupleElement(%__norm_11) [1]
+    %__norm_14 =(agg) GetField(%__norm_13) [GP]
+    !3 = IsNA(%__norm_14)
+    !4 = ApplyUnaryPrimOp(!3) [Bang]
+    !38 = AggFilter(!4) [False] {
+      !5 = ArrayLen(%__norm_14) 
+      !c3 = I32 [3]
+      !6 = ApplyComparisonOp(!5, !c3) [EQ]
+      %__norm_15 =(agg) If !6 then { %__norm_14 } else {
+        !7 = Str ["'info_scor..."]
+        Die(!7) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_16 =(agg) ArrayRef(%__norm_15, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_17 =(agg) ArrayRef(%__norm_15, !c1) [3]
+      !8 = F64 [2.0]
+      !9 = ApplyBinaryPrimOp(!8, %__norm_16) [Multiply]
+      %__norm_18 =(agg) ApplyBinaryPrimOp(%__norm_17, !9) [Add]
+      %__norm_19 = ApplyAggOp [Count]
+      !10 = ApplyBinaryPrimOp(%__norm_17, %__norm_16) [Add] 
+      !c0 = I32 [0]
+      !11 = ArrayRef(%__norm_15, !c0) [7]
+      !12 = ApplyBinaryPrimOp(!10, !11) [Add]
+      %__norm_20 = ApplyAggOp(!12) [Sum]
+      %__norm_21 = ApplyAggOp(%__norm_18) [Sum]
+      !13 = F64 [4.0]
+      !14 = ApplyBinaryPrimOp(!13, %__norm_16) [Multiply]
+      !15 = ApplyBinaryPrimOp(%__norm_17, !14) [Add] 
+      !16 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+      !17 = ApplyBinaryPrimOp(!15, !16) [Subtract]
+      %__norm_22 = ApplyAggOp(!17) [Sum]
+      !18 = F64 [0.0]
+      !19 = ApplyComparisonOp(%__norm_20, !18) [NEQ]
+      %__norm_23 = If !19 then {
+        ApplyBinaryPrimOp(%__norm_21, %__norm_20) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !20 = I64 [0]
+      !21 = ApplyComparisonOp(%__norm_19, !20) [EQ]
+      !36 = If !21 then {
+        NA [Float64]
+      } else {
+        !22 = F64 [0.0]
+        !23 = ApplyComparisonOp(%__norm_23, !22) [EQ] 
+        !24 = F64 [1.0]
+        !25 = ApplyComparisonOp(%__norm_23, !24) [EQ]
+        !26 = ApplySpecial(!23, !25) [10, lor, 
+        (), Boolean]
+        If !26 then {
+          F64 [1.0]
+        } else {
+          !27 = F64 [1.0] 
+          !28 = ApplyIR(%__norm_19) [11, toFloat64, 
+          (), Float64]
+          !29 = ApplyBinaryPrimOp(%__norm_22, !28) [FloatingPointDivide] 
+          !30 = F64 [2.0]
+          !31 = ApplyBinaryPrimOp(!30, %__norm_23) [Multiply] 
+          !32 = F64 [1.0]
+          !33 = ApplyBinaryPrimOp(!32, %__norm_23) [Subtract]
+          !34 = ApplyBinaryPrimOp(!31, !33) [Multiply]
+          !35 = ApplyBinaryPrimOp(!29, !34) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!27, !35) [Subtract]
+        }
+      } 
+      !37 = ApplyIR(%__norm_19) [14, toInt32, (), Int32]
+      MakeStruct(score: !36, n_included: !37)
+    }
+    InsertFields %__norm_5 (info_score: !38)
+  }
+  InsertFields %__norm_24 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: %__norm_1)
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  SelectFields(%global) [()]
+}
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  SelectFields(%row) [(locus alleles info_score)]
+}
+TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.403 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.403 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.403 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.495 ForwardLets$: INFO: Eliminating unused binding:
+__norm_3: int32 = (EVAL) ArrayLen(#__norm_2)
+2026-10-23 03:31:44.496 ForwardLets$: INFO: Eliminating unused binding:
+__norm_4: struct{} = (EVAL) MakeStruct()
+2026-10-23 03:31:44.497 ForwardLets$: INFO: Eliminating unused binding:
+__norm_6: struct{} = (SCAN) MakeStruct()
+2026-10-23 03:31:44.498 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{locus: locus<GRCh37>, alleles: array<str>} = (SCAN) SelectFields(#row) [(locus alleles)]
+2026-10-23 03:31:44.498 ForwardLets$: INFO: Eliminating unused binding:
+__norm_12: struct{s: str} = (AGG) GetTupleElement(#__norm_11) [0]
+2026-10-23 03:31:44.518 PruneDeadFields$: INFO: Prune: InsertFields: eliminating field 'the entries! [877f12a8827e18f61222c6c8c5fb04a8]'
+2026-10-23 03:31:44.520 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.520 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.520 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.521 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.521 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.521 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.527 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.527 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.527 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.542 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 115: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = GetField(%global) [__cols]
+  !s = ToStream(!1) [False] 
+  !2 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !s2 = ToStream(!2) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_8, %__norm_9) =>
+    !3 = IsNA(%__norm_9)
+    If !3 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_8, %__norm_9) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_10) =>
+    !4 = IsNA(%__norm_10)
+    ApplyUnaryPrimOp(!4) [Bang]
+  }
+  StreamAgg(!s4) { (%__norm_11) =>
+    !5 = SelectFields(%row) [(locus alleles)] 
+    !6 = GetTupleElement(%__norm_11) [1]
+    %__norm_14 =(agg) GetField(!6) [GP]
+    !7 = IsNA(%__norm_14)
+    !8 = ApplyUnaryPrimOp(!7) [Bang]
+    !42 = AggFilter(!8) [False] {
+      !9 = ArrayLen(%__norm_14) 
+      !c3 = I32 [3]
+      !10 = ApplyComparisonOp(!9, !c3) [EQ]
+      %__norm_15 =(agg) If !10 then {
+        %__norm_14
+        } else {
+        !11 = Str ["'info_scor..."]
+        Die(!11) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_16 =(agg) ArrayRef(%__norm_15, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_17 =(agg) ArrayRef(%__norm_15, !c1) [3]
+      !12 = F64 [2.0]
+      !13 = ApplyBinaryPrimOp(!12, %__norm_16) [Multiply]
+      %__norm_18 =(agg) ApplyBinaryPrimOp(%__norm_17, !13) [Add]
+      %__norm_19 = ApplyAggOp [Count]
+      !14 = ApplyBinaryPrimOp(%__norm_17, %__norm_16) [Add] 
+      !c0 = I32 [0]
+      !15 = ArrayRef(%__norm_15, !c0) [7]
+      !16 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_20 = ApplyAggOp(!16) [Sum]
+      %__norm_21 = ApplyAggOp(%__norm_18) [Sum]
+      !17 = F64 [4.0]
+      !18 = ApplyBinaryPrimOp(!17, %__norm_16) [Multiply]
+      !19 = ApplyBinaryPrimOp(%__norm_17, !18) [Add] 
+      !20 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+      !21 = ApplyBinaryPrimOp(!19, !20) [Subtract]
+      %__norm_22 = ApplyAggOp(!21) [Sum]
+      !22 = F64 [0.0]
+      !23 = ApplyComparisonOp(%__norm_20, !22) [NEQ]
+      %__norm_23 = If !23 then {
+        ApplyBinaryPrimOp(%__norm_21, %__norm_20) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !24 = I64 [0]
+      !25 = ApplyComparisonOp(%__norm_19, !24) [EQ]
+      !40 = If !25 then {
+        NA [Float64]
+      } else {
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_23, !26) [EQ] 
+        !28 = F64 [1.0]
+        !29 = ApplyComparisonOp(%__norm_23, !28) [EQ]
+        !30 = ApplySpecial(!27, !29) [10, lor, 
+        (), Boolean]
+        If !30 then {
+          F64 [1.0]
+        } else {
+          !31 = F64 [1.0] 
+          !32 = ApplyIR(%__norm_19) [11, toFloat64, 
+          (), Float64]
+          !33 = ApplyBinaryPrimOp(%__norm_22, !32) [FloatingPointDivide] 
+          !34 = F64 [2.0]
+          !35 = ApplyBinaryPrimOp(!34, %__norm_23) [Multiply] 
+          !36 = F64 [1.0]
+          !37 = ApplyBinaryPrimOp(!36, %__norm_23) [Subtract]
+          !38 = ApplyBinaryPrimOp(!35, !37) [Multiply]
+          !39 = ApplyBinaryPrimOp(!33, !38) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!31, !39) [Subtract]
+        }
+      } 
+      !41 = ApplyIR(%__norm_19) [14, toInt32, (), Int32]
+      MakeStruct(score: !40, n_included: !41)
+    }
+    InsertFields !5 (info_score: !42)
+  }
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.549 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 117: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = GetField(%global) [__cols]
+  !s = ToStream(!1) [False] 
+  !2 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !s2 = ToStream(!2) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_1, %__norm_2) =>
+    !3 = IsNA(%__norm_2)
+    If !3 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_1, %__norm_2) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_3) =>
+    !4 = IsNA(%__norm_3)
+    ApplyUnaryPrimOp(!4) [Bang]
+  }
+  StreamAgg(!s4) { (%__norm_4) =>
+    !5 = SelectFields(%row) [(locus alleles)] 
+    !6 = GetTupleElement(%__norm_4) [1]
+    %__norm_5 =(agg) GetField(!6) [GP]
+    !7 = IsNA(%__norm_5)
+    !8 = ApplyUnaryPrimOp(!7) [Bang]
+    !42 = AggFilter(!8) [False] {
+      !9 = ArrayLen(%__norm_5) 
+      !c3 = I32 [3]
+      !10 = ApplyComparisonOp(!9, !c3) [EQ]
+      %__norm_6 =(agg) If !10 then { %__norm_5 } else {
+        !11 = Str ["'info_scor..."]
+        Die(!11) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_7 =(agg) ArrayRef(%__norm_6, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_8 =(agg) ArrayRef(%__norm_6, !c1) [3]
+      !12 = F64 [2.0]
+      !13 = ApplyBinaryPrimOp(!12, %__norm_7) [Multiply]
+      %__norm_9 =(agg) ApplyBinaryPrimOp(%__norm_8, !13) [Add]
+      %__norm_10 = ApplyAggOp [Count]
+      !14 = ApplyBinaryPrimOp(%__norm_8, %__norm_7) [Add] 
+      !c0 = I32 [0]
+      !15 = ArrayRef(%__norm_6, !c0) [7]
+      !16 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_11 = ApplyAggOp(!16) [Sum]
+      %__norm_12 = ApplyAggOp(%__norm_9) [Sum]
+      !17 = F64 [4.0]
+      !18 = ApplyBinaryPrimOp(!17, %__norm_7) [Multiply]
+      !19 = ApplyBinaryPrimOp(%__norm_8, !18) [Add] 
+      !20 = ApplyBinaryPrimOp(%__norm_9, %__norm_9) [Multiply]
+      !21 = ApplyBinaryPrimOp(!19, !20) [Subtract]
+      %__norm_13 = ApplyAggOp(!21) [Sum]
+      !22 = F64 [0.0]
+      !23 = ApplyComparisonOp(%__norm_11, !22) [NEQ]
+      %__norm_14 = If !23 then {
+        ApplyBinaryPrimOp(%__norm_12, %__norm_11) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !24 = I64 [0]
+      !25 = ApplyComparisonOp(%__norm_10, !24) [EQ]
+      !40 = If !25 then {
+        NA [Float64]
+      } else {
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_14, !26) [EQ] 
+        !28 = F64 [1.0]
+        !29 = ApplyComparisonOp(%__norm_14, !28) [EQ]
+        !30 = ApplySpecial(!27, !29) [10, lor, 
+        (), Boolean]
+        If !30 then {
+          F64 [1.0]
+        } else {
+          !31 = F64 [1.0] 
+          !32 = ApplyIR(%__norm_10) [11, toFloat64, 
+          (), Float64]
+          !33 = ApplyBinaryPrimOp(%__norm_13, !32) [FloatingPointDivide] 
+          !34 = F64 [2.0]
+          !35 = ApplyBinaryPrimOp(!34, %__norm_14) [Multiply] 
+          !36 = F64 [1.0]
+          !37 = ApplyBinaryPrimOp(!36, %__norm_14) [Subtract]
+          !38 = ApplyBinaryPrimOp(!35, !37) [Multiply]
+          !39 = ApplyBinaryPrimOp(!33, !38) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!31, !39) [Subtract]
+        }
+      } 
+      !41 = ApplyIR(%__norm_10) [14, toInt32, (), Int32]
+      MakeStruct(score: !40, n_included: !41)
+    }
+    InsertFields !5 (info_score: !42)
+  }
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+%__norm_15 = TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+RelationalRef [Int64]
+
+2026-10-23 03:31:44.552 LoweringPipeline: INFO: initial IR: IR size 115: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = GetField(%global) [__cols]
+  !s = ToStream(!1) [False] 
+  !2 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !s2 = ToStream(!2) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_1, %__norm_2) =>
+    !3 = IsNA(%__norm_2)
+    If !3 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_1, %__norm_2) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_3) =>
+    !4 = IsNA(%__norm_3)
+    ApplyUnaryPrimOp(!4) [Bang]
+  }
+  StreamAgg(!s4) { (%__norm_4) =>
+    !5 = SelectFields(%row) [(locus alleles)] 
+    !6 = GetTupleElement(%__norm_4) [1]
+    %__norm_5 =(agg) GetField(!6) [GP]
+    !7 = IsNA(%__norm_5)
+    !8 = ApplyUnaryPrimOp(!7) [Bang]
+    !42 = AggFilter(!8) [False] {
+      !9 = ArrayLen(%__norm_5) 
+      !c3 = I32 [3]
+      !10 = ApplyComparisonOp(!9, !c3) [EQ]
+      %__norm_6 =(agg) If !10 then { %__norm_5 } else {
+        !11 = Str ["'info_scor..."]
+        Die(!11) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_7 =(agg) ArrayRef(%__norm_6, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_8 =(agg) ArrayRef(%__norm_6, !c1) [3]
+      !12 = F64 [2.0]
+      !13 = ApplyBinaryPrimOp(!12, %__norm_7) [Multiply]
+      %__norm_9 =(agg) ApplyBinaryPrimOp(%__norm_8, !13) [Add]
+      %__norm_10 = ApplyAggOp [Count]
+      !14 = ApplyBinaryPrimOp(%__norm_8, %__norm_7) [Add] 
+      !c0 = I32 [0]
+      !15 = ArrayRef(%__norm_6, !c0) [7]
+      !16 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_11 = ApplyAggOp(!16) [Sum]
+      %__norm_12 = ApplyAggOp(%__norm_9) [Sum]
+      !17 = F64 [4.0]
+      !18 = ApplyBinaryPrimOp(!17, %__norm_7) [Multiply]
+      !19 = ApplyBinaryPrimOp(%__norm_8, !18) [Add] 
+      !20 = ApplyBinaryPrimOp(%__norm_9, %__norm_9) [Multiply]
+      !21 = ApplyBinaryPrimOp(!19, !20) [Subtract]
+      %__norm_13 = ApplyAggOp(!21) [Sum]
+      !22 = F64 [0.0]
+      !23 = ApplyComparisonOp(%__norm_11, !22) [NEQ]
+      %__norm_14 = If !23 then {
+        ApplyBinaryPrimOp(%__norm_12, %__norm_11) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !24 = I64 [0]
+      !25 = ApplyComparisonOp(%__norm_10, !24) [EQ]
+      !40 = If !25 then {
+        NA [Float64]
+      } else {
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_14, !26) [EQ] 
+        !28 = F64 [1.0]
+        !29 = ApplyComparisonOp(%__norm_14, !28) [EQ]
+        !30 = ApplySpecial(!27, !29) [10, lor, 
+        (), Boolean]
+        If !30 then {
+          F64 [1.0]
+        } else {
+          !31 = F64 [1.0] 
+          !32 = ApplyIR(%__norm_10) [11, toFloat64, 
+          (), Float64]
+          !33 = ApplyBinaryPrimOp(%__norm_13, !32) [FloatingPointDivide] 
+          !34 = F64 [2.0]
+          !35 = ApplyBinaryPrimOp(!34, %__norm_14) [Multiply] 
+          !36 = F64 [1.0]
+          !37 = ApplyBinaryPrimOp(!36, %__norm_14) [Subtract]
+          !38 = ApplyBinaryPrimOp(!35, !37) [Multiply]
+          !39 = ApplyBinaryPrimOp(!33, !38) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!31, !39) [Subtract]
+        }
+      } 
+      !41 = ApplyIR(%__norm_10) [14, toInt32, (), Int32]
+      MakeStruct(score: !40, n_included: !41)
+    }
+    InsertFields !5 (info_score: !42)
+  }
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.555 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 115: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = GetField(%global) [__cols]
+  !s = ToStream(!1) [False] 
+  !2 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !s2 = ToStream(!2) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_1, %__norm_2) =>
+    !3 = IsNA(%__norm_2)
+    If !3 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_1, %__norm_2) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_3) =>
+    !4 = IsNA(%__norm_3)
+    ApplyUnaryPrimOp(!4) [Bang]
+  }
+  StreamAgg(!s4) { (%__norm_4) =>
+    !5 = SelectFields(%row) [(locus alleles)] 
+    !6 = GetTupleElement(%__norm_4) [1]
+    %__norm_5 =(agg) GetField(!6) [GP]
+    !7 = IsNA(%__norm_5)
+    !8 = ApplyUnaryPrimOp(!7) [Bang]
+    !42 = AggFilter(!8) [False] {
+      !9 = ArrayLen(%__norm_5) 
+      !c3 = I32 [3]
+      !10 = ApplyComparisonOp(!9, !c3) [EQ]
+      %__norm_6 =(agg) If !10 then { %__norm_5 } else {
+        !11 = Str ["'info_scor..."]
+        Die(!11) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_7 =(agg) ArrayRef(%__norm_6, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_8 =(agg) ArrayRef(%__norm_6, !c1) [3]
+      !12 = F64 [2.0]
+      !13 = ApplyBinaryPrimOp(!12, %__norm_7) [Multiply]
+      %__norm_9 =(agg) ApplyBinaryPrimOp(%__norm_8, !13) [Add]
+      %__norm_10 = ApplyAggOp [Count]
+      !14 = ApplyBinaryPrimOp(%__norm_8, %__norm_7) [Add] 
+      !c0 = I32 [0]
+      !15 = ArrayRef(%__norm_6, !c0) [7]
+      !16 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_11 = ApplyAggOp(!16) [Sum]
+      %__norm_12 = ApplyAggOp(%__norm_9) [Sum]
+      !17 = F64 [4.0]
+      !18 = ApplyBinaryPrimOp(!17, %__norm_7) [Multiply]
+      !19 = ApplyBinaryPrimOp(%__norm_8, !18) [Add] 
+      !20 = ApplyBinaryPrimOp(%__norm_9, %__norm_9) [Multiply]
+      !21 = ApplyBinaryPrimOp(!19, !20) [Subtract]
+      %__norm_13 = ApplyAggOp(!21) [Sum]
+      !22 = F64 [0.0]
+      !23 = ApplyComparisonOp(%__norm_11, !22) [NEQ]
+      %__norm_14 = If !23 then {
+        ApplyBinaryPrimOp(%__norm_12, %__norm_11) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !24 = I64 [0]
+      !25 = ApplyComparisonOp(%__norm_10, !24) [EQ]
+      !40 = If !25 then {
+        NA [Float64]
+      } else {
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_14, !26) [EQ] 
+        !28 = F64 [1.0]
+        !29 = ApplyComparisonOp(%__norm_14, !28) [EQ]
+        !30 = ApplySpecial(!27, !29) [10, lor, 
+        (), Boolean]
+        If !30 then {
+          F64 [1.0]
+        } else {
+          !31 = F64 [1.0] 
+          !32 = ApplyIR(%__norm_10) [11, toFloat64, 
+          (), Float64]
+          !33 = ApplyBinaryPrimOp(%__norm_13, !32) [FloatingPointDivide] 
+          !34 = F64 [2.0]
+          !35 = ApplyBinaryPrimOp(!34, %__norm_14) [Multiply] 
+          !36 = F64 [1.0]
+          !37 = ApplyBinaryPrimOp(!36, %__norm_14) [Subtract]
+          !38 = ApplyBinaryPrimOp(!35, !37) [Multiply]
+          !39 = ApplyBinaryPrimOp(!33, !38) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!31, !39) [Subtract]
+        }
+      } 
+      !41 = ApplyIR(%__norm_10) [14, toInt32, (), Int32]
+      MakeStruct(score: !40, n_included: !41)
+    }
+    InsertFields !5 (info_score: !42)
+  }
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.606 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 115: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = GetField(%global) [__cols]
+  !s = ToStream(!1) [False] 
+  !2 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !s2 = ToStream(!2) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_1, %__norm_2) =>
+    !3 = IsNA(%__norm_2)
+    If !3 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_1, %__norm_2) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_3) =>
+    !4 = IsNA(%__norm_3)
+    ApplyUnaryPrimOp(!4) [Bang]
+  }
+  StreamAgg(!s4) { (%__norm_4) =>
+    !5 = SelectFields(%row) [(locus alleles)] 
+    !6 = GetTupleElement(%__norm_4) [1]
+    %__norm_5 =(agg) GetField(!6) [GP]
+    !7 = IsNA(%__norm_5)
+    !8 = ApplyUnaryPrimOp(!7) [Bang]
+    !42 = AggFilter(!8) [False] {
+      !9 = ArrayLen(%__norm_5) 
+      !c3 = I32 [3]
+      !10 = ApplyComparisonOp(!9, !c3) [EQ]
+      %__norm_6 =(agg) If !10 then { %__norm_5 } else {
+        !11 = Str ["'info_scor..."]
+        Die(!11) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_7 =(agg) ArrayRef(%__norm_6, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_8 =(agg) ArrayRef(%__norm_6, !c1) [3]
+      !12 = F64 [2.0]
+      !13 = ApplyBinaryPrimOp(!12, %__norm_7) [Multiply]
+      %__norm_9 =(agg) ApplyBinaryPrimOp(%__norm_8, !13) [Add]
+      %__norm_10 = ApplyAggOp [Count]
+      !14 = ApplyBinaryPrimOp(%__norm_8, %__norm_7) [Add] 
+      !c0 = I32 [0]
+      !15 = ArrayRef(%__norm_6, !c0) [7]
+      !16 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_11 = ApplyAggOp(!16) [Sum]
+      %__norm_12 = ApplyAggOp(%__norm_9) [Sum]
+      !17 = F64 [4.0]
+      !18 = ApplyBinaryPrimOp(!17, %__norm_7) [Multiply]
+      !19 = ApplyBinaryPrimOp(%__norm_8, !18) [Add] 
+      !20 = ApplyBinaryPrimOp(%__norm_9, %__norm_9) [Multiply]
+      !21 = ApplyBinaryPrimOp(!19, !20) [Subtract]
+      %__norm_13 = ApplyAggOp(!21) [Sum]
+      !22 = F64 [0.0]
+      !23 = ApplyComparisonOp(%__norm_11, !22) [NEQ]
+      %__norm_14 = If !23 then {
+        ApplyBinaryPrimOp(%__norm_12, %__norm_11) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !24 = I64 [0]
+      !25 = ApplyComparisonOp(%__norm_10, !24) [EQ]
+      !40 = If !25 then {
+        NA [Float64]
+      } else {
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_14, !26) [EQ] 
+        !28 = F64 [1.0]
+        !29 = ApplyComparisonOp(%__norm_14, !28) [EQ]
+        !30 = ApplySpecial(!27, !29) [10, lor, 
+        (), Boolean]
+        If !30 then {
+          F64 [1.0]
+        } else {
+          !31 = F64 [1.0] 
+          !32 = ApplyIR(%__norm_10) [11, toFloat64, 
+          (), Float64]
+          !33 = ApplyBinaryPrimOp(%__norm_13, !32) [FloatingPointDivide] 
+          !34 = F64 [2.0]
+          !35 = ApplyBinaryPrimOp(!34, %__norm_14) [Multiply] 
+          !36 = F64 [1.0]
+          !37 = ApplyBinaryPrimOp(!36, %__norm_14) [Subtract]
+          !38 = ApplyBinaryPrimOp(!35, !37) [Multiply]
+          !39 = ApplyBinaryPrimOp(!33, !38) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!31, !39) [Subtract]
+        }
+      } 
+      !41 = ApplyIR(%__norm_10) [14, toInt32, (), Int32]
+      MakeStruct(score: !40, n_included: !41)
+    }
+    InsertFields !5 (info_score: !42)
+  }
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.607 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.607 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.607 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.622 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 115: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = GetField(%global) [__cols]
+  !s = ToStream(!1) [False] 
+  !2 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !s2 = ToStream(!2) [False]
+  !s3 = StreamZip(!s, !s2) [-1, AssertSameLength] {
+  (%__norm_1, %__norm_2) =>
+    !3 = IsNA(%__norm_2)
+    If !3 then {
+      NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+    } else {
+      MakeTuple(%__norm_1, %__norm_2) [(0 1)]
+    }
+  }
+  !s4 = StreamFilter(!s3) { (%__norm_3) =>
+    !4 = IsNA(%__norm_3)
+    ApplyUnaryPrimOp(!4) [Bang]
+  }
+  StreamAgg(!s4) { (%__norm_4) =>
+    !5 = SelectFields(%row) [(locus alleles)] 
+    !6 = GetTupleElement(%__norm_4) [1]
+    %__norm_5 =(agg) GetField(!6) [GP]
+    !7 = IsNA(%__norm_5)
+    !8 = ApplyUnaryPrimOp(!7) [Bang]
+    !42 = AggFilter(!8) [False] {
+      !9 = ArrayLen(%__norm_5) 
+      !c3 = I32 [3]
+      !10 = ApplyComparisonOp(!9, !c3) [EQ]
+      %__norm_6 =(agg) If !10 then { %__norm_5 } else {
+        !11 = Str ["'info_scor..."]
+        Die(!11) [Array[Float64], 2]
+      }
+      !c2 = I32 [2]
+      %__norm_7 =(agg) ArrayRef(%__norm_6, !c2) [4]
+      !c1 = I32 [1]
+      %__norm_8 =(agg) ArrayRef(%__norm_6, !c1) [3]
+      !12 = F64 [2.0]
+      !13 = ApplyBinaryPrimOp(!12, %__norm_7) [Multiply]
+      %__norm_9 =(agg) ApplyBinaryPrimOp(%__norm_8, !13) [Add]
+      %__norm_10 = ApplyAggOp [Count]
+      !14 = ApplyBinaryPrimOp(%__norm_8, %__norm_7) [Add] 
+      !c0 = I32 [0]
+      !15 = ArrayRef(%__norm_6, !c0) [7]
+      !16 = ApplyBinaryPrimOp(!14, !15) [Add]
+      %__norm_11 = ApplyAggOp(!16) [Sum]
+      %__norm_12 = ApplyAggOp(%__norm_9) [Sum]
+      !17 = F64 [4.0]
+      !18 = ApplyBinaryPrimOp(!17, %__norm_7) [Multiply]
+      !19 = ApplyBinaryPrimOp(%__norm_8, !18) [Add] 
+      !20 = ApplyBinaryPrimOp(%__norm_9, %__norm_9) [Multiply]
+      !21 = ApplyBinaryPrimOp(!19, !20) [Subtract]
+      %__norm_13 = ApplyAggOp(!21) [Sum]
+      !22 = F64 [0.0]
+      !23 = ApplyComparisonOp(%__norm_11, !22) [NEQ]
+      %__norm_14 = If !23 then {
+        ApplyBinaryPrimOp(%__norm_12, %__norm_11) [FloatingPointDivide]
+      } else {
+        NA [Float64]
+      }
+      !24 = I64 [0]
+      !25 = ApplyComparisonOp(%__norm_10, !24) [EQ]
+      !40 = If !25 then {
+        NA [Float64]
+      } else {
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_14, !26) [EQ] 
+        !28 = F64 [1.0]
+        !29 = ApplyComparisonOp(%__norm_14, !28) [EQ]
+        !30 = ApplySpecial(!27, !29) [10, lor, 
+        (), Boolean]
+        If !30 then {
+          F64 [1.0]
+        } else {
+          !31 = F64 [1.0] 
+          !32 = ApplyIR(%__norm_10) [11, toFloat64, 
+          (), Float64]
+          !33 = ApplyBinaryPrimOp(%__norm_13, !32) [FloatingPointDivide] 
+          !34 = F64 [2.0]
+          !35 = ApplyBinaryPrimOp(!34, %__norm_14) [Multiply] 
+          !36 = F64 [1.0]
+          !37 = ApplyBinaryPrimOp(!36, %__norm_14) [Subtract]
+          !38 = ApplyBinaryPrimOp(!35, !37) [Multiply]
+          !39 = ApplyBinaryPrimOp(!33, !38) [FloatingPointDivide]
+          ApplyBinaryPrimOp(!31, !39) [Subtract]
+        }
+      } 
+      !41 = ApplyIR(%__norm_10) [14, toInt32, (), Int32]
+      MakeStruct(score: !40, n_included: !41)
+    }
+    InsertFields !5 (info_score: !42)
+  }
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:31:44.626 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:31:44.626 LowerOrInterpretNonCompilable$: INFO: lowering result: TableToValueApply
+2026-10-23 03:31:44.690 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableToValueApply
+2026-10-23 03:31:44.721 LoweringPipeline: INFO: initial IR: IR size 149: 
+
+!1 = Literal [Array[Struct{s:String}], <literal value>]
+%__norm_1 = MakeStruct(__cols: !1)
+%__norm_2 = Ref [__norm_1]
+%__norm_3 = Literal [Struct{}, <literal value>]
+!2 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!2) [False] 
+!3 = MakeStruct(__iruid_49: %__norm_1, __iruid_52: %__norm_3) 
+!4 = NA [String]
+%__norm_29 = CollectDistributedArray(!s, !3, !4) {
+(%__norm_4, %__norm_5) =>
+  %__norm_6 = GetField(%__norm_5) [__iruid_49]
+  %__norm_7 = GetField(%__norm_5) [__iruid_52]
+  %__norm_8 = ReadPartition(%__norm_4) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"]
+  %__norm_9 = Ref [__norm_6]
+  %__norm_25 = StreamMap(%__norm_8) {
+  (%__norm_10) =>
+    !5 = GetField(%__norm_9) [__cols]
+    !s2 = ToStream(!5) [False] 
+    !6 = GetField(%__norm_10) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !s3 = ToStream(!6) [False]
+    !s4 = StreamZip(!s2, !s3) [-1, AssertSameLength] {
+    (%__norm_11, %__norm_12) =>
+      !7 = IsNA(%__norm_12)
+      If !7 then {
+        NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+      } else {
+        MakeTuple(%__norm_11, %__norm_12) [(0 1)]
+      }
+    }
+    !s5 = StreamFilter(!s4) { (%__norm_13) =>
+      !8 = IsNA(%__norm_13)
+      ApplyUnaryPrimOp(!8) [Bang]
+    }
+    StreamAgg(!s5) { (%__norm_14) =>
+      !9 = SelectFields(%__norm_10) [(locus alleles)] 
+      !10 = GetTupleElement(%__norm_14) [1]
+      %__norm_15 =(agg) GetField(!10) [GP]
+      !11 = IsNA(%__norm_15)
+      !12 = ApplyUnaryPrimOp(!11) [Bang]
+      !46 = AggFilter(!12) [False] {
+        !13 = ArrayLen(%__norm_15) 
+        !c3 = I32 [3]
+        !14 = ApplyComparisonOp(!13, !c3) [EQ]
+        %__norm_16 =(agg) If !14 then {
+          %__norm_15
+          } else {
+          !15 = Str ["'info_scor..."]
+          Die(!15) [Array[Float64], 2]
+        }
+        !c2 = I32 [2]
+        %__norm_17 =(agg) ArrayRef(%__norm_16, !c2) [4]
+        !c1 = I32 [1]
+        %__norm_18 =(agg) ArrayRef(%__norm_16, !c1) [3]
+        !16 = F64 [2.0]
+        !17 = ApplyBinaryPrimOp(!16, %__norm_17) [Multiply]
+        %__norm_19 =(agg) ApplyBinaryPrimOp(%__norm_18, !17) [Add]
+        %__norm_20 = ApplyAggOp [Count]
+        !18 = ApplyBinaryPrimOp(%__norm_18, %__norm_17) [Add] 
+        !c0 = I32 [0]
+        !19 = ArrayRef(%__norm_16, !c0) [7]
+        !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+        %__norm_21 = ApplyAggOp(!20) [Sum]
+        %__norm_22 = ApplyAggOp(%__norm_19) [Sum]
+        !21 = F64 [4.0]
+        !22 = ApplyBinaryPrimOp(!21, %__norm_17) [Multiply]
+        !23 = ApplyBinaryPrimOp(%__norm_18, !22) [Add] 
+        !24 = ApplyBinaryPrimOp(%__norm_19, %__norm_19) [Multiply]
+        !25 = ApplyBinaryPrimOp(!23, !24) [Subtract]
+        %__norm_23 = ApplyAggOp(!25) [Sum]
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_21, !26) [NEQ]
+        %__norm_24 = If !27 then {
+          ApplyBinaryPrimOp(%__norm_22, %__norm_21) [FloatingPointDivide]
+        } else {
+          NA [Float64]
+        }
+        !28 = I64 [0]
+        !29 = ApplyComparisonOp(%__norm_20, !28) [EQ]
+        !44 = If !29 then {
+          NA [Float64]
+        } else {
+          !30 = F64 [0.0]
+          !31 = ApplyComparisonOp(%__norm_24, !30) [EQ] 
+          !32 = F64 [1.0]
+          !33 = ApplyComparisonOp(%__norm_24, !32) [EQ]
+          !34 = ApplySpecial(!31, !33) [10, lor, 
+          (), Boolean]
+          If !34 then {
+            F64 [1.0]
+          } else {
+            !35 = F64 [1.0] 
+            !36 = ApplyIR(%__norm_20) [11, toFloat64, 
+            (), Float64]
+            !37 = ApplyBinaryPrimOp(%__norm_23, !36) [FloatingPointDivide] 
+            !38 = F64 [2.0]
+            !39 = ApplyBinaryPrimOp(!38, %__norm_24) [Multiply] 
+            !40 = F64 [1.0]
+            !41 = ApplyBinaryPrimOp(!40, %__norm_24) [Subtract]
+            !42 = ApplyBinaryPrimOp(!39, !41) [Multiply]
+            !43 = ApplyBinaryPrimOp(!37, !42) [FloatingPointDivide]
+            ApplyBinaryPrimOp(!35, !43) [Subtract]
+          }
+        } 
+        !45 = ApplyIR(%__norm_20) [14, toInt32, (), Int32]
+        MakeStruct(score: !44, n_included: !45)
+      }
+      InsertFields !9 (info_score: !46)
+    }
+  }
+  !s6 = StreamMap(%__norm_25) { (%__norm_26) =>
+    Consume(%__norm_26)
+  } 
+  !47 = I64 [0]
+  StreamFold(!s6, !47) { (%__norm_27, %__norm_28) =>
+    ApplyBinaryPrimOp(%__norm_27, %__norm_28) [Add]
+  }
+}
+!48 = Ref [__norm_29]
+!49 = ApplyIR(!48) [-1, sum, (), Int64]
+MakeTuple(!49) [(0)]
+
+2026-10-23 03:31:44.721 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.721 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.721 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.722 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.722 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.722 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.725 ForwardLets$: INFO: Eliminating unused binding:
+__norm_2: struct{__cols: array<struct{s: str}>} = (EVAL) Ref [__norm_1]
+2026-10-23 03:31:44.725 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{} = (EVAL) GetField(#__norm_5) [__iruid_52]
+2026-10-23 03:31:44.735 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_52'
+2026-10-23 03:31:44.737 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.737 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.737 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.743 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.743 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.743 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.743 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.743 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.743 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.749 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 127: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{__iruid_49:Struct{__cols:Array[Struct{s:String}]}}, <literal value>] 
+!3 = NA [String]
+!49 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_4, %__norm_5) =>
+  %__norm_9 = GetField(%__norm_5) [__iruid_49]
+  !s2 = ReadPartition(%__norm_4) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_27, %__norm_10) =>
+    !5 = GetField(%__norm_9) [__cols]
+    !s3 = ToStream(!5) [False] 
+    !6 = GetField(%__norm_10) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !s4 = ToStream(!6) [False]
+    !s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+    (%__norm_11, %__norm_12) =>
+      !7 = IsNA(%__norm_12)
+      If !7 then {
+        NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+      } else {
+        MakeTuple(%__norm_11, %__norm_12) [(0 1)]
+      }
+    }
+    !s6 = StreamFilter(!s5) { (%__norm_13) =>
+      !8 = IsNA(%__norm_13)
+      ApplyUnaryPrimOp(!8) [Bang]
+    }
+    !47 = StreamAgg(!s6) { (%__norm_14) =>
+      !9 = SelectFields(%__norm_10) [(locus alleles)] 
+      !10 = GetTupleElement(%__norm_14) [1]
+      %__norm_15 =(agg) GetField(!10) [GP]
+      !11 = IsNA(%__norm_15)
+      !12 = ApplyUnaryPrimOp(!11) [Bang]
+      !46 = AggFilter(!12) [False] {
+        !13 = ArrayLen(%__norm_15) 
+        !c3 = I32 [3]
+        !14 = ApplyComparisonOp(!13, !c3) [EQ]
+        %__norm_16 =(agg) If !14 then {
+          %__norm_15
+          } else {
+          !15 = Str ["'info_scor..."]
+          Die(!15) [Array[Float64], 2]
+        }
+        !c2 = I32 [2]
+        %__norm_17 =(agg) ArrayRef(%__norm_16, !c2) [4]
+        !c1 = I32 [1]
+        %__norm_18 =(agg) ArrayRef(%__norm_16, !c1) [3]
+        !16 = F64 [2.0]
+        !17 = ApplyBinaryPrimOp(!16, %__norm_17) [Multiply]
+        %__norm_19 =(agg) ApplyBinaryPrimOp(%__norm_18, !17) [Add]
+        %__norm_20 = ApplyAggOp [Count]
+        !18 = ApplyBinaryPrimOp(%__norm_18, %__norm_17) [Add] 
+        !c0 = I32 [0]
+        !19 = ArrayRef(%__norm_16, !c0) [7]
+        !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+        %__norm_21 = ApplyAggOp(!20) [Sum]
+        %__norm_22 = ApplyAggOp(%__norm_19) [Sum]
+        !21 = F64 [4.0]
+        !22 = ApplyBinaryPrimOp(!21, %__norm_17) [Multiply]
+        !23 = ApplyBinaryPrimOp(%__norm_18, !22) [Add] 
+        !24 = ApplyBinaryPrimOp(%__norm_19, %__norm_19) [Multiply]
+        !25 = ApplyBinaryPrimOp(!23, !24) [Subtract]
+        %__norm_23 = ApplyAggOp(!25) [Sum]
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_21, !26) [NEQ]
+        %__norm_24 = If !27 then {
+          ApplyBinaryPrimOp(%__norm_22, %__norm_21) [FloatingPointDivide]
+        } else {
+          NA [Float64]
+        }
+        !28 = I64 [0]
+        !29 = ApplyComparisonOp(%__norm_20, !28) [EQ]
+        !44 = If !29 then {
+          NA [Float64]
+        } else {
+          !30 = F64 [0.0]
+          !31 = ApplyComparisonOp(%__norm_24, !30) [EQ] 
+          !32 = F64 [1.0]
+          !33 = ApplyComparisonOp(%__norm_24, !32) [EQ]
+          !34 = ApplySpecial(!31, !33) [10, lor, 
+          (), Boolean]
+          If !34 then {
+            F64 [1.0]
+          } else {
+            !35 = F64 [1.0] 
+            !36 = ApplyIR(%__norm_20) [11, toFloat64, 
+            (), Float64]
+            !37 = ApplyBinaryPrimOp(%__norm_23, !36) [FloatingPointDivide] 
+            !38 = F64 [2.0]
+            !39 = ApplyBinaryPrimOp(!38, %__norm_24) [Multiply] 
+            !40 = F64 [1.0]
+            !41 = ApplyBinaryPrimOp(!40, %__norm_24) [Subtract]
+            !42 = ApplyBinaryPrimOp(!39, !41) [Multiply]
+            !43 = ApplyBinaryPrimOp(!37, !42) [FloatingPointDivide]
+            ApplyBinaryPrimOp(!35, !43) [Subtract]
+          }
+        } 
+        !45 = ApplyIR(%__norm_20) [14, toInt32, (), Int32]
+        MakeStruct(score: !44, n_included: !45)
+      }
+      InsertFields !9 (info_score: !46)
+    }
+    !48 = Consume(!47)
+    ApplyBinaryPrimOp(%__norm_27, !48) [Add]
+  }
+}
+!50 = ApplyIR(!49) [-1, sum, (), Int64]
+MakeTuple(!50) [(0)]
+
+2026-10-23 03:31:44.754 LoweringPipeline: INFO: after InlineApplyIR: IR size 139: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{__iruid_49:Struct{__cols:Array[Struct{s:String}]}}, <literal value>] 
+!3 = NA [String]
+%__norm_22 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  %__norm_3 = GetField(%__norm_2) [__iruid_49]
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_4, %__norm_5) =>
+    !5 = GetField(%__norm_3) [__cols]
+    !s3 = ToStream(!5) [False] 
+    !6 = GetField(%__norm_5) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !s4 = ToStream(!6) [False]
+    !s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+    (%__norm_6, %__norm_7) =>
+      !7 = IsNA(%__norm_7)
+      If !7 then {
+        NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+      } else {
+        MakeTuple(%__norm_6, %__norm_7) [(0 1)]
+      }
+    }
+    !s6 = StreamFilter(!s5) { (%__norm_8) =>
+      !8 = IsNA(%__norm_8)
+      ApplyUnaryPrimOp(!8) [Bang]
+    }
+    !47 = StreamAgg(!s6) { (%__norm_9) =>
+      !9 = SelectFields(%__norm_5) [(locus alleles)] 
+      !10 = GetTupleElement(%__norm_9) [1]
+      %__norm_10 =(agg) GetField(!10) [GP]
+      !11 = IsNA(%__norm_10)
+      !12 = ApplyUnaryPrimOp(!11) [Bang]
+      !46 = AggFilter(!12) [False] {
+        !13 = ArrayLen(%__norm_10) 
+        !c3 = I32 [3]
+        !14 = ApplyComparisonOp(!13, !c3) [EQ]
+        %__norm_11 =(agg) If !14 then {
+          %__norm_10
+          } else {
+          !15 = Str ["'info_scor..."]
+          Die(!15) [Array[Float64], 2]
+        }
+        !c2 = I32 [2]
+        %__norm_12 =(agg) ArrayRef(%__norm_11, !c2) [4]
+        !c1 = I32 [1]
+        %__norm_13 =(agg) ArrayRef(%__norm_11, !c1) [3]
+        !16 = F64 [2.0]
+        !17 = ApplyBinaryPrimOp(!16, %__norm_12) [Multiply]
+        %__norm_14 =(agg) ApplyBinaryPrimOp(%__norm_13, !17) [Add]
+        %__norm_15 = ApplyAggOp [Count]
+        !18 = ApplyBinaryPrimOp(%__norm_13, %__norm_12) [Add] 
+        !c0 = I32 [0]
+        !19 = ArrayRef(%__norm_11, !c0) [7]
+        !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+        %__norm_16 = ApplyAggOp(!20) [Sum]
+        %__norm_17 = ApplyAggOp(%__norm_14) [Sum]
+        !21 = F64 [4.0]
+        !22 = ApplyBinaryPrimOp(!21, %__norm_12) [Multiply]
+        !23 = ApplyBinaryPrimOp(%__norm_13, !22) [Add] 
+        !24 = ApplyBinaryPrimOp(%__norm_14, %__norm_14) [Multiply]
+        !25 = ApplyBinaryPrimOp(!23, !24) [Subtract]
+        %__norm_18 = ApplyAggOp(!25) [Sum]
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_16, !26) [NEQ]
+        %__norm_19 = If !27 then {
+          ApplyBinaryPrimOp(%__norm_17, %__norm_16) [FloatingPointDivide]
+        } else {
+          NA [Float64]
+        }
+        !28 = I64 [0]
+        !29 = ApplyComparisonOp(%__norm_15, !28) [EQ]
+        !44 = If !29 then {
+          NA [Float64]
+        } else {
+          !30 = F64 [0.0]
+          !31 = ApplyComparisonOp(%__norm_19, !30) [EQ] 
+          !32 = F64 [1.0]
+          !33 = ApplyComparisonOp(%__norm_19, !32) [EQ]
+          !34 = ApplySpecial(!31, !33) [10, lor, 
+          (), Boolean]
+          If !34 then {
+            F64 [1.0]
+          } else {
+            !35 = F64 [1.0] 
+            %__norm_20 = Ref [__norm_15]
+            !36 = Cast(%__norm_20) [Float64]
+            !37 = ApplyBinaryPrimOp(%__norm_18, !36) [FloatingPointDivide] 
+            !38 = F64 [2.0]
+            !39 = ApplyBinaryPrimOp(!38, %__norm_19) [Multiply] 
+            !40 = F64 [1.0]
+            !41 = ApplyBinaryPrimOp(!40, %__norm_19) [Subtract]
+            !42 = ApplyBinaryPrimOp(!39, !41) [Multiply]
+            !43 = ApplyBinaryPrimOp(!37, !42) [FloatingPointDivide]
+            ApplyBinaryPrimOp(!35, !43) [Subtract]
+          }
+        } 
+        %__norm_21 = Ref [__norm_15]
+        !45 = Cast(%__norm_21) [Int32]
+        MakeStruct(score: !44, n_included: !45)
+      }
+      InsertFields !9 (info_score: !46)
+    }
+    !48 = Consume(!47)
+    ApplyBinaryPrimOp(%__norm_4, !48) [Add]
+  }
+}
+!s7 = ToStream(%__norm_22) [False] 
+!49 = I64 [0]
+!50 = Cast(!49) [Int64]
+!51 = StreamFold(!s7, !50) {
+(%__norm_23, %__norm_24) =>
+  ApplyBinaryPrimOp(%__norm_23, %__norm_24) [Add]
+}
+MakeTuple(!51) [(0)]
+
+2026-10-23 03:31:44.757 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.757 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.757 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.758 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.758 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.758 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.807 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.807 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.807 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.812 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 132: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{__iruid_49:Struct{__cols:Array[Struct{s:String}]}}, <literal value>] 
+!3 = NA [String]
+!49 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  %__norm_3 = GetField(%__norm_2) [__iruid_49]
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_4, %__norm_5) =>
+    !5 = GetField(%__norm_3) [__cols]
+    !s3 = ToStream(!5) [False] 
+    !6 = GetField(%__norm_5) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !s4 = ToStream(!6) [False]
+    !s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+    (%__norm_6, %__norm_7) =>
+      !7 = IsNA(%__norm_7)
+      If !7 then {
+        NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+      } else {
+        MakeTuple(%__norm_6, %__norm_7) [(0 1)]
+      }
+    }
+    !s6 = StreamFilter(!s5) { (%__norm_8) =>
+      !8 = IsNA(%__norm_8)
+      ApplyUnaryPrimOp(!8) [Bang]
+    }
+    !47 = StreamAgg(!s6) { (%__norm_9) =>
+      !9 = SelectFields(%__norm_5) [(locus alleles)] 
+      !10 = GetTupleElement(%__norm_9) [1]
+      %__norm_10 =(agg) GetField(!10) [GP]
+      !11 = IsNA(%__norm_10)
+      !12 = ApplyUnaryPrimOp(!11) [Bang]
+      !46 = AggFilter(!12) [False] {
+        !13 = ArrayLen(%__norm_10) 
+        !c3 = I32 [3]
+        !14 = ApplyComparisonOp(!13, !c3) [EQ]
+        %__norm_11 =(agg) If !14 then {
+          %__norm_10
+          } else {
+          !15 = Str ["'info_scor..."]
+          Die(!15) [Array[Float64], 2]
+        }
+        !c2 = I32 [2]
+        %__norm_12 =(agg) ArrayRef(%__norm_11, !c2) [4]
+        !c1 = I32 [1]
+        %__norm_13 =(agg) ArrayRef(%__norm_11, !c1) [3]
+        !16 = F64 [2.0]
+        !17 = ApplyBinaryPrimOp(!16, %__norm_12) [Multiply]
+        %__norm_14 =(agg) ApplyBinaryPrimOp(%__norm_13, !17) [Add]
+        %__norm_15 = ApplyAggOp [Count]
+        !18 = ApplyBinaryPrimOp(%__norm_13, %__norm_12) [Add] 
+        !c0 = I32 [0]
+        !19 = ArrayRef(%__norm_11, !c0) [7]
+        !20 = ApplyBinaryPrimOp(!18, !19) [Add]
+        %__norm_16 = ApplyAggOp(!20) [Sum]
+        %__norm_17 = ApplyAggOp(%__norm_14) [Sum]
+        !21 = F64 [4.0]
+        !22 = ApplyBinaryPrimOp(!21, %__norm_12) [Multiply]
+        !23 = ApplyBinaryPrimOp(%__norm_13, !22) [Add] 
+        !24 = ApplyBinaryPrimOp(%__norm_14, %__norm_14) [Multiply]
+        !25 = ApplyBinaryPrimOp(!23, !24) [Subtract]
+        %__norm_18 = ApplyAggOp(!25) [Sum]
+        !26 = F64 [0.0]
+        !27 = ApplyComparisonOp(%__norm_16, !26) [NEQ]
+        %__norm_19 = If !27 then {
+          ApplyBinaryPrimOp(%__norm_17, %__norm_16) [FloatingPointDivide]
+        } else {
+          NA [Float64]
+        }
+        !28 = I64 [0]
+        !29 = ApplyComparisonOp(%__norm_15, !28) [EQ]
+        !44 = If !29 then {
+          NA [Float64]
+        } else {
+          !30 = F64 [0.0]
+          !31 = ApplyComparisonOp(%__norm_19, !30) [EQ] 
+          !32 = F64 [1.0]
+          !33 = ApplyComparisonOp(%__norm_19, !32) [EQ]
+          !34 = ApplySpecial(!31, !33) [10, lor, 
+          (), Boolean]
+          If !34 then {
+            F64 [1.0]
+          } else {
+            !35 = F64 [1.0] 
+            !36 = Cast(%__norm_15) [Float64]
+            !37 = ApplyBinaryPrimOp(%__norm_18, !36) [FloatingPointDivide] 
+            !38 = F64 [2.0]
+            !39 = ApplyBinaryPrimOp(!38, %__norm_19) [Multiply] 
+            !40 = F64 [1.0]
+            !41 = ApplyBinaryPrimOp(!40, %__norm_19) [Subtract]
+            !42 = ApplyBinaryPrimOp(!39, !41) [Multiply]
+            !43 = ApplyBinaryPrimOp(!37, !42) [FloatingPointDivide]
+            ApplyBinaryPrimOp(!35, !43) [Subtract]
+          }
+        } 
+        !45 = Cast(%__norm_15) [Int32]
+        MakeStruct(score: !44, n_included: !45)
+      }
+      InsertFields !9 (info_score: !46)
+    }
+    !48 = Consume(!47)
+    ApplyBinaryPrimOp(%__norm_4, !48) [Add]
+  }
+}
+!s7 = ToStream(!49) [False] 
+!50 = I64 [0]
+!51 = StreamFold(!s7, !50) {
+(%__norm_23, %__norm_24) =>
+  ApplyBinaryPrimOp(%__norm_23, %__norm_24) [Add]
+}
+MakeTuple(!51) [(0)]
+
+2026-10-23 03:31:44.840 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 155: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{__iruid_49:Struct{__cols:Array[Struct{s:String}]}}, <literal value>] 
+!3 = NA [String]
+!55 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  %__norm_3 = GetField(%__norm_2) [__iruid_49]
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_4, %__norm_5) =>
+    %__norm_6 = InitOp [0, 
+    (Count (TypedStateSig +PInt64))]
+    %__norm_7 = InitOp [1, 
+    (Sum (TypedStateSig +PFloat64))]
+    %__norm_8 = InitOp [2, 
+    (Sum (TypedStateSig +PFloat64))]
+    %__norm_9 = InitOp [3, 
+    (Sum (TypedStateSig +PFloat64))]
+    !5 = GetField(%__norm_3) [__cols]
+    !s3 = ToStream(!5) [False] 
+    !6 = GetField(%__norm_5) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !s4 = ToStream(!6) [False]
+    !s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+    (%__norm_10, %__norm_11) =>
+      !7 = IsNA(%__norm_11)
+      If !7 then {
+        NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+      } else {
+        MakeTuple(%__norm_10, %__norm_11) [(0 1)]
+      }
+    }
+    !s6 = StreamFilter(!s5) { (%__norm_12) =>
+      !8 = IsNA(%__norm_12)
+      ApplyUnaryPrimOp(!8) [Bang]
+    }
+    !25 = StreamFor(!s6) { (%__norm_13) =>
+      !9 = GetTupleElement(%__norm_13) [1]
+      %__norm_14 = GetField(!9) [GP]
+      !10 = IsNA(%__norm_14)
+      !11 = ApplyUnaryPrimOp(!10) [Bang]
+      If !11 then {
+        !12 = ArrayLen(%__norm_14) 
+        !c3 = I32 [3]
+        !13 = ApplyComparisonOp(!12, !c3) [EQ]
+        %__norm_15 = If !13 then { %__norm_14 } else {
+          !14 = Str ["'info_scor..."]
+          Die(!14) [Array[Float64], 2]
+        }
+        !c2 = I32 [2]
+        %__norm_16 = ArrayRef(%__norm_15, !c2) [4]
+        !c1 = I32 [1]
+        %__norm_17 = ArrayRef(%__norm_15, !c1) [3]
+        !15 = F64 [2.0]
+        !16 = ApplyBinaryPrimOp(!15, %__norm_16) [Multiply]
+        %__norm_18 = ApplyBinaryPrimOp(%__norm_17, !16) [Add]
+        %__norm_19 = SeqOp [0, 
+        (Count (TypedStateSig +PInt64))]
+        !17 = ApplyBinaryPrimOp(%__norm_17, %__norm_16) [Add] 
+        !c0 = I32 [0]
+        !18 = ArrayRef(%__norm_15, !c0) [7]
+        !19 = ApplyBinaryPrimOp(!17, !18) [Add]
+        %__norm_20 = SeqOp(!19) [1, 
+        (Sum (TypedStateSig +PFloat64))]
+        %__norm_21 = SeqOp(%__norm_18) [2, 
+        (Sum (TypedStateSig +PFloat64))]
+        !20 = F64 [4.0]
+        !21 = ApplyBinaryPrimOp(!20, %__norm_16) [Multiply]
+        !22 = ApplyBinaryPrimOp(%__norm_17, !21) [Add] 
+        !23 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+        !24 = ApplyBinaryPrimOp(!22, !23) [Subtract]
+        SeqOp(!24) [3, (Sum (TypedStateSig +PFloat64))]
+      } else {
+        Void
+      }
+    } 
+    !26 = ResultOp [0, 
+    (Count (TypedStateSig +PInt64))] 
+    !27 = ResultOp [1, 
+    (Sum (TypedStateSig +PFloat64))] 
+    !28 = ResultOp [2, 
+    (Sum (TypedStateSig +PFloat64))] 
+    !29 = ResultOp [3, 
+    (Sum (TypedStateSig +PFloat64))]
+    %__norm_22 = MakeTuple(!26, !27, !28, !29) [(0 1 2
+    3)]
+    !30 = SelectFields(%__norm_5) [(locus alleles)] 
+    %__norm_23 = GetTupleElement(%__norm_22) [0]
+    %__norm_24 = GetTupleElement(%__norm_22) [1]
+    %__norm_25 = GetTupleElement(%__norm_22) [2]
+    %__norm_26 = GetTupleElement(%__norm_22) [3]
+    !31 = F64 [0.0]
+    !32 = ApplyComparisonOp(%__norm_24, !31) [NEQ]
+    %__norm_27 = If !32 then {
+      ApplyBinaryPrimOp(%__norm_25, %__norm_24) [FloatingPointDivide]
+    } else {
+      NA [Float64]
+    }
+    !33 = I64 [0]
+    !34 = ApplyComparisonOp(%__norm_23, !33) [EQ]
+    !49 = If !34 then {
+      NA [Float64]
+    } else {
+      !35 = F64 [0.0]
+      !36 = ApplyComparisonOp(%__norm_27, !35) [EQ] 
+      !37 = F64 [1.0]
+      !38 = ApplyComparisonOp(%__norm_27, !37) [EQ]
+      !39 = ApplySpecial(!36, !38) [10, lor, 
+      (), Boolean]
+      If !39 then {
+        F64 [1.0]
+      } else {
+        !40 = F64 [1.0] 
+        !41 = Cast(%__norm_23) [Float64]
+        !42 = ApplyBinaryPrimOp(%__norm_26, !41) [FloatingPointDivide] 
+        !43 = F64 [2.0]
+        !44 = ApplyBinaryPrimOp(!43, %__norm_27) [Multiply] 
+        !45 = F64 [1.0]
+        !46 = ApplyBinaryPrimOp(!45, %__norm_27) [Subtract]
+        !47 = ApplyBinaryPrimOp(!44, !46) [Multiply]
+        !48 = ApplyBinaryPrimOp(!42, !47) [FloatingPointDivide]
+        ApplyBinaryPrimOp(!40, !48) [Subtract]
+      }
+    } 
+    !50 = Cast(%__norm_23) [Int32]
+    !51 = MakeStruct(score: !49, n_included: !50)
+    !52 = InsertFields !30 (info_score: !51)
+    !53 = RunAgg(!25, !52) [((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (TypedStateSig +PFloat64)
+      (TypedStateSig +PFloat64))]
+    !54 = Consume(!53)
+    ApplyBinaryPrimOp(%__norm_4, !54) [Add]
+  }
+}
+!s7 = ToStream(!55) [False] 
+!56 = I64 [0]
+!57 = StreamFold(!s7, !56) {
+(%__norm_28, %__norm_29) =>
+  ApplyBinaryPrimOp(%__norm_28, %__norm_29) [Add]
+}
+MakeTuple(!57) [(0)]
+
+2026-10-23 03:31:44.842 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.842 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.842 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.850 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.850 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:31:44.850 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:31:44.857 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 151: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{__iruid_49:Struct{__cols:Array[Struct{s:String}]}}, <literal value>] 
+!3 = NA [String]
+!56 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  %__norm_3 = GetField(%__norm_2) [__iruid_49]
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_4, %__norm_5) =>
+    %__norm_6 = InitOp [0, 
+    (Count (TypedStateSig +PInt64))]
+    %__norm_7 = InitOp [1, 
+    (Sum (TypedStateSig +PFloat64))]
+    %__norm_8 = InitOp [2, 
+    (Sum (TypedStateSig +PFloat64))]
+    %__norm_9 = InitOp [3, 
+    (Sum (TypedStateSig +PFloat64))]
+    !5 = GetField(%__norm_3) [__cols]
+    !s3 = ToStream(!5) [False] 
+    !6 = GetField(%__norm_5) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !s4 = ToStream(!6) [False]
+    !s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+    (%__norm_10, %__norm_11) =>
+      !7 = IsNA(%__norm_11)
+      If !7 then {
+        NA [Tuple[Struct{s:String},Struct{GP:Array[Float64]}]]
+      } else {
+        MakeTuple(%__norm_10, %__norm_11) [(0 1)]
+      }
+    }
+    !24 = StreamFor(!s5) { (%__norm_12) =>
+      !8 = IsNA(%__norm_12)
+      If !8 then {
+        Void
+      } else {
+        !9 = GetTupleElement(%__norm_12) [1]
+        %__norm_14 = GetField(!9) [GP]
+        !10 = IsNA(%__norm_14)
+        If !10 then {
+          Void
+        } else {
+          !11 = ArrayLen(%__norm_14) 
+          !c3 = I32 [3]
+          !12 = ApplyComparisonOp(!11, !c3) [EQ]
+          %__norm_15 = If !12 then { %__norm_14 } else {
+            !13 = Str ["'info_scor..."]
+            Die(!13) [Array[Float64], 2]
+          }
+          !c2 = I32 [2]
+          %__norm_16 = ArrayRef(%__norm_15, !c2) [4]
+          !c1 = I32 [1]
+          %__norm_17 = ArrayRef(%__norm_15, !c1) [3]
+          !14 = F64 [2.0]
+          !15 = ApplyBinaryPrimOp(!14, %__norm_16) [Multiply]
+          %__norm_18 = ApplyBinaryPrimOp(%__norm_17, !15) [Add]
+          %__norm_19 = SeqOp [0, 
+          (Count (TypedStateSig +PInt64))]
+          !16 = ApplyBinaryPrimOp(%__norm_17, %__norm_16) [Add] 
+          !c0 = I32 [0]
+          !17 = ArrayRef(%__norm_15, !c0) [7]
+          !18 = ApplyBinaryPrimOp(!16, !17) [Add]
+          %__norm_20 = SeqOp(!18) [1, 
+          (Sum (TypedStateSig +PFloat64))]
+          %__norm_21 = SeqOp(%__norm_18) [2, 
+          (Sum (TypedStateSig +PFloat64))]
+          !19 = F64 [4.0]
+          !20 = ApplyBinaryPrimOp(!19, %__norm_16) [Multiply]
+          !21 = ApplyBinaryPrimOp(%__norm_17, !20) [Add] 
+          !22 = ApplyBinaryPrimOp(%__norm_18, %__norm_18) [Multiply]
+          !23 = ApplyBinaryPrimOp(!21, !22) [Subtract]
+          SeqOp(!23) [3, (Sum (TypedStateSig +PFloat64))]
+        }
+      }
+    } 
+    !25 = ResultOp [0, 
+    (Count (TypedStateSig +PInt64))] 
+    !26 = ResultOp [1, 
+    (Sum (TypedStateSig +PFloat64))] 
+    !27 = ResultOp [2, 
+    (Sum (TypedStateSig +PFloat64))] 
+    !28 = ResultOp [3, 
+    (Sum (TypedStateSig +PFloat64))]
+    %__norm_22 = MakeTuple(!25, !26, !27, !28) [(0 1 2
+    3)]
+    !29 = SelectFields(%__norm_5) [(locus alleles)] 
+    %__norm_23 = GetTupleElement(%__norm_22) [0]
+    %__norm_24 = GetTupleElement(%__norm_22) [1]
+    !30 = F64 [0.0]
+    !31 = ApplyComparisonOp(%__norm_24, !30) [NEQ]
+    %__norm_27 = If !31 then {
+      !32 = GetTupleElement(%__norm_22) [2]
+      ApplyBinaryPrimOp(!32, %__norm_24) [FloatingPointDivide]
+    } else {
+      NA [Float64]
+    }
+    !33 = I64 [0]
+    !34 = ApplyComparisonOp(%__norm_23, !33) [EQ]
+    !50 = If !34 then {
+      NA [Float64]
+    } else {
+      !35 = F64 [0.0]
+      !36 = ApplyComparisonOp(%__norm_27, !35) [EQ] 
+      !37 = F64 [1.0]
+      !38 = ApplyComparisonOp(%__norm_27, !37) [EQ]
+      !39 = ApplySpecial(!36, !38) [10, lor, 
+      (), Boolean]
+      If !39 then {
+        F64 [1.0]
+      } else {
+        !40 = F64 [1.0] 
+        !41 = GetTupleElement(%__norm_22) [3] 
+        !42 = Cast(%__norm_23) [Float64]
+        !43 = ApplyBinaryPrimOp(!41, !42) [FloatingPointDivide] 
+        !44 = F64 [2.0]
+        !45 = ApplyBinaryPrimOp(!44, %__norm_27) [Multiply] 
+        !46 = F64 [1.0]
+        !47 = ApplyBinaryPrimOp(!46, %__norm_27) [Subtract]
+        !48 = ApplyBinaryPrimOp(!45, !47) [Multiply]
+        !49 = ApplyBinaryPrimOp(!43, !48) [FloatingPointDivide]
+        ApplyBinaryPrimOp(!40, !49) [Subtract]
+      }
+    } 
+    !51 = Cast(%__norm_23) [Int32]
+    !52 = MakeStruct(score: !50, n_included: !51)
+    !53 = InsertFields !29 (info_score: !52)
+    !54 = RunAgg(!24, !53) [((TypedStateSig +PInt64)
+      (TypedStateSig +PFloat64)
+      (TypedStateSig +PFloat64)
+      (TypedStateSig +PFloat64))]
+    !55 = Consume(!54)
+    ApplyBinaryPrimOp(%__norm_4, !55) [Add]
+  }
+}
+!s6 = ToStream(!56) [False] 
+!57 = I64 [0]
+!58 = StreamFold(!s6, !57) {
+(%__norm_28, %__norm_29) =>
+  ApplyBinaryPrimOp(%__norm_28, %__norm_29) [Add]
+}
+MakeTuple(!58) [(0)]
+
+2026-10-23 03:31:45.014 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:31:45.411 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:45.676 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:45.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:45.681 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 576.0K allocated (64.0K blocks / 512.0K chunks), regions.size = 1, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:45.686 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:45.687 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:45.687 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:45.688 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:45.688 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:45.688 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:45.691 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:45.693 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 640.0K allocated (64.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:45.716 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:45.716 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:45.721 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:45.722 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:45.723 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:45.723 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:45.724 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:45.728 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (448.0K blocks / 576.0K chunks), regions.size = 1, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:45.750 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:45.753 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:45.757 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:45.763 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:45.763 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:45.764 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:45.767 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:45.768 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:45.770 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:45.770 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:45.770 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.9M allocated (1.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:45.794 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:45.796 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:45.796 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:45.796 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:45.796 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (2.2M blocks / 1.8M chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:55.522 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:55.957 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:31:55.988 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:31:56.420 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:31:56.679 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:31:56.746 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:31:57.012 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:31:57.226 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.3M allocated (4.6M blocks / 3.8M chunks), regions.size = 11, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:31:59.950 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=9716224, peakBytesReadable=9.27 MiB, chunks requested=31151, cache hits=31130
+2026-10-23 03:31:59.950 RegionPool: INFO: RegionPool: FREE: 9.3M allocated (5.0M blocks / 4.3M chunks), regions.size = 14, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:31:59.990 SparkTaskContext: INFO: TaskReport: stage=0, partition=5, attempt=0, peakBytes=9220352, peakBytesReadable=8.79 MiB, chunks requested=31150, cache hits=31131
+2026-10-23 03:31:59.991 RegionPool: INFO: RegionPool: FREE: 8.8M allocated (4.8M blocks / 4.0M chunks), regions.size = 13, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:32:00.013 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=9220096, peakBytesReadable=8.79 MiB, chunks requested=31151, cache hits=31132
+2026-10-23 03:32:00.013 RegionPool: INFO: RegionPool: FREE: 8.8M allocated (4.8M blocks / 4.0M chunks), regions.size = 13, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:32:00.055 SparkTaskContext: INFO: TaskReport: stage=0, partition=6, attempt=0, peakBytes=9715968, peakBytesReadable=9.27 MiB, chunks requested=31151, cache hits=31130
+2026-10-23 03:32:00.055 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=9715456, peakBytesReadable=9.27 MiB, chunks requested=31152, cache hits=31131
+2026-10-23 03:32:00.055 RegionPool: INFO: RegionPool: FREE: 9.3M allocated (5.0M blocks / 4.3M chunks), regions.size = 14, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:32:00.055 RegionPool: INFO: RegionPool: FREE: 9.3M allocated (5.0M blocks / 4.3M chunks), regions.size = 14, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:32:00.092 SparkTaskContext: INFO: TaskReport: stage=0, partition=7, attempt=0, peakBytes=9178368, peakBytesReadable=8.75 MiB, chunks requested=31151, cache hits=31131
+2026-10-23 03:32:00.092 RegionPool: INFO: RegionPool: FREE: 8.8M allocated (4.7M blocks / 4.0M chunks), regions.size = 13, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:32:00.167 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=9219328, peakBytesReadable=8.79 MiB, chunks requested=31151, cache hits=31132
+2026-10-23 03:32:00.167 RegionPool: INFO: RegionPool: FREE: 8.8M allocated (4.8M blocks / 4.0M chunks), regions.size = 13, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:32:00.168 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=9716992, peakBytesReadable=9.27 MiB, chunks requested=31151, cache hits=31130
+2026-10-23 03:32:00.169 RegionPool: INFO: RegionPool: FREE: 9.3M allocated (5.0M blocks / 4.3M chunks), regions.size = 14, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:32:00.231 BackendUtils: INFO: table_force_count: executed 8 tasks in 14.773s
+2026-10-23 03:32:00.231 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.232 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.232 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.232 LowerOrInterpretNonCompilable$: INFO: took 15.609s
+2026-10-23 03:32:00.232 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.232 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.232 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.232 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.232 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.232 LoweringPipeline: INFO: after EvalRelationalLets: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.232 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.232 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.232 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.233 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.233 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.233 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.233 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.233 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.233 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.233 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.234 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:32:00.234 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = I64 [249115]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:32:00.234 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.234 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.234 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.234 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.235 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.235 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.235 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.235 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.235 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.235 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:32:00.235 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:32:00.235 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.235 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.235 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.235 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:32:00.236 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:32:00.236 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.236 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.236 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.236 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:32:00.238 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:32:00.242 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.242 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.242 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.243 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:32:00.277 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.278 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:32:00.278 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:32:00.278 RegionPool: INFO: RegionPool: FREE: 5.2M allocated (2.9M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher

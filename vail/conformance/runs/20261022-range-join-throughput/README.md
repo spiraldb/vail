@@ -19,3 +19,14 @@ Public Python suites `test_interval_partition_joins.py` and `test_table_joins.py
 Exact 1B×1B diagnostic after-profile returned count 1,000,000,000: wall **3.607s**, process CPU **45.504s**, peak RSS **756334592 bytes**. KeyPredicate samples disappeared entirely, versus ~20% leaf samples before. The dominant remaining work is native DataFusion sort-merge row comparison/group advancement/output pair construction (~75% sampled leaves), not hashing. Profiles were collected under unrelated builds; source-baseline and candidate have other unrelated differences and Python versions differ. Do not present the single before/after wall/CPU values as a controlled speedup or a new Hail comparison. The demonstrated fix is removal of redundant per-row guard work with public result preservation.
 
 Source/test review `9bf9b864` cleared by required reviewer; final runtime evidence receipt pending root integration. No main changes made by this agent.
+
+## Fresh laptop Hail comparison
+
+Three fresh serial attempts per engine on the exact upstream 1B×1B inner-join count. Stock PyPI Hail 0.2.139, Java11/Spark local[32] heap24g; Vail same validated normal native227d artifact, EXECUTION_CONCURRENCY32. Separate engine processes, query scopes exclude initialization. 10Hz process-tree CPU retains exited children by (pid, creation_time). Raw telemetry and driver in paired-local/.
+
+| Engine | Wall median (range), seconds | Core-seconds median (range) | Peak tree RSS |
+|---|---:|---:|---:|
+| Hail | 5.708 (4.701–8.183) | 47.609 (43.478–50.577) | 0.926 GiB |
+| Vail | 6.342 (5.018–6.449) | 56.623 (54.217–57.695) | 0.841 GiB |
+
+Hail/Vail ratios: 0.900 wall, 0.841 CPU. Vail remains slower on this pair. Native range-join source is identical to reviewed main de726be9; artifact predates unrelated later SUM/writer work. Unrelated legacy Rust compiler (~one core) and Git activity were observed during the window: these are fresh same-laptop serial results, **not an otherwise-idle comparison**. No cloud baseline substituted. Remaining bottleneck is native merge comparison/group advancement/output pairing as documented by postprofile.

@@ -1,0 +1,2120 @@
+2026-10-23 03:29:39.356 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:29:39.578 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:29:39.788 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:39.837 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:39.837 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:39.839 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:39.839 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:39.860 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.099 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.099 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.099 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.099 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.116 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.195 LoweringPipeline: INFO: initial IR: IR size 44: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!mt2 = MatrixMapEntries(!mt) {
+(%global, %sa, %va, %g) =>
+  !1 = SelectFields(%g) [(AD DP GQ GT PL)]
+  !2 = SelectFields(!1) [()] 
+  !3 = GetField(%g) [GT]
+  InsertFields !2 (GT: !3)
+}
+!mt3 = MatrixMapGlobals(!mt2) { (%global) =>
+  !4 = SelectFields(%global) [()]
+  !5 = SelectFields(!4) [()]
+  InsertFields !5 ()
+}
+!mt4 = MatrixMapCols(!mt3) [None] {
+(%global, %sa, %va, %g, %n_rows) =>
+  !6 = SelectFields(%sa) [(s)]
+  !7 = SelectFields(!6) [(s)]
+  InsertFields !7 ()
+}
+!mt5 = MatrixMapRows(!mt4) {
+(%global, %sa, %va, %g, %n_cols) =>
+  !8 = SelectFields(%va) [
+  (locus alleles rsid qual filters info)]
+  !9 = SelectFields(!8) [(locus alleles)]
+  InsertFields !9 ()
+}
+!mt6 = MatrixMapCols(!mt5) [()] {
+(%global, %sa, %va, %g, %n_rows) =>
+  SelectFields(%sa) [(s)]
+}
+!ht = MatrixEntriesTable(!mt6)
+!ht2 = TableOrderBy(!ht) [(Alocus Aalleles)]
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !10 = SelectFields(%row) [(locus alleles s GT)]
+  !11 = SelectFields(!10) [(GT)]
+  InsertFields !11 ()
+}
+!ht4 = TableHead(!ht3) [100]
+!12 = TableCollect(!ht4)
+!13 = GetField(!12) [rows]
+!s = ToStream(!13) [False]
+!s2 = StreamMap(!s) { (%__norm_2) =>
+  GetField(%__norm_2) [GT]
+}
+!14 = ToArray(!s2)
+MakeTuple(!14) [(0)]
+
+2026-10-23 03:29:40.198 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.198 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.198 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.210 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:29:40.224 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.224 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.224 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.227 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.227 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.228 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.231 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 17: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String]},entry:Struct{GT:Call}}, False, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!mt2 = MatrixMapCols(!mt) [()] {
+(%global, %sa, %va, %g, %n_rows) => %sa }
+!ht = MatrixEntriesTable(!mt2)
+!ht2 = TableOrderBy(!ht) [(Alocus Aalleles)]
+!ht3 = TableHead(!ht2) [100]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+!1 = TableCollect(!ht4)
+!2 = GetField(!1) [rows]
+!s = ToStream(!2) [False]
+!s2 = StreamMap(!s) { (%__norm_2) =>
+  GetField(%__norm_2) [GT]
+}
+!3 = ToArray(!s2)
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:40.273 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 85: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !c0 = I32 [0]
+  !1 = Cast(!c0) [Int64] 
+  !2 = Str ["/tmp/full-..."]
+  !3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+  !s = ReadPartition(!3) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !4 = ToArray(!s)
+  InsertFields %global (__cols: !4)
+}
+!ht3 = TableMapGlobals(!ht2) { (%global) =>
+  %__norm_1 = Ref [global]
+  %__norm_2 = GetField(%__norm_1) [__cols]
+  %__norm_3 = SelectFields(%__norm_1) [()]
+  !s2 = ToStream(%__norm_2) [False] 
+  !c0_2 = I32 [0] 
+  !c1 = I32 [1]
+  !s3 = StreamIota(!c0_2, !c1) [False]
+  !s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+  (%__norm_4, %__norm_5) =>
+    %__norm_6 = Ref [__norm_4]
+    %__norm_7 = Ref [__norm_5]
+    Ref [__norm_6]
+  }
+  !5 = ToArray(!s4)
+  InsertFields %__norm_1 (__cols: !5)
+}
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_8 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_3 = I32 [0] 
+  !6 = GetField(%global) [__cols]
+  !7 = ArrayLen(!6) 
+  !c1_2 = I32 [1]
+  !s5 = StreamRange(!c0_3, !7, !c1_2) [-1, False]
+  !s6 = StreamFilter(!s5) { (%__norm_9) =>
+    !8 = ArrayRef(%__norm_8, %__norm_9) [-1]
+    !9 = IsNA(!8)
+    ApplyUnaryPrimOp(!9) [Bang]
+  }
+  !10 = ToArray(!s6)
+  InsertFields %row (__col_idx: !10)
+}
+!ht5 = TableExplode(!ht4) [("__col_idx")]
+!ht6 = TableMapRows(!ht5) { (%global, %row) =>
+  %__norm_10 = GetField(%row) [__col_idx]
+  !11 = GetField(%global) [__cols]
+  %__norm_11 = ArrayRef(!11, %__norm_10) [-1]
+  !12 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  %__norm_12 = ArrayRef(!12, %__norm_10) [-1]
+  !13 = SelectFields(%row) [(locus alleles)] 
+  !14 = GetField(%__norm_11) [s] 
+  !15 = GetField(%__norm_12) [GT]
+  InsertFields !13 (s: !14, GT: !15)
+}
+!ht7 = TableMapGlobals(!ht6) { (%global) =>
+  SelectFields(%global) [()]
+}
+!ht8 = TableOrderBy(!ht7) [(Alocus Aalleles)]
+!ht9 = TableHead(!ht8) [100]
+!ht10 = TableMapRows(!ht9) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+!16 = TableCollect(!ht10)
+!17 = GetField(!16) [rows]
+!s7 = ToStream(!17) [False]
+!s8 = StreamMap(!s7) { (%__norm_13) =>
+  GetField(%__norm_13) [GT]
+}
+!18 = ToArray(!s8)
+MakeTuple(!18) [(0)]
+
+2026-10-23 03:29:40.283 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.283 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.283 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.285 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.285 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.285 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.285 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.336 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.336 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.343 ForwardLets$: INFO: Eliminating unused binding:
+__norm_3: struct{} = (EVAL) SelectFields(#__norm_1) [()]
+2026-10-23 03:29:40.343 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: int32 = (EVAL) Ref [__norm_5]
+2026-10-23 03:29:40.350 PruneDeadFields$: INFO: Prune: InsertFields: eliminating field 's'
+2026-10-23 03:29:40.353 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.353 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.353 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.353 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.353 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.353 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.361 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.361 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.361 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.371 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 57: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+  !c0 = I32 [0] 
+  !c1 = I32 [1]
+  !s2 = StreamIota(!c0, !c1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+  (%__norm_4, %__norm_5) => %__norm_4 }
+  !2 = ToArray(!s3)
+  InsertFields %global (__cols: !2)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_8 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_2 = I32 [0] 
+  !3 = GetField(%global) [__cols]
+  !4 = ArrayLen(!3) 
+  !c1_2 = I32 [1]
+  !s4 = StreamRange(!c0_2, !4, !c1_2) [-1, False]
+  !s5 = StreamFilter(!s4) { (%__norm_9) =>
+    !5 = ArrayRef(%__norm_8, %__norm_9) [-1]
+    !6 = IsNA(!5)
+    ApplyUnaryPrimOp(!6) [Bang]
+  }
+  !7 = ToArray(!s5)
+  InsertFields %row (__col_idx: !7)
+}
+!ht4 = TableExplode(!ht3) [("__col_idx")]
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  !8 = SelectFields(%row) [(locus alleles)] 
+  !9 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+  !10 = GetField(%row) [__col_idx]
+  !11 = ArrayRef(!9, !10) [-1]
+  !12 = GetField(!11) [GT]
+  InsertFields !8 (GT: !12)
+}
+!ht6 = TableMapGlobals(!ht5) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht7 = TableOrderBy(!ht6) [(Alocus Aalleles)]
+!ht8 = TableHead(!ht7) [100]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+!13 = TableCollect(!ht9)
+!14 = GetField(!13) [rows]
+!s6 = ToStream(!14) [False]
+!s7 = StreamMap(!s6) { (%__norm_13) =>
+  GetField(%__norm_13) [GT]
+}
+!15 = ToArray(!s7)
+MakeTuple(!15) [(0)]
+
+2026-10-23 03:29:40.410 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 59: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+  !c0 = I32 [0] 
+  !c1 = I32 [1]
+  !s2 = StreamIota(!c0, !c1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+  (%__norm_1, %__norm_2) => %__norm_1 }
+  !2 = ToArray(!s3)
+  InsertFields %global (__cols: !2)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_3 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_2 = I32 [0] 
+  !3 = GetField(%global) [__cols]
+  !4 = ArrayLen(!3) 
+  !c1_2 = I32 [1]
+  !s4 = StreamRange(!c0_2, !4, !c1_2) [-1, False]
+  !s5 = StreamFilter(!s4) { (%__norm_4) =>
+    !5 = ArrayRef(%__norm_3, %__norm_4) [-1]
+    !6 = IsNA(!5)
+    ApplyUnaryPrimOp(!6) [Bang]
+  }
+  !7 = ToArray(!s5)
+  InsertFields %row (__col_idx: !7)
+}
+!ht4 = TableExplode(!ht3) [("__col_idx")]
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  !8 = SelectFields(%row) [(locus alleles)] 
+  !9 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+  !10 = GetField(%row) [__col_idx]
+  !11 = ArrayRef(!9, !10) [-1]
+  !12 = GetField(!11) [GT]
+  InsertFields !8 (GT: !12)
+}
+!ht6 = TableMapGlobals(!ht5) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht7 = TableOrderBy(!ht6) [(Alocus Aalleles)]
+!ht8 = TableHead(!ht7) [100]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+%__norm_5 = TableCollect(!ht9)
+!13 = GetField(%__norm_5) [rows]
+!s6 = ToStream(!13) [False]
+!s7 = StreamMap(!s6) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!14 = ToArray(!s7)
+MakeTuple(!14) [(0)]
+
+2026-10-23 03:29:40.414 LoweringPipeline: INFO: initial IR: IR size 50: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+  !c0 = I32 [0] 
+  !c1 = I32 [1]
+  !s2 = StreamIota(!c0, !c1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+  (%__norm_1, %__norm_2) => %__norm_1 }
+  !2 = ToArray(!s3)
+  InsertFields %global (__cols: !2)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_3 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_2 = I32 [0] 
+  !3 = GetField(%global) [__cols]
+  !4 = ArrayLen(!3) 
+  !c1_2 = I32 [1]
+  !s4 = StreamRange(!c0_2, !4, !c1_2) [-1, False]
+  !s5 = StreamFilter(!s4) { (%__norm_4) =>
+    !5 = ArrayRef(%__norm_3, %__norm_4) [-1]
+    !6 = IsNA(!5)
+    ApplyUnaryPrimOp(!6) [Bang]
+  }
+  !7 = ToArray(!s5)
+  InsertFields %row (__col_idx: !7)
+}
+!ht4 = TableExplode(!ht3) [("__col_idx")]
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  !8 = SelectFields(%row) [(locus alleles)] 
+  !9 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+  !10 = GetField(%row) [__col_idx]
+  !11 = ArrayRef(!9, !10) [-1]
+  !12 = GetField(!11) [GT]
+  InsertFields !8 (GT: !12)
+}
+!ht6 = TableMapGlobals(!ht5) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht7 = TableOrderBy(!ht6) [(Alocus Aalleles)]
+!ht8 = TableHead(!ht7) [100]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+TableCollect(!ht9)
+
+2026-10-23 03:29:40.416 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 50: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+  !c0 = I32 [0] 
+  !c1 = I32 [1]
+  !s2 = StreamIota(!c0, !c1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+  (%__norm_1, %__norm_2) => %__norm_1 }
+  !2 = ToArray(!s3)
+  InsertFields %global (__cols: !2)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_3 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_2 = I32 [0] 
+  !3 = GetField(%global) [__cols]
+  !4 = ArrayLen(!3) 
+  !c1_2 = I32 [1]
+  !s4 = StreamRange(!c0_2, !4, !c1_2) [-1, False]
+  !s5 = StreamFilter(!s4) { (%__norm_4) =>
+    !5 = ArrayRef(%__norm_3, %__norm_4) [-1]
+    !6 = IsNA(!5)
+    ApplyUnaryPrimOp(!6) [Bang]
+  }
+  !7 = ToArray(!s5)
+  InsertFields %row (__col_idx: !7)
+}
+!ht4 = TableExplode(!ht3) [("__col_idx")]
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  !8 = SelectFields(%row) [(locus alleles)] 
+  !9 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+  !10 = GetField(%row) [__col_idx]
+  !11 = ArrayRef(!9, !10) [-1]
+  !12 = GetField(!11) [GT]
+  InsertFields !8 (GT: !12)
+}
+!ht6 = TableMapGlobals(!ht5) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht7 = TableOrderBy(!ht6) [(Alocus Aalleles)]
+!ht8 = TableHead(!ht7) [100]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+TableCollect(!ht9)
+
+2026-10-23 03:29:40.419 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 50: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+  !c0 = I32 [0] 
+  !c1 = I32 [1]
+  !s2 = StreamIota(!c0, !c1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+  (%__norm_1, %__norm_2) => %__norm_1 }
+  !2 = ToArray(!s3)
+  InsertFields %global (__cols: !2)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_3 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_2 = I32 [0] 
+  !3 = GetField(%global) [__cols]
+  !4 = ArrayLen(!3) 
+  !c1_2 = I32 [1]
+  !s4 = StreamRange(!c0_2, !4, !c1_2) [-1, False]
+  !s5 = StreamFilter(!s4) { (%__norm_4) =>
+    !5 = ArrayRef(%__norm_3, %__norm_4) [-1]
+    !6 = IsNA(!5)
+    ApplyUnaryPrimOp(!6) [Bang]
+  }
+  !7 = ToArray(!s5)
+  InsertFields %row (__col_idx: !7)
+}
+!ht4 = TableExplode(!ht3) [("__col_idx")]
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  !8 = SelectFields(%row) [(locus alleles)] 
+  !9 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+  !10 = GetField(%row) [__col_idx]
+  !11 = ArrayRef(!9, !10) [-1]
+  !12 = GetField(!11) [GT]
+  InsertFields !8 (GT: !12)
+}
+!ht6 = TableMapGlobals(!ht5) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht7 = TableOrderBy(!ht6) [(Alocus Aalleles)]
+!ht8 = TableHead(!ht7) [100]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+TableCollect(!ht9)
+
+2026-10-23 03:29:40.419 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.420 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.420 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.431 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 50: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}}, False, (TableNativeZippedReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+  !c0 = I32 [0] 
+  !c1 = I32 [1]
+  !s2 = StreamIota(!c0, !c1) [False]
+  !s3 = StreamZip(!s, !s2) [-1, TakeMinLength] {
+  (%__norm_1, %__norm_2) => %__norm_1 }
+  !2 = ToArray(!s3)
+  InsertFields %global (__cols: !2)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_3 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  !c0_2 = I32 [0] 
+  !3 = GetField(%global) [__cols]
+  !4 = ArrayLen(!3) 
+  !c1_2 = I32 [1]
+  !s4 = StreamRange(!c0_2, !4, !c1_2) [-1, False]
+  !s5 = StreamFilter(!s4) { (%__norm_4) =>
+    !5 = ArrayRef(%__norm_3, %__norm_4) [-1]
+    !6 = IsNA(!5)
+    ApplyUnaryPrimOp(!6) [Bang]
+  }
+  !7 = ToArray(!s5)
+  InsertFields %row (__col_idx: !7)
+}
+!ht4 = TableExplode(!ht3) [("__col_idx")]
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  !8 = SelectFields(%row) [(locus alleles)] 
+  !9 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+  !10 = GetField(%row) [__col_idx]
+  !11 = ArrayRef(!9, !10) [-1]
+  !12 = GetField(!11) [GT]
+  InsertFields !8 (GT: !12)
+}
+!ht6 = TableMapGlobals(!ht5) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht7 = TableOrderBy(!ht6) [(Alocus Aalleles)]
+!ht8 = TableHead(!ht7) [100]
+!ht9 = TableMapRows(!ht8) { (%global, %row) =>
+  SelectFields(%row) [(GT)]
+}
+TableCollect(!ht9)
+
+2026-10-23 03:29:40.433 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:29:40.433 LowerOrInterpretNonCompilable$: INFO: lowering result: TableCollect
+2026-10-23 03:29:40.464 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString]})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{GT:PCCall}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:29:40.465 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.465 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.465 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.465 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString]})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{GT:PCCall}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:29:40.466 LoweringPipeline: INFO: after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString]})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{GT:PCCall}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:29:40.466 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.466 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.466 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.466 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString]})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{GT:PCCall}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:29:40.468 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString]})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{GT:PCCall}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:29:40.468 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.468 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.468 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.469 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString]})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{GT:PCCall}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-23 03:29:40.616 LoweringPipeline: INFO: initial IR: IR size 201: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = Ref [__norm_1]
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s4)
+%__norm_5 = InsertFields %__norm_2 (__cols: !6)
+%__norm_6 = Ref [__norm_5]
+%__norm_7 = Literal [Struct{}, <literal value>]
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s5 = ToStream(!7) [False]
+%__norm_8 = ToArray(!s5)
+%__norm_9 = ArrayLen(%__norm_8)
+!c0_3 = I32 [0] 
+!8 = I64 [100] 
+!c0_4 = I32 [0] 
+!c4 = I32 [4]
+%__norm_44 = TailLoop(!c0_3, !8, !c0_4, !c4) {
+(%__norm_10, %__norm_11, %__norm_12, %__norm_13, %__norm_14) =>
+  !s6 = ToStream(%__norm_8) [False]
+  !s7 = StreamDrop(!s6, %__norm_12)
+  %__norm_15 = StreamTake(!s7, %__norm_13)
+  !9 = MakeStruct(__iruid_18: %__norm_1, __iruid_20: %__norm_5, __iruid_27: %__norm_7) 
+  !10 = Str ["iteration="] 
+  !11 = Apply(%__norm_10) [-1, str, (), String]
+  !12 = Apply(!10, !11) [-1, concat, (), String] 
+  !13 = Str [",nParts="]
+  !14 = Apply(!12, !13) [-1, concat, (), String] 
+  !15 = Apply(%__norm_13) [-1, str, (), String]
+  !16 = Apply(!14, !15) [-1, concat, (), String]
+  %__norm_34 = CollectDistributedArray(%__norm_15, !9, !16) {
+  (%__norm_16, %__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [__iruid_18]
+    %__norm_19 = GetField(%__norm_17) [__iruid_20]
+    %__norm_20 = GetField(%__norm_17) [__iruid_27]
+    %__norm_21 = ReadPartition(%__norm_16) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+    %__norm_22 = Ref [__norm_19]
+    %__norm_26 = StreamMap(%__norm_21) {
+    (%__norm_23) =>
+      %__norm_24 = GetField(%__norm_23) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !c0_5 = I32 [0] 
+      !17 = GetField(%__norm_22) [__cols]
+      !18 = ArrayLen(!17) 
+      !c1_2 = I32 [1]
+      !s8 = StreamRange(!c0_5, !18, !c1_2) [-1, False]
+      !s9 = StreamFilter(!s8) { (%__norm_25) =>
+        !19 = ArrayRef(%__norm_24, %__norm_25) [-1]
+        !20 = IsNA(!19)
+        ApplyUnaryPrimOp(!20) [Bang]
+      }
+      !21 = ToArray(!s9)
+      InsertFields %__norm_23 (__col_idx: !21)
+    }
+    %__norm_30 = StreamFlatMap(%__norm_26) {
+    (%__norm_27) =>
+      %__norm_28 = GetField(%__norm_27) [__col_idx]
+      !s10 = ToStream(%__norm_28) [True]
+      StreamMap(!s10) { (%__norm_29) =>
+        InsertFields %__norm_27 (__col_idx: %__norm_29)
+      }
+    }
+    %__norm_31 = Ref [__norm_19]
+    %__norm_33 = StreamMap(%__norm_30) {
+    (%__norm_32) =>
+      !22 = SelectFields(%__norm_32) [(locus alleles)] 
+      !23 = GetField(%__norm_32) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+      !24 = GetField(%__norm_32) [__col_idx]
+      !25 = ArrayRef(!23, !24) [-1]
+      !26 = GetField(!25) [GT]
+      InsertFields !22 (GT: !26)
+    }
+    StreamLen(%__norm_33)
+  }
+  %__norm_35 = Ref [__norm_34]
+  %__norm_36 = ArrayLen(%__norm_35)
+  %__norm_37 = ApplyBinaryPrimOp(%__norm_12, %__norm_36) [Add]
+  %__norm_38 = ApplyComparisonOp(%__norm_37, %__norm_9) [GTEQ]
+  !c0_6 = I32 [0] 
+  !27 = I64 [0]
+  TailLoop(!c0_6, %__norm_11, !27) {
+  (%__norm_39, %__norm_40, %__norm_41, %__norm_42) =>
+    !28 = I64 [0]
+    !29 = ApplyComparisonOp(%__norm_40, !28) [LTEQ] 
+    !30 = ApplyComparisonOp(%__norm_39, %__norm_36) [GTEQ]
+    !31 = ApplySpecial(!30, %__norm_38) [-1, land, 
+    (), Boolean]
+    !32 = ApplySpecial(!29, !31) [-1, lor, 
+    (), Boolean]
+    If !32 then {
+      !33 = ApplyBinaryPrimOp(%__norm_12, %__norm_39) [Add] 
+      !34 = Cast(%__norm_41) [Int32]
+      MakeTuple(!33, !34) [(0 1)]
+    } else {
+      !35 = ApplyComparisonOp(%__norm_39, %__norm_36) [LT]
+      If !35 then {
+        !36 = ArrayRef(%__norm_35, %__norm_39) [-1]
+        %__norm_43 = Cast(!36) [Int64]
+        !c1_3 = I32 [1]
+        !37 = ApplyBinaryPrimOp(%__norm_39, !c1_3) [Add] 
+        !38 = ApplyBinaryPrimOp(%__norm_40, %__norm_43) [Subtract] 
+        !39 = ApplyComparisonOp(%__norm_43, %__norm_40) [LT]
+        !40 = If !39 then { %__norm_43 } else {
+          %__norm_40
+          }
+        Recur(!37, !38, !40)
+      } else {
+        !c1_4 = I32 [1]
+        !41 = ApplyBinaryPrimOp(%__norm_10, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !42 = ApplyBinaryPrimOp(%__norm_36, !c3) [Multiply]
+        Recur(!41, %__norm_40, %__norm_37, !42)
+      }
+    }
+  }
+}
+%__norm_45 = GetTupleElement(%__norm_44) [0]
+%__norm_46 = GetTupleElement(%__norm_44) [1]
+!c1_5 = I32 [1]
+%__norm_47 = ApplyBinaryPrimOp(%__norm_45, !c1_5) [Subtract]
+!c0_7 = I32 [0] 
+!c1_6 = I32 [1]
+!s11 = StreamRange(!c0_7, %__norm_45, !c1_6) [-1, False]
+!s12 = StreamMap(!s11) { (%__norm_48) =>
+  !43 = ArrayRef(%__norm_8, %__norm_48) [-1] 
+  !44 = ApplyComparisonOp(%__norm_48, %__norm_47) [EQWithNA]
+  !45 = If !44 then { %__norm_46 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!43, !45) [(0 1)]
+}
+!46 = ToArray(!s12)
+MakeTuple(!46) [(0)]
+
+2026-10-23 03:29:40.616 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.616 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.616 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.617 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.617 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.617 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.623 ForwardLets$: INFO: Eliminating unused binding:
+__norm_6: struct{__cols: array<struct{s: str}>} = (EVAL) Ref [__norm_5]
+2026-10-23 03:29:40.623 ForwardLets$: INFO: Eliminating unused binding:
+__norm_18: struct{} = (EVAL) GetField(#__norm_17) [__iruid_18]
+2026-10-23 03:29:40.623 ForwardLets$: INFO: Eliminating unused binding:
+__norm_20: struct{} = (EVAL) GetField(#__norm_17) [__iruid_27]
+2026-10-23 03:29:40.623 ForwardLets$: INFO: Eliminating unused binding:
+__norm_31: struct{__cols: array<struct{s: str}>} = (EVAL) Ref [__norm_19]
+2026-10-23 03:29:40.715 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_18'
+2026-10-23 03:29:40.715 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_27'
+2026-10-23 03:29:40.723 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.723 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.723 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.735 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{} = (EVAL) Literal [Struct{}, <literal value>]
+2026-10-23 03:29:40.735 ForwardLets$: INFO: Eliminating unused binding:
+__norm_27: struct{locus: locus<GRCh37>, alleles: array<str>, `the entries! [877f12a8827e18f61222c6c8c5fb04a8]`: array<struct{GT: call}>} = (EVAL) Ref [__norm_23]
+2026-10-23 03:29:40.745 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.745 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.745 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.814 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 173: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!5 = ToArray(!s4)
+%__norm_5 = InsertFields !3 (__cols: !5)
+%__norm_8 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_9 = ArrayLen(%__norm_8)
+!c0_3 = I32 [0] 
+!6 = I64 [100] 
+!c0_4 = I32 [0] 
+!c4 = I32 [4]
+%__norm_44 = TailLoop(!c0_3, !6, !c0_4, !c4) {
+(%__norm_10, %__norm_11, %__norm_12, %__norm_13, %__norm_14) =>
+  !s5 = ToStream(%__norm_8) [False]
+  !s6 = StreamDrop(!s5, %__norm_12)
+  !s7 = StreamTake(!s6, %__norm_13) 
+  %__iruid_56 = MakeStruct(__iruid_20: %__norm_5)
+  !7 = IsNA(%__iruid_56)
+  !12 = If !7 then {
+    NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+  } else {
+    %__iruid_57 = GetField(%__iruid_56) [__iruid_20]
+    !8 = IsNA(%__iruid_57)
+    !11 = If !8 then {
+      NA [Struct{__cols:Array[Struct{}]}]
+    } else {
+      !9 = GetField(%__iruid_57) [__cols]
+      !s8 = ToStream(!9) [False]
+      !s9 = StreamMap(!s8) { (%__iruid_58) =>
+        SelectFields(%__iruid_58) [()]
+      }
+      !10 = ToArray(!s9)
+      MakeStruct(__cols: !10)
+    }
+    MakeStruct(__iruid_20: !11)
+  } 
+  !13 = Str ["iteration="] 
+  !14 = Apply(%__norm_10) [-1, str, (), String]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Str [",nParts="]
+  !17 = Apply(!15, !16) [-1, concat, (), String] 
+  !18 = Apply(%__norm_13) [-1, str, (), String]
+  !19 = Apply(!17, !18) [-1, concat, (), String]
+  %__norm_35 = CollectDistributedArray(!s7, !12, !19) {
+  (%__norm_16, %__norm_17) =>
+    %__norm_19 = GetField(%__norm_17) [__iruid_20]
+    !s10 = ReadPartition(%__norm_16) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+    !c0_5 = I32 [0]
+    StreamFold(!s10, !c0_5) {
+    (%__iruid_62, %__norm_23) =>
+      %__norm_24 = GetField(%__norm_23) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !c0_6 = I32 [0] 
+      !20 = GetField(%__norm_19) [__cols]
+      !21 = ArrayLen(!20) 
+      !c1_2 = I32 [1]
+      !s11 = StreamRange(!c0_6, !21, !c1_2) [-1, False]
+      !s12 = StreamFilter(!s11) { (%__norm_25) =>
+        !22 = ArrayRef(%__norm_24, %__norm_25) [-1]
+        !23 = IsNA(!22)
+        ApplyUnaryPrimOp(!23) [Bang]
+      }
+      !24 = ToArray(!s12)
+      !s13 = ToStream(!24) [True]
+      !25 = StreamLen(!s13)
+      ApplyBinaryPrimOp(%__iruid_62, !25) [Add]
+    }
+  }
+  %__norm_36 = ArrayLen(%__norm_35)
+  %__norm_37 = ApplyBinaryPrimOp(%__norm_12, %__norm_36) [Add]
+  %__norm_38 = ApplyComparisonOp(%__norm_37, %__norm_9) [GTEQ]
+  !c0_7 = I32 [0] 
+  !26 = I64 [0]
+  TailLoop(!c0_7, %__norm_11, !26) {
+  (%__norm_39, %__norm_40, %__norm_41, %__norm_42) =>
+    !27 = I64 [0]
+    !28 = ApplyComparisonOp(%__norm_40, !27) [LTEQ] 
+    !29 = ApplyComparisonOp(%__norm_39, %__norm_36) [GTEQ]
+    !30 = ApplySpecial(!29, %__norm_38) [-1, land, 
+    (), Boolean]
+    !31 = ApplySpecial(!28, !30) [-1, lor, 
+    (), Boolean]
+    If !31 then {
+      !32 = ApplyBinaryPrimOp(%__norm_12, %__norm_39) [Add] 
+      !33 = Cast(%__norm_41) [Int32]
+      MakeTuple(!32, !33) [(0 1)]
+    } else {
+      !34 = ApplyComparisonOp(%__norm_39, %__norm_36) [LT]
+      If !34 then {
+        !35 = ArrayRef(%__norm_35, %__norm_39) [-1]
+        %__norm_43 = Cast(!35) [Int64]
+        !c1_3 = I32 [1]
+        !36 = ApplyBinaryPrimOp(%__norm_39, !c1_3) [Add] 
+        !37 = ApplyBinaryPrimOp(%__norm_40, %__norm_43) [Subtract] 
+        !38 = ApplyComparisonOp(%__norm_43, %__norm_40) [LT]
+        !39 = If !38 then { %__norm_43 } else {
+          %__norm_40
+          }
+        Recur(!36, !37, !39)
+      } else {
+        !c1_4 = I32 [1]
+        !40 = ApplyBinaryPrimOp(%__norm_10, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !41 = ApplyBinaryPrimOp(%__norm_36, !c3) [Multiply]
+        Recur(!40, %__norm_40, %__norm_37, !41)
+      }
+    }
+  }
+}
+%__norm_45 = GetTupleElement(%__norm_44) [0]
+%__norm_46 = GetTupleElement(%__norm_44) [1]
+!c1_5 = I32 [1]
+%__norm_47 = ApplyBinaryPrimOp(%__norm_45, !c1_5) [Subtract]
+!c0_8 = I32 [0] 
+!c1_6 = I32 [1]
+!s14 = StreamRange(!c0_8, %__norm_45, !c1_6) [-1, False]
+!s15 = StreamMap(!s14) { (%__norm_48) =>
+  !42 = ArrayRef(%__norm_8, %__norm_48) [-1] 
+  !43 = ApplyComparisonOp(%__norm_48, %__norm_47) [EQWithNA]
+  !44 = If !43 then { %__norm_46 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!42, !44) [(0 1)]
+}
+!45 = ToArray(!s15)
+MakeTuple(!45) [(0)]
+
+2026-10-23 03:29:40.819 LoweringPipeline: INFO: after InlineApplyIR: IR size 173: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!5 = ToArray(!s4)
+%__norm_5 = InsertFields !3 (__cols: !5)
+%__norm_8 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_9 = ArrayLen(%__norm_8)
+!c0_3 = I32 [0] 
+!6 = I64 [100] 
+!c0_4 = I32 [0] 
+!c4 = I32 [4]
+%__norm_44 = TailLoop(!c0_3, !6, !c0_4, !c4) {
+(%__norm_10, %__norm_11, %__norm_12, %__norm_13, %__norm_14) =>
+  !s5 = ToStream(%__norm_8) [False]
+  !s6 = StreamDrop(!s5, %__norm_12)
+  !s7 = StreamTake(!s6, %__norm_13) 
+  %__iruid_56 = MakeStruct(__iruid_20: %__norm_5)
+  !7 = IsNA(%__iruid_56)
+  !12 = If !7 then {
+    NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+  } else {
+    %__iruid_57 = GetField(%__iruid_56) [__iruid_20]
+    !8 = IsNA(%__iruid_57)
+    !11 = If !8 then {
+      NA [Struct{__cols:Array[Struct{}]}]
+    } else {
+      !9 = GetField(%__iruid_57) [__cols]
+      !s8 = ToStream(!9) [False]
+      !s9 = StreamMap(!s8) { (%__iruid_58) =>
+        SelectFields(%__iruid_58) [()]
+      }
+      !10 = ToArray(!s9)
+      MakeStruct(__cols: !10)
+    }
+    MakeStruct(__iruid_20: !11)
+  } 
+  !13 = Str ["iteration="] 
+  !14 = Apply(%__norm_10) [-1, str, (), String]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Str [",nParts="]
+  !17 = Apply(!15, !16) [-1, concat, (), String] 
+  !18 = Apply(%__norm_13) [-1, str, (), String]
+  !19 = Apply(!17, !18) [-1, concat, (), String]
+  %__norm_35 = CollectDistributedArray(!s7, !12, !19) {
+  (%__norm_16, %__norm_17) =>
+    %__norm_19 = GetField(%__norm_17) [__iruid_20]
+    !s10 = ReadPartition(%__norm_16) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+    !c0_5 = I32 [0]
+    StreamFold(!s10, !c0_5) {
+    (%__iruid_62, %__norm_23) =>
+      %__norm_24 = GetField(%__norm_23) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !c0_6 = I32 [0] 
+      !20 = GetField(%__norm_19) [__cols]
+      !21 = ArrayLen(!20) 
+      !c1_2 = I32 [1]
+      !s11 = StreamRange(!c0_6, !21, !c1_2) [-1, False]
+      !s12 = StreamFilter(!s11) { (%__norm_25) =>
+        !22 = ArrayRef(%__norm_24, %__norm_25) [-1]
+        !23 = IsNA(!22)
+        ApplyUnaryPrimOp(!23) [Bang]
+      }
+      !24 = ToArray(!s12)
+      !s13 = ToStream(!24) [True]
+      !25 = StreamLen(!s13)
+      ApplyBinaryPrimOp(%__iruid_62, !25) [Add]
+    }
+  }
+  %__norm_36 = ArrayLen(%__norm_35)
+  %__norm_37 = ApplyBinaryPrimOp(%__norm_12, %__norm_36) [Add]
+  %__norm_38 = ApplyComparisonOp(%__norm_37, %__norm_9) [GTEQ]
+  !c0_7 = I32 [0] 
+  !26 = I64 [0]
+  TailLoop(!c0_7, %__norm_11, !26) {
+  (%__norm_39, %__norm_40, %__norm_41, %__norm_42) =>
+    !27 = I64 [0]
+    !28 = ApplyComparisonOp(%__norm_40, !27) [LTEQ] 
+    !29 = ApplyComparisonOp(%__norm_39, %__norm_36) [GTEQ]
+    !30 = ApplySpecial(!29, %__norm_38) [-1, land, 
+    (), Boolean]
+    !31 = ApplySpecial(!28, !30) [-1, lor, 
+    (), Boolean]
+    If !31 then {
+      !32 = ApplyBinaryPrimOp(%__norm_12, %__norm_39) [Add] 
+      !33 = Cast(%__norm_41) [Int32]
+      MakeTuple(!32, !33) [(0 1)]
+    } else {
+      !34 = ApplyComparisonOp(%__norm_39, %__norm_36) [LT]
+      If !34 then {
+        !35 = ArrayRef(%__norm_35, %__norm_39) [-1]
+        %__norm_43 = Cast(!35) [Int64]
+        !c1_3 = I32 [1]
+        !36 = ApplyBinaryPrimOp(%__norm_39, !c1_3) [Add] 
+        !37 = ApplyBinaryPrimOp(%__norm_40, %__norm_43) [Subtract] 
+        !38 = ApplyComparisonOp(%__norm_43, %__norm_40) [LT]
+        !39 = If !38 then { %__norm_43 } else {
+          %__norm_40
+          }
+        Recur(!36, !37, !39)
+      } else {
+        !c1_4 = I32 [1]
+        !40 = ApplyBinaryPrimOp(%__norm_10, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !41 = ApplyBinaryPrimOp(%__norm_36, !c3) [Multiply]
+        Recur(!40, %__norm_40, %__norm_37, !41)
+      }
+    }
+  }
+}
+%__norm_45 = GetTupleElement(%__norm_44) [0]
+%__norm_46 = GetTupleElement(%__norm_44) [1]
+!c1_5 = I32 [1]
+%__norm_47 = ApplyBinaryPrimOp(%__norm_45, !c1_5) [Subtract]
+!c0_8 = I32 [0] 
+!c1_6 = I32 [1]
+!s14 = StreamRange(!c0_8, %__norm_45, !c1_6) [-1, False]
+!s15 = StreamMap(!s14) { (%__norm_48) =>
+  !42 = ArrayRef(%__norm_8, %__norm_48) [-1] 
+  !43 = ApplyComparisonOp(%__norm_48, %__norm_47) [EQWithNA]
+  !44 = If !43 then { %__norm_46 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!42, !44) [(0 1)]
+}
+!45 = ToArray(!s15)
+MakeTuple(!45) [(0)]
+
+2026-10-23 03:29:40.820 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.821 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.821 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.833 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 173: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!5 = ToArray(!s4)
+%__norm_5 = InsertFields !3 (__cols: !5)
+%__norm_8 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_9 = ArrayLen(%__norm_8)
+!c0_3 = I32 [0] 
+!6 = I64 [100] 
+!c0_4 = I32 [0] 
+!c4 = I32 [4]
+%__norm_44 = TailLoop(!c0_3, !6, !c0_4, !c4) {
+(%__norm_10, %__norm_11, %__norm_12, %__norm_13, %__norm_14) =>
+  !s5 = ToStream(%__norm_8) [False]
+  !s6 = StreamDrop(!s5, %__norm_12)
+  !s7 = StreamTake(!s6, %__norm_13) 
+  %__iruid_56 = MakeStruct(__iruid_20: %__norm_5)
+  !7 = IsNA(%__iruid_56)
+  !12 = If !7 then {
+    NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+  } else {
+    %__iruid_57 = GetField(%__iruid_56) [__iruid_20]
+    !8 = IsNA(%__iruid_57)
+    !11 = If !8 then {
+      NA [Struct{__cols:Array[Struct{}]}]
+    } else {
+      !9 = GetField(%__iruid_57) [__cols]
+      !s8 = ToStream(!9) [False]
+      !s9 = StreamMap(!s8) { (%__iruid_58) =>
+        SelectFields(%__iruid_58) [()]
+      }
+      !10 = ToArray(!s9)
+      MakeStruct(__cols: !10)
+    }
+    MakeStruct(__iruid_20: !11)
+  } 
+  !13 = Str ["iteration="] 
+  !14 = Apply(%__norm_10) [-1, str, (), String]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Str [",nParts="]
+  !17 = Apply(!15, !16) [-1, concat, (), String] 
+  !18 = Apply(%__norm_13) [-1, str, (), String]
+  !19 = Apply(!17, !18) [-1, concat, (), String]
+  %__norm_35 = CollectDistributedArray(!s7, !12, !19) {
+  (%__norm_16, %__norm_17) =>
+    %__norm_19 = GetField(%__norm_17) [__iruid_20]
+    !s10 = ReadPartition(%__norm_16) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+    !c0_5 = I32 [0]
+    StreamFold(!s10, !c0_5) {
+    (%__iruid_62, %__norm_23) =>
+      %__norm_24 = GetField(%__norm_23) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !c0_6 = I32 [0] 
+      !20 = GetField(%__norm_19) [__cols]
+      !21 = ArrayLen(!20) 
+      !c1_2 = I32 [1]
+      !s11 = StreamRange(!c0_6, !21, !c1_2) [-1, False]
+      !s12 = StreamFilter(!s11) { (%__norm_25) =>
+        !22 = ArrayRef(%__norm_24, %__norm_25) [-1]
+        !23 = IsNA(!22)
+        ApplyUnaryPrimOp(!23) [Bang]
+      }
+      !24 = ToArray(!s12)
+      !s13 = ToStream(!24) [True]
+      !25 = StreamLen(!s13)
+      ApplyBinaryPrimOp(%__iruid_62, !25) [Add]
+    }
+  }
+  %__norm_36 = ArrayLen(%__norm_35)
+  %__norm_37 = ApplyBinaryPrimOp(%__norm_12, %__norm_36) [Add]
+  %__norm_38 = ApplyComparisonOp(%__norm_37, %__norm_9) [GTEQ]
+  !c0_7 = I32 [0] 
+  !26 = I64 [0]
+  TailLoop(!c0_7, %__norm_11, !26) {
+  (%__norm_39, %__norm_40, %__norm_41, %__norm_42) =>
+    !27 = I64 [0]
+    !28 = ApplyComparisonOp(%__norm_40, !27) [LTEQ] 
+    !29 = ApplyComparisonOp(%__norm_39, %__norm_36) [GTEQ]
+    !30 = ApplySpecial(!29, %__norm_38) [-1, land, 
+    (), Boolean]
+    !31 = ApplySpecial(!28, !30) [-1, lor, 
+    (), Boolean]
+    If !31 then {
+      !32 = ApplyBinaryPrimOp(%__norm_12, %__norm_39) [Add] 
+      !33 = Cast(%__norm_41) [Int32]
+      MakeTuple(!32, !33) [(0 1)]
+    } else {
+      !34 = ApplyComparisonOp(%__norm_39, %__norm_36) [LT]
+      If !34 then {
+        !35 = ArrayRef(%__norm_35, %__norm_39) [-1]
+        %__norm_43 = Cast(!35) [Int64]
+        !c1_3 = I32 [1]
+        !36 = ApplyBinaryPrimOp(%__norm_39, !c1_3) [Add] 
+        !37 = ApplyBinaryPrimOp(%__norm_40, %__norm_43) [Subtract] 
+        !38 = ApplyComparisonOp(%__norm_43, %__norm_40) [LT]
+        !39 = If !38 then { %__norm_43 } else {
+          %__norm_40
+          }
+        Recur(!36, !37, !39)
+      } else {
+        !c1_4 = I32 [1]
+        !40 = ApplyBinaryPrimOp(%__norm_10, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !41 = ApplyBinaryPrimOp(%__norm_36, !c3) [Multiply]
+        Recur(!40, %__norm_40, %__norm_37, !41)
+      }
+    }
+  }
+}
+%__norm_45 = GetTupleElement(%__norm_44) [0]
+%__norm_46 = GetTupleElement(%__norm_44) [1]
+!c1_5 = I32 [1]
+%__norm_47 = ApplyBinaryPrimOp(%__norm_45, !c1_5) [Subtract]
+!c0_8 = I32 [0] 
+!c1_6 = I32 [1]
+!s14 = StreamRange(!c0_8, %__norm_45, !c1_6) [-1, False]
+!s15 = StreamMap(!s14) { (%__norm_48) =>
+  !42 = ArrayRef(%__norm_8, %__norm_48) [-1] 
+  !43 = ApplyComparisonOp(%__norm_48, %__norm_47) [EQWithNA]
+  !44 = If !43 then { %__norm_46 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!42, !44) [(0 1)]
+}
+!45 = ToArray(!s15)
+MakeTuple(!45) [(0)]
+
+2026-10-23 03:29:40.848 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 173: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!5 = ToArray(!s4)
+%__norm_5 = InsertFields !3 (__cols: !5)
+%__norm_8 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_9 = ArrayLen(%__norm_8)
+!c0_3 = I32 [0] 
+!6 = I64 [100] 
+!c0_4 = I32 [0] 
+!c4 = I32 [4]
+%__norm_44 = TailLoop(!c0_3, !6, !c0_4, !c4) {
+(%__norm_10, %__norm_11, %__norm_12, %__norm_13, %__norm_14) =>
+  !s5 = ToStream(%__norm_8) [False]
+  !s6 = StreamDrop(!s5, %__norm_12)
+  !s7 = StreamTake(!s6, %__norm_13) 
+  %__iruid_56 = MakeStruct(__iruid_20: %__norm_5)
+  !7 = IsNA(%__iruid_56)
+  !12 = If !7 then {
+    NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+  } else {
+    %__iruid_57 = GetField(%__iruid_56) [__iruid_20]
+    !8 = IsNA(%__iruid_57)
+    !11 = If !8 then {
+      NA [Struct{__cols:Array[Struct{}]}]
+    } else {
+      !9 = GetField(%__iruid_57) [__cols]
+      !s8 = ToStream(!9) [False]
+      !s9 = StreamMap(!s8) { (%__iruid_58) =>
+        SelectFields(%__iruid_58) [()]
+      }
+      !10 = ToArray(!s9)
+      MakeStruct(__cols: !10)
+    }
+    MakeStruct(__iruid_20: !11)
+  } 
+  !13 = Str ["iteration="] 
+  !14 = Apply(%__norm_10) [-1, str, (), String]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Str [",nParts="]
+  !17 = Apply(!15, !16) [-1, concat, (), String] 
+  !18 = Apply(%__norm_13) [-1, str, (), String]
+  !19 = Apply(!17, !18) [-1, concat, (), String]
+  %__norm_35 = CollectDistributedArray(!s7, !12, !19) {
+  (%__norm_16, %__norm_17) =>
+    %__norm_19 = GetField(%__norm_17) [__iruid_20]
+    !s10 = ReadPartition(%__norm_16) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+    !c0_5 = I32 [0]
+    StreamFold(!s10, !c0_5) {
+    (%__iruid_62, %__norm_23) =>
+      %__norm_24 = GetField(%__norm_23) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !c0_6 = I32 [0] 
+      !20 = GetField(%__norm_19) [__cols]
+      !21 = ArrayLen(!20) 
+      !c1_2 = I32 [1]
+      !s11 = StreamRange(!c0_6, !21, !c1_2) [-1, False]
+      !s12 = StreamFilter(!s11) { (%__norm_25) =>
+        !22 = ArrayRef(%__norm_24, %__norm_25) [-1]
+        !23 = IsNA(!22)
+        ApplyUnaryPrimOp(!23) [Bang]
+      }
+      !24 = ToArray(!s12)
+      !s13 = ToStream(!24) [True]
+      !25 = StreamLen(!s13)
+      ApplyBinaryPrimOp(%__iruid_62, !25) [Add]
+    }
+  }
+  %__norm_36 = ArrayLen(%__norm_35)
+  %__norm_37 = ApplyBinaryPrimOp(%__norm_12, %__norm_36) [Add]
+  %__norm_38 = ApplyComparisonOp(%__norm_37, %__norm_9) [GTEQ]
+  !c0_7 = I32 [0] 
+  !26 = I64 [0]
+  TailLoop(!c0_7, %__norm_11, !26) {
+  (%__norm_39, %__norm_40, %__norm_41, %__norm_42) =>
+    !27 = I64 [0]
+    !28 = ApplyComparisonOp(%__norm_40, !27) [LTEQ] 
+    !29 = ApplyComparisonOp(%__norm_39, %__norm_36) [GTEQ]
+    !30 = ApplySpecial(!29, %__norm_38) [-1, land, 
+    (), Boolean]
+    !31 = ApplySpecial(!28, !30) [-1, lor, 
+    (), Boolean]
+    If !31 then {
+      !32 = ApplyBinaryPrimOp(%__norm_12, %__norm_39) [Add] 
+      !33 = Cast(%__norm_41) [Int32]
+      MakeTuple(!32, !33) [(0 1)]
+    } else {
+      !34 = ApplyComparisonOp(%__norm_39, %__norm_36) [LT]
+      If !34 then {
+        !35 = ArrayRef(%__norm_35, %__norm_39) [-1]
+        %__norm_43 = Cast(!35) [Int64]
+        !c1_3 = I32 [1]
+        !36 = ApplyBinaryPrimOp(%__norm_39, !c1_3) [Add] 
+        !37 = ApplyBinaryPrimOp(%__norm_40, %__norm_43) [Subtract] 
+        !38 = ApplyComparisonOp(%__norm_43, %__norm_40) [LT]
+        !39 = If !38 then { %__norm_43 } else {
+          %__norm_40
+          }
+        Recur(!36, !37, !39)
+      } else {
+        !c1_4 = I32 [1]
+        !40 = ApplyBinaryPrimOp(%__norm_10, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !41 = ApplyBinaryPrimOp(%__norm_36, !c3) [Multiply]
+        Recur(!40, %__norm_40, %__norm_37, !41)
+      }
+    }
+  }
+}
+%__norm_45 = GetTupleElement(%__norm_44) [0]
+%__norm_46 = GetTupleElement(%__norm_44) [1]
+!c1_5 = I32 [1]
+%__norm_47 = ApplyBinaryPrimOp(%__norm_45, !c1_5) [Subtract]
+!c0_8 = I32 [0] 
+!c1_6 = I32 [1]
+!s14 = StreamRange(!c0_8, %__norm_45, !c1_6) [-1, False]
+!s15 = StreamMap(!s14) { (%__norm_48) =>
+  !42 = ArrayRef(%__norm_8, %__norm_48) [-1] 
+  !43 = ApplyComparisonOp(%__norm_48, %__norm_47) [EQWithNA]
+  !44 = If !43 then { %__norm_46 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!42, !44) [(0 1)]
+}
+!45 = ToArray(!s15)
+MakeTuple(!45) [(0)]
+
+2026-10-23 03:29:40.849 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.849 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:40.849 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:40.861 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 173: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!5 = ToArray(!s4)
+%__norm_5 = InsertFields !3 (__cols: !5)
+%__norm_8 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_9 = ArrayLen(%__norm_8)
+!c0_3 = I32 [0] 
+!6 = I64 [100] 
+!c0_4 = I32 [0] 
+!c4 = I32 [4]
+%__norm_44 = TailLoop(!c0_3, !6, !c0_4, !c4) {
+(%__norm_10, %__norm_11, %__norm_12, %__norm_13, %__norm_14) =>
+  !s5 = ToStream(%__norm_8) [False]
+  !s6 = StreamDrop(!s5, %__norm_12)
+  !s7 = StreamTake(!s6, %__norm_13) 
+  %__iruid_56 = MakeStruct(__iruid_20: %__norm_5)
+  !7 = IsNA(%__iruid_56)
+  !12 = If !7 then {
+    NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+  } else {
+    %__iruid_57 = GetField(%__iruid_56) [__iruid_20]
+    !8 = IsNA(%__iruid_57)
+    !11 = If !8 then {
+      NA [Struct{__cols:Array[Struct{}]}]
+    } else {
+      !9 = GetField(%__iruid_57) [__cols]
+      !s8 = ToStream(!9) [False]
+      !s9 = StreamMap(!s8) { (%__iruid_58) =>
+        SelectFields(%__iruid_58) [()]
+      }
+      !10 = ToArray(!s9)
+      MakeStruct(__cols: !10)
+    }
+    MakeStruct(__iruid_20: !11)
+  } 
+  !13 = Str ["iteration="] 
+  !14 = Apply(%__norm_10) [-1, str, (), String]
+  !15 = Apply(!13, !14) [-1, concat, (), String] 
+  !16 = Str [",nParts="]
+  !17 = Apply(!15, !16) [-1, concat, (), String] 
+  !18 = Apply(%__norm_13) [-1, str, (), String]
+  !19 = Apply(!17, !18) [-1, concat, (), String]
+  %__norm_35 = CollectDistributedArray(!s7, !12, !19) {
+  (%__norm_16, %__norm_17) =>
+    %__norm_19 = GetField(%__norm_17) [__iruid_20]
+    !s10 = ReadPartition(%__norm_16) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+    !c0_5 = I32 [0]
+    StreamFold(!s10, !c0_5) {
+    (%__iruid_62, %__norm_23) =>
+      %__norm_24 = GetField(%__norm_23) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !c0_6 = I32 [0] 
+      !20 = GetField(%__norm_19) [__cols]
+      !21 = ArrayLen(!20) 
+      !c1_2 = I32 [1]
+      !s11 = StreamRange(!c0_6, !21, !c1_2) [-1, False]
+      !s12 = StreamFilter(!s11) { (%__norm_25) =>
+        !22 = ArrayRef(%__norm_24, %__norm_25) [-1]
+        !23 = IsNA(!22)
+        ApplyUnaryPrimOp(!23) [Bang]
+      }
+      !24 = ToArray(!s12)
+      !s13 = ToStream(!24) [True]
+      !25 = StreamLen(!s13)
+      ApplyBinaryPrimOp(%__iruid_62, !25) [Add]
+    }
+  }
+  %__norm_36 = ArrayLen(%__norm_35)
+  %__norm_37 = ApplyBinaryPrimOp(%__norm_12, %__norm_36) [Add]
+  %__norm_38 = ApplyComparisonOp(%__norm_37, %__norm_9) [GTEQ]
+  !c0_7 = I32 [0] 
+  !26 = I64 [0]
+  TailLoop(!c0_7, %__norm_11, !26) {
+  (%__norm_39, %__norm_40, %__norm_41, %__norm_42) =>
+    !27 = I64 [0]
+    !28 = ApplyComparisonOp(%__norm_40, !27) [LTEQ] 
+    !29 = ApplyComparisonOp(%__norm_39, %__norm_36) [GTEQ]
+    !30 = ApplySpecial(!29, %__norm_38) [-1, land, 
+    (), Boolean]
+    !31 = ApplySpecial(!28, !30) [-1, lor, 
+    (), Boolean]
+    If !31 then {
+      !32 = ApplyBinaryPrimOp(%__norm_12, %__norm_39) [Add] 
+      !33 = Cast(%__norm_41) [Int32]
+      MakeTuple(!32, !33) [(0 1)]
+    } else {
+      !34 = ApplyComparisonOp(%__norm_39, %__norm_36) [LT]
+      If !34 then {
+        !35 = ArrayRef(%__norm_35, %__norm_39) [-1]
+        %__norm_43 = Cast(!35) [Int64]
+        !c1_3 = I32 [1]
+        !36 = ApplyBinaryPrimOp(%__norm_39, !c1_3) [Add] 
+        !37 = ApplyBinaryPrimOp(%__norm_40, %__norm_43) [Subtract] 
+        !38 = ApplyComparisonOp(%__norm_43, %__norm_40) [LT]
+        !39 = If !38 then { %__norm_43 } else {
+          %__norm_40
+          }
+        Recur(!36, !37, !39)
+      } else {
+        !c1_4 = I32 [1]
+        !40 = ApplyBinaryPrimOp(%__norm_10, !c1_4) [Add] 
+        !c3 = I32 [3]
+        !41 = ApplyBinaryPrimOp(%__norm_36, !c3) [Multiply]
+        Recur(!40, %__norm_40, %__norm_37, !41)
+      }
+    }
+  }
+}
+%__norm_45 = GetTupleElement(%__norm_44) [0]
+%__norm_46 = GetTupleElement(%__norm_44) [1]
+!c1_5 = I32 [1]
+%__norm_47 = ApplyBinaryPrimOp(%__norm_45, !c1_5) [Subtract]
+!c0_8 = I32 [0] 
+!c1_6 = I32 [1]
+!s14 = StreamRange(!c0_8, %__norm_45, !c1_6) [-1, False]
+!s15 = StreamMap(!s14) { (%__norm_48) =>
+  !42 = ArrayRef(%__norm_8, %__norm_48) [-1] 
+  !43 = ApplyComparisonOp(%__norm_48, %__norm_47) [EQWithNA]
+  !44 = If !43 then { %__norm_46 } else {
+    I32 [2147483647]
+  }
+  MakeTuple(!42, !44) [(0 1)]
+}
+!45 = ToArray(!s15)
+MakeTuple(!45) [(0)]
+
+2026-10-23 03:29:41.073 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:29:41.719 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:41.850 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:29:41.850 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:29:41.850 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:29:41.850 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:29:42.034 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.034 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:29:42.035 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.035 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:29:42.050 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.050 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:29:42.069 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.069 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:29:42.127 BackendUtils: INFO: table_head_or_tail_recursive_count|iteration=0,nParts=4: executed 4 tasks in 407.562ms
+2026-10-23 03:29:42.128 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.128 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.128 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.132 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableCollect
+2026-10-23 03:29:42.136 LoweringPipeline: INFO: initial IR: IR size 117: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = Ref [__norm_1]
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s3 = StreamIota(!c0_2, !c1) [False]
+!s4 = StreamZip(!s2, !s3) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s4)
+%__norm_5 = InsertFields %__norm_2 (__cols: !6)
+%__norm_6 = Ref [__norm_5]
+%__norm_7 = Literal [Struct{}, <literal value>]
+!7 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s5 = ToStream(!7) [False] 
+!8 = MakeStruct(__iruid_18: %__norm_1, __iruid_20: %__norm_5, __iruid_27: %__norm_7) 
+!9 = NA [String]
+%__norm_31 = CollectDistributedArray(!s5, !8, !9) {
+(%__norm_8, %__norm_9) =>
+  %__norm_10 = GetField(%__norm_9) [__iruid_18]
+  %__norm_11 = GetField(%__norm_9) [__iruid_20]
+  %__norm_12 = GetField(%__norm_9) [__iruid_27]
+  %__norm_13 = GetTupleElement(%__norm_8) [0]
+  %__norm_14 = Ref [__norm_13]
+  %__norm_15 = ReadPartition(%__norm_14) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  %__norm_16 = Ref [__norm_11]
+  %__norm_20 = StreamMap(%__norm_15) {
+  (%__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !c0_3 = I32 [0] 
+    !10 = GetField(%__norm_16) [__cols]
+    !11 = ArrayLen(!10) 
+    !c1_2 = I32 [1]
+    !s6 = StreamRange(!c0_3, !11, !c1_2) [-1, False]
+    !s7 = StreamFilter(!s6) { (%__norm_19) =>
+      !12 = ArrayRef(%__norm_18, %__norm_19) [-1]
+      !13 = IsNA(!12)
+      ApplyUnaryPrimOp(!13) [Bang]
+    }
+    !14 = ToArray(!s7)
+    InsertFields %__norm_17 (__col_idx: !14)
+  }
+  %__norm_24 = StreamFlatMap(%__norm_20) {
+  (%__norm_21) =>
+    %__norm_22 = GetField(%__norm_21) [__col_idx]
+    !s8 = ToStream(%__norm_22) [True]
+    StreamMap(!s8) { (%__norm_23) =>
+      InsertFields %__norm_21 (__col_idx: %__norm_23)
+    }
+  }
+  %__norm_25 = Ref [__norm_11]
+  !s9 = StreamMap(%__norm_24) { (%__norm_26) =>
+    !15 = SelectFields(%__norm_26) [(locus alleles)] 
+    !16 = GetField(%__norm_26) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`] 
+    !17 = GetField(%__norm_26) [__col_idx]
+    !18 = ArrayRef(!16, !17) [-1]
+    !19 = GetField(!18) [GT]
+    InsertFields !15 (GT: !19)
+  } 
+  !20 = GetTupleElement(%__norm_8) [1]
+  %__norm_27 = StreamTake(!s9, !20)
+  %__norm_28 = Ref [__norm_12]
+  %__norm_30 = StreamMap(%__norm_27) {
+  (%__norm_29) =>
+    SelectFields(%__norm_29) [(GT)]
+  }
+  ToArray(%__norm_30)
+}
+!s10 = ToStream(%__norm_31) [False]
+!s11 = StreamFlatMap(!s10) { (%__norm_32) =>
+  ToStream(%__norm_32) [False]
+}
+!21 = ToArray(!s11)
+!22 = MakeStruct(rows: !21, global: %__norm_7)
+MakeTuple(!22) [(0)]
+
+2026-10-23 03:29:42.136 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.136 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.136 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.137 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.137 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.137 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.139 ForwardLets$: INFO: Eliminating unused binding:
+__norm_6: struct{__cols: array<struct{s: str}>} = (EVAL) Ref [__norm_5]
+2026-10-23 03:29:42.140 ForwardLets$: INFO: Eliminating unused binding:
+__norm_10: struct{} = (EVAL) GetField(#__norm_9) [__iruid_18]
+2026-10-23 03:29:42.140 ForwardLets$: INFO: Eliminating unused binding:
+__norm_25: struct{__cols: array<struct{s: str}>} = (EVAL) Ref [__norm_11]
+2026-10-23 03:29:42.140 ForwardLets$: INFO: Eliminating unused binding:
+__norm_28: struct{} = (EVAL) Ref [__norm_12]
+2026-10-23 03:29:42.146 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_18'
+2026-10-23 03:29:42.146 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_27'
+2026-10-23 03:29:42.147 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.147 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.147 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.152 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.152 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.152 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.158 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 85: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!2) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!3 = ToArray(!s2) 
+!c0 = I32 [0]
+!4 = ArrayRef(!3, !c0) [-1] 
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s3 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s4 = StreamIota(!c0_2, !c1) [False]
+!s5 = StreamZip(!s3, !s4) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s5)
+!7 = InsertFields !4 (__cols: !6)
+%__iruid_71 = MakeStruct(__iruid_20: !7)
+!8 = IsNA(%__iruid_71)
+!13 = If !8 then {
+  NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+} else {
+  %__iruid_72 = GetField(%__iruid_71) [__iruid_20]
+  !9 = IsNA(%__iruid_72)
+  !12 = If !9 then {
+    NA [Struct{__cols:Array[Struct{}]}]
+  } else {
+    !10 = GetField(%__iruid_72) [__cols]
+    !s6 = ToStream(!10) [False]
+    !s7 = StreamMap(!s6) { (%__iruid_73) =>
+      SelectFields(%__iruid_73) [()]
+    }
+    !11 = ToArray(!s7)
+    MakeStruct(__cols: !11)
+  }
+  MakeStruct(__iruid_20: !12)
+} 
+!14 = NA [String]
+!26 = CollectDistributedArray(!s, !13, !14) {
+(%__norm_8, %__norm_9) =>
+  %__norm_11 = GetField(%__norm_9) [__iruid_20]
+  !15 = GetTupleElement(%__norm_8) [0]
+  !s8 = ReadPartition(!15) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !s12 = StreamFlatMap(!s8) { (%__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !c0_3 = I32 [0] 
+    !16 = GetField(%__norm_11) [__cols]
+    !17 = ArrayLen(!16) 
+    !c1_2 = I32 [1]
+    !s9 = StreamRange(!c0_3, !17, !c1_2) [-1, False]
+    !s10 = StreamFilter(!s9) { (%__norm_19) =>
+      !18 = ArrayRef(%__norm_18, %__norm_19) [-1]
+      !19 = IsNA(!18)
+      ApplyUnaryPrimOp(!19) [Bang]
+    }
+    !20 = ToArray(!s10)
+    !s11 = ToStream(!20) [True]
+    StreamMap(!s11) { (%__norm_23) =>
+      !21 = SelectFields(%__norm_17) [()] 
+      !22 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !23 = ArrayRef(!22, %__norm_23) [-1]
+      !24 = GetField(!23) [GT]
+      InsertFields !21 (GT: !24)
+    }
+  } 
+  !25 = GetTupleElement(%__norm_8) [1]
+  !s13 = StreamTake(!s12, !25)
+  ToArray(!s13)
+}
+!s14 = ToStream(!26) [False]
+!s15 = StreamFlatMap(!s14) { (%__norm_32) =>
+  ToStream(%__norm_32) [False]
+}
+!27 = ToArray(!s15) 
+!28 = Literal [Struct{}, <literal value>]
+!29 = MakeStruct(rows: !27, global: !28)
+MakeTuple(!29) [(0)]
+
+2026-10-23 03:29:42.160 LoweringPipeline: INFO: after InlineApplyIR: IR size 85: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!2) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!3 = ToArray(!s2) 
+!c0 = I32 [0]
+!4 = ArrayRef(!3, !c0) [-1] 
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s3 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s4 = StreamIota(!c0_2, !c1) [False]
+!s5 = StreamZip(!s3, !s4) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s5)
+!7 = InsertFields !4 (__cols: !6)
+%__iruid_71 = MakeStruct(__iruid_20: !7)
+!8 = IsNA(%__iruid_71)
+!13 = If !8 then {
+  NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+} else {
+  %__iruid_72 = GetField(%__iruid_71) [__iruid_20]
+  !9 = IsNA(%__iruid_72)
+  !12 = If !9 then {
+    NA [Struct{__cols:Array[Struct{}]}]
+  } else {
+    !10 = GetField(%__iruid_72) [__cols]
+    !s6 = ToStream(!10) [False]
+    !s7 = StreamMap(!s6) { (%__iruid_73) =>
+      SelectFields(%__iruid_73) [()]
+    }
+    !11 = ToArray(!s7)
+    MakeStruct(__cols: !11)
+  }
+  MakeStruct(__iruid_20: !12)
+} 
+!14 = NA [String]
+!26 = CollectDistributedArray(!s, !13, !14) {
+(%__norm_8, %__norm_9) =>
+  %__norm_11 = GetField(%__norm_9) [__iruid_20]
+  !15 = GetTupleElement(%__norm_8) [0]
+  !s8 = ReadPartition(!15) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !s12 = StreamFlatMap(!s8) { (%__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !c0_3 = I32 [0] 
+    !16 = GetField(%__norm_11) [__cols]
+    !17 = ArrayLen(!16) 
+    !c1_2 = I32 [1]
+    !s9 = StreamRange(!c0_3, !17, !c1_2) [-1, False]
+    !s10 = StreamFilter(!s9) { (%__norm_19) =>
+      !18 = ArrayRef(%__norm_18, %__norm_19) [-1]
+      !19 = IsNA(!18)
+      ApplyUnaryPrimOp(!19) [Bang]
+    }
+    !20 = ToArray(!s10)
+    !s11 = ToStream(!20) [True]
+    StreamMap(!s11) { (%__norm_23) =>
+      !21 = SelectFields(%__norm_17) [()] 
+      !22 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !23 = ArrayRef(!22, %__norm_23) [-1]
+      !24 = GetField(!23) [GT]
+      InsertFields !21 (GT: !24)
+    }
+  } 
+  !25 = GetTupleElement(%__norm_8) [1]
+  !s13 = StreamTake(!s12, !25)
+  ToArray(!s13)
+}
+!s14 = ToStream(!26) [False]
+!s15 = StreamFlatMap(!s14) { (%__norm_32) =>
+  ToStream(%__norm_32) [False]
+}
+!27 = ToArray(!s15) 
+!28 = Literal [Struct{}, <literal value>]
+!29 = MakeStruct(rows: !27, global: !28)
+MakeTuple(!29) [(0)]
+
+2026-10-23 03:29:42.161 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.161 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.161 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.171 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 85: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!2) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!3 = ToArray(!s2) 
+!c0 = I32 [0]
+!4 = ArrayRef(!3, !c0) [-1] 
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s3 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s4 = StreamIota(!c0_2, !c1) [False]
+!s5 = StreamZip(!s3, !s4) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s5)
+!7 = InsertFields !4 (__cols: !6)
+%__iruid_71 = MakeStruct(__iruid_20: !7)
+!8 = IsNA(%__iruid_71)
+!13 = If !8 then {
+  NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+} else {
+  %__iruid_72 = GetField(%__iruid_71) [__iruid_20]
+  !9 = IsNA(%__iruid_72)
+  !12 = If !9 then {
+    NA [Struct{__cols:Array[Struct{}]}]
+  } else {
+    !10 = GetField(%__iruid_72) [__cols]
+    !s6 = ToStream(!10) [False]
+    !s7 = StreamMap(!s6) { (%__iruid_73) =>
+      SelectFields(%__iruid_73) [()]
+    }
+    !11 = ToArray(!s7)
+    MakeStruct(__cols: !11)
+  }
+  MakeStruct(__iruid_20: !12)
+} 
+!14 = NA [String]
+!26 = CollectDistributedArray(!s, !13, !14) {
+(%__norm_8, %__norm_9) =>
+  %__norm_11 = GetField(%__norm_9) [__iruid_20]
+  !15 = GetTupleElement(%__norm_8) [0]
+  !s8 = ReadPartition(!15) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !s12 = StreamFlatMap(!s8) { (%__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !c0_3 = I32 [0] 
+    !16 = GetField(%__norm_11) [__cols]
+    !17 = ArrayLen(!16) 
+    !c1_2 = I32 [1]
+    !s9 = StreamRange(!c0_3, !17, !c1_2) [-1, False]
+    !s10 = StreamFilter(!s9) { (%__norm_19) =>
+      !18 = ArrayRef(%__norm_18, %__norm_19) [-1]
+      !19 = IsNA(!18)
+      ApplyUnaryPrimOp(!19) [Bang]
+    }
+    !20 = ToArray(!s10)
+    !s11 = ToStream(!20) [True]
+    StreamMap(!s11) { (%__norm_23) =>
+      !21 = SelectFields(%__norm_17) [()] 
+      !22 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !23 = ArrayRef(!22, %__norm_23) [-1]
+      !24 = GetField(!23) [GT]
+      InsertFields !21 (GT: !24)
+    }
+  } 
+  !25 = GetTupleElement(%__norm_8) [1]
+  !s13 = StreamTake(!s12, !25)
+  ToArray(!s13)
+}
+!s14 = ToStream(!26) [False]
+!s15 = StreamFlatMap(!s14) { (%__norm_32) =>
+  ToStream(%__norm_32) [False]
+}
+!27 = ToArray(!s15) 
+!28 = Literal [Struct{}, <literal value>]
+!29 = MakeStruct(rows: !27, global: !28)
+MakeTuple(!29) [(0)]
+
+2026-10-23 03:29:42.183 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 85: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!2) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!3 = ToArray(!s2) 
+!c0 = I32 [0]
+!4 = ArrayRef(!3, !c0) [-1] 
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s3 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s4 = StreamIota(!c0_2, !c1) [False]
+!s5 = StreamZip(!s3, !s4) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s5)
+!7 = InsertFields !4 (__cols: !6)
+%__iruid_71 = MakeStruct(__iruid_20: !7)
+!8 = IsNA(%__iruid_71)
+!13 = If !8 then {
+  NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+} else {
+  %__iruid_72 = GetField(%__iruid_71) [__iruid_20]
+  !9 = IsNA(%__iruid_72)
+  !12 = If !9 then {
+    NA [Struct{__cols:Array[Struct{}]}]
+  } else {
+    !10 = GetField(%__iruid_72) [__cols]
+    !s6 = ToStream(!10) [False]
+    !s7 = StreamMap(!s6) { (%__iruid_73) =>
+      SelectFields(%__iruid_73) [()]
+    }
+    !11 = ToArray(!s7)
+    MakeStruct(__cols: !11)
+  }
+  MakeStruct(__iruid_20: !12)
+} 
+!14 = NA [String]
+!26 = CollectDistributedArray(!s, !13, !14) {
+(%__norm_8, %__norm_9) =>
+  %__norm_11 = GetField(%__norm_9) [__iruid_20]
+  !15 = GetTupleElement(%__norm_8) [0]
+  !s8 = ReadPartition(!15) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !s12 = StreamFlatMap(!s8) { (%__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !c0_3 = I32 [0] 
+    !16 = GetField(%__norm_11) [__cols]
+    !17 = ArrayLen(!16) 
+    !c1_2 = I32 [1]
+    !s9 = StreamRange(!c0_3, !17, !c1_2) [-1, False]
+    !s10 = StreamFilter(!s9) { (%__norm_19) =>
+      !18 = ArrayRef(%__norm_18, %__norm_19) [-1]
+      !19 = IsNA(!18)
+      ApplyUnaryPrimOp(!19) [Bang]
+    }
+    !20 = ToArray(!s10)
+    !s11 = ToStream(!20) [True]
+    StreamMap(!s11) { (%__norm_23) =>
+      !21 = SelectFields(%__norm_17) [()] 
+      !22 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !23 = ArrayRef(!22, %__norm_23) [-1]
+      !24 = GetField(!23) [GT]
+      InsertFields !21 (GT: !24)
+    }
+  } 
+  !25 = GetTupleElement(%__norm_8) [1]
+  !s13 = StreamTake(!s12, !25)
+  ToArray(!s13)
+}
+!s14 = ToStream(!26) [False]
+!s15 = StreamFlatMap(!s14) { (%__norm_32) =>
+  ToStream(%__norm_32) [False]
+}
+!27 = ToArray(!s15) 
+!28 = Literal [Struct{}, <literal value>]
+!29 = MakeStruct(rows: !27, global: !28)
+MakeTuple(!29) [(0)]
+
+2026-10-23 03:29:42.184 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.184 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.184 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.187 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 85: 
+
+!1 = Literal [Array[Tuple[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}},Int32]], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!2) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!3 = ToArray(!s2) 
+!c0 = I32 [0]
+!4 = ArrayRef(!3, !c0) [-1] 
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s3 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"] 
+!c0_2 = I32 [0] 
+!c1 = I32 [1]
+!s4 = StreamIota(!c0_2, !c1) [False]
+!s5 = StreamZip(!s3, !s4) [-1, TakeMinLength] {
+(%__norm_3, %__norm_4) => %__norm_3 }
+!6 = ToArray(!s5)
+!7 = InsertFields !4 (__cols: !6)
+%__iruid_71 = MakeStruct(__iruid_20: !7)
+!8 = IsNA(%__iruid_71)
+!13 = If !8 then {
+  NA [Struct{__iruid_20:Struct{__cols:Array[Struct{}]}}]
+} else {
+  %__iruid_72 = GetField(%__iruid_71) [__iruid_20]
+  !9 = IsNA(%__iruid_72)
+  !12 = If !9 then {
+    NA [Struct{__cols:Array[Struct{}]}]
+  } else {
+    !10 = GetField(%__iruid_72) [__cols]
+    !s6 = ToStream(!10) [False]
+    !s7 = StreamMap(!s6) { (%__iruid_73) =>
+      SelectFields(%__iruid_73) [()]
+    }
+    !11 = ToArray(!s7)
+    MakeStruct(__cols: !11)
+  }
+  MakeStruct(__iruid_20: !12)
+} 
+!14 = NA [String]
+!26 = CollectDistributedArray(!s, !13, !14) {
+(%__norm_8, %__norm_9) =>
+  %__norm_11 = GetField(%__norm_9) [__iruid_20]
+  !15 = GetTupleElement(%__norm_8) [0]
+  !s8 = ReadPartition(!15) [Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !s12 = StreamFlatMap(!s8) { (%__norm_17) =>
+    %__norm_18 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+    !c0_3 = I32 [0] 
+    !16 = GetField(%__norm_11) [__cols]
+    !17 = ArrayLen(!16) 
+    !c1_2 = I32 [1]
+    !s9 = StreamRange(!c0_3, !17, !c1_2) [-1, False]
+    !s10 = StreamFilter(!s9) { (%__norm_19) =>
+      !18 = ArrayRef(%__norm_18, %__norm_19) [-1]
+      !19 = IsNA(!18)
+      ApplyUnaryPrimOp(!19) [Bang]
+    }
+    !20 = ToArray(!s10)
+    !s11 = ToStream(!20) [True]
+    StreamMap(!s11) { (%__norm_23) =>
+      !21 = SelectFields(%__norm_17) [()] 
+      !22 = GetField(%__norm_17) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+      !23 = ArrayRef(!22, %__norm_23) [-1]
+      !24 = GetField(!23) [GT]
+      InsertFields !21 (GT: !24)
+    }
+  } 
+  !25 = GetTupleElement(%__norm_8) [1]
+  !s13 = StreamTake(!s12, !25)
+  ToArray(!s13)
+}
+!s14 = ToStream(!26) [False]
+!s15 = StreamFlatMap(!s14) { (%__norm_32) =>
+  ToStream(%__norm_32) [False]
+}
+!27 = ToArray(!s15) 
+!28 = Literal [Struct{}, <literal value>]
+!29 = MakeStruct(rows: !27, global: !28)
+MakeTuple(!29) [(0)]
+
+2026-10-23 03:29:42.223 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:29:42.225 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 6, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.251 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 0.0 in stage 1.0 (TID 4)
+2026-10-23 03:29:42.255 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 0.0 in stage 1.0 (TID 4)
+2026-10-23 03:29:42.258 SparkTaskContext: INFO: TaskReport: stage=1, partition=0, attempt=0, peakBytes=327680, peakBytesReadable=320.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.258 RegionPool: INFO: RegionPool: FREE: 320.0K allocated (320.0K blocks / 0 chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 0.0 in stage 1.0 (TID 4)
+2026-10-23 03:29:42.260 BackendUtils: INFO: table_collect: executed 1 tasks in 16.107ms
+2026-10-23 03:29:42.261 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.261 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.261 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.261 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:29:42.265 LowerOrInterpretNonCompilable$: INFO: took 1.833s
+2026-10-23 03:29:42.265 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{GT:Call}],global:Struct{}}]
+
+2026-10-23 03:29:42.265 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.265 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.265 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.265 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{GT:Call}],global:Struct{}}]
+
+2026-10-23 03:29:42.266 LoweringPipeline: INFO: after EvalRelationalLets: IR size 8: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{GT:Call}],global:Struct{}}]
+!2 = GetField(!1) [rows]
+!s = ToStream(!2) [False]
+!s2 = StreamMap(!s) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!3 = ToArray(!s2)
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.266 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 8: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{GT:Call}],global:Struct{}}]
+!2 = GetField(!1) [rows]
+!s = ToStream(!2) [False]
+!s2 = StreamMap(!s) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!3 = ToArray(!s2)
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.266 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 8: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{GT:Call}],global:Struct{}}]
+!2 = GetField(!1) [rows]
+!s = ToStream(!2) [False]
+!s2 = StreamMap(!s) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!3 = ToArray(!s2)
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.267 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:29:42.271 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.271 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.271 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.271 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.271 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.271 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.272 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.272 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.272 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.272 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 7: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!2 = ToArray(!s2)
+MakeTuple(!2) [(0)]
+
+2026-10-23 03:29:42.272 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 7: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!2 = ToArray(!s2)
+MakeTuple(!2) [(0)]
+
+2026-10-23 03:29:42.272 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.272 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.272 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.273 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 7: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_6) =>
+  GetField(%__norm_6) [GT]
+}
+!2 = ToArray(!s2)
+MakeTuple(!2) [(0)]
+
+2026-10-23 03:29:42.273 LoweringPipeline: INFO: initial IR: IR size 8: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  GetField(%__norm_1) [GT]
+}
+!2 = ToArray(!s2)
+!3 = MakeTuple(!2) [(0)]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.273 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.273 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.273 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.274 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 8: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  GetField(%__norm_1) [GT]
+}
+!2 = ToArray(!s2)
+!3 = MakeTuple(!2) [(0)]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.274 LoweringPipeline: INFO: after InlineApplyIR: IR size 8: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  GetField(%__norm_1) [GT]
+}
+!2 = ToArray(!s2)
+!3 = MakeTuple(!2) [(0)]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.274 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.274 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.274 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.274 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 8: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  GetField(%__norm_1) [GT]
+}
+!2 = ToArray(!s2)
+!3 = MakeTuple(!2) [(0)]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.275 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 8: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  GetField(%__norm_1) [GT]
+}
+!2 = ToArray(!s2)
+!3 = MakeTuple(!2) [(0)]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.275 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.276 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.276 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.276 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 8: 
+
+!1 = Literal [Array[Struct{GT:Call}], <literal value>]
+!s = ToStream(!1) [False]
+!s2 = StreamMap(!s) { (%__norm_1) =>
+  GetField(%__norm_1) [GT]
+}
+!2 = ToArray(!s2)
+!3 = MakeTuple(!2) [(0)]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:29:42.282 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:29:42.288 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.288 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.288 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.289 EType$: INFO: encoder cache miss (0 hits, 5 misses, 0.000)
+2026-10-23 03:29:42.322 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.322 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:29:42.322 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:29:42.322 RegionPool: INFO: RegionPool: FREE: 640.0K allocated (640.0K blocks / 0 chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher

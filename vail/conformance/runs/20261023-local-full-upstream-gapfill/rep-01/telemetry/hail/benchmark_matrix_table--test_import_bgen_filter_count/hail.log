@@ -1,0 +1,600 @@
+2026-10-23 03:16:41.377 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:16:41.591 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:16:41.802 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:41.842 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen returned 1 files: sim_ukb.bgen
+2026-10-23 03:16:42.388 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 391.8K allocated (131.8K blocks / 260.0K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.393 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.401 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (507.8K blocks / 516.3K chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.491 MatrixBGENReader$: INFO: Number of BGEN files parsed: 1
+Number of samples in BGEN files: 50000
+Number of variants across all BGEN files: 249115
+2026-10-23 03:16:42.534 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (1019.8K blocks / 1.0M chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.539 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.2M allocated (1.9M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.580 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.581 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.581 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.581 RegionPool: INFO: RegionPool: FREE: 4.4M allocated (2.1M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.597 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.609 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen returned 1 files: sim_ukb.bgen
+2026-10-23 03:16:42.634 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 391.8K allocated (131.8K blocks / 260.0K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.636 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.637 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (507.8K blocks / 516.3K chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.679 MatrixBGENReader$: INFO: Number of BGEN files parsed: 1
+Number of samples in BGEN files: 50000
+Number of variants across all BGEN files: 249115
+2026-10-23 03:16:42.699 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (1019.8K blocks / 1.0M chunks), regions.size = 7, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.704 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.2M allocated (1.9M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.719 RelationalFunctions$: INFO: JSON: JObject(List((name,JString(ForceCountMatrixTable))))
+2026-10-23 03:16:42.757 LoweringPipeline: INFO: initial IR: IR size 30: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,offset:Int64,file_idx:Int32},entry:Struct{GT:Call,GP:Array[Float64],dosage:Float64}}, False, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!mt2 = MatrixMapRows(!mt) {
+(%global, %sa, %va, %g, %n_cols) =>
+  !1 = GetField(%va) [locus] 
+  !2 = GetField(%va) [alleles] 
+  !3 = GetField(%va) [rsid] 
+  !4 = GetField(%va) [varid] 
+  !5 = GetField(%va) [offset] 
+  !6 = GetField(%va) [file_idx]
+  !7 = MakeStruct(locus: !1, alleles: !2, rsid: !3, varid: !4, offset: !5, file_idx: !6)
+  SelectFields(!7) [(locus alleles rsid varid)]
+}
+!mt3 = MatrixMapEntries(!mt2) {
+(%global, %sa, %va, %g) =>
+  !8 = SelectFields(%g) [(GT GP dosage)]
+  SelectFields(!8) [(GT GP)]
+}
+!mt4 = MatrixFilterRows(!mt3) { (%global, %va) =>
+  Coalesce {
+    !9 = GetField(%va) [alleles] 
+    !10 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!9, !10) [EQ]
+  } {
+    False
+  }
+}
+MatrixToValueApply(!mt4) ["{\"name\":\"ForceCountMatrixTable\"}"]
+
+2026-10-23 03:16:42.760 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.760 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.761 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.769 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:16:42.787 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:16:42.798 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.798 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.798 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.798 EType$: INFO: decoder cache hit
+2026-10-23 03:16:42.800 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.800 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.800 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.800 EType$: INFO: decoder cache hit
+2026-10-23 03:16:42.802 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 9: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String},entry:Struct{GT:Call,GP:Array[Float64]}}, False, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!mt2 = MatrixFilterRows(!mt) { (%global, %va) =>
+  Coalesce {
+    !1 = GetField(%va) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+MatrixToValueApply(!mt2) ["{\"name\":\"ForceCountMatrixTable\"}"]
+
+2026-10-23 03:16:42.812 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 14: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  %__norm_1 = SelectFields(%global) [()]
+  %__norm_2 = SelectFields(%row) [
+  (locus alleles rsid varid)]
+  Coalesce {
+    !1 = GetField(%__norm_2) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:16:42.812 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.813 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.813 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.822 EType$: INFO: decoder cache hit
+2026-10-23 03:16:42.823 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) MakeStruct()
+2026-10-23 03:16:42.824 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.825 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.825 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.825 EType$: INFO: decoder cache hit
+2026-10-23 03:16:42.826 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.826 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.826 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.827 EType$: INFO: decoder cache hit
+2026-10-23 03:16:42.828 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 9: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:16:42.831 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 11: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+%__norm_1 = TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+RelationalRef [Int64]
+
+2026-10-23 03:16:42.832 LoweringPipeline: INFO: initial IR: IR size 9: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:16:42.834 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 9: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:16:42.835 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 9: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:16:42.836 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.836 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:42.836 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:42.836 EType$: INFO: decoder cache hit
+2026-10-23 03:16:42.838 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 9: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":8,\"blockSizeInMB\":null,\"includedVariants\":null}]
+!ht2 = TableFilter(!ht) { (%global, %row) =>
+  Coalesce {
+    !1 = GetField(%row) [alleles] 
+    !2 = EncodedLiteral [Array[String]]
+    ApplyComparisonOp(!1, !2) [EQ]
+  } {
+    False
+  }
+}
+TableToValueApply(!ht2) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:16:42.841 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:16:42.841 LowerOrInterpretNonCompilable$: INFO: lowering result: TableToValueApply
+2026-10-23 03:16:42.981 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableToValueApply
+2026-10-23 03:16:43.009 LoweringPipeline: INFO: initial IR: IR size 39: 
+
+!1 = Literal [Array[Struct{s:String}], <literal value>]
+%__norm_1 = MakeStruct(__cols: !1)
+!2 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!2) [False] 
+!3 = MakeStruct(__iruid_3: %__norm_1) 
+!4 = NA [String]
+%__norm_12 = CollectDistributedArray(!s, !3, !4) {
+(%__norm_2, %__norm_3) =>
+  %__norm_4 = GetField(%__norm_3) [__iruid_3]
+  %__norm_5 = ReadPartition(%__norm_2) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"]
+  %__norm_6 = Ref [__norm_4]
+  %__norm_8 = StreamFilter(%__norm_5) {
+  (%__norm_7) =>
+    Coalesce {
+      !5 = GetField(%__norm_7) [alleles] 
+      !6 = EncodedLiteral [Array[String]]
+      ApplyComparisonOp(!5, !6) [EQ]
+    } {
+      False
+    }
+  }
+  !s2 = StreamMap(%__norm_8) { (%__norm_9) =>
+    Consume(%__norm_9)
+  } 
+  !7 = I64 [0]
+  StreamFold(!s2, !7) { (%__norm_10, %__norm_11) =>
+    ApplyBinaryPrimOp(%__norm_10, %__norm_11) [Add]
+  }
+}
+!8 = Ref [__norm_12]
+!9 = ApplyIR(!8) [-1, sum, (), Int64]
+MakeTuple(!9) [(0)]
+
+2026-10-23 03:16:43.024 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.024 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.024 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.025 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.025 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.026 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.029 ForwardLets$: INFO: Eliminating unused binding:
+__norm_6: struct{__cols: array<struct{s: str}>} = (EVAL) Ref [__norm_4]
+2026-10-23 03:16:43.033 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_3'
+2026-10-23 03:16:43.034 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.034 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.034 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.034 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.034 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.034 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.036 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.036 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.037 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.040 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 23: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!9 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_2, %__norm_3) =>
+  !s2 = ReadPartition(%__norm_2) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_10, %__norm_7) =>
+    !7 = Coalesce {
+      !5 = GetField(%__norm_7) [alleles] 
+      !6 = EncodedLiteral [Array[String]]
+      ApplyComparisonOp(!5, !6) [EQ]
+    } {
+      False
+    }
+    If !7 then {
+      !8 = Consume(%__norm_7)
+      ApplyBinaryPrimOp(%__norm_10, !8) [Add]
+    } else { %__norm_10 }
+  }
+}
+!10 = ApplyIR(!9) [-1, sum, (), Int64]
+MakeTuple(!10) [(0)]
+
+2026-10-23 03:16:43.043 LoweringPipeline: INFO: after InlineApplyIR: IR size 31: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+%__norm_5 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !7 = Coalesce {
+      !5 = GetField(%__norm_4) [alleles] 
+      !6 = EncodedLiteral [Array[String]]
+      ApplyComparisonOp(!5, !6) [EQ]
+    } {
+      False
+    }
+    If !7 then {
+      !8 = Consume(%__norm_4)
+      ApplyBinaryPrimOp(%__norm_3, !8) [Add]
+    } else { %__norm_3 }
+  }
+}
+!s3 = ToStream(%__norm_5) [False] 
+!9 = I64 [0]
+!10 = Cast(!9) [Int64]
+!11 = StreamFold(!s3, !10) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!11) [(0)]
+
+2026-10-23 03:16:43.046 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.046 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.046 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.047 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.047 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.047 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.049 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.049 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.049 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.054 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 28: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!9 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !7 = Coalesce {
+      !5 = GetField(%__norm_4) [alleles] 
+      !6 = EncodedLiteral [Array[String]]
+      ApplyComparisonOp(!5, !6) [EQ]
+    } {
+      False
+    }
+    If !7 then {
+      !8 = Consume(%__norm_4)
+      ApplyBinaryPrimOp(%__norm_3, !8) [Add]
+    } else { %__norm_3 }
+  }
+}
+!s3 = ToStream(!9) [False] 
+!10 = I64 [0]
+!11 = StreamFold(!s3, !10) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!11) [(0)]
+
+2026-10-23 03:16:43.085 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 28: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!9 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !7 = Coalesce {
+      !5 = GetField(%__norm_4) [alleles] 
+      !6 = EncodedLiteral [Array[String]]
+      ApplyComparisonOp(!5, !6) [EQ]
+    } {
+      False
+    }
+    If !7 then {
+      !8 = Consume(%__norm_4)
+      ApplyBinaryPrimOp(%__norm_3, !8) [Add]
+    } else { %__norm_3 }
+  }
+}
+!s3 = ToStream(!9) [False] 
+!10 = I64 [0]
+!11 = StreamFold(!s3, !10) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!11) [(0)]
+
+2026-10-23 03:16:43.085 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.085 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:43.085 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:43.090 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 28: 
+
+!1 = Literal [Array[Struct{file_index:Int32,first_variant_index:Int64,n_variants:Int64,partition_index:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!9 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{GT:Call,GP:Array[Float64]}]}, "{\"name\":\"BgenPartitionReader\",\"fileMetadata\":[{\"indexPath\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen.idx2\",\"indexVersion\":{\"major\":1,\"minor\":3,\"patch\":0},\"header\":{\"compression\":1,\"nSamples\":50000,\"nVariants\":249115,\"headerLength\":20,\"dataStart\":688922,\"hasIds\":true,\"version\":2,\"fileByteSize\":149698233,\"path\":\"file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"},\"rg\":\"GRCh37\",\"contigRecoding\":{},\"skipInvalidLoci\":false,\"nVariants\":249115}],\"rg\":\"GRCh37\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    !7 = Coalesce {
+      !5 = GetField(%__norm_4) [alleles] 
+      !6 = EncodedLiteral [Array[String]]
+      ApplyComparisonOp(!5, !6) [EQ]
+    } {
+      False
+    }
+    If !7 then {
+      !8 = Consume(%__norm_4)
+      ApplyBinaryPrimOp(%__norm_3, !8) [Add]
+    } else { %__norm_3 }
+  }
+}
+!s3 = ToStream(!9) [False] 
+!10 = I64 [0]
+!11 = StreamFold(!s3, !10) {
+(%__norm_6, %__norm_7) =>
+  ApplyBinaryPrimOp(%__norm_6, %__norm_7) [Add]
+}
+MakeTuple(!11) [(0)]
+
+2026-10-23 03:16:43.159 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:16:43.441 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:43.714 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:43.722 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:43.722 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:43.722 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:43.722 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:43.723 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:43.723 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:43.724 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:43.725 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 455.8K allocated (195.8K blocks / 260.0K chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:43.728 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:43.731 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:43.731 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:43.731 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:43.731 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:43.731 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:43.732 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:43.733 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:43.777 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:43.777 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (423.8K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:43.781 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:43.782 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:43.782 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:43.782 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:43.780 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.0K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:43.784 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:43.785 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:43.785 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (423.8K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:43.785 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.0K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:43.786 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:43.786 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:43.788 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.0K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:43.789 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.3K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:43.790 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.7M allocated (424.0K blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:43.830 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:43.831 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:43.831 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:43.831 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:43.847 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:43.848 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:43.848 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:43.849 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (1.7M blocks / 2.3M chunks), regions.size = 5, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:50.255 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:50.536 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:50.542 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:50.831 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:51.133 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:51.143 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:51.449 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:51.461 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (3.5M blocks / 4.5M chunks), regions.size = 10, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:55.367 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=9913600, peakBytesReadable=9.45 MiB, chunks requested=31150, cache hits=31130
+2026-10-23 03:16:55.367 RegionPool: INFO: RegionPool: FREE: 9.5M allocated (4.2M blocks / 5.3M chunks), regions.size = 13, 0 current java objects, thread 96: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:16:55.374 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=9912064, peakBytesReadable=9.45 MiB, chunks requested=31151, cache hits=31131
+2026-10-23 03:16:55.374 RegionPool: INFO: RegionPool: FREE: 9.5M allocated (4.2M blocks / 5.3M chunks), regions.size = 13, 0 current java objects, thread 93: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:16:55.377 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=9415936, peakBytesReadable=8.98 MiB, chunks requested=31150, cache hits=31132
+2026-10-23 03:16:55.377 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=9416704, peakBytesReadable=8.98 MiB, chunks requested=31150, cache hits=31132
+2026-10-23 03:16:55.377 RegionPool: INFO: RegionPool: FREE: 9.0M allocated (4.0M blocks / 5.0M chunks), regions.size = 12, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:16:55.377 RegionPool: INFO: RegionPool: FREE: 9.0M allocated (4.0M blocks / 5.0M chunks), regions.size = 12, 0 current java objects, thread 94: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:16:55.381 SparkTaskContext: INFO: TaskReport: stage=0, partition=7, attempt=0, peakBytes=9374976, peakBytesReadable=8.94 MiB, chunks requested=31150, cache hits=31131
+2026-10-23 03:16:55.381 RegionPool: INFO: RegionPool: FREE: 8.9M allocated (3.9M blocks / 5.0M chunks), regions.size = 12, 0 current java objects, thread 99: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:16:55.390 SparkTaskContext: INFO: TaskReport: stage=0, partition=6, attempt=0, peakBytes=9912576, peakBytesReadable=9.45 MiB, chunks requested=31150, cache hits=31130
+2026-10-23 03:16:55.390 RegionPool: INFO: RegionPool: FREE: 9.5M allocated (4.2M blocks / 5.3M chunks), regions.size = 13, 0 current java objects, thread 98: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:16:55.394 SparkTaskContext: INFO: TaskReport: stage=0, partition=5, attempt=0, peakBytes=9416960, peakBytesReadable=8.98 MiB, chunks requested=31149, cache hits=31131
+2026-10-23 03:16:55.394 RegionPool: INFO: RegionPool: FREE: 9.0M allocated (4.0M blocks / 5.0M chunks), regions.size = 12, 0 current java objects, thread 97: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:16:55.397 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=9912832, peakBytesReadable=9.45 MiB, chunks requested=31150, cache hits=31130
+2026-10-23 03:16:55.397 RegionPool: INFO: RegionPool: FREE: 9.5M allocated (4.2M blocks / 5.3M chunks), regions.size = 13, 0 current java objects, thread 95: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:16:55.460 BackendUtils: INFO: table_force_count: executed 8 tasks in 12.000s
+2026-10-23 03:16:55.461 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.461 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.461 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.461 LowerOrInterpretNonCompilable$: INFO: took 12.622s
+2026-10-23 03:16:55.461 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.461 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.461 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.461 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.462 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.462 LoweringPipeline: INFO: after EvalRelationalLets: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.462 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.462 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.462 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.462 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.462 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.462 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.462 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.463 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.463 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.463 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.463 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [6090]
+
+2026-10-23 03:16:55.463 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = I64 [6090]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:16:55.464 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.464 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.464 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.464 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.464 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.464 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.464 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.464 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.464 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.465 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:16:55.465 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:16:55.465 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.465 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.465 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.465 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:16:55.465 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:16:55.465 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.466 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.466 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.466 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:16:55.467 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:16:55.473 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.473 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.473 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.473 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:16:55.507 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.507 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:16:55.507 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:16:55.507 RegionPool: INFO: RegionPool: FREE: 4.4M allocated (2.2M blocks / 2.3M chunks), regions.size = 12, 0 current java objects, thread 90: HTTP-Dispatcher

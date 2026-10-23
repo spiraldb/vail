@@ -1,0 +1,997 @@
+[
+  {
+    "module": "benchmark_table.py",
+    "name": "test_table_read_force_count_ints",
+    "id": "benchmark_table::test_table_read_force_count_ints",
+    "args": [
+      "many_ints_ht"
+    ],
+    "fixtures": [
+      "many_ints_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_int_stats",
+    "id": "benchmark_table::test_table_aggregate_int_stats",
+    "args": [
+      "many_ints_ht"
+    ],
+    "fixtures": [
+      "many_ints_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_downsample_dense",
+    "id": "benchmark_table::test_table_aggregate_downsample_dense",
+    "args": [
+      "many_ints_ht"
+    ],
+    "fixtures": [
+      "many_ints_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_table_aggregate_linreg",
+    "id": "benchmark_table::test_table_aggregate_linreg",
+    "args": [
+      "many_ints_ht"
+    ],
+    "fixtures": [
+      "many_ints_ht"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_read_force_count_partitions",
+    "id": "benchmark_table::test_read_force_count_partitions[10]",
+    "args": [
+      "many_partitions_ht"
+    ],
+    "fixtures": [
+      "many_partitions_ht"
+    ],
+    "parameters": [
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_read_force_count_partitions",
+    "id": "benchmark_table::test_read_force_count_partitions[100]",
+    "args": [
+      "many_partitions_ht"
+    ],
+    "fixtures": [
+      "many_partitions_ht"
+    ],
+    "parameters": [
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_read_force_count_partitions",
+    "id": "benchmark_table::test_read_force_count_partitions[1000]",
+    "args": [
+      "many_partitions_ht"
+    ],
+    "fixtures": [
+      "many_partitions_ht"
+    ],
+    "parameters": [
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_read_with_index",
+    "id": "benchmark_table::test_read_with_index[1000]",
+    "args": [
+      "many_partitions_ht"
+    ],
+    "fixtures": [
+      "many_partitions_ht"
+    ],
+    "parameters": [
+      1000
+    ],
+    "arguments": {
+      "many_partitions_ht": 1000
+    },
+    "fixture_parameters": {
+      "many_partitions_ht": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[10,10]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      10,
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 10,
+      "many_partitions_ht2": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[10,100]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      10,
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 10,
+      "many_partitions_ht2": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[10,1000]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      10,
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 10,
+      "many_partitions_ht2": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[100,10]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      100,
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 100,
+      "many_partitions_ht2": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[100,100]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      100,
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 100,
+      "many_partitions_ht2": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[100,1000]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      100,
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 100,
+      "many_partitions_ht2": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[1000,10]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      1000,
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 1000,
+      "many_partitions_ht2": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[1000,100]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      1000,
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 1000,
+      "many_partitions_ht2": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_union_partitions_table",
+    "id": "benchmark_table::test_union_partitions_table[1000,1000]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      1000,
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 1000,
+      "many_partitions_ht2": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[10,10]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      10,
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 10,
+      "many_partitions_ht2": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[10,100]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      10,
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 10,
+      "many_partitions_ht2": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[10,1000]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      10,
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 10,
+      "many_partitions_ht2": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[100,10]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      100,
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 100,
+      "many_partitions_ht2": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[100,100]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      100,
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 100,
+      "many_partitions_ht2": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[100,1000]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      100,
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 100,
+      "many_partitions_ht2": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[1000,10]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      1000,
+      10
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 1000,
+      "many_partitions_ht2": 10
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[1000,100]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      1000,
+      100
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 1000,
+      "many_partitions_ht2": 100
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_table.py",
+    "name": "test_join_partitions_table",
+    "id": "benchmark_table::test_join_partitions_table[1000,1000]",
+    "args": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "fixtures": [
+      "many_partitions_ht1",
+      "many_partitions_ht2"
+    ],
+    "parameters": [
+      1000,
+      1000
+    ],
+    "arguments": {},
+    "fixture_parameters": {
+      "many_partitions_ht1": 1000,
+      "many_partitions_ht2": 1000
+    },
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_decode_and_count",
+    "id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_decode_and_count_just_gt",
+    "id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_array_arithmetic",
+    "id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_entries_table",
+    "id": "benchmark_matrix_table::test_matrix_table_entries_table",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_entries_table_no_key",
+    "id": "benchmark_matrix_table::test_matrix_table_entries_table_no_key",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_rows_force_count",
+    "id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_show",
+    "id": "benchmark_matrix_table::test_matrix_table_show",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_rows_show",
+    "id": "benchmark_matrix_table::test_matrix_table_rows_show",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_cols_show",
+    "id": "benchmark_matrix_table::test_matrix_table_cols_show",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_take_entry",
+    "id": "benchmark_matrix_table::test_matrix_table_take_entry",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_entries_show",
+    "id": "benchmark_matrix_table::test_matrix_table_entries_show",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_take_row",
+    "id": "benchmark_matrix_table::test_matrix_table_take_row",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_take_col",
+    "id": "benchmark_matrix_table::test_matrix_table_take_col",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_write_profile_mt",
+    "id": "benchmark_matrix_table::test_write_profile_mt",
+    "args": [
+      "profile25_mt",
+      "tmp_path"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_rows_is_transition",
+    "id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_filter_entries",
+    "id": "benchmark_matrix_table::test_matrix_table_filter_entries",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_filter_entries_unfilter",
+    "id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_nested_annotate_rows_annotate_entries",
+    "id": "benchmark_matrix_table::test_matrix_table_nested_annotate_rows_annotate_entries",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": []
+      }
+    ]
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_many_aggs_row_wise",
+    "id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_many_aggs_col_wise",
+    "id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_aggregate_entries",
+    "id": "benchmark_matrix_table::test_matrix_table_aggregate_entries",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_matrix_table_call_stats_star_star",
+    "id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_import_bgen_force_count_just_gp",
+    "id": "benchmark_matrix_table::test_import_bgen_force_count_just_gp",
+    "args": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "fixtures": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_import_bgen_force_count_all",
+    "id": "benchmark_matrix_table::test_import_bgen_force_count_all",
+    "args": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "fixtures": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_import_bgen_info_score",
+    "id": "benchmark_matrix_table::test_import_bgen_info_score",
+    "args": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "fixtures": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [
+      {
+        "name": "xtimeout",
+        "reason": null,
+        "args": [
+          180
+        ]
+      }
+    ]
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_import_bgen_filter_count",
+    "id": "benchmark_matrix_table::test_import_bgen_filter_count",
+    "args": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "fixtures": [
+      "sim_ukb_bgen",
+      "sim_ukb_sample"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_kyle_sex_specific_qc",
+    "id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  },
+  {
+    "module": "benchmark_matrix_table.py",
+    "name": "test_mt_localize_and_collect",
+    "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+    "args": [
+      "profile25_mt"
+    ],
+    "fixtures": [
+      "profile25_mt"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": []
+  }
+]

@@ -1,0 +1,1766 @@
+2026-10-23 03:14:48.977 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:14:49.196 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:14:49.404 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.454 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.455 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:49.456 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.456 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.472 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.715 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.716 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:49.716 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.716 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.731 RegionPool: INFO: initialized for thread 27: Thread-3
+2026-10-23 03:14:49.828 RegionPool: INFO: initialized for thread 27: Thread-3
+2026-10-23 03:14:49.828 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:49.828 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 27: Thread-3
+2026-10-23 03:14:49.828 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 27: Thread-3
+2026-10-23 03:14:49.834 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.863 RelationalFunctions$: INFO: JSON: JObject(List((name,JString(ForceCountTable))))
+2026-10-23 03:14:49.903 LoweringPipeline: INFO: initial IR: IR size 23: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!ht = MatrixRowsTable(!mt)
+!ht2 = TableKeyBy(!ht) [(), False, None]
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_2 = GetField(%row) [alleles]
+  !1 = SelectFields(%row) [
+  (locus alleles rsid qual filters info)]
+  !2 = SelectFields(!1) [()] 
+  !c0 = I32 [0]
+  !3 = ApplyIR(%__norm_2, !c0) [1, indexArray, 
+  (), String] 
+  !c1 = I32 [1]
+  !4 = ApplyIR(%__norm_2, !c1) [2, indexArray, 
+  (), String]
+  !5 = ApplyIR(!3, !4) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !6 = ApplyComparisonOp(!5, !c1_2) [EQ]
+  InsertFields !2 (is_snp: !6)
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:49.917 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.918 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:49.918 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.929 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:14:49.969 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.969 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:49.969 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:49.973 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 18: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String]},entry:Struct{}}, True, False, (MatrixNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt )]
+!ht = MatrixRowsTable(!mt)
+!ht2 = TableKeyBy(!ht) [(), False, None]
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_2 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_2, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_2, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:49.982 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 31: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = MakeArray [Array[Struct{s:String}]]
+  InsertFields %global (__cols: !1)
+}
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  !2 = MakeArray [Array[Struct{}]]
+  InsertFields %row (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !2)
+}
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  SelectFields(%global) [()]
+}
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  SelectFields(%row) [(locus alleles)]
+}
+!ht6 = TableKeyBy(!ht5) [(), False, None]
+!ht7 = TableMapRows(!ht6) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !3 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !4 = ArrayRef(%__norm_1, !c1) [2]
+  !5 = ApplyIR(!3, !4) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !6 = ApplyComparisonOp(!5, !c1_2) [EQ]
+  MakeStruct(is_snp: !6)
+}
+TableToValueApply(!ht7) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:50.051 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.051 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.051 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.052 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.052 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.052 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.058 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.058 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.058 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.063 PruneDeadFields$: INFO: Prune: InsertFields: eliminating field '__cols'
+2026-10-23 03:14:50.063 PruneDeadFields$: INFO: Prune: InsertFields: eliminating field 'the entries! [877f12a8827e18f61222c6c8c5fb04a8]'
+2026-10-23 03:14:50.067 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.067 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.067 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.069 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.069 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.069 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.073 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.073 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.073 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.076 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 19: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableKeyBy(!ht2) [(), False, None]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_1, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:50.080 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 21: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableKeyBy(!ht2) [(), False, None]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_1, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+%__norm_2 = TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+RelationalRef [Int64]
+
+2026-10-23 03:14:50.081 LoweringPipeline: INFO: initial IR: IR size 19: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableKeyBy(!ht2) [(), False, None]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_1, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:50.083 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 19: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableKeyBy(!ht2) [(), False, None]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_1, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:50.084 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 19: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableKeyBy(!ht2) [(), False, None]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_1, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:50.087 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.087 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.087 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.089 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 19: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String]}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/profile25_mt.mt/rows )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht3 = TableKeyBy(!ht2) [(), False, None]
+!ht4 = TableMapRows(!ht3) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [alleles]
+  !c0 = I32 [0]
+  !1 = ArrayRef(%__norm_1, !c0) [1] 
+  !c1 = I32 [1]
+  !2 = ArrayRef(%__norm_1, !c1) [2]
+  !3 = ApplyIR(!1, !2) [23, __uid_1, (), Int32] 
+  !c1_2 = I32 [1]
+  !4 = ApplyComparisonOp(!3, !c1_2) [EQ]
+  MakeStruct(is_snp: !4)
+}
+TableToValueApply(!ht4) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:14:50.091 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:14:50.091 LowerOrInterpretNonCompilable$: INFO: lowering result: TableToValueApply
+2026-10-23 03:14:50.152 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableToValueApply
+2026-10-23 03:14:50.222 LoweringPipeline: INFO: initial IR: IR size 57: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = Ref [__norm_1]
+%__norm_3 = Literal [Struct{}, <literal value>]
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s2 = ToStream(!5) [False] 
+!6 = MakeStruct(__iruid_260: %__norm_1, __iruid_262: %__norm_3) 
+!7 = NA [String]
+%__norm_16 = CollectDistributedArray(!s2, !6, !7) {
+(%__norm_4, %__norm_5) =>
+  %__norm_6 = GetField(%__norm_5) [__iruid_260]
+  %__norm_7 = GetField(%__norm_5) [__iruid_262]
+  %__norm_8 = ReadPartition(%__norm_4) [Struct{locus:Locus(GRCh37),alleles:Array[String]}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  %__norm_9 = Ref [__norm_7]
+  %__norm_12 = StreamMap(%__norm_8) {
+  (%__norm_10) =>
+    %__norm_11 = GetField(%__norm_10) [alleles]
+    !c0_2 = I32 [0]
+    !8 = ArrayRef(%__norm_11, !c0_2) [1] 
+    !c1 = I32 [1]
+    !9 = ArrayRef(%__norm_11, !c1) [2]
+    !10 = ApplyIR(!8, !9) [23, __uid_1, (), Int32] 
+    !c1_2 = I32 [1]
+    !11 = ApplyComparisonOp(!10, !c1_2) [EQ]
+    MakeStruct(is_snp: !11)
+  }
+  !s3 = StreamMap(%__norm_12) { (%__norm_13) =>
+    Consume(%__norm_13)
+  } 
+  !12 = I64 [0]
+  StreamFold(!s3, !12) { (%__norm_14, %__norm_15) =>
+    ApplyBinaryPrimOp(%__norm_14, %__norm_15) [Add]
+  }
+}
+!13 = Ref [__norm_16]
+!14 = ApplyIR(!13) [-1, sum, (), Int64]
+MakeTuple(!14) [(0)]
+
+2026-10-23 03:14:50.223 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.223 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.223 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.226 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.226 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.226 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.228 ForwardLets$: INFO: Eliminating unused binding:
+__norm_2: struct{} = (EVAL) Ref [__norm_1]
+2026-10-23 03:14:50.229 ForwardLets$: INFO: Eliminating unused binding:
+__norm_6: struct{} = (EVAL) GetField(#__norm_5) [__iruid_260]
+2026-10-23 03:14:50.229 ForwardLets$: INFO: Eliminating unused binding:
+__norm_9: struct{} = (EVAL) Ref [__norm_7]
+2026-10-23 03:14:50.256 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_260'
+2026-10-23 03:14:50.256 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_262'
+2026-10-23 03:14:50.259 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.259 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.259 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.261 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.261 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.261 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.263 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+ArrayRef(!2, !c0) [-1]
+2026-10-23 03:14:50.267 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.267 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.267 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.271 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 27: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!11 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_4, %__norm_5) =>
+  !s2 = ReadPartition(%__norm_4) [Struct{locus:Locus(GRCh37),alleles:Array[String]}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_14, %__norm_10) =>
+    %__norm_11 = GetField(%__norm_10) [alleles]
+    !c0 = I32 [0]
+    !5 = ArrayRef(%__norm_11, !c0) [1] 
+    !c1 = I32 [1]
+    !6 = ArrayRef(%__norm_11, !c1) [2]
+    !7 = ApplyIR(!5, !6) [23, __uid_1, (), Int32] 
+    !c1_2 = I32 [1]
+    !8 = ApplyComparisonOp(!7, !c1_2) [EQ]
+    !9 = MakeStruct(is_snp: !8)
+    !10 = Consume(!9)
+    ApplyBinaryPrimOp(%__norm_14, !10) [Add]
+  }
+}
+!12 = ApplyIR(!11) [-1, sum, (), Int64]
+MakeTuple(!12) [(0)]
+
+2026-10-23 03:14:50.307 LoweringPipeline: INFO: after InlineApplyIR: IR size 379: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+%__norm_42 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String]}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    %__norm_5 = GetField(%__norm_4) [alleles]
+    !c0 = I32 [0]
+    %__norm_6 = ArrayRef(%__norm_5, !c0) [1]
+    !c1 = I32 [1]
+    %__norm_7 = ArrayRef(%__norm_5, !c1) [2]
+    %__norm_8 = Ref [__norm_7]
+    %__norm_9 = Ref [__norm_6]
+    !5 = Str ["^([ACGTNM])+$"]
+    !6 = Apply(!5, %__norm_9) [3, regexMatch, 
+    (), Boolean]
+    !109 = If !6 then {
+      !7 = Str ["^([ACGTNM])+$"]
+      !8 = Apply(!7, %__norm_8) [4, regexMatch, 
+      (), Boolean]
+      If !8 then {
+        !9 = Apply(%__norm_9) [5, length, (), Int32] 
+        !10 = Apply(%__norm_8) [6, length, (), Int32]
+        !11 = ApplyComparisonOp(!9, !10) [EQ]
+        If !11 then {
+          !12 = Apply(%__norm_9) [7, length, (), Int32] 
+          !c1_2 = I32 [1]
+          !13 = ApplyComparisonOp(!12, !c1_2) [EQ]
+          If !13 then {
+            !14 = ApplyComparisonOp(%__norm_9, %__norm_8) [NEQ]
+            If !14 then {
+              I32 [1]
+            } else {
+              I32 [0]
+            }
+          } else {
+            !15 = ApplySpecial(%__norm_9, %__norm_8) [8, hamming, 
+            (), Int32] 
+            !c1_3 = I32 [1]
+            !16 = ApplyComparisonOp(!15, !c1_3) [EQ]
+            If !16 then {
+              I32 [1]
+            } else {
+              I32 [2]
+            }
+          }
+        } else {
+          !17 = Apply(%__norm_9) [9, length, (), Int32] 
+          !18 = Apply(%__norm_8) [10, length, (), Int32]
+          !19 = ApplyComparisonOp(!17, !18) [LT] 
+          %__norm_10 = Ref [__norm_9]
+          %__norm_11 = I32 [0]
+          %__norm_12 = Apply(%__norm_10) [-1, length, 
+          (), Int32]
+          !20 = ApplyUnaryPrimOp(%__norm_12) [Negate]
+          !21 = ApplyComparisonOp(%__norm_11, !20) [LT] 
+          !22 = ApplyComparisonOp(%__norm_11, %__norm_12) [GTEQ]
+          !23 = ApplySpecial(!21, !22) [-1, lor, 
+          (), Boolean]
+          %__norm_13 = If !23 then {
+            !24 = Str ["string ind..."] 
+            !25 = Apply(%__norm_11) [-1, str, (), String]
+            !26 = Apply(!24, !25) [-1, concat, (), String] 
+            !27 = Str ["/"]
+            !28 = Apply(!26, !27) [-1, concat, (), String] 
+            !29 = Apply(%__norm_12) [-1, str, (), String]
+            !30 = Apply(!28, !29) [-1, concat, (), String]
+            Die(!30) [Int32, 11]
+          } else {
+            !c0_2 = I32 [0]
+            !31 = ApplyComparisonOp(%__norm_11, !c0_2) [LT]
+            If !31 then {
+              ApplyBinaryPrimOp(%__norm_11, %__norm_12) [Add]
+            } else { %__norm_11 }
+          }
+          !c1_4 = I32 [1]
+          !32 = ApplyBinaryPrimOp(%__norm_13, !c1_4) [Add]
+          !33 = Apply(%__norm_10, %__norm_13, !32) [-1, substring, 
+          (), String] 
+          %__norm_14 = Ref [__norm_8]
+          %__norm_15 = I32 [0]
+          %__norm_16 = Apply(%__norm_14) [-1, length, 
+          (), Int32]
+          !34 = ApplyUnaryPrimOp(%__norm_16) [Negate]
+          !35 = ApplyComparisonOp(%__norm_15, !34) [LT] 
+          !36 = ApplyComparisonOp(%__norm_15, %__norm_16) [GTEQ]
+          !37 = ApplySpecial(!35, !36) [-1, lor, 
+          (), Boolean]
+          %__norm_17 = If !37 then {
+            !38 = Str ["string ind..."] 
+            !39 = Apply(%__norm_15) [-1, str, (), String]
+            !40 = Apply(!38, !39) [-1, concat, (), String] 
+            !41 = Str ["/"]
+            !42 = Apply(!40, !41) [-1, concat, (), String] 
+            !43 = Apply(%__norm_16) [-1, str, (), String]
+            !44 = Apply(!42, !43) [-1, concat, (), String]
+            Die(!44) [Int32, 12]
+          } else {
+            !c0_3 = I32 [0]
+            !45 = ApplyComparisonOp(%__norm_15, !c0_3) [LT]
+            If !45 then {
+              ApplyBinaryPrimOp(%__norm_15, %__norm_16) [Add]
+            } else { %__norm_15 }
+          }
+          !c1_5 = I32 [1]
+          !46 = ApplyBinaryPrimOp(%__norm_17, !c1_5) [Add]
+          !47 = Apply(%__norm_14, %__norm_17, !46) [-1, substring, 
+          (), String]
+          !48 = ApplyComparisonOp(!33, !47) [EQ]
+          !49 = ApplySpecial(!19, !48) [13, land, 
+          (), Boolean] 
+          %__norm_18 = Ref [__norm_9]
+          %__norm_19 = I32 [1]
+          %__norm_20 = Ref [__norm_18]
+          %__norm_21 = Ref [__norm_19]
+          %__norm_22 = Apply(%__norm_18) [-1, length, 
+          (), Int32]
+          %__norm_23 = Apply(%__norm_20) [-1, length, 
+          (), Int32]
+          !50 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !51 = ApplyComparisonOp(%__norm_21, !50) [LT]
+          %__norm_24 = If !51 then {
+            I32 [0]
+          } else {
+            !c0_4 = I32 [0]
+            !52 = ApplyComparisonOp(%__norm_21, !c0_4) [LT]
+            If !52 then {
+              ApplyBinaryPrimOp(%__norm_21, %__norm_23) [Add]
+            } else {
+              !53 = ApplyComparisonOp(%__norm_21, %__norm_23) [GTEQ]
+              If !53 then { %__norm_23 } else { %__norm_21 }
+            }
+          }
+          !54 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !55 = ApplyComparisonOp(%__norm_22, !54) [LT]
+          %__norm_25 = If !55 then {
+            I32 [0]
+          } else {
+            !c0_5 = I32 [0]
+            !56 = ApplyComparisonOp(%__norm_22, !c0_5) [LT]
+            If !56 then {
+              ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+            } else {
+              !57 = ApplyComparisonOp(%__norm_22, %__norm_23) [GTEQ]
+              If !57 then { %__norm_23 } else { %__norm_22 }
+            }
+          }
+          !58 = ApplyComparisonOp(%__norm_25, %__norm_24) [LT]
+          !59 = If !58 then { %__norm_24 } else {
+            %__norm_25
+            }
+          !60 = Apply(%__norm_20, %__norm_24, !59) [-1, substring, 
+          (), String]
+          !61 = Apply(%__norm_8, !60) [15, endswith, 
+          (), Boolean]
+          !62 = ApplySpecial(!49, !61) [16, land, 
+          (), Boolean]
+          If !62 then {
+            I32 [3]
+          } else {
+            %__norm_26 = Ref [__norm_9]
+            %__norm_27 = I32 [0]
+            %__norm_28 = Apply(%__norm_26) [-1, length, 
+            (), Int32]
+            !63 = ApplyUnaryPrimOp(%__norm_28) [Negate]
+            !64 = ApplyComparisonOp(%__norm_27, !63) [LT] 
+            !65 = ApplyComparisonOp(%__norm_27, %__norm_28) [GTEQ]
+            !66 = ApplySpecial(!64, !65) [-1, lor, 
+            (), Boolean]
+            %__norm_29 = If !66 then {
+              !67 = Str ["string ind..."] 
+              !68 = Apply(%__norm_27) [-1, str, (), String]
+              !69 = Apply(!67, !68) [-1, concat, (), String] 
+              !70 = Str ["/"]
+              !71 = Apply(!69, !70) [-1, concat, (), String] 
+              !72 = Apply(%__norm_28) [-1, str, (), String]
+              !73 = Apply(!71, !72) [-1, concat, (), String]
+              Die(!73) [Int32, 17]
+            } else {
+              !c0_6 = I32 [0]
+              !74 = ApplyComparisonOp(%__norm_27, !c0_6) [LT]
+              If !74 then {
+                ApplyBinaryPrimOp(%__norm_27, %__norm_28) [Add]
+              } else { %__norm_27 }
+            }
+            !c1_6 = I32 [1]
+            !75 = ApplyBinaryPrimOp(%__norm_29, !c1_6) [Add]
+            !76 = Apply(%__norm_26, %__norm_29, !75) [-1, substring, 
+            (), String] 
+            %__norm_30 = Ref [__norm_8]
+            %__norm_31 = I32 [0]
+            %__norm_32 = Apply(%__norm_30) [-1, length, 
+            (), Int32]
+            !77 = ApplyUnaryPrimOp(%__norm_32) [Negate]
+            !78 = ApplyComparisonOp(%__norm_31, !77) [LT] 
+            !79 = ApplyComparisonOp(%__norm_31, %__norm_32) [GTEQ]
+            !80 = ApplySpecial(!78, !79) [-1, lor, 
+            (), Boolean]
+            %__norm_33 = If !80 then {
+              !81 = Str ["string ind..."] 
+              !82 = Apply(%__norm_31) [-1, str, (), String]
+              !83 = Apply(!81, !82) [-1, concat, (), String] 
+              !84 = Str ["/"]
+              !85 = Apply(!83, !84) [-1, concat, (), String] 
+              !86 = Apply(%__norm_32) [-1, str, (), String]
+              !87 = Apply(!85, !86) [-1, concat, (), String]
+              Die(!87) [Int32, 18]
+            } else {
+              !c0_7 = I32 [0]
+              !88 = ApplyComparisonOp(%__norm_31, !c0_7) [LT]
+              If !88 then {
+                ApplyBinaryPrimOp(%__norm_31, %__norm_32) [Add]
+              } else { %__norm_31 }
+            }
+            !c1_7 = I32 [1]
+            !89 = ApplyBinaryPrimOp(%__norm_33, !c1_7) [Add]
+            !90 = Apply(%__norm_30, %__norm_33, !89) [-1, substring, 
+            (), String]
+            !91 = ApplyComparisonOp(!76, !90) [EQ] 
+            %__norm_34 = Ref [__norm_8]
+            %__norm_35 = I32 [1]
+            %__norm_36 = Ref [__norm_34]
+            %__norm_37 = Ref [__norm_35]
+            %__norm_38 = Apply(%__norm_34) [-1, length, 
+            (), Int32]
+            %__norm_39 = Apply(%__norm_36) [-1, length, 
+            (), Int32]
+            !92 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !93 = ApplyComparisonOp(%__norm_37, !92) [LT]
+            %__norm_40 = If !93 then {
+              I32 [0]
+            } else {
+              !c0_8 = I32 [0]
+              !94 = ApplyComparisonOp(%__norm_37, !c0_8) [LT]
+              If !94 then {
+                ApplyBinaryPrimOp(%__norm_37, %__norm_39) [Add]
+              } else {
+                !95 = ApplyComparisonOp(%__norm_37, %__norm_39) [GTEQ]
+                If !95 then { %__norm_39 } else { %__norm_37 }
+              }
+            }
+            !96 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !97 = ApplyComparisonOp(%__norm_38, !96) [LT]
+            %__norm_41 = If !97 then {
+              I32 [0]
+            } else {
+              !c0_9 = I32 [0]
+              !98 = ApplyComparisonOp(%__norm_38, !c0_9) [LT]
+              If !98 then {
+                ApplyBinaryPrimOp(%__norm_38, %__norm_39) [Add]
+              } else {
+                !99 = ApplyComparisonOp(%__norm_38, %__norm_39) [GTEQ]
+                If !99 then { %__norm_39 } else { %__norm_38 }
+              }
+            }
+            !100 = ApplyComparisonOp(%__norm_41, %__norm_40) [LT]
+            !101 = If !100 then { %__norm_40 } else {
+              %__norm_41
+              }
+            !102 = Apply(%__norm_36, %__norm_40, !101) [-1, substring, 
+            (), String]
+            !103 = Apply(%__norm_9, !102) [20, endswith, 
+            (), Boolean]
+            !104 = ApplySpecial(!91, !103) [21, land, 
+            (), Boolean]
+            If !104 then {
+              I32 [4]
+            } else {
+              I32 [5]
+            }
+          }
+        }
+      } else {
+        !105 = Str ["*"]
+        !106 = ApplyComparisonOp(%__norm_8, !105) [EQ]
+        If !106 then {
+          I32 [6]
+        } else {
+          !107 = Str ["(^\\.)|(\\.$..."]
+          !108 = Apply(!107, %__norm_8) [22, regexMatch, 
+          (), Boolean]
+          If !108 then {
+            I32 [7]
+          } else {
+            I32 [0]
+          }
+        }
+      }
+    } else {
+      I32 [0]
+    } 
+    !c1_8 = I32 [1]
+    !110 = ApplyComparisonOp(!109, !c1_8) [EQ]
+    !111 = MakeStruct(is_snp: !110)
+    !112 = Consume(!111)
+    ApplyBinaryPrimOp(%__norm_3, !112) [Add]
+  }
+}
+!s3 = ToStream(%__norm_42) [False] 
+!113 = I64 [0]
+!114 = Cast(!113) [Int64]
+!115 = StreamFold(!s3, !114) {
+(%__norm_43, %__norm_44) =>
+  ApplyBinaryPrimOp(%__norm_43, %__norm_44) [Add]
+}
+MakeTuple(!115) [(0)]
+
+2026-10-23 03:14:50.317 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.317 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.317 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.317 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.317 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.317 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.337 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PInt32])), 0]
+!2 = GetTupleElement(!1) [0]
+!3 = Apply(!2) [-1, str, (), String]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:14:50.337 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PInt32])), 0]
+!2 = GetTupleElement(!1) [0]
+!3 = Apply(!2) [-1, str, (), String]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:14:50.338 LoweringPipeline: INFO: after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PInt32])), 0]
+!2 = GetTupleElement(!1) [0]
+!3 = Apply(!2) [-1, str, (), String]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:14:50.338 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PInt32])), 0]
+!2 = GetTupleElement(!1) [0]
+!3 = Apply(!2) [-1, str, (), String]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:14:50.346 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PInt32])), 0]
+!2 = GetTupleElement(!1) [0]
+!3 = Apply(!2) [-1, str, (), String]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:14:50.346 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PInt32])), 0]
+!2 = GetTupleElement(!1) [0]
+!3 = Apply(!2) [-1, str, (), String]
+MakeTuple(!3) [(0)]
+
+2026-10-23 03:14:50.460 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.460 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.460 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.461 LoweringPipeline: INFO: initial IR: IR size 6: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!2 = GetTupleElement(!1) [0] 
+!3 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!4 = GetTupleElement(!3) [1]
+!5 = Apply(!2, !4) [-1, concat, (), String]
+MakeTuple(!5) [(0)]
+
+2026-10-23 03:14:50.461 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 6: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!2 = GetTupleElement(!1) [0] 
+!3 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!4 = GetTupleElement(!3) [1]
+!5 = Apply(!2, !4) [-1, concat, (), String]
+MakeTuple(!5) [(0)]
+
+2026-10-23 03:14:50.461 LoweringPipeline: INFO: after InlineApplyIR: IR size 6: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!2 = GetTupleElement(!1) [0] 
+!3 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!4 = GetTupleElement(!3) [1]
+!5 = Apply(!2, !4) [-1, concat, (), String]
+MakeTuple(!5) [(0)]
+
+2026-10-23 03:14:50.462 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 6: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!2 = GetTupleElement(!1) [0] 
+!3 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!4 = GetTupleElement(!3) [1]
+!5 = Apply(!2, !4) [-1, concat, (), String]
+MakeTuple(!5) [(0)]
+
+2026-10-23 03:14:50.462 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 6: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!2 = GetTupleElement(!1) [0] 
+!3 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!4 = GetTupleElement(!3) [1]
+!5 = Apply(!2, !4) [-1, concat, (), String]
+MakeTuple(!5) [(0)]
+
+2026-10-23 03:14:50.462 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 6: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!2 = GetTupleElement(!1) [0] 
+!3 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCTuple[0:PCString,1:PCString])), 0]
+!4 = GetTupleElement(!3) [1]
+!5 = Apply(!2, !4) [-1, concat, (), String]
+MakeTuple(!5) [(0)]
+
+2026-10-23 03:14:50.470 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.470 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.470 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.471 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.471 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.471 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.473 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.474 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.474 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.474 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.474 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.474 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.475 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.475 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.475 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.475 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.475 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.475 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.476 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.476 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.476 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.477 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.477 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.477 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.477 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.477 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.477 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.478 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.478 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.478 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.478 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.478 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.478 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.478 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.478 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.478 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.479 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.479 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.479 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.479 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.479 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.479 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.480 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.480 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.480 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.480 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.480 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.480 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.480 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.480 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.480 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.481 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.481 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.481 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.495 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.495 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.495 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.507 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 282: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!91 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String]}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    %__norm_5 = GetField(%__norm_4) [alleles]
+    !c1 = I32 [1]
+    %__norm_8 = ArrayRef(%__norm_5, !c1) [2]
+    !c0 = I32 [0]
+    %__norm_9 = ArrayRef(%__norm_5, !c0) [1]
+    !5 = Str ["^([ACGTNM])+$"]
+    !6 = Apply(!5, %__norm_9) [3, regexMatch, 
+    (), Boolean]
+    !87 = If !6 then {
+      !7 = Str ["^([ACGTNM])+$"]
+      !8 = Apply(!7, %__norm_8) [4, regexMatch, 
+      (), Boolean]
+      If !8 then {
+        !9 = Apply(%__norm_9) [5, length, (), Int32] 
+        !10 = Apply(%__norm_8) [6, length, (), Int32]
+        !11 = ApplyComparisonOp(!9, !10) [EQ]
+        If !11 then {
+          !12 = Apply(%__norm_9) [7, length, (), Int32] 
+          !c1_2 = I32 [1]
+          !13 = ApplyComparisonOp(!12, !c1_2) [EQ]
+          If !13 then {
+            !14 = ApplyComparisonOp(%__norm_9, %__norm_8) [NEQ]
+            If !14 then {
+              I32 [1]
+            } else {
+              I32 [0]
+            }
+          } else {
+            !15 = ApplySpecial(%__norm_9, %__norm_8) [8, hamming, 
+            (), Int32] 
+            !c1_3 = I32 [1]
+            !16 = ApplyComparisonOp(!15, !c1_3) [EQ]
+            If !16 then {
+              I32 [1]
+            } else {
+              I32 [2]
+            }
+          }
+        } else {
+          !17 = Apply(%__norm_9) [9, length, (), Int32] 
+          !18 = Apply(%__norm_8) [10, length, (), Int32]
+          !19 = ApplyComparisonOp(!17, !18) [LT] 
+          %__norm_12 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          !c0_2 = I32 [0] 
+          !20 = ApplyUnaryPrimOp(%__norm_12) [Negate]
+          !21 = ApplyComparisonOp(!c0_2, !20) [LT] 
+          !c0_3 = I32 [0]
+          !22 = ApplyComparisonOp(!c0_3, %__norm_12) [GTEQ]
+          !23 = ApplySpecial(!21, !22) [-1, lor, 
+          (), Boolean]
+          %__norm_13 = If !23 then {
+            !24 = Str ["string ind..."] 
+            !25 = Apply(%__norm_12) [-1, str, (), String]
+            !26 = Apply(!24, !25) [-1, concat, (), String]
+            Die(!26) [Int32, 11]
+          } else {
+            I32 [0]
+          }
+          !c1_4 = I32 [1]
+          !27 = ApplyBinaryPrimOp(%__norm_13, !c1_4) [Add]
+          !28 = Apply(%__norm_9, %__norm_13, !27) [-1, substring, 
+          (), String] 
+          %__norm_16 = Apply(%__norm_8) [-1, length, 
+          (), Int32]
+          !c0_4 = I32 [0] 
+          !29 = ApplyUnaryPrimOp(%__norm_16) [Negate]
+          !30 = ApplyComparisonOp(!c0_4, !29) [LT] 
+          !c0_5 = I32 [0]
+          !31 = ApplyComparisonOp(!c0_5, %__norm_16) [GTEQ]
+          !32 = ApplySpecial(!30, !31) [-1, lor, 
+          (), Boolean]
+          %__norm_17 = If !32 then {
+            !33 = Str ["string ind..."] 
+            !34 = Apply(%__norm_16) [-1, str, (), String]
+            !35 = Apply(!33, !34) [-1, concat, (), String]
+            Die(!35) [Int32, 12]
+          } else {
+            I32 [0]
+          }
+          !c1_5 = I32 [1]
+          !36 = ApplyBinaryPrimOp(%__norm_17, !c1_5) [Add]
+          !37 = Apply(%__norm_8, %__norm_17, !36) [-1, substring, 
+          (), String]
+          !38 = ApplyComparisonOp(!28, !37) [EQ]
+          !39 = ApplySpecial(!19, !38) [13, land, 
+          (), Boolean] 
+          %__norm_22 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          %__norm_23 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          !c1_6 = I32 [1] 
+          !40 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !41 = ApplyComparisonOp(!c1_6, !40) [LT]
+          %__norm_24 = If !41 then {
+            I32 [0]
+          } else {
+            !c1_7 = I32 [1]
+            !42 = ApplyComparisonOp(!c1_7, %__norm_23) [GTEQ]
+            If !42 then { %__norm_23 } else {
+              I32 [1]
+            }
+          }
+          !43 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !44 = ApplyComparisonOp(%__norm_22, !43) [LT]
+          %__norm_25 = If !44 then {
+            I32 [0]
+          } else {
+            !c0_6 = I32 [0]
+            !45 = ApplyComparisonOp(%__norm_22, !c0_6) [LT]
+            If !45 then {
+              ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+            } else {
+              !46 = ApplyComparisonOp(%__norm_22, %__norm_23) [GTEQ]
+              If !46 then { %__norm_23 } else { %__norm_22 }
+            }
+          }
+          !47 = ApplyComparisonOp(%__norm_25, %__norm_24) [LT]
+          !48 = If !47 then { %__norm_24 } else {
+            %__norm_25
+            }
+          !49 = Apply(%__norm_9, %__norm_24, !48) [-1, substring, 
+          (), String]
+          !50 = Apply(%__norm_8, !49) [15, endswith, 
+          (), Boolean]
+          !51 = ApplySpecial(!39, !50) [16, land, 
+          (), Boolean]
+          If !51 then {
+            I32 [3]
+          } else {
+            %__norm_28 = Apply(%__norm_9) [-1, length, 
+            (), Int32]
+            !c0_7 = I32 [0] 
+            !52 = ApplyUnaryPrimOp(%__norm_28) [Negate]
+            !53 = ApplyComparisonOp(!c0_7, !52) [LT] 
+            !c0_8 = I32 [0]
+            !54 = ApplyComparisonOp(!c0_8, %__norm_28) [GTEQ]
+            !55 = ApplySpecial(!53, !54) [-1, lor, 
+            (), Boolean]
+            %__norm_29 = If !55 then {
+              !56 = Str ["string ind..."] 
+              !57 = Apply(%__norm_28) [-1, str, (), String]
+              !58 = Apply(!56, !57) [-1, concat, (), String]
+              Die(!58) [Int32, 17]
+            } else {
+              I32 [0]
+            }
+            !c1_8 = I32 [1]
+            !59 = ApplyBinaryPrimOp(%__norm_29, !c1_8) [Add]
+            !60 = Apply(%__norm_9, %__norm_29, !59) [-1, substring, 
+            (), String] 
+            %__norm_32 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            !c0_9 = I32 [0] 
+            !61 = ApplyUnaryPrimOp(%__norm_32) [Negate]
+            !62 = ApplyComparisonOp(!c0_9, !61) [LT] 
+            !c0_10 = I32 [0]
+            !63 = ApplyComparisonOp(!c0_10, %__norm_32) [GTEQ]
+            !64 = ApplySpecial(!62, !63) [-1, lor, 
+            (), Boolean]
+            %__norm_33 = If !64 then {
+              !65 = Str ["string ind..."] 
+              !66 = Apply(%__norm_32) [-1, str, (), String]
+              !67 = Apply(!65, !66) [-1, concat, (), String]
+              Die(!67) [Int32, 18]
+            } else {
+              I32 [0]
+            }
+            !c1_9 = I32 [1]
+            !68 = ApplyBinaryPrimOp(%__norm_33, !c1_9) [Add]
+            !69 = Apply(%__norm_8, %__norm_33, !68) [-1, substring, 
+            (), String]
+            !70 = ApplyComparisonOp(!60, !69) [EQ] 
+            %__norm_38 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            %__norm_39 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            !c1_10 = I32 [1] 
+            !71 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !72 = ApplyComparisonOp(!c1_10, !71) [LT]
+            %__norm_40 = If !72 then {
+              I32 [0]
+            } else {
+              !c1_11 = I32 [1]
+              !73 = ApplyComparisonOp(!c1_11, %__norm_39) [GTEQ]
+              If !73 then { %__norm_39 } else {
+                I32 [1]
+              }
+            }
+            !74 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !75 = ApplyComparisonOp(%__norm_38, !74) [LT]
+            %__norm_41 = If !75 then {
+              I32 [0]
+            } else {
+              !c0_11 = I32 [0]
+              !76 = ApplyComparisonOp(%__norm_38, !c0_11) [LT]
+              If !76 then {
+                ApplyBinaryPrimOp(%__norm_38, %__norm_39) [Add]
+              } else {
+                !77 = ApplyComparisonOp(%__norm_38, %__norm_39) [GTEQ]
+                If !77 then { %__norm_39 } else { %__norm_38 }
+              }
+            }
+            !78 = ApplyComparisonOp(%__norm_41, %__norm_40) [LT]
+            !79 = If !78 then { %__norm_40 } else {
+              %__norm_41
+              }
+            !80 = Apply(%__norm_8, %__norm_40, !79) [-1, substring, 
+            (), String]
+            !81 = Apply(%__norm_9, !80) [20, endswith, 
+            (), Boolean]
+            !82 = ApplySpecial(!70, !81) [21, land, 
+            (), Boolean]
+            If !82 then {
+              I32 [4]
+            } else {
+              I32 [5]
+            }
+          }
+        }
+      } else {
+        !83 = Str ["*"]
+        !84 = ApplyComparisonOp(%__norm_8, !83) [EQ]
+        If !84 then {
+          I32 [6]
+        } else {
+          !85 = Str ["(^\\.)|(\\.$..."]
+          !86 = Apply(!85, %__norm_8) [22, regexMatch, 
+          (), Boolean]
+          If !86 then {
+            I32 [7]
+          } else {
+            I32 [0]
+          }
+        }
+      }
+    } else {
+      I32 [0]
+    } 
+    !c1_12 = I32 [1]
+    !88 = ApplyComparisonOp(!87, !c1_12) [EQ]
+    !89 = MakeStruct(is_snp: !88)
+    !90 = Consume(!89)
+    ApplyBinaryPrimOp(%__norm_3, !90) [Add]
+  }
+}
+!s3 = ToStream(!91) [False] 
+!92 = I64 [0]
+!93 = StreamFold(!s3, !92) {
+(%__norm_43, %__norm_44) =>
+  ApplyBinaryPrimOp(%__norm_43, %__norm_44) [Add]
+}
+MakeTuple(!93) [(0)]
+
+2026-10-23 03:14:50.515 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 282: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!91 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String]}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    %__norm_5 = GetField(%__norm_4) [alleles]
+    !c1 = I32 [1]
+    %__norm_8 = ArrayRef(%__norm_5, !c1) [2]
+    !c0 = I32 [0]
+    %__norm_9 = ArrayRef(%__norm_5, !c0) [1]
+    !5 = Str ["^([ACGTNM])+$"]
+    !6 = Apply(!5, %__norm_9) [3, regexMatch, 
+    (), Boolean]
+    !87 = If !6 then {
+      !7 = Str ["^([ACGTNM])+$"]
+      !8 = Apply(!7, %__norm_8) [4, regexMatch, 
+      (), Boolean]
+      If !8 then {
+        !9 = Apply(%__norm_9) [5, length, (), Int32] 
+        !10 = Apply(%__norm_8) [6, length, (), Int32]
+        !11 = ApplyComparisonOp(!9, !10) [EQ]
+        If !11 then {
+          !12 = Apply(%__norm_9) [7, length, (), Int32] 
+          !c1_2 = I32 [1]
+          !13 = ApplyComparisonOp(!12, !c1_2) [EQ]
+          If !13 then {
+            !14 = ApplyComparisonOp(%__norm_9, %__norm_8) [NEQ]
+            If !14 then {
+              I32 [1]
+            } else {
+              I32 [0]
+            }
+          } else {
+            !15 = ApplySpecial(%__norm_9, %__norm_8) [8, hamming, 
+            (), Int32] 
+            !c1_3 = I32 [1]
+            !16 = ApplyComparisonOp(!15, !c1_3) [EQ]
+            If !16 then {
+              I32 [1]
+            } else {
+              I32 [2]
+            }
+          }
+        } else {
+          !17 = Apply(%__norm_9) [9, length, (), Int32] 
+          !18 = Apply(%__norm_8) [10, length, (), Int32]
+          !19 = ApplyComparisonOp(!17, !18) [LT] 
+          %__norm_12 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          !c0_2 = I32 [0] 
+          !20 = ApplyUnaryPrimOp(%__norm_12) [Negate]
+          !21 = ApplyComparisonOp(!c0_2, !20) [LT] 
+          !c0_3 = I32 [0]
+          !22 = ApplyComparisonOp(!c0_3, %__norm_12) [GTEQ]
+          !23 = ApplySpecial(!21, !22) [-1, lor, 
+          (), Boolean]
+          %__norm_13 = If !23 then {
+            !24 = Str ["string ind..."] 
+            !25 = Apply(%__norm_12) [-1, str, (), String]
+            !26 = Apply(!24, !25) [-1, concat, (), String]
+            Die(!26) [Int32, 11]
+          } else {
+            I32 [0]
+          }
+          !c1_4 = I32 [1]
+          !27 = ApplyBinaryPrimOp(%__norm_13, !c1_4) [Add]
+          !28 = Apply(%__norm_9, %__norm_13, !27) [-1, substring, 
+          (), String] 
+          %__norm_16 = Apply(%__norm_8) [-1, length, 
+          (), Int32]
+          !c0_4 = I32 [0] 
+          !29 = ApplyUnaryPrimOp(%__norm_16) [Negate]
+          !30 = ApplyComparisonOp(!c0_4, !29) [LT] 
+          !c0_5 = I32 [0]
+          !31 = ApplyComparisonOp(!c0_5, %__norm_16) [GTEQ]
+          !32 = ApplySpecial(!30, !31) [-1, lor, 
+          (), Boolean]
+          %__norm_17 = If !32 then {
+            !33 = Str ["string ind..."] 
+            !34 = Apply(%__norm_16) [-1, str, (), String]
+            !35 = Apply(!33, !34) [-1, concat, (), String]
+            Die(!35) [Int32, 12]
+          } else {
+            I32 [0]
+          }
+          !c1_5 = I32 [1]
+          !36 = ApplyBinaryPrimOp(%__norm_17, !c1_5) [Add]
+          !37 = Apply(%__norm_8, %__norm_17, !36) [-1, substring, 
+          (), String]
+          !38 = ApplyComparisonOp(!28, !37) [EQ]
+          !39 = ApplySpecial(!19, !38) [13, land, 
+          (), Boolean] 
+          %__norm_22 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          %__norm_23 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          !c1_6 = I32 [1] 
+          !40 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !41 = ApplyComparisonOp(!c1_6, !40) [LT]
+          %__norm_24 = If !41 then {
+            I32 [0]
+          } else {
+            !c1_7 = I32 [1]
+            !42 = ApplyComparisonOp(!c1_7, %__norm_23) [GTEQ]
+            If !42 then { %__norm_23 } else {
+              I32 [1]
+            }
+          }
+          !43 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !44 = ApplyComparisonOp(%__norm_22, !43) [LT]
+          %__norm_25 = If !44 then {
+            I32 [0]
+          } else {
+            !c0_6 = I32 [0]
+            !45 = ApplyComparisonOp(%__norm_22, !c0_6) [LT]
+            If !45 then {
+              ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+            } else {
+              !46 = ApplyComparisonOp(%__norm_22, %__norm_23) [GTEQ]
+              If !46 then { %__norm_23 } else { %__norm_22 }
+            }
+          }
+          !47 = ApplyComparisonOp(%__norm_25, %__norm_24) [LT]
+          !48 = If !47 then { %__norm_24 } else {
+            %__norm_25
+            }
+          !49 = Apply(%__norm_9, %__norm_24, !48) [-1, substring, 
+          (), String]
+          !50 = Apply(%__norm_8, !49) [15, endswith, 
+          (), Boolean]
+          !51 = ApplySpecial(!39, !50) [16, land, 
+          (), Boolean]
+          If !51 then {
+            I32 [3]
+          } else {
+            %__norm_28 = Apply(%__norm_9) [-1, length, 
+            (), Int32]
+            !c0_7 = I32 [0] 
+            !52 = ApplyUnaryPrimOp(%__norm_28) [Negate]
+            !53 = ApplyComparisonOp(!c0_7, !52) [LT] 
+            !c0_8 = I32 [0]
+            !54 = ApplyComparisonOp(!c0_8, %__norm_28) [GTEQ]
+            !55 = ApplySpecial(!53, !54) [-1, lor, 
+            (), Boolean]
+            %__norm_29 = If !55 then {
+              !56 = Str ["string ind..."] 
+              !57 = Apply(%__norm_28) [-1, str, (), String]
+              !58 = Apply(!56, !57) [-1, concat, (), String]
+              Die(!58) [Int32, 17]
+            } else {
+              I32 [0]
+            }
+            !c1_8 = I32 [1]
+            !59 = ApplyBinaryPrimOp(%__norm_29, !c1_8) [Add]
+            !60 = Apply(%__norm_9, %__norm_29, !59) [-1, substring, 
+            (), String] 
+            %__norm_32 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            !c0_9 = I32 [0] 
+            !61 = ApplyUnaryPrimOp(%__norm_32) [Negate]
+            !62 = ApplyComparisonOp(!c0_9, !61) [LT] 
+            !c0_10 = I32 [0]
+            !63 = ApplyComparisonOp(!c0_10, %__norm_32) [GTEQ]
+            !64 = ApplySpecial(!62, !63) [-1, lor, 
+            (), Boolean]
+            %__norm_33 = If !64 then {
+              !65 = Str ["string ind..."] 
+              !66 = Apply(%__norm_32) [-1, str, (), String]
+              !67 = Apply(!65, !66) [-1, concat, (), String]
+              Die(!67) [Int32, 18]
+            } else {
+              I32 [0]
+            }
+            !c1_9 = I32 [1]
+            !68 = ApplyBinaryPrimOp(%__norm_33, !c1_9) [Add]
+            !69 = Apply(%__norm_8, %__norm_33, !68) [-1, substring, 
+            (), String]
+            !70 = ApplyComparisonOp(!60, !69) [EQ] 
+            %__norm_38 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            %__norm_39 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            !c1_10 = I32 [1] 
+            !71 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !72 = ApplyComparisonOp(!c1_10, !71) [LT]
+            %__norm_40 = If !72 then {
+              I32 [0]
+            } else {
+              !c1_11 = I32 [1]
+              !73 = ApplyComparisonOp(!c1_11, %__norm_39) [GTEQ]
+              If !73 then { %__norm_39 } else {
+                I32 [1]
+              }
+            }
+            !74 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !75 = ApplyComparisonOp(%__norm_38, !74) [LT]
+            %__norm_41 = If !75 then {
+              I32 [0]
+            } else {
+              !c0_11 = I32 [0]
+              !76 = ApplyComparisonOp(%__norm_38, !c0_11) [LT]
+              If !76 then {
+                ApplyBinaryPrimOp(%__norm_38, %__norm_39) [Add]
+              } else {
+                !77 = ApplyComparisonOp(%__norm_38, %__norm_39) [GTEQ]
+                If !77 then { %__norm_39 } else { %__norm_38 }
+              }
+            }
+            !78 = ApplyComparisonOp(%__norm_41, %__norm_40) [LT]
+            !79 = If !78 then { %__norm_40 } else {
+              %__norm_41
+              }
+            !80 = Apply(%__norm_8, %__norm_40, !79) [-1, substring, 
+            (), String]
+            !81 = Apply(%__norm_9, !80) [20, endswith, 
+            (), Boolean]
+            !82 = ApplySpecial(!70, !81) [21, land, 
+            (), Boolean]
+            If !82 then {
+              I32 [4]
+            } else {
+              I32 [5]
+            }
+          }
+        }
+      } else {
+        !83 = Str ["*"]
+        !84 = ApplyComparisonOp(%__norm_8, !83) [EQ]
+        If !84 then {
+          I32 [6]
+        } else {
+          !85 = Str ["(^\\.)|(\\.$..."]
+          !86 = Apply(!85, %__norm_8) [22, regexMatch, 
+          (), Boolean]
+          If !86 then {
+            I32 [7]
+          } else {
+            I32 [0]
+          }
+        }
+      }
+    } else {
+      I32 [0]
+    } 
+    !c1_12 = I32 [1]
+    !88 = ApplyComparisonOp(!87, !c1_12) [EQ]
+    !89 = MakeStruct(is_snp: !88)
+    !90 = Consume(!89)
+    ApplyBinaryPrimOp(%__norm_3, !90) [Add]
+  }
+}
+!s3 = ToStream(!91) [False] 
+!92 = I64 [0]
+!93 = StreamFold(!s3, !92) {
+(%__norm_43, %__norm_44) =>
+  ApplyBinaryPrimOp(%__norm_43, %__norm_44) [Add]
+}
+MakeTuple(!93) [(0)]
+
+2026-10-23 03:14:50.516 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.516 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:50.516 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:50.522 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 282: 
+
+!1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!91 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !s2 = ReadPartition(%__norm_1) [Struct{locus:Locus(GRCh37),alleles:Array[String]}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"] 
+  !4 = I64 [0]
+  StreamFold(!s2, !4) { (%__norm_3, %__norm_4) =>
+    %__norm_5 = GetField(%__norm_4) [alleles]
+    !c1 = I32 [1]
+    %__norm_8 = ArrayRef(%__norm_5, !c1) [2]
+    !c0 = I32 [0]
+    %__norm_9 = ArrayRef(%__norm_5, !c0) [1]
+    !5 = Str ["^([ACGTNM])+$"]
+    !6 = Apply(!5, %__norm_9) [3, regexMatch, 
+    (), Boolean]
+    !87 = If !6 then {
+      !7 = Str ["^([ACGTNM])+$"]
+      !8 = Apply(!7, %__norm_8) [4, regexMatch, 
+      (), Boolean]
+      If !8 then {
+        !9 = Apply(%__norm_9) [5, length, (), Int32] 
+        !10 = Apply(%__norm_8) [6, length, (), Int32]
+        !11 = ApplyComparisonOp(!9, !10) [EQ]
+        If !11 then {
+          !12 = Apply(%__norm_9) [7, length, (), Int32] 
+          !c1_2 = I32 [1]
+          !13 = ApplyComparisonOp(!12, !c1_2) [EQ]
+          If !13 then {
+            !14 = ApplyComparisonOp(%__norm_9, %__norm_8) [NEQ]
+            If !14 then {
+              I32 [1]
+            } else {
+              I32 [0]
+            }
+          } else {
+            !15 = ApplySpecial(%__norm_9, %__norm_8) [8, hamming, 
+            (), Int32] 
+            !c1_3 = I32 [1]
+            !16 = ApplyComparisonOp(!15, !c1_3) [EQ]
+            If !16 then {
+              I32 [1]
+            } else {
+              I32 [2]
+            }
+          }
+        } else {
+          !17 = Apply(%__norm_9) [9, length, (), Int32] 
+          !18 = Apply(%__norm_8) [10, length, (), Int32]
+          !19 = ApplyComparisonOp(!17, !18) [LT] 
+          %__norm_12 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          !c0_2 = I32 [0] 
+          !20 = ApplyUnaryPrimOp(%__norm_12) [Negate]
+          !21 = ApplyComparisonOp(!c0_2, !20) [LT] 
+          !c0_3 = I32 [0]
+          !22 = ApplyComparisonOp(!c0_3, %__norm_12) [GTEQ]
+          !23 = ApplySpecial(!21, !22) [-1, lor, 
+          (), Boolean]
+          %__norm_13 = If !23 then {
+            !24 = Str ["string ind..."] 
+            !25 = Apply(%__norm_12) [-1, str, (), String]
+            !26 = Apply(!24, !25) [-1, concat, (), String]
+            Die(!26) [Int32, 11]
+          } else {
+            I32 [0]
+          }
+          !c1_4 = I32 [1]
+          !27 = ApplyBinaryPrimOp(%__norm_13, !c1_4) [Add]
+          !28 = Apply(%__norm_9, %__norm_13, !27) [-1, substring, 
+          (), String] 
+          %__norm_16 = Apply(%__norm_8) [-1, length, 
+          (), Int32]
+          !c0_4 = I32 [0] 
+          !29 = ApplyUnaryPrimOp(%__norm_16) [Negate]
+          !30 = ApplyComparisonOp(!c0_4, !29) [LT] 
+          !c0_5 = I32 [0]
+          !31 = ApplyComparisonOp(!c0_5, %__norm_16) [GTEQ]
+          !32 = ApplySpecial(!30, !31) [-1, lor, 
+          (), Boolean]
+          %__norm_17 = If !32 then {
+            !33 = Str ["string ind..."] 
+            !34 = Apply(%__norm_16) [-1, str, (), String]
+            !35 = Apply(!33, !34) [-1, concat, (), String]
+            Die(!35) [Int32, 12]
+          } else {
+            I32 [0]
+          }
+          !c1_5 = I32 [1]
+          !36 = ApplyBinaryPrimOp(%__norm_17, !c1_5) [Add]
+          !37 = Apply(%__norm_8, %__norm_17, !36) [-1, substring, 
+          (), String]
+          !38 = ApplyComparisonOp(!28, !37) [EQ]
+          !39 = ApplySpecial(!19, !38) [13, land, 
+          (), Boolean] 
+          %__norm_22 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          %__norm_23 = Apply(%__norm_9) [-1, length, 
+          (), Int32]
+          !c1_6 = I32 [1] 
+          !40 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !41 = ApplyComparisonOp(!c1_6, !40) [LT]
+          %__norm_24 = If !41 then {
+            I32 [0]
+          } else {
+            !c1_7 = I32 [1]
+            !42 = ApplyComparisonOp(!c1_7, %__norm_23) [GTEQ]
+            If !42 then { %__norm_23 } else {
+              I32 [1]
+            }
+          }
+          !43 = ApplyUnaryPrimOp(%__norm_23) [Negate]
+          !44 = ApplyComparisonOp(%__norm_22, !43) [LT]
+          %__norm_25 = If !44 then {
+            I32 [0]
+          } else {
+            !c0_6 = I32 [0]
+            !45 = ApplyComparisonOp(%__norm_22, !c0_6) [LT]
+            If !45 then {
+              ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+            } else {
+              !46 = ApplyComparisonOp(%__norm_22, %__norm_23) [GTEQ]
+              If !46 then { %__norm_23 } else { %__norm_22 }
+            }
+          }
+          !47 = ApplyComparisonOp(%__norm_25, %__norm_24) [LT]
+          !48 = If !47 then { %__norm_24 } else {
+            %__norm_25
+            }
+          !49 = Apply(%__norm_9, %__norm_24, !48) [-1, substring, 
+          (), String]
+          !50 = Apply(%__norm_8, !49) [15, endswith, 
+          (), Boolean]
+          !51 = ApplySpecial(!39, !50) [16, land, 
+          (), Boolean]
+          If !51 then {
+            I32 [3]
+          } else {
+            %__norm_28 = Apply(%__norm_9) [-1, length, 
+            (), Int32]
+            !c0_7 = I32 [0] 
+            !52 = ApplyUnaryPrimOp(%__norm_28) [Negate]
+            !53 = ApplyComparisonOp(!c0_7, !52) [LT] 
+            !c0_8 = I32 [0]
+            !54 = ApplyComparisonOp(!c0_8, %__norm_28) [GTEQ]
+            !55 = ApplySpecial(!53, !54) [-1, lor, 
+            (), Boolean]
+            %__norm_29 = If !55 then {
+              !56 = Str ["string ind..."] 
+              !57 = Apply(%__norm_28) [-1, str, (), String]
+              !58 = Apply(!56, !57) [-1, concat, (), String]
+              Die(!58) [Int32, 17]
+            } else {
+              I32 [0]
+            }
+            !c1_8 = I32 [1]
+            !59 = ApplyBinaryPrimOp(%__norm_29, !c1_8) [Add]
+            !60 = Apply(%__norm_9, %__norm_29, !59) [-1, substring, 
+            (), String] 
+            %__norm_32 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            !c0_9 = I32 [0] 
+            !61 = ApplyUnaryPrimOp(%__norm_32) [Negate]
+            !62 = ApplyComparisonOp(!c0_9, !61) [LT] 
+            !c0_10 = I32 [0]
+            !63 = ApplyComparisonOp(!c0_10, %__norm_32) [GTEQ]
+            !64 = ApplySpecial(!62, !63) [-1, lor, 
+            (), Boolean]
+            %__norm_33 = If !64 then {
+              !65 = Str ["string ind..."] 
+              !66 = Apply(%__norm_32) [-1, str, (), String]
+              !67 = Apply(!65, !66) [-1, concat, (), String]
+              Die(!67) [Int32, 18]
+            } else {
+              I32 [0]
+            }
+            !c1_9 = I32 [1]
+            !68 = ApplyBinaryPrimOp(%__norm_33, !c1_9) [Add]
+            !69 = Apply(%__norm_8, %__norm_33, !68) [-1, substring, 
+            (), String]
+            !70 = ApplyComparisonOp(!60, !69) [EQ] 
+            %__norm_38 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            %__norm_39 = Apply(%__norm_8) [-1, length, 
+            (), Int32]
+            !c1_10 = I32 [1] 
+            !71 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !72 = ApplyComparisonOp(!c1_10, !71) [LT]
+            %__norm_40 = If !72 then {
+              I32 [0]
+            } else {
+              !c1_11 = I32 [1]
+              !73 = ApplyComparisonOp(!c1_11, %__norm_39) [GTEQ]
+              If !73 then { %__norm_39 } else {
+                I32 [1]
+              }
+            }
+            !74 = ApplyUnaryPrimOp(%__norm_39) [Negate]
+            !75 = ApplyComparisonOp(%__norm_38, !74) [LT]
+            %__norm_41 = If !75 then {
+              I32 [0]
+            } else {
+              !c0_11 = I32 [0]
+              !76 = ApplyComparisonOp(%__norm_38, !c0_11) [LT]
+              If !76 then {
+                ApplyBinaryPrimOp(%__norm_38, %__norm_39) [Add]
+              } else {
+                !77 = ApplyComparisonOp(%__norm_38, %__norm_39) [GTEQ]
+                If !77 then { %__norm_39 } else { %__norm_38 }
+              }
+            }
+            !78 = ApplyComparisonOp(%__norm_41, %__norm_40) [LT]
+            !79 = If !78 then { %__norm_40 } else {
+              %__norm_41
+              }
+            !80 = Apply(%__norm_8, %__norm_40, !79) [-1, substring, 
+            (), String]
+            !81 = Apply(%__norm_9, !80) [20, endswith, 
+            (), Boolean]
+            !82 = ApplySpecial(!70, !81) [21, land, 
+            (), Boolean]
+            If !82 then {
+              I32 [4]
+            } else {
+              I32 [5]
+            }
+          }
+        }
+      } else {
+        !83 = Str ["*"]
+        !84 = ApplyComparisonOp(%__norm_8, !83) [EQ]
+        If !84 then {
+          I32 [6]
+        } else {
+          !85 = Str ["(^\\.)|(\\.$..."]
+          !86 = Apply(!85, %__norm_8) [22, regexMatch, 
+          (), Boolean]
+          If !86 then {
+            I32 [7]
+          } else {
+            I32 [0]
+          }
+        }
+      }
+    } else {
+      I32 [0]
+    } 
+    !c1_12 = I32 [1]
+    !88 = ApplyComparisonOp(!87, !c1_12) [EQ]
+    !89 = MakeStruct(is_snp: !88)
+    !90 = Consume(!89)
+    ApplyBinaryPrimOp(%__norm_3, !90) [Add]
+  }
+}
+!s3 = ToStream(!91) [False] 
+!92 = I64 [0]
+!93 = StreamFold(!s3, !92) {
+(%__norm_43, %__norm_44) =>
+  ApplyBinaryPrimOp(%__norm_43, %__norm_44) [Add]
+}
+MakeTuple(!93) [(0)]
+
+2026-10-23 03:14:50.646 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:14:51.136 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 104: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 107: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 106: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 109: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 108: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:14:51.325 RegionPool: INFO: initialized for thread 105: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-23 03:14:51.390 SparkTaskContext: INFO: TaskReport: stage=0, partition=9, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.390 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:14:51.391 SparkTaskContext: INFO: TaskReport: stage=0, partition=11, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.391 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 105: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-23 03:14:51.394 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.394 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:14:51.397 SparkTaskContext: INFO: TaskReport: stage=0, partition=12, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.397 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 106: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-23 03:14:51.398 SparkTaskContext: INFO: TaskReport: stage=0, partition=8, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.398 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:14:51.398 SparkTaskContext: INFO: TaskReport: stage=0, partition=14, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.399 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 108: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-23 03:14:51.399 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.399 SparkTaskContext: INFO: TaskReport: stage=0, partition=13, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.399 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:14:51.399 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 107: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-23 03:14:51.400 SparkTaskContext: INFO: TaskReport: stage=0, partition=15, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.400 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 109: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-23 03:14:51.403 SparkTaskContext: INFO: TaskReport: stage=0, partition=7, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.403 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:14:51.404 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.404 SparkTaskContext: INFO: TaskReport: stage=0, partition=6, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.404 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:14:51.404 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:14:51.404 SparkTaskContext: INFO: TaskReport: stage=0, partition=10, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.404 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 104: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-23 03:14:51.405 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.405 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:14:51.406 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.406 SparkTaskContext: INFO: TaskReport: stage=0, partition=5, attempt=0, peakBytes=196608, peakBytesReadable=192.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.406 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:14:51.406 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:14:51.492 BackendUtils: INFO: table_force_count: executed 16 tasks in 328.474ms
+2026-10-23 03:14:51.492 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.492 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.493 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.493 LowerOrInterpretNonCompilable$: INFO: took 1.403s
+2026-10-23 03:14:51.493 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.493 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.493 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.493 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after EvalRelationalLets: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.494 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.494 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.494 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.494 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.494 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.494 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.494 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [24885]
+
+2026-10-23 03:14:51.495 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = I64 [24885]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:14:51.495 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.495 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.495 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.495 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.495 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.495 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.496 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.496 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.496 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.496 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:14:51.497 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:14:51.497 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.497 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.497 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.497 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:14:51.497 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:14:51.498 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.498 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.498 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.498 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:14:51.500 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:14:51.505 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.505 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.505 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.506 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:14:51.538 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.539 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:14:51.539 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:14:51.539 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher

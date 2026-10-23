@@ -1,0 +1,111 @@
+{
+  "repetitions": [
+    {
+      "repetition": "rep-01",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 85,
+      "vail_wall_sum_seconds": 185.50899579492398,
+      "hail_wall_sum_seconds": 370.5353762867162,
+      "vail_cpu_sum_seconds": 885.0728685833333,
+      "hail_cpu_sum_seconds": 2048.5483997083334,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 85,
+        "unsupported": 15,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "not_run_vail_failed": 23,
+        "passed": 85
+      },
+      "wall_ratio_geomean": 6.027932192025315,
+      "cpu_ratio_geomean": 6.538920109403449,
+      "wall_sum_ratio": 1.9973984264155833,
+      "cpu_sum_ratio": 2.314553380206179
+    },
+    {
+      "repetition": "rep-02",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 85,
+      "vail_wall_sum_seconds": 183.62416945549194,
+      "hail_wall_sum_seconds": 380.08415187266655,
+      "vail_cpu_sum_seconds": 888.6002845416666,
+      "hail_cpu_sum_seconds": 2138.563253125,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 85,
+        "unsupported": 15,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "not_run_vail_failed": 23,
+        "passed": 85
+      },
+      "wall_ratio_geomean": 6.303751857881704,
+      "cpu_ratio_geomean": 6.8817269074964145,
+      "wall_sum_ratio": 2.069902633186825,
+      "cpu_sum_ratio": 2.4066650555126197
+    },
+    {
+      "repetition": "rep-03",
+      "selected": 108,
+      "vail_attempts": 108,
+      "hail_attempts_or_gated_entries": 108,
+      "common_passes": 85,
+      "vail_wall_sum_seconds": 183.33929300005548,
+      "hail_wall_sum_seconds": 370.36922600248363,
+      "vail_cpu_sum_seconds": 884.4955669166666,
+      "hail_cpu_sum_seconds": 2037.1139860833332,
+      "vail_status_counts": {
+        "failed": 4,
+        "passed": 85,
+        "unsupported": 15,
+        "upstream_skipped": 4
+      },
+      "hail_status_counts": {
+        "not_run_vail_failed": 23,
+        "passed": 85
+      },
+      "wall_ratio_geomean": 6.178004047561949,
+      "cpu_ratio_geomean": 6.574006472201697,
+      "wall_sum_ratio": 2.0201301092743473,
+      "cpu_sum_ratio": 2.3031364568447423
+    }
+  ],
+  "paired_cases_with_at_least_one_successful_pair": 85,
+  "all_rep_paired_cases": 85,
+  "common_paired_case_count": 85,
+  "variable_paired_case_count": 0,
+  "paired_case_outcomes": {
+    "wall_vail_faster_gt_10pct": 83,
+    "wall_within_10pct": 0,
+    "wall_hail_faster_gt_10pct": 2,
+    "cpu_vail_faster_gt_10pct": 75,
+    "cpu_within_10pct": 6,
+    "cpu_hail_faster_gt_10pct": 4
+  },
+  "case_medians": {
+    "wall_ratio_geomean": 6.145985594010491,
+    "cpu_ratio_geomean": 6.597871190046869,
+    "vail_wall_sum_seconds": 183.9366400358267,
+    "hail_wall_sum_seconds": 371.0642104999861,
+    "vail_cpu_sum_seconds": 886.7575453333333,
+    "hail_cpu_sum_seconds": 2060.60613,
+    "wall_sum_ratio": 2.0173479869356705,
+    "cpu_sum_ratio": 2.3237537034155324,
+    "median_repetition_wall_geomean": 6.178004047561949,
+    "median_repetition_cpu_geomean": 6.574006472201697,
+    "median_repetition_wall_sum_ratio": 2.0201301092743473,
+    "median_repetition_cpu_sum_ratio": 2.314553380206179
+  },
+  "metric_definitions": {
+    "wall_seconds": "benchmark_seconds, per fresh worker/query; excludes startup and fixture preparation",
+    "cpu_seconds": "sum of user+system process-tree counters; exited descendants retained by PID+creation time; 10 Hz sample lower-bound for very short children",
+    "ratios": "Hail / Vail; geomean over per-case ratios; sum ratio is sum of per-case times divided by sum of per-case times",
+    "case_medians": "independent per-engine successful samples: three fresh repetitions per engine; observed minimum and maximum are descriptive ranges, not confidence intervals; ratios computed from medians"
+  }
+}

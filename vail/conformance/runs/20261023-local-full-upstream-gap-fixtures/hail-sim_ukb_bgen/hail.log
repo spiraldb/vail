@@ -1,0 +1,902 @@
+2026-10-23 03:03:30.945 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:03:31.162 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:03:31.330 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.582 LoweringPipeline: INFO: initial IR: IR size 26: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_2 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = SelectFields(%row) [(idx)] 
+  !4 = EncodedLiteral [Dict[String,String]] 
+  !5 = Str [".idx2"]
+  !6 = Apply(%__norm_2, !5) [2, concat, (), String]
+  !7 = ApplyIR(!4, %__norm_2, !6) [3, get, 
+  (), String] 
+  !8 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !9 = Apply(%__norm_2, !7, !8, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields !3 (n_indexed: !9)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+!10 = TableCollect(!ht3)
+GetField(!10) [rows]
+
+2026-10-23 03:03:31.591 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.591 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.593 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.605 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:03:31.622 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.622 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.622 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.627 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 23: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_2 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_2, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_2, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_2, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+!9 = TableCollect(!ht3)
+GetField(!9) [rows]
+
+2026-10-23 03:03:31.633 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 23: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_2 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_2, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_2, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_2, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+!9 = TableCollect(!ht3)
+GetField(!9) [rows]
+
+2026-10-23 03:03:31.634 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.634 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.634 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.638 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 23: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_2 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_2, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_2, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_2, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+!9 = TableCollect(!ht3)
+GetField(!9) [rows]
+
+2026-10-23 03:03:31.642 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 25: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_1 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_1, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_1, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_1, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+%__norm_2 = TableCollect(!ht3)
+GetField(%__norm_2) [rows]
+
+2026-10-23 03:03:31.644 LoweringPipeline: INFO: initial IR: IR size 22: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_1 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_1, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_1, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_1, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+TableCollect(!ht3)
+
+2026-10-23 03:03:31.646 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 22: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_1 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_1, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_1, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_1, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+TableCollect(!ht3)
+
+2026-10-23 03:03:31.648 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 22: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_1 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_1, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_1, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_1, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+TableCollect(!ht3)
+
+2026-10-23 03:03:31.649 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.649 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.649 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.652 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 22: 
+
+!ht = TableRange [1, 1]
+!ht2 = TableMapRows(!ht) { (%global, %row) =>
+  !1 = EncodedLiteral [Array[String]] 
+  !2 = GetField(%row) [idx]
+  %__norm_1 = ApplyIR(!1, !2) [1, indexArray, 
+  (), String]
+  !3 = EncodedLiteral [Dict[String,String]] 
+  !4 = Str [".idx2"]
+  !5 = Apply(%__norm_1, !4) [2, concat, (), String]
+  !6 = ApplyIR(!3, %__norm_1, !5) [3, get, 
+  (), String] 
+  !7 = EncodedLiteral [Dict[String,String]] 
+  !false = False 
+  !c16000000 = I32 [16000000]
+  !8 = Apply(%__norm_1, !6, !7, !false, !c16000000) [4, index_bgen, 
+  (Locus(GRCh37)), Int64]
+  InsertFields %row (n_indexed: !8)
+}
+!ht3 = TableOrderBy(!ht2) [(Aidx)]
+TableCollect(!ht3)
+
+2026-10-23 03:03:31.654 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:03:31.654 LowerOrInterpretNonCompilable$: INFO: lowering result: TableCollect
+2026-10-23 03:03:31.743 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableCollect
+2026-10-23 03:03:31.780 LoweringPipeline: INFO: initial IR: IR size 56: 
+
+%__norm_1 = MakeStruct()
+!1 = Literal [Array[Struct{start:Int32,end:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = MakeStruct(__iruid_43: %__norm_1) 
+!3 = NA [String]
+%__norm_11 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_2, %__norm_3) =>
+  %__norm_4 = GetField(%__norm_3) [__iruid_43]
+  !4 = GetField(%__norm_2) [start] 
+  !5 = GetField(%__norm_2) [end] 
+  !c1 = I32 [1]
+  !s2 = StreamRange(!4, !5, !c1) [-1, True]
+  %__norm_6 = StreamMap(!s2) { (%__norm_5) =>
+    MakeStruct(idx: %__norm_5)
+  }
+  %__norm_7 = Ref [__norm_4]
+  %__norm_10 = StreamMap(%__norm_6) { (%__norm_8) =>
+    !6 = EncodedLiteral [Array[String]] 
+    !7 = GetField(%__norm_8) [idx]
+    %__norm_9 = ApplyIR(!6, !7) [1, indexArray, 
+    (), String]
+    !8 = EncodedLiteral [Dict[String,String]] 
+    !9 = Str [".idx2"]
+    !10 = Apply(%__norm_9, !9) [2, concat, (), String]
+    !11 = ApplyIR(!8, %__norm_9, !10) [3, get, 
+    (), String] 
+    !12 = EncodedLiteral [Dict[String,String]] 
+    !false = False 
+    !c16000000 = I32 [16000000]
+    !13 = Apply(%__norm_9, !11, !12, !false, !c16000000) [4, index_bgen, 
+    (Locus(GRCh37)), Int64]
+    InsertFields %__norm_8 (n_indexed: !13)
+  }
+  ToArray(%__norm_10)
+}
+!s3 = ToStream(%__norm_11) [False]
+!s4 = StreamFlatMap(!s3) { (%__norm_12) =>
+  ToStream(%__norm_12) [False]
+}
+!14 = ToArray(!s4)
+!15 = MakeStruct(rows: !14, global: %__norm_1)
+MakeTuple(!15) [(0)]
+
+2026-10-23 03:03:31.784 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.784 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.784 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.786 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.786 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.786 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.789 ForwardLets$: INFO: Eliminating unused binding:
+__norm_7: struct{} = (EVAL) Ref [__norm_4]
+2026-10-23 03:03:31.794 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_43'
+2026-10-23 03:03:31.795 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.795 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.795 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.796 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.796 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.796 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.801 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.801 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.801 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.808 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 41: 
+
+!1 = Literal [Array[Struct{start:Int32,end:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!14 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_2, %__norm_3) =>
+  !4 = GetField(%__norm_2) [start] 
+  !5 = GetField(%__norm_2) [end] 
+  !c1 = I32 [1]
+  !s2 = StreamRange(!4, !5, !c1) [-1, True]
+  !s3 = StreamMap(!s2) { (%__norm_5) =>
+    %__norm_8 = MakeStruct(idx: %__norm_5)
+    !6 = EncodedLiteral [Array[String]] 
+    !7 = GetField(%__norm_8) [idx]
+    %__norm_9 = ApplyIR(!6, !7) [1, indexArray, 
+    (), String]
+    !8 = EncodedLiteral [Dict[String,String]] 
+    !9 = Str [".idx2"]
+    !10 = Apply(%__norm_9, !9) [2, concat, (), String]
+    !11 = ApplyIR(!8, %__norm_9, !10) [3, get, 
+    (), String] 
+    !12 = EncodedLiteral [Dict[String,String]] 
+    !false = False 
+    !c16000000 = I32 [16000000]
+    !13 = Apply(%__norm_9, !11, !12, !false, !c16000000) [4, index_bgen, 
+    (Locus(GRCh37)), Int64]
+    InsertFields %__norm_8 (n_indexed: !13)
+  }
+  ToArray(!s3)
+}
+!s4 = ToStream(!14) [False]
+!s5 = StreamFlatMap(!s4) { (%__norm_12) =>
+  ToStream(%__norm_12) [False]
+}
+!15 = ToArray(!s5) 
+!16 = Literal [Struct{}, <literal value>]
+!17 = MakeStruct(rows: !15, global: !16)
+MakeTuple(!17) [(0)]
+
+2026-10-23 03:03:31.836 LoweringPipeline: INFO: after InlineApplyIR: IR size 81: 
+
+!1 = Literal [Array[Struct{start:Int32,end:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!19 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !4 = GetField(%__norm_1) [start] 
+  !5 = GetField(%__norm_1) [end] 
+  !c1 = I32 [1]
+  !s2 = StreamRange(!4, !5, !c1) [-1, True]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    %__norm_4 = MakeStruct(idx: %__norm_3)
+    %__norm_5 = EncodedLiteral [Array[String]]
+    %__norm_6 = GetField(%__norm_4) [idx]
+    !c0 = I32 [0]
+    !6 = ApplyComparisonOp(%__norm_6, !c0) [LT]
+    !8 = If !6 then {
+      !7 = ArrayLen(%__norm_5)
+      ApplyBinaryPrimOp(!7, %__norm_6) [Add]
+    } else { %__norm_6 }
+    %__norm_7 = ArrayRef(%__norm_5, !8) [1]
+    %__norm_8 = EncodedLiteral [Dict[String,String]]
+    %__norm_9 = Ref [__norm_7]
+    !9 = Str [".idx2"]
+    %__norm_10 = Apply(%__norm_7, !9) [2, concat, 
+    (), String]
+    !10 = IsNA(%__norm_8)
+    !11 = ApplyUnaryPrimOp(!10) [Bang]
+    !16 = If !11 then {
+      %__norm_11 = LowerBoundOnOrderedCollection(%__norm_8, %__norm_9) [True]
+      %__norm_12 = CastToArray(%__norm_8)
+      !12 = ArrayLen(%__norm_12)
+      !13 = ApplyComparisonOp(%__norm_11, !12) [EQWithNA]
+      If !13 then { %__norm_10 } else {
+        %__norm_13 = ArrayRef(%__norm_12, %__norm_11) [-1]
+        !14 = GetField(%__norm_13) [key]
+        !15 = ApplyComparisonOp(!14, %__norm_9) [EQWithNA]
+        If !15 then {
+          GetField(%__norm_13) [value]
+        } else { %__norm_10 }
+      }
+    } else {
+      NA [String]
+    } 
+    !17 = EncodedLiteral [Dict[String,String]] 
+    !false = False 
+    !c16000000 = I32 [16000000]
+    !18 = Apply(%__norm_7, !16, !17, !false, !c16000000) [4, index_bgen, 
+    (Locus(GRCh37)), Int64]
+    InsertFields %__norm_4 (n_indexed: !18)
+  }
+  ToArray(!s3)
+}
+!s4 = ToStream(!19) [False]
+!s5 = StreamFlatMap(!s4) { (%__norm_14) =>
+  ToStream(%__norm_14) [False]
+}
+!20 = ToArray(!s5) 
+!21 = Literal [Struct{}, <literal value>]
+!22 = MakeStruct(rows: !20, global: !21)
+MakeTuple(!22) [(0)]
+
+2026-10-23 03:03:31.837 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.837 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.837 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.851 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.851 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.851 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.865 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 78: 
+
+!1 = Literal [Array[Struct{start:Int32,end:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!18 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !4 = GetField(%__norm_1) [start] 
+  !5 = GetField(%__norm_1) [end] 
+  !c1 = I32 [1]
+  !s2 = StreamRange(!4, !5, !c1) [-1, True]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    %__norm_4 = MakeStruct(idx: %__norm_3)
+    %__norm_5 = EncodedLiteral [Array[String]]
+    %__norm_6 = GetField(%__norm_4) [idx]
+    !c0 = I32 [0]
+    !6 = ApplyComparisonOp(%__norm_6, !c0) [LT]
+    !8 = If !6 then {
+      !7 = ArrayLen(%__norm_5)
+      ApplyBinaryPrimOp(!7, %__norm_6) [Add]
+    } else { %__norm_6 }
+    %__norm_7 = ArrayRef(%__norm_5, !8) [1]
+    %__norm_8 = EncodedLiteral [Dict[String,String]]
+    !9 = Str [".idx2"]
+    %__norm_10 = Apply(%__norm_7, !9) [2, concat, 
+    (), String]
+    !10 = IsNA(%__norm_8)
+    !15 = If !10 then {
+      NA [String]
+    } else {
+      %__norm_11 = LowerBoundOnOrderedCollection(%__norm_8, %__norm_7) [True]
+      %__norm_12 = CastToArray(%__norm_8)
+      !11 = ArrayLen(%__norm_12)
+      !12 = ApplyComparisonOp(%__norm_11, !11) [EQWithNA]
+      If !12 then { %__norm_10 } else {
+        %__norm_13 = ArrayRef(%__norm_12, %__norm_11) [-1]
+        !13 = GetField(%__norm_13) [key]
+        !14 = ApplyComparisonOp(!13, %__norm_7) [EQWithNA]
+        If !14 then {
+          GetField(%__norm_13) [value]
+        } else { %__norm_10 }
+      }
+    } 
+    !16 = EncodedLiteral [Dict[String,String]] 
+    !false = False 
+    !c16000000 = I32 [16000000]
+    !17 = Apply(%__norm_7, !15, !16, !false, !c16000000) [4, index_bgen, 
+    (Locus(GRCh37)), Int64]
+    InsertFields %__norm_4 (n_indexed: !17)
+  }
+  ToArray(!s3)
+}
+!s4 = ToStream(!18) [False]
+!s5 = StreamFlatMap(!s4) { (%__norm_14) =>
+  ToStream(%__norm_14) [False]
+}
+!19 = ToArray(!s5) 
+!20 = Literal [Struct{}, <literal value>]
+!21 = MakeStruct(rows: !19, global: !20)
+MakeTuple(!21) [(0)]
+
+2026-10-23 03:03:31.873 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 78: 
+
+!1 = Literal [Array[Struct{start:Int32,end:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!18 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !4 = GetField(%__norm_1) [start] 
+  !5 = GetField(%__norm_1) [end] 
+  !c1 = I32 [1]
+  !s2 = StreamRange(!4, !5, !c1) [-1, True]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    %__norm_4 = MakeStruct(idx: %__norm_3)
+    %__norm_5 = EncodedLiteral [Array[String]]
+    %__norm_6 = GetField(%__norm_4) [idx]
+    !c0 = I32 [0]
+    !6 = ApplyComparisonOp(%__norm_6, !c0) [LT]
+    !8 = If !6 then {
+      !7 = ArrayLen(%__norm_5)
+      ApplyBinaryPrimOp(!7, %__norm_6) [Add]
+    } else { %__norm_6 }
+    %__norm_7 = ArrayRef(%__norm_5, !8) [1]
+    %__norm_8 = EncodedLiteral [Dict[String,String]]
+    !9 = Str [".idx2"]
+    %__norm_10 = Apply(%__norm_7, !9) [2, concat, 
+    (), String]
+    !10 = IsNA(%__norm_8)
+    !15 = If !10 then {
+      NA [String]
+    } else {
+      %__norm_11 = LowerBoundOnOrderedCollection(%__norm_8, %__norm_7) [True]
+      %__norm_12 = CastToArray(%__norm_8)
+      !11 = ArrayLen(%__norm_12)
+      !12 = ApplyComparisonOp(%__norm_11, !11) [EQWithNA]
+      If !12 then { %__norm_10 } else {
+        %__norm_13 = ArrayRef(%__norm_12, %__norm_11) [-1]
+        !13 = GetField(%__norm_13) [key]
+        !14 = ApplyComparisonOp(!13, %__norm_7) [EQWithNA]
+        If !14 then {
+          GetField(%__norm_13) [value]
+        } else { %__norm_10 }
+      }
+    } 
+    !16 = EncodedLiteral [Dict[String,String]] 
+    !false = False 
+    !c16000000 = I32 [16000000]
+    !17 = Apply(%__norm_7, !15, !16, !false, !c16000000) [4, index_bgen, 
+    (Locus(GRCh37)), Int64]
+    InsertFields %__norm_4 (n_indexed: !17)
+  }
+  ToArray(!s3)
+}
+!s4 = ToStream(!18) [False]
+!s5 = StreamFlatMap(!s4) { (%__norm_14) =>
+  ToStream(%__norm_14) [False]
+}
+!19 = ToArray(!s5) 
+!20 = Literal [Struct{}, <literal value>]
+!21 = MakeStruct(rows: !19, global: !20)
+MakeTuple(!21) [(0)]
+
+2026-10-23 03:03:31.874 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.874 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:31.874 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:31.879 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 78: 
+
+!1 = Literal [Array[Struct{start:Int32,end:Int32}], <literal value>]
+!s = ToStream(!1) [False] 
+!2 = Literal [Struct{}, <literal value>] 
+!3 = NA [String]
+!18 = CollectDistributedArray(!s, !2, !3) {
+(%__norm_1, %__norm_2) =>
+  !4 = GetField(%__norm_1) [start] 
+  !5 = GetField(%__norm_1) [end] 
+  !c1 = I32 [1]
+  !s2 = StreamRange(!4, !5, !c1) [-1, True]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    %__norm_4 = MakeStruct(idx: %__norm_3)
+    %__norm_5 = EncodedLiteral [Array[String]]
+    %__norm_6 = GetField(%__norm_4) [idx]
+    !c0 = I32 [0]
+    !6 = ApplyComparisonOp(%__norm_6, !c0) [LT]
+    !8 = If !6 then {
+      !7 = ArrayLen(%__norm_5)
+      ApplyBinaryPrimOp(!7, %__norm_6) [Add]
+    } else { %__norm_6 }
+    %__norm_7 = ArrayRef(%__norm_5, !8) [1]
+    %__norm_8 = EncodedLiteral [Dict[String,String]]
+    !9 = Str [".idx2"]
+    %__norm_10 = Apply(%__norm_7, !9) [2, concat, 
+    (), String]
+    !10 = IsNA(%__norm_8)
+    !15 = If !10 then {
+      NA [String]
+    } else {
+      %__norm_11 = LowerBoundOnOrderedCollection(%__norm_8, %__norm_7) [True]
+      %__norm_12 = CastToArray(%__norm_8)
+      !11 = ArrayLen(%__norm_12)
+      !12 = ApplyComparisonOp(%__norm_11, !11) [EQWithNA]
+      If !12 then { %__norm_10 } else {
+        %__norm_13 = ArrayRef(%__norm_12, %__norm_11) [-1]
+        !13 = GetField(%__norm_13) [key]
+        !14 = ApplyComparisonOp(!13, %__norm_7) [EQWithNA]
+        If !14 then {
+          GetField(%__norm_13) [value]
+        } else { %__norm_10 }
+      }
+    } 
+    !16 = EncodedLiteral [Dict[String,String]] 
+    !false = False 
+    !c16000000 = I32 [16000000]
+    !17 = Apply(%__norm_7, !15, !16, !false, !c16000000) [4, index_bgen, 
+    (Locus(GRCh37)), Int64]
+    InsertFields %__norm_4 (n_indexed: !17)
+  }
+  ToArray(!s3)
+}
+!s4 = ToStream(!18) [False]
+!s5 = StreamFlatMap(!s4) { (%__norm_14) =>
+  ToStream(%__norm_14) [False]
+}
+!19 = ToArray(!s5) 
+!20 = Literal [Struct{}, <literal value>]
+!21 = MakeStruct(rows: !19, global: !20)
+MakeTuple(!21) [(0)]
+
+2026-10-23 03:03:32.170 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:03:32.554 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:03:32.741 RegionPool: INFO: initialized for thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.761 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.765 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.772 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (960.0K blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.784 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 2.0M allocated (1.9M blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.800 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 4.0M allocated (3.9M blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.834 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 8.0M allocated (7.9M blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:32.889 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 16.0M allocated (15.9M blocks / 64.0K chunks), regions.size = 2, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:33.209 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=25362432, peakBytesReadable=24.19 MiB, chunks requested=64, cache hits=62
+2026-10-23 03:03:33.209 RegionPool: INFO: RegionPool: FREE: 24.2M allocated (23.4M blocks / 768.0K chunks), regions.size = 7, 0 current java objects, thread 92: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:03:33.284 BackendUtils: INFO: table_collect: executed 1 tasks in 709.084ms
+2026-10-23 03:03:33.285 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.285 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.285 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.286 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:03:33.289 LowerOrInterpretNonCompilable$: INFO: took 1.636s
+2026-10-23 03:03:33.289 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{idx:Int32,n_indexed:Int64}],global:Struct{}}]
+
+2026-10-23 03:03:33.290 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.290 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.290 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.290 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+EncodedLiteral [Struct{rows:Array[Struct{idx:Int32,n_indexed:Int64}],global:Struct{}}]
+
+2026-10-23 03:03:33.290 LoweringPipeline: INFO: after EvalRelationalLets: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{idx:Int32,n_indexed:Int64}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:03:33.291 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{idx:Int32,n_indexed:Int64}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:03:33.291 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 2: 
+
+!1 = EncodedLiteral [Struct{rows:Array[Struct{idx:Int32,n_indexed:Int64}],global:Struct{}}]
+GetField(!1) [rows]
+
+2026-10-23 03:03:33.292 EType$: INFO: decoder cache miss (0 hits, 1 misses, 0.000
+2026-10-23 03:03:33.296 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.297 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.297 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.297 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.297 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.297 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.297 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.297 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.297 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.297 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+Literal [Array[Struct{idx:Int32,n_indexed:Int64}], <literal value>]
+
+2026-10-23 03:03:33.297 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Array[Struct{idx:Int32,n_indexed:Int64}], <literal value>]
+
+2026-10-23 03:03:33.297 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.298 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.298 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.298 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Literal [Array[Struct{idx:Int32,n_indexed:Int64}], <literal value>]
+
+2026-10-23 03:03:33.298 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = Literal [Array[Struct{idx:Int32,n_indexed:Int64}], <literal value>]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:03:33.298 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.298 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.298 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.298 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.299 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.299 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.299 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.299 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.299 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.299 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Array[Struct{idx:Int32,n_indexed:Int64}]], <literal value>]
+
+2026-10-23 03:03:33.300 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Array[Struct{idx:Int32,n_indexed:Int64}]], <literal value>]
+
+2026-10-23 03:03:33.300 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.300 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.300 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.300 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Array[Struct{idx:Int32,n_indexed:Int64}]], <literal value>]
+
+2026-10-23 03:03:33.300 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Array[Struct{idx:Int32,n_indexed:Int64}]], <literal value>]
+
+2026-10-23 03:03:33.301 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.301 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.301 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.301 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Array[Struct{idx:Int32,n_indexed:Int64}]], <literal value>]
+
+2026-10-23 03:03:33.304 EType$: INFO: encoder cache miss (0 hits, 4 misses, 0.000)
+2026-10-23 03:03:33.309 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.309 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.310 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.313 EType$: INFO: encoder cache miss (0 hits, 5 misses, 0.000)
+2026-10-23 03:03:33.347 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.347 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.347 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.347 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.355 py4jutils$: INFO: indexed 249115 sites in /tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen at /tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen
+2026-10-23 03:03:33.360 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.363 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen returned 1 files: sim_ukb.bgen
+2026-10-23 03:03:33.404 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 391.8K allocated (131.8K blocks / 260.0K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.406 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.408 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (507.8K blocks / 516.3K chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.490 MatrixBGENReader$: INFO: Number of BGEN files parsed: 1
+Number of samples in BGEN files: 50000
+Number of variants across all BGEN files: 249115
+2026-10-23 03:03:33.524 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.524 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.524 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.525 RegionPool: INFO: RegionPool: FREE: 1.5M allocated (775.5K blocks / 772.0K chunks), regions.size = 6, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.531 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.535 HadoopFS: INFO: globbing path file:/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen returned 1 files: sim_ukb.bgen
+2026-10-23 03:03:33.546 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 391.8K allocated (131.8K blocks / 260.0K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.548 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (251.8K blocks / 260.3K chunks), regions.size = 4, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.549 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 1.0M allocated (507.8K blocks / 516.3K chunks), regions.size = 5, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.598 MatrixBGENReader$: INFO: Number of BGEN files parsed: 1
+Number of samples in BGEN files: 50000
+Number of variants across all BGEN files: 249115
+2026-10-23 03:03:33.617 LoweringPipeline: INFO: initial IR: IR size 24: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,varid:String,offset:Int64,file_idx:Int32},entry:Struct{GT:Call,GP:Array[Float64],dosage:Float64}}, False, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":null,\"blockSizeInMB\":128,\"includedVariants\":null}]
+!mt2 = MatrixMapRows(!mt) {
+(%global, %sa, %va, %g, %n_cols) =>
+  !1 = GetField(%va) [locus] 
+  !2 = GetField(%va) [alleles] 
+  !3 = GetField(%va) [rsid] 
+  !4 = GetField(%va) [varid] 
+  !5 = GetField(%va) [offset] 
+  !6 = GetField(%va) [file_idx]
+  !7 = MakeStruct(locus: !1, alleles: !2, rsid: !3, varid: !4, offset: !5, file_idx: !6)
+  SelectFields(!7) [(locus alleles rsid varid)]
+}
+!mt3 = MatrixMapEntries(!mt2) {
+(%global, %sa, %va, %g) =>
+  !8 = SelectFields(%g) [(GT GP dosage)]
+  SelectFields(!8) [(GP)]
+}
+!ht = MatrixRowsTable(!mt3)
+TableCount(!ht)
+
+2026-10-23 03:03:33.618 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.618 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.618 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.621 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:03:33.626 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.626 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.626 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.627 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.627 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.627 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.628 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.628 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.628 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.630 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 6: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String]},entry:Struct{}}, False, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":null,\"blockSizeInMB\":128,\"includedVariants\":null}]
+!mt2 = MatrixKeyRowsBy(!mt) [(), False]
+!mt3 = MatrixMapRows(!mt2) {
+(%global, %sa, %va, %g, %n_cols) =>
+  Literal [Struct{}, <literal value>]
+}
+!ht = MatrixRowsTable(!mt3)
+TableCount(!ht)
+
+2026-10-23 03:03:33.635 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 29: 
+
+!ht = TableRead [Table{global:Struct{__cols:Array[Struct{s:String}]},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{}]}}, False, {\"name\":\"MatrixBGENReader\",\"files\":[\"/tmp/full-local-upstream-cache-20261022/hail-bgen/sim_ukb.bgen\"],\"sampleFile\":\"/tmp/bgen-throughput-data/sim_ukb.sample\",\"indexFileMap\":{},\"nPartitions\":null,\"blockSizeInMB\":128,\"includedVariants\":null}]
+!ht2 = TableKeyBy(!ht) [(), False, None]
+!ht3 = TableMapRows(!ht2) { (%global, %row) =>
+  %__norm_1 = GetField(%row) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+  %__norm_2 = GetField(%global) [__cols]
+  %__norm_3 = ArrayLen(%__norm_2)
+  %__norm_4 = SelectFields(%global) [()]
+  %__norm_5 = SelectFields(%row) [(locus alleles)]
+  %__norm_6 =(scan) SelectFields(%global) [()]
+  %__norm_7 =(scan) SelectFields(%row) [
+  (locus alleles)]
+  %__norm_8 = Literal [Struct{}, <literal value>]
+  InsertFields %__norm_8 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: %__norm_1)
+}
+!ht4 = TableMapGlobals(!ht3) { (%global) =>
+  SelectFields(%global) [()]
+}
+!ht5 = TableMapRows(!ht4) { (%global, %row) =>
+  SelectFields(%row) [()]
+}
+TableCount(!ht5)
+
+2026-10-23 03:03:33.636 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.636 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.636 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.637 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.637 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.637 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.637 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.637 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.637 LoweringPipeline: INFO: after EvalRelationalLets: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.637 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.637 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.638 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.638 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.638 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.638 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.638 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.638 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.638 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.638 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.638 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [249115]
+
+2026-10-23 03:03:33.639 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = I64 [249115]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:03:33.639 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.639 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.639 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.639 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.639 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.639 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.639 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.639 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.639 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.640 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:03:33.640 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:03:33.640 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.640 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.640 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.640 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:03:33.640 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:03:33.640 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.640 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.640 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.640 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:03:33.641 EType$: INFO: encoder cache miss (0 hits, 6 misses, 0.000)
+2026-10-23 03:03:33.644 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.644 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.645 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.645 EType$: INFO: encoder cache miss (0 hits, 7 misses, 0.000)
+2026-10-23 03:03:33.645 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.645 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:03:33.645 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:03:33.645 RegionPool: INFO: RegionPool: FREE: 1.6M allocated (839.5K blocks / 772.0K chunks), regions.size = 6, 0 current java objects, thread 90: HTTP-Dispatcher

@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[100]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "upstream_marks": [],
+      "status": "not_run_vail_failed",
+      "comparable": false
+    }
+  ]
+}

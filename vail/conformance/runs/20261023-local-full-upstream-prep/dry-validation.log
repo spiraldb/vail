@@ -1,0 +1,83 @@
+START rep1 vail benchmark_table::test_table_python_construction
+DONE rep1 vail benchmark_table::test_table_python_construction passed
+START rep1 hail benchmark_table::test_table_python_construction
+DONE rep1 hail benchmark_table::test_table_python_construction passed
+{
+  "selected": 1,
+  "completed": {
+    "vail": 1,
+    "hail": 1
+  },
+  "common_passes": 1,
+  "vail_wins": 1,
+  "hail_wins": 0,
+  "common_totals_seconds": {
+    "vail": 0.1296931660035625,
+    "hail": 0.5257339159725234
+  },
+  "status_counts": {
+    "vail": {
+      "passed": 1
+    },
+    "hail": {
+      "passed": 1
+    }
+  }
+}
+{
+  "repetitions": [
+    {
+      "repetition": "rep-01",
+      "selected": 1,
+      "vail_attempts": 1,
+      "hail_attempts_or_gated_entries": 1,
+      "common_passes": 1,
+      "vail_wall_sum_seconds": 0.1296931660035625,
+      "hail_wall_sum_seconds": 0.5257339159725234,
+      "vail_cpu_sum_seconds": 0.12302891666666665,
+      "hail_cpu_sum_seconds": 0.55136025,
+      "vail_status_counts": {
+        "passed": 1
+      },
+      "hail_status_counts": {
+        "passed": 1
+      },
+      "wall_ratio_geomean": 4.053674778500527,
+      "cpu_ratio_geomean": 4.4815500691910515,
+      "wall_sum_ratio": 4.053674778500527,
+      "cpu_sum_ratio": 4.481550069191051
+    }
+  ],
+  "paired_cases_with_at_least_one_successful_pair": 1,
+  "all_rep_paired_cases": 0,
+  "common_paired_case_count": 0,
+  "variable_paired_case_count": 1,
+  "paired_case_outcomes": {
+    "wall_vail_faster_gt_10pct": 1,
+    "wall_within_10pct": 0,
+    "wall_hail_faster_gt_10pct": 0,
+    "cpu_vail_faster_gt_10pct": 1,
+    "cpu_within_10pct": 0,
+    "cpu_hail_faster_gt_10pct": 0
+  },
+  "case_medians": {
+    "wall_ratio_geomean": 4.053674778500527,
+    "cpu_ratio_geomean": 4.4815500691910515,
+    "vail_wall_sum_seconds": 0.1296931660035625,
+    "hail_wall_sum_seconds": 0.5257339159725234,
+    "vail_cpu_sum_seconds": 0.12302891666666665,
+    "hail_cpu_sum_seconds": 0.55136025,
+    "wall_sum_ratio": 4.053674778500527,
+    "cpu_sum_ratio": 4.481550069191051,
+    "median_repetition_wall_geomean": 4.053674778500527,
+    "median_repetition_cpu_geomean": 4.4815500691910515,
+    "median_repetition_wall_sum_ratio": 4.053674778500527,
+    "median_repetition_cpu_sum_ratio": 4.481550069191051
+  },
+  "metric_definitions": {
+    "wall_seconds": "benchmark_seconds, per fresh worker/query; excludes startup and fixture preparation",
+    "cpu_seconds": "sum of user+system process-tree counters; exited descendants retained by PID+creation time; 10 Hz sample lower-bound for very short children",
+    "ratios": "Hail / Vail; geomean over per-case ratios; sum ratio is sum of per-case times divided by sum of per-case times",
+    "case_medians": "independent per-engine successful samples: three fresh repetitions per engine; observed minimum and maximum are descriptive ranges, not confidence intervals; ratios computed from medians"
+  }
+}

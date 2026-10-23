@@ -1,0 +1,85 @@
+{
+  "engine": "hail",
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_dense",
+      "id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 9.239375083008781,
+      "telemetry": {
+        "cpu_seconds": 32.5633625,
+        "average_cores": 3.5215204281503882,
+        "peak_rss_gib": 4.039031982421875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 724161714,
+          "system_time": 57358986,
+          "instructions": 230408619061,
+          "cycles": 116623770444,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-loopback/rep-02/telemetry/hail/benchmark_table--test_table_aggregate_downsample_dense"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.112,
+      "elapsed_seconds": 12.916,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_localize_and_collect",
+      "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.605116875027306,
+      "telemetry": {
+        "cpu_seconds": 10.165054833333333,
+        "average_cores": 1.811074407968445,
+        "peak_rss_gib": 1.5571746826171875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 209993062,
+          "system_time": 33968254,
+          "instructions": 97870082423,
+          "cycles": 36464519482,
+          "diskio_bytesread": 20480,
+          "diskio_byteswritten": 966656
+        },
+        "cpu_scope": "worker and sampled descendants, including JVM; exited-process counters retained by (pid, creation_time)",
+        "cpu_sampling_note": "10 Hz process sampling may miss descendants that start and exit between samples; reported process-tree CPU is a lower bound.",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream-loopback/rep-02/telemetry/hail/benchmark_matrix_table--test_mt_localize_and_collect"
+      },
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 3.137,
+      "elapsed_seconds": 9.308,
+      "source_commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+      "comparable": true,
+      "baseline_hardware": "sameM3Maxlaptop;seeprovenanceforbackgroundactivity"
+    }
+  ]
+}

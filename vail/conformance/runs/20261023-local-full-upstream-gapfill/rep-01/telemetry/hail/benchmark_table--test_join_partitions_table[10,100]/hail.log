@@ -1,0 +1,1213 @@
+2026-10-23 03:12:20.966 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-23 03:12:21.185 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-23 03:12:21.397 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.445 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.445 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.448 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.448 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.468 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.672 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.672 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.672 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.673 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.676 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.679 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.679 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.679 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.679 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.682 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.692 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.692 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.692 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.692 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.697 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.724 RelationalFunctions$: INFO: JSON: JObject(List((name,JString(ForceCountTable))))
+2026-10-23 03:12:21.760 LoweringPipeline: INFO: initial IR: IR size 6: 
+
+%__norm_1 = RNGStateLiteral
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.762 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.762 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.762 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.772 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-23 03:12:21.778 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.779 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.779 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.781 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.785 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.786 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.786 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.786 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.787 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.789 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 6: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+%__norm_1 = TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+RelationalRef [Int64]
+
+2026-10-23 03:12:21.790 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.792 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.793 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.793 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.793 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.793 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.795 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 4: 
+
+!ht = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p10.ht )] 
+!ht2 = TableRead [Table{global:Struct{},key:[idx],row:Struct{idx:Int32}}, False, (TableNativeReader /tmp/full-local-upstream-cache-20261022/hail/many_partitions_ht-p100.ht )]
+!ht3 = TableJoin(!ht, !ht2) [inner, 1]
+TableToValueApply(!ht3) ["{\"name\":\"ForceCountTable\"}"]
+
+2026-10-23 03:12:21.797 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-23 03:12:21.797 LowerOrInterpretNonCompilable$: INFO: lowering result: TableToValueApply
+2026-10-23 03:12:21.867 LowerTableIR$: INFO: repartition cost: 0.167
+2026-10-23 03:12:21.950 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableToValueApply
+2026-10-23 03:12:21.976 LoweringPipeline: INFO: initial IR: IR size 119: 
+
+!1 = I64 [0] 
+!2 = Str ["/tmp/full-..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+!5 = I64 [0] 
+!6 = Str ["/tmp/full-..."]
+!7 = MakeStruct(partitionIndex: !5, partitionPath: !6)
+!s2 = ReadPartition(!7) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!8 = ToArray(!s2) 
+!c0_2 = I32 [0]
+%__norm_2 = ArrayRef(!8, !c0_2) [-1]
+%__norm_3 = InsertFields %__norm_1 ()
+!9 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s3 = ToStream(!9) [False]
+%__norm_4 = ToArray(!s3)
+!10 = Literal [Array[Struct{partitionBound:Interval[Tuple[Struct{idx:Int32},Int32]],parentPartitions:Array[Int32]}], <literal value>]
+!s4 = ToStream(!10) [False]
+!s7 = StreamMap(!s4) { (%__norm_5) =>
+  !11 = GetField(%__norm_5) [partitionBound] 
+  !12 = GetField(%__norm_5) [parentPartitions]
+  !s5 = ToStream(!12) [False]
+  !s6 = StreamMap(!s5) { (%__norm_6) =>
+    ArrayRef(%__norm_4, %__norm_6) [-1]
+  }
+  !13 = ToArray(!s6)
+  MakeStruct(partitionBound: !11, oldContexts: !13)
+} 
+!14 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s8 = ToStream(!14) [False]
+!s9 = StreamZip(!s7, !s8) [-1, AssertSameLength] {
+(%__norm_7, %__norm_8) =>
+  MakeTuple(%__norm_7, %__norm_8) [(0 1)]
+} 
+!15 = MakeStruct(__iruid_2: %__norm_1, __iruid_4: %__norm_2, __iruid_19: %__norm_3) 
+!16 = NA [String]
+%__norm_35 = CollectDistributedArray(!s9, !15, !16) {
+(%__norm_9, %__norm_10) =>
+  %__norm_11 = GetField(%__norm_10) [__iruid_2]
+  %__norm_12 = GetField(%__norm_10) [__iruid_4]
+  %__norm_13 = GetField(%__norm_10) [__iruid_19]
+  %__norm_14 = GetTupleElement(%__norm_9) [0]
+  %__norm_15 = Ref [__norm_14]
+  %__norm_16 = GetField(%__norm_15) [partitionBound]
+  %__norm_17 = ApplySpecial(%__norm_16) [-1, start, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_18 = Apply(%__norm_16) [-1, includesStart, 
+  (), Boolean]
+  %__norm_19 = ApplySpecial(%__norm_16) [-1, end, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_20 = Apply(%__norm_16) [-1, includesEnd, 
+  (), Boolean]
+  !17 = GetField(%__norm_15) [oldContexts]
+  !s10 = ToStream(!17) [True]
+  !s11 = StreamFlatMap(!s10) { (%__norm_21) =>
+    %__norm_22 = Ref [__norm_21]
+    ReadPartition(%__norm_22) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  }
+  !s12 = StreamDropWhile(!s11) { (%__norm_23) =>
+    !18 = SelectFields(%__norm_23) [(idx)]
+    Apply(!18, %__norm_17, %__norm_18) [-1, pointLessThanPartitionIntervalLeftEndpoint, 
+    (), Boolean]
+  }
+  %__norm_25 = StreamTakeWhile(!s12) {
+  (%__norm_24) =>
+    !19 = SelectFields(%__norm_24) [(idx)]
+    Apply(!19, %__norm_19, %__norm_20) [-1, pointLessThanPartitionIntervalRightEndpoint, 
+    (), Boolean]
+  }
+  %__norm_26 = GetTupleElement(%__norm_9) [1]
+  %__norm_27 = Ref [__norm_26]
+  %__norm_28 = ReadPartition(%__norm_27) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  %__norm_31 = StreamJoinRightDistinct(%__norm_25, %__norm_28) [
+  (idx), (idx), inner] { (%__norm_29, %__norm_30) =>
+    !20 = Coalesce {
+      GetField(%__norm_29) [idx]
+    } {
+      GetField(%__norm_30) [idx]
+    }
+    MakeStruct(idx: !20)
+  }
+  !s13 = StreamMap(%__norm_31) { (%__norm_32) =>
+    Consume(%__norm_32)
+  } 
+  !21 = I64 [0]
+  StreamFold(!s13, !21) {
+  (%__norm_33, %__norm_34) =>
+    ApplyBinaryPrimOp(%__norm_33, %__norm_34) [Add]
+  }
+}
+!22 = Ref [__norm_35]
+!23 = ApplyIR(!22) [-1, sum, (), Int64]
+MakeTuple(!23) [(0)]
+
+2026-10-23 03:12:21.980 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.980 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.980 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.980 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.980 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.981 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.982 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.982 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:21.982 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:21.995 ForwardLets$: INFO: Eliminating unused binding:
+__norm_11: struct{} = (EVAL) GetField(#__norm_10) [__iruid_2]
+2026-10-23 03:12:21.995 ForwardLets$: INFO: Eliminating unused binding:
+__norm_12: struct{} = (EVAL) GetField(#__norm_10) [__iruid_4]
+2026-10-23 03:12:21.995 ForwardLets$: INFO: Eliminating unused binding:
+__norm_13: struct{} = (EVAL) GetField(#__norm_10) [__iruid_19]
+2026-10-23 03:12:22.007 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_2'
+2026-10-23 03:12:22.007 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_4'
+2026-10-23 03:12:22.007 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_19'
+2026-10-23 03:12:22.010 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.010 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.010 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.010 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.010 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.010 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.013 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: struct{} = (EVAL) !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+ArrayRef(!2, !c0) [-1]
+2026-10-23 03:12:22.018 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.019 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.019 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.092 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 72: 
+
+%__norm_4 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!1 = Literal [Array[Struct{partitionBound:Interval[Tuple[Struct{idx:Int32},Int32]],parentPartitions:Array[Int32]}], <literal value>]
+!s = ToStream(!1) [False]
+!s4 = StreamMap(!s) { (%__norm_5) =>
+  !2 = GetField(%__norm_5) [partitionBound] 
+  !3 = GetField(%__norm_5) [parentPartitions]
+  !s2 = ToStream(!3) [False]
+  !s3 = StreamMap(!s2) { (%__norm_6) =>
+    ArrayRef(%__norm_4, %__norm_6) [-1]
+  }
+  !4 = ToArray(!s3)
+  MakeStruct(partitionBound: !2, oldContexts: !4)
+} 
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s5 = ToStream(!5) [False]
+!s6 = StreamZip(!s4, !s5) [-1, AssertSameLength] {
+(%__norm_7, %__norm_8) =>
+  MakeTuple(%__norm_7, %__norm_8) [(0 1)]
+} 
+!6 = Literal [Struct{}, <literal value>] 
+!7 = NA [String]
+!13 = CollectDistributedArray(!s6, !6, !7) {
+(%__norm_9, %__norm_10) =>
+  %__norm_15 = GetTupleElement(%__norm_9) [0]
+  %__norm_16 = GetField(%__norm_15) [partitionBound]
+  %__norm_17 = ApplySpecial(%__norm_16) [-1, start, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_18 = Apply(%__norm_16) [-1, includesStart, 
+  (), Boolean]
+  %__norm_19 = ApplySpecial(%__norm_16) [-1, end, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_20 = Apply(%__norm_16) [-1, includesEnd, 
+  (), Boolean]
+  !8 = GetField(%__norm_15) [oldContexts]
+  !s7 = ToStream(!8) [True]
+  !s8 = StreamFlatMap(!s7) { (%__norm_21) =>
+    ReadPartition(%__norm_21) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  }
+  !s9 = StreamDropWhile(!s8) { (%__norm_23) =>
+    Apply(%__norm_23, %__norm_17, %__norm_18) [-1, pointLessThanPartitionIntervalLeftEndpoint, 
+    (), Boolean]
+  }
+  !s10 = StreamTakeWhile(!s9) { (%__norm_24) =>
+    Apply(%__norm_24, %__norm_19, %__norm_20) [-1, pointLessThanPartitionIntervalRightEndpoint, 
+    (), Boolean]
+  } 
+  !9 = GetTupleElement(%__norm_9) [1]
+  !s11 = ReadPartition(!9) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !s12 = StreamJoinRightDistinct(!s10, !s11) [
+  (idx), (idx), inner] { (%__norm_29, %__norm_30) =>
+    !10 = Coalesce {
+      GetField(%__norm_29) [idx]
+    } {
+      GetField(%__norm_30) [idx]
+    }
+    MakeStruct(idx: !10)
+  } 
+  !11 = I64 [0]
+  StreamFold(!s12, !11) {
+  (%__norm_33, %__norm_32) =>
+    !12 = Consume(%__norm_32)
+    ApplyBinaryPrimOp(%__norm_33, !12) [Add]
+  }
+}
+!14 = ApplyIR(!13) [-1, sum, (), Int64]
+MakeTuple(!14) [(0)]
+
+2026-10-23 03:12:22.115 LoweringPipeline: INFO: after InlineApplyIR: IR size 80: 
+
+%__norm_1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!1 = Literal [Array[Struct{partitionBound:Interval[Tuple[Struct{idx:Int32},Int32]],parentPartitions:Array[Int32]}], <literal value>]
+!s = ToStream(!1) [False]
+!s4 = StreamMap(!s) { (%__norm_2) =>
+  !2 = GetField(%__norm_2) [partitionBound] 
+  !3 = GetField(%__norm_2) [parentPartitions]
+  !s2 = ToStream(!3) [False]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    ArrayRef(%__norm_1, %__norm_3) [-1]
+  }
+  !4 = ToArray(!s3)
+  MakeStruct(partitionBound: !2, oldContexts: !4)
+} 
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s5 = ToStream(!5) [False]
+!s6 = StreamZip(!s4, !s5) [-1, AssertSameLength] {
+(%__norm_4, %__norm_5) =>
+  MakeTuple(%__norm_4, %__norm_5) [(0 1)]
+} 
+!6 = Literal [Struct{}, <literal value>] 
+!7 = NA [String]
+%__norm_21 = CollectDistributedArray(!s6, !6, !7) {
+(%__norm_6, %__norm_7) =>
+  %__norm_8 = GetTupleElement(%__norm_6) [0]
+  %__norm_9 = GetField(%__norm_8) [partitionBound]
+  %__norm_10 = ApplySpecial(%__norm_9) [-1, start, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_11 = Apply(%__norm_9) [-1, includesStart, 
+  (), Boolean]
+  %__norm_12 = ApplySpecial(%__norm_9) [-1, end, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_13 = Apply(%__norm_9) [-1, includesEnd, 
+  (), Boolean]
+  !8 = GetField(%__norm_8) [oldContexts]
+  !s7 = ToStream(!8) [True]
+  !s8 = StreamFlatMap(!s7) { (%__norm_14) =>
+    ReadPartition(%__norm_14) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  }
+  !s9 = StreamDropWhile(!s8) { (%__norm_15) =>
+    Apply(%__norm_15, %__norm_10, %__norm_11) [-1, pointLessThanPartitionIntervalLeftEndpoint, 
+    (), Boolean]
+  }
+  !s10 = StreamTakeWhile(!s9) { (%__norm_16) =>
+    Apply(%__norm_16, %__norm_12, %__norm_13) [-1, pointLessThanPartitionIntervalRightEndpoint, 
+    (), Boolean]
+  } 
+  !9 = GetTupleElement(%__norm_6) [1]
+  !s11 = ReadPartition(!9) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !s12 = StreamJoinRightDistinct(!s10, !s11) [
+  (idx), (idx), inner] { (%__norm_17, %__norm_18) =>
+    !10 = Coalesce {
+      GetField(%__norm_17) [idx]
+    } {
+      GetField(%__norm_18) [idx]
+    }
+    MakeStruct(idx: !10)
+  } 
+  !11 = I64 [0]
+  StreamFold(!s12, !11) {
+  (%__norm_19, %__norm_20) =>
+    !12 = Consume(%__norm_20)
+    ApplyBinaryPrimOp(%__norm_19, !12) [Add]
+  }
+}
+!s13 = ToStream(%__norm_21) [False] 
+!13 = I64 [0]
+!14 = Cast(!13) [Int64]
+!15 = StreamFold(!s13, !14) {
+(%__norm_22, %__norm_23) =>
+  ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+}
+MakeTuple(!15) [(0)]
+
+2026-10-23 03:12:22.119 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.119 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.119 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.119 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.120 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.120 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.126 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.127 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.127 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.141 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 77: 
+
+%__norm_1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!1 = Literal [Array[Struct{partitionBound:Interval[Tuple[Struct{idx:Int32},Int32]],parentPartitions:Array[Int32]}], <literal value>]
+!s = ToStream(!1) [False]
+!s4 = StreamMap(!s) { (%__norm_2) =>
+  !2 = GetField(%__norm_2) [partitionBound] 
+  !3 = GetField(%__norm_2) [parentPartitions]
+  !s2 = ToStream(!3) [False]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    ArrayRef(%__norm_1, %__norm_3) [-1]
+  }
+  !4 = ToArray(!s3)
+  MakeStruct(partitionBound: !2, oldContexts: !4)
+} 
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s5 = ToStream(!5) [False]
+!s6 = StreamZip(!s4, !s5) [-1, AssertSameLength] {
+(%__norm_4, %__norm_5) =>
+  MakeTuple(%__norm_4, %__norm_5) [(0 1)]
+} 
+!6 = Literal [Struct{}, <literal value>] 
+!7 = NA [String]
+!13 = CollectDistributedArray(!s6, !6, !7) {
+(%__norm_6, %__norm_7) =>
+  %__norm_8 = GetTupleElement(%__norm_6) [0]
+  %__norm_9 = GetField(%__norm_8) [partitionBound]
+  %__norm_10 = ApplySpecial(%__norm_9) [-1, start, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_11 = Apply(%__norm_9) [-1, includesStart, 
+  (), Boolean]
+  %__norm_12 = ApplySpecial(%__norm_9) [-1, end, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_13 = Apply(%__norm_9) [-1, includesEnd, 
+  (), Boolean]
+  !8 = GetField(%__norm_8) [oldContexts]
+  !s7 = ToStream(!8) [True]
+  !s8 = StreamFlatMap(!s7) { (%__norm_14) =>
+    ReadPartition(%__norm_14) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  }
+  !s9 = StreamDropWhile(!s8) { (%__norm_15) =>
+    Apply(%__norm_15, %__norm_10, %__norm_11) [-1, pointLessThanPartitionIntervalLeftEndpoint, 
+    (), Boolean]
+  }
+  !s10 = StreamTakeWhile(!s9) { (%__norm_16) =>
+    Apply(%__norm_16, %__norm_12, %__norm_13) [-1, pointLessThanPartitionIntervalRightEndpoint, 
+    (), Boolean]
+  } 
+  !9 = GetTupleElement(%__norm_6) [1]
+  !s11 = ReadPartition(!9) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !s12 = StreamJoinRightDistinct(!s10, !s11) [
+  (idx), (idx), inner] { (%__norm_17, %__norm_18) =>
+    !10 = Coalesce {
+      GetField(%__norm_17) [idx]
+    } {
+      GetField(%__norm_18) [idx]
+    }
+    MakeStruct(idx: !10)
+  } 
+  !11 = I64 [0]
+  StreamFold(!s12, !11) {
+  (%__norm_19, %__norm_20) =>
+    !12 = Consume(%__norm_20)
+    ApplyBinaryPrimOp(%__norm_19, !12) [Add]
+  }
+}
+!s13 = ToStream(!13) [False] 
+!14 = I64 [0]
+!15 = StreamFold(!s13, !14) {
+(%__norm_22, %__norm_23) =>
+  ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+}
+MakeTuple(!15) [(0)]
+
+2026-10-23 03:12:22.210 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 77: 
+
+%__norm_1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!1 = Literal [Array[Struct{partitionBound:Interval[Tuple[Struct{idx:Int32},Int32]],parentPartitions:Array[Int32]}], <literal value>]
+!s = ToStream(!1) [False]
+!s4 = StreamMap(!s) { (%__norm_2) =>
+  !2 = GetField(%__norm_2) [partitionBound] 
+  !3 = GetField(%__norm_2) [parentPartitions]
+  !s2 = ToStream(!3) [False]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    ArrayRef(%__norm_1, %__norm_3) [-1]
+  }
+  !4 = ToArray(!s3)
+  MakeStruct(partitionBound: !2, oldContexts: !4)
+} 
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s5 = ToStream(!5) [False]
+!s6 = StreamZip(!s4, !s5) [-1, AssertSameLength] {
+(%__norm_4, %__norm_5) =>
+  MakeTuple(%__norm_4, %__norm_5) [(0 1)]
+} 
+!6 = Literal [Struct{}, <literal value>] 
+!7 = NA [String]
+!13 = CollectDistributedArray(!s6, !6, !7) {
+(%__norm_6, %__norm_7) =>
+  %__norm_8 = GetTupleElement(%__norm_6) [0]
+  %__norm_9 = GetField(%__norm_8) [partitionBound]
+  %__norm_10 = ApplySpecial(%__norm_9) [-1, start, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_11 = Apply(%__norm_9) [-1, includesStart, 
+  (), Boolean]
+  %__norm_12 = ApplySpecial(%__norm_9) [-1, end, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_13 = Apply(%__norm_9) [-1, includesEnd, 
+  (), Boolean]
+  !8 = GetField(%__norm_8) [oldContexts]
+  !s7 = ToStream(!8) [True]
+  !s8 = StreamFlatMap(!s7) { (%__norm_14) =>
+    ReadPartition(%__norm_14) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  }
+  !s9 = StreamDropWhile(!s8) { (%__norm_15) =>
+    Apply(%__norm_15, %__norm_10, %__norm_11) [-1, pointLessThanPartitionIntervalLeftEndpoint, 
+    (), Boolean]
+  }
+  !s10 = StreamTakeWhile(!s9) { (%__norm_16) =>
+    Apply(%__norm_16, %__norm_12, %__norm_13) [-1, pointLessThanPartitionIntervalRightEndpoint, 
+    (), Boolean]
+  } 
+  !9 = GetTupleElement(%__norm_6) [1]
+  !s11 = ReadPartition(!9) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !s12 = StreamJoinRightDistinct(!s10, !s11) [
+  (idx), (idx), inner] { (%__norm_17, %__norm_18) =>
+    !10 = Coalesce {
+      GetField(%__norm_17) [idx]
+    } {
+      GetField(%__norm_18) [idx]
+    }
+    MakeStruct(idx: !10)
+  } 
+  !11 = I64 [0]
+  StreamFold(!s12, !11) {
+  (%__norm_19, %__norm_20) =>
+    !12 = Consume(%__norm_20)
+    ApplyBinaryPrimOp(%__norm_19, !12) [Add]
+  }
+}
+!s13 = ToStream(!13) [False] 
+!14 = I64 [0]
+!15 = StreamFold(!s13, !14) {
+(%__norm_22, %__norm_23) =>
+  ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+}
+MakeTuple(!15) [(0)]
+
+2026-10-23 03:12:22.211 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.212 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:22.212 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:22.226 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 77: 
+
+%__norm_1 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!1 = Literal [Array[Struct{partitionBound:Interval[Tuple[Struct{idx:Int32},Int32]],parentPartitions:Array[Int32]}], <literal value>]
+!s = ToStream(!1) [False]
+!s4 = StreamMap(!s) { (%__norm_2) =>
+  !2 = GetField(%__norm_2) [partitionBound] 
+  !3 = GetField(%__norm_2) [parentPartitions]
+  !s2 = ToStream(!3) [False]
+  !s3 = StreamMap(!s2) { (%__norm_3) =>
+    ArrayRef(%__norm_1, %__norm_3) [-1]
+  }
+  !4 = ToArray(!s3)
+  MakeStruct(partitionBound: !2, oldContexts: !4)
+} 
+!5 = Literal [Array[Struct{partitionIndex:Int64,partitionPath:String}], <literal value>]
+!s5 = ToStream(!5) [False]
+!s6 = StreamZip(!s4, !s5) [-1, AssertSameLength] {
+(%__norm_4, %__norm_5) =>
+  MakeTuple(%__norm_4, %__norm_5) [(0 1)]
+} 
+!6 = Literal [Struct{}, <literal value>] 
+!7 = NA [String]
+!13 = CollectDistributedArray(!s6, !6, !7) {
+(%__norm_6, %__norm_7) =>
+  %__norm_8 = GetTupleElement(%__norm_6) [0]
+  %__norm_9 = GetField(%__norm_8) [partitionBound]
+  %__norm_10 = ApplySpecial(%__norm_9) [-1, start, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_11 = Apply(%__norm_9) [-1, includesStart, 
+  (), Boolean]
+  %__norm_12 = ApplySpecial(%__norm_9) [-1, end, 
+  (), Tuple[Struct{idx:Int32},Int32]]
+  %__norm_13 = Apply(%__norm_9) [-1, includesEnd, 
+  (), Boolean]
+  !8 = GetField(%__norm_8) [oldContexts]
+  !s7 = ToStream(!8) [True]
+  !s8 = StreamFlatMap(!s7) { (%__norm_14) =>
+    ReadPartition(%__norm_14) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  }
+  !s9 = StreamDropWhile(!s8) { (%__norm_15) =>
+    Apply(%__norm_15, %__norm_10, %__norm_11) [-1, pointLessThanPartitionIntervalLeftEndpoint, 
+    (), Boolean]
+  }
+  !s10 = StreamTakeWhile(!s9) { (%__norm_16) =>
+    Apply(%__norm_16, %__norm_12, %__norm_13) [-1, pointLessThanPartitionIntervalRightEndpoint, 
+    (), Boolean]
+  } 
+  !9 = GetTupleElement(%__norm_6) [1]
+  !s11 = ReadPartition(!9) [Struct{idx:Int32}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{idx:+EVarint}\",\"_vType\":\"Struct{idx:Int32}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+  !s12 = StreamJoinRightDistinct(!s10, !s11) [
+  (idx), (idx), inner] { (%__norm_17, %__norm_18) =>
+    !10 = Coalesce {
+      GetField(%__norm_17) [idx]
+    } {
+      GetField(%__norm_18) [idx]
+    }
+    MakeStruct(idx: !10)
+  } 
+  !11 = I64 [0]
+  StreamFold(!s12, !11) {
+  (%__norm_19, %__norm_20) =>
+    !12 = Consume(%__norm_20)
+    ApplyBinaryPrimOp(%__norm_19, !12) [Add]
+  }
+}
+!s13 = ToStream(!13) [False] 
+!14 = I64 [0]
+!15 = StreamFold(!s13, !14) {
+(%__norm_22, %__norm_23) =>
+  ApplyBinaryPrimOp(%__norm_22, %__norm_23) [Add]
+}
+MakeTuple(!15) [(0)]
+
+2026-10-23 03:12:22.402 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 114: Executor task launch worker for task 20.0 in stage 0.0 (TID 20)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 112: Executor task launch worker for task 18.0 in stage 0.0 (TID 18)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 108: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 107: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 111: Executor task launch worker for task 17.0 in stage 0.0 (TID 17)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 106: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 119: Executor task launch worker for task 25.0 in stage 0.0 (TID 25)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 118: Executor task launch worker for task 24.0 in stage 0.0 (TID 24)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 116: Executor task launch worker for task 22.0 in stage 0.0 (TID 22)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 125: Executor task launch worker for task 31.0 in stage 0.0 (TID 31)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 124: Executor task launch worker for task 30.0 in stage 0.0 (TID 30)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 117: Executor task launch worker for task 23.0 in stage 0.0 (TID 23)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 115: Executor task launch worker for task 21.0 in stage 0.0 (TID 21)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 105: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 110: Executor task launch worker for task 16.0 in stage 0.0 (TID 16)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 120: Executor task launch worker for task 26.0 in stage 0.0 (TID 26)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:12:23.016 RegionPool: INFO: initialized for thread 121: Executor task launch worker for task 27.0 in stage 0.0 (TID 27)
+2026-10-23 03:12:23.017 RegionPool: INFO: initialized for thread 109: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-23 03:12:23.018 RegionPool: INFO: initialized for thread 113: Executor task launch worker for task 19.0 in stage 0.0 (TID 19)
+2026-10-23 03:12:23.018 RegionPool: INFO: initialized for thread 104: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-23 03:12:23.018 RegionPool: INFO: initialized for thread 122: Executor task launch worker for task 28.0 in stage 0.0 (TID 28)
+2026-10-23 03:12:23.018 RegionPool: INFO: initialized for thread 123: Executor task launch worker for task 29.0 in stage 0.0 (TID 29)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 110: Executor task launch worker for task 16.0 in stage 0.0 (TID 16)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 117: Executor task launch worker for task 23.0 in stage 0.0 (TID 23)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 116: Executor task launch worker for task 22.0 in stage 0.0 (TID 22)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 119: Executor task launch worker for task 25.0 in stage 0.0 (TID 25)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 120: Executor task launch worker for task 26.0 in stage 0.0 (TID 26)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 111: Executor task launch worker for task 17.0 in stage 0.0 (TID 17)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 123: Executor task launch worker for task 29.0 in stage 0.0 (TID 29)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 107: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-23 03:12:23.022 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 112: Executor task launch worker for task 18.0 in stage 0.0 (TID 18)
+2026-10-23 03:12:23.022 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 115: Executor task launch worker for task 21.0 in stage 0.0 (TID 21)
+2026-10-23 03:12:23.022 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 125: Executor task launch worker for task 31.0 in stage 0.0 (TID 31)
+2026-10-23 03:12:23.026 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 116: Executor task launch worker for task 22.0 in stage 0.0 (TID 22)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:12:23.027 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 120: Executor task launch worker for task 26.0 in stage 0.0 (TID 26)
+2026-10-23 03:12:23.027 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 117: Executor task launch worker for task 23.0 in stage 0.0 (TID 23)
+2026-10-23 03:12:23.027 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 119: Executor task launch worker for task 25.0 in stage 0.0 (TID 25)
+2026-10-23 03:12:23.028 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 104: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-23 03:12:23.028 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 110: Executor task launch worker for task 16.0 in stage 0.0 (TID 16)
+2026-10-23 03:12:23.028 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 111: Executor task launch worker for task 17.0 in stage 0.0 (TID 17)
+2026-10-23 03:12:23.023 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 121: Executor task launch worker for task 27.0 in stage 0.0 (TID 27)
+2026-10-23 03:12:23.030 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 125: Executor task launch worker for task 31.0 in stage 0.0 (TID 31)
+2026-10-23 03:12:23.030 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 112: Executor task launch worker for task 18.0 in stage 0.0 (TID 18)
+2026-10-23 03:12:23.030 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:12:23.030 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 122: Executor task launch worker for task 28.0 in stage 0.0 (TID 28)
+2026-10-23 03:12:23.030 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 123: Executor task launch worker for task 29.0 in stage 0.0 (TID 29)
+2026-10-23 03:12:23.030 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:12:23.031 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 114: Executor task launch worker for task 20.0 in stage 0.0 (TID 20)
+2026-10-23 03:12:23.031 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 104: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-23 03:12:23.032 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 121: Executor task launch worker for task 27.0 in stage 0.0 (TID 27)
+2026-10-23 03:12:23.020 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 118: Executor task launch worker for task 24.0 in stage 0.0 (TID 24)
+2026-10-23 03:12:23.032 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 122: Executor task launch worker for task 28.0 in stage 0.0 (TID 28)
+2026-10-23 03:12:23.032 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 115: Executor task launch worker for task 21.0 in stage 0.0 (TID 21)
+2026-10-23 03:12:23.033 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 114: Executor task launch worker for task 20.0 in stage 0.0 (TID 20)
+2026-10-23 03:12:23.033 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 118: Executor task launch worker for task 24.0 in stage 0.0 (TID 24)
+2026-10-23 03:12:23.037 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 113: Executor task launch worker for task 19.0 in stage 0.0 (TID 19)
+2026-10-23 03:12:23.037 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:12:23.038 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 113: Executor task launch worker for task 19.0 in stage 0.0 (TID 19)
+2026-10-23 03:12:23.040 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:12:23.040 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:12:23.043 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 108: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-23 03:12:23.044 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 108: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-23 03:12:23.044 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 106: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-23 03:12:23.044 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 109: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-23 03:12:23.044 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:12:23.045 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 109: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-23 03:12:23.045 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:12:23.045 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:12:23.047 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:12:23.047 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:12:23.048 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:12:23.048 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:12:23.049 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:12:23.049 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:12:23.021 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 124: Executor task launch worker for task 30.0 in stage 0.0 (TID 30)
+2026-10-23 03:12:23.052 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 124: Executor task launch worker for task 30.0 in stage 0.0 (TID 30)
+2026-10-23 03:12:23.055 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 107: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-23 03:12:23.056 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 106: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-23 03:12:23.058 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:12:23.063 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 105: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-23 03:12:23.065 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 105: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-23 03:12:23.097 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:12:23.310 SparkTaskContext: INFO: TaskReport: stage=0, partition=5, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.310 SparkTaskContext: INFO: TaskReport: stage=0, partition=11, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.310 SparkTaskContext: INFO: TaskReport: stage=0, partition=27, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.310 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 105: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-23 03:12:23.310 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 121: Executor task launch worker for task 27.0 in stage 0.0 (TID 27)
+2026-10-23 03:12:23.310 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 99: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-23 03:12:23.310 SparkTaskContext: INFO: TaskReport: stage=0, partition=10, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.310 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 104: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-23 03:12:23.364 SparkTaskContext: INFO: TaskReport: stage=0, partition=7, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.364 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 101: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-23 03:12:23.365 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.365 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 97: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-23 03:12:23.367 SparkTaskContext: INFO: TaskReport: stage=0, partition=30, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.367 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 124: Executor task launch worker for task 30.0 in stage 0.0 (TID 30)
+2026-10-23 03:12:23.369 SparkTaskContext: INFO: TaskReport: stage=0, partition=20, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.391 SparkTaskContext: INFO: TaskReport: stage=0, partition=8, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.411 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.411 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 95: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-23 03:12:23.412 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 102: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-23 03:12:23.380 SparkTaskContext: INFO: TaskReport: stage=0, partition=13, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.418 SparkTaskContext: INFO: TaskReport: stage=0, partition=6, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.419 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 100: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-23 03:12:23.419 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.418 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 114: Executor task launch worker for task 20.0 in stage 0.0 (TID 20)
+2026-10-23 03:12:23.420 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 94: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-23 03:12:23.421 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 107: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-23 03:12:23.423 SparkTaskContext: INFO: TaskReport: stage=0, partition=14, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.423 SparkTaskContext: INFO: TaskReport: stage=0, partition=19, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.423 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 108: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-23 03:12:23.423 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 113: Executor task launch worker for task 19.0 in stage 0.0 (TID 19)
+2026-10-23 03:12:23.432 SparkTaskContext: INFO: TaskReport: stage=0, partition=31, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.432 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 125: Executor task launch worker for task 31.0 in stage 0.0 (TID 31)
+2026-10-23 03:12:23.438 SparkTaskContext: INFO: TaskReport: stage=0, partition=12, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.438 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 106: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-23 03:12:23.438 SparkTaskContext: INFO: TaskReport: stage=0, partition=21, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.439 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 115: Executor task launch worker for task 21.0 in stage 0.0 (TID 21)
+2026-10-23 03:12:23.445 SparkTaskContext: INFO: TaskReport: stage=0, partition=22, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.445 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 116: Executor task launch worker for task 22.0 in stage 0.0 (TID 22)
+2026-10-23 03:12:23.445 RegionPool: INFO: initialized for thread 113: Executor task launch worker for task 32.0 in stage 0.0 (TID 32)
+2026-10-23 03:12:23.446 SparkTaskContext: INFO: TaskReport: stage=0, partition=23, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.446 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 117: Executor task launch worker for task 23.0 in stage 0.0 (TID 23)
+2026-10-23 03:12:23.450 SparkTaskContext: INFO: TaskReport: stage=0, partition=15, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.450 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 109: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-23 03:12:23.454 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 113: Executor task launch worker for task 32.0 in stage 0.0 (TID 32)
+2026-10-23 03:12:23.456 SparkTaskContext: INFO: TaskReport: stage=0, partition=24, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.454 SparkTaskContext: INFO: TaskReport: stage=0, partition=25, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.460 RegionPool: INFO: initialized for thread 102: Executor task launch worker for task 34.0 in stage 0.0 (TID 34)
+2026-10-23 03:12:23.460 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.460 RegionPool: INFO: initialized for thread 107: Executor task launch worker for task 35.0 in stage 0.0 (TID 35)
+2026-10-23 03:12:23.463 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 98: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-23 03:12:23.463 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 102: Executor task launch worker for task 34.0 in stage 0.0 (TID 34)
+2026-10-23 03:12:23.459 SparkTaskContext: INFO: TaskReport: stage=0, partition=26, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.464 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 107: Executor task launch worker for task 35.0 in stage 0.0 (TID 35)
+2026-10-23 03:12:23.465 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 120: Executor task launch worker for task 26.0 in stage 0.0 (TID 26)
+2026-10-23 03:12:23.465 RegionPool: INFO: initialized for thread 125: Executor task launch worker for task 33.0 in stage 0.0 (TID 33)
+2026-10-23 03:12:23.467 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 125: Executor task launch worker for task 33.0 in stage 0.0 (TID 33)
+2026-10-23 03:12:23.468 SparkTaskContext: INFO: TaskReport: stage=0, partition=28, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.468 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 122: Executor task launch worker for task 28.0 in stage 0.0 (TID 28)
+2026-10-23 03:12:23.468 RegionPool: INFO: initialized for thread 101: Executor task launch worker for task 37.0 in stage 0.0 (TID 37)
+2026-10-23 03:12:23.469 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 101: Executor task launch worker for task 37.0 in stage 0.0 (TID 37)
+2026-10-23 03:12:23.469 RegionPool: INFO: initialized for thread 115: Executor task launch worker for task 36.0 in stage 0.0 (TID 36)
+2026-10-23 03:12:23.469 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 113: Executor task launch worker for task 32.0 in stage 0.0 (TID 32)
+2026-10-23 03:12:23.458 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.470 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 96: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-23 03:12:23.470 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 125: Executor task launch worker for task 33.0 in stage 0.0 (TID 33)
+2026-10-23 03:12:23.471 RegionPool: INFO: initialized for thread 109: Executor task launch worker for task 38.0 in stage 0.0 (TID 38)
+2026-10-23 03:12:23.471 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 109: Executor task launch worker for task 38.0 in stage 0.0 (TID 38)
+2026-10-23 03:12:23.457 SparkTaskContext: INFO: TaskReport: stage=0, partition=9, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.472 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 115: Executor task launch worker for task 36.0 in stage 0.0 (TID 36)
+2026-10-23 03:12:23.472 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 103: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-23 03:12:23.474 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 115: Executor task launch worker for task 36.0 in stage 0.0 (TID 36)
+2026-10-23 03:12:23.476 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 119: Executor task launch worker for task 25.0 in stage 0.0 (TID 25)
+2026-10-23 03:12:23.463 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 118: Executor task launch worker for task 24.0 in stage 0.0 (TID 24)
+2026-10-23 03:12:23.478 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 102: Executor task launch worker for task 34.0 in stage 0.0 (TID 34)
+2026-10-23 03:12:23.482 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 107: Executor task launch worker for task 35.0 in stage 0.0 (TID 35)
+2026-10-23 03:12:23.483 SparkTaskContext: INFO: TaskReport: stage=0, partition=18, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.483 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 112: Executor task launch worker for task 18.0 in stage 0.0 (TID 18)
+2026-10-23 03:12:23.485 RegionPool: INFO: initialized for thread 116: Executor task launch worker for task 40.0 in stage 0.0 (TID 40)
+2026-10-23 03:12:23.485 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 116: Executor task launch worker for task 40.0 in stage 0.0 (TID 40)
+2026-10-23 03:12:23.485 SparkTaskContext: INFO: TaskReport: stage=0, partition=16, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.485 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 110: Executor task launch worker for task 16.0 in stage 0.0 (TID 16)
+2026-10-23 03:12:23.485 SparkTaskContext: INFO: TaskReport: stage=0, partition=29, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.485 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 123: Executor task launch worker for task 29.0 in stage 0.0 (TID 29)
+2026-10-23 03:12:23.487 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 109: Executor task launch worker for task 38.0 in stage 0.0 (TID 38)
+2026-10-23 03:12:23.488 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 116: Executor task launch worker for task 40.0 in stage 0.0 (TID 40)
+2026-10-23 03:12:23.496 RegionPool: INFO: initialized for thread 117: Executor task launch worker for task 39.0 in stage 0.0 (TID 39)
+2026-10-23 03:12:23.496 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 117: Executor task launch worker for task 39.0 in stage 0.0 (TID 39)
+2026-10-23 03:12:23.496 RegionPool: INFO: initialized for thread 110: Executor task launch worker for task 41.0 in stage 0.0 (TID 41)
+2026-10-23 03:12:23.496 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 110: Executor task launch worker for task 41.0 in stage 0.0 (TID 41)
+2026-10-23 03:12:23.496 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 117: Executor task launch worker for task 39.0 in stage 0.0 (TID 39)
+2026-10-23 03:12:23.497 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 110: Executor task launch worker for task 41.0 in stage 0.0 (TID 41)
+2026-10-23 03:12:23.501 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 42.0 in stage 0.0 (TID 42)
+2026-10-23 03:12:23.501 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 98: Executor task launch worker for task 42.0 in stage 0.0 (TID 42)
+2026-10-23 03:12:23.502 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 42.0 in stage 0.0 (TID 42)
+2026-10-23 03:12:23.502 RegionPool: INFO: initialized for thread 119: Executor task launch worker for task 43.0 in stage 0.0 (TID 43)
+2026-10-23 03:12:23.502 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 119: Executor task launch worker for task 43.0 in stage 0.0 (TID 43)
+2026-10-23 03:12:23.503 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 119: Executor task launch worker for task 43.0 in stage 0.0 (TID 43)
+2026-10-23 03:12:23.506 SparkTaskContext: INFO: TaskReport: stage=0, partition=17, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.506 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 111: Executor task launch worker for task 17.0 in stage 0.0 (TID 17)
+2026-10-23 03:12:23.508 RegionPool: INFO: initialized for thread 106: Executor task launch worker for task 44.0 in stage 0.0 (TID 44)
+2026-10-23 03:12:23.508 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 106: Executor task launch worker for task 44.0 in stage 0.0 (TID 44)
+2026-10-23 03:12:23.509 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 106: Executor task launch worker for task 44.0 in stage 0.0 (TID 44)
+2026-10-23 03:12:23.511 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 101: Executor task launch worker for task 37.0 in stage 0.0 (TID 37)
+2026-10-23 03:12:23.513 RegionPool: INFO: initialized for thread 120: Executor task launch worker for task 47.0 in stage 0.0 (TID 47)
+2026-10-23 03:12:23.513 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 120: Executor task launch worker for task 47.0 in stage 0.0 (TID 47)
+2026-10-23 03:12:23.514 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 120: Executor task launch worker for task 47.0 in stage 0.0 (TID 47)
+2026-10-23 03:12:23.515 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 48.0 in stage 0.0 (TID 48)
+2026-10-23 03:12:23.516 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 48.0 in stage 0.0 (TID 48)
+2026-10-23 03:12:23.516 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 48.0 in stage 0.0 (TID 48)
+2026-10-23 03:12:23.519 RegionPool: INFO: initialized for thread 103: Executor task launch worker for task 45.0 in stage 0.0 (TID 45)
+2026-10-23 03:12:23.520 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 103: Executor task launch worker for task 45.0 in stage 0.0 (TID 45)
+2026-10-23 03:12:23.522 RegionPool: INFO: initialized for thread 123: Executor task launch worker for task 46.0 in stage 0.0 (TID 46)
+2026-10-23 03:12:23.522 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 123: Executor task launch worker for task 46.0 in stage 0.0 (TID 46)
+2026-10-23 03:12:23.523 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 123: Executor task launch worker for task 46.0 in stage 0.0 (TID 46)
+2026-10-23 03:12:23.529 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 103: Executor task launch worker for task 45.0 in stage 0.0 (TID 45)
+2026-10-23 03:12:23.537 RegionPool: INFO: initialized for thread 112: Executor task launch worker for task 51.0 in stage 0.0 (TID 51)
+2026-10-23 03:12:23.537 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 112: Executor task launch worker for task 51.0 in stage 0.0 (TID 51)
+2026-10-23 03:12:23.537 RegionPool: INFO: initialized for thread 104: Executor task launch worker for task 53.0 in stage 0.0 (TID 53)
+2026-10-23 03:12:23.537 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 104: Executor task launch worker for task 53.0 in stage 0.0 (TID 53)
+2026-10-23 03:12:23.538 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 112: Executor task launch worker for task 51.0 in stage 0.0 (TID 51)
+2026-10-23 03:12:23.538 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 55.0 in stage 0.0 (TID 55)
+2026-10-23 03:12:23.538 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 104: Executor task launch worker for task 53.0 in stage 0.0 (TID 53)
+2026-10-23 03:12:23.538 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 55.0 in stage 0.0 (TID 55)
+2026-10-23 03:12:23.538 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 55.0 in stage 0.0 (TID 55)
+2026-10-23 03:12:23.539 RegionPool: INFO: initialized for thread 118: Executor task launch worker for task 49.0 in stage 0.0 (TID 49)
+2026-10-23 03:12:23.539 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 118: Executor task launch worker for task 49.0 in stage 0.0 (TID 49)
+2026-10-23 03:12:23.540 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 118: Executor task launch worker for task 49.0 in stage 0.0 (TID 49)
+2026-10-23 03:12:23.544 RegionPool: INFO: initialized for thread 111: Executor task launch worker for task 50.0 in stage 0.0 (TID 50)
+2026-10-23 03:12:23.545 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 111: Executor task launch worker for task 50.0 in stage 0.0 (TID 50)
+2026-10-23 03:12:23.546 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 111: Executor task launch worker for task 50.0 in stage 0.0 (TID 50)
+2026-10-23 03:12:23.556 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 61.0 in stage 0.0 (TID 61)
+2026-10-23 03:12:23.557 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 99: Executor task launch worker for task 61.0 in stage 0.0 (TID 61)
+2026-10-23 03:12:23.557 RegionPool: INFO: initialized for thread 121: Executor task launch worker for task 63.0 in stage 0.0 (TID 63)
+2026-10-23 03:12:23.557 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 121: Executor task launch worker for task 63.0 in stage 0.0 (TID 63)
+2026-10-23 03:12:23.558 SparkTaskContext: INFO: TaskReport: stage=0, partition=53, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.558 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 104: Executor task launch worker for task 53.0 in stage 0.0 (TID 53)
+2026-10-23 03:12:23.559 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 99: Executor task launch worker for task 61.0 in stage 0.0 (TID 61)
+2026-10-23 03:12:23.556 RegionPool: INFO: initialized for thread 105: Executor task launch worker for task 60.0 in stage 0.0 (TID 60)
+2026-10-23 03:12:23.559 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 105: Executor task launch worker for task 60.0 in stage 0.0 (TID 60)
+2026-10-23 03:12:23.559 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 121: Executor task launch worker for task 63.0 in stage 0.0 (TID 63)
+2026-10-23 03:12:23.560 SparkTaskContext: INFO: TaskReport: stage=0, partition=35, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.560 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 107: Executor task launch worker for task 35.0 in stage 0.0 (TID 35)
+2026-10-23 03:12:23.561 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 105: Executor task launch worker for task 60.0 in stage 0.0 (TID 60)
+2026-10-23 03:12:23.562 SparkTaskContext: INFO: TaskReport: stage=0, partition=36, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.562 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 115: Executor task launch worker for task 36.0 in stage 0.0 (TID 36)
+2026-10-23 03:12:23.562 SparkTaskContext: INFO: TaskReport: stage=0, partition=37, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.562 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 101: Executor task launch worker for task 37.0 in stage 0.0 (TID 37)
+2026-10-23 03:12:23.564 RegionPool: INFO: initialized for thread 107: Executor task launch worker for task 65.0 in stage 0.0 (TID 65)
+2026-10-23 03:12:23.564 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 107: Executor task launch worker for task 65.0 in stage 0.0 (TID 65)
+2026-10-23 03:12:23.564 SparkTaskContext: INFO: TaskReport: stage=0, partition=55, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.564 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 95: Executor task launch worker for task 55.0 in stage 0.0 (TID 55)
+2026-10-23 03:12:23.564 RegionPool: INFO: initialized for thread 114: Executor task launch worker for task 57.0 in stage 0.0 (TID 57)
+2026-10-23 03:12:23.565 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 114: Executor task launch worker for task 57.0 in stage 0.0 (TID 57)
+2026-10-23 03:12:23.565 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 114: Executor task launch worker for task 57.0 in stage 0.0 (TID 57)
+2026-10-23 03:12:23.565 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 107: Executor task launch worker for task 65.0 in stage 0.0 (TID 65)
+2026-10-23 03:12:23.568 RegionPool: INFO: initialized for thread 124: Executor task launch worker for task 56.0 in stage 0.0 (TID 56)
+2026-10-23 03:12:23.568 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 124: Executor task launch worker for task 56.0 in stage 0.0 (TID 56)
+2026-10-23 03:12:23.569 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 124: Executor task launch worker for task 56.0 in stage 0.0 (TID 56)
+2026-10-23 03:12:23.569 RegionPool: INFO: initialized for thread 104: Executor task launch worker for task 64.0 in stage 0.0 (TID 64)
+2026-10-23 03:12:23.569 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 68.0 in stage 0.0 (TID 68)
+2026-10-23 03:12:23.569 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 104: Executor task launch worker for task 64.0 in stage 0.0 (TID 64)
+2026-10-23 03:12:23.569 RegionPool: INFO: initialized for thread 100: Executor task launch worker for task 59.0 in stage 0.0 (TID 59)
+2026-10-23 03:12:23.570 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 68.0 in stage 0.0 (TID 68)
+2026-10-23 03:12:23.570 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 100: Executor task launch worker for task 59.0 in stage 0.0 (TID 59)
+2026-10-23 03:12:23.570 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 104: Executor task launch worker for task 64.0 in stage 0.0 (TID 64)
+2026-10-23 03:12:23.571 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 100: Executor task launch worker for task 59.0 in stage 0.0 (TID 59)
+2026-10-23 03:12:23.571 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 68.0 in stage 0.0 (TID 68)
+2026-10-23 03:12:23.573 SparkTaskContext: INFO: TaskReport: stage=0, partition=61, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.573 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 99: Executor task launch worker for task 61.0 in stage 0.0 (TID 61)
+2026-10-23 03:12:23.576 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 69.0 in stage 0.0 (TID 69)
+2026-10-23 03:12:23.576 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 99: Executor task launch worker for task 69.0 in stage 0.0 (TID 69)
+2026-10-23 03:12:23.576 RegionPool: INFO: initialized for thread 122: Executor task launch worker for task 52.0 in stage 0.0 (TID 52)
+2026-10-23 03:12:23.576 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 122: Executor task launch worker for task 52.0 in stage 0.0 (TID 52)
+2026-10-23 03:12:23.577 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 122: Executor task launch worker for task 52.0 in stage 0.0 (TID 52)
+2026-10-23 03:12:23.580 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 99: Executor task launch worker for task 69.0 in stage 0.0 (TID 69)
+2026-10-23 03:12:23.581 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 62.0 in stage 0.0 (TID 62)
+2026-10-23 03:12:23.582 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 97: Executor task launch worker for task 62.0 in stage 0.0 (TID 62)
+2026-10-23 03:12:23.582 SparkTaskContext: INFO: TaskReport: stage=0, partition=60, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.582 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 105: Executor task launch worker for task 60.0 in stage 0.0 (TID 60)
+2026-10-23 03:12:23.582 RegionPool: INFO: initialized for thread 108: Executor task launch worker for task 54.0 in stage 0.0 (TID 54)
+2026-10-23 03:12:23.583 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 108: Executor task launch worker for task 54.0 in stage 0.0 (TID 54)
+2026-10-23 03:12:23.583 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 62.0 in stage 0.0 (TID 62)
+2026-10-23 03:12:23.583 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 108: Executor task launch worker for task 54.0 in stage 0.0 (TID 54)
+2026-10-23 03:12:23.583 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 58.0 in stage 0.0 (TID 58)
+2026-10-23 03:12:23.584 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 94: Executor task launch worker for task 58.0 in stage 0.0 (TID 58)
+2026-10-23 03:12:23.584 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 58.0 in stage 0.0 (TID 58)
+2026-10-23 03:12:23.585 RegionPool: INFO: initialized for thread 105: Executor task launch worker for task 70.0 in stage 0.0 (TID 70)
+2026-10-23 03:12:23.585 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 105: Executor task launch worker for task 70.0 in stage 0.0 (TID 70)
+2026-10-23 03:12:23.586 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 105: Executor task launch worker for task 70.0 in stage 0.0 (TID 70)
+2026-10-23 03:12:23.589 SparkTaskContext: INFO: TaskReport: stage=0, partition=63, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.589 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 121: Executor task launch worker for task 63.0 in stage 0.0 (TID 63)
+2026-10-23 03:12:23.623 SparkTaskContext: INFO: TaskReport: stage=0, partition=43, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.623 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 119: Executor task launch worker for task 43.0 in stage 0.0 (TID 43)
+2026-10-23 03:12:23.623 SparkTaskContext: INFO: TaskReport: stage=0, partition=69, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.623 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 99: Executor task launch worker for task 69.0 in stage 0.0 (TID 69)
+2026-10-23 03:12:23.623 RegionPool: INFO: initialized for thread 101: Executor task launch worker for task 66.0 in stage 0.0 (TID 66)
+2026-10-23 03:12:23.623 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 101: Executor task launch worker for task 66.0 in stage 0.0 (TID 66)
+2026-10-23 03:12:23.624 SparkTaskContext: INFO: TaskReport: stage=0, partition=50, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.624 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 111: Executor task launch worker for task 50.0 in stage 0.0 (TID 50)
+2026-10-23 03:12:23.625 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 101: Executor task launch worker for task 66.0 in stage 0.0 (TID 66)
+2026-10-23 03:12:23.625 SparkTaskContext: INFO: TaskReport: stage=0, partition=45, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.626 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 103: Executor task launch worker for task 45.0 in stage 0.0 (TID 45)
+2026-10-23 03:12:23.622 SparkTaskContext: INFO: TaskReport: stage=0, partition=52, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.626 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 122: Executor task launch worker for task 52.0 in stage 0.0 (TID 52)
+2026-10-23 03:12:23.621 SparkTaskContext: INFO: TaskReport: stage=0, partition=58, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.626 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 94: Executor task launch worker for task 58.0 in stage 0.0 (TID 58)
+2026-10-23 03:12:23.626 SparkTaskContext: INFO: TaskReport: stage=0, partition=62, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.627 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 97: Executor task launch worker for task 62.0 in stage 0.0 (TID 62)
+2026-10-23 03:12:23.619 SparkTaskContext: INFO: TaskReport: stage=0, partition=59, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.627 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 100: Executor task launch worker for task 59.0 in stage 0.0 (TID 59)
+2026-10-23 03:12:23.619 SparkTaskContext: INFO: TaskReport: stage=0, partition=34, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.609 SparkTaskContext: INFO: TaskReport: stage=0, partition=44, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.627 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 106: Executor task launch worker for task 44.0 in stage 0.0 (TID 44)
+2026-10-23 03:12:23.627 SparkTaskContext: INFO: TaskReport: stage=0, partition=57, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.627 SparkTaskContext: INFO: TaskReport: stage=0, partition=40, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.627 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 114: Executor task launch worker for task 57.0 in stage 0.0 (TID 57)
+2026-10-23 03:12:23.628 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 116: Executor task launch worker for task 40.0 in stage 0.0 (TID 40)
+2026-10-23 03:12:23.628 SparkTaskContext: INFO: TaskReport: stage=0, partition=54, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.628 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 108: Executor task launch worker for task 54.0 in stage 0.0 (TID 54)
+2026-10-23 03:12:23.605 SparkTaskContext: INFO: TaskReport: stage=0, partition=51, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.628 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 112: Executor task launch worker for task 51.0 in stage 0.0 (TID 51)
+2026-10-23 03:12:23.630 SparkTaskContext: INFO: TaskReport: stage=0, partition=64, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.630 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 104: Executor task launch worker for task 64.0 in stage 0.0 (TID 64)
+2026-10-23 03:12:23.631 SparkTaskContext: INFO: TaskReport: stage=0, partition=42, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.631 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 98: Executor task launch worker for task 42.0 in stage 0.0 (TID 42)
+2026-10-23 03:12:23.633 SparkTaskContext: INFO: TaskReport: stage=0, partition=41, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.633 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 110: Executor task launch worker for task 41.0 in stage 0.0 (TID 41)
+2026-10-23 03:12:23.634 SparkTaskContext: INFO: TaskReport: stage=0, partition=33, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.599 SparkTaskContext: INFO: TaskReport: stage=0, partition=70, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.634 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 125: Executor task launch worker for task 33.0 in stage 0.0 (TID 33)
+2026-10-23 03:12:23.634 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 105: Executor task launch worker for task 70.0 in stage 0.0 (TID 70)
+2026-10-23 03:12:23.634 SparkTaskContext: INFO: TaskReport: stage=0, partition=32, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.634 SparkTaskContext: INFO: TaskReport: stage=0, partition=56, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.634 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 124: Executor task launch worker for task 56.0 in stage 0.0 (TID 56)
+2026-10-23 03:12:23.634 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 113: Executor task launch worker for task 32.0 in stage 0.0 (TID 32)
+2026-10-23 03:12:23.638 SparkTaskContext: INFO: TaskReport: stage=0, partition=68, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.638 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 95: Executor task launch worker for task 68.0 in stage 0.0 (TID 68)
+2026-10-23 03:12:23.639 RegionPool: INFO: initialized for thread 105: Executor task launch worker for task 72.0 in stage 0.0 (TID 72)
+2026-10-23 03:12:23.639 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 105: Executor task launch worker for task 72.0 in stage 0.0 (TID 72)
+2026-10-23 03:12:23.639 SparkTaskContext: INFO: TaskReport: stage=0, partition=38, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.640 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 109: Executor task launch worker for task 38.0 in stage 0.0 (TID 38)
+2026-10-23 03:12:23.639 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 105: Executor task launch worker for task 72.0 in stage 0.0 (TID 72)
+2026-10-23 03:12:23.640 RegionPool: INFO: initialized for thread 115: Executor task launch worker for task 67.0 in stage 0.0 (TID 67)
+2026-10-23 03:12:23.640 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 115: Executor task launch worker for task 67.0 in stage 0.0 (TID 67)
+2026-10-23 03:12:23.641 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 115: Executor task launch worker for task 67.0 in stage 0.0 (TID 67)
+2026-10-23 03:12:23.641 RegionPool: INFO: initialized for thread 124: Executor task launch worker for task 73.0 in stage 0.0 (TID 73)
+2026-10-23 03:12:23.643 SparkTaskContext: INFO: TaskReport: stage=0, partition=46, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.643 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 123: Executor task launch worker for task 46.0 in stage 0.0 (TID 46)
+2026-10-23 03:12:23.643 RegionPool: INFO: initialized for thread 94: Executor task launch worker for task 78.0 in stage 0.0 (TID 78)
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 94: Executor task launch worker for task 78.0 in stage 0.0 (TID 78)
+2026-10-23 03:12:23.644 RegionPool: INFO: initialized for thread 108: Executor task launch worker for task 77.0 in stage 0.0 (TID 77)
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 108: Executor task launch worker for task 77.0 in stage 0.0 (TID 77)
+2026-10-23 03:12:23.629 SparkTaskContext: INFO: TaskReport: stage=0, partition=48, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 94: Executor task launch worker for task 78.0 in stage 0.0 (TID 78)
+2026-10-23 03:12:23.644 SparkTaskContext: INFO: TaskReport: stage=0, partition=47, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 120: Executor task launch worker for task 47.0 in stage 0.0 (TID 47)
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 96: Executor task launch worker for task 48.0 in stage 0.0 (TID 48)
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 108: Executor task launch worker for task 77.0 in stage 0.0 (TID 77)
+2026-10-23 03:12:23.644 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 102: Executor task launch worker for task 34.0 in stage 0.0 (TID 34)
+2026-10-23 03:12:23.646 RegionPool: INFO: initialized for thread 111: Executor task launch worker for task 79.0 in stage 0.0 (TID 79)
+2026-10-23 03:12:23.646 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 111: Executor task launch worker for task 79.0 in stage 0.0 (TID 79)
+2026-10-23 03:12:23.647 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 111: Executor task launch worker for task 79.0 in stage 0.0 (TID 79)
+2026-10-23 03:12:23.653 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 88.0 in stage 0.0 (TID 88)
+2026-10-23 03:12:23.653 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 97: Executor task launch worker for task 88.0 in stage 0.0 (TID 88)
+2026-10-23 03:12:23.653 SparkTaskContext: INFO: TaskReport: stage=0, partition=49, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.653 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 118: Executor task launch worker for task 49.0 in stage 0.0 (TID 49)
+2026-10-23 03:12:23.654 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 97: Executor task launch worker for task 88.0 in stage 0.0 (TID 88)
+2026-10-23 03:12:23.655 RegionPool: INFO: initialized for thread 116: Executor task launch worker for task 92.0 in stage 0.0 (TID 92)
+2026-10-23 03:12:23.655 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 116: Executor task launch worker for task 92.0 in stage 0.0 (TID 92)
+2026-10-23 03:12:23.655 RegionPool: INFO: initialized for thread 104: Executor task launch worker for task 94.0 in stage 0.0 (TID 94)
+2026-10-23 03:12:23.655 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 104: Executor task launch worker for task 94.0 in stage 0.0 (TID 94)
+2026-10-23 03:12:23.655 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 124: Executor task launch worker for task 73.0 in stage 0.0 (TID 73)
+2026-10-23 03:12:23.656 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 116: Executor task launch worker for task 92.0 in stage 0.0 (TID 92)
+2026-10-23 03:12:23.656 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 104: Executor task launch worker for task 94.0 in stage 0.0 (TID 94)
+2026-10-23 03:12:23.656 RegionPool: INFO: initialized for thread 114: Executor task launch worker for task 91.0 in stage 0.0 (TID 91)
+2026-10-23 03:12:23.656 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 114: Executor task launch worker for task 91.0 in stage 0.0 (TID 91)
+2026-10-23 03:12:23.657 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 96.0 in stage 0.0 (TID 96)
+2026-10-23 03:12:23.657 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 98: Executor task launch worker for task 96.0 in stage 0.0 (TID 96)
+2026-10-23 03:12:23.657 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 114: Executor task launch worker for task 91.0 in stage 0.0 (TID 91)
+2026-10-23 03:12:23.657 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 98: Executor task launch worker for task 96.0 in stage 0.0 (TID 96)
+2026-10-23 03:12:23.657 RegionPool: INFO: initialized for thread 122: Executor task launch worker for task 84.0 in stage 0.0 (TID 84)
+2026-10-23 03:12:23.657 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 122: Executor task launch worker for task 84.0 in stage 0.0 (TID 84)
+2026-10-23 03:12:23.658 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 85.0 in stage 0.0 (TID 85)
+2026-10-23 03:12:23.658 RegionPool: INFO: initialized for thread 100: Executor task launch worker for task 89.0 in stage 0.0 (TID 89)
+2026-10-23 03:12:23.658 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 122: Executor task launch worker for task 84.0 in stage 0.0 (TID 84)
+2026-10-23 03:12:23.658 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 100: Executor task launch worker for task 89.0 in stage 0.0 (TID 89)
+2026-10-23 03:12:23.659 RegionPool: INFO: initialized for thread 102: Executor task launch worker for task 80.0 in stage 0.0 (TID 80)
+2026-10-23 03:12:23.659 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 102: Executor task launch worker for task 80.0 in stage 0.0 (TID 80)
+2026-10-23 03:12:23.659 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 102: Executor task launch worker for task 80.0 in stage 0.0 (TID 80)
+2026-10-23 03:12:23.661 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 81.0 in stage 0.0 (TID 81)
+2026-10-23 03:12:23.661 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 96: Executor task launch worker for task 81.0 in stage 0.0 (TID 81)
+2026-10-23 03:12:23.662 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 96: Executor task launch worker for task 81.0 in stage 0.0 (TID 81)
+2026-10-23 03:12:23.665 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 100: Executor task launch worker for task 89.0 in stage 0.0 (TID 89)
+2026-10-23 03:12:23.666 RegionPool: INFO: initialized for thread 110: Executor task launch worker for task 76.0 in stage 0.0 (TID 76)
+2026-10-23 03:12:23.666 RegionPool: INFO: initialized for thread 123: Executor task launch worker for task 87.0 in stage 0.0 (TID 87)
+2026-10-23 03:12:23.666 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 110: Executor task launch worker for task 76.0 in stage 0.0 (TID 76)
+2026-10-23 03:12:23.666 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 123: Executor task launch worker for task 87.0 in stage 0.0 (TID 87)
+2026-10-23 03:12:23.667 SparkTaskContext: INFO: TaskReport: stage=0, partition=72, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.667 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 124: Executor task launch worker for task 73.0 in stage 0.0 (TID 73)
+2026-10-23 03:12:23.667 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 110: Executor task launch worker for task 76.0 in stage 0.0 (TID 76)
+2026-10-23 03:12:23.668 RegionPool: INFO: initialized for thread 120: Executor task launch worker for task 82.0 in stage 0.0 (TID 82)
+2026-10-23 03:12:23.668 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 120: Executor task launch worker for task 82.0 in stage 0.0 (TID 82)
+2026-10-23 03:12:23.668 SparkTaskContext: INFO: TaskReport: stage=0, partition=91, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.668 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 114: Executor task launch worker for task 91.0 in stage 0.0 (TID 91)
+2026-10-23 03:12:23.669 RegionPool: INFO: initialized for thread 95: Executor task launch worker for task 75.0 in stage 0.0 (TID 75)
+2026-10-23 03:12:23.669 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 95: Executor task launch worker for task 75.0 in stage 0.0 (TID 75)
+2026-10-23 03:12:23.669 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 120: Executor task launch worker for task 82.0 in stage 0.0 (TID 82)
+2026-10-23 03:12:23.670 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 95: Executor task launch worker for task 75.0 in stage 0.0 (TID 75)
+2026-10-23 03:12:23.670 RegionPool: INFO: initialized for thread 109: Executor task launch worker for task 74.0 in stage 0.0 (TID 74)
+2026-10-23 03:12:23.671 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 109: Executor task launch worker for task 74.0 in stage 0.0 (TID 74)
+2026-10-23 03:12:23.672 RegionPool: INFO: initialized for thread 113: Executor task launch worker for task 97.0 in stage 0.0 (TID 97)
+2026-10-23 03:12:23.672 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 113: Executor task launch worker for task 97.0 in stage 0.0 (TID 97)
+2026-10-23 03:12:23.673 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 113: Executor task launch worker for task 97.0 in stage 0.0 (TID 97)
+2026-10-23 03:12:23.673 RegionPool: INFO: initialized for thread 112: Executor task launch worker for task 93.0 in stage 0.0 (TID 93)
+2026-10-23 03:12:23.673 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 112: Executor task launch worker for task 93.0 in stage 0.0 (TID 93)
+2026-10-23 03:12:23.674 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 112: Executor task launch worker for task 93.0 in stage 0.0 (TID 93)
+2026-10-23 03:12:23.675 RegionPool: INFO: initialized for thread 106: Executor task launch worker for task 90.0 in stage 0.0 (TID 90)
+2026-10-23 03:12:23.676 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 106: Executor task launch worker for task 90.0 in stage 0.0 (TID 90)
+2026-10-23 03:12:23.677 RegionPool: INFO: initialized for thread 125: Executor task launch worker for task 86.0 in stage 0.0 (TID 86)
+2026-10-23 03:12:23.677 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 125: Executor task launch worker for task 86.0 in stage 0.0 (TID 86)
+2026-10-23 03:12:23.677 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 106: Executor task launch worker for task 90.0 in stage 0.0 (TID 90)
+2026-10-23 03:12:23.658 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 99: Executor task launch worker for task 85.0 in stage 0.0 (TID 85)
+2026-10-23 03:12:23.678 RegionPool: INFO: initialized for thread 103: Executor task launch worker for task 83.0 in stage 0.0 (TID 83)
+2026-10-23 03:12:23.678 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 103: Executor task launch worker for task 83.0 in stage 0.0 (TID 83)
+2026-10-23 03:12:23.678 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 99: Executor task launch worker for task 85.0 in stage 0.0 (TID 85)
+2026-10-23 03:12:23.678 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 103: Executor task launch worker for task 83.0 in stage 0.0 (TID 83)
+2026-10-23 03:12:23.680 RegionPool: INFO: initialized for thread 121: Executor task launch worker for task 71.0 in stage 0.0 (TID 71)
+2026-10-23 03:12:23.680 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 121: Executor task launch worker for task 71.0 in stage 0.0 (TID 71)
+2026-10-23 03:12:23.681 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 121: Executor task launch worker for task 71.0 in stage 0.0 (TID 71)
+2026-10-23 03:12:23.682 SparkTaskContext: INFO: TaskReport: stage=0, partition=39, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.682 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 117: Executor task launch worker for task 39.0 in stage 0.0 (TID 39)
+2026-10-23 03:12:23.683 SparkTaskContext: INFO: TaskReport: stage=0, partition=65, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.683 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 107: Executor task launch worker for task 65.0 in stage 0.0 (TID 65)
+2026-10-23 03:12:23.684 SparkTaskContext: INFO: TaskReport: stage=0, partition=73, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.684 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 124: Executor task launch worker for task 73.0 in stage 0.0 (TID 73)
+2026-10-23 03:12:23.677 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 125: Executor task launch worker for task 86.0 in stage 0.0 (TID 86)
+2026-10-23 03:12:23.667 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 105: Executor task launch worker for task 72.0 in stage 0.0 (TID 72)
+2026-10-23 03:12:23.688 SparkTaskContext: INFO: TaskReport: stage=0, partition=80, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.688 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 102: Executor task launch worker for task 80.0 in stage 0.0 (TID 80)
+2026-10-23 03:12:23.688 SparkTaskContext: INFO: TaskReport: stage=0, partition=81, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.688 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 96: Executor task launch worker for task 81.0 in stage 0.0 (TID 81)
+2026-10-23 03:12:23.689 SparkTaskContext: INFO: TaskReport: stage=0, partition=92, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.689 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 116: Executor task launch worker for task 92.0 in stage 0.0 (TID 92)
+2026-10-23 03:12:23.677 SparkTaskContext: INFO: TaskReport: stage=0, partition=94, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.690 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 104: Executor task launch worker for task 94.0 in stage 0.0 (TID 94)
+2026-10-23 03:12:23.693 SparkTaskContext: INFO: TaskReport: stage=0, partition=88, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.693 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 97: Executor task launch worker for task 88.0 in stage 0.0 (TID 88)
+2026-10-23 03:12:23.696 SparkTaskContext: INFO: TaskReport: stage=0, partition=83, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.696 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 103: Executor task launch worker for task 83.0 in stage 0.0 (TID 83)
+2026-10-23 03:12:23.698 SparkTaskContext: INFO: TaskReport: stage=0, partition=71, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.698 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 121: Executor task launch worker for task 71.0 in stage 0.0 (TID 71)
+2026-10-23 03:12:23.698 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 123: Executor task launch worker for task 87.0 in stage 0.0 (TID 87)
+2026-10-23 03:12:23.700 SparkTaskContext: INFO: TaskReport: stage=0, partition=93, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.704 SparkTaskContext: INFO: TaskReport: stage=0, partition=97, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.704 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 113: Executor task launch worker for task 97.0 in stage 0.0 (TID 97)
+2026-10-23 03:12:23.706 RegionPool: INFO: initialized for thread 117: Executor task launch worker for task 99.0 in stage 0.0 (TID 99)
+2026-10-23 03:12:23.707 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 117: Executor task launch worker for task 99.0 in stage 0.0 (TID 99)
+2026-10-23 03:12:23.707 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 109: Executor task launch worker for task 74.0 in stage 0.0 (TID 74)
+2026-10-23 03:12:23.707 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 117: Executor task launch worker for task 99.0 in stage 0.0 (TID 99)
+2026-10-23 03:12:23.708 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 112: Executor task launch worker for task 93.0 in stage 0.0 (TID 93)
+2026-10-23 03:12:23.709 SparkTaskContext: INFO: TaskReport: stage=0, partition=77, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.709 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 108: Executor task launch worker for task 77.0 in stage 0.0 (TID 77)
+2026-10-23 03:12:23.714 SparkTaskContext: INFO: TaskReport: stage=0, partition=85, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.714 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 99: Executor task launch worker for task 85.0 in stage 0.0 (TID 85)
+2026-10-23 03:12:23.714 SparkTaskContext: INFO: TaskReport: stage=0, partition=90, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.714 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 106: Executor task launch worker for task 90.0 in stage 0.0 (TID 90)
+2026-10-23 03:12:23.715 SparkTaskContext: INFO: TaskReport: stage=0, partition=86, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.715 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 125: Executor task launch worker for task 86.0 in stage 0.0 (TID 86)
+2026-10-23 03:12:23.716 RegionPool: INFO: initialized for thread 107: Executor task launch worker for task 98.0 in stage 0.0 (TID 98)
+2026-10-23 03:12:23.716 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 107: Executor task launch worker for task 98.0 in stage 0.0 (TID 98)
+2026-10-23 03:12:23.724 RegionPool: INFO: initialized for thread 118: Executor task launch worker for task 95.0 in stage 0.0 (TID 95)
+2026-10-23 03:12:23.724 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 256.0K allocated (192.0K blocks / 64.0K chunks), regions.size = 3, 0 current java objects, thread 118: Executor task launch worker for task 95.0 in stage 0.0 (TID 95)
+2026-10-23 03:12:23.724 SparkTaskContext: INFO: TaskReport: stage=0, partition=84, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.724 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 122: Executor task launch worker for task 84.0 in stage 0.0 (TID 84)
+2026-10-23 03:12:23.725 SparkTaskContext: INFO: TaskReport: stage=0, partition=75, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.725 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 95: Executor task launch worker for task 75.0 in stage 0.0 (TID 75)
+2026-10-23 03:12:23.727 SparkTaskContext: INFO: TaskReport: stage=0, partition=96, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.727 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 98: Executor task launch worker for task 96.0 in stage 0.0 (TID 96)
+2026-10-23 03:12:23.729 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 107: Executor task launch worker for task 98.0 in stage 0.0 (TID 98)
+2026-10-23 03:12:23.730 SparkTaskContext: INFO: TaskReport: stage=0, partition=67, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.730 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 115: Executor task launch worker for task 67.0 in stage 0.0 (TID 67)
+2026-10-23 03:12:23.733 SparkTaskContext: INFO: TaskReport: stage=0, partition=79, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.733 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 111: Executor task launch worker for task 79.0 in stage 0.0 (TID 79)
+2026-10-23 03:12:23.733 SparkTaskContext: INFO: TaskReport: stage=0, partition=66, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.733 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 101: Executor task launch worker for task 66.0 in stage 0.0 (TID 66)
+2026-10-23 03:12:23.734 SparkTaskContext: INFO: TaskReport: stage=0, partition=76, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.734 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 110: Executor task launch worker for task 76.0 in stage 0.0 (TID 76)
+2026-10-23 03:12:23.734 SparkTaskContext: INFO: TaskReport: stage=0, partition=87, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.734 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 123: Executor task launch worker for task 87.0 in stage 0.0 (TID 87)
+2026-10-23 03:12:23.737 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (448.0K blocks / 64.0K chunks), regions.size = 7, 0 current java objects, thread 118: Executor task launch worker for task 95.0 in stage 0.0 (TID 95)
+2026-10-23 03:12:23.737 SparkTaskContext: INFO: TaskReport: stage=0, partition=78, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.737 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 94: Executor task launch worker for task 78.0 in stage 0.0 (TID 78)
+2026-10-23 03:12:23.741 SparkTaskContext: INFO: TaskReport: stage=0, partition=82, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.741 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 120: Executor task launch worker for task 82.0 in stage 0.0 (TID 82)
+2026-10-23 03:12:23.742 SparkTaskContext: INFO: TaskReport: stage=0, partition=89, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.742 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 100: Executor task launch worker for task 89.0 in stage 0.0 (TID 89)
+2026-10-23 03:12:23.750 SparkTaskContext: INFO: TaskReport: stage=0, partition=74, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.750 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 109: Executor task launch worker for task 74.0 in stage 0.0 (TID 74)
+2026-10-23 03:12:23.763 SparkTaskContext: INFO: TaskReport: stage=0, partition=98, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.763 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 107: Executor task launch worker for task 98.0 in stage 0.0 (TID 98)
+2026-10-23 03:12:23.765 SparkTaskContext: INFO: TaskReport: stage=0, partition=95, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.765 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 118: Executor task launch worker for task 95.0 in stage 0.0 (TID 95)
+2026-10-23 03:12:23.767 SparkTaskContext: INFO: TaskReport: stage=0, partition=99, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.767 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (512.0K blocks / 0 chunks), regions.size = 8, 0 current java objects, thread 117: Executor task launch worker for task 99.0 in stage 0.0 (TID 99)
+2026-10-23 03:12:23.839 BackendUtils: INFO: table_force_count: executed 100 tasks in 1.005s
+2026-10-23 03:12:23.839 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.839 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.840 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.841 LowerOrInterpretNonCompilable$: INFO: took 2.045s
+2026-10-23 03:12:23.841 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.841 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.841 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.841 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.841 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: after EvalRelationalLets: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.842 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.842 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.842 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.842 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+I64 [10000000]
+
+2026-10-23 03:12:23.842 LoweringPipeline: INFO: initial IR: IR size 2: 
+
+!1 = I64 [10000000]
+MakeTuple(!1) [(0)]
+
+2026-10-23 03:12:23.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:12:23.843 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:12:23.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:12:23.843 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:12:23.843 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.843 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.843 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Literal [Tuple[Int64], <literal value>]
+
+2026-10-23 03:12:23.844 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-23 03:12:23.849 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.849 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.849 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.850 EType$: INFO: encoder cache miss (0 hits, 3 misses, 0.000)
+2026-10-23 03:12:23.880 RegionPool: INFO: initialized for thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.881 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-23 03:12:23.881 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 90: HTTP-Dispatcher
+2026-10-23 03:12:23.881 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 90: HTTP-Dispatcher

@@ -1,0 +1,5 @@
+
+thread 'tokio-rt-worker' (18000126) panicked at /kache/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/arrow-select-59.2.0/src/take.rs:682:83:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[1/1] benchmark_table::test_table_range_array_range_force_count: failed

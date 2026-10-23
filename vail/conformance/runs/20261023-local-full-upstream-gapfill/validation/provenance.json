@@ -1,0 +1,56 @@
+{
+  "native": {
+    "path": "/Users/danielking/.codex/worktrees/large-matrix-sum/vail/python/vail/_native.abi3.so",
+    "sha256": "3f8b5061f4d9fc1b0e8b9ec26e68fb3847d547511fdd87c72ae6ec06182b2201"
+  },
+  "settings": {
+    "vail_python": "/private/tmp/large-matrix-sum-env/bin/python",
+    "hail_python": "/private/tmp/linreg-hail-pypi-latest/bin/python",
+    "output": "/tmp/full-local-upstream-gapfill-20261023/validation",
+    "commit": "1c00d2d6fb8a5b029b3014f57dd3942e904afce8",
+    "upstream": "/Users/danielking/projects/vail/hail/hail/python/benchmark/hail",
+    "data_dir": "/tmp/full-local-upstream-cache-20261022",
+    "fixture_manifest": "/private/tmp/full-local-upstream-gapfill-20261023/fixture-manifest.json",
+    "repetitions": 1,
+    "cores": 32,
+    "heap": "24g",
+    "rss_gib": 48,
+    "timeout": 250.0,
+    "fixture_timeout": 1800,
+    "allow_fixture_generation": false,
+    "minimum_free_gib": 2,
+    "case": [
+      "benchmark_table::test_table_python_construction"
+    ],
+    "validation_only": true,
+    "reuse_vail_results": "/Users/danielking/projects/vail/vail/conformance/runs/20261023-local-full-upstream",
+    "deadline_hours": 1.0
+  },
+  "background_builds": [],
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "logical_cpus": 14,
+  "memory": 103079215104,
+  "versions": {
+    "vail": "0.1.0a1",
+    "hail": "0.2.139"
+  },
+  "hashes": {
+    "/private/tmp/full-local-upstream-gapfill-20261023/aggregate_runs.py": "764ced16b7bc82f7f6a83d09e2d8890b1bbc12d673b315d63aae79bc8fea8701",
+    "/private/tmp/full-local-upstream-gapfill-20261023/prepare_cache_links.py": "de6cc7c7619719a73d2ab39a03126a4442a587aa05095a6f96ddee9e25aa98df",
+    "/private/tmp/full-local-upstream-gapfill-20261023/prepare_fixture.py": "7c8c67ff46995cef7ee8485005ef2844f75ac0c41b114a6a08a8dea095a460eb",
+    "/private/tmp/full-local-upstream-gapfill-20261023/render_overlay.py": "15a6b24f66861f3345e7f8e5310f89afe0a4f9f98f03d737265086c64624c08a",
+    "/private/tmp/full-local-upstream-gapfill-20261023/run_local_upstream.py": "872e6a2e830f9b6136dc6e3b5ab1d059f0986397785fbc18f18909fe9cf00e33",
+    "/private/tmp/full-local-upstream-gapfill-20261023/stage_cached_fixtures.py": "6616138e9935844831ec802ce0357da9d277d75e03dc711da0397b540728ddc2",
+    "/private/tmp/full-local-upstream-gapfill-20261023/harness/benchmark_telemetry.py": "3293bccd6acf70d6249c818f02a9bc76e99f5ff3c39d268ae8bc1bd8d24d520e",
+    "/private/tmp/full-local-upstream-gapfill-20261023/harness/hail_gate.py": "bf9dda467802a17f226b736663d51a19139d32af8fda48a38aeb70539923dc57",
+    "/private/tmp/full-local-upstream-gapfill-20261023/harness/profile_annotate.py": "2ff556a30fa1104d04acadc45c2ac770da040613cb42f222eea590870a6d99aa",
+    "/private/tmp/full-local-upstream-gapfill-20261023/harness/render_affected_benchmarks.py": "f26a0fadc10113c20afd8619d15ad823bba7ca57bec21e76fc0c6edd7916f7c1",
+    "/private/tmp/full-local-upstream-gapfill-20261023/harness/upstream_benchmark_coverage.py": "3ae72c331129c9985b94a2ae7cf01b9bd213c907089ffd694403c67d988a8b58",
+    "/private/tmp/full-local-upstream-gapfill-20261023/fixture-manifest.json": "610bea6d59847c5aecb4f6112c749bed22909917fd32fffe02bd10b0752709bb"
+  },
+  "source_hashes": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  }
+}
