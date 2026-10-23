@@ -1,27 +1,30 @@
 """Demand-preserving bindings for shared, already-lowered list reductions."""
 from collections import Counter
-from .expressions import Expression, NativeExpr, _IR, IR_NODE_TYPES
+from .expressions import Expression, NativeExpr, _IR
 from .types import type_from_wire
 
 
 def bind_shared_list_results(expression, table):
-    """Bind shared work only where an existing strict path already demands it.
+    """Reuse vectors through the existing native lexical binder.
 
-    Conditionals expose only their condition as strict; lambda bodies and RNG
-    stay opaque. The existing native bind implementation evaluates vectors once,
-    not a Python callback per row. This is query construction only.
+    Analyze the retained DAG once. Bit summaries track shared expensive nodes,
+    repeated demand, and unconditional demand. No descendant walk is repeated
+    for each ancestor. Bit operations scale with the number of shared candidates
+    (one bit per candidate), rather than the expanded expression tree.
     """
-    if expression.to_ir().contains_random():
+    root = expression.to_ir()
+    if root.contains_random():
         return expression
-    retained, rewritten = {}, {}
+    nodes, views, edges, postorder, seen = {}, {}, {}, [], set()
 
-    def identity(node):
+    def key(node):
         return node.node_identity()
 
     def opaque(node):
-        op = node.get('op')
-        return op in {'array_map', 'array_filter', 'array_fold', 'array_predicate'} or (
-            op == 'nested_function' and str(node.get('function', '')).startswith('__vail_list_'))
+        # Switch/callback variables belong to their binder, not the root schema.
+        return node.get('op') in {'switch', 'array_map', 'array_filter',
+            'array_fold', 'array_predicate'} or (node.get('op') == 'nested_function'
+            and str(node.get('function', '')).startswith('__vail_list_'))
 
     def map_value(value, visit):
         if isinstance(value, NativeExpr):
@@ -32,37 +35,49 @@ def bind_shared_list_results(expression, table):
             return {name: map_value(child, visit) for name, child in value.items()}
         return value
 
-    def view(node):
-        values = dict(node.items())
-        children = []
+    # Retain each inspection view: inline Vec children have fresh wrapper owners
+    # on a second view(), so replacement must reuse these same child handles.
+    pending = [(root, False)]
+    counts = Counter()
+    while pending:
+        node, finish = pending.pop()
+        identity = key(node)
+        if finish:
+            postorder.append(identity)
+            continue
+        if identity in seen:
+            continue
+        seen.add(identity)
+        nodes[identity] = node
+        values, children = dict(node.items()), []
         def add(child):
             children.append(child)
             return child
-        map_value(values, add)
-        return values, children
+        if not opaque(node):
+            map_value(values, add)
+        views[identity], edges[identity] = values, children
+        counts.update(key(child) for child in children)
+        pending.append((node, True))
+        pending.extend((child, False) for child in reversed(children))
 
-    def expensive(node, seen=None):
-        seen = set() if seen is None else seen
-        key = identity(node)
-        if key in seen:
-            return False
-        seen.add(key)
-        if node.get('op') == 'nested_function' and str(node.get('function', '')).startswith('__vail_list_reduce_'):
-            return True
-        if node.get('op') == 'array_map':
-            # A lexical bind's source can itself contain a reduction, while
-            # its callback remains a separate scope that must stay opaque.
-            return expensive(node.get('value'), seen)
-        if opaque(node):
-            return False
-        return any(expensive(child, seen) for child in view(node)[1])
+    expensive = {}
+    for identity in postorder:
+        node = nodes[identity]
+        expensive[identity] = (node.get('op') == 'nested_function'
+            and str(node.get('function', '')).startswith('__vail_list_reduce_')) or any(
+                expensive[key(child)] for child in edges[identity])
+    candidates = [identity for identity in postorder if counts[identity] > 1 and expensive[identity]]
+    if not candidates:
+        return expression
+    bits = {identity: 1 << index for index, identity in enumerate(candidates)}
+    by_bit = {bit: identity for identity, bit in bits.items()}
 
-    def strict_children(node, values, children):
+    def strict_children(identity):
+        node, values, children = nodes[identity], views[identity], edges[identity]
         op = node.get('op')
         if op == 'if_else':
             return [values['condition']]
         if op in {'binary', 'integer_binary'}:
-            # Logical conjunction/disjunction may short-circuit the right side.
             return [values['left']] if values.get('operator') in {'and', 'or'} else children
         if op == 'nested_function' and values.get('function') == 'coalesce':
             return values['args'][:1]
@@ -70,84 +85,78 @@ def bind_shared_list_results(expression, table):
             return children
         return []
 
-    def typed(node):
+    summaries = {}
+    for identity in postorder:
+        once, twice = bits.get(identity, 0), 0
+        for child in edges[identity]:
+            child_once, child_twice, _ = summaries[key(child)]
+            twice |= child_twice | (once & child_once)
+            once |= child_once
+        strict = bits.get(identity, 0)
+        for child in strict_children(identity):
+            strict |= summaries[key(child)][2]
+        summaries[identity] = once, twice, strict
+
+    def typed(node, environment):
+        lexical = dict(expression._lexical_types)
+        for variable in environment.values():
+            lexical.update(variable._lexical_types)
         dtype = type_from_wire(node.infer_type(
             [(n, t._native_type) for n, t in table._schema.items()],
             [(n, t._native_type) for n, t in table._global_schema.items()],
-            [(n, t._native_type) for n, t in expression._lexical_types.items()]))
+            [(n, t._native_type) for n, t in lexical.items()]))
         return Expression(dtype, table, _IR(node, expression._global_refs,
-            expression._lookup_refs, lexical_types=expression._lexical_types))
+            expression._lookup_refs, lexical_types=lexical))
 
-    def bind_at(node):
-        nodes, edges, counts = {}, {}, Counter()
-        pending = [node]
-        while pending:
-            current = pending.pop()
-            key = identity(current)
-            if key in nodes:
-                continue
-            nodes[key] = current
-            values, children = view(current)
-            edges[key] = (values, children)
-            if not opaque(current):
-                counts.update(identity(child) for child in children)
-                pending.extend(children)
-        # Only unconditional demand paths can justify moving a may-error node.
-        strict, pending = set(), [node]
-        while pending:
-            current = pending.pop()
-            key = identity(current)
-            if key in strict:
-                continue
-            strict.add(key)
-            if not opaque(current):
-                pending.extend(strict_children(current, *edges[key]))
-        candidates = {key for key in strict if counts[key] > 1 and expensive(nodes[key])}
-        if not candidates:
-            return node
-        # Bind outer shared nodes; their inner work remains owned by that binding.
-        selected = []
-        pending, seen = [node], set()
-        while pending:
-            current = pending.pop()
-            key = identity(current)
-            if key in seen:
-                continue
-            seen.add(key)
-            if key in candidates:
-                selected.append(current)
-            elif not opaque(current):
-                pending.extend(edges[key][1])
-        if not selected:
-            return node
-        from . import bind
-        dtype = typed(node).dtype
-        def body(*variables):
-            replacements = {identity(value): variable.to_ir() for value, variable in zip(selected, variables)}
-            memo = {}
-            def replace(current):
-                key = identity(current)
-                if key in replacements:
-                    return replacements[key]
-                if key not in memo:
-                    memo[key] = current if opaque(current) else NativeExpr(map_value(dict(current.items()), replace))
-                return memo[key]
-            return Expression(dtype, table, _IR(replace(node), expression._global_refs,
-                expression._lookup_refs, lexical_types=expression._lexical_types))
-        return bind(body, *(typed(value) for value in selected)).to_ir()
+    replaced, rewritten = {}, {}
+    def environment_key(environment):
+        return tuple((identity, key(variable.to_ir())) for identity, variable in environment.items())
 
-    def rewrite(node):
-        key = identity(node)
-        if key in rewritten:
-            return rewritten[key]
-        retained[key] = node
-        if opaque(node) or not expensive(node):
-            result = node
+    def replace_bound(node, environment):
+        identity = key(node)
+        if identity in environment:
+            return environment[identity].to_ir()
+        cache_key = identity, environment_key(environment)
+        if cache_key not in replaced:
+            replaced[cache_key] = node if opaque(node) else NativeExpr(
+                map_value(views[identity], lambda child: replace_bound(child, environment)))
+        return replaced[cache_key]
+
+    def rewrite(node, environment, bound_bits):
+        identity = key(node)
+        if identity in environment:
+            return environment[identity].to_ir()
+        cache_key = identity, environment_key(environment)
+        if cache_key in rewritten:
+            return rewritten[cache_key]
+        _, twice, strict = summaries[identity]
+        available = twice & strict & ~bound_bits
+        if available:
+            # Bind dependencies first, then their users in the extended lexical
+            # environment; eager bind arguments never duplicate one another.
+            choice = None
+            remaining = available
+            while remaining:
+                bit = remaining & -remaining
+                candidate = by_bit[bit]
+                if not (summaries[candidate][0] & available & ~bit):
+                    choice = candidate, bit
+                    break
+                remaining ^= bit
+            assert choice is not None  # retained graph is acyclic
+            candidate, bit = choice
+            argument = typed(replace_bound(nodes[candidate], environment), environment)
+            from . import bind
+            def body(variable):
+                nested = {**environment, candidate: variable}
+                return typed(rewrite(node, nested, bound_bits | bit), nested)
+            result = bind(body, argument).to_ir()
         else:
-            result = bind_at(NativeExpr(map_value(dict(node.items()), rewrite)))
-        rewritten[key] = result
+            result = node if opaque(node) else NativeExpr(map_value(
+                views[identity], lambda child: rewrite(child, environment, bound_bits)))
+        rewritten[cache_key] = result
         return result
 
-    result = rewrite(expression.to_ir())
+    result = rewrite(root, {}, 0)
     return Expression(expression.dtype, table, _IR(result, expression._global_refs,
         expression._lookup_refs, lexical_types=expression._lexical_types))

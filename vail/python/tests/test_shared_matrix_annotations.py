@@ -82,3 +82,21 @@ def test_repeated_failing_row_aggregate_stays_in_unselected_branch():
     good = hl.agg.sum(m.col_idx)
     m = m.annotate_rows(result=hl.if_else(m.row_idx < 0, bad + bad, good + good))
     assert [x.result for x in m.rows().collect()] == [12, 12, 12]
+
+
+def test_shared_row_binding_preserves_switch_lexical_scope():
+    m = hl.utils.range_matrix_table(3, 4, n_partitions=1)
+    total = hl.agg.sum(m.col_idx)
+    result = hl.switch(m.row_idx).when(total + total, 1).default(2)
+    m = m.annotate_rows(result=result)
+    assert [x.result for x in m.rows().collect()] == [2, 2, 2]
+
+
+def test_shared_row_reduction_below_deep_arithmetic_chain():
+    m = hl.utils.range_matrix_table(2, 4, n_partitions=1)
+    total = hl.agg.sum(m.col_idx)
+    result = total + total
+    for _ in range(80):
+        result = result + 1
+    m = m.annotate_rows(result=result)
+    assert [x.result for x in m.rows().collect()] == [92, 92]
