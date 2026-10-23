@@ -120,28 +120,72 @@ pub(super) fn evaluate(
             "integer list sum requires integer values".into(),
         ));
     }
-    let mut output = Vec::with_capacity(lists.len());
-    for row in 0..lists.len() {
-        if lists.is_null(row) {
-            output.push(None);
-            continue;
+    // Dispatch once per batch. All-valid typed slices allow LLVM to reduce
+    // integer lanes without per-element virtual validity or type checks.
+    macro_rules! typed {
+        ($source:expr) => {{
+            let source = $source;
+            let mut output = Vec::with_capacity(lists.len());
+            for row in 0..lists.len() {
+                if lists.is_null(row) {
+                    output.push(None);
+                    continue;
+                }
+                let start = lists.value_offsets()[row] as usize;
+                let end = lists.value_offsets()[row + 1] as usize;
+                let mut missing = false;
+                let sum = if source.null_count() == 0 {
+                    source.values()[start..end]
+                        .iter()
+                        .fold(0_i64, |sum, &v| sum.wrapping_add(i64::from(v)))
+                } else {
+                    let nulls = source.nulls().expect("nonzero null count");
+                    let mut sum = 0_i64;
+                    for (i, &v) in source.values()[start..end].iter().enumerate() {
+                        if nulls.is_valid(start + i) {
+                            sum = sum.wrapping_add(i64::from(v));
+                        } else {
+                            missing = true;
+                        }
+                    }
+                    sum
+                };
+                output.push((filter_missing || !missing).then_some(sum));
+            }
+            output
+        }};
+    }
+    let output = if parents.is_empty() {
+        if let Some(source) = source32 {
+            typed!(source)
+        } else {
+            typed!(source64.expect("integer type checked above"))
         }
-        let mut sum = 0_i64;
-        let mut missing = false;
-        for i in lists.value_offsets()[row] as usize..lists.value_offsets()[row + 1] as usize {
-            if !valid(i) {
-                missing = true;
+    } else {
+        let mut output = Vec::with_capacity(lists.len());
+        for row in 0..lists.len() {
+            if lists.is_null(row) {
+                output.push(None);
                 continue;
             }
-            let v = if let Some(v) = source32 {
-                i64::from(v.value(i))
-            } else {
-                source64.unwrap().value(i)
-            };
-            sum = sum.wrapping_add(v);
+            let mut sum = 0_i64;
+            let mut missing = false;
+            for i in lists.value_offsets()[row] as usize..lists.value_offsets()[row + 1] as usize {
+                if !valid(i) {
+                    missing = true;
+                    continue;
+                }
+                let v = if let Some(v) = source32 {
+                    i64::from(v.value(i))
+                } else {
+                    source64.unwrap().value(i)
+                };
+                sum = sum.wrapping_add(v);
+            }
+            output.push((filter_missing || !missing).then_some(sum));
         }
-        output.push((filter_missing || !missing).then_some(sum));
-    }
+        output
+    };
     Ok(match dtype {
         DataType::Int32 => Arc::new(Int32Array::from(
             output
@@ -275,17 +319,35 @@ mod tests {
                 "parameter": "cell", "body": {"op": "get_field", "name": "number",
                     "value": {"op": "get_field", "name": "payload",
                         "value": {"op": "lambda_variable", "name": "cell"}}}}
-        })).unwrap();
+        }))
+        .unwrap();
         let input = fixture();
-        let schema = Arc::new(Schema::new(vec![Field::new("cells", input.data_type().clone(), true)]));
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "cells",
+            input.data_type().clone(),
+            true,
+        )]));
         let program = lower(&expression, &schema).unwrap();
         let compiled = program.downcast_ref::<CompiledPhysical>().unwrap();
-        assert!(matches!(compiled.inner.downcast_ref::<HailPhysicalExpr>().unwrap().kind,
-            HailKind::IntegerListFieldSum(..)));
+        assert!(matches!(
+            compiled
+                .inner
+                .downcast_ref::<HailPhysicalExpr>()
+                .unwrap()
+                .kind,
+            HailKind::IntegerListFieldSum(..)
+        ));
         let batch = RecordBatch::try_new(schema, vec![input]).unwrap();
         let result = program.evaluate(&batch).unwrap().into_array(4).unwrap();
-        assert_eq!(result.as_any().downcast_ref::<Int32Array>().unwrap().iter().collect::<Vec<_>>(),
-            vec![Some(-2), Some(0), Some(0), None]);
+        assert_eq!(
+            result
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .iter()
+                .collect::<Vec<_>>(),
+            vec![Some(-2), Some(0), Some(0), None]
+        );
     }
 
     #[test]
@@ -306,6 +368,53 @@ mod tests {
             vec![Some(i64::MIN)]
         );
     }
+    #[test]
+    fn typed_fast_paths_preserve_null_outer_lists_slices_and_nullable_leaves() {
+        for values in [
+            Arc::new(Int32Array::from(vec![i32::MAX, 1, 7, 8])) as ArrayRef,
+            Arc::new(Int64Array::from(vec![i64::MAX, 1, 7, 8])) as ArrayRef,
+        ] {
+            let expected = if values.data_type() == &DataType::Int32 {
+                i64::from(i32::MAX) + 1
+            } else {
+                i64::MIN
+            };
+            let lists: ArrayRef = Arc::new(ListArray::new(
+                Arc::new(Field::new("item", values.data_type().clone(), true)),
+                OffsetBuffer::new(vec![0_i32, 2, 4, 4].into()),
+                values,
+                Some(NullBuffer::from(vec![true, false, true])),
+            ));
+            assert_eq!(
+                results(evaluate(&lists, &[], true, &DataType::Int64).unwrap()),
+                vec![Some(expected), None, Some(0)]
+            );
+            assert_eq!(
+                results(evaluate(&lists.slice(1, 2), &[], true, &DataType::Int64).unwrap()),
+                vec![None, Some(0)]
+            );
+        }
+        for values in [
+            Arc::new(Int32Array::from(vec![Some(3), None, Some(5)])) as ArrayRef,
+            Arc::new(Int64Array::from(vec![Some(3), None, Some(5)])) as ArrayRef,
+        ] {
+            let lists: ArrayRef = Arc::new(ListArray::new(
+                Arc::new(Field::new("item", values.data_type().clone(), true)),
+                OffsetBuffer::new(vec![0_i32, 1, 3].into()),
+                values,
+                None,
+            ));
+            assert_eq!(
+                results(evaluate(&lists.slice(1, 1), &[], true, &DataType::Int64).unwrap()),
+                vec![Some(5)]
+            );
+            assert_eq!(
+                results(evaluate(&lists.slice(1, 1), &[], false, &DataType::Int64).unwrap()),
+                vec![None]
+            );
+        }
+    }
+
     #[test]
     fn recognizer_accepts_widening_and_rejects_fallible_or_narrowing_bodies() {
         let element = Type::Struct {
