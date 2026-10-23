@@ -890,6 +890,8 @@ impl Coordinates {
             && aggregate.groups_accumulator_supported()
         {
             Kernels::Collect(crate::coordinate_collect::CoordinateCollect::new(aggregate_input.clone()))
+        } else if let Some(take) = crate::advanced_collection_aggregates::coordinate_take(native) {
+            Kernels::Collect(take)
         } else if let Some(histogram) = crate::advanced_numeric_aggregates::coordinate_histogram(native) {
             Kernels::Histogram(histogram)
         } else if aggregate.groups_accumulator_supported() {

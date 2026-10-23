@@ -1,0 +1,39 @@
+samples 1099
+12.92 142 __psynch_cvwait
+5.55 61 _PyEval_EvalFrameDefault
+4.37 48 __open
+3.82 42 stat
+2.46 27 _PyObject_Malloc
+2.27 25 gc_collect_main.llvm.6325940347975832991
+2.0 22 mach_o::GenericTrie::find(CString, bool) const
+1.91 21 PyDict_SetDefault
+1.82 20 deduce_unreachable
+1.73 19 visit_decref
+1.55 17 r_object.llvm.9845490566179339274
+1.46 16 type_new
+1.27 14 _platform_memmove
+1.27 14 __psynch_mutexwait
+1.18 13 func_traverse
+1.09 12 mach_msg2_trap
+1.0 11 arrow_data::transform::primitive::build_extend::<i32>::{closure#0}
+0.91 10 0x352b4
+0.91 10 visit_reachable
+0.82 9 pysiphash
+0.82 9 swtch_pri
+0.73 8 read
+inclusive
+84.26 926 start
+83.99 923 Py_BytesMain
+83.99 923 pymain_main
+83.17 914 Py_RunMain
+77.16 848 _PyEval_EvalFrameDefault
+77.16 848 PyEval_EvalCode
+76.34 839 pymain_run_file
+76.34 839 _PyRun_SimpleFileObject
+76.34 839 _PyRun_AnyFileObject
+76.34 839 run_mod.llvm.8217961648363706888
+76.34 839 pymain_run_file_obj
+76.34 839 pyrun_file
+60.05 660 _PyObject_VectorcallTstate.llvm.12038793513780791252
+60.05 660 object_vacall.llvm.12038793513780791252
+60.05 660 PyImport_ImportModuleLevelObject
