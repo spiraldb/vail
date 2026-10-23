@@ -172,3 +172,30 @@ fn packed_counts_keep_signed64_partial_state_wrapping() {
             .all(|v| *v == i64::MAX.wrapping_add(rows as i64))
     );
 }
+
+
+#[test]
+fn coordinate_count_respects_logical_nulls_of_encoded_arrays() {
+    use arrow_array::{DictionaryArray, Int8Array, NullArray, types::Int8Type};
+    let dictionary: ArrayRef = Arc::new(DictionaryArray::<Int8Type>::try_new(
+        Int8Array::from(vec![Some(0), Some(1), None, Some(2), Some(1), Some(0)]),
+        Arc::new(Int64Array::from(vec![Some(10), None, Some(30)])),
+    ).unwrap());
+    for (values, expected) in [
+        (Arc::new(NullArray::new(6)) as ArrayRef, vec![0_i64, 0, 0]),
+        (dictionary, vec![2_i64, 0, 1]),
+    ] {
+        let dtype = values.data_type().clone();
+        let native = configured_udaf("count", Some(&dtype), &serde_json::json!({})).unwrap();
+        let udf = coordinate_udaf(native, dtype, ScalarValue::Int64(Some(0))).unwrap();
+        let input: ArrayRef = Arc::new(list(values, 3, 2));
+        let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("xs", 0))])
+            .schema(Arc::new(Schema::new(vec![Field::new("xs", input.data_type().clone(), true)])))
+            .alias("counts").build().unwrap();
+        let mut state = aggregate.create_accumulator().unwrap();
+        state.update_batch(&[input]).unwrap();
+        let ScalarValue::List(result) = state.evaluate().unwrap() else { panic!("list result") };
+        let counts = result.values().as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(counts.values().as_ref(), expected.as_slice());
+    }
+}

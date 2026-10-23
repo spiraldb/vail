@@ -478,8 +478,9 @@ impl DenseNumeric {
         Ok(())
     }
     fn count_valid(&mut self, flat: &ArrayRef, filter: Option<&BooleanArray>, width: usize) -> Result<()> {
+        let validity = flat.logical_nulls();
         self.update_masks(flat.len(), width, [
-            flat.nulls().map(|n| n.inner()),
+            validity.as_ref().map(|n| n.inner()),
             filter.map(|f| f.values()),
             filter.and_then(|f| f.nulls()).map(|n| n.inner()), None,
         ])
