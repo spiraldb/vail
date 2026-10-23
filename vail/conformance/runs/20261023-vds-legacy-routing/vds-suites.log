@@ -1,0 +1,229 @@
+....FF.F..FF.F..................                                         [100%]
+=================================== FAILURES ===================================
+______________________________ test_dense[False] _______________________________
+
+without_ref_gt = False
+
+    @pytest.mark.parametrize("without_ref_gt", [False, True])
+    def test_dense(without_ref_gt):
+        v = fixture()
+        if without_ref_gt:
+            v = hl.vds.VariantDataset(v.reference_data.drop("GT"), v.variant_data)
+        d = hl.vds.to_dense_mt(v)
+>       rows = d.localize_entries("entries", "cols").collect()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_vds.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10c449880>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1176: FatalError
+_______________________________ test_dense[True] _______________________________
+
+without_ref_gt = True
+
+    @pytest.mark.parametrize("without_ref_gt", [False, True])
+    def test_dense(without_ref_gt):
+        v = fixture()
+        if without_ref_gt:
+            v = hl.vds.VariantDataset(v.reference_data.drop("GT"), v.variant_data)
+        d = hl.vds.to_dense_mt(v)
+>       rows = d.localize_entries("entries", "cols").collect()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_vds.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10c44bbf0>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1176: FatalError
+____________________________ test_sparse_roundtrip _____________________________
+
+    def test_sparse_roundtrip():
+        v = fixture()
+        merged = hl.vds.to_merged_sparse_mt(v, ref_allele_function=lambda row: hl.str("A"))
+        out = hl.vds.VariantDataset.from_merged_representation(
+            merged,
+            ref_block_indicator_field="LEN",
+            is_split=True,
+            infer_ref_block_fields=False,
+            ref_block_fields=["GT", "DP"],
+        )
+>       assert out.reference_data.count_rows() == 2
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_vds.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1764: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10c44c3b0>
+
+    def count(self):
+>       return self._native.count()
+               ^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1367: FatalError
+_________________________________ test_combine _________________________________
+
+    def test_combine():
+        combined = hl.vds.combiner.combine_variant_datasets(
+            [single("a", "C"), single("b", "G")]
+        )
+        assert combined.n_samples() == 2
+>       assert combined.variant_data.count_rows() == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_vds.py:118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1764: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10c163bc0>
+
+    def count(self):
+>       return self._native.count()
+               ^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1367: FatalError
+_______________________ test_filter_samples_and_variants _______________________
+
+    def test_filter_samples_and_variants():
+        v = fixture()
+        selected = hl.vds.filter_samples(v, ["0"])
+        assert selected.n_samples() == 1
+        assert selected.reference_data.cols().collect() == [hl.Struct(s="0")]
+        selected.validate()
+        variants = v.variant_data.rows()
+        variants = variants.filter(variants.locus.position == 3)
+>       filtered = hl.vds.filter_variants(v, variants)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_vds.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/vds/methods.py:305: in filter_variants
+    variant_data = vds.variant_data.semi_join_rows(variants_table)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:2289: in semi_join_rows
+    return self._key_filter("row", other, False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:2274: in _key_filter
+    temp = _project(
+python/vail/matrixtable.py:236: in _project
+    return table.key_by()._project(fields, keys=())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10bd7d760>
+projections = [('locus', <vail.expressions.Expression object at 0x10cccde70>), ('alleles', <vail.expressions.Expression object at 0x...('locus', <vail.expressions.Field object at 0x10ccce0a0>), ('alleles', <vail.expressions.Field object at 0x10ccce030>)]
+keys = ()
+
+    def _project(self, projections, keys=None):
+        projections = list(projections)
+        native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
+        projections = [(name, expr) for (name, _), expr in builtins.zip(projections, expressions)]
+        native_projections = [[name, expr.to_ir()] for name, expr in projections]
+>       native = native.project(_native_projection(native_projections), _global_bindings(expressions))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: invalid expression: duplicate projection field "locus"
+
+python/vail/__init__.py:627: ValueError
+_________________________ test_fresh_hail_dense_golden _________________________
+
+    def test_fresh_hail_dense_golden():
+        # The fixture is extracted using Hail itself, not reconstructed by Vail.
+        # Struct field order is not stable across Hail processes (its implementation
+        # iterates a Python set); compare entry field names/types and named values.
+        import runpy
+        from pathlib import Path
+        import math
+    
+        adapter = runpy.run_path(
+            str(Path(__file__).parents[2] / "conformance" / "vds_fixture.py")
+        )
+        name = "1kg_chr22_5_samples.vds"
+        expected = adapter["matrix"](name, "dense")
+        actual = hl.vds.to_dense_mt(adapter["vds"](name))
+        assert actual.row.dtype == expected.row.dtype
+        assert dict(actual.entry.dtype.items()) == dict(expected.entry.dtype.items())
+        actual_table = actual.localize_entries("entries", "cols")
+        expected_table = expected.localize_entries("entries", "cols")
+        assert hl.eval(actual_table.index_globals()) == hl.eval(
+            expected_table.index_globals()
+        )
+    
+        def equivalent(a, b):
+            if (
+                isinstance(a, float)
+                and isinstance(b, float)
+                and math.isnan(a)
+                and math.isnan(b)
+            ):
+                return True
+            if hasattr(a, "items") and hasattr(b, "items"):
+                return set(a) == set(b) and all(equivalent(a[k], b[k]) for k in a)
+            if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+                return len(a) == len(b) and all(
+                    equivalent(x, y) for x, y in zip(a, b, strict=True)
+                )
+            return a == b
+    
+>       assert equivalent(actual_table.collect(), expected_table.collect())
+                          ^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_vds.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10bd8de50>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:1176: FatalError
+=========================== short test summary info ============================
+FAILED python/tests/test_vds.py::test_dense[False] - vail.utils.FatalError: E...
+FAILED python/tests/test_vds.py::test_dense[True] - vail.utils.FatalError: Ex...
+FAILED python/tests/test_vds.py::test_sparse_roundtrip - vail.utils.FatalErro...
+FAILED python/tests/test_vds.py::test_combine - vail.utils.FatalError: Extern...
+FAILED python/tests/test_vds.py::test_filter_samples_and_variants - ValueErro...
+FAILED python/tests/test_vds.py::test_fresh_hail_dense_golden - vail.utils.Fa...
+6 failed, 26 passed in 21.61s

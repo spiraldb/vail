@@ -1,0 +1,244 @@
+.FFFFF.FFFFFFFFFFFFFFFFF.FFF                                             [100%]
+=================================== FAILURES ===================================
+_______________________________ test_multi_write _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:35: in test_multi_write
+    hl.vds.write_variant_datasets([vds1, vds2], [path1, path2])
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'write_variant_datasets'
+______________________ test_sampleqc_old_new_equivalence _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:41: in test_sampleqc_old_new_equivalence
+    sqc = hl.vds.sample_qc(vds)
+          ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'sample_qc'
+_____________________________ test_sampleqc_gq_dp ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:51: in test_sampleqc_gq_dp
+    sqc = hl.vds.sample_qc(vds)
+          ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'sample_qc'
+_______________________ test_sampleqc_singleton_r_ti_tv ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:58: in test_sampleqc_singleton_r_ti_tv
+    sqc = hl.vds.sample_qc(vds)
+          ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'sample_qc'
+________________________ test_filter_samples_and_merge _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:76: in test_filter_samples_and_merge
+    assert merged.reference_data._same(vds.reference_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:2487: in _same
+    return self.localize_entries(entries_name, columns_name)._same(
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/__init__.py:1361: in _same
+    same, diagnostic = left._native.same(right._native, tolerance, absolute, reorder_fields)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   vail.utils.FatalError: External error: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E   This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+____________________________ test_segment_intervals ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:97: in test_segment_intervals
+    r = hl.vds.segment_reference_blocks(vds.reference_data, intervals_ht)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'segment_reference_blocks'
+____________________________ test_interval_coverage ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:119: in test_interval_coverage
+    r = hl.vds.interval_coverage(vds, intervals, gq_thresholds=(1, 21), dp_thresholds=(0, 1, 6)).checkpoint(checkpoint_path)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'interval_coverage'
+________________________ test_filter_intervals_segment _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:175: in test_filter_intervals_segment
+    filt = hl.vds.filter_intervals(vds, intervals, split_reference_blocks=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+_____________________ test_filter_intervals_segment_table ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:187: in test_filter_intervals_segment_table
+    filt = hl.vds.filter_intervals(vds, intervals_table, split_reference_blocks=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+________________________ test_filter_intervals_default _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:197: in test_filter_intervals_default
+    filt = hl.vds.filter_intervals(vds, intervals)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+_____________________ test_filter_intervals_default_table ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:206: in test_filter_intervals_default_table
+    filt = hl.vds.filter_intervals(vds, intervals_table)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+___________________________ test_filter_chromosomes ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:226: in test_filter_chromosomes
+    vds_remove_1_5 = hl.vds.filter_chromosomes(vds, remove=['chr1', 'chr5'])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/vds/methods.py:328: in filter_chromosomes
+    intervals = [hl.parse_locus_interval(c, reference_genome=rg) for c in contigs]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/interval_import.py:86: in parse_locus_interval
+    cross = interval(locus(c1, start, reference), locus(c2, end, reference), inc_start, inc_end)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/expressions.py:1497: in locus
+    return Expression(tlocus(reference), _merge_sources(contig.source, pos.source),
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/expressions.py:239: in __init__
+    object.__setattr__(self, "_lookup_refs", MappingProxyType(_lookup_references(ir)))
+                                                              ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/expressions.py:207: in _lookup_references
+    result.update(_lookup_references(value))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/expressions.py:207: in _lookup_references
+    result.update(_lookup_references(value))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/expressions.py:207: in _lookup_references
+    result.update(_lookup_references(value))
+vail_pytest_reporter.py:56: in timeout
+    raise TimeoutError(f'per-test time limit exceeded ({timeout_seconds} seconds)')
+E   TimeoutError: per-test time limit exceeded (30 seconds)
+_______________________________ test_to_dense_mt _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:235: in test_to_dense_mt
+    assert dense.rows().select()._same(vds.variant_data.rows().select()), 'rows differ between variant data and dense mt'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/__init__.py:1361: in _same
+    same, diagnostic = left._native.same(right._native, tolerance, absolute, reorder_fields)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E   This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+________________ test_read_dense_mt_and_to_dense_mt_equivalence ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:258: in test_read_dense_mt_and_to_dense_mt_equivalence
+    mt = hl.vds.read_dense_mt(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'read_dense_mt'. Did you mean: 'to_dense_mt'?
+___________________________ test_to_dense_mt_haploid ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:268: in test_to_dense_mt_haploid
+    assert dense.rows().select()._same(vds.variant_data.rows().select()), 'rows differ between variant data and dense mt'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/__init__.py:1361: in _same
+    same, diagnostic = left._native.same(right._native, tolerance, absolute, reorder_fields)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E   This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+_________________________ test_merge_reference_blocks __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:293: in test_merge_reference_blocks
+    sampqc_1 = hl.vds.sample_qc(vds, gq_bins=(0, 10, 20, 30), dp_bins=()).select('bases_over_gq_threshold')
+               ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'sample_qc'
+________________________ test_truncate_reference_blocks ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:310: in test_truncate_reference_blocks
+    sampqc_1 = hl.vds.sample_qc(vds, gq_bins=(0, 10, 20, 30), dp_bins=()).select('bases_over_gq_threshold')
+               ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'sample_qc'
+_______________________________ test_union_rows1 _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:322: in test_union_rows1
+    vds1 = hl.vds.filter_intervals(vds, [hl.parse_locus_interval('chr22:start-10754094', reference_genome='GRCh38')], split_reference_blocks=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+_______________________________ test_union_rows2 _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:330: in test_union_rows2
+    vds1 = hl.vds.filter_intervals(vds, [hl.parse_locus_interval('chr22:start-10754094', reference_genome='GRCh38')], split_reference_blocks=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+____________________________ test_combiner_max_len _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:345: in test_combiner_max_len
+    vds1_trunc = hl.vds.truncate_reference_blocks(vds1, max_ref_block_base_pairs=50)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'truncate_reference_blocks'
+_________________________ test_split_sparse_roundtrip __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:359: in test_split_sparse_roundtrip
+    smt = hl.experimental.sparse_split_multi(smt)
+          ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+___________________________ test_split_alters_ref_gt ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:367: in test_split_alters_ref_gt
+    vds_split = hl.vds.split_multi(vds_base)
+                ^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'split_multi'
+_________________________ test_filter_intervals_table __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:399: in test_filter_intervals_table
+    vds_filt = hl.vds.filter_intervals(vds, filter_intervals)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'filter_intervals'
+________________ test_ref_block_does_not_densify_to_next_contig ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:408: in test_ref_block_does_not_densify_to_next_contig
+    ref = ref.annotate_entries(LEN=hl.if_else(ref.locus.contig == 'chr1', chr1_end - ref.locus.position + 1, 1))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:1374: in annotate_entries
+    return self._annotate("entry", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:1305: in _annotate
+    return self._project_axis(
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:1167: in _project_axis
+    cells = self._aligned_matrix_map(
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:868: in _aligned_matrix_map
+    rewritten = rewrite(body)
+                ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:828: in rewrite
+    return [rewrite(value) for value in node]
+            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:828: in rewrite
+    return [rewrite(value) for value in node]
+            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:862: in rewrite
+    result = {key: rewrite(value) for key, value in node.items()}
+                   ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/vds-legacy-routing/vail/vail/python/vail/matrixtable.py:864: in rewrite
+    result = NativeExpr(result)
+             ^^^^^^^^^^^^^^^^^^
+E   KeyError: 'op'
+_______________________________ test_basic_impex _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py:430: in test_basic_impex
+    hl.vds.export_vcf(orig_vds, path)
+    ^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.vds' has no attribute 'export_vcf'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_multi_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_sampleqc_old_new_equivalence
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_sampleqc_gq_dp
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_sampleqc_singleton_r_ti_tv
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_samples_and_merge
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_segment_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_interval_coverage
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_intervals_segment
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_intervals_segment_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_intervals_default
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_intervals_default_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_chromosomes
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_to_dense_mt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_read_dense_mt_and_to_dense_mt_equivalence
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_to_dense_mt_haploid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_merge_reference_blocks
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_truncate_reference_blocks
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_union_rows1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_union_rows2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_combiner_max_len
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_split_sparse_roundtrip
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_split_alters_ref_gt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_filter_intervals_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_ref_block_does_not_densify_to_next_contig
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-fkcp33k5/upstream_hail/vds/test_vds.py::test_basic_impex
+25 failed, 3 passed, 5 deselected in 49.15s
