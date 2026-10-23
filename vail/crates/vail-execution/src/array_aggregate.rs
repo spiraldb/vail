@@ -828,6 +828,7 @@ enum Kernels {
     Correlation(crate::advanced_numeric_aggregates::CoordinateCorrelation),
     Quantiles(crate::advanced_numeric_aggregates::CoordinateQuantiles),
     Linreg(crate::advanced_numeric_aggregates::CoordinateLinreg),
+    OrderedTake(crate::coordinate_take::CoordinateOrderedTake),
     Groups(std::sync::Mutex<GroupKernel>),
     Coordinates(Vec<Box<dyn Accumulator>>),
 }
@@ -845,6 +846,7 @@ impl std::fmt::Debug for Kernels {
             Self::Correlation(correlation) => correlation.fmt(f),
             Self::Quantiles(quantiles) => quantiles.fmt(f),
             Self::Linreg(linreg) => linreg.fmt(f),
+            Self::OrderedTake(take) => take.fmt(f),
             Self::Groups(_) => f.write_str("DataFusionGroupsAccumulator"),
             Self::Coordinates(kernels) => f
                 .debug_tuple("CoordinateAccumulators")
@@ -906,6 +908,8 @@ impl Coordinates {
             Kernels::Quantiles(quantiles)
         } else if let Some(linreg) = crate::advanced_numeric_aggregates::coordinate_linreg(native) {
             Kernels::Linreg(linreg)
+        } else if let Some(take) = crate::advanced_collection_aggregates::coordinate_ordered_take(native) {
+            Kernels::OrderedTake(take)
         } else if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(GroupKernel {
                 kernel: aggregate.create_groups_accumulator()?,
@@ -954,6 +958,7 @@ impl Coordinates {
             Kernels::Correlation(correlation) => Ok(correlation.states()),
             Kernels::Quantiles(quantiles) => quantiles.states(),
             Kernels::Linreg(linreg) => linreg.states(),
+            Kernels::OrderedTake(take) => take.states(width),
             Kernels::Product(product) => Ok(vec![
                 Arc::clone(&product.count.values),
                 Arc::clone(&product.values.values),
@@ -991,6 +996,10 @@ impl Coordinates {
         filter: Option<&arrow_array::BooleanArray>,
         width: usize,
     ) -> Result<()> {
+        if let Kernels::OrderedTake(take) = &mut self.kernels {
+            let flat = if flat.data_type() == &self.aggregate_input { flat } else { cast(&flat, &self.aggregate_input)? };
+            return take.update(&flat, filter, width);
+        }
         if let Kernels::Linreg(linreg) = &mut self.kernels {
             return linreg.update(&flat, filter, width);
         }
@@ -1090,6 +1099,7 @@ impl Coordinates {
             Kernels::Correlation(correlation) => correlation.array()?,
             Kernels::Quantiles(quantiles) => quantiles.array()?,
             Kernels::Linreg(linreg) => linreg.array()?,
+            Kernels::OrderedTake(take) => take.array(self.width.unwrap_or(0))?,
             Kernels::Groups(_) => {
                 let width = self.width.unwrap_or(0);
                 let states = self.states()?;
@@ -1160,7 +1170,7 @@ impl Accumulator for Coordinates {
         };
         if matches!(
             self.kernels,
-            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_) | Kernels::Collect(_) | Kernels::Histogram(_) | Kernels::Correlation(_) | Kernels::Quantiles(_) | Kernels::Linreg(_)
+            Kernels::Count(_) | Kernels::Ratio(_) | Kernels::Product(_) | Kernels::Bool(_) | Kernels::Extrema(_) | Kernels::Stddev(_) | Kernels::Collect(_) | Kernels::Histogram(_) | Kernels::Correlation(_) | Kernels::Quantiles(_) | Kernels::Linreg(_) | Kernels::OrderedTake(_)
         ) {
             return self.update_flat(flat, None, width);
         }
@@ -1215,6 +1225,7 @@ impl Accumulator for Coordinates {
                 Kernels::Correlation(correlation) => correlation.size(),
                 Kernels::Quantiles(quantiles) => quantiles.size(),
                 Kernels::Linreg(linreg) => linreg.size(),
+                Kernels::OrderedTake(take) => take.size(),
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
             }
@@ -1267,6 +1278,7 @@ impl Accumulator for Coordinates {
                 Kernels::Correlation(correlation) => correlation.merge(&values, width)?,
                 Kernels::Quantiles(quantiles) => quantiles.merge(&values, width)?,
                 Kernels::Linreg(linreg) => linreg.merge(&values, width)?,
+                Kernels::OrderedTake(take) => take.merge(&values, width)?,
                 Kernels::Groups(kernel) => {
                     let kernel = kernel
                         .get_mut()
