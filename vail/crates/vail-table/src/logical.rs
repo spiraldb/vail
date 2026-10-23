@@ -1570,7 +1570,7 @@ fn with_metadata_optimizer(
 ) -> datafusion::execution::SessionState {
     let mut rules: Vec<
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
-    > = vec![Arc::new(MetadataCrossJoin)];
+    > = vec![Arc::new(MetadataCrossJoin), Arc::new(CountOrderingDemand)];
     rules.extend(state.physical_optimizers().iter().cloned());
     rules.push(Arc::new(CountOrderingDemand));
     rules.push(Arc::new(EliminateIdentityRanges));

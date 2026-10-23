@@ -11,7 +11,7 @@ It removes fetch-free column-key sorts and ordered merges, preserving partition
 counts and the execution DAG. A global sort becomes a coalesce. Local sorts
 retain their source partitions. Top-k sorts and limits remain intact.
 
-The ordinary physical optimizer also invokes this pass below proven built-in
+Before and after the standard physical rules, the optimizer invokes this pass below proven built-in
 count aggregates. This is deliberately based on the concrete built-in Count
 implementation, with no grouping/filter and only column/literal arguments.
 Unknown user aggregates are not presumed commutative. In DataFusion 55.0.0,
