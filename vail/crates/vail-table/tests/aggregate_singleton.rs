@@ -276,3 +276,47 @@ async fn unreachable_case_aggregate_is_not_evaluated() {
     }
     assert_eq!(rows, 5);
 }
+
+#[tokio::test]
+async fn unselected_conditional_aggregate_does_not_fold_invalid_cast() {
+    let bad = GlobalsIR::aggregate(
+        TableIR::range(1, 1).unwrap(),
+        Expr::Aggregate {
+            function: "sum".into(),
+            value: Some(Arc::new(Expr::Cast {
+                dtype: Type::Primitive(PrimitiveType::Int32),
+                value: Arc::new(Expr::Literal {
+                    dtype: Type::Primitive(PrimitiveType::Str),
+                    value: json!("not an integer"),
+                }),
+            })),
+            options: json!({}),
+            result_type: None,
+            init: vec![],
+        },
+        Default::default(),
+    )
+    .unwrap();
+    let selector = GlobalsIR::empty()
+        .map(vec![(
+            "condition".into(),
+            Expr::Literal {
+                dtype: Type::Primitive(PrimitiveType::Bool),
+                value: json!(true),
+            },
+        )])
+        .unwrap();
+    let selected = GlobalsIR::conditional(selector, count(17), bad).unwrap();
+    assert_eq!(
+        selected
+            .evaluate()
+            .await
+            .unwrap()
+            .column(0)
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .value(0),
+        17
+    );
+}
