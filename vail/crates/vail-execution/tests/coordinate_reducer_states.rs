@@ -133,6 +133,8 @@ fn collect_coordinate_reuses_repeatable_native_state_then_restores_on_update() {
         .build()
         .unwrap();
     let mut accumulator = aggregate.create_accumulator().unwrap();
+    // Native snapshots may be requested before the first input establishes width.
+    let _empty_snapshot = accumulator.state().unwrap();
     let input: ArrayRef = Arc::new(ListArray::new(
         Arc::new(Field::new_list_field(DataType::Int32, true)),
         OffsetBuffer::from_lengths([2, 2]),

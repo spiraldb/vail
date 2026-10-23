@@ -799,7 +799,11 @@ impl GroupKernel {
     }
     fn restore(&mut self, width: usize) -> Result<()> {
         if let Some(snapshot) = self.snapshot.take() {
-            if width > 0 {
+            // A snapshot can precede the first defined input list: it then
+            // contains zero groups, although this update just established width.
+            let groups = snapshot.first().map_or(0, |state| state.len());
+            if groups > 0 {
+                if groups != width { return Err(error("coordinate snapshot width mismatch")); }
                 self.kernel.merge_batch(&snapshot, &(0..width).collect::<Vec<_>>(), width)?;
             }
         }
