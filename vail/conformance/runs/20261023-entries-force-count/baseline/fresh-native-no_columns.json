@@ -1,0 +1,50 @@
+{
+  "pid": 26797,
+  "kind": "native",
+  "case": "no_columns",
+  "path": "/home/danielking/cloud-scan-20261023/data/supplemental/vail-from-hail/matrix_100000x10000.mt",
+  "row_key_unique": false,
+  "column_ordering": null,
+  "iterations": [
+    {
+      "rep": 0,
+      "warmup": true,
+      "count": 1000000000,
+      "wall_seconds": 2.874149467999814,
+      "cpu_seconds": 75.63568200000002,
+      "peak_rss_kib": 941240,
+      "minor_faults": 1583255,
+      "major_faults": 0
+    },
+    {
+      "rep": 1,
+      "warmup": false,
+      "count": 1000000000,
+      "wall_seconds": 2.6017556709998644,
+      "cpu_seconds": 77.729242,
+      "peak_rss_kib": 997588,
+      "minor_faults": 1024839,
+      "major_faults": 0
+    },
+    {
+      "rep": 2,
+      "warmup": false,
+      "count": 1000000000,
+      "wall_seconds": 2.546466660999613,
+      "cpu_seconds": 76.29317500000002,
+      "peak_rss_kib": 997588,
+      "minor_faults": 1030267,
+      "major_faults": 0
+    },
+    {
+      "rep": 3,
+      "warmup": false,
+      "count": 1000000000,
+      "wall_seconds": 2.58974876100001,
+      "cpu_seconds": 77.61851099999998,
+      "peak_rss_kib": 999112,
+      "minor_faults": 1025188,
+      "major_faults": 0
+    }
+  ]
+}
