@@ -308,11 +308,24 @@ impl Input {
             return Ok(None);
         }
         let available = self.source.fill_buf()?;
-        if available.len() < count || available[..count].iter().any(|byte| byte & 128 != 0) {
+        if available.len() < count {
             return Ok(None);
         }
-        let mut values = [0; 8];
-        values[..count].copy_from_slice(&available[..count]);
+        let values = if available.len() >= 8 {
+            let word = u64::from_le_bytes(available[..8].try_into().unwrap());
+            let prefix_mask = u64::MAX >> ((8 - count) * 8);
+            if word & prefix_mask & 0x8080_8080_8080_8080 != 0 {
+                return Ok(None);
+            }
+            (word & prefix_mask).to_le_bytes()
+        } else {
+            if available[..count].iter().any(|byte| byte & 128 != 0) {
+                return Ok(None);
+            }
+            let mut values = [0; 8];
+            values[..count].copy_from_slice(&available[..count]);
+            values
+        };
         self.source.consume(count);
         self.bytes += count as u64;
         Ok(Some(values))
@@ -446,6 +459,33 @@ mod tests {
         assert_eq!(input.byte()?, 13);
         assert_eq!(input.bytes, 7);
         assert!(input.skip(1).is_err());
+        Ok(())
+    }
+
+    #[test]
+    fn short_varint_word_probe_masks_unused_bytes() -> Result<()> {
+        for count in 1..=8 {
+            let mut input = buffered(vec![]);
+            input.source = BufReader::with_capacity(
+                32,
+                Box::new(Cursor::new(vec![1u8, 2, 3, 4, 5, 6, 7, 8, 128, 1])) as Stream,
+            );
+            let values = input.try_small_varints(count)?.unwrap();
+            assert_eq!(&values[..count], &(1..=count as u8).collect::<Vec<_>>());
+            assert!(values[count..].iter().all(|v| *v == 0));
+            assert_eq!(input.bytes, count as u64);
+        }
+        let mut input = buffered(vec![]);
+        input.source = BufReader::with_capacity(
+            32,
+            Box::new(Cursor::new(vec![1u8, 2, 128, 1, 5, 6, 7, 8])) as Stream,
+        );
+        assert_eq!(
+            input.try_small_varints(2)?.unwrap(),
+            [1, 2, 0, 0, 0, 0, 0, 0]
+        );
+        assert!(input.try_small_varints(1)?.is_none());
+        assert_eq!(input.varint(32)?, 128);
         Ok(())
     }
 

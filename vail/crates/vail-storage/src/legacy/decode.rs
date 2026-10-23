@@ -410,6 +410,18 @@ fn bitmap(input: &mut Input, n: usize) -> Result<Bitmap> {
     }
 }
 impl Bitmap {
+    #[inline(always)]
+    fn low_word(&self) -> u64 {
+        match self {
+            Self::Inline(bytes) => u64::from_le_bytes(*bytes),
+            Self::Heap(bytes) => {
+                let mut word = [0; 8];
+                let n = bytes.len().min(8);
+                word[..n].copy_from_slice(&bytes[..n]);
+                u64::from_le_bytes(word)
+            }
+        }
+    }
     fn present_count(&self, len: usize) -> usize {
         let bits: &[u8] = match self {
             Self::Inline(b) => b,
@@ -518,6 +530,9 @@ struct FieldOp {
     invert_boolean: bool,
     varint_run: u8,
     run_requires_leb: bool,
+    run_missing_mask: u64,
+    run_wide_missingness: bool,
+    run_output_mask: u8,
 }
 
 /// Compile physical destination mapping once, outside the row loop.
@@ -585,6 +600,9 @@ impl Node {
                         && e.fields[i].0 == "includesStart",
                     varint_run: 0,
                     run_requires_leb: false,
+                    run_missing_mask: 0,
+                    run_wide_missingness: false,
+                    run_output_mask: 0,
                 }
             })
             .collect::<Vec<_>>();
@@ -612,6 +630,21 @@ impl Node {
                 if i - start >= 2 {
                     fields[start].varint_run = (i - start) as u8;
                     fields[start].run_requires_leb = requires_leb;
+                    fields[start].run_output_mask = u8::MAX >> (8 - (i - start));
+                    let mut missing_mask = 0u64;
+                    let mut wide = false;
+                    for field in &fields[start..i] {
+                        if field.missing_bit == usize::MAX {
+                            continue;
+                        }
+                        if field.missing_bit >= 64 {
+                            wide = true;
+                        } else {
+                            missing_mask |= 1u64 << field.missing_bit;
+                        }
+                    }
+                    fields[start].run_missing_mask = missing_mask;
+                    fields[start].run_wide_missingness = wide;
                 }
             }
         }
@@ -695,6 +728,21 @@ impl Node {
             }
         } else if self.e.kind.starts_with("EArray") {
             self.children[0].demand(paths);
+        }
+        self.refresh_run_projection();
+    }
+    fn refresh_run_projection(&mut self) {
+        for i in 0..self.fields.len() {
+            let count = self.fields[i].varint_run as usize;
+            if count == 0 {
+                continue;
+            }
+            self.fields[i].run_output_mask = self.fields[i..i + count]
+                .iter()
+                .enumerate()
+                .fold(0u8, |mask, (offset, op)| {
+                    mask | (u8::from(op.project) << offset)
+                });
         }
     }
     fn fixed_width(&self, leb: bool) -> Option<usize> {
@@ -897,24 +945,26 @@ impl Node {
         if first.run_requires_leb && !input.leb {
             return Ok(false);
         }
-        let fields = &self.fields[start..start + count];
-        if fields
-            .iter()
-            .any(|op| op.missing_bit != usize::MAX && absent(bits, op.missing_bit))
-        {
+        if first.run_wide_missingness {
+            if self.fields[start..start + count]
+                .iter()
+                .any(|op| op.missing_bit != usize::MAX && absent(bits, op.missing_bit))
+            {
+                return Ok(false);
+            }
+        } else if bits.low_word() & first.run_missing_mask != 0 {
             return Ok(false);
         }
         let Some(values) = input.try_small_varints(count)? else {
             return Ok(false);
         };
-        for ((op, child), value) in fields
-            .iter()
-            .zip(&self.children[start..start + count])
-            .zip(values)
-        {
-            if !op.project {
-                continue;
-            }
+        let mut selected = first.run_output_mask;
+        while selected != 0 {
+            let offset = selected.trailing_zeros() as usize;
+            selected &= selected - 1;
+            let op = &self.fields[start + offset];
+            let child = &self.children[start + offset];
+            let value = values[offset];
             let output = &mut outputs[op.dest];
             match child.append_kind {
                 AppendKind::Int32 => output.int32().append_value(i32::from(value)),
@@ -1123,6 +1173,7 @@ impl PartReader {
         for field in &mut node.fields {
             field.project = projection.contains(&field.dest);
         }
+        node.refresh_run_projection();
         Ok(Self {
             input: Input::open(&path, &c.buffer)?,
             node,
@@ -1242,6 +1293,90 @@ impl PartReader {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn adjacent_varint_run_masks_handle_high_and_wide_missingness() -> Result<()> {
+        let path =
+            std::env::temp_dir().join(format!("vail-run-missing-masks-{}.bin", std::process::id()));
+        let result = (|| -> Result<()> {
+            for preceding in [62usize, 65] {
+                let mut types = (0..preceding)
+                    .map(|i| (format!("b{i}"), Type::Primitive(P::Bool)))
+                    .collect::<Vec<_>>();
+                types.extend([
+                    ("x".into(), Type::Primitive(P::Int32)),
+                    ("y".into(), Type::Primitive(P::Int32)),
+                ]);
+                let ty = Type::Struct { r#struct: types };
+                let mut fields = (0..preceding)
+                    .map(|i| {
+                        (
+                            format!("b{i}"),
+                            Encoding {
+                                kind: "EBoolean".into(),
+                                required: false,
+                                fields: vec![],
+                                rank: 0,
+                            },
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                fields.extend(["x", "y"].into_iter().map(|name| {
+                    (
+                        name.into(),
+                        Encoding {
+                            kind: "EVarint".into(),
+                            required: false,
+                            fields: vec![],
+                            rank: 0,
+                        },
+                    )
+                }));
+                let encoding = Encoding {
+                    kind: "EBaseStruct".into(),
+                    required: true,
+                    fields,
+                    rank: 0,
+                };
+                for missing in 0..4u8 {
+                    let mut fast = Node::new(&encoding, &ty);
+                    fast.demand(&[vec!["x".into()]]);
+                    let mut slow = Node::new(&encoding, &ty);
+                    slow.demand(&[vec!["x".into()]]);
+                    for field in &mut slow.fields {
+                        field.varint_run = 0;
+                    }
+                    assert_eq!(fast.fields[preceding].run_wide_missingness, preceding >= 64);
+                    let mut bytes = vec![255u8; (preceding + 2).div_ceil(8)];
+                    for offset in 0..2 {
+                        if missing & (1 << offset) == 0 {
+                            let bit = preceding + offset;
+                            bytes[bit / 8] &= !(1 << (bit % 8));
+                        }
+                    }
+                    if missing & 1 == 0 {
+                        bytes.push(10);
+                    }
+                    if missing & 2 == 0 {
+                        bytes.push(20);
+                    }
+                    std::fs::write(&path, bytes)?;
+                    let spec = serde_json::json!({"name":"StreamBufferSpec"});
+                    let mut fast_column = Column::projected(&fast, &ty.to_arrow()?);
+                    let mut slow_column = Column::projected(&slow, &ty.to_arrow()?);
+                    fast.append(&mut Input::open(&path, &spec)?, &mut fast_column)?;
+                    slow.append(&mut Input::open(&path, &spec)?, &mut slow_column)?;
+                    assert_eq!(
+                        fast_column.finish()?.as_ref(),
+                        slow_column.finish()?.as_ref()
+                    );
+                }
+            }
+            Ok(())
+        })();
+        let _ = std::fs::remove_file(path);
+        result
+    }
 
     #[test]
     fn adjacent_varint_runs_match_scalar_fields_with_projection_and_missingness() -> Result<()> {

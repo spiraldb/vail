@@ -39,7 +39,7 @@ def run(case):
     return m.aggregate_entries(hl.agg.sum(m.DP))
 results = {}
 def compiler_active():
-    return any(line.rstrip().endswith('/rustc') for line in subprocess.check_output(['ps', '-axo', 'comm'], text=True).splitlines())
+    return any(line.strip().rsplit('/', 1)[-1] == 'rustc' for line in subprocess.check_output(['ps', '-axo', 'comm'], text=True).splitlines())
 
 def measure(case):
     if not a.reject_compilers:
