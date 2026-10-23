@@ -150,18 +150,30 @@ pub fn make_udaf(
                     },
                 }))
             });
-            Ok(Some(Arc::new(create_udaf(
+            Ok(Some(crate::kernel_identity::aggregate_named(
                 &udaf_name,
+                TakeIdentity { input: input_type.clone(), n: n as usize, ordered },
                 vec![argument_type],
-                Arc::new(output),
-                Volatility::Immutable,
+                output,
+                vec![state_type],
                 factory,
-                Arc::new(vec![state_type]),
-            ))))
+            )))
         }
         "counter" => Ok(None),
         _ => Ok(None),
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct TakeIdentity {
+    input: DataType,
+    n: usize,
+    ordered: bool,
+}
+
+pub(crate) fn coordinate_take(udf: &AggregateUDF) -> Option<crate::coordinate_collect::CoordinateCollect> {
+    let identity = crate::kernel_identity::aggregate_key::<TakeIdentity>(udf)?;
+    (!identity.ordered).then(|| crate::coordinate_collect::CoordinateCollect::bounded(identity.input.clone(), identity.n))
 }
 
 #[derive(Debug)]

@@ -42,3 +42,19 @@ def test_matrix_coordinate_collect_present_slots_and_missing_values(partitions):
     empty=hl.utils.range_matrix_table(0,3,n_partitions=partitions)
     empty=empty.annotate_cols(collected=hl.agg.collect(empty.row_idx))
     assert empty.collected.collect()==[[],[],[]]
+
+
+@pytest.mark.parametrize('partitions',[1,3])
+@pytest.mark.parametrize('limit',[0,1,3,20])
+def test_coordinate_take_bounded_order_nulls_and_filters(partitions,limit):
+    rows=[{'xs':[{'s':str(i),'v':[i,None]},None], 'keep':i%2==0} for i in range(9)]
+    dtype=hl.tstruct(s=hl.tstr,v=hl.tarray(hl.tint32))
+    table=hl.Table.parallelize(rows,schema=hl.tstruct(xs=hl.tarray(dtype),keep=hl.tbool),n_partitions=partitions)
+    result=table.aggregate(hl.agg.array_agg(lambda x:hl.struct(
+        taken=hl.agg.take(x,limit),filtered=hl.agg.filter(table.keep,hl.agg.take(x,limit)),
+        absent=hl.agg.filter(False,hl.agg.take(x,limit))),table.xs))
+    assert result[0].taken==[hl.Struct(s=str(i),v=[i,None]) for i in range(min(limit,9))]
+    assert result[1].taken==[None]*min(limit,9)
+    assert result[0].filtered==[hl.Struct(s=str(i),v=[i,None]) for i in range(0,9,2)][:limit]
+    assert result[1].filtered==[None]*min(limit,5)
+    assert result[0].absent==result[1].absent==[]
