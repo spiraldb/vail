@@ -27,3 +27,18 @@ def test_coordinate_collect_missing_lists_do_not_add_hidden_values(partitions):
     result=table.aggregate(hl.agg.array_agg(lambda x:hl.agg.collect(x),table.xs))
     assert sorted(result[0])==[1,3]
     assert sorted(result[1],key=lambda x:(x is not None,x or 0))==[None,4]
+
+
+@pytest.mark.parametrize('partitions',[1,3])
+def test_matrix_coordinate_collect_present_slots_and_missing_values(partitions):
+    matrix=hl.utils.range_matrix_table(6,3,n_partitions=partitions)
+    matrix=matrix.annotate_entries(x=hl.or_missing((matrix.row_idx+matrix.col_idx)%3!=0,matrix.row_idx+matrix.col_idx))
+    matrix=matrix.filter_entries((matrix.row_idx+matrix.col_idx)%4!=0)
+    matrix=matrix.annotate_cols(collected=hl.agg.collect(matrix.x))
+    for column,values in enumerate(matrix.collected.collect()):
+        expected=[None if (row+column)%3==0 else row+column for row in range(6) if (row+column)%4!=0]
+        key=lambda value:(value is not None,value or 0)
+        assert sorted(values,key=key)==sorted(expected,key=key)
+    empty=hl.utils.range_matrix_table(0,3,n_partitions=partitions)
+    empty=empty.annotate_cols(collected=hl.agg.collect(empty.row_idx))
+    assert empty.collected.collect()==[[],[],[]]
