@@ -1,0 +1,56 @@
+Repeated singleton aggregate evaluation audit
+Production candidate: fe5323cb2cd02814fa6abd61e626addb2039aa44, based on dec4b8db.
+
+Confirmed mechanism
+logical_globals::lower_in_context memoized logical-plan construction, not execution.
+Different conditional branches or external scalar-subquery bindings could clone
+plans depending on the same GlobalsIR aggregate identity, executing that aggregate
+separately. Existing ActionParameters cached branch roots, not shared dependencies.
+
+Confirmed affected frontend shapes
+- MatrixTable column SUM result missing/empty normalization (matrixtable.py987-993).
+- explode_cols maximum-width aggregate used in selector and chosen width (2250-2251).
+- union_cols maximum column-ID aggregate used in selector and chosen offset (2443-2444).
+- Public coalesce/or_else of a lazy total aggregate result: selector and selected value.
+
+Generic candidate
+Wrap total aggregate GlobalsIR nodes with a retained identity singleton. Bind the
+identity once per ActionParameters lifetime, including scalar-subquery-owned plans.
+No structural expression CSE, no result cache across actions, and no merging of
+independently constructed aggregate/RNG expressions. Conditional branches remain
+selected before their dependencies are bound. Native OptimizeProjections runs only
+when aggregate singleton dependencies exist, before binding, so dead scalar
+subqueries are discarded before execution. Native diagnostics remain unbound.
+
+Already bound, not confirmed duplicate execution
+- Table lookups: lookups.resolve maps each lookup reference to one private column.
+- Coordinate callback reducer leaves: coordinate_bundle deduplicates semantic
+  reducer identities, including function/value/options/filter/initializer.
+- Collection extrema: collections.py436 explicitly binds the reduction result.
+
+Remaining audit candidates, not asserted bugs
+Repeated row/list expressions in conditional guards (strings, collection nullness,
+approx_equal) need actual execution profiling and DataFusion CSE inspection.
+A repeated printed logical subtree alone is not execution evidence.
+
+Validation
+Rust 1.98.0 release, kache wrapper unchanged, isolated worktree target.
+4 new public native tests, 2 existing conditional tests, 6 consumer action tests PASS.
+Tests cover condition+selected aggregate dependencies, scalar subqueries/repeated
+actions, unchosen failing aggregate laziness, discarded failing aggregate pruning,
+and deferred public diagnostics. No mocks or private plan-display assertions.
+Normal final build log: native-tests.log. No Python wheel built in this worktree.
+Combined SUM profile must confirm actual processed entries fall from 10B to 5B;
+these public semantic tests intentionally do not assert private plan shape.
+
+Final validation and baseline demand check
+Final production is byte-identical to fe5323cb; dc10bbab adds one public lazy
+foldable-cast regression. Exact dc10bbab: 5 singleton +2 conditional +6 consumer
+native tests PASS (13 total). An attempted broader native optimizer prepass was
+reverted: literal-false row CASE with an external aggregate SUM(Die) still retained
+and executed its scalar subquery. Running that exact same public test against
+unmodified dec4b8 production ALSO failed. See dead-case-baseline.log. This is a
+pre-existing demand-optimization opportunity, not a regression introduced by the
+aggregate identity binding. No private plan-display assertions were added.
+The paired SUM agent reports its combined fe532/SUM profile processes exactly
+5 billion entries once; that evidence is maintained by the SUM agent separately.
