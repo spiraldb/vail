@@ -144,6 +144,12 @@ async fn struct_leaf_values_survive_filter_sort_and_limit() {
         ])
         .unwrap();
     let batches = frame.collect().await.unwrap();
+    for batch in &batches {
+        assert_eq!(batch.schema().fields().len(), 1);
+        assert_eq!(batch.schema().field(0).name(), "value");
+        assert_eq!(batch.schema().field(0).data_type(), &DataType::Int32);
+        assert_eq!(batch.column(0).null_count(), 0);
+    }
     let values: Vec<_> = batches
         .iter()
         .flat_map(|batch| {
