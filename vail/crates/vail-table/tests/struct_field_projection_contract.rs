@@ -251,7 +251,7 @@ async fn public_valid_projection_resource_control() {
         .select(vec![col("idx"), structure(0).alias("original")])
         .unwrap();
     let (frame, base, shift) = match mode.as_str() {
-        "rename" => (
+        "rename" | "many" => (
             frame
                 .select(vec![col("original").alias("renamed")])
                 .unwrap(),
@@ -259,58 +259,104 @@ async fn public_valid_projection_resource_control() {
             0i64,
         ),
         "wide" => (
-            frame.select(vec![structure(1).alias("fresh")]).unwrap(),
+            frame
+                .select(vec![col("idx"), structure(1).alias("fresh")])
+                .unwrap(),
             "fresh",
             1i64,
         ),
         _ => panic!("unknown public control mode"),
     };
-    let frame = frame
-        .select(vec![
-            datafusion_functions::core::get_field()
-                .call(vec![col(base), lit(format!("f{}", width - 1))])
-                .alias("value"),
-        ])
-        .unwrap();
-    let expected =
-        i64::from(rows) * i64::from(rows - 1) / 2 + i64::from(rows) * (width as i64 - 1 + shift);
+    let field = |index: usize| {
+        datafusion_functions::core::get_field().call(vec![col(base), lit(format!("f{index}"))])
+    };
+    let outputs = if mode == "many" {
+        (0..width)
+            .map(|index| field(index).alias(format!("v{index}")))
+            .collect()
+    } else if mode == "wide" {
+        // Arithmetic sibling stays uncaptured; idx passes through the inner
+        // projection. Both outputs are observed, so pruning either is wrong.
+        vec![
+            field(width - 1).alias("value"),
+            (col("idx") + lit(7)).alias("aux"),
+        ]
+    } else {
+        vec![field(width - 1).alias("value")]
+    };
+    let frame = frame.select(outputs).unwrap();
+    let output_count = if mode == "many" {
+        width
+    } else if mode == "wide" {
+        2
+    } else {
+        1
+    };
+    let output_name = |index: usize| {
+        if mode == "many" {
+            format!("v{index}")
+        } else if index == 0 {
+            "value".into()
+        } else {
+            "aux".into()
+        }
+    };
+    let check_schema = |schema: &Schema| {
+        assert_eq!(schema.fields().len(), output_count);
+        for index in 0..output_count {
+            assert_eq!(schema.field(index).name(), &output_name(index));
+            assert_eq!(schema.field(index).data_type(), &DataType::Int32);
+        }
+    };
     let validate = |batches: Vec<RecordBatch>| {
-        let mut sum = 0i64;
+        let mut sums = vec![0i64; output_count];
         let mut count = 0usize;
         for batch in batches {
-            assert_eq!(batch.schema().fields().len(), 1);
-            assert_eq!(batch.schema().field(0).name(), "value");
-            assert_eq!(batch.schema().field(0).data_type(), &DataType::Int32);
-            let values = batch
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap();
-            assert_eq!(values.null_count(), 0);
-            count += values.len();
-            sum += values
-                .values()
-                .iter()
-                .map(|value| i64::from(*value))
-                .sum::<i64>();
+            check_schema(batch.schema().as_ref());
+            count += batch.num_rows();
+            for (index, sum) in sums.iter_mut().enumerate() {
+                let values = batch
+                    .column(index)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap();
+                assert_eq!(values.null_count(), 0);
+                *sum += values
+                    .values()
+                    .iter()
+                    .map(|value| i64::from(*value))
+                    .sum::<i64>();
+            }
         }
         assert_eq!(count, rows as usize);
-        assert_eq!(sum, expected);
+        for (index, sum) in sums.iter().enumerate() {
+            let offset = if mode == "many" {
+                index as i64
+            } else if index == 1 {
+                7
+            } else {
+                width as i64 - 1 + shift
+            };
+            let expected = i64::from(rows) * i64::from(rows - 1) / 2 + i64::from(rows) * offset;
+            assert_eq!(*sum, expected);
+        }
     };
     validate(frame.clone().collect().await.unwrap());
     let started = Instant::now();
     for _ in 0..iterations {
         if phase == "plan" {
             let plan = frame.clone().into_optimized_plan().unwrap();
-            assert_eq!(plan.schema().fields().len(), 1);
-            assert_eq!(plan.schema().field(0).name(), "value");
-            assert_eq!(plan.schema().field(0).data_type(), &DataType::Int32);
+            assert_eq!(plan.schema().fields().len(), output_count);
+            for index in 0..output_count {
+                assert_eq!(plan.schema().field(index).name(), &output_name(index));
+                assert_eq!(plan.schema().field(index).data_type(), &DataType::Int32);
+            }
         } else {
             validate(frame.clone().collect().await.unwrap());
         }
     }
     eprintln!(
-        "PUBLIC_DF_RESOURCE mode={mode} phase={phase} width={width} rows={rows} iterations={iterations} wall_seconds={:.9}",
+        "PUBLIC_DF_RESOURCE mode={mode} phase={phase} width={width} output_count={output_count} rows={rows} iterations={iterations} wall_seconds={:.9}",
         started.elapsed().as_secs_f64()
     );
 }
