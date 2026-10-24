@@ -8,7 +8,7 @@ Vortex codec in Iceberg. The PR pins Vortex `0.86.1`, Arrow `59.2`, and
 DataFusion `55.0.0` in its workspace.
 
 `iceberg-rust-vail.patch` contains every local change relative to that exact
-PR commit. The four touched paths add only:
+PR commit. The initial four touched paths add only:
 
 - A Cargo workspace locator for the copied Iceberg crate.
 - A public export of `MemoryCatalogBuilder` for local tests and examples.
@@ -134,3 +134,14 @@ slices and batches. The legacy packed Call implementation reports its packed
 buffer and any already-materialized cache. A storage regression invokes actual
 DataFusion accounting on nested shared/sliced Calls and checks both laziness
 and exact allocation deduplication.
+
+# Iceberg nested-list evolution offset reuse
+
+The same `iceberg-rust-vail.patch` additionally records safe typed rewrapping of
+List/LargeList arrays during nested schema evolution. Their existing validated
+Arrow OffsetBuffer and logical parent validity are retained while the complete
+evolved child and updated field metadata are installed through Arrow try_new.
+This keeps child bounds/type/nullability checks without rescanning unchanged
+offsets. Nonnullable logical-child representation mismatches keep the original
+ArrayData construction path; FixedSizeList, Map and Struct handling is unchanged.
+No unsafe construction or schema-evolution bypass is introduced.
