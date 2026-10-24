@@ -1,0 +1,10 @@
+........................................................................ [ 72%]
+...........................                                              [100%]
+============================= slowest 6 durations ==============================
+5.59s call     python/tests/test_array_agg_coordinate_dag.py::test_reused_aggregate_expression_in_array_callback
+0.75s call     python/tests/test_reduction_expression_sharing.py::test_reused_callback_dag_preserves_multiplicity
+0.18s call     python/tests/test_row_fraction_shared_contexts.py::test_named_fractions_preserve_sparse_and_empty_scopes[False-0]
+0.06s call     python/tests/test_aggregate_execution.py::test_query_backed_scalar_reduction_is_lazy_and_reusable
+0.05s call     python/tests/test_agg_composition_execution.py::test_tuple_and_struct_aggregate_values_round_trip
+0.04s call     python/tests/test_array_agg_coordinate_callbacks.py::test_grouped_matrix_coordinate_callbacks_preserve_column_alignment
+99 passed in 9.12s
