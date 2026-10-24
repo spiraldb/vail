@@ -38,7 +38,7 @@ use vortex_error::VortexExpect;
 use vortex_error::VortexResult;
 use vortex_mask::Mask;
 use vortex_session::VortexSession;
-use vortex_utils::aliases::dash_map::DashMap;
+use vortex_utils::aliases::dash_map::{DashMap, Entry};
 use vortex_utils::aliases::hash_map::HashMap;
 
 use crate::ArrayFuture;
@@ -72,7 +72,7 @@ pub struct ListReader {
     elements: LayoutReaderRef,
     offsets: LayoutReaderRef,
     validity: Option<LayoutReaderRef>,
-    element_projection_cache: Arc<DashMap<ExactBoundExpr, Option<Arc<PreparedElementProjection>>>>,
+    projection_cache: Arc<DashMap<ExactBoundExpr, Arc<PreparedListProjection>>>,
 }
 
 impl ListReader {
@@ -114,7 +114,7 @@ impl ListReader {
             elements,
             offsets,
             validity,
-            element_projection_cache: Arc::new(DashMap::default()),
+            projection_cache: Arc::new(DashMap::default()),
         })
     }
 
@@ -168,8 +168,8 @@ impl ListReader {
         row_range: &Range<u64>,
         expr: &BoundExpression,
         mask: MaskFuture,
+        prepared: Option<Arc<PreparedElementProjection>>,
     ) -> VortexResult<ArrayFuture> {
-        let prepared = self.prepare_element_projection(expr)?;
         let is_full_range = row_range.start == 0 && row_range.end == self.layout.row_count();
         let reader = self.clone();
         let row_range = row_range.clone();
@@ -209,8 +209,9 @@ impl ListReader {
 
         Ok(async move {
             let (offsets, elements, validity) = try_join!(offsets_fut, elements_fut, validity_fut)?;
-            // SAFETY: ListLayout is constructed from a valid ListArray and reading its children
-            // without transformation preserves the list invariants.
+            // SAFETY: child projection preserves element row cardinality. Original
+            // offsets and outer validity therefore still index the same rows even
+            // when the genuine element dtype changes to non-null Bool.
             let list = unsafe {
                 ListArray::new_unchecked(elements, offsets, create_validity(validity, nullability))
             }
@@ -355,20 +356,30 @@ impl ListReader {
             .projection_evaluation(row_range, &root, MaskFuture::new_true(row_count))
     }
 
-    fn prepare_element_projection(
+    fn prepare_projection(
         &self,
         expr: &BoundExpression,
-    ) -> VortexResult<Option<Arc<PreparedElementProjection>>> {
+    ) -> VortexResult<Arc<PreparedListProjection>> {
         let key = ExactBoundExpr(expr.clone());
-        if let Some(cached) = self.element_projection_cache.get(&key) {
+        if let Some(cached) = self.projection_cache.get(&key) {
             return Ok(cached.clone());
         }
-        let prepared = prepare_element_projection(expr)?.map(Arc::new);
-        Ok(self
-            .element_projection_cache
-            .entry(key)
-            .or_insert(prepared)
-            .clone())
+        // Entry locking is preparation-only: no await, IO, output data or user
+        // callback. Concurrent first ranges share the same immutable preparation.
+        match self.projection_cache.entry(key) {
+            Entry::Occupied(entry) => Ok(entry.get().clone()),
+            Entry::Vacant(entry) => {
+                let children = get_necessary_bound_list_children(expr);
+                let elements = if children == ListChildrenNeeded::All {
+                    prepare_element_projection(expr)?.map(Arc::new)
+                } else {
+                    None
+                };
+                let prepared = Arc::new(PreparedListProjection { children, elements });
+                entry.insert(prepared.clone());
+                Ok(prepared)
+            }
+        }
     }
 
     /// Fetch elements using the nested paths requested by a list projection when present.
@@ -400,6 +411,13 @@ impl ListReader {
         self.elements
             .projection_evaluation(row_range, &projection, MaskFuture::new_true(row_count))
     }
+}
+
+/// Immutable schema/expression preparation only. Reader lifetime bounds this
+/// cache; no selections, values, buffers, cursors or execution context are kept.
+struct PreparedListProjection {
+    children: ListChildrenNeeded,
+    elements: Option<Arc<PreparedElementProjection>>,
 }
 
 /// One typed transformed element domain, shared by all identical occurrences.
@@ -678,12 +696,15 @@ impl LayoutReader for ListReader {
         mask: MaskFuture,
     ) -> VortexResult<ArrayFuture> {
         // Read as little as possible based on which list children the expression needs.
-        match get_necessary_bound_list_children(expr) {
+        let prepared = self.prepare_projection(expr)?;
+        match prepared.children {
             ListChildrenNeeded::Validity => self.project_validity(row_range, expr, mask),
             ListChildrenNeeded::OffsetsAndValidity => {
                 self.project_offsets_validity(row_range, expr, mask)
             }
-            ListChildrenNeeded::All => self.project_all(row_range, expr, mask),
+            ListChildrenNeeded::All => {
+                self.project_all(row_range, expr, mask, prepared.elements.clone())
+            }
         }
     }
 }
@@ -848,7 +869,7 @@ mod tests {
     use vortex_buffer::buffer;
     use vortex_io::session::RuntimeSession;
     use vortex_io::session::RuntimeSessionExt;
-    use vortex_utils::aliases::dash_map::DashMap;
+    use vortex_utils::aliases::dash_map::{DashMap, Entry};
     use vortex_utils::aliases::hash_map::HashMap;
 
     use super::*;
