@@ -799,8 +799,8 @@ fn nullable_grouped_combined_mean_preserves_count_and_sum_pairing() -> VortexRes
 fn nullable_grouped_public_resource_windows() -> VortexResult<()> {
     use std::time::Instant;
     use vortex::array::Canonical;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
     use vortex::array::arrays::BoolArray;
-    use vortex::expr::{list_sum, root};
     let owner = std::env::var("VAIL_GROUPED_PCO_OWNER")
         .ok()
         .map(|v| v.parse::<usize>().expect("resource owner is an integer"))
@@ -841,7 +841,6 @@ fn nullable_grouped_public_resource_windows() -> VortexResult<()> {
     ] {
         let alias = input.clone();
         let original_dtype = input.dtype().clone();
-        let expression = list_sum(root()).bind(input.dtype())?;
         let element_dtype = match input.dtype() {
             DType::List(e, _) => e.as_ref().clone(),
             _ => panic!("canonical list"),
@@ -867,7 +866,15 @@ fn nullable_grouped_public_resource_windows() -> VortexResult<()> {
                     acc.accumulate_list(&input, &mut ctx)?;
                     acc.finish()?
                 } else {
-                    input.apply_bound(&expression)?
+                    // Call the public wrapper directly so a strict-expression
+                    // optimizer cannot fold an all-missing list to a constant.
+                    let mut acc = ListGroupedAccumulator::try_new(
+                        SumV2,
+                        NumericalAggregateOpts::include_nans(),
+                        input.dtype().clone(),
+                    )?;
+                    acc.accumulate_list(&input, &mut ctx)?;
+                    acc.finish()?
                 };
                 let result = result.execute::<PrimitiveArray>(&mut ctx)?;
                 let seconds = start.elapsed().as_secs_f64();
