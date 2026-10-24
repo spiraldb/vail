@@ -324,6 +324,42 @@ fn grouped_primitive_tracks_empty_overflow_and_null_groups() -> VortexResult<()>
 }
 
 #[test]
+fn grouped_dictionary_preserves_code_value_and_list_nulls() -> VortexResult<()> {
+    use crate::arrays::DictArray;
+    let codes = PrimitiveArray::from_option_iter([
+        Some(0u8), Some(1), None, Some(2), Some(3), Some(0), Some(3),
+    ]).into_array();
+    let values = PrimitiveArray::from_option_iter([
+        Some(i32::MAX), None, Some(i32::MIN), Some(7),
+    ]).into_array();
+    let elements = DictArray::try_new(codes, values)?.into_array();
+    // Overlapping/reordered ranges exercise ListView rather than only List offsets.
+    let groups = ListViewArray::try_new(
+        elements,
+        buffer![0i32, 1, 3, 4, 0, 6].into_array(),
+        buffer![7i32, 2, 1, 2, 0, 1].into_array(),
+        Validity::from_iter([true, true, true, true, true, false]),
+    )?.into_array();
+    let mut accumulator = GroupedAccumulator::try_new(
+        SumV2, NumericalAggregateOpts::default(),
+        DType::Primitive(PType::I32, Nullable),
+    )?;
+    let mut ctx = array_session().create_execution_ctx();
+    accumulator.accumulate_list(&groups, &mut ctx)?;
+    let result = accumulator.finish()?;
+    let expected = PrimitiveArray::from_option_iter([
+        Some(i64::from(i32::MAX) * 2 + i64::from(i32::MIN) + 14),
+        None,
+        Some(i64::from(i32::MIN)),
+        Some(i64::from(i32::MAX) + 7),
+        None,
+        None,
+    ]).into_array();
+    assert_arrays_eq!(&result, &expected, &mut ctx);
+    Ok(())
+}
+
+#[test]
 fn grouped_bool_fallback_tracks_empty_groups() -> VortexResult<()> {
     let elements = BoolArray::from_iter([Some(true), Some(true), None, None]).into_array();
     let groups = ListViewArray::try_new(

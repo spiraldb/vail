@@ -1,0 +1,231 @@
+warning: unused import: `crate::builtins::ArrayBuiltins`
+  --> patches/vortex-array/src/aggregate_fn/fns/sum_v2/dict_grouped.rs:22:5
+   |
+22 | use crate::builtins::ArrayBuiltins;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `ListViewArrayExt`
+ --> patches/vortex-array/src/scalar_fn/fns/list_field.rs:6:31
+  |
+6 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+  |                               ^^^^^^^^^^^^^^^^
+
+warning: `vortex-array` (lib) generated 2 warnings (run `cargo fix --lib -p vortex-array` to apply 2 suggestions)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:722:20
+    |
+722 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+722 -                 if (!shape || !tail.is_empty()) {
+722 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:751:20
+    |
+751 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+751 -                 if (!shape || !tail.is_empty()) {
+751 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:761:20
+    |
+761 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+761 -                 if (!shape || !tail.is_empty()) {
+761 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:11:23
+   |
+11 |     coalesce_batches::CoalesceBatchesExec,
+   |                       ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:65:26
+   |
+65 |             || plan.is::<CoalesceBatchesExec>()
+   |                          ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:351:32
+    |
+351 |         || input.as_ref().is::<CoalesceBatchesExec>()
+    |                                ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:325:27
+    |
+325 |         coalesce_batches::CoalesceBatchesExec,
+    |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:66:31
+   |
+66 |         || plan.as_ref().is::<CoalesceBatchesExec>()
+   |                               ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:38:27
+   |
+38 |         coalesce_batches::CoalesceBatchesExec,
+   |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:457:31
+    |
+457 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/projection_broadcast.rs:374:26
+    |
+374 |             plan.clone().with_new_children(children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/wide_batch.rs:291:26
+    |
+291 |             plan.clone().with_new_children(rewritten_children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:313:9
+    |
+313 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `kind`
+   --> crates/vail-table/src/logical_scan.rs:630:26
+    |
+630 |     for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_kind`
+
+warning: fields `varid` and `rsid` are never read
+  --> crates/vail-table/src/bgen_source.rs:41:5
+   |
+30 | struct BgenOptions {
+   |        ----------- fields in this struct
+...
+41 |     varid: bool,
+   |     ^^^^^
+42 |     rsid: bool,
+   |     ^^^^
+   |
+   = note: `BgenOptions` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `owners` is never read
+  --> crates/vail-table/src/conditional_globals.rs:14:5
+   |
+ 9 | pub(crate) struct ConditionalNode {
+   |                   --------------- field in this struct
+...
+14 |     owners: [GlobalsRef; 3],
+   |     ^^^^^^
+   |
+   = note: `ConditionalNode` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `evaluate` is never used
+   --> crates/vail-table/src/count_explode.rs:418:8
+    |
+400 | impl ZipProgram {
+    | --------------- method in this implementation
+...
+418 |     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+    |        ^^^^^^^^
+
+warning: `vail-table` (lib) generated 17 warnings (run `cargo fix --lib -p vail-table` to apply 5 suggestions)
+   Compiling vail-table v0.1.0 (/Users/danielking/.codex/worktrees/encoded-list-reduction/vail/vail/crates/vail-table)
+    Finished `release` profile [optimized] target(s) in 16.35s
+     Running tests/encoded_projection.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/encoded_projection-bc7617b697a6c1ed)
+
+running 9 tests
+test encoded_list_sum::grouped_sum_with_encoded_logical_mask_matches_nullable_values ... ok
+test encoded_list_sum::grouped_dictionary_preserves_code_value_and_list_nulls ... ok
+test encoded_list_sum::dictionary_all_missing_codes_or_values_yield_missing_group_sums ... ok
+test encoded_list_sum::list_field_sum_preserves_nested_logical_nulls_and_zero_identity ... ok
+test encoded_list_sum::nullable_dictionary_sizes_and_reuse_match_independent_sums ... ok
+test encoded_list_sum::sliced_list_field_preserves_logical_masks_and_ignores_hidden_owner_rows ... ok
+test encoded_list_sum::distant_list_groups_and_large_retained_dictionary_preserve_logical_values ... ok
+test encoded_list_sum::dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists ... ok
+test native_nested_projection_and_global_sum_preserve_nulls_and_widening ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+

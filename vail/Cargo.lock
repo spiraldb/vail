@@ -5796,6 +5796,7 @@ dependencies = [
  "futures",
  "iceberg",
  "lz4_flex 0.13.1",
+ "prost",
  "serde",
  "serde_json",
  "sha2 0.10.9",
@@ -6161,8 +6162,6 @@ dependencies = [
 [[package]]
 name = "vortex-fastlanes"
 version = "0.86.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd5799e2e14034fa4e174fd935842318d0d858ad328b0dc17291ceb4ae96d2e1"
 dependencies = [
  "fastlanes 0.7.2",
  "itertools 0.14.0",

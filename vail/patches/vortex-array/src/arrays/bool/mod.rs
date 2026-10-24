@@ -16,6 +16,7 @@ mod vtable;
 pub use compute::rules::BoolMaskedValidityRule;
 pub use vtable::Bool;
 pub use vtable::BoolArray;
+pub use vtable::BoolMetadata;
 
 pub(crate) fn initialize(session: &vortex_session::VortexSession) {
     vtable::initialize(session);
