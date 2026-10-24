@@ -75,16 +75,19 @@ macro_rules! integer_kernel {
                 .ok_or_else(|| exec_datafusion_err!("prepared list reducer input type changed"))?;
             let logical_nulls = values.logical_nulls();
             let nulls = logical_nulls.as_ref().filter(|n| n.null_count() != 0);
-            fn run<const OP: u8, const NULLS: bool>(
+            let list_logical_nulls = lists.logical_nulls();
+            let list_nulls = list_logical_nulls.as_ref().filter(|n| n.null_count() != 0);
+            fn run<const OP: u8, const NULLS: bool, const LIST_NULLS: bool>(
                 lists: &ListArray,
                 values: &$typed,
                 nulls: Option<&arrow_buffer::NullBuffer>,
+                list_nulls: Option<&arrow_buffer::NullBuffer>,
             ) -> ArrayRef {
                 let offsets = lists.value_offsets();
                 let raw = values.values();
                 let mut output = <$builder>::with_capacity(lists.len());
                 for row in 0..lists.len() {
-                    if lists.is_null(row) {
+                    if LIST_NULLS && !list_nulls.unwrap().is_valid(row) {
                         output.append_null();
                         continue;
                     }
@@ -115,10 +118,11 @@ macro_rules! integer_kernel {
                 }
                 Arc::new(output.finish())
             }
-            Ok(if nulls.is_some() {
-                run::<OP, true>(lists, values, nulls)
-            } else {
-                run::<OP, false>(lists, values, None)
+            Ok(match (nulls.is_some(), list_nulls.is_some()) {
+                (false, false) => run::<OP, false, false>(lists, values, None, None),
+                (false, true) => run::<OP, false, true>(lists, values, None, list_nulls),
+                (true, false) => run::<OP, true, false>(lists, values, nulls, None),
+                (true, true) => run::<OP, true, true>(lists, values, nulls, list_nulls),
             })
         }
     };
