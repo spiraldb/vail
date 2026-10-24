@@ -939,3 +939,170 @@ fn nullable_grouped_public_resource_windows() -> VortexResult<()> {
     }
     Ok(())
 }
+
+fn element_validity_fixture() -> VortexResult<vortex::array::ArrayRef> {
+    use vortex::array::arrays::StructArray;
+    let leaf = PrimitiveArray::from_option_iter([
+        Some(f64::NAN),
+        None,
+        Some(3.0),
+        Some(4.0),
+        Some(5.0),
+        Some(6.0),
+        Some(7.0),
+        Some(8.0),
+    ])
+    .into_array();
+    let selected = StructArray::try_from_iter_with_validity(
+        [("leaf", leaf)],
+        Validity::from_iter([true, true, false, true, true, true, true, true]),
+    )?
+    .into_array();
+    let entries = StructArray::try_from_iter_with_validity(
+        [
+            ("selected", selected),
+            (
+                "spare",
+                buffer![10i32, 20, 30, 40, 50, 60, 70, 80].into_array(),
+            ),
+        ],
+        Validity::from_iter([true, true, true, false, true, true, true, true]),
+    )?
+    .into_array();
+    Ok(ListViewArray::try_new(
+        entries,
+        buffer![0u32, 2, 4, 0].into_array(),
+        buffer![2u32, 0, 3, 4].into_array(),
+        Validity::from_iter([true, true, true, false]),
+    )?
+    .into_array())
+}
+
+#[test]
+fn element_validity_map_has_true_boolean_type_and_logical_ancestor_masks() -> VortexResult<()> {
+    use vortex::array::arrays::BoolArray;
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::expr::root;
+    let input = element_validity_fixture()?;
+    let expression =
+        list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
+    let expected_dtype = DType::List(
+        std::sync::Arc::new(DType::Bool(vortex::dtype::Nullability::NonNullable)),
+        Nullable,
+    );
+    let bound = expression.bind(input.dtype())?;
+    assert_eq!(bound.dtype(), &expected_dtype);
+    let actual = input.apply_bound(&bound)?;
+    assert_eq!(actual.dtype(), &expected_dtype);
+    let expected = ListViewArray::try_new(
+        BoolArray::from_iter([true, false, false, false, true, true, true, true]).into_array(),
+        buffer![0u32, 2, 4, 0].into_array(),
+        buffer![2u32, 0, 3, 4].into_array(),
+        Validity::from_iter([true, true, true, false]),
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    assert_arrays_eq(&actual, &expected, &mut ctx);
+    Ok(())
+}
+
+#[test]
+fn element_validity_sum_map_and_count_identity_preserve_outer_missingness() -> VortexResult<()> {
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::expr::{fill_null, is_not_null, list_sum, lit, mask, root};
+    let input = element_validity_fixture()?;
+    let mapped = list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
+    let raw_sum = list_sum(mapped);
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    assert_arrays_eq(
+        &input.apply_bound(&raw_sum.bind(input.dtype())?)?,
+        &PrimitiveArray::from_option_iter([Some(1u64), None, Some(3), None]).into_array(),
+        &mut ctx,
+    );
+    // This explicit count-style identity applies to a PRESENT empty list;
+    // the independent outer logical mask retains a missing list.
+    let count = mask(fill_null(raw_sum, lit(0u64)), is_not_null(root()));
+    assert_arrays_eq(
+        &input.apply_bound(&count.bind(input.dtype())?)?,
+        &PrimitiveArray::from_option_iter([Some(1u64), Some(0), Some(3), None]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}
+
+#[test]
+fn element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types() -> VortexResult<()>
+{
+    use vortex::array::builtins::ArrayBuiltins;
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::expr::{list_sum, pack, root};
+    let input = element_validity_fixture()?;
+    let body = list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
+    let root_presence = list_element_validity(root(), input.dtype(), &[])?;
+    let combined = pack(
+        [
+            ("mapped", body.clone()),
+            ("sum", list_sum(body)),
+            ("raw", root()),
+            ("root_presence_sum", list_sum(root_presence)),
+        ],
+        vortex::dtype::Nullability::NonNullable,
+    )
+    .bind(input.dtype())?;
+    let actual = input.apply_bound(&combined)?;
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    assert_arrays_eq(&actual.get_item("raw")?, &input, &mut ctx);
+    assert_arrays_eq(
+        &actual.get_item("sum")?,
+        &PrimitiveArray::from_option_iter([Some(1u64), None, Some(3), None]).into_array(),
+        &mut ctx,
+    );
+    assert_arrays_eq(
+        &actual.get_item("root_presence_sum")?,
+        &PrimitiveArray::from_option_iter([Some(2u64), None, Some(3), None]).into_array(),
+        &mut ctx,
+    );
+    assert!(
+        matches!(actual.get_item("mapped")?.dtype(), DType::List(element, _) if element.as_ref() == &DType::Bool(vortex::dtype::Nullability::NonNullable))
+    );
+    Ok(())
+}
+
+#[test]
+fn element_validity_serialization_retains_exact_original_schema_and_no_capture() -> VortexResult<()>
+{
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::expr::{ExprSerializeProtoExt, deserialize_expr_proto, root};
+    let input = element_validity_fixture()?;
+    let expression =
+        list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
+    let session = VortexSession::default();
+    let restored = deserialize_expr_proto(&expression.serialize_proto()?, &session)?;
+    assert_eq!(expression, restored);
+    let mut ctx = session.create_execution_ctx();
+    assert_arrays_eq(
+        &input.apply_bound(&restored.bind(input.dtype())?)?,
+        &input.apply_bound(&expression.bind(input.dtype())?)?,
+        &mut ctx,
+    );
+    // Same positions/nullability but a different field name is a different
+    // original schema, not a valid rebinding of a captured prepared path.
+    let DType::List(element, nullable) = input.dtype() else {
+        unreachable!()
+    };
+    let DType::Struct(fields, entry_nullable) = element.as_ref() else {
+        unreachable!()
+    };
+    let renamed = DType::List(
+        std::sync::Arc::new(DType::Struct(
+            vortex::dtype::StructFields::new(
+                vortex::dtype::FieldNames::from(["renamed", "spare"]),
+                fields.fields().collect(),
+            ),
+            *entry_nullable,
+        )),
+        *nullable,
+    );
+    assert!(restored.bind(&renamed).is_err());
+    Ok(())
+}

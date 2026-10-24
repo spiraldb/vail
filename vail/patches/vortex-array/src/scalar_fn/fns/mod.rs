@@ -17,6 +17,7 @@ pub mod list_contains;
 pub mod list_length;
 pub mod list_project;
 pub mod list_field;
+pub mod list_element_validity;
 pub mod list_sum;
 pub mod literal;
 pub mod mask;
