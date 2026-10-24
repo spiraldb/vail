@@ -74,3 +74,30 @@ Bool/Constant; encoded logical masks therefore prevented the Dict rule. The next
 prototype changes mask execution order to resolve only that bitmap first and
 reapply the existing encoding-specific mask rules. No improvement from that
 next change is claimed before its own build, correctness checks and timings.
+
+## Third prototype: encoding preserved, kernel still slower
+
+Production source `a2f343dd` (test/evidence HEAD `12629a5c`), native SHA256
+`1557c16866ec8d9bfe5e164cc4f6b7eb1966092ccb7365f0f8f23f60be93ab7d`.
+Normal build took 5m23s. Same quiet warmup + three actions: baseline median
+75.921ms / 0.898115 CPU seconds; candidate 101.917ms / 1.207583 CPU seconds,
+1.34× slower in both. Exact independent sum passed every action.
+
+Current Time Profiler establishes that the encoding-preservation fix works:
+61.56% of leaf CPU samples are in the new dictionary reduction. Dictionary
+gathers and the generic masked grouped reducer disappeared from the top
+stacks. Thus avoiding expansion alone was insufficient to beat main.
+
+A read-only public Vortex API diagnostic inspected one existing file: DP has
+102 dictionary values with bitpacked u16 codes. Field extraction yields
+Mask(Dict, encoded Boolean AND); one execution step after the mask-order fix
+returns Dict(masked codes, shared dictionary values). Diagnostic output is
+retained, with no production hooks or implementation-dependent test assertions.
+The example was built with normal Cargo/kache and the exact standard maturin
+CPU/link flags; this reused its dependency cache normally (3.60s build), without
+copying any native artifact.
+
+Actual ARM assembly showed hidden Mask enum decisions and bounds checks in
+the per-code loop, plus bit-at-a-time validity extraction. The next version
+binds concrete borrowed bitmap views per batch and reuses the library's
+word-wise BitIndexIterator. Its improvement remains unclaimed until measured.

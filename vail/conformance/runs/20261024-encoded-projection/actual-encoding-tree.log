@@ -1,0 +1,70 @@
+file dtype: {__vail_matrix_row={row_idx=i32?}?, __vail_matrix_cells=list({value={DP=i32?}?}?)?, row_idx=i32?}
+raw list:
+root: vortex.list(list({value={DP=i32?}?}?)?, len=1)
+  elements: vortex.struct({value={DP=i32?}?}?, len=2500)
+    validity: vortex.constant(bool, len=2500)
+    value: vortex.struct({DP=i32?}?, len=2500)
+      validity: vortex.bool(bool, len=2500)
+      DP: vortex.dict(i32?, len=2500)
+        codes: fastlanes.bitpacked(u16, len=2500)
+        values: vortex.shared(i32?, len=102)
+          source: vortex.primitive(i32?, len=102)
+            validity: vortex.bool(bool, len=102)
+  offsets: vortex.sequence(u64, len=2)
+  validity: vortex.constant(bool, len=1)
+
+extracted element:
+root: vortex.mask(i32?, len=2500)
+  input: vortex.dict(i32?, len=2500)
+    codes: fastlanes.bitpacked(u16, len=2500)
+    values: vortex.shared(i32?, len=102)
+      source: vortex.primitive(i32?, len=102)
+        validity: vortex.bool(bool, len=102)
+  mask: vortex.binary(bool, len=2500)
+    lhs: vortex.bool(bool, len=2500)
+    rhs: vortex.constant(bool, len=2500)
+
+step 0:
+root: vortex.dict(i32?, len=2500)
+  codes: vortex.mask(u16?, len=2500)
+    input: fastlanes.bitpacked(u16, len=2500)
+    mask: vortex.bool(bool, len=2500)
+  values: vortex.shared(i32?, len=102)
+    source: vortex.primitive(i32?, len=102)
+      validity: vortex.bool(bool, len=102)
+
+step 1:
+root: vortex.dict(i32?, len=2500)
+  codes: vortex.primitive(u16?, len=2500)
+    validity: vortex.bool(bool, len=2500)
+  values: vortex.shared(i32?, len=102)
+    source: vortex.primitive(i32?, len=102)
+      validity: vortex.bool(bool, len=102)
+
+step 2:
+root: vortex.dict(i32?, len=2500)
+  codes: vortex.primitive(u16?, len=2500)
+    validity: vortex.bool(bool, len=2500)
+  values: vortex.primitive(i32?, len=102)
+    validity: vortex.bool(bool, len=102)
+
+step 3:
+root: vortex.primitive(i32?, len=2500)
+  validity: vortex.binary(bool, len=2500)
+    lhs: vortex.dict(bool, len=2500)
+      codes: vortex.primitive(u16, len=2500)
+      values: vortex.fill_null(bool, len=102)
+        input: vortex.bool(bool, len=102)
+        fill_value: vortex.constant(bool, len=102)
+    rhs: vortex.bool(bool, len=2500)
+
+step 4:
+root: vortex.primitive(i32?, len=2500)
+  validity: vortex.binary(bool, len=2500)
+    lhs: vortex.dict(bool, len=2500)
+      codes: vortex.primitive(u16, len=2500)
+      values: vortex.fill_null(bool, len=102)
+        input: vortex.bool(bool, len=102)
+        fill_value: vortex.constant(bool, len=102)
+    rhs: vortex.bool(bool, len=2500)
+
