@@ -165,3 +165,50 @@ async fn struct_leaf_values_survive_filter_sort_and_limit() {
         .collect();
     assert_eq!(values, vec![13, 12]);
 }
+
+#[tokio::test]
+async fn renamed_struct_projection_keeps_selected_field_values() {
+    let batch = RecordBatch::try_new(
+        Arc::new(Schema::new(vec![Field::new("idx", DataType::Int32, false)])),
+        vec![Arc::new(Int32Array::from(vec![0, 1, 2]))],
+    )
+    .unwrap();
+    let frame = SessionContext::new()
+        .read_batch(batch)
+        .unwrap()
+        .select(vec![
+            datafusion_functions::core::named_struct()
+                .call(vec![lit("value"), col("idx") + lit(5)])
+                .alias("original"),
+        ])
+        .unwrap()
+        .select(vec![col("original").alias("renamed")])
+        .unwrap()
+        .select(vec![
+            datafusion_functions::core::get_field()
+                .call(vec![col("renamed"), lit("value")])
+                .alias("value"),
+        ])
+        .unwrap();
+    let batches = frame.collect().await.unwrap();
+    for batch in &batches {
+        assert_eq!(batch.schema().fields().len(), 1);
+        assert_eq!(batch.schema().field(0).name(), "value");
+        assert_eq!(batch.schema().field(0).data_type(), &DataType::Int32);
+        assert_eq!(batch.column(0).null_count(), 0);
+    }
+    let values: Vec<_> = batches
+        .iter()
+        .flat_map(|batch| {
+            batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .iter()
+                .copied()
+        })
+        .collect();
+    assert_eq!(values, vec![5, 6, 7]);
+}
