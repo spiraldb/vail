@@ -400,6 +400,21 @@ impl ScalarUDFImpl for ListAggregate {
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or_else(|| exec_datafusion_err!("list reducer requires Arrow lists"))?;
+        if self.function == "collect" {
+            // Direct UDF callers retain the same zero-copy identity even when
+            // their plan did not pass through Vail expression lowering.
+            let DataType::List(field) = args.return_field.data_type() else {
+                return Err(exec_datafusion_err!("collect requires list output"));
+            };
+            let result: ArrayRef = Arc::new(ListArray::new(
+                field.clone(), lists.offsets().clone(), lists.values().clone(), lists.nulls().cloned(),
+            ));
+            return if scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(&result, 0)?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            };
+        }
         if self.function == "linreg" {
             return invoke_linreg_lists(lists, &arrays[1], rows, scalar);
         }
