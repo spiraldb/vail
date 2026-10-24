@@ -1,0 +1,48 @@
+   Compiling arrow-data v59.2.0 (/home/danielking/finite-stddev-20261024/source/vail/patches/arrow-data)
+   Compiling vail-ordering v0.1.0 (/home/danielking/finite-stddev-20261024/source/vail/crates/vail-ordering)
+   Compiling arrow-array v59.2.0 (/home/danielking/finite-stddev-20261024/source/vail/patches/arrow-array)
+   Compiling arrow-select v59.2.0
+   Compiling arrow-arith v59.2.0
+   Compiling arrow-row v59.2.0
+   Compiling arrow-ord v59.2.0
+   Compiling arrow-string v59.2.0
+   Compiling arrow-ipc v59.2.0
+   Compiling arrow-cast v59.2.0
+   Compiling arrow-json v59.2.0
+   Compiling arrow-csv v59.2.0
+   Compiling arrow v59.2.0
+   Compiling datafusion-common v55.0.0 (/home/danielking/finite-stddev-20261024/source/vail/patches/datafusion-common)
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling datafusion-functions v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0 (/home/danielking/finite-stddev-20261024/source/vail/patches/datafusion-functions-aggregate)
+   Compiling datafusion-optimizer v55.0.0
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-session v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling vail-execution v0.1.0 (/home/danielking/finite-stddev-20261024/source/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib test) generated 1 warning (run `cargo fix --lib -p vail-execution --tests` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 29.43s
+     Running unittests src/lib.rs (/home/danielking/cloud-scan-20261023/target/release/deps/vail_execution-3356100bfcf947ee)
+
+running 2 tests
+test expressions::tests::direct_call_index_missing_index_suppresses_out_of_bounds ... ok
+test expressions::tests::direct_call_index_matches_expected_alleles_for_slices_nulls_and_bounds ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 64 filtered out; finished in 0.00s
+
