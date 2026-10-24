@@ -1,0 +1,32 @@
+{
+  "mode": "hail",
+  "storage": "legacy",
+  "repetition": "2",
+  "seconds": 6.567564174000154,
+  "telemetry": {
+    "cpu_seconds": 64.88999999999999,
+    "average_cores": 9.880032509932558,
+    "peak_rss_gib": 5.0836944580078125,
+    "sampling_hz": 10,
+    "counter_deltas": {
+      "user_time": 60.85999999999999,
+      "system_time": 4.029999999999999,
+      "instructions": null,
+      "cycles": null,
+      "diskio_bytesread": 0,
+      "diskio_byteswritten": 481275904
+    },
+    "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+    "directory": "/home/danielking/parallel-vcf-export/results/hail-legacy-2/telemetry",
+    "hardware_counters": {
+      "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+      "path": "/home/danielking/parallel-vcf-export/results/hail-legacy-2/telemetry/perf.csv",
+      "returncode": 255,
+      "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+    }
+  },
+  "bytes": 238110134,
+  "decompressed_sha256": "a233cd63bc88165b505a023cc3a6cabfb33186298172d5590a21015cf1a784ee",
+  "records": 24885,
+  "native_module": "None"
+}

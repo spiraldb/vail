@@ -1,0 +1,6 @@
+{
+  "reason": "Preserved source mtimes caused Cargo to skip candidate recompilation after baseline restoration; installed native hashes identical",
+  "observed_native_sha256": "920e32c992ede0d1d66e2c9715410adf3b2e0030bdfc1b0312b96ae593e7bbb9",
+  "accepted_measurements": false,
+  "correction": "Refresh candidate source mtimes, normal kache/maturin rebuild, verify installed wheel payload and baseline distinctness; rerun public tests and all measurements"
+}

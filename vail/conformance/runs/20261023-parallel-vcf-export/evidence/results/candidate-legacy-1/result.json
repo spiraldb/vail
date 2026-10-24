@@ -1,0 +1,32 @@
+{
+  "mode": "candidate",
+  "storage": "legacy",
+  "repetition": "1",
+  "seconds": 12.223621014999935,
+  "telemetry": {
+    "cpu_seconds": 78.89,
+    "average_cores": 6.453767157133424,
+    "peak_rss_gib": 5.630149841308594,
+    "sampling_hz": 10,
+    "counter_deltas": {
+      "user_time": 72.47,
+      "system_time": 6.42,
+      "instructions": null,
+      "cycles": null,
+      "diskio_bytesread": 0,
+      "diskio_byteswritten": 225316864
+    },
+    "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+    "directory": "/home/danielking/parallel-vcf-export/results/candidate-legacy-1/telemetry",
+    "hardware_counters": {
+      "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+      "path": "/home/danielking/parallel-vcf-export/results/candidate-legacy-1/telemetry/perf.csv",
+      "returncode": 255,
+      "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+    }
+  },
+  "bytes": 225285423,
+  "decompressed_sha256": "8036eaf6ea3fbe05e9b1837aaf361d582fb0ac698610eed6c68dddbcbd35c924",
+  "records": 24885,
+  "native_module": "<module 'vail._native' from '/home/danielking/parallel-vcf-export/env/lib/python3.11/site-packages/vail/_native.abi3.so'>"
+}

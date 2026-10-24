@@ -1,0 +1,673 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 5K of event 'cpu-clock'
+# Event count (approx.): 57494948920
+#
+# Overhead  Command              Pid:Command        
+# ........  ...............  .......................
+#
+     4.44%  tokio-rt-worker     9413:tokio-rt-worker
+     3.94%  tokio-rt-worker     9427:tokio-rt-worker
+            |          
+            |--1.79%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+            |          _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+            |          _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+            |          _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+            |          _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+            |          _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+            |          _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+            |          _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+            |          |          
+            |           --1.70%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+            |                     _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+            |                     _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+            |                     _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+            |                     _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+            |                     _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+            |                     0x7d742cc94a82
+            |                     0x7d742cd268df
+            |          
+             --0.51%--_RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+
+     3.78%  tokio-rt-worker     9429:tokio-rt-worker
+            |          
+             --1.70%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.62%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.76%  tokio-rt-worker     9420:tokio-rt-worker
+            |          
+             --1.91%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.81%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.76%  tokio-rt-worker     9432:tokio-rt-worker
+            |          
+             --1.58%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.51%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.74%  tokio-rt-worker     9423:tokio-rt-worker
+            |          
+             --1.69%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.46%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.71%  tokio-rt-worker     9422:tokio-rt-worker
+            |          
+             --1.65%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       |          
+                        --1.62%--_RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                                  _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                                  _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                                  |          
+                                   --1.56%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                             _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                             _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                             _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                             _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                             _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                             0x7d742cc94a82
+                                             0x7d742cd268df
+
+     3.69%  tokio-rt-worker     9421:tokio-rt-worker
+            |          
+            |--1.60%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+            |          _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+            |          _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+            |          _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+            |          _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+            |          _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+            |          _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+            |          _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+            |          |          
+            |           --1.51%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+            |                     _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+            |                     _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+            |                     _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+            |                     _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+            |                     _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+            |                     0x7d742cc94a82
+            |                     0x7d742cd268df
+            |          
+             --0.63%--_RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       _RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                       _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                       _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                       _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                       _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                       _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                       _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                       _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                       _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                       0x7d742cc94a82
+                       0x7d742cd268df
+
+     3.69%  tokio-rt-worker     9430:tokio-rt-worker
+            |          
+             --1.81%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       |          
+                        --1.79%--_RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                                  _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                                  _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                                  |          
+                                   --1.65%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                             _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                             _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                             _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                             _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                             _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                             0x7d742cc94a82
+                                             0x7d742cd268df
+
+     3.69%  tokio-rt-worker     9434:tokio-rt-worker
+            |          
+             --1.67%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.53%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.69%  tokio-rt-worker     9435:tokio-rt-worker
+            |          
+            |--1.48%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+            |          _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+            |          _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+            |          _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+            |          _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+            |          _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+            |          _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+            |          _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+            |          |          
+            |           --1.37%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+            |                     _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+            |                     _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+            |                     _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+            |                     _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+            |                     _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+            |                     0x7d742cc94a82
+            |                     0x7d742cd268df
+            |          
+             --0.56%--_RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --0.53%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.67%  tokio-rt-worker     9426:tokio-rt-worker
+            |          
+            |--1.62%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+            |          _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+            |          _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+            |          _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+            |          _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+            |          _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+            |          _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+            |          _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+            |          |          
+            |           --1.55%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+            |                     _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+            |                     _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                     _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+            |                     _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+            |                     _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+            |                     _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+            |                     0x7d742cc94a82
+            |                     0x7d742cd268df
+            |          
+             --0.54%--_RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --0.53%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.64%  tokio-rt-worker     9425:tokio-rt-worker
+            |          
+             --1.51%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.39%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.64%  tokio-rt-worker     9428:tokio-rt-worker
+            |          
+             --1.62%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.60%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.58%  tokio-rt-worker     9433:tokio-rt-worker
+            |          
+             --1.69%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.58%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.57%  tokio-rt-worker     9424:tokio-rt-worker
+            |          
+             --1.76%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.65%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.53%  tokio-rt-worker     9431:tokio-rt-worker
+            |          
+             --1.48%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.41%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.44%  tokio-rt-worker     9437:tokio-rt-worker
+            |          
+            |--1.39%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+            |          _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+            |          _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+            |          _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+            |          _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+            |          |          
+            |           --1.37%--_RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+            |                     _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+            |                     _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+            |                     |          
+            |                      --1.28%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+            |                                _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+            |                                _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+            |                                _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                                _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+            |                                _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+            |                                _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+            |                                _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+            |                                _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+            |                                0x7d742cc94a82
+            |                                0x7d742cd268df
+            |          
+             --0.58%--_RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --0.51%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.41%  tokio-rt-worker     9439:tokio-rt-worker
+            |          
+             --1.21%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.14%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.37%  tokio-rt-worker     9436:tokio-rt-worker
+            |          
+             --1.44%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.30%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     3.25%  tokio-rt-worker     9438:tokio-rt-worker
+            |          
+             --1.70%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.63%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     2.88%  tokio-rt-worker     9441:tokio-rt-worker
+            |          
+             --1.32%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       |          
+                        --1.30%--_RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                                  _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                                  _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                                  |          
+                                   --1.16%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                             _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                             _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                             _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                             _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                             _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                             0x7d742cc94a82
+                                             0x7d742cd268df
+
+     2.88%  tokio-rt-worker     9442:tokio-rt-worker
+            |          
+             --1.16%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       |          
+                        --1.14%--_RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                                  _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                                  _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                                  |          
+                                   --1.09%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                             _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                             _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                             _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                             _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                             _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                             _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                             0x7d742cc94a82
+                                             0x7d742cd268df
+
+     2.81%  tokio-rt-worker     9440:tokio-rt-worker
+            |          
+             --1.32%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.28%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     2.74%  tokio-rt-worker     9443:tokio-rt-worker
+            |          
+             --1.19%--_RNvNtNtCs12RrJdt9qbk_7zlib_rs7deflate13longest_match13longest_match
+                       _RNvNtNtNtCs12RrJdt9qbk_7zlib_rs7deflate9algorithm6medium14deflate_medium
+                       _RNvNtCs12RrJdt9qbk_7zlib_rs7deflate7deflate
+                       _RNvMs5_NtCs12RrJdt9qbk_7zlib_rs6stableNtB5_7Deflate8compress
+                       _RNvXNtCsjrYKHBSpprw_6flate23zioNtNtB4_3mem8CompressNtB2_3Ops7run_vec
+                       _RNvMs2_NtCsjrYKHBSpprw_6flate23zioINtB5_6WriterINtNtCscHgRw1M2fX5_5alloc3vec3VechENtNtB7_3mem8CompressE17write_with_statusCs8eGafpZmYjM_10vail_table
+                       _RNvYINtNtNtCsjrYKHBSpprw_6flate27deflate5write14DeflateEncoderINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allCs8eGafpZmYjM_10vail_table
+                       _RNvMNtCs8eGafpZmYjM_10vail_table15compressed_textINtB2_10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEE5drainB4_.llvm.12432241607607558662
+                       |          
+                        --1.16%--_RNvYINtNtCs8eGafpZmYjM_10vail_table15compressed_text10BgzfWriterQINtNtCscHgRw1M2fX5_5alloc3vec3VechEENtNtCs6ZjlLoI6YmX_3std2io5Write9write_allB7_
+                                  _RNvMs2_NtCs8eGafpZmYjM_10vail_table10vcf_exportNtB5_9Formatter5batch
+                                  _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB13_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNCNvNtCs8eGafpZmYjM_10vail_table10vcf_export6export0sa_0ENtNtB19_8schedule16BlockingScheduleE4pollCsiydeDPbIdkr_7__native
+                                  _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                  _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                  _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                  _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                  0x7d742cc94a82
+                                  0x7d742cd268df
+
+     0.93%  tokio-rt-worker     9415:tokio-rt-worker
+     0.84%  python              9385:python         
+     0.79%  tokio-rt-worker     9444:tokio-rt-worker
+     0.74%  tokio-rt-worker     9404:tokio-rt-worker
+     0.72%  tokio-rt-worker     9389:tokio-rt-worker
+     0.65%  tokio-rt-worker     9401:tokio-rt-worker
+     0.63%  tokio-rt-worker     9400:tokio-rt-worker
+     0.61%  tokio-rt-worker     9397:tokio-rt-worker
+     0.58%  tokio-rt-worker     9396:tokio-rt-worker
+     0.54%  tokio-rt-worker     9402:tokio-rt-worker
+     0.53%  tokio-rt-worker     9392:tokio-rt-worker
+     0.51%  tokio-rt-worker     9399:tokio-rt-worker
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

@@ -1,0 +1,22 @@
+{
+  "cpu_seconds": 63.68,
+  "average_cores": 1.2786697644525171,
+  "peak_rss_gib": 6.968685150146484,
+  "sampling_hz": 10,
+  "counter_deltas": {
+    "user_time": 55.17,
+    "system_time": 8.51,
+    "instructions": null,
+    "cycles": null,
+    "diskio_bytesread": 0,
+    "diskio_byteswritten": 225222656
+  },
+  "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+  "directory": "/home/danielking/parallel-vcf-export/results/candidate-legacy-1/telemetry",
+  "hardware_counters": {
+    "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+    "path": "/home/danielking/parallel-vcf-export/results/candidate-legacy-1/telemetry/perf.csv",
+    "returncode": 255,
+    "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+  }
+}

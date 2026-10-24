@@ -1,0 +1,91 @@
+[
+  {
+    "mode": "baseline",
+    "storage": "legacy",
+    "samples": 3,
+    "median_seconds": 49.75648069099998,
+    "median_cpu_seconds": 63.16,
+    "peak_rss_gib": 7.000614166259766,
+    "records": [
+      24885
+    ],
+    "decompressed_sha256": [
+      "8036eaf6ea3fbe05e9b1837aaf361d582fb0ac698610eed6c68dddbcbd35c924"
+    ],
+    "output_bytes": [
+      225141536
+    ]
+  },
+  {
+    "mode": "baseline",
+    "storage": "native",
+    "samples": 3,
+    "median_seconds": 42.420778616999996,
+    "median_cpu_seconds": 55.04,
+    "peak_rss_gib": 1.313232421875,
+    "records": [
+      24885
+    ],
+    "decompressed_sha256": [
+      "8036eaf6ea3fbe05e9b1837aaf361d582fb0ac698610eed6c68dddbcbd35c924"
+    ],
+    "output_bytes": [
+      225141536
+    ]
+  },
+  {
+    "mode": "candidate",
+    "storage": "legacy",
+    "samples": 3,
+    "median_seconds": 12.235126318000084,
+    "median_cpu_seconds": 78.55,
+    "peak_rss_gib": 5.667156219482422,
+    "records": [
+      24885
+    ],
+    "decompressed_sha256": [
+      "8036eaf6ea3fbe05e9b1837aaf361d582fb0ac698610eed6c68dddbcbd35c924"
+    ],
+    "output_bytes": [
+      225285423
+    ],
+    "speedup_vs_baseline": 4.066691213297831,
+    "relative_time_vs_hail": 1.8629625830588492
+  },
+  {
+    "mode": "candidate",
+    "storage": "native",
+    "samples": 3,
+    "median_seconds": 5.642806309999969,
+    "median_cpu_seconds": 60.25,
+    "peak_rss_gib": 1.4730491638183594,
+    "records": [
+      24885
+    ],
+    "decompressed_sha256": [
+      "8036eaf6ea3fbe05e9b1837aaf361d582fb0ac698610eed6c68dddbcbd35c924"
+    ],
+    "output_bytes": [
+      225250038
+    ],
+    "speedup_vs_baseline": 7.5176740590623305,
+    "relative_time_vs_hail": 0.8591931742880959
+  },
+  {
+    "mode": "hail",
+    "storage": "legacy",
+    "samples": 3,
+    "median_seconds": 6.567564174000154,
+    "median_cpu_seconds": 64.54,
+    "peak_rss_gib": 5.0836944580078125,
+    "records": [
+      24885
+    ],
+    "decompressed_sha256": [
+      "a233cd63bc88165b505a023cc3a6cabfb33186298172d5590a21015cf1a784ee"
+    ],
+    "output_bytes": [
+      238110134
+    ]
+  }
+]

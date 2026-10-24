@@ -1,0 +1,582 @@
+2026-10-24 00:38:36.801 SparkBackend$: WARN: This Hail JAR was compiled for Spark 3.5.3, running with Spark 3.5.9.
+  Compatibility is not guaranteed.
+2026-10-24 00:38:37.233 py4jutils$: INFO: Hail 0.2.139-5e5eedb87ff8
+2026-10-24 00:38:37.700 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:37.801 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:37.801 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:37.805 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:37.805 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:37.825 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.329 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.329 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.329 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.330 RegionPool: INFO: RegionPool: FREE: 64.0K allocated (64.0K blocks / 0 chunks), regions.size = 1, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.347 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.475 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+%__norm_1 = RNGStateLiteral
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /home/danielking/parallel-vcf-export/data/profile.mt )]
+MatrixWrite(!mt) ["{\"name\":\"MatrixVCFWriter\",\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:38.480 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.480 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.480 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.512 ForwardLets$: INFO: Eliminating unused binding:
+__norm_1: rng_state = (EVAL) RNGStateLiteral
+2026-10-24 00:38:38.526 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.526 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.526 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.529 LoweringPipeline: INFO: after Optimize: relationalLowerer, initial IR: IR size 2: 
+
+!mt = MatrixRead [Matrix{global:Struct{},col_key:[s],col:Struct{s:String},row_key:[[locus,alleles]],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}},entry:Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}}, False, False, (MatrixNativeReader /home/danielking/parallel-vcf-export/data/profile.mt )]
+MatrixWrite(!mt) ["{\"name\":\"MatrixVCFWriter\",\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:38.580 LoweringPipeline: INFO: after LowerMatrixToTable: IR size 11: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !c0 = I32 [0]
+  !1 = Cast(!c0) [Int64] 
+  !2 = Str ["/home/dani..."]
+  !3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+  !s = ReadPartition(!3) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !4 = ToArray(!s)
+  InsertFields %global (__cols: !4)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.594 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.594 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.594 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.598 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.598 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.598 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.598 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.599 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.599 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.609 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.609 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.609 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.615 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerMatrixToTable: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !2 = ToArray(!s)
+  InsertFields %global (__cols: !2)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.619 LoweringPipeline: INFO: after LiftRelationalValuesToRelationalLets: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !2 = ToArray(!s)
+  InsertFields %global (__cols: !2)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.623 LoweringPipeline: INFO: after EvalRelationalLets: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !2 = ToArray(!s)
+  InsertFields %global (__cols: !2)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.627 LoweringPipeline: INFO: after LowerTableKeyByAndAggregate: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !2 = ToArray(!s)
+  InsertFields %global (__cols: !2)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.631 LoweringPipeline: INFO: after LowerAndExecuteShuffles: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !2 = ToArray(!s)
+  InsertFields %global (__cols: !2)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.632 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.632 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.632 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.637 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerAndExecuteShuffles: IR size 8: 
+
+!ht = TableRead [Table{global:Struct{},key:[locus,alleles],row:Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}}, False, (TableNativeZippedReader /home/danielking/parallel-vcf-export/data/profile.mt/rows /home/danielking/parallel-vcf-export/data/profile.mt/entries )]
+!ht2 = TableMapGlobals(!ht) { (%global) =>
+  !1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+  !s = ReadPartition(!1) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+  !2 = ToArray(!s)
+  InsertFields %global (__cols: !2)
+}
+TableWrite(!ht2) ["{\"writer\":{\"path\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false},\"colsFieldName\":\"__cols\",\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"colKey\":[\"s\"]}"]
+
+2026-10-24 00:38:38.640 LowerOrInterpretNonCompilable$: INFO: LowerOrInterpretNonCompilable: whole stage code generation is a go!
+2026-10-24 00:38:38.640 LowerOrInterpretNonCompilable$: INFO: lowering result: TableWrite
+2026-10-24 00:38:38.708 LoweringPipeline: INFO: initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-24 00:38:38.709 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.709 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.709 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.712 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-24 00:38:38.714 LoweringPipeline: INFO: after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-24 00:38:38.714 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.715 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.715 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.716 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-24 00:38:38.722 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-24 00:38:38.722 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.722 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:38.722 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:38.724 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 4: 
+
+!1 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{locus:+PCLocus(GRCh37),alleles:+PCArray[+PCString],rsid:PCString,qual:PFloat64,filters:PCSet[+PCString],info:+PCStruct{AC:PCArray[+PInt32],AF:PCArray[+PFloat64],AN:PInt32,BaseQRankSum:PFloat64,ClippingRankSum:PFloat64,DP:PInt32,DS:+PBoolean,FS:PFloat64,HaplotypeScore:PFloat64,InbreedingCoeff:PFloat64,MLEAC:PCArray[+PInt32],MLEAF:PCArray[+PFloat64],MQ:PFloat64,MQ0:PInt32,MQRankSum:PFloat64,QD:PFloat64,ReadPosRankSum:PFloat64,set:PCString}})), 0] 
+!2 = In [SingleCodeEmitParamType(true, PTypeReferenceSingleCodeType(+PCStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+PCArray[+PCStruct{AD:PCArray[+PInt32],DP:PInt32,GQ:PInt32,GT:PCCall,PL:PCArray[+PInt32]}]})), 1]
+!3 = GetField(!2) [`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`]
+InsertFields !1 (the entries! [877f12a8827e18f61222c6c8c5fb04a8]: !3)
+
+2026-10-24 00:38:39.040 LowerOrInterpretNonCompilable$: INFO: compiling and evaluating result: TableWrite
+2026-10-24 00:38:39.087 LoweringPipeline: INFO: initial IR: IR size 60: 
+
+!1 = I64 [0] 
+!2 = Str ["/home/dani..."]
+!3 = MakeStruct(partitionIndex: !1, partitionPath: !2)
+!s = ReadPartition(!3) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!4 = ToArray(!s) 
+!c0 = I32 [0]
+%__norm_1 = ArrayRef(!4, !c0) [-1]
+%__norm_2 = Ref [__norm_1]
+!5 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!5) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!6 = ToArray(!s2)
+%__norm_3 = InsertFields %__norm_2 (__cols: !6)
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+%__norm_4 = ToStream(!7) [False]
+!8 = Literal [Array[String], <literal value>]
+!s3 = ToStream(!8) [False]
+!s4 = StreamZip(%__norm_4, !s3) [-1, AssertSameLength] {
+(%__norm_5, %__norm_6) =>
+  MakeStruct(__old_ctx: %__norm_5, __part_file: %__norm_6)
+} 
+!9 = MakeStruct(__iruid_3: %__norm_1, __iruid_5: %__norm_3) 
+!10 = NA [String]
+%__norm_14 = CollectDistributedArray(!s4, !9, !10) {
+(%__norm_7, %__norm_8) =>
+  %__norm_9 = GetField(%__norm_8) [__iruid_3]
+  %__norm_10 = GetField(%__norm_8) [__iruid_5]
+  %__norm_11 = GetField(%__norm_7) [__old_ctx]
+  %__norm_12 = Ref [__norm_11]
+  %__norm_13 = ReadPartition(%__norm_12) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"]
+  !11 = GetField(%__norm_10) [__cols] 
+  !12 = GetField(%__norm_7) [__part_file] 
+  !13 = UUID4 [__iruid_13]
+  !14 = Apply(!12, !13) [-1, concat, (), String] 
+  !15 = Str [".bgz"]
+  !16 = Apply(!14, !15) [-1, concat, (), String]
+  !17 = MakeStruct(cols: !11, partFile: !16)
+  WritePartition(%__norm_13, !17) ["{\"name\":\"VCFPartitionWriter\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"writeHeader\":false,\"tabix\":false}"]
+}
+!18 = GetField(%__norm_3) [__cols]
+!19 = MakeStruct(cols: !18, partFiles: %__norm_14)
+WriteMetadata(!19) ["{\"name\":\"VCFExportFinalizer\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"outputPath\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:39.088 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.088 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:39.088 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.090 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.090 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:39.090 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.121 ForwardLets$: INFO: Eliminating unused binding:
+__norm_9: struct{} = (EVAL) GetField(#__norm_8) [__iruid_3]
+2026-10-24 00:38:39.134 PruneDeadFields$: INFO: Prune: MakeStruct: eliminating field '__iruid_3'
+2026-10-24 00:38:39.137 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.137 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:39.137 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.145 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.146 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:39.146 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.160 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 40: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!5 = ToArray(!s2)
+%__norm_3 = InsertFields !3 (__cols: !5)
+!6 = GetField(%__norm_3) [__cols] 
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s3 = ToStream(!7) [False] 
+!8 = Literal [Array[String], <literal value>]
+!s4 = ToStream(!8) [False]
+!s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+(%__norm_5, %__norm_6) =>
+  MakeStruct(__old_ctx: %__norm_5, __part_file: %__norm_6)
+} 
+!9 = MakeStruct(__iruid_5: %__norm_3) 
+!10 = NA [String]
+!20 = CollectDistributedArray(!s5, !9, !10) {
+(%__norm_7, %__norm_8) =>
+  !11 = GetField(%__norm_7) [__old_ctx]
+  !s6 = ReadPartition(!11) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !12 = GetField(%__norm_8) [__iruid_5]
+  !13 = GetField(!12) [__cols] 
+  !14 = GetField(%__norm_7) [__part_file] 
+  !15 = UUID4 [__iruid_13]
+  !16 = Apply(!14, !15) [-1, concat, (), String] 
+  !17 = Str [".bgz"]
+  !18 = Apply(!16, !17) [-1, concat, (), String]
+  !19 = MakeStruct(cols: !13, partFile: !18)
+  WritePartition(!s6, !19) ["{\"name\":\"VCFPartitionWriter\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"writeHeader\":false,\"tabix\":false}"]
+}
+!21 = MakeStruct(cols: !6, partFiles: !20)
+WriteMetadata(!21) ["{\"name\":\"VCFExportFinalizer\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"outputPath\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:39.166 LoweringPipeline: INFO: after InlineApplyIR: IR size 40: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!5 = ToArray(!s2)
+%__norm_3 = InsertFields !3 (__cols: !5)
+!6 = GetField(%__norm_3) [__cols] 
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s3 = ToStream(!7) [False] 
+!8 = Literal [Array[String], <literal value>]
+!s4 = ToStream(!8) [False]
+!s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+(%__norm_5, %__norm_6) =>
+  MakeStruct(__old_ctx: %__norm_5, __part_file: %__norm_6)
+} 
+!9 = MakeStruct(__iruid_5: %__norm_3) 
+!10 = NA [String]
+!20 = CollectDistributedArray(!s5, !9, !10) {
+(%__norm_7, %__norm_8) =>
+  !11 = GetField(%__norm_7) [__old_ctx]
+  !s6 = ReadPartition(!11) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !12 = GetField(%__norm_8) [__iruid_5]
+  !13 = GetField(!12) [__cols] 
+  !14 = GetField(%__norm_7) [__part_file] 
+  !15 = UUID4 [__iruid_13]
+  !16 = Apply(!14, !15) [-1, concat, (), String] 
+  !17 = Str [".bgz"]
+  !18 = Apply(!16, !17) [-1, concat, (), String]
+  !19 = MakeStruct(cols: !13, partFile: !18)
+  WritePartition(!s6, !19) ["{\"name\":\"VCFPartitionWriter\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"writeHeader\":false,\"tabix\":false}"]
+}
+!21 = MakeStruct(cols: !6, partFiles: !20)
+WriteMetadata(!21) ["{\"name\":\"VCFExportFinalizer\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"outputPath\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:39.168 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.168 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:39.168 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.186 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 40: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!5 = ToArray(!s2)
+%__norm_3 = InsertFields !3 (__cols: !5)
+!6 = GetField(%__norm_3) [__cols] 
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s3 = ToStream(!7) [False] 
+!8 = Literal [Array[String], <literal value>]
+!s4 = ToStream(!8) [False]
+!s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+(%__norm_5, %__norm_6) =>
+  MakeStruct(__old_ctx: %__norm_5, __part_file: %__norm_6)
+} 
+!9 = MakeStruct(__iruid_5: %__norm_3) 
+!10 = NA [String]
+!20 = CollectDistributedArray(!s5, !9, !10) {
+(%__norm_7, %__norm_8) =>
+  !11 = GetField(%__norm_7) [__old_ctx]
+  !s6 = ReadPartition(!11) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !12 = GetField(%__norm_8) [__iruid_5]
+  !13 = GetField(!12) [__cols] 
+  !14 = GetField(%__norm_7) [__part_file] 
+  !15 = UUID4 [__iruid_13]
+  !16 = Apply(!14, !15) [-1, concat, (), String] 
+  !17 = Str [".bgz"]
+  !18 = Apply(!16, !17) [-1, concat, (), String]
+  !19 = MakeStruct(cols: !13, partFile: !18)
+  WritePartition(!s6, !19) ["{\"name\":\"VCFPartitionWriter\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"writeHeader\":false,\"tabix\":false}"]
+}
+!21 = MakeStruct(cols: !6, partFiles: !20)
+WriteMetadata(!21) ["{\"name\":\"VCFExportFinalizer\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"outputPath\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:39.209 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 40: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!5 = ToArray(!s2)
+%__norm_3 = InsertFields !3 (__cols: !5)
+!6 = GetField(%__norm_3) [__cols] 
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s3 = ToStream(!7) [False] 
+!8 = Literal [Array[String], <literal value>]
+!s4 = ToStream(!8) [False]
+!s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+(%__norm_5, %__norm_6) =>
+  MakeStruct(__old_ctx: %__norm_5, __part_file: %__norm_6)
+} 
+!9 = MakeStruct(__iruid_5: %__norm_3) 
+!10 = NA [String]
+!20 = CollectDistributedArray(!s5, !9, !10) {
+(%__norm_7, %__norm_8) =>
+  !11 = GetField(%__norm_7) [__old_ctx]
+  !s6 = ReadPartition(!11) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !12 = GetField(%__norm_8) [__iruid_5]
+  !13 = GetField(!12) [__cols] 
+  !14 = GetField(%__norm_7) [__part_file] 
+  !15 = UUID4 [__iruid_13]
+  !16 = Apply(!14, !15) [-1, concat, (), String] 
+  !17 = Str [".bgz"]
+  !18 = Apply(!16, !17) [-1, concat, (), String]
+  !19 = MakeStruct(cols: !13, partFile: !18)
+  WritePartition(!s6, !19) ["{\"name\":\"VCFPartitionWriter\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"writeHeader\":false,\"tabix\":false}"]
+}
+!21 = MakeStruct(cols: !6, partFiles: !20)
+WriteMetadata(!21) ["{\"name\":\"VCFExportFinalizer\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"outputPath\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:39.212 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.212 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:39.212 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:39.222 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 40: 
+
+!1 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s = ReadPartition(!1) [Struct{}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{}\",\"_vType\":\"Struct{}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}"]
+!2 = ToArray(!s) 
+!c0 = I32 [0]
+!3 = ArrayRef(!2, !c0) [-1] 
+!4 = Literal [Struct{partitionIndex:Int64,partitionPath:String}, <literal value>]
+!s2 = ReadPartition(!4) [Struct{s:String}, "{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{s:EBinary2}\",\"_vType\":\"Struct{s:String}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__col_uid\"}"]
+!5 = ToArray(!s2)
+%__norm_3 = InsertFields !3 (__cols: !5)
+!6 = GetField(%__norm_3) [__cols] 
+!7 = Literal [Array[Struct{leftContext:Struct{partitionIndex:Int64,partitionPath:String},rightContext:Struct{partitionIndex:Int64,partitionPath:String}}], <literal value>]
+!s3 = ToStream(!7) [False] 
+!8 = Literal [Array[String], <literal value>]
+!s4 = ToStream(!8) [False]
+!s5 = StreamZip(!s3, !s4) [-1, AssertSameLength] {
+(%__norm_5, %__norm_6) =>
+  MakeStruct(__old_ctx: %__norm_5, __part_file: %__norm_6)
+} 
+!9 = MakeStruct(__iruid_5: %__norm_3) 
+!10 = NA [String]
+!20 = CollectDistributedArray(!s5, !9, !10) {
+(%__norm_7, %__norm_8) =>
+  !11 = GetField(%__norm_7) [__old_ctx]
+  !s6 = ReadPartition(!11) [Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String},`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}, "{\"name\":\"PartitionZippedNativeReader\",\"left\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{locus:+EBaseStruct{contig:+EBinary2,position:+EVarint},alleles:+EArray2[+EBinary2],rsid:EBinary2,qual:EFloat64,filters:EArray2[+EBinary2],info:+EBaseStruct{AC:EArray2[+EVarint],AF:EArray2[+EFloat64],AN:EVarint,BaseQRankSum:EFloat64,ClippingRankSum:EFloat64,DP:EVarint,DS:+EBoolean,FS:EFloat64,HaplotypeScore:EFloat64,InbreedingCoeff:EFloat64,MLEAC:EArray2[+EVarint],MLEAF:EArray2[+EFloat64],MQ:EFloat64,MQ0:EVarint,MQRankSum:EFloat64,QD:EFloat64,ReadPosRankSum:EFloat64,set:EBinary2}}\",\"_vType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"},\"right\":{\"name\":\"PartitionNativeReader\",\"spec\":{\"name\":\"TypedCodecSpec\",\"_eType\":\"+EBaseStruct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:+EArray2[+EBaseStruct{AD:EArray2[+EVarint],DP:EVarint,GQ:EVarint,GT:EVarint,PL:EArray2[+EVarint]}]}\",\"_vType\":\"Struct{`the entries! [877f12a8827e18f61222c6c8c5fb04a8]`:Array[Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}]}\",\"_bufferSpec\":{\"name\":\"BlockingBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"ZstdBlockBufferSpec\",\"blockSize\":65536,\"child\":{\"name\":\"StreamBlockBufferSpec2\"}}}},\"uidFieldName\":\"__row_uid\"}}"] 
+  !12 = GetField(%__norm_8) [__iruid_5]
+  !13 = GetField(!12) [__cols] 
+  !14 = GetField(%__norm_7) [__part_file] 
+  !15 = UUID4 [__iruid_13]
+  !16 = Apply(!14, !15) [-1, concat, (), String] 
+  !17 = Str [".bgz"]
+  !18 = Apply(!16, !17) [-1, concat, (), String]
+  !19 = MakeStruct(cols: !13, partFile: !18)
+  WritePartition(!s6, !19) ["{\"name\":\"VCFPartitionWriter\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"entriesFieldName\":\"the entries! [877f12a8827e18f61222c6c8c5fb04a8]\",\"writeHeader\":false,\"tabix\":false}"]
+}
+!21 = MakeStruct(cols: !6, partFiles: !20)
+WriteMetadata(!21) ["{\"name\":\"VCFExportFinalizer\",\"typ\":{\"globalType\":\"Struct{}\",\"colKey\":[\"s\"],\"colType\":\"Struct{s:String}\",\"rowKey\":[\"locus\",\"alleles\"],\"rowType\":\"Struct{locus:Locus(GRCh37),alleles:Array[String],rsid:String,qual:Float64,filters:Set[String],info:Struct{AC:Array[Int32],AF:Array[Float64],AN:Int32,BaseQRankSum:Float64,ClippingRankSum:Float64,DP:Int32,DS:Boolean,FS:Float64,HaplotypeScore:Float64,InbreedingCoeff:Float64,MLEAC:Array[Int32],MLEAF:Array[Float64],MQ:Float64,MQ0:Int32,MQRankSum:Float64,QD:Float64,ReadPosRankSum:Float64,set:String}}\",\"entryType\":\"Struct{AD:Array[Int32],DP:Int32,GQ:Int32,GT:Call,PL:Array[Int32]}\"},\"outputPath\":\"/home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz\",\"exportType\":\"concatenated\",\"tabix\":false}"]
+
+2026-10-24 00:38:39.411 EType$: INFO: encoder cache miss (0 hits, 1 misses, 0.000)
+2026-10-24 00:38:39.837 EType$: INFO: encoder cache miss (0 hits, 2 misses, 0.000)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 107: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 109: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 101: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 108: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 100: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 96: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-24 00:38:40.210 RegionPool: INFO: initialized for thread 102: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-24 00:38:40.210 RegionPool: INFO: initialized for thread 104: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 110: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 99: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-24 00:38:40.210 RegionPool: INFO: initialized for thread 105: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-24 00:38:40.210 RegionPool: INFO: initialized for thread 97: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-24 00:38:40.210 RegionPool: INFO: initialized for thread 106: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 111: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 98: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-24 00:38:40.209 RegionPool: INFO: initialized for thread 103: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-24 00:38:40.313 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 104: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-24 00:38:40.314 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 96: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-24 00:38:40.314 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 110: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-24 00:38:40.314 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 111: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-24 00:38:40.314 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 102: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-24 00:38:40.315 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 103: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-24 00:38:40.314 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 106: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-24 00:38:40.315 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 99: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-24 00:38:40.315 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 107: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-24 00:38:40.315 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 97: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-24 00:38:40.315 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 109: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-24 00:38:40.316 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 101: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-24 00:38:40.316 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 100: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-24 00:38:40.316 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 105: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-24 00:38:40.316 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 108: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-24 00:38:40.316 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 320.0K allocated (192.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 98: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-24 00:38:40.700 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 109: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-24 00:38:40.761 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 108: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-24 00:38:40.787 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 105: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-24 00:38:40.789 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 107: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-24 00:38:40.814 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 96: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-24 00:38:40.929 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 106: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-24 00:38:40.935 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 102: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-24 00:38:40.945 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 111: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-24 00:38:41.031 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 110: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-24 00:38:41.129 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 97: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-24 00:38:41.208 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 100: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-24 00:38:41.429 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 101: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-24 00:38:41.441 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 104: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-24 00:38:41.548 RegionPool: INFO: RegionPool: REPORT_THRESHOLD: 512.0K allocated (320.0K blocks / 192.0K chunks), regions.size = 2, 0 current java objects, thread 103: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-24 00:38:43.163 SparkTaskContext: INFO: TaskReport: stage=0, partition=9, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1432, cache hits=1431
+2026-10-24 00:38:43.163 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 105: Executor task launch worker for task 9.0 in stage 0.0 (TID 9)
+2026-10-24 00:38:43.177 SparkTaskContext: INFO: TaskReport: stage=0, partition=15, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1407, cache hits=1406
+2026-10-24 00:38:43.177 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 111: Executor task launch worker for task 15.0 in stage 0.0 (TID 15)
+2026-10-24 00:38:43.241 SparkTaskContext: INFO: TaskReport: stage=0, partition=11, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1302, cache hits=1301
+2026-10-24 00:38:43.241 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 107: Executor task launch worker for task 11.0 in stage 0.0 (TID 11)
+2026-10-24 00:38:43.256 SparkTaskContext: INFO: TaskReport: stage=0, partition=4, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1405, cache hits=1404
+2026-10-24 00:38:43.256 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 100: Executor task launch worker for task 4.0 in stage 0.0 (TID 4)
+2026-10-24 00:38:43.287 SparkTaskContext: INFO: TaskReport: stage=0, partition=5, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1577, cache hits=1576
+2026-10-24 00:38:43.287 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 101: Executor task launch worker for task 5.0 in stage 0.0 (TID 5)
+2026-10-24 00:38:43.293 SparkTaskContext: INFO: TaskReport: stage=0, partition=1, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1760, cache hits=1759
+2026-10-24 00:38:43.293 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 97: Executor task launch worker for task 1.0 in stage 0.0 (TID 1)
+2026-10-24 00:38:43.297 SparkTaskContext: INFO: TaskReport: stage=0, partition=14, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1369, cache hits=1368
+2026-10-24 00:38:43.297 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 110: Executor task launch worker for task 14.0 in stage 0.0 (TID 14)
+2026-10-24 00:38:43.306 SparkTaskContext: INFO: TaskReport: stage=0, partition=12, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1400, cache hits=1399
+2026-10-24 00:38:43.306 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 108: Executor task launch worker for task 12.0 in stage 0.0 (TID 12)
+2026-10-24 00:38:43.317 SparkTaskContext: INFO: TaskReport: stage=0, partition=13, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1381, cache hits=1380
+2026-10-24 00:38:43.317 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 109: Executor task launch worker for task 13.0 in stage 0.0 (TID 13)
+2026-10-24 00:38:43.340 SparkTaskContext: INFO: TaskReport: stage=0, partition=8, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1459, cache hits=1458
+2026-10-24 00:38:43.341 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 104: Executor task launch worker for task 8.0 in stage 0.0 (TID 8)
+2026-10-24 00:38:43.380 SparkTaskContext: INFO: TaskReport: stage=0, partition=7, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1610, cache hits=1609
+2026-10-24 00:38:43.380 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 103: Executor task launch worker for task 7.0 in stage 0.0 (TID 7)
+2026-10-24 00:38:43.389 SparkTaskContext: INFO: TaskReport: stage=0, partition=10, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1376, cache hits=1375
+2026-10-24 00:38:43.390 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 106: Executor task launch worker for task 10.0 in stage 0.0 (TID 10)
+2026-10-24 00:38:43.471 SparkTaskContext: INFO: TaskReport: stage=0, partition=6, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=1510, cache hits=1509
+2026-10-24 00:38:43.472 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 102: Executor task launch worker for task 6.0 in stage 0.0 (TID 6)
+2026-10-24 00:38:43.477 SparkTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=524288, peakBytesReadable=512.00 KiB, chunks requested=2003, cache hits=2002
+2026-10-24 00:38:43.477 RegionPool: INFO: RegionPool: FREE: 512.0K allocated (384.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 96: Executor task launch worker for task 0.0 in stage 0.0 (TID 0)
+2026-10-24 00:38:43.517 SparkTaskContext: INFO: TaskReport: stage=0, partition=3, attempt=0, peakBytes=458752, peakBytesReadable=448.00 KiB, chunks requested=1661, cache hits=1660
+2026-10-24 00:38:43.518 RegionPool: INFO: RegionPool: FREE: 448.0K allocated (320.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 99: Executor task launch worker for task 3.0 in stage 0.0 (TID 3)
+2026-10-24 00:38:43.570 SparkTaskContext: INFO: TaskReport: stage=0, partition=2, attempt=0, peakBytes=458752, peakBytesReadable=448.00 KiB, chunks requested=2233, cache hits=2232
+2026-10-24 00:38:43.570 RegionPool: INFO: RegionPool: FREE: 448.0K allocated (320.0K blocks / 128.0K chunks), regions.size = 2, 0 current java objects, thread 98: Executor task launch worker for task 2.0 in stage 0.0 (TID 2)
+2026-10-24 00:38:43.696 BackendUtils: INFO: matrix_vcf_writer: executed 16 tasks in 3.806s
+2026-10-24 00:38:43.714 HadoopFS: INFO: merging 17 files totalling 227.1M...
+2026-10-24 00:38:44.053 HadoopFS: INFO: while writing:
+    /home/danielking/parallel-vcf-export/results/hail-legacy-2/out.vcf.bgz
+  merge time: 338.201ms
+2026-10-24 00:38:44.110 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.111 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.111 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.111 LowerOrInterpretNonCompilable$: INFO: took 5.473s
+2026-10-24 00:38:44.112 LoweringPipeline: INFO: after LowerOrInterpretNonCompilable: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.112 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.112 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.112 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.113 LoweringPipeline: INFO: after Optimize: relationalLowerer, after LowerOrInterpretNonCompilable: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.113 LoweringPipeline: INFO: initial IR: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.113 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.113 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.113 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.114 LoweringPipeline: INFO: after Optimize: compileLowerer, initial IR: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.114 LoweringPipeline: INFO: after InlineApplyIR: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.114 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.114 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.114 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.114 LoweringPipeline: INFO: after Optimize: compileLowerer, after InlineApplyIR: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.114 LoweringPipeline: INFO: after LowerArrayAggsToRunAggs: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.115 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.115 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.115 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.115 LoweringPipeline: INFO: after Optimize: compileLowerer, after LowerArrayAggsToRunAggs: IR size 1: 
+
+Void
+
+2026-10-24 00:38:44.118 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.118 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.118 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.186 RegionPool: INFO: initialized for thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.186 LocalTaskContext: INFO: TaskReport: stage=0, partition=0, attempt=0, peakBytes=0, peakBytesReadable=0.00 B, chunks requested=0, cache hits=0
+2026-10-24 00:38:44.186 RegionPool: INFO: RegionPool: FREE: 0 allocated (0 blocks / 0 chunks), regions.size = 0, 0 current java objects, thread 93: HTTP-Dispatcher
+2026-10-24 00:38:44.186 RegionPool: INFO: RegionPool: FREE: 192.0K allocated (192.0K blocks / 0 chunks), regions.size = 3, 0 current java objects, thread 93: HTTP-Dispatcher
