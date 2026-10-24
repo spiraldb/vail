@@ -1015,7 +1015,7 @@ fn element_validity_sum_map_and_count_identity_preserve_outer_missingness() -> V
     let raw_sum = list_sum(mapped);
     let mut ctx = VortexSession::default().create_execution_ctx();
     assert_arrays_eq(
-        &input.apply_bound(&raw_sum.bind(input.dtype())?)?,
+        &input.clone().apply_bound(&raw_sum.bind(input.dtype())?)?,
         &PrimitiveArray::from_option_iter([Some(1u64), None, Some(3), None]).into_array(),
         &mut ctx,
     );
@@ -1023,7 +1023,7 @@ fn element_validity_sum_map_and_count_identity_preserve_outer_missingness() -> V
     // the independent outer logical mask retains a missing list.
     let count = mask(fill_null(raw_sum, lit(0u64)), is_not_null(root()));
     assert_arrays_eq(
-        &input.apply_bound(&count.bind(input.dtype())?)?,
+        &input.clone().apply_bound(&count.bind(input.dtype())?)?,
         &PrimitiveArray::from_option_iter([Some(1u64), Some(0), Some(3), None]).into_array(),
         &mut ctx,
     );
@@ -1049,7 +1049,7 @@ fn element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types()
         vortex::dtype::Nullability::NonNullable,
     )
     .bind(input.dtype())?;
-    let actual = input.apply_bound(&combined)?;
+    let actual = input.clone().apply_bound(&combined)?;
     let mut ctx = VortexSession::default().create_execution_ctx();
     assert_arrays_eq(&actual.get_item("raw")?, &input, &mut ctx);
     assert_arrays_eq(
@@ -1082,8 +1082,8 @@ fn element_validity_serialization_retains_exact_original_schema_and_no_capture()
     assert_eq!(expression, restored);
     let mut ctx = session.create_execution_ctx();
     assert_arrays_eq(
-        &input.apply_bound(&restored.bind(input.dtype())?)?,
-        &input.apply_bound(&expression.bind(input.dtype())?)?,
+        &input.clone().apply_bound(&restored.bind(input.dtype())?)?,
+        &input.clone().apply_bound(&expression.bind(input.dtype())?)?,
         &mut ctx,
     );
     // Same positions/nullability but a different field name is a different
