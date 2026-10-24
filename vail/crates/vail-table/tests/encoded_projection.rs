@@ -172,3 +172,57 @@ async fn native_nested_projection_and_global_sum_preserve_nulls_and_widening() {
 
 #[path = "support/encoded_list_sum.rs"]
 mod encoded_list_sum;
+
+async fn native_list_lengths_on_polling_runtime() {
+    let rows = 64usize;
+    let width = 5usize;
+    let values = Int32Array::from_iter((0..rows * width).map(|i| {
+        (i % 3 != 0).then_some(i as i32)
+    }));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", DataType::Int32, true)),
+        OffsetBuffer::new(ScalarBuffer::from((0..=rows)
+            .map(|i| (i * width) as i32).collect::<Vec<_>>())),
+        Arc::new(values),
+        Some(NullBuffer::from((0..rows).map(|i| i % 7 != 0).collect::<Vec<_>>())),
+    );
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("idx", DataType::Int32, false),
+        Field::new("entries", lists.data_type().clone(), true),
+    ]));
+    let batch = RecordBatch::try_new(schema, vec![
+        Arc::new(Int32Array::from_iter_values(0..rows as i32)), Arc::new(lists),
+    ]).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("runtime-shapes");
+    let path = path.to_str().unwrap();
+    TableIR::parallelize(batch, 8).unwrap().key_by(vec!["idx".into()]).unwrap()
+        .write(path, false).await.unwrap();
+    let source = TableIR::read(path).await.unwrap();
+    let length = Expr::ArrayLength { value: Arc::new(Expr::Column { name: "entries".into() }) };
+    let mapped = source.map_rows(vec![
+        ("idx".into(), Expr::Column { name: "idx".into() }),
+        ("length".into(), length.clone()),
+    ]).unwrap();
+    let batches = mapped.collect_partitions().await.unwrap();
+    let got = batches.iter().flatten().flat_map(|batch| {
+        batch.column_by_name("length").unwrap().as_any()
+            .downcast_ref::<Int32Array>().unwrap().iter()
+    }).collect::<Vec<_>>();
+    assert_eq!(got, (0..rows).map(|i| (i % 7 != 0).then_some(width as i32)).collect::<Vec<_>>());
+    let total = GlobalsIR::aggregate(source, Expr::Aggregate {
+        function: "sum".into(), value: Some(Arc::new(length)), options: json!({}),
+        result_type: None, init: vec![],
+    }, Default::default()).unwrap().evaluate().await.unwrap();
+    assert_eq!(total.column(0).as_any().downcast_ref::<Int64Array>().unwrap().value(0), 270);
+}
+
+#[tokio::test]
+async fn native_list_lengths_on_current_thread_runtime() {
+    native_list_lengths_on_polling_runtime().await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn native_list_lengths_on_multithread_runtime() {
+    native_list_lengths_on_polling_runtime().await;
+}
