@@ -71,8 +71,8 @@ fn translate(expr: &Expr, schema: &Schema, session: &VortexSession) -> Option<(E
     } = body.as_ref()
     {
         let missing = match alternate.as_ref() {
-            Expr::Literal { value, .. } => value.is_not_null(),
-            Expr::RuntimeLiteral { value } => value.is_not_null(),
+            Expr::Literal { value, .. } => value.is_null(),
+            Expr::RuntimeLiteral { value } => value.is_null(),
             _ => false,
         };
         if !missing {
@@ -123,7 +123,10 @@ fn translate(expr: &Expr, schema: &Schema, session: &VortexSession) -> Option<(E
     // This proven nonoverflowing subset permits zero identity for empty/all-null
     // lists while separately retaining a missing outer list.
     Some((
-        mask(fill_null(list_sum(elements), lit(0_i64)), is_not_null(input)),
+        mask(
+            fill_null(list_sum(elements), lit(0_i64)),
+            is_not_null(input),
+        ),
         true,
     ))
 }
@@ -163,11 +166,16 @@ pub(crate) fn try_lower(
         source: source.clone(),
         schema: Arc::new(Schema::new(output)),
         expressions: translated.into_iter().map(|(n, e, _)| (n, e)).collect(),
-        keys: child.keys().iter().map_while(|key| {
-            fields.iter().find_map(|(name, expr)| {
-                matches!(expr, Expr::Column {name: source} if source == key).then(|| name.clone())
+        keys: child
+            .keys()
+            .iter()
+            .map_while(|key| {
+                fields.iter().find_map(|(name, expr)| {
+                    matches!(expr, Expr::Column {name: source} if source == key)
+                        .then(|| name.clone())
+                })
             })
-        }).collect(),
+            .collect(),
     };
     Ok(Some(
         LogicalPlanBuilder::scan(
@@ -177,6 +185,55 @@ pub(crate) fn try_lower(
         )?
         .build()?,
     ))
+}
+
+/// Push a supported row-local aggregate argument into its source without
+/// changing the global aggregate or its row multiplicities.
+pub(crate) fn try_total(
+    table: &TableRef,
+    expression: &Expr,
+) -> Result<Option<(LogicalPlan, Expr)>> {
+    if !matches!(table.node(), TableNode::Read { .. }) {
+        return Ok(None);
+    }
+    let Expr::Aggregate {
+        value: Some(value), ..
+    } = expression
+    else {
+        return Ok(None);
+    };
+    let session = VortexSession::default();
+    if !translate(value, table.schema(), &session).is_some_and(|(_, reduction)| reduction) {
+        return Ok(None);
+    }
+    let name = crate::plan::private_name(
+        table.schema(),
+        table.globals().schema(),
+        "__vail_encoded_value",
+    );
+    let mut fields = table
+        .schema()
+        .fields()
+        .iter()
+        .map(|f| {
+            (
+                f.name().clone(),
+                Expr::Column {
+                    name: f.name().clone(),
+                },
+            )
+        })
+        .collect::<Vec<_>>();
+    fields.push((name.clone(), value.as_ref().clone()));
+    let mapped = table.map_rows(fields.clone())?;
+    let Some(child) = try_lower(&mapped, table, &fields)? else {
+        return Ok(None);
+    };
+    let mut rewritten = expression.clone();
+    if let Expr::Aggregate { value, .. } = &mut rewritten {
+        *value = Some(Arc::new(Expr::Column { name }));
+    }
+    Ok(Some((child, rewritten)))
 }
 
 #[derive(Debug)]
@@ -222,13 +279,28 @@ impl TableProvider for ComputedProvider {
         );
         let schema = Arc::new(self.schema.project(&indices)?);
         let mut equivalence = EquivalenceProperties::new(schema.clone());
-        let keys = self.keys.iter().take_while(|name| schema.index_of(name).is_ok()).map(|name| (name.clone(), false)).collect::<Vec<_>>();
+        let keys = self
+            .keys
+            .iter()
+            .take_while(|name| schema.index_of(name).is_ok())
+            .map(|name| (name.clone(), false))
+            .collect::<Vec<_>>();
         if !keys.is_empty() {
-            let requirement = crate::order_requirement(&keys).map_err(|e| DataFusionError::External(Box::new(e)))?;
-            equivalence.add_ordering(requirement.physical_ordering(&schema)?);
+            let requirement = crate::order_requirement(&keys)
+                .map_err(|e| DataFusionError::External(Box::new(e)))?;
+            equivalence.add_ordering(
+                requirement
+                    .physical_ordering(&schema)
+                    .map_err(|e| DataFusionError::External(Box::new(e)))?,
+            );
         }
         let partitioning = if let Some(position) = indices.iter().position(|&i| i == tag) {
-            crate::provider::partition_id_properties(&schema, &mut equivalence, self.source.partition_rows().len(), position)
+            crate::provider::partition_id_properties(
+                &schema,
+                &mut equivalence,
+                self.source.partition_rows().len(),
+                position,
+            )
         } else {
             Partitioning::UnknownPartitioning(self.source.partition_rows().len())
         };
@@ -274,7 +346,12 @@ impl ExecutionPlan for ComputedExec {
     fn children(&self) -> Vec<&Arc<dyn ExecutionPlan>> {
         vec![]
     }
-    fn apply_expressions(&self, _: &mut dyn FnMut(&Arc<dyn datafusion_physical_expr::PhysicalExpr>) -> DFResult<datafusion_common::tree_node::TreeNodeRecursion>) -> DFResult<datafusion_common::tree_node::TreeNodeRecursion> {
+    fn apply_expressions(
+        &self,
+        _: &mut dyn FnMut(
+            &Arc<dyn datafusion_physical_expr::PhysicalExpr>,
+        ) -> DFResult<datafusion_common::tree_node::TreeNodeRecursion>,
+    ) -> DFResult<datafusion_common::tree_node::TreeNodeRecursion> {
         Ok(datafusion_common::tree_node::TreeNodeRecursion::Continue)
     }
     fn with_new_children(

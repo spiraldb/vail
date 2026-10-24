@@ -226,7 +226,7 @@ pub(super) async fn read_vortex_task(
     // evolution pipeline and apply the same expression to its result below.
     // Virtual metadata/partition constants also remain in that fallback path.
     let encoded_projection = computed_projection.as_ref().filter(|_| {
-        file_schema.as_ref() == task.schema_ref().as_ref()
+        file_schema.as_struct() == task.schema_ref().as_struct()
             && !task.project_field_ids().iter().any(|id| is_metadata_field(*id))
             && task.partition_spec().is_none_or(|spec| spec.fields().is_empty())
     });

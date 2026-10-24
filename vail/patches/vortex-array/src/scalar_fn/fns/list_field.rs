@@ -140,7 +140,9 @@ pub fn list_field(
         let index = fields
             .find(name.as_ref())
             .ok_or_else(|| vortex_err!("list field missing: {name}"))?;
-        path.push((index, nullable.is_nullable()));
+        // A single-path Project below this expression retains only one field
+        // at each struct level. Bind positions in that projected schema.
+        path.push((0, nullable.is_nullable()));
         element = fields
             .fields()
             .nth(index)
@@ -149,5 +151,10 @@ pub fn list_field(
             element = element.with_nullability(crate::dtype::Nullability::Nullable);
         }
     }
+    let child = if names.is_empty() {
+        child
+    } else {
+        super::list_project::project_paths(&[names.to_vec()], child, dtype)?
+    };
     Ok(ListField.new_expr(FieldPath(path), vec![child]))
 }
