@@ -432,7 +432,7 @@ async fn correlation_counts_offset_validities_and_parent_masks() {
     // Independent child offsets exercise Arrow's shifted bitmap words and tail.
     for &len in &[0usize, 1, 63, 64, 65, 129] {
         for &(x_offset, y_offset) in &[(0, 0), (1, 7), (7, 63), (63, 64), (64, 65)] {
-            for masks in 0..4 {
+            for masks in 0..8 {
                 let x = Float64Array::from(
                     (0..len + x_offset)
                         .map(|i| {
@@ -450,7 +450,9 @@ async fn correlation_counts_offset_validities_and_parent_masks() {
                         .collect::<Vec<_>>(),
                 )
                 .slice(y_offset, len);
-                let parent = (0..len).map(|i| i % 7 != 0).collect::<Vec<_>>();
+                let parent = (0..len)
+                    .map(|i| masks & 4 == 0 || i % 7 != 0)
+                    .collect::<Vec<_>>();
                 let valid = (0..len)
                     .filter(|&i| {
                         parent[i]
