@@ -1,0 +1,328 @@
+{
+  "provenance": {
+    "source_revision": "53a502870783b9ab3bd66a7695bd3cc23d25203e",
+    "module": "/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/python/vail/__init__.py",
+    "native": "/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/python/vail/_native.abi3.so",
+    "sha256": "a7caca703c6d225e311f332dab397e9d403e72bf3ca391b07102ae6ba49c71f3",
+    "source_sha256": {
+      "crates/vail-execution/src/expressions.rs": "0e6909e58fbb8228b787befcad58e0323b832a40fd93360bf16874f0ae076c0e",
+      "crates/vail-execution/src/integer_list_sum.rs": "5c5a51cf337b20e331a518c6ecdb8efc8b289fe4edc9ce75459da9aaed13becc",
+      "python/tests/test_nullable_integer_sum.py": "50df0cd5355430cf39f67bff8d466f7f818b6d60d076cefdc0b23a9b2582b23f",
+      "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+    },
+    "build": "normal kache maturin develop --release --locked; jobs2; target-cpu=native; final span-fix build log"
+  },
+  "dp": {
+    "base": {
+      "wall": 0.1562415414955467,
+      "cpu": 1.8280674999999995,
+      "samples": 24,
+      "median_process_peak_rss": 959250432
+    },
+    "candidate": {
+      "wall": 0.07847735402174294,
+      "cpu": 0.8872159999999993,
+      "samples": 24,
+      "median_process_peak_rss": 849313792
+    }
+  },
+  "null_rates": [
+    {
+      "width": 32,
+      "missing_threshold": 0,
+      "base": {
+        "wall": 0.016958915977738798,
+        "cpu": 0.17265599999999998
+      },
+      "candidate": {
+        "wall": 0.01784541690722108,
+        "cpu": 0.1752060000000001
+      },
+      "speedup": 0.9503233276033152
+    },
+    {
+      "width": 32,
+      "missing_threshold": 1,
+      "base": {
+        "wall": 0.02414912497624755,
+        "cpu": 0.23451100000000014
+      },
+      "candidate": {
+        "wall": 0.019945292035117745,
+        "cpu": 0.18185000000000018
+      },
+      "speedup": 1.2107681819713696
+    },
+    {
+      "width": 32,
+      "missing_threshold": 10,
+      "base": {
+        "wall": 0.04079958295915276,
+        "cpu": 0.39689600000000014
+      },
+      "candidate": {
+        "wall": 0.021448499988764524,
+        "cpu": 0.20784499999999997
+      },
+      "speedup": 1.9022114824125234
+    },
+    {
+      "width": 32,
+      "missing_threshold": 50,
+      "base": {
+        "wall": 0.031014334061183035,
+        "cpu": 0.30829799999999974
+      },
+      "candidate": {
+        "wall": 0.020756708923727274,
+        "cpu": 0.20410199999999998
+      },
+      "speedup": 1.4941835998735875
+    },
+    {
+      "width": 32,
+      "missing_threshold": 90,
+      "base": {
+        "wall": 0.018564124940894544,
+        "cpu": 0.17378700000000008
+      },
+      "candidate": {
+        "wall": 0.012697333004325628,
+        "cpu": 0.11930499999999995
+      },
+      "speedup": 1.4620491511540465
+    },
+    {
+      "width": 32,
+      "missing_threshold": 100,
+      "base": {
+        "wall": 0.01772670797072351,
+        "cpu": 0.171007
+      },
+      "candidate": {
+        "wall": 0.013215583050623536,
+        "cpu": 0.11889599999999992
+      },
+      "speedup": 1.3413489138405537
+    },
+    {
+      "width": 64,
+      "missing_threshold": 0,
+      "base": {
+        "wall": 0.021764582954347134,
+        "cpu": 0.21981199999999998
+      },
+      "candidate": {
+        "wall": 0.021690333960577846,
+        "cpu": 0.20634600000000006
+      },
+      "speedup": 1.0034231374170741
+    },
+    {
+      "width": 64,
+      "missing_threshold": 1,
+      "base": {
+        "wall": 0.027877166983671486,
+        "cpu": 0.2591720000000002
+      },
+      "candidate": {
+        "wall": 0.024482457898557186,
+        "cpu": 0.22847700000000004
+      },
+      "speedup": 1.138658834794294
+    },
+    {
+      "width": 64,
+      "missing_threshold": 10,
+      "base": {
+        "wall": 0.03722112497780472,
+        "cpu": 0.36586600000000014
+      },
+      "candidate": {
+        "wall": 0.025538291898556054,
+        "cpu": 0.22692000000000012
+      },
+      "speedup": 1.4574633701288855
+    },
+    {
+      "width": 64,
+      "missing_threshold": 50,
+      "base": {
+        "wall": 0.030616457923315465,
+        "cpu": 0.308587
+      },
+      "candidate": {
+        "wall": 0.024816708057187498,
+        "cpu": 0.229079
+      },
+      "speedup": 1.2337034328954128
+    },
+    {
+      "width": 64,
+      "missing_threshold": 90,
+      "base": {
+        "wall": 0.024566334090195596,
+        "cpu": 0.23282
+      },
+      "candidate": {
+        "wall": 0.019121333956718445,
+        "cpu": 0.18839199999999992
+      },
+      "speedup": 1.2847604746510901
+    },
+    {
+      "width": 64,
+      "missing_threshold": 100,
+      "base": {
+        "wall": 0.023945083026774228,
+        "cpu": 0.23071199999999994
+      },
+      "candidate": {
+        "wall": 0.01857737498357892,
+        "cpu": 0.1846739999999999
+      },
+      "speedup": 1.2889379176519815
+    }
+  ],
+  "all_valid_controls": [
+    {
+      "width": 32,
+      "base": {
+        "wall": 0.016669041942805052,
+        "cpu": 0.17180999999999982
+      },
+      "candidate": {
+        "wall": 0.016634957981295884,
+        "cpu": 0.17215700000000003
+      }
+    },
+    {
+      "width": 64,
+      "base": {
+        "wall": 0.021397874923422933,
+        "cpu": 0.23033000000000015
+      },
+      "candidate": {
+        "wall": 0.02149095805361867,
+        "cpu": 0.23257099999999953
+      }
+    }
+  ],
+  "slice_resources": [
+    {
+      "file": "nullable-slice-base-1000000-131.jsonl",
+      "backing": 999923,
+      "visible": 131,
+      "wall": 0.00032837491016834974,
+      "cpu": 0.00033600000000000296
+    },
+    {
+      "file": "nullable-slice-base-50000000-131.jsonl",
+      "backing": 49999949,
+      "visible": 131,
+      "wall": 0.00033095793332904577,
+      "cpu": 0.00033799999999998415
+    },
+    {
+      "file": "nullable-slice-candidate-1000000-131.jsonl",
+      "backing": 999923,
+      "visible": 131,
+      "wall": 0.0003327919403091073,
+      "cpu": 0.00034
+    },
+    {
+      "file": "nullable-slice-candidate-50000000-131.jsonl",
+      "backing": 49999949,
+      "visible": 131,
+      "wall": 0.0003252909518778324,
+      "cpu": 0.00033200000000008917
+    },
+    {
+      "file": "nullable-slice-candidate-50000000-131072.jsonl",
+      "backing": 49938432,
+      "visible": 131072,
+      "wall": 0.0003631669096648693,
+      "cpu": 0.00037000000000003
+    },
+    {
+      "file": "nullable-slice-candidate-50000000-8192.jsonl",
+      "backing": 49995776,
+      "visible": 8192,
+      "wall": 0.00033608300145715475,
+      "cpu": 0.0003430000000000377
+    }
+  ],
+  "references": [
+    {
+      "kind": "primitive",
+      "width": 32,
+      "workers": 1,
+      "wall": 0.0620352920377627,
+      "cpu": 0.06204399999999999,
+      "application_bytes": 412500000,
+      "GB_s": 6.649440769117346
+    },
+    {
+      "kind": "primitive",
+      "width": 32,
+      "workers": 14,
+      "wall": 0.007011084002442658,
+      "cpu": 0.07340799999999992,
+      "application_bytes": 412500000,
+      "GB_s": 58.835409739247915
+    },
+    {
+      "kind": "primitive",
+      "width": 64,
+      "workers": 1,
+      "wall": 0.06318016606383026,
+      "cpu": 0.06318199999999985,
+      "application_bytes": 812500000,
+      "GB_s": 12.860048502866228
+    },
+    {
+      "kind": "primitive",
+      "width": 64,
+      "workers": 14,
+      "wall": 0.00962316698860377,
+      "cpu": 0.07983200000000013,
+      "application_bytes": 812500000,
+      "GB_s": 84.4316638131919
+    },
+    {
+      "kind": "copy",
+      "width": 32,
+      "workers": 1,
+      "wall": 0.006470083026215434,
+      "cpu": 0.0064760000000000095,
+      "application_bytes": 800000000,
+      "GB_s": 123.64601764128311
+    },
+    {
+      "kind": "copy",
+      "width": 32,
+      "workers": 14,
+      "wall": 0.0036125830374658108,
+      "cpu": 0.03945799999999999,
+      "application_bytes": 800000000,
+      "GB_s": 221.4481969558246
+    }
+  ],
+  "hardware": {
+    "rows": 509545,
+    "slices": 74345,
+    "cycles": 150320666012.0,
+    "cycle_weighted_ratios": {
+      "delivery": 0.1129305780782129,
+      "discarded": 0.03417982042752994,
+      "processing": 0.36030188791659506,
+      "useful": 0.49258771157645675
+    },
+    "docs": {
+      "delivery": "Documentation for Instruction Delivery Bottleneck",
+      "discarded": "Documentation for Discarded Bottleneck",
+      "processing": "Documentation for Instruction Processing Bottleneck",
+      "useful": "Documentation for Useful"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 //! Fuse a pure integer field projection into a segmented sum. No mapped or
 //! widened child vector is allocated; ordinary expression lowering is fallback.
 use super::*;
+use arrow_buffer::{NullBuffer, bit_chunk_iterator::BitChunks};
 
 fn path(expr: &Expr, parameter: &str) -> Option<Vec<String>> {
     match expr {
@@ -91,122 +92,254 @@ pub(super) fn projection(
     Some(p)
 }
 
-pub(super) fn evaluate(
-    array: &ArrayRef,
-    path: &[String],
-    filter_missing: bool,
-    dtype: &DataType,
-) -> Result<ArrayRef, ExprError> {
+type Evaluate = fn(&ArrayRef, &[usize]) -> Result<ArrayRef, ExprError>;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum Kernel {
+    Int32(bool),
+    Int32ToInt64(bool),
+    Int64(bool),
+}
+
+/// Typed kernel and field offsets are selected during expression lowering.
+#[derive(Debug, Clone)]
+pub(super) struct Prepared {
+    path: Vec<usize>,
+    identity: Kernel,
+    evaluate: Evaluate,
+}
+
+// Function addresses are not semantic expression identities. The kernel tag
+// and field positions uniquely determine the selected evaluator.
+impl PartialEq for Prepared {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path && self.identity == other.identity
+    }
+}
+impl Eq for Prepared {}
+impl std::hash::Hash for Prepared {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(&self.path, state);
+        std::hash::Hash::hash(&self.identity, state);
+    }
+}
+
+impl Prepared {
+    pub(super) fn new(
+        element: &Type,
+        names: Vec<String>,
+        filter_missing: bool,
+        output: &DataType,
+    ) -> Result<Self, ExprError> {
+        let mut leaf = element;
+        let mut path = Vec::with_capacity(names.len());
+        for name in names {
+            let Type::Struct { r#struct: fields } = leaf else {
+                return Err(ExprError::Invalid(
+                    "integer list sum requires struct path".into(),
+                ));
+            };
+            let index = fields
+                .iter()
+                .position(|(n, _)| n == &name)
+                .ok_or_else(|| ExprError::Invalid("integer list sum field absent".into()))?;
+            path.push(index);
+            leaf = &fields[index].1;
+        }
+        let (identity, evaluate): (_, Evaluate) = match (leaf, output, filter_missing) {
+            (Type::Primitive(PrimitiveType::Int32), DataType::Int32, true) => {
+                (Kernel::Int32(true), evaluate_same::<Int32Type, true>)
+            }
+            (Type::Primitive(PrimitiveType::Int32), DataType::Int32, false) => {
+                (Kernel::Int32(false), evaluate_same::<Int32Type, false>)
+            }
+            (Type::Primitive(PrimitiveType::Int32), DataType::Int64, true) => {
+                (Kernel::Int32ToInt64(true), evaluate_wide::<true>)
+            }
+            (Type::Primitive(PrimitiveType::Int32), DataType::Int64, false) => {
+                (Kernel::Int32ToInt64(false), evaluate_wide::<false>)
+            }
+            (Type::Primitive(PrimitiveType::Int64), DataType::Int64, true) => {
+                (Kernel::Int64(true), evaluate_same::<Int64Type, true>)
+            }
+            (Type::Primitive(PrimitiveType::Int64), DataType::Int64, false) => {
+                (Kernel::Int64(false), evaluate_same::<Int64Type, false>)
+            }
+            _ => return Err(ExprError::Invalid("integer list sum type mismatch".into())),
+        };
+        Ok(Self {
+            path,
+            identity,
+            evaluate,
+        })
+    }
+    pub(super) fn evaluate(&self, array: &ArrayRef) -> Result<ArrayRef, ExprError> {
+        (self.evaluate)(array, &self.path)
+    }
+}
+
+struct Input<'a, T: arrow_array::types::ArrowPrimitiveType> {
+    lists: &'a ListArray,
+    values: arrow_array::PrimitiveArray<T>,
+    base: usize,
+    list_nulls: Option<NullBuffer>,
+    value_nulls: Option<NullBuffer>,
+}
+
+/// Batch-boundary downcasts validate the prepared types; they never select a
+/// kernel. Only data-dependent logical masks are assembled here.
+fn input<'a, T: arrow_array::types::ArrowPrimitiveType>(
+    array: &'a ArrayRef,
+    path: &[usize],
+) -> Result<Input<'a, T>, ExprError> {
     let lists = list_array(array)?;
-    let list_nulls = lists
-        .logical_nulls()
-        .filter(|nulls| nulls.null_count() != 0);
-    let mut values = lists.values();
-    let mut parents = Vec::with_capacity(path.len());
-    for name in path {
+    let list_nulls = lists.logical_nulls().filter(|n| n.null_count() != 0);
+    // A sliced ListArray retains its full child owner. Limit every bitmap
+    // operation to this batch's visible contiguous child span, then rebase row
+    // offsets. Array slices share data and do not copy child values.
+    let base = lists.value_offsets()[0] as usize;
+    let end = lists.value_offsets()[lists.len()] as usize;
+    let mut values = lists.values().slice(base, end - base);
+    let mut parents = Vec::with_capacity(path.len() + 1);
+    for &index in path {
         let parent = values
             .as_any()
             .downcast_ref::<StructArray>()
-            .ok_or_else(|| ExprError::Invalid("integer list sum requires struct path".into()))?;
-        if let Some(nulls) = parent
-            .logical_nulls()
-            .filter(|nulls| nulls.null_count() != 0)
-        {
-            parents.push(nulls);
-        }
+            .ok_or_else(|| ExprError::Invalid("integer list sum struct type changed".into()))?;
+        parents.push(parent.logical_nulls());
         values = parent
-            .column_by_name(name)
-            .ok_or_else(|| ExprError::Invalid("integer list sum field absent".into()))?;
+            .columns()
+            .get(index)
+            .ok_or_else(|| ExprError::Invalid("integer list sum field absent".into()))?
+            .clone();
     }
-    let value_nulls = values
-        .logical_nulls()
-        .filter(|nulls| nulls.null_count() != 0);
-    let valid = |i| {
-        value_nulls.as_ref().is_none_or(|nulls| nulls.is_valid(i))
-            && parents.iter().all(|nulls| nulls.is_valid(i))
-    };
-    let source32 = values.as_any().downcast_ref::<Int32Array>();
-    let source64 = values.as_any().downcast_ref::<Int64Array>();
-    if source32.is_none() && source64.is_none() {
-        return Err(ExprError::Invalid(
-            "integer list sum requires integer values".into(),
-        ));
-    }
-    // Dispatch once per batch. All-valid typed slices allow LLVM to reduce
-    // integer lanes without per-element virtual validity or type checks.
-    macro_rules! typed {
-        ($source:expr) => {{
-            let source = $source;
-            let mut output = Vec::with_capacity(lists.len());
-            for row in 0..lists.len() {
-                if list_nulls.as_ref().is_some_and(|nulls| nulls.is_null(row)) {
-                    output.push(None);
-                    continue;
-                }
-                let start = lists.value_offsets()[row] as usize;
-                let end = lists.value_offsets()[row + 1] as usize;
-                let mut missing = false;
-                let sum = if let Some(nulls) = &value_nulls {
-                    let mut sum = 0_i64;
-                    for (i, &v) in source.values()[start..end].iter().enumerate() {
-                        if nulls.is_valid(start + i) {
-                            sum = sum.wrapping_add(i64::from(v));
-                        } else {
-                            missing = true;
-                        }
-                    }
-                    sum
-                } else {
-                    source.values()[start..end]
-                        .iter()
-                        .fold(0_i64, |sum, &v| sum.wrapping_add(i64::from(v)))
-                };
-                output.push((filter_missing || !missing).then_some(sum));
-            }
-            output
-        }};
-    }
-    let output = if parents.is_empty() {
-        if let Some(source) = source32 {
-            typed!(source)
-        } else {
-            typed!(source64.expect("integer type checked above"))
-        }
-    } else {
-        let mut output = Vec::with_capacity(lists.len());
-        for row in 0..lists.len() {
-            if list_nulls.as_ref().is_some_and(|nulls| nulls.is_null(row)) {
-                output.push(None);
-                continue;
-            }
-            let mut sum = 0_i64;
-            let mut missing = false;
-            for i in lists.value_offsets()[row] as usize..lists.value_offsets()[row + 1] as usize {
-                if !valid(i) {
-                    missing = true;
-                    continue;
-                }
-                let v = if let Some(v) = source32 {
-                    i64::from(v.value(i))
-                } else {
-                    source64.unwrap().value(i)
-                };
-                sum = sum.wrapping_add(v);
-            }
-            output.push((filter_missing || !missing).then_some(sum));
-        }
-        output
-    };
-    Ok(match dtype {
-        DataType::Int32 => Arc::new(Int32Array::from(
-            output
-                .into_iter()
-                .map(|v| v.map(|v| v as i32))
-                .collect::<Vec<_>>(),
-        )),
-        DataType::Int64 => Arc::new(Int64Array::from(output)),
-        _ => return Err(ExprError::Invalid("integer list sum output type".into())),
+    parents.push(values.logical_nulls());
+    let value_nulls = NullBuffer::union_many(parents.iter().map(Option::as_ref));
+    let values = values
+        .as_any()
+        .downcast_ref::<arrow_array::PrimitiveArray<T>>()
+        .ok_or_else(|| ExprError::Invalid("integer list sum primitive type changed".into()))?
+        .clone();
+    Ok(Input {
+        lists,
+        values,
+        base,
+        list_nulls,
+        value_nulls,
     })
+}
+
+/// Arrow owns same-width nullable reduction, including its SIMD selection.
+/// Headers and slices share primitive values; only logical bitmaps are combined.
+fn evaluate_same<T: arrow_array::ArrowNumericType, const FILTER_MISSING: bool>(
+    array: &ArrayRef,
+    path: &[usize],
+) -> Result<ArrayRef, ExprError> {
+    let input = input::<T>(array, path)?;
+    let values =
+        arrow_array::PrimitiveArray::<T>::new(input.values.values().clone(), input.value_nulls);
+    let mut output = Vec::with_capacity(input.lists.len());
+    for row in 0..input.lists.len() {
+        if input.list_nulls.as_ref().is_some_and(|n| n.is_null(row)) {
+            output.push(None);
+            continue;
+        }
+        let start = input.lists.value_offsets()[row] as usize - input.base;
+        let len =
+            (input.lists.value_offsets()[row + 1] - input.lists.value_offsets()[row]) as usize;
+        let row = values.slice(start, len);
+        output.push(if !FILTER_MISSING && row.null_count() != 0 {
+            None
+        } else {
+            Some(arrow_arith::aggregate::sum(&row).unwrap_or_default())
+        });
+    }
+    Ok(Arc::new(arrow_array::PrimitiveArray::<T>::from_iter(
+        output,
+    )))
+}
+
+/// Arrow 59's primitive sum accumulates in the input width. This adapter covers
+/// its missing Int32-to-Int64 case without allocating a widened child vector.
+fn evaluate_wide<const FILTER_MISSING: bool>(
+    array: &ArrayRef,
+    path: &[usize],
+) -> Result<ArrayRef, ExprError> {
+    let input = input::<Int32Type>(array, path)?;
+    let mut output = Vec::with_capacity(input.lists.len());
+    for row in 0..input.lists.len() {
+        if input.list_nulls.as_ref().is_some_and(|n| n.is_null(row)) {
+            output.push(None);
+            continue;
+        }
+        let start = input.lists.value_offsets()[row] as usize - input.base;
+        let end = input.lists.value_offsets()[row + 1] as usize - input.base;
+        let values = &input.values.values()[start..end];
+        output.push(match &input.value_nulls {
+            None => Some(sum_slice(values)),
+            Some(nulls) => sum_nullable::<FILTER_MISSING>(values, nulls, start),
+        });
+    }
+    Ok(Arc::new(Int64Array::from(output)))
+}
+
+#[inline]
+fn sum_slice(values: &[i32]) -> i64 {
+    values
+        .iter()
+        .fold(0_i64, |sum, &v| sum.wrapping_add(i64::from(v)))
+}
+
+/// Inspect validity one word at a time. All-valid words take the vectorizable
+/// typed-slice reduction; mixed words use a branch-free masked widening reduction.
+fn sum_nullable<const FILTER_MISSING: bool>(
+    values: &[i32],
+    nulls: &NullBuffer,
+    start: usize,
+) -> Option<i64> {
+    let bits = BitChunks::new(nulls.validity(), nulls.offset() + start, values.len());
+    let mut sum = 0_i64;
+    for (chunk, mask) in values.chunks_exact(64).zip(bits.iter()) {
+        if mask == u64::MAX {
+            sum = sum.wrapping_add(sum_slice(chunk));
+        } else if !FILTER_MISSING {
+            return None;
+        } else if mask != 0 {
+            sum = sum.wrapping_add(sum_selected(chunk, mask));
+        }
+    }
+    let remainder = values.chunks_exact(64).remainder();
+    if !remainder.is_empty() {
+        let mask = bits.remainder_bits();
+        if mask == (1_u64 << remainder.len()) - 1 {
+            sum = sum.wrapping_add(sum_slice(remainder));
+        } else if !FILTER_MISSING {
+            return None;
+        } else if mask != 0 {
+            sum = sum.wrapping_add(sum_selected(remainder, mask));
+        }
+    }
+    Some(sum)
+}
+
+#[inline]
+fn sum_selected(values: &[i32], mut mask: u64) -> i64 {
+    // Independent accumulators expose a masked widening reduction to LLVM.
+    // No architecture-specific intrinsics or temporary value vector is needed.
+    let mut sums = [0_i64; 4];
+    let mut chunks = values.chunks_exact(4);
+    for chunk in &mut chunks {
+        for lane in 0..4 {
+            let valid = -(((mask >> lane) & 1) as i64);
+            sums[lane] = sums[lane].wrapping_add(i64::from(chunk[lane]) & valid);
+        }
+        mask >>= 4;
+    }
+    for (lane, &value) in chunks.remainder().iter().enumerate() {
+        let valid = -(((mask >> lane) & 1) as i64);
+        sums[lane] = sums[lane].wrapping_add(i64::from(value) & valid);
+    }
+    sums.into_iter().fold(0_i64, i64::wrapping_add)
 }
 
 #[cfg(test)]

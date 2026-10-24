@@ -1,0 +1,18 @@
+{
+  "source_revision": "6a1936d0cb39449ddd4721cba48f66b9dc1404b8",
+  "base_revision": "53d59fb5104d896505ec5023b346aba9e2909285",
+  "native": "/Users/danielking/.codex/worktrees/prepared-list-reducers/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "366047c2b9dc1e68cf9bc32aae41d709a9f7ad3836966afa1d23c7f4595dc2cf",
+  "python": "/Users/danielking/.codex/worktrees/prepared-list-reducers/vail/vail/python/vail/__init__.py",
+  "source_sha256": {
+    "crates/vail-execution/src/expressions.rs": "bec7881c8ceeaed6af61806e514f2d7b1395e7aef860f732b1e63e8d3d9e66ca",
+    "crates/vail-execution/src/logical_expr.rs": "b49aa170b22bbcfd3885dd58b459e5e94761fe079f064845d060a7ff4ef7a69a",
+    "crates/vail-execution/src/list_aggregate.rs": "212bc829c6ff60cdeb24b1394835047fc37916f1ab99a7efa5860c8eec7b10c3",
+    "python/tests/test_list_collect_identity.py": "9d6e76c6a8ce798b0d86184a5d2f3afefd4cec7e2e1299494b6a1b545ba700bb",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  },
+  "baseline_env": "/private/tmp/vail-native-row-fusion-env",
+  "baseline_native_sha256": "77b0c38a0f7bea5308f1651114d0bc8391d2da93beed0b0f4111bb01e7bd7d49",
+  "build": "normal kache maturin develop --release --locked; CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0 RUSTFLAGS=-C target-cpu=native; exclusive existing target",
+  "followup": "Test-only additional Call phase and guarded invalid-cast case; production Rust remains exact6a1936d0."
+}

@@ -641,6 +641,15 @@ fn lower(
                 recurse(&args[1])?,
             )
         }
+        Expr::NestedFunction { function, args, .. } if function == "__vail_list_reduce_collect" => {
+            // The input already is the ordered collection, including missing
+            // elements. Expose this identity to DataFusion rather than hiding
+            // a projection behind a per-list aggregate adapter.
+            let dtype = expr
+                .dtype_with_globals(schema.as_arrow(), globals)?
+                .to_arrow()?;
+            restore_type(recurse(&args[0])?, dtype)
+        }
         Expr::NestedFunction { function, args, .. } => {
             if crate::expression_effects::effects(expr) != crate::expression_effects::Effects::Pure
             {

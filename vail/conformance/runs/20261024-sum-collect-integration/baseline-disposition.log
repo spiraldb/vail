@@ -1,0 +1,150 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+__________ test_collection_aggregate_matrix_scope_and_lookup_context ___________
+
+    def test_collection_aggregate_matrix_scope_and_lookup_context():
+        matrix = hl.range_matrix_table(3, 2)
+        matrix = matrix.annotate_entries(total=hl.array([1, 2]).aggregate(lambda x: hl.agg.sum(x + matrix.row_idx + matrix.col_idx)))
+>       assert matrix.total.collect() == [3, 5, 5, 7, 7, 9]
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_collection_aggregate.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../native-row-reduction-fusion/vail/vail/python/vail/expressions.py:1034: in collect
+    return eval(result) if _localize else result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10675a570>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_47ec29a093d25b88 returned a different number of rows than expected. Expected: 3, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+../../../native-row-reduction-fusion/vail/vail/python/vail/__init__.py:2043: FatalError
+__ AggregateTests.test_integer_reducers_preserve_values_above_float_precision __
+
+self = <test_aggregate.AggregateTests testMethod=test_integer_reducers_preserve_values_above_float_precision>
+
+    def test_integer_reducers_preserve_values_above_float_precision(self):
+        value = 2**53 + 17
+        table = hl.Table.parallelize([{"x": value}], schema=hl.tstruct(x=hl.tint64))
+>       result = table.aggregate({"sum": hl.agg.sum(table.x),
+                                  "product": hl.agg.product(table.x),
+                                  "min": hl.agg.min(table.x),
+                                  "max": hl.agg.max(table.x),
+                                  "mean": hl.agg.mean(table.x),
+                                  "collect": hl.agg.collect(table.x),
+                                  "count_where": hl.agg.count_where(table.x > value - 1),
+                                  "fraction": hl.agg.fraction(table.x > value - 1),
+                                  "any": hl.agg.any(table.x > value - 1),
+                                  "all": hl.agg.all(table.x > value - 1),
+                                  "stats": hl.agg.stats(table.x)})
+
+python/tests/test_aggregate.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../native-row-reduction-fusion/vail/vail/python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+../../../native-row-reduction-fusion/vail/vail/python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+../../../native-row-reduction-fusion/vail/vail/python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../native-row-reduction-fusion/vail/vail/python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10bf70ac0>, <vail.expressions.Expression object at 0x10bf70b30>,...0e40>, <vail.expressions.Expression object at 0x10bf70eb0>, <vail.expressions.StructExpression object at 0x10bf71150>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+../../../native-row-reduction-fusion/vail/vail/python/vail/types.py:688: TypeError
+_________ AggregateTests.test_reducers_on_empty_and_all_missing_tables _________
+
+self = <test_aggregate.AggregateTests testMethod=test_reducers_on_empty_and_all_missing_tables>
+
+    def test_reducers_on_empty_and_all_missing_tables(self):
+        for table, expected_count, expected_values, expected_fraction in (
+            (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], None),
+            (hl.Table.parallelize([{"x": None, "b": None}, {"x": None, "b": None}],
+                                  schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 2, [None, None], 0.0),
+        ):
+            x, b = table.x, table.b
+>           result = table.aggregate({
+                "count": hl.agg.count(),
+                "sum": hl.agg.sum(x),
+                "product": hl.agg.product(x),
+                "min": hl.agg.min(x),
+                "max": hl.agg.max(x),
+                "mean": hl.agg.mean(x),
+                "collect": hl.agg.collect(x),
+                "count_where": hl.agg.count_where(b),
+                "fraction": hl.agg.fraction(b),
+                "any": hl.agg.any(b),
+                "all": hl.agg.all(b),
+                "stats": hl.agg.stats(x),
+            })
+
+python/tests/test_aggregate.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../native-row-reduction-fusion/vail/vail/python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+../../../native-row-reduction-fusion/vail/vail/python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+../../../native-row-reduction-fusion/vail/vail/python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../native-row-reduction-fusion/vail/vail/python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10c0373e0>, <vail.expressions.Expression object at 0x10c036ce0>,...7290>, <vail.expressions.Expression object at 0x10c037370>, <vail.expressions.StructExpression object at 0x10c0377d0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+../../../native-row-reduction-fusion/vail/vail/python/vail/types.py:688: TypeError
+=========================== short test summary info ============================
+FAILED python/tests/test_collection_aggregate.py::test_collection_aggregate_matrix_scope_and_lookup_context
+FAILED python/tests/test_aggregate.py::AggregateTests::test_integer_reducers_preserve_values_above_float_precision
+FAILED python/tests/test_aggregate.py::AggregateTests::test_reducers_on_empty_and_all_missing_tables
+3 failed in 1.15s

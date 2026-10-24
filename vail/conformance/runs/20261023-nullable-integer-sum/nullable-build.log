@@ -1,0 +1,135 @@
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.12 at /private/tmp/vail-nullable-sum-env/bin/python
+🔗 Found pyo3 bindings with abi3-py3.11 support
+📡 Using build options features from pyproject.toml
+Using Python 3.12.12 environment at: /private/tmp/vail-nullable-sum-env
+Checked 3 packages in 1ms
+Using Python 3.12.12 environment at: /private/tmp/vail-nullable-sum-env
+Resolved 11 packages in 526ms
+Installed 4 packages in 62ms
+ + pandas==3.1.0
+ + python-dateutil==3.0.0
+ + six==1.17.0
+ + tzdata==2026.5
+   Compiling arrow-data v59.2.0 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/arrow-data)
+   Compiling vortex-array v0.86.1 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/vortex-array)
+   Compiling arrow-array v59.2.0 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/arrow-array)
+   Compiling arrow-select v59.2.0
+   Compiling arrow-ord v59.2.0
+   Compiling arrow-cast v59.2.0
+   Compiling arrow-ipc v59.2.0
+   Compiling arrow-csv v59.2.0
+   Compiling arrow-json v59.2.0
+   Compiling arrow-string v59.2.0
+   Compiling arrow-arith v59.2.0
+   Compiling arrow-row v59.2.0
+   Compiling arrow v59.2.0
+   Compiling parquet v59.2.0
+   Compiling datafusion-common v55.0.0 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/datafusion-common)
+   Compiling vortex-runend v0.86.1
+   Compiling vortex-fastlanes v0.86.1
+   Compiling vortex-arrow v0.86.1
+   Compiling vortex-zigzag v0.86.1
+   Compiling vortex-fsst v0.86.1
+   Compiling vortex-alp v0.86.1
+   Compiling vortex-onpair v0.86.1
+   Compiling vortex-pco v0.86.1
+   Compiling vortex-zstd v0.86.1
+   Compiling vortex-sequence v0.86.1
+   Compiling vortex-decimal-byte-parts v0.86.1
+   Compiling vortex-compressor v0.86.1
+   Compiling vortex-datetime-parts v0.86.1
+   Compiling vortex-sparse v0.86.1
+   Compiling parquet-variant v59.2.0
+   Compiling vortex-io v0.86.1
+   Compiling parquet-variant-json v59.2.0
+   Compiling vortex-btrblocks v0.86.1
+   Compiling vortex-scan v0.86.1
+   Compiling vortex-layout v0.86.1 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/vortex-layout)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+   Compiling parquet-variant-compute v59.2.0
+   Compiling vortex-json v0.86.1
+   Compiling vortex-bytebool v0.86.1
+   Compiling vortex-file v0.86.1
+   Compiling vortex-parquet-variant v0.86.1
+   Compiling vortex-ipc v0.86.1
+   Compiling vail-ordering v0.1.0 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/crates/vail-ordering)
+   Compiling vortex v0.86.1
+   Compiling iceberg-property-macro v0.10.1 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/iceberg-rust/crates/property-macro)
+   Compiling iceberg v0.10.1 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/iceberg-rust/crates/iceberg)
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling datafusion-functions v55.0.0
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling datafusion-session v55.0.0
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/patches/datafusion-functions-aggregate)
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling datafusion-pruning v55.0.0
+   Compiling datafusion-catalog v55.0.0
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/crates/vail-execution)
+error[E0405]: cannot find trait `ArrowNumericType` in module `arrow_array::types`
+   --> crates/vail-execution/src/integer_list_sum.rs:225:41
+    |
+225 | fn evaluate_same<T: arrow_array::types::ArrowNumericType, const FILTER_MISSING: bool>(
+    |                                         ^^^^^^^^^^^^^^^^ not found in `arrow_array::types`
+
+For more information about this error, try `rustc --explain E0405`.
+error: could not compile `vail-execution` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+💥 maturin failed
+  Caused by: Failed to build a native library through cargo
+  Caused by: Cargo build finished with "exit status: 101": `env -u CARGO CARGO_ENCODED_RUSTFLAGS="-C\u{1f}target-cpu=native\u{1f}-C\u{1f}link-arg=-undefined\u{1f}-C\u{1f}link-arg=dynamic_lookup" PYO3_BUILD_EXTENSION_MODULE="1" PYO3_CONFIG_FILE="/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/maturin/pyo3-config-aarch64-apple-darwin-3.12-abi3.txt" PYO3_ENVIRONMENT_SIGNATURE="cpython-3.12-64bit" PYO3_PYTHON="/private/tmp/vail-nullable-sum-env/bin/python" PYTHON_SYS_EXECUTABLE="/private/tmp/vail-nullable-sum-env/bin/python" "cargo" "rustc" "--profile" "release" "--features" "pyo3/extension-module" "--message-format" "json-render-diagnostics" "--locked" "--manifest-path" "/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/crates/vail-python/Cargo.toml" "--lib" "--" "-C" "link-args=-Wl,-install_name,@rpath/vail._native.abi3.so"`
