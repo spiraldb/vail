@@ -6,7 +6,7 @@ use arrow_array::{
     ListArray, StringArray, StringViewArray, StructArray,
 };
 use arrow_schema::{DataType, Schema};
-use futures::TryStreamExt;
+use futures::{StreamExt, TryStreamExt};
 use std::{
     fmt::Write as _,
     io::{BufWriter, Write},
@@ -147,6 +147,7 @@ fn text(value: &str, separator: char, out: &mut String) -> Result<()> {
     out.push_str(value);
     Ok(())
 }
+#[derive(Clone)]
 struct Field {
     name: String,
     index: usize,
@@ -172,14 +173,12 @@ impl Field {
 enum Output<W: Write> {
     Plain(W),
     Gzip(flate2::write::GzEncoder<W>),
-    Bgzf(crate::compressed_text::BgzfWriter<W>),
 }
 impl<W: Write> Output<W> {
     fn finish(self) -> std::io::Result<()> {
         match self {
             Self::Plain(mut w) => w.flush(),
             Self::Gzip(w) => w.finish()?.flush(),
-            Self::Bgzf(w) => w.finish(),
         }
     }
 }
@@ -188,14 +187,12 @@ impl<W: Write> Write for Output<W> {
         match self {
             Self::Plain(w) => w.write(data),
             Self::Gzip(w) => w.write(data),
-            Self::Bgzf(w) => w.write(data),
         }
     }
     fn flush(&mut self) -> std::io::Result<()> {
         match self {
             Self::Plain(w) => w.flush(),
             Self::Gzip(w) => w.flush(),
-            Self::Bgzf(w) => w.flush(),
         }
     }
 }
@@ -294,17 +291,162 @@ pub async fn export(
     let mut output = tempfile::NamedTempFile::new_in(parent).map_err(|e| bad(e.to_string()))?;
     let buffered = BufWriter::new(output.as_file_mut());
     let mut writer = if path.ends_with(".bgz") {
-        Output::Bgzf(crate::compressed_text::BgzfWriter::new(buffered))
+        Output::Plain(buffered)
     } else if path.ends_with(".gz") {
-        Output::Gzip(flate2::write::GzEncoder::new(buffered, flate2::Compression::default()))
+        Output::Gzip(flate2::write::GzEncoder::new(
+            buffered,
+            flate2::Compression::default(),
+        ))
     } else {
         Output::Plain(buffered)
     };
+    let bgzf = path.ends_with(".bgz");
+    let mut header_bytes = Vec::new();
     for header in headers {
-        writeln!(writer, "{}", header).map_err(|e| bad(e.to_string()))?;
+        writeln!(header_bytes, "{}", header).map_err(|e| bad(e.to_string()))?;
     }
-    let mut line = String::new();
-    while let Some(batch) = batches.try_next().await? {
+    if bgzf {
+        let mut compressor = crate::compressed_text::BgzfWriter::new(&mut writer);
+        compressor
+            .write_all(&header_bytes)
+            .map_err(|e| bad(e.to_string()))?;
+        compressor
+            .finish_members()
+            .map_err(|e| bad(e.to_string()))?;
+    } else {
+        writer
+            .write_all(&header_bytes)
+            .map_err(|e| bad(e.to_string()))?;
+    }
+    let formatter = Arc::new(Formatter {
+        allele,
+        entries,
+        locus_index,
+        contig,
+        position,
+        rsid,
+        qual,
+        filters,
+        info_index,
+        info_fields,
+        fields,
+        format,
+        sample_count,
+    });
+    // Slice before queuing: at most 32K entries (or one wide row) per job.
+    // Arrow slices borrow buffers; only the bounded worker window owns formatted output.
+    let rows_per_job = (32_768 / sample_count.max(1)).clamp(1, 4096);
+    let chunks: futures::stream::BoxStream<'_, Result<arrow_array::RecordBatch>> =
+        async_stream::try_stream! {
+            while let Some(batch) = batches.try_next().await? {
+                for start in (0..batch.num_rows()).step_by(rows_per_job) {
+                    yield batch.slice(start, rows_per_job.min(batch.num_rows() - start));
+                }
+            }
+        }
+        .boxed();
+    let workers = std::thread::available_parallelism()
+        .map_or(1, usize::from)
+        .min(crate::EXECUTION_CONCURRENCY);
+    futures::pin_mut!(chunks);
+    let mut jobs = futures::stream::FuturesOrdered::new();
+    let mut input_done = false;
+    let mut failure = None;
+    loop {
+        while !input_done && failure.is_none() && jobs.len() < workers {
+            match chunks.try_next().await {
+                Ok(Some(batch)) => {
+                    let formatter = formatter.clone();
+                    jobs.push_back(tokio::task::spawn_blocking(move || {
+                        formatter.batch(batch, bgzf)
+                    }));
+                }
+                Ok(None) => input_done = true,
+                Err(error) => failure = Some(error.into()),
+            }
+        }
+        let Some(result) = jobs.next().await else {
+            break;
+        };
+        match result
+            .map_err(|e| bad(e.to_string()))
+            .and_then(|result| result)
+        {
+            Ok(bytes) if failure.is_none() => {
+                if let Err(error) = writer.write_all(&bytes) {
+                    failure = Some(bad(error.to_string()));
+                }
+            }
+            Err(error) if failure.is_none() => failure = Some(error),
+            _ => {}
+        }
+        // On failure stop producing input and join only the bounded existing jobs.
+        // Workers own private buffers, never the temporary file or destination.
+    }
+    if let Some(error) = failure {
+        return Err(error);
+    }
+    if bgzf {
+        crate::compressed_text::BgzfWriter::new(&mut writer)
+            .finish()
+            .map_err(|e| bad(e.to_string()))?;
+    }
+    writer.finish().map_err(|e| bad(e.to_string()))?;
+    output
+        .persist(destination)
+        .map_err(|e| bad(e.error.to_string()))?;
+    Ok(())
+}
+
+struct Formatter {
+    allele: Field,
+    entries: Field,
+    locus_index: usize,
+    contig: Field,
+    position: Field,
+    rsid: Option<Field>,
+    qual: Option<Field>,
+    filters: Option<Field>,
+    info_index: Option<usize>,
+    info_fields: Vec<Field>,
+    fields: Vec<Field>,
+    format: String,
+    sample_count: usize,
+}
+impl Formatter {
+    fn batch(&self, batch: arrow_array::RecordBatch, bgzf: bool) -> Result<Vec<u8>> {
+        let mut encoded = Vec::new();
+        if bgzf {
+            let mut compressor = crate::compressed_text::BgzfWriter::new(&mut encoded);
+            self.write_batch(&batch, &mut compressor)?;
+            compressor
+                .finish_members()
+                .map_err(|e| bad(e.to_string()))?;
+        } else {
+            self.write_batch(&batch, &mut encoded)?;
+        }
+        Ok(encoded)
+    }
+    fn write_batch(&self, batch: &arrow_array::RecordBatch, writer: &mut impl Write) -> Result<()> {
+        let Self {
+            allele,
+            entries,
+            locus_index,
+            contig,
+            position,
+            rsid,
+            qual,
+            filters,
+            info_index,
+            info_fields,
+            fields,
+            format,
+            sample_count,
+        } = self;
+        let locus_index = *locus_index;
+        let sample_count = *sample_count;
+        let mut line = String::new();
+
         let loci: &StructArray = down(batch.column(locus_index).as_ref())?;
         let contigs = contig.bind(loci.columns())?;
         let positions = position.bind(loci.columns())?;
@@ -445,9 +587,12 @@ pub async fn export(
                     }
                     // VCF permits omitted trailing missing FORMAT values. Keep
                     // the first field (especially GT) even if all are missing.
-                    let retained = entry_views.iter().rposition(|view| {
-                        !entry_values.is_null(cell) && !view.array().is_null(cell)
-                    }).map_or(1, |i| i + 1);
+                    let retained = entry_views
+                        .iter()
+                        .rposition(|view| {
+                            !entry_values.is_null(cell) && !view.array().is_null(cell)
+                        })
+                        .map_or(1, |i| i + 1);
                     for (i, view) in entry_views.iter().take(retained).enumerate() {
                         if i > 0 {
                             line.push(':');
@@ -469,10 +614,6 @@ pub async fn export(
                 .write_all(line.as_bytes())
                 .map_err(|e| bad(e.to_string()))?;
         }
+        Ok(())
     }
-    writer.finish().map_err(|e| bad(e.to_string()))?;
-    output
-        .persist(destination)
-        .map_err(|e| bad(e.error.to_string()))?;
-    Ok(())
 }

@@ -12,7 +12,10 @@ pub(crate) struct BgzfWriter<W: Write> {
 
 impl<W: Write> BgzfWriter<W> {
     pub(crate) fn new(output: W) -> Self {
-        Self { output, pending: Vec::with_capacity(BLOCK_SIZE) }
+        Self {
+            output,
+            pending: Vec::with_capacity(BLOCK_SIZE),
+        }
     }
     fn block(&mut self, data: &[u8]) -> io::Result<()> {
         let mut encoder =
@@ -40,6 +43,12 @@ impl<W: Write> BgzfWriter<W> {
             self.pending.clear();
         }
         Ok(())
+    }
+
+    /// Finish data members without the stream EOF; ordered parallel sinks append it once.
+    pub(crate) fn finish_members(mut self) -> io::Result<()> {
+        self.drain()?;
+        self.output.flush()
     }
 
     pub(crate) fn finish(mut self) -> io::Result<()> {

@@ -114,3 +114,61 @@ def test_separate_header_export_manifest_roundtrip(tmp_path):
         for name in names:
             output.write((directory / name).read_bytes())
     assert_public_matrix_equal(hl.import_vcf(combined), matrix)
+
+
+@pytest.mark.parametrize('suffix', ['.vcf', '.vcf.gz', '.vcf.bgz'])
+def test_parallel_export_orders_partitions_and_preserves_missing_entries(tmp_path, suffix):
+    import gzip
+    samples = 400
+    header = HEADER[:HEADER.index('#CHROM')] + '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t' + '\t'.join(f's{i}' for i in range(samples)) + '\n'
+    records = [f'1\t{row}\t.\tA\tC\t.\tPASS\t.\tGT:DP:AD\t' + '\t'.join(f'0/1:{row + col}:2,3' for col in range(samples)) + '\n' for row in range(1, 601)]
+    input_path = tmp_path / 'partitioned.vcf'
+    input_path.write_text(header + ''.join(records))
+    matrix = hl.import_vcf(input_path, min_partitions=7).choose_cols(list(reversed(range(samples))))
+    matrix = matrix.filter_entries((matrix.locus.position + hl.int32(matrix.s[1:])) % 7 != 0)
+    output = tmp_path / ('out' + suffix)
+    hl.export_vcf(matrix, output)
+    content = output.read_text() if suffix == '.vcf' else gzip.open(output, 'rt').read()
+    lines = content.splitlines()
+    assert sum(line.startswith('#CHROM') for line in lines) == 1
+    assert next(line for line in lines if line.startswith('#CHROM')).endswith('\ts0')
+    data = [line.split('\t') for line in lines if not line.startswith('#')]
+    assert [int(line[1]) for line in data] == list(range(1, 601))
+    for row, line in enumerate(data, 1):
+        for col, entry in zip(reversed(range(samples)), line[9:], strict=True):
+            assert entry == ('./.' if (row + col) % 7 == 0 else f'0/1:{row + col}:2,3')
+    actual = hl.import_vcf(output, force=True)
+    assert actual.count() == (600, samples)
+    assert actual.aggregate_entries(hl.agg.sum(actual.DP)) == sum(row + col for row in range(1, 601) for col in range(samples) if (row + col) % 7)
+
+
+@pytest.mark.parametrize('suffix', ['.vcf', '.vcf.gz', '.vcf.bgz'])
+def test_parallel_export_late_failure_is_atomic(tmp_path, suffix):
+    matrix = source(tmp_path)
+    matrix = matrix.annotate_rows(rsid=hl.if_else(matrix.locus.position == 2, 'bad\nidentifier', 'valid'))
+    output = tmp_path / ('out' + suffix)
+    output.write_bytes(b'previous result\n')
+    before = set(tmp_path.iterdir())
+    with pytest.raises(ValueError, match='tabs or newlines'):
+        hl.export_vcf(matrix, output)
+    assert output.read_bytes() == b'previous result\n'
+    assert set(tmp_path.iterdir()) == before
+
+
+def test_parallel_bgzf_export_is_tabix_queryable(tmp_path):
+    import shutil
+    import subprocess
+    if shutil.which('tabix') is None:
+        pytest.skip('tabix executable required')
+    samples = 10000
+    path = tmp_path / 'wide.vcf'
+    header = HEADER[:HEADER.index('#CHROM')] + '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t' + '\t'.join(f's{i}' for i in range(samples)) + '\n'
+    records = [f'1\t{row}\t.\tA\tC\t.\tPASS\t.\tGT:DP\t' + '\t'.join(f'0/1:{row + col}' for col in range(samples)) + '\n' for row in range(1, 21)]
+    path.write_text(header + ''.join(records))
+    matrix = hl.import_vcf(path, min_partitions=4)
+    output = tmp_path / 'wide.vcf.bgz'
+    hl.export_vcf(matrix, output, tabix=True)
+    selected = subprocess.run(['tabix', str(output), '1:7-12'], check=True, capture_output=True, text=True).stdout.splitlines()
+    assert [int(line.split('\t')[1]) for line in selected] == list(range(7, 13))
+    for row, line in zip(range(7, 13), selected, strict=True):
+        assert line.split('\t')[9:] == [f'0/1:{row + col}' for col in range(samples)]
