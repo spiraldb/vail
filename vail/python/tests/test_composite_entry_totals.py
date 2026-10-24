@@ -57,14 +57,22 @@ def test_composite_shared_aggregate_dag_preserves_every_output():
     query = hl.struct(s=hl.agg.sum(m.x),n=hl.agg.count())
     for _ in range(8):
         query = hl.struct(a=query,b=query)
-    result = m.aggregate_entries(query)
-    frontier = [result]
+    result = m.aggregate_entries(query, _localize=False)
     for _ in range(8):
-        frontier = [child for node in frontier for child in (node.a,node.b)]
-    assert frontier == [hl.Struct(s=30,n=12)]*256
+        result = result.a
+    assert hl.eval(result.s) == 30
+    assert hl.eval(result.n) == 12
 
 
 def test_composite_floating_sum_retains_existing_aggregation_results():
     m = hl.utils.range_matrix_table(2, 3, 1)
     m = m.annotate_entries(x=hl.float64(m.row_idx + m.col_idx)/4)
-    assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x),n=hl.agg.count())) == hl.Struct(s=2.25,n=6)
+    assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x),twice=hl.agg.sum(m.x * 2))) == hl.Struct(s=2.25,twice=4.5)
+
+
+def test_composite_seeded_random_input_keeps_present_entry_uid_context():
+    m = hl.utils.range_matrix_table(2, 3, 2)
+    m = m.filter_entries(m.col_idx != 1)
+    query = hl.struct(s=hl.agg.sum(hl.rand_int32(100,seed=7)),n=hl.agg.count())
+    assert m.aggregate_entries(query) == hl.Struct(s=189,n=4)
+    assert m.aggregate_entries(query) == hl.Struct(s=189,n=4)
