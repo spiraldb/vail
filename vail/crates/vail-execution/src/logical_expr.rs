@@ -988,7 +988,7 @@ fn logical_kernel(
         .to_arrow()?;
     let kernel_schema = Arc::new(kernel_schema);
     let identity = (
-        crate::expression_identity::Identity::new(rewritten),
+        crate::expression_identity::Identity::with_bound_names(rewritten),
         kernel_schema.clone(),
     );
     let volatility = crate::expression_effects::effects(expr).volatility();

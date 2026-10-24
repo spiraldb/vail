@@ -257,12 +257,24 @@ pub(crate) struct Identity {
 }
 impl Identity {
     pub(crate) fn new(expression: Expr) -> Self {
+        Self::from_canonical(expression, None)
+    }
+
+    /// Scalar semantic kernels separately expose their free input arguments
+    /// and effects. Only that contract opts into lexical-name equivalence.
+    pub(crate) fn with_bound_names(expression: Expr) -> Self {
         let canonical = alpha_identity(&expression);
+        Self::from_canonical(expression, Some(canonical))
+    }
+
+    fn from_canonical(expression: Expr, canonical: Option<Expr>) -> Self {
+        let expression = Arc::new(expression);
+        let canonical = canonical.map(Arc::new).unwrap_or_else(|| expression.clone());
         let mut memo = HashMap::new();
         let fingerprint = fingerprint(&canonical, &mut memo);
         Self {
-            expression: Arc::new(expression),
-            canonical: Arc::new(canonical),
+            expression,
+            canonical,
             fingerprint,
             nodes: memo.len(),
         }
