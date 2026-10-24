@@ -1236,6 +1236,13 @@ class MatrixTable:
                 reduced = self._axis_aggregates(
                     struct(**dict(compatible)), axis, base
                 )
+                if axis == "row":
+                    # Give the shared aggregate result one relational identity.
+                    # An opaque field callback over the full expression would
+                    # otherwise evaluate every reduction again for each field.
+                    shared_name = "__vail_shared_row_aggregates_" + uuid4().hex
+                    base = base.annotate(**{shared_name: reduced})
+                    reduced = base[shared_name]
                 shared = {name: reduced[name] for name, _ in compatible}
                 if axis == "row":
                     # Plain row fractions return NaN for an empty entry scope.

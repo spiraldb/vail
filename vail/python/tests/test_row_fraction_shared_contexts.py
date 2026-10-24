@@ -43,3 +43,34 @@ def test_shared_fraction_keeps_dead_errors_and_filtered_scope():
         assert row.f == 2 / 3
         assert row.g == 1 / 3
         assert row.subset == 1.0
+
+
+def test_shared_fraction_counts_present_entries_with_missing_values():
+    m = hl.utils.range_matrix_table(2, 3, 1).annotate_entries(x=hl.missing(hl.tint32))
+    result = m.annotate_rows(
+        f=hl.agg.fraction(m.x > 0), g=hl.agg.fraction(m.x > 3),
+        count=hl.agg.count(), nested=hl.struct(f=hl.agg.fraction(m.x > 0)),
+    ).rows().collect()
+    for row in result:
+        assert row.f == row.g == row.nested.f == 0.0
+        assert row.count == 3
+    empty = m.filter_entries(False)
+    result = empty.annotate_rows(
+        f=hl.agg.fraction(empty.x > 0), g=hl.agg.fraction(empty.x > 3),
+        nested=hl.struct(f=hl.agg.fraction(empty.x > 0)),
+    ).rows().collect()
+    for row in result:
+        assert math.isnan(row.f) and math.isnan(row.g)
+        assert row.nested.f is None
+
+
+def test_shared_fractions_leave_seeded_aggregate_scope_unchanged():
+    m = hl.utils.range_matrix_table(3, 5, 2)
+    m = m.filter_entries(m.col_idx % 2 == 0)
+    random_total = hl.agg.sum(hl.rand_int32(100, seed=17))
+    expected = m.annotate_rows(random_total=random_total).random_total.collect()
+    combined = m.annotate_rows(
+        f=hl.agg.fraction(m.col_idx > 0), g=hl.agg.fraction(m.col_idx > 2),
+        random_total=random_total,
+    )
+    assert combined.random_total.collect() == expected
