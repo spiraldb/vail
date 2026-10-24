@@ -791,3 +791,144 @@ fn nullable_grouped_combined_mean_preserves_count_and_sum_pairing() -> VortexRes
     );
     Ok(())
 }
+
+/// Public API resource experiment. Timings are observations, never assertions.
+/// The fixed output has four groups; input construction/compression, canonical
+/// acquisition, expression binding, context construction and RSS reads are untimed.
+#[test]
+fn nullable_grouped_public_resource_windows() -> VortexResult<()> {
+    use std::time::Instant;
+    use vortex::array::Canonical;
+    use vortex::array::arrays::BoolArray;
+    use vortex::expr::{list_sum, root};
+    let owner = std::env::var("VAIL_GROUPED_PCO_OWNER")
+        .ok()
+        .map(|v| v.parse::<usize>().expect("resource owner is an integer"))
+        .unwrap_or(10_000);
+    assert!(owner >= 256);
+    let session = VortexSession::default();
+    let mut setup = session.create_execution_ctx();
+    let primitive = PrimitiveArray::from_iter((0..owner).map(|i| (i % 101) as f64));
+    let child =
+        vortex::encodings::pco::Pco::from_primitive(primitive.as_view(), 0, 1024, &mut setup)?
+            .into_array();
+    drop(primitive);
+    let missing = ListViewArray::try_new(
+        child,
+        buffer![17u32, 81, 145, 209].into_array(),
+        buffer![3u32, 3, 3, 3].into_array(),
+        Validity::AllInvalid,
+    )?
+    .into_array()
+    .execute::<Canonical>(&mut setup)?
+    .into_array();
+    let mixed = ListViewArray::try_new(
+        BoolArray::from_iter([Some(true), Some(false), None]).into_array(),
+        buffer![0u32, 2, 2, 0].into_array(),
+        buffer![2u32, 0, 1, 2].into_array(),
+        Validity::from_iter([true, true, true, false]),
+    )?
+    .into_array()
+    .execute::<Canonical>(&mut setup)?
+    .into_array();
+    for (name, input, expected) in [
+        (
+            "mixed_bool_sum",
+            mixed,
+            vec![Some(1.0f64), None, None, None],
+        ),
+        ("all_missing_pco_sum", missing, vec![None, None, None, None]),
+    ] {
+        let alias = input.clone();
+        let original_dtype = input.dtype().clone();
+        let expression = list_sum(root()).bind(input.dtype())?;
+        let element_dtype = match input.dtype() {
+            DType::List(e, _) => e.as_ref().clone(),
+            _ => panic!("canonical list"),
+        };
+        let mut observations = Vec::new();
+        for (window, legacy) in [true, false, false, true].into_iter().enumerate() {
+            let rss_before = std::process::Command::new("ps")
+                .args(["-o", "rss=", "-p", &std::process::id().to_string()])
+                .output()
+                .ok()
+                .and_then(|v| String::from_utf8(v.stdout).ok())
+                .and_then(|s| s.trim().parse::<u64>().ok());
+            let mut times = Vec::new();
+            for iteration in 0..9 {
+                let mut ctx = session.create_execution_ctx();
+                let start = Instant::now();
+                let result = if legacy {
+                    let mut acc = GroupedAccumulator::try_new(
+                        SumV2,
+                        NumericalAggregateOpts::include_nans(),
+                        element_dtype.clone(),
+                    )?;
+                    acc.accumulate_list(&input, &mut ctx)?;
+                    acc.finish()?
+                } else {
+                    input.apply_bound(&expression)?
+                };
+                let result = result.execute::<PrimitiveArray>(&mut ctx)?;
+                let seconds = start.elapsed().as_secs_f64();
+                assert_eq!(result.len(), 4);
+                let result_type = if name == "mixed_bool_sum" {
+                    PType::U64
+                } else {
+                    PType::F64
+                };
+                assert_eq!(result.dtype(), &DType::Primitive(result_type, Nullable));
+                let valid = result.validity()?.execute_mask(4, &mut ctx)?;
+                let actual = (0..4)
+                    .map(|i| {
+                        valid.value(i).then(|| {
+                            if result_type == PType::U64 {
+                                result.as_slice::<u64>()[i] as f64
+                            } else {
+                                result.as_slice::<f64>()[i]
+                            }
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                // Raw outputs, no fill, post-mask or benchmark-specific normalization.
+                assert_eq!(actual, expected);
+                if iteration >= 3 {
+                    times.push(seconds);
+                }
+            }
+            assert_eq!(alias.dtype(), &original_dtype);
+            assert_eq!(alias.len(), 4);
+            if name == "all_missing_pco_sum" {
+                for i in 0..4 {
+                    assert!(alias.execute_scalar(i, &mut setup)?.is_null());
+                }
+            } else {
+                let expected_input = ListViewArray::try_new(
+                    BoolArray::from_iter([Some(true), Some(false), None]).into_array(),
+                    buffer![0u32, 2, 2, 0].into_array(),
+                    buffer![2u32, 0, 1, 2].into_array(),
+                    Validity::from_iter([true, true, true, false]),
+                )?
+                .into_array();
+                assert_arrays_eq(&alias, &expected_input, &mut setup);
+            }
+            let rss_after = std::process::Command::new("ps")
+                .args(["-o", "rss=", "-p", &std::process::id().to_string()])
+                .output()
+                .ok()
+                .and_then(|v| String::from_utf8(v.stdout).ok())
+                .and_then(|s| s.trim().parse::<u64>().ok());
+            observations.push(
+                serde_json::json!({"window":window,"legacy":legacy,"seconds":times,
+                "rss_before_kib":rss_before,"rss_after_kib":rss_after}),
+            );
+        }
+        println!(
+            "GROUPED_RESOURCE {}",
+            serde_json::json!({"case":name,"owner":owner,"output_groups":4,
+            "canonical_acquired_before_timing":true,"raw_expected":expected,"windows":observations,
+            "limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"})
+        );
+    }
+    Ok(())
+}
