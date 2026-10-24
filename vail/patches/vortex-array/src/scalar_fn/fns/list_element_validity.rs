@@ -34,6 +34,7 @@ pub struct ElementValidityPath {
     bound_selector: BoundExpression,
     input_dtype: DType,
     output_dtype: DType,
+    element_projection: BoundExpression,
 }
 
 impl PartialEq for ElementValidityPath {
@@ -55,6 +56,16 @@ impl Display for ElementValidityPath {
 }
 
 impl ElementValidityPath {
+    /// Prepared genuine Bool projection for an element LayoutReader. Outer list
+    /// validity remains owned by the list reader and is not applied here.
+    pub fn input_dtype(&self) -> &DType {
+        &self.input_dtype
+    }
+
+    pub fn element_projection(&self) -> &BoundExpression {
+        &self.element_projection
+    }
+
     fn from_selector(selector: Expression) -> VortexResult<Self> {
         // Closed serialized grammar: ListField(Project?(Cast(Root, original schema))).
         // The existing prepared FieldPath supplies positions/requiredness; the Cast
@@ -84,11 +95,24 @@ impl ElementValidityPath {
         };
         let output_dtype = DType::List(Arc::new(DType::Bool(Nullability::NonNullable)), *nullable);
         let bound_selector = selector.bind(&input_dtype)?;
+        let DType::List(projected_element, _) = bound_selector.children()[0].dtype() else {
+            vortex_bail!("Element selector input is not List");
+        };
+        let element_expression = selector
+            .as_opt::<ListField>()
+            .ok_or_else(|| vortex_err!("Element selector is not ListField"))?
+            .element_expression(projected_element)?;
+        let DType::List(original_element, _) = &input_dtype else {
+            unreachable!()
+        };
+        let element_projection =
+            crate::expr::is_not_null(element_expression).bind(original_element)?;
         Ok(Self {
             selector,
             bound_selector,
             input_dtype,
             output_dtype,
+            element_projection,
         })
     }
 }

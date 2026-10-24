@@ -21,10 +21,14 @@ use vortex_array::dtype::FieldName;
 use vortex_array::dtype::Nullability;
 use vortex_array::dtype::PType;
 use vortex_array::expr::BoundExpression;
+use vortex_array::expr::ExactBoundExpr;
 use vortex_array::expr::Expression;
 use vortex_array::expr::root;
 use vortex_array::scalar_fn::fns::is_not_null::IsNotNull;
 use vortex_array::scalar_fn::fns::is_null::IsNull;
+use vortex_array::scalar_fn::fns::list_element_validity::{
+    ElementValidityPath, ListElementValidity,
+};
 use vortex_array::scalar_fn::fns::list_length::ListLength;
 use vortex_array::scalar_fn::fns::list_project::Project;
 use vortex_array::scalar_fn::fns::list_project::project_paths;
@@ -34,6 +38,7 @@ use vortex_error::VortexExpect;
 use vortex_error::VortexResult;
 use vortex_mask::Mask;
 use vortex_session::VortexSession;
+use vortex_utils::aliases::dash_map::DashMap;
 
 use crate::ArrayFuture;
 use crate::LayoutReader;
@@ -66,6 +71,7 @@ pub struct ListReader {
     elements: LayoutReaderRef,
     offsets: LayoutReaderRef,
     validity: Option<LayoutReaderRef>,
+    element_projection_cache: Arc<DashMap<ExactBoundExpr, Option<Arc<PreparedElementProjection>>>>,
 }
 
 impl ListReader {
@@ -107,6 +113,7 @@ impl ListReader {
             elements,
             offsets,
             validity,
+            element_projection_cache: Arc::new(DashMap::default()),
         })
     }
 
@@ -161,6 +168,7 @@ impl ListReader {
         expr: &BoundExpression,
         mask: MaskFuture,
     ) -> VortexResult<ArrayFuture> {
+        let prepared = self.prepare_element_projection(expr)?;
         let is_full_range = row_range.start == 0 && row_range.end == self.layout.row_count();
         let reader = self.clone();
         let row_range = row_range.clone();
@@ -168,23 +176,30 @@ impl ListReader {
         Ok(async move {
             let mask = mask.await?;
             if is_full_range && mask.all_true() {
-                reader.project_all_full(&expr)?.await
+                reader.project_all_full(&expr, prepared.as_deref())?.await
             } else {
-                reader.project_all_bounded(&row_range, &expr, mask)?.await
+                reader
+                    .project_all_bounded(&row_range, &expr, mask, prepared)?
+                    .await
             }
         }
         .boxed())
     }
 
     /// Fetch the complete `elements`, `offsets`, and `validity` children concurrently.
-    fn project_all_full(&self, expr: &BoundExpression) -> VortexResult<ArrayFuture> {
+    fn project_all_full(
+        &self,
+        expr: &BoundExpression,
+        prepared: Option<&PreparedElementProjection>,
+    ) -> VortexResult<ArrayFuture> {
         let row_count = self.layout.row_count();
         let elements_row_count = self.elements.row_count();
         let nullability = self.layout.dtype().nullability();
-        let expr = expr.clone();
+        let residual = prepared.map_or_else(|| expr.clone(), |p| p.residual.clone());
 
         let offsets_fut = self.fetch_raw_offsets(&(0..row_count))?;
-        let elements_fut = self.fetch_elements_for_projection(&(0..elements_row_count), &expr)?;
+        let elements_fut =
+            self.fetch_elements_for_projection(&(0..elements_row_count), expr, prepared)?;
         let validity_fut = fetch_validity(
             self.validity.as_ref(),
             &(0..row_count),
@@ -199,10 +214,10 @@ impl ListReader {
                 ListArray::new_unchecked(elements, offsets, create_validity(validity, nullability))
             }
             .into_array();
-            if is_root_list_project(&expr) {
+            if is_root_list_project(&residual) {
                 Ok(list)
             } else {
-                list.apply_bound(&expr)
+                list.apply_bound(&residual)
             }
         }
         .boxed())
@@ -218,6 +233,7 @@ impl ListReader {
         row_range: &Range<u64>,
         expr: &BoundExpression,
         mask: Mask,
+        prepared: Option<Arc<PreparedElementProjection>>,
     ) -> VortexResult<ArrayFuture> {
         // Crop to the smallest contiguous row range containing every selected list.
         let Some(selected_rows) = selected_row_range(&mask) else {
@@ -238,13 +254,18 @@ impl ListReader {
             let offsets = offsets_fut.await?;
 
             let elements_range = elements_range_from_offsets(&offsets, &reader.session)?;
-            let elements_fut = reader.fetch_elements_for_projection(&elements_range, &expr)?;
+            let elements_fut = reader.fetch_elements_for_projection(
+                &elements_range,
+                &expr,
+                prepared.as_deref(),
+            )?;
             let validity_fut = fetch_validity(
                 reader.validity.as_ref(),
                 &selected_row_range,
                 MaskFuture::new_true(selected_mask.len()),
             )?;
             let (elements, validity) = try_join!(elements_fut, validity_fut)?;
+            let residual = prepared.as_ref().map_or(&expr, |p| &p.residual);
 
             let offsets = rebase_offsets(offsets, elements_range.start)?;
             // SAFETY: the selected offsets remain monotonically increasing, rebasing them against
@@ -259,10 +280,10 @@ impl ListReader {
             } else {
                 list.filter(selected_mask)?
             };
-            if is_root_list_project(&expr) {
+            if is_root_list_project(residual) {
                 Ok(list)
             } else {
-                list.apply_bound(&expr)
+                list.apply_bound(residual)
             }
         }
         .boxed())
@@ -333,6 +354,22 @@ impl ListReader {
             .projection_evaluation(row_range, &root, MaskFuture::new_true(row_count))
     }
 
+    fn prepare_element_projection(
+        &self,
+        expr: &BoundExpression,
+    ) -> VortexResult<Option<Arc<PreparedElementProjection>>> {
+        let key = ExactBoundExpr(expr.clone());
+        if let Some(cached) = self.element_projection_cache.get(&key) {
+            return Ok(cached.clone());
+        }
+        let prepared = prepare_element_projection(expr)?.map(Arc::new);
+        Ok(self
+            .element_projection_cache
+            .entry(key)
+            .or_insert(prepared)
+            .clone())
+    }
+
     /// Fetch elements using the nested paths requested by a list projection when present.
     /// This lets the child struct reader prune unreferenced element fields (including nested
     /// fields) while this reader continues to own and preserve offsets and list validity.
@@ -340,7 +377,16 @@ impl ListReader {
         &self,
         row_range: &Range<u64>,
         expr: &BoundExpression,
+        prepared: Option<&PreparedElementProjection>,
     ) -> VortexResult<ArrayFuture> {
+        if let Some(prepared) = prepared {
+            let row_count = usize::try_from(row_range.end - row_range.start)?;
+            return self.elements.projection_evaluation(
+                row_range,
+                &prepared.elements,
+                MaskFuture::new_true(row_count),
+            );
+        }
         let Some(paths) = nested_element_paths(expr) else {
             return self.fetch_raw_elements(row_range);
         };
@@ -353,6 +399,78 @@ impl ListReader {
         self.elements
             .projection_evaluation(row_range, &projection, MaskFuture::new_true(row_count))
     }
+}
+
+/// One typed transformed element domain, shared by all identical occurrences.
+/// Replacing only the selected scalar node avoids applying the old field path
+/// a second time to genuine Bool children.
+struct PreparedElementProjection {
+    elements: BoundExpression,
+    residual: BoundExpression,
+}
+
+fn prepare_element_projection(
+    expr: &BoundExpression,
+) -> VortexResult<Option<PreparedElementProjection>> {
+    fn collect(expr: &BoundExpression, chosen: &mut Option<ElementValidityPath>) -> bool {
+        if let Some(path) = expr.as_opt::<ListElementValidity>() {
+            if !expr.children()[0].is_root() {
+                return false;
+            }
+            return match chosen {
+                Some(existing) => existing == path,
+                None => {
+                    *chosen = Some(path.clone());
+                    true
+                }
+            };
+        }
+        if expr.is_root() {
+            return false;
+        }
+        if (expr.is::<IsNotNull>() || expr.is::<IsNull>() || expr.is::<ListLength>())
+            && expr
+                .children()
+                .first()
+                .is_some_and(BoundExpression::is_root)
+        {
+            return true;
+        }
+        expr.children().iter().all(|child| collect(child, chosen))
+    }
+    fn rewrite(expr: &BoundExpression, output: &DType) -> VortexResult<BoundExpression> {
+        if expr.is::<ListElementValidity>() || expr.is_root() {
+            return Ok(BoundExpression::Root {
+                dtype: output.clone(),
+            });
+        }
+        let children = expr
+            .children()
+            .iter()
+            .map(|child| rewrite(child, output))
+            .collect::<VortexResult<Vec<_>>>()?;
+        expr.clone().with_children(children)
+    }
+    let mut chosen = None;
+    if !collect(expr, &mut chosen) {
+        return Ok(None);
+    }
+    let Some(chosen) = chosen else {
+        return Ok(None);
+    };
+    let input = chosen.input_dtype();
+    let DType::List(_, outer) = input else {
+        return Ok(None);
+    };
+    let output = DType::List(Arc::new(DType::Bool(Nullability::NonNullable)), *outer);
+    let residual = rewrite(expr, &output)?;
+    if residual.dtype() != expr.dtype() {
+        return Ok(None);
+    }
+    Ok(Some(PreparedElementProjection {
+        elements: chosen.element_projection().clone(),
+        residual,
+    }))
 }
 
 /// Infer element dependencies through arbitrary scalar expressions. A raw
@@ -689,6 +807,7 @@ mod tests {
     use vortex_array::assert_arrays_eq;
     use vortex_array::dtype::FieldName;
     use vortex_array::dtype::FieldNames;
+    use vortex_array::expr::ExactBoundExpr;
     use vortex_array::expr::Expression;
     use vortex_array::expr::cast;
     use vortex_array::expr::gt;
@@ -696,10 +815,14 @@ mod tests {
     use vortex_array::expr::is_null;
     use vortex_array::expr::list_length;
     use vortex_array::expr::lit;
+    use vortex_array::scalar_fn::fns::list_element_validity::{
+        ElementValidityPath, ListElementValidity,
+    };
     use vortex_array::scalar_fn::fns::list_project::list_project;
     use vortex_buffer::buffer;
     use vortex_io::session::RuntimeSession;
     use vortex_io::session::RuntimeSessionExt;
+    use vortex_utils::aliases::dash_map::DashMap;
 
     use super::*;
     use crate::LayoutRef;
