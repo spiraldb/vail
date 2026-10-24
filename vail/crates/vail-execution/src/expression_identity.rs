@@ -263,6 +263,15 @@ impl Identity {
     /// Scalar semantic kernels separately expose their free input arguments
     /// and effects. Only that contract opts into lexical-name equivalence.
     pub(crate) fn with_bound_names(expression: Expr) -> Self {
+        let mut has_binder = false;
+        expression.visit_unique(&mut |node| {
+            has_binder |= matches!(node, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. }
+                | Expr::ArrayPredicate { .. } | Expr::ArrayFold { .. } | Expr::Switch { .. }
+                | Expr::AggArray { .. } | Expr::AggExplode { .. } | Expr::AggregateFold { .. });
+        });
+        if !has_binder {
+            return Self::new(expression);
+        }
         let canonical = alpha_identity(&expression);
         Self::from_canonical(expression, Some(canonical))
     }
@@ -289,7 +298,29 @@ impl Identity {
 /// Canonicalize only the owned identity: execution retains the original names.
 /// Free names remain distinct, and the chosen namespace cannot capture them.
 fn alpha_identity(expression: &Expr) -> Expr {
-    let free = expression.free_parameters();
+    fn summarize(node: &Expr, summaries: &mut HashMap<usize, HashSet<String>>) -> HashSet<String> {
+        let address = node as *const Expr as usize;
+        if let Some(names) = summaries.get(&address) {
+            return names.clone();
+        }
+        let mut names = HashSet::new();
+        if let Expr::LambdaVariable { name, .. } = node {
+            names.insert(name.clone());
+        }
+        let mut position = 0;
+        node.for_each_child(&mut |child| {
+            let mut child_names = summarize(child, summaries);
+            for binder in node.child_binders(position) {
+                child_names.remove(binder);
+            }
+            position += 1;
+            names.extend(child_names);
+        });
+        summaries.insert(address, names.clone());
+        names
+    }
+    let mut free_names = HashMap::new();
+    let free = summarize(expression, &mut free_names);
     let mut prefix = "\0vail_bound_".to_owned();
     while free.iter().any(|name| name.starts_with(&prefix)) {
         prefix.push('_');
@@ -300,14 +331,18 @@ fn alpha_identity(expression: &Expr) -> Expr {
         // A shared expression reached repeatedly in one scope is rewritten once.
         scopes: Vec<Vec<(String, String)>>,
         edges: HashMap<(usize, Vec<String>), usize>,
-        memo: HashMap<(usize, usize), Expr>,
+        free_names: HashMap<usize, HashSet<String>>,
+        memo: HashMap<(usize, usize, Vec<(String, Option<String>)>), Expr>,
     }
     impl Normalizer {
         fn child_scope(&mut self, parent: usize, binders: Vec<&str>) -> usize {
             if binders.is_empty() {
                 return parent;
             }
-            let key = (parent, binders.iter().map(|name| (*name).to_owned()).collect());
+            let key = (
+                parent,
+                binders.iter().map(|name| (*name).to_owned()).collect(),
+            );
             if let Some(id) = self.edges.get(&key) {
                 return *id;
             }
@@ -321,21 +356,44 @@ fn alpha_identity(expression: &Expr) -> Expr {
             id
         }
         fn visit(&mut self, node: &Expr, scope: usize) -> Expr {
-            let key = (node as *const Expr as usize, scope);
+            let address = node as *const Expr as usize;
+            let depth = self.scopes[scope].len();
+            // Irrelevant enclosing binders must not multiply visits to a
+            // shared DAG. Only free names of this node can affect its result.
+            let mut captures = self.free_names[&address]
+                .iter()
+                .map(|name| {
+                    (
+                        name.clone(),
+                        self.scopes[scope]
+                            .iter()
+                            .rev()
+                            .find(|(original, _)| original == name)
+                            .map(|(_, bound)| bound.clone()),
+                    )
+                })
+                .collect::<Vec<_>>();
+            captures.sort_unstable();
+            let key = (address, depth, captures);
             if let Some(result) = self.memo.get(&key) {
                 return result.clone();
             }
             let mut position = 0;
-            let mut result = node.try_map_original_children::<std::convert::Infallible>(|child| {
-                let child_scope = self.child_scope(scope, node.child_binders(position));
-                position += 1;
-                Ok(self.visit(child, child_scope))
-            }).expect("identity traversal is infallible");
-            let depth = self.scopes[scope].len();
+            let mut result = node
+                .try_map_original_children::<std::convert::Infallible>(|child| {
+                    let child_scope = self.child_scope(scope, node.child_binders(position));
+                    position += 1;
+                    Ok(self.visit(child, child_scope))
+                })
+                .expect("identity traversal is infallible");
             let canonical = |index| format!("{}{}", self.prefix, depth + index);
             match &mut result {
                 Expr::LambdaVariable { name, .. } => {
-                    if let Some((_, bound)) = self.scopes[scope].iter().rev().find(|(original, _)| original == name) {
+                    if let Some((_, bound)) = self.scopes[scope]
+                        .iter()
+                        .rev()
+                        .find(|(original, _)| original == name)
+                    {
                         *name = bound.clone();
                     }
                 }
@@ -345,11 +403,20 @@ fn alpha_identity(expression: &Expr) -> Expr {
                 | Expr::AggArray { parameter, .. }
                 | Expr::AggExplode { parameter, .. }
                 | Expr::Switch { parameter, .. } => *parameter = canonical(0),
-                Expr::ArrayFold { accumulator, parameter, .. } => {
+                Expr::ArrayFold {
+                    accumulator,
+                    parameter,
+                    ..
+                } => {
                     *accumulator = canonical(0);
                     *parameter = canonical(1);
                 }
-                Expr::AggregateFold { state_parameter, left_parameter, right_parameter, .. } => {
+                Expr::AggregateFold {
+                    state_parameter,
+                    left_parameter,
+                    right_parameter,
+                    ..
+                } => {
                     *state_parameter = canonical(0);
                     *left_parameter = canonical(0);
                     *right_parameter = canonical(1);
@@ -360,9 +427,16 @@ fn alpha_identity(expression: &Expr) -> Expr {
             result
         }
     }
-    Normalizer { prefix, scopes: vec![vec![]], edges: HashMap::new(), memo: HashMap::new() }
-        .visit(expression, 0)
+    Normalizer {
+        prefix,
+        scopes: vec![vec![]],
+        edges: HashMap::new(),
+        free_names,
+        memo: HashMap::new(),
+    }
+    .visit(expression, 0)
 }
+
 impl std::fmt::Debug for Identity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ExpressionIdentity")
