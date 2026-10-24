@@ -1,7 +1,7 @@
 import json, resource, time, math
 import vail as h
 for mode in ['direct','struct']:
- for size,path in [('small','/private/tmp/native-reduction-cse-input.mt'),('large','/private/tmp/native-reduction-cse-large.mt')]:
+ for size,path in [('small','/private/tmp/native-reduction-cse-input.mt'),('large','/private/tmp/native-reduction-cse-large.mt'),('500m','/private/tmp/native-reduction-cse-500m.mt')]:
   for rep in range(3):
    m=h.read_matrix_table(path)
    fields={f'f{i}':h.agg.fraction(m.value>t) for i,t in enumerate([-5,20,50,95])}

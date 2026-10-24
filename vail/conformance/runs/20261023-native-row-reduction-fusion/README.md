@@ -41,3 +41,10 @@ tests cover sparse/empty/mixed numeric reductions and dead errors on filtered
 entries. Candidate execution validation and larger timings are still pending a
 normal build; the shared local Cargo target is currently owned by the integration
 agent. No main changes have been made.
+
+A second baseline diagnostic extends to 500M entries (baseline-500m-diagnostic.log):
+independent named fractions take 1.697–1.940 seconds and 19.17–19.60 CPU seconds;
+shared struct fractions take 0.644–0.658 seconds and 7.05–7.10 CPU seconds.
+All numerical outputs match. The five new public semantic tests pass against the
+unchanged baseline (0.31 seconds); this establishes the oracle before candidate
+execution, including the guarded invalid cast on filtered entries.
