@@ -1,0 +1,13 @@
+BOUNDS ["locus", "alleles"] declared=["locus", "alleles"] node=Discriminant(0) metadata=true
+BOUNDS ["locus", "alleles"] declared=["locus", "alleles"] node=Discriminant(13) metadata=false
+BOUNDS ["locus", "alleles"] declared=["locus", "alleles"] node=Discriminant(14) metadata=false
+KEYEXPR Some(("locus", Column { name: "locus" }))
+KEYEXPR Some(("alleles", Column { name: "alleles" }))
+BOUNDS ["locus", "alleles"] declared=["locus", "alleles"] node=Discriminant(14) metadata=false
+KEYEXPR Some(("locus", Column { name: "locus" }))
+KEYEXPR Some(("alleles", Column { name: "alleles" }))
+BOUNDS ["locus", "alleles"] declared=["locus", "alleles"] node=Discriminant(13) metadata=false
+BOUNDS ["locus", "alleles"] declared=[] node=Discriminant(14) metadata=false
+KEYEXPR Some(("locus", Column { name: "locus" }))
+KEYEXPR Some(("alleles", Column { name: "alleles" }))
+BOUNDS ["locus", "alleles"] declared=[] node=Discriminant(17) metadata=false
