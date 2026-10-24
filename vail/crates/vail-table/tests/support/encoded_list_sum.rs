@@ -134,9 +134,16 @@ fn dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists() -> VortexR
                             }
                         })
                         .collect::<Vec<_>>();
+                    // Preserve a non-byte-aligned dictionary validity slice,
+                    // independently of the visible code envelope's offset.
+                    let sliced_values = PrimitiveArray::from_option_iter(
+                        std::iter::repeat_n(Some(999_i32), 7)
+                            .chain(dictionary.iter().copied())
+                            .chain(std::iter::repeat_n(None, 3)),
+                    ).into_array().slice(7..24)?;
                     let elements = DictArray::try_new(
                         PrimitiveArray::from_option_iter(codes).into_array(),
-                        PrimitiveArray::from_option_iter(dictionary).into_array(),
+                        sliced_values,
                     )?
                     .into_array();
                     let dtype = elements.dtype().clone();
