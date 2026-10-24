@@ -1,0 +1,267 @@
+........................................................................ [ 33%]
+........................................................................ [ 67%]
+..........F.F..............FFFF.......................................   [100%]
+=================================== FAILURES ===================================
+__ AggregateTests.test_integer_reducers_preserve_values_above_float_precision __
+
+self = <test_aggregate.AggregateTests testMethod=test_integer_reducers_preserve_values_above_float_precision>
+
+    def test_integer_reducers_preserve_values_above_float_precision(self):
+        value = 2**53 + 17
+        table = hl.Table.parallelize([{"x": value}], schema=hl.tstruct(x=hl.tint64))
+>       result = table.aggregate({"sum": hl.agg.sum(table.x),
+                                  "product": hl.agg.product(table.x),
+                                  "min": hl.agg.min(table.x),
+                                  "max": hl.agg.max(table.x),
+                                  "mean": hl.agg.mean(table.x),
+                                  "collect": hl.agg.collect(table.x),
+                                  "count_where": hl.agg.count_where(table.x > value - 1),
+                                  "fraction": hl.agg.fraction(table.x > value - 1),
+                                  "any": hl.agg.any(table.x > value - 1),
+                                  "all": hl.agg.all(table.x > value - 1),
+                                  "stats": hl.agg.stats(table.x)})
+
+python/tests/test_aggregate.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10cf66e30>, <vail.expressions.Expression object at 0x10cf66ce0>,...70d0>, <vail.expressions.Expression object at 0x10cf67140>, <vail.expressions.StructExpression object at 0x10cf673e0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+python/vail/types.py:688: TypeError
+_________ AggregateTests.test_reducers_on_empty_and_all_missing_tables _________
+
+self = <test_aggregate.AggregateTests testMethod=test_reducers_on_empty_and_all_missing_tables>
+
+    def test_reducers_on_empty_and_all_missing_tables(self):
+        for table, expected_count, expected_values, expected_fraction in (
+            (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], None),
+            (hl.Table.parallelize([{"x": None, "b": None}, {"x": None, "b": None}],
+                                  schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 2, [None, None], 0.0),
+        ):
+            x, b = table.x, table.b
+>           result = table.aggregate({
+                "count": hl.agg.count(),
+                "sum": hl.agg.sum(x),
+                "product": hl.agg.product(x),
+                "min": hl.agg.min(x),
+                "max": hl.agg.max(x),
+                "mean": hl.agg.mean(x),
+                "collect": hl.agg.collect(x),
+                "count_where": hl.agg.count_where(b),
+                "fraction": hl.agg.fraction(b),
+                "any": hl.agg.any(b),
+                "all": hl.agg.all(b),
+                "stats": hl.agg.stats(x),
+            })
+
+python/tests/test_aggregate.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10d3c4510>, <vail.expressions.Expression object at 0x10d3c4430>,...4a50>, <vail.expressions.Expression object at 0x10d3c4ac0>, <vail.expressions.StructExpression object at 0x10cec17e0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+python/vail/types.py:688: TypeError
+________________ test_upstream_scalar_bind[test_bind_multiple] _________________
+
+name = 'test_bind_multiple'
+
+    @pytest.mark.parametrize('name', [
+        'test_bind_multiple', 'test_bind_placement',
+        'test_rbind_multiple', 'test_rbind_placement',
+    ])
+    def test_upstream_scalar_bind(name):
+        source = Path(__file__).resolve().parents[3] / 'hail/hail/python/test/hail/expr/test_expr.py'
+>       node = copy.deepcopy(next(n for n in ast.walk(ast.parse(source.read_text()))
+                                                                ^^^^^^^^^^^^^^^^^^
+                                  if isinstance(n, ast.FunctionDef) and n.name == name))
+
+python/tests/test_bind.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py'
+
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1013: FileNotFoundError
+________________ test_upstream_scalar_bind[test_bind_placement] ________________
+
+name = 'test_bind_placement'
+
+    @pytest.mark.parametrize('name', [
+        'test_bind_multiple', 'test_bind_placement',
+        'test_rbind_multiple', 'test_rbind_placement',
+    ])
+    def test_upstream_scalar_bind(name):
+        source = Path(__file__).resolve().parents[3] / 'hail/hail/python/test/hail/expr/test_expr.py'
+>       node = copy.deepcopy(next(n for n in ast.walk(ast.parse(source.read_text()))
+                                                                ^^^^^^^^^^^^^^^^^^
+                                  if isinstance(n, ast.FunctionDef) and n.name == name))
+
+python/tests/test_bind.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py'
+
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1013: FileNotFoundError
+________________ test_upstream_scalar_bind[test_rbind_multiple] ________________
+
+name = 'test_rbind_multiple'
+
+    @pytest.mark.parametrize('name', [
+        'test_bind_multiple', 'test_bind_placement',
+        'test_rbind_multiple', 'test_rbind_placement',
+    ])
+    def test_upstream_scalar_bind(name):
+        source = Path(__file__).resolve().parents[3] / 'hail/hail/python/test/hail/expr/test_expr.py'
+>       node = copy.deepcopy(next(n for n in ast.walk(ast.parse(source.read_text()))
+                                                                ^^^^^^^^^^^^^^^^^^
+                                  if isinstance(n, ast.FunctionDef) and n.name == name))
+
+python/tests/test_bind.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py'
+
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_______________ test_upstream_scalar_bind[test_rbind_placement] ________________
+
+name = 'test_rbind_placement'
+
+    @pytest.mark.parametrize('name', [
+        'test_bind_multiple', 'test_bind_placement',
+        'test_rbind_multiple', 'test_rbind_placement',
+    ])
+    def test_upstream_scalar_bind(name):
+        source = Path(__file__).resolve().parents[3] / 'hail/hail/python/test/hail/expr/test_expr.py'
+>       node = copy.deepcopy(next(n for n in ast.walk(ast.parse(source.read_text()))
+                                                                ^^^^^^^^^^^^^^^^^^
+                                  if isinstance(n, ast.FunctionDef) and n.name == name))
+
+python/tests/test_bind.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/hail/hail/python/test/hail/expr/test_expr.py'
+
+../../../../../.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pathlib.py:1013: FileNotFoundError
+=========================== short test summary info ============================
+FAILED python/tests/test_aggregate.py::AggregateTests::test_integer_reducers_preserve_values_above_float_precision
+FAILED python/tests/test_aggregate.py::AggregateTests::test_reducers_on_empty_and_all_missing_tables
+FAILED python/tests/test_bind.py::test_upstream_scalar_bind[test_bind_multiple]
+FAILED python/tests/test_bind.py::test_upstream_scalar_bind[test_bind_placement]
+FAILED python/tests/test_bind.py::test_upstream_scalar_bind[test_rbind_multiple]
+FAILED python/tests/test_bind.py::test_upstream_scalar_bind[test_rbind_placement]
+6 failed, 208 passed in 9.53s
