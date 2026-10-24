@@ -145,8 +145,11 @@ pub(crate) async fn prepare(
     );
     let expected = session.arrow().from_arrow_field(&field).map_err(invalid)?;
     // Ordered results preserve source-file error/fallback precedence while IO
-    // futures overlap. One shared budget reserves every read before allocation;
-    // it is not a separate allowance per concurrent file.
+    // futures overlap. One shared cumulative budget charges reads before their
+    // buffers are allocated, plus parsed metadata estimates after opening. It
+    // is not a strict peak-heap cap: footer parsing precedes its estimate, and
+    // library-owned allocations are not all included. Dropped read futures may
+    // leave already-dispatched blocking reads finishing in the background.
     let domains = {
         let mut files = futures::stream::iter(
             plan.files
@@ -256,8 +259,9 @@ async fn prepare_file(
     }))
 }
 
-/// Cumulative bytes across all in-flight files, never reset per file. Charging
-/// raw read buffers and parsed metadata bounds concurrent preparation and work.
+/// Cumulative charged read bytes and metadata estimates, never reset per file.
+/// This limits requested preparation work alongside the in-flight file limit;
+/// it does not enforce peak heap usage or precharge every parsed allocation.
 #[derive(Default)]
 struct MetadataBudget {
     used: AtomicUsize,
