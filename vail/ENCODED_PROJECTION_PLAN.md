@@ -2,6 +2,8 @@
 
 The ordinary DataFusion scan currently requests field indices and filters. Vail additionally carries nested field paths into Iceberg's Vortex projection, but computed scalar expressions are not carried. Vortex's Arrow conversion materializes primitive dictionary outputs before DataFusion's expression evaluator.
 
+The broader rollout is tracked in `investigations/VORTEX_PUSHDOWN_QUEUE.md` in the integration workspace. This foundation accepts arbitrary typed Vortex struct-valued computed projections; the first eligibility proof covers widened integer list sums. Next capabilities include predicates/null/list predicates, arithmetic/casts/conditionals, other mergeable reductions and bundles, common interval-source projection, and safe one-side pre-join expressions. Each needs its own exact semantics and encoding-kernel/fallback evidence.
+
 | Operation | Pinned Vortex capability | Current Vail scan | Safe next use |
 | --- | --- | --- | --- |
 | Field/nested projection | get_item/select/list_project; parent struct validity masking | Yes | Keep existing pruning and logical validity |

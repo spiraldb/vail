@@ -277,8 +277,21 @@ pub(super) async fn read_vortex_task(
     }
 
     let array_stream = scan_builder.into_array_stream().map_err(to_iceberg_error)?;
-    if array_stream.dtype().as_struct_fields_opt().is_none() {
-        return Err(Error::new(ErrorKind::DataInvalid, "computed scan projection must return a struct"));
+    if computed_before_arrow && (array_stream.dtype().as_struct_fields_opt().is_none()
+        || array_stream.dtype().nullability().is_nullable()) {
+        return Err(Error::new(ErrorKind::DataInvalid, "computed scan projection must return a non-nullable struct"));
+    }
+    if computed_before_arrow {
+        let field = session.arrow().to_arrow_field("", array_stream.dtype()).map_err(to_iceberg_error)?;
+        let mut ctx = session.create_execution_ctx();
+        // Select the encoded route once per file. It needs neither the
+        // schema-evolution machinery nor a per-batch route decision.
+        return Ok(Box::pin(array_stream.map(move |chunk| {
+            let output = session.arrow().execute_arrow(
+                chunk.map_err(to_iceberg_error)?, Some(&field), &mut ctx,
+            ).map_err(to_iceberg_error)?;
+            Ok(RecordBatch::from(output.as_struct()))
+        })));
     }
 
     // Mirror the parquet pipeline: adapt file batches to the task schema.
@@ -390,9 +403,6 @@ pub(super) async fn read_vortex_task(
             .execute_arrow(chunk, Some(&arrow_field), &mut execution_ctx)
             .map_err(to_iceberg_error)?;
         let batch = RecordBatch::from(arrow_array.as_struct());
-        if computed_before_arrow {
-            return Ok(batch);
-        }
         let mut batch = attach_field_id_metadata(batch, &file_schema)?;
         if need_pos {
             let schema = batch.schema();
@@ -432,8 +442,9 @@ pub(super) async fn read_vortex_task(
             ).map_err(to_iceberg_error)?;
             if fallback_bound.is_none() {
                     let bound = expression.bind(input.dtype()).map_err(to_iceberg_error)?;
-                    if bound.dtype().as_struct_fields_opt().is_none() {
-                        return Err(Error::new(ErrorKind::DataInvalid, "computed scan projection must return a struct"));
+                    if bound.dtype().as_struct_fields_opt().is_none()
+                        || bound.dtype().nullability().is_nullable() {
+                        return Err(Error::new(ErrorKind::DataInvalid, "computed scan projection must return a non-nullable struct"));
                     }
                     fallback_bound = Some(bound);
             }

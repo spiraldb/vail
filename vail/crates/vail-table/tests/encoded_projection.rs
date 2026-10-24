@@ -162,3 +162,6 @@ async fn native_nested_projection_and_global_sum_preserve_nulls_and_widening() {
         i64::from(i32::MAX) * 2 + 3
     );
 }
+
+#[path = "support/encoded_list_sum.rs"]
+mod encoded_list_sum;

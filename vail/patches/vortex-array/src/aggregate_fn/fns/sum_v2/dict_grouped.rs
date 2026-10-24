@@ -69,30 +69,22 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         if dict.values().len() > end - start {
             return Ok(None);
         }
-        let ranges = GroupRanges::ListView {
-            ranges: ranges
-                .iter()
-                .enumerate()
-                .map(|(group, (offset, len))| {
-                    if group_mask.value(group) && len != 0 {
-                        (offset - start, len)
-                    } else {
-                        (0, 0)
-                    }
-                })
-                .collect(),
-        };
         // Decode only the codes and dictionary, never the expanded child.
-        let codes = dict
-            .codes()
-            .slice(start..end)?
-            .execute::<PrimitiveArray>(ctx)?;
-        let values = dict.values().clone().execute::<PrimitiveArray>(ctx)?;
-        let code_mask = codes.as_ref().validity()?.execute_mask(codes.len(), ctx)?;
-        let value_mask = values
-            .as_ref()
+        let codes = dict.codes().slice(start..end)?;
+        let code_mask = codes.validity()?.execute_mask(codes.len(), ctx)?;
+        let value_mask = dict
+            .values()
             .validity()?
-            .execute_mask(values.len(), ctx)?;
+            .execute_mask(dict.values().len(), ctx)?;
+        if code_mask.all_false() || value_mask.all_false() {
+            return Ok(Some(partial(
+                PrimitiveArray::from_iter(std::iter::repeat_n(0_i64, groups.len())),
+                BitBuffer::new_set(groups.len()),
+                group_mask,
+            )));
+        }
+        let codes = codes.execute::<PrimitiveArray>(ctx)?;
+        let values = dict.values().clone().execute::<PrimitiveArray>(ctx)?;
         let (sums, empty) = match_each_integer_ptype!(codes.ptype(), |C| {
             let codes = codes.as_slice::<C>();
             let values = values.as_slice::<i32>();
@@ -102,6 +94,7 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     codes,
                     values,
                     &ranges,
+                    start,
                     &group_mask,
                     &code_mask,
                     &value_mask,
@@ -110,6 +103,7 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     codes,
                     values,
                     &ranges,
+                    start,
                     &group_mask,
                     &code_mask,
                     &value_mask,
@@ -118,6 +112,7 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     codes,
                     values,
                     &ranges,
+                    start,
                     &group_mask,
                     &code_mask,
                     &value_mask,
@@ -126,6 +121,7 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     codes,
                     values,
                     &ranges,
+                    start,
                     &group_mask,
                     &code_mask,
                     &value_mask,
@@ -163,6 +159,7 @@ fn reduce<
     codes: &[C],
     values: &[i32],
     ranges: &GroupRanges,
+    base: usize,
     groups: &Mask,
     code_mask: &Mask,
     value_mask: &Mask,
@@ -172,6 +169,7 @@ fn reduce<
         if !groups.value(group) {
             return 0_i64;
         }
+        let offset = if len == 0 { 0 } else { offset - base };
         let mut sum = 0_i64;
         let mut any = false;
         for (relative, code) in codes[offset..offset + len].iter().enumerate() {

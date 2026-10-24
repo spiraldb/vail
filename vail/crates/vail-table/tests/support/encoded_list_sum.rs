@@ -209,3 +209,39 @@ fn assert_arrays_eq(
         );
     }
 }
+
+#[test]
+fn dictionary_all_missing_codes_or_values_yield_missing_group_sums() -> VortexResult<()> {
+    use vortex::array::arrays::DictArray;
+    for codes_missing in [false, true] {
+        let codes = PrimitiveArray::from_option_iter((0..64).map(|i| {
+            if codes_missing {
+                None
+            } else {
+                Some((i % 2) as u8)
+            }
+        }))
+        .into_array();
+        let values = PrimitiveArray::from_option_iter(
+            (0..2).map(|i| if codes_missing { Some(i as i32) } else { None }),
+        )
+        .into_array();
+        let dict = DictArray::try_new(codes, values)?.into_array();
+        let dtype = dict.dtype().clone();
+        let groups = ListViewArray::try_new(
+            dict,
+            buffer![0i32, 32, 0].into_array(),
+            buffer![32i32, 32, 0].into_array(),
+            Validity::NonNullable,
+        )?
+        .into_array();
+        let mut accumulator =
+            GroupedAccumulator::try_new(SumV2, NumericalAggregateOpts::default(), dtype)?;
+        let mut ctx = VortexSession::default().create_execution_ctx();
+        accumulator.accumulate_list(&groups, &mut ctx)?;
+        let result = accumulator.finish()?;
+        let expected = PrimitiveArray::from_option_iter([None::<i64>, None, None]).into_array();
+        assert_arrays_eq(&result, &expected, &mut ctx);
+    }
+    Ok(())
+}

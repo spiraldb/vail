@@ -94,7 +94,7 @@ impl ArrowReaderBuilder {
     }
 
     /// Apply a row-preserving Vortex expression before crossing the Arrow boundary.
-    /// The expression must return a struct. Ordinary Iceberg field projection
+    /// The expression must return a non-nullable struct. Ordinary Iceberg field projection
     /// declares its input dependencies; the expression declares the output.
     /// Schema evolution retains a correctness-preserving post-evolution fallback.
     pub fn with_computed_projection(mut self, expression: ::vortex::expr::Expression) -> Self {

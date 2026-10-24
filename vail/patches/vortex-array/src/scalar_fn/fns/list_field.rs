@@ -18,8 +18,52 @@ use vortex_error::{VortexResult, vortex_bail, vortex_err};
 use vortex_session::{VortexSession, registry::CachedId};
 
 /// Field positions and parent-nullability choices are bound at expression preparation.
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct FieldPath(Vec<(usize, bool)>);
+#[derive(Clone)]
+pub struct FieldPath(Vec<(usize, bool)>, Vec<FieldStep>);
+
+type FieldStep = fn(StructArray, usize) -> VortexResult<ArrayRef>;
+
+impl FieldPath {
+    fn new(fields: Vec<(usize, bool)>) -> Self {
+        let steps = fields
+            .iter()
+            .map(|&(_, nullable)| {
+                if nullable {
+                    masked_field as FieldStep
+                } else {
+                    required_field as FieldStep
+                }
+            })
+            .collect();
+        Self(fields, steps)
+    }
+}
+impl std::fmt::Debug for FieldPath {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(&self.0, f)
+    }
+}
+impl PartialEq for FieldPath {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+impl Eq for FieldPath {}
+impl std::hash::Hash for FieldPath {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(&self.0, state);
+    }
+}
+
+fn required_field(parent: StructArray, index: usize) -> VortexResult<ArrayRef> {
+    Ok(parent.unmasked_field(index).clone())
+}
+fn masked_field(parent: StructArray, index: usize) -> VortexResult<ArrayRef> {
+    parent
+        .unmasked_field(index)
+        .clone()
+        .mask(parent.validity()?.to_array(parent.len()))
+}
 
 impl std::fmt::Display for FieldPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -62,7 +106,7 @@ impl ScalarFnVTable for ListField {
                 chunk[4] == 1,
             ));
         }
-        Ok(FieldPath(path))
+        Ok(FieldPath::new(path))
     }
     fn arity(&self, _: &FieldPath) -> Arity {
         Arity::Exact(1)
@@ -105,12 +149,9 @@ impl ScalarFnVTable for ListField {
             .try_downcast::<ListView>()
             .map_err(|_| vortex_err!("list field canonical shape mismatch"))?;
         let mut elements = list.elements().clone();
-        for &(index, parent_nullable) in &path.0 {
+        for (&(index, _), step) in path.0.iter().zip(&path.1) {
             let parent = elements.execute::<StructArray>(ctx)?;
-            elements = parent.unmasked_field(index).clone();
-            if parent_nullable {
-                elements = elements.mask(parent.validity()?.to_array(parent.len()))?;
-            }
+            elements = step(parent, index)?;
         }
         Ok(ListViewArray::try_new(
             elements,
@@ -156,5 +197,5 @@ pub fn list_field(
     } else {
         super::list_project::project_paths(&[names.to_vec()], child, dtype)?
     };
-    Ok(ListField.new_expr(FieldPath(path), vec![child]))
+    Ok(ListField.new_expr(FieldPath::new(path), vec![child]))
 }
