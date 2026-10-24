@@ -62,3 +62,12 @@ def test_empty_entry_fraction_keeps_nan_contract():
         b=hl.agg.fraction(matrix.col_idx > 2)).rows().collect()
     assert len(rows) == 2
     assert all(math.isnan(row.a) and math.isnan(row.b) for row in rows)
+
+
+def test_reused_callback_dag_preserves_multiplicity():
+    table = hl.range_table(3)
+    value = hl.sum(hl.array([1, 2]).map(lambda item: item + table.idx))
+    for _ in range(18):
+        value = value + value
+    assert table.select(value=value).value.collect() == [
+        (3 + 2 * row) * (1 << 18) for row in range(3)]
