@@ -819,6 +819,17 @@ def reduce_composite_totals(matrix, expr):
     eligibility = {}
     # Retain every native handle whose identity is cached throughout rewriting.
     retained = {}
+    views = {}
+
+    def view(node):
+        identity = node.node_identity()
+        if identity not in views:
+            retained[identity] = node
+            # Struct children are inline Expr values: view() creates fresh Arc
+            # wrappers. Retain one view so discovery and substitution see the
+            # same child identities, as in the existing row-reducer walker.
+            views[identity] = node.view()
+        return views[identity]
 
     def eligible(node):
         if not isinstance(node, IR_NODE_TYPES):
@@ -827,11 +838,12 @@ def reduce_composite_totals(matrix, expr):
         if identity in eligibility:
             return eligibility[identity]
         retained[identity] = node
-        op = node.get("op")
+        data = view(node)
+        op = data.get("op")
         if op == "struct":
-            result = all(eligible(value) for _, value in node["fields"])
+            result = all(eligible(value) for _, value in data["fields"])
         elif op == "tuple":
-            result = all(eligible(value) for value in node["elements"])
+            result = all(eligible(value) for value in data["elements"])
         elif (op != "aggregate" or matrix._is_scan_node(node)
                 or set(node.get("options") or {}) != {"__vail_result_type"}
                 or node.get("init")):
@@ -877,11 +889,12 @@ def reduce_composite_totals(matrix, expr):
         identity = node.node_identity()
         if identity in rebuilt:
             return rebuilt[identity]
-        if node.get("op") == "struct":
+        data = view(node)
+        if data.get("op") == "struct":
             value = {"op": "struct", "fields": [
-                [name, rebuild(value)] for name, value in node["fields"]]}
+                [name, rebuild(value)] for name, value in data["fields"]]}
         else:
-            value = {"op": "tuple", "elements": [rebuild(value) for value in node["elements"]]}
+            value = {"op": "tuple", "elements": [rebuild(value) for value in data["elements"]]}
         # Native handles preserve shared children; a repeated Python dictionary
         # alone would be expanded again by the native expression parser.
         result = NativeExpr(value)
