@@ -226,6 +226,47 @@ pub(crate) fn evolve_nested_fields(
                         .clone()
                         .with_data_type(child.data_type().clone()),
                 );
+                // The input's typed OffsetBuffer is already validated. Reuse
+                // that proof instead of rescanning unchanged offsets when only
+                // the evolved child/type changes. Keep the old ArrayData path
+                // for logical-nullability representations (e.g. dictionaries)
+                // whose non-nullable-child contract differs in typed Arrow.
+                if field.is_nullable() || !child.is_nullable() {
+                    match source.data_type() {
+                        DataType::List(_) => {
+                            let lists = array
+                                .as_any()
+                                .downcast_ref::<arrow_array::ListArray>()
+                                .ok_or_else(|| {
+                                    Error::new(ErrorKind::DataInvalid, "Expected a list array")
+                                })?;
+                            return Ok(Arc::new(arrow_array::ListArray::try_new(
+                                field,
+                                lists.offsets().clone(),
+                                child,
+                                lists.nulls().cloned(),
+                            )?));
+                        }
+                        DataType::LargeList(_) => {
+                            let lists = array
+                                .as_any()
+                                .downcast_ref::<arrow_array::LargeListArray>()
+                                .ok_or_else(|| {
+                                    Error::new(
+                                        ErrorKind::DataInvalid,
+                                        "Expected a large list array",
+                                    )
+                                })?;
+                            return Ok(Arc::new(arrow_array::LargeListArray::try_new(
+                                field,
+                                lists.offsets().clone(),
+                                child,
+                                lists.nulls().cloned(),
+                            )?));
+                        }
+                        _ => {}
+                    }
+                }
                 let dtype = match source.data_type() {
                     DataType::List(_) => DataType::List(field),
                     DataType::LargeList(_) => DataType::LargeList(field),
