@@ -8,14 +8,14 @@ use vortex::array::arrays::{ListArray, PrimitiveArray, StructArray};
 use vortex::array::memory::MemorySessionExt;
 use vortex::array::stream::ArrayStreamAdapter;
 use vortex::array::validity::Validity;
-use vortex::array::{ArrayRef, IntoArray, VortexSessionExecute, buffer::BufferHandle};
+use vortex::array::{ArrayRef, IntoArray, buffer::BufferHandle};
 use vortex::buffer::Alignment;
 use vortex::dtype::FieldNames;
 use vortex::error::VortexResult;
 use vortex::expr::{list_sum, root};
 use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
 use vortex::io::{CoalesceConfig, VortexReadAt, session::RuntimeSessionExt, std_file::FileReadAt};
-use vortex::{VortexSessionDefault, session::VortexSession};
+use vortex::{VortexSessionDefault, arrow::ArrowSessionExt, session::VortexSession};
 
 #[derive(Default)]
 struct Traffic {
@@ -152,6 +152,8 @@ async fn element_validity_public_file_io_receipt() -> VortexResult<()> {
             )
         })
         .collect::<Vec<_>>();
+    let reduction = list_sum(presence.clone()).bind(input.dtype())?;
+    let result_field = session.arrow().to_arrow_field("", reduction.dtype())?;
     for raw in [true, false] {
         let traffic = Arc::new(Traffic::default());
         let reader = Arc::new(ObservedFile {
@@ -178,18 +180,21 @@ async fn element_validity_public_file_io_receipt() -> VortexResult<()> {
         let mut ctx = session.create_execution_ctx();
         for chunk in chunks {
             let output = if raw {
-                chunk.apply_bound(&list_sum(presence.clone()).bind(input.dtype())?)?
+                chunk.apply_bound(&reduction)?
             } else {
                 chunk
             };
-            for i in 0..output.len() {
-                actual.push(
-                    output
-                        .execute_scalar(i, &mut ctx)?
-                        .as_primitive()
-                        .as_::<u64>(),
-                );
-            }
+            // Execute the tiny row result exactly once. Per-value scalar access
+            // to a lazy sum could repeatedly execute the entire expression.
+            let materialized =
+                session
+                    .arrow()
+                    .execute_arrow(output, Some(&result_field), &mut ctx)?;
+            let materialized = materialized
+                .as_any()
+                .downcast_ref::<arrow_array::UInt64Array>()
+                .expect("prepared UInt64 list sum result");
+            actual.extend(materialized.iter());
         }
         assert_eq!(actual, expected);
         let scan_seconds = start.elapsed().as_secs_f64();

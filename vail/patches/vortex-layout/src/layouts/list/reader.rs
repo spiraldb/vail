@@ -364,8 +364,8 @@ impl ListReader {
         if let Some(cached) = self.projection_cache.get(&key) {
             return Ok(cached.clone());
         }
-        // Entry locking is preparation-only: no await, IO, output data or user
-        // callback. Concurrent first ranges share the same immutable preparation.
+        // Entry locking is preparation-only: no await, IO, output data or
+        // per-element evaluation callback. Concurrent first ranges share the same immutable preparation.
         match self.projection_cache.entry(key) {
             Entry::Occupied(entry) => Ok(entry.get().clone()),
             Entry::Vacant(entry) => {
