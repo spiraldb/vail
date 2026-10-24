@@ -763,6 +763,8 @@ impl Probe<'_> {
                     Ok(bytes) => bytes
                         .try_into_host()
                         .map_err(invalid)?
+                        .await
+                        .map_err(invalid)?
                         .slice(padding..padding + length),
                     Err(_) if self.reader.denied.load(Ordering::Relaxed) => return Ok(false),
                     Err(error) => return Err(invalid(error)),
