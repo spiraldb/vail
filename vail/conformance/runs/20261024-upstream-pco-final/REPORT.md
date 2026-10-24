@@ -2,9 +2,11 @@
 
 PR https://github.com/vortex-data/vortex/pull/10771 remains DRAFT. Source 58fd61e34d181553a60423defaebb381e9213b74; CI merge615a967dfe3f77447d53aaedc44096c3b3977034.
 
-59PCO tests,1doctest and four2/2 public file/actual unchanged-reader phases PASS. Resource40121399516, attribution40121399664 SUCCESS. CodSpeed FAILURE; usual remaining jobs listed separately.
+59PCO tests,1doctest and four2/2 public file/actual unchanged-reader phases PASS. Resource40121399516, attribution40121399664 SUCCESS. Final checks: 77 successful and 11 skipped. CodSpeed remains failing; two human reviews and a maintainer performance-gate decision are outstanding.
 
-Final fixed iteration has ended. No further probe variants or post-hoc windows. Final reviewer disposition required for residual warm latency.
+Final internal technical review accepted the documented resource tradeoff; this is not GitHub approval or a CI waiver. The PR remains draft. No further probe variants or post-hoc windows are planned.
+
+Durable evidence: [protocol](PROTOCOL.md), [raw resource archive](resource-raw.tar.gz), and [assembly/profile archive](assembly-profile.tar.gz). Temporary paths below are provenance, not the sole copies of the evidence.
 
 |Operation|Pattern|Base warmµs|Current warmµs|Speedup|
 |---|---|---:|---:|---:|
