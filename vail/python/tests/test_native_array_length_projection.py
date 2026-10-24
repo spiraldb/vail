@@ -56,3 +56,18 @@ def test_native_list_length_can_drop_other_computed_columns(tmp_path):
     assert siblings.aggregate(hl.struct(
         n=hl.agg.sum(siblings.n), total=hl.agg.sum(siblings.total))) == hl.Struct(
             n=41 * 19, total=sum(i - c for i in range(41) for c in range(19)))
+
+
+def test_native_list_lengths_across_many_files_and_independent_reads(tmp_path):
+    table = hl.utils.range_table(258, n_partitions=129)
+    table = table.annotate(items=hl.or_missing(table.idx % 7 != 0,
+        hl.range(11).map(lambda c: hl.struct(value=table.idx + c))))
+    path = str(tmp_path / "many.ht")
+    table.write(path)
+    expected = [(i, None if i % 7 == 0 else 11) for i in range(258)]
+    for _ in range(2):
+        source = hl.read_table(path)
+        result = source.select(n=hl.len(source.items))
+        assert [(row.idx, row.n) for row in result.collect()] == expected
+        assert result.aggregate(hl.agg.sum(result.n)) == sum(
+            n for _, n in expected if n is not None)
