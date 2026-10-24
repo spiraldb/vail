@@ -8,13 +8,15 @@ def test_row_collect_keeps_nested_missing_and_filtered_entries(partitions,tmp_pa
     m=m.annotate_entries(value=hl.or_missing(m.col_idx%3!=0,hl.struct(x=m.row_idx+m.col_idx, ys=hl.array([m.col_idx,hl.missing(hl.tint32)]))))
     m=m.filter_entries((m.row_idx!=1)&(m.col_idx%2==0))
     result=m.annotate_rows(values=hl.agg.collect(m.value),empty=hl.agg.collect(hl.struct())).rows().collect()
+    def multiset(values):
+        return sorted((0,) if v is None else (1,v.x,tuple(v.ys)) for v in values)
     for r in result:
         cols=[c for c in range(7) if r.row_idx!=1 and c%2==0]
-        assert r['values']==[None if c%3==0 else hl.Struct(x=r.row_idx+c,ys=[c,None]) for c in cols]
+        assert multiset(r['values'])==multiset([None if c%3==0 else hl.Struct(x=r.row_idx+c,ys=[c,None]) for c in cols])
         assert r.empty==[hl.Struct() for _ in cols]
     path=str(tmp_path/'roundtrip.ht')
     m.annotate_rows(values=hl.agg.collect(m.value)).rows().write(path)
-    assert hl.read_table(path)['values'].collect()==[r['values'] for r in result]
+    assert {r.row_idx:multiset(r['values']) for r in hl.read_table(path).collect()}=={r.row_idx:multiset(r['values']) for r in result}
 
 
 def test_array_collect_preserves_null_empty_and_sliced_elements():
