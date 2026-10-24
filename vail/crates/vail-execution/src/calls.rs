@@ -242,7 +242,8 @@ impl PreparedIndex {
 // missing Calls still yield missing without raising an out-of-bounds error.
 fn invalid_call_index(args: &[ArrayRef], requested: Option<i32>) -> Result<ArrayRef, ExprError> {
     let rows = CallRows::new(&args[0])?;
-    if let Some(row) = (0..rows.parent.len()).find(|&row| rows.parent.is_valid(row)) {
+    let nulls = rows.parent.logical_nulls();
+    if let Some(row) = (0..rows.parent.len()).find(|&row| nulls.as_ref().is_none_or(|n| n.is_valid(row))) {
         let n = rows.ploidy.value(row);
         let len = if n == 2 { 2 } else { usize::from(n > 0) };
         return Err(ExprError::Invalid(format!(
