@@ -92,47 +92,27 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         let value_bits = value_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
         let code_bits = BitBufferView::new_with_offset(code_bits.inner().as_slice(), code_bits.len(), code_bits.offset());
         let value_bits = BitBufferView::new_with_offset(value_bits.inner().as_slice(), value_bits.len(), value_bits.offset());
+        // Small, reused dictionaries amortize a cardinality-sized normalization
+        // and keep the value/validity pair in cache. Large dictionaries retain
+        // the borrowed bitmap path rather than doubling their lookup footprint.
+        const NORMALIZED_DICTIONARY_BYTES: usize = 16 * 1024;
+        let normalized = (!value_mask.all_true()
+            && values.len() <= NORMALIZED_DICTIONARY_BYTES / std::mem::size_of::<LookupValue>()
+            && codes.len() >= values.len() * 4)
+            .then(|| values.as_slice::<i32>().iter().enumerate().map(|(index, &value)| {
+                let valid = value_bits.value(index);
+                LookupValue { value: if valid { value } else { 0 }, valid: i32::from(valid) }
+            }).collect::<Vec<_>>());
         let (sums, empty) = match_each_integer_ptype!(codes.ptype(), |C| {
             let codes = codes.as_slice::<C>();
             let values = values.as_slice::<i32>();
-            // Nullability strategy is selected once for this physical batch.
-            match (code_mask.all_true(), value_mask.all_true()) {
-                (true, true) => reduce::<C, true, true>(
-                    codes,
-                    values,
-                    &ranges,
-                    start,
-                    &group_mask,
-                    code_bits,
-                    value_bits,
-                ),
-                (true, false) => reduce::<C, true, false>(
-                    codes,
-                    values,
-                    &ranges,
-                    start,
-                    &group_mask,
-                    code_bits,
-                    value_bits,
-                ),
-                (false, true) => reduce::<C, false, true>(
-                    codes,
-                    values,
-                    &ranges,
-                    start,
-                    &group_mask,
-                    code_bits,
-                    value_bits,
-                ),
-                (false, false) => reduce::<C, false, false>(
-                    codes,
-                    values,
-                    &ranges,
-                    start,
-                    &group_mask,
-                    code_bits,
-                    value_bits,
-                ),
+            // Lookup and code-validity strategies are selected once per batch.
+            if let Some(normalized) = &normalized {
+                dispatch_codes(codes, &PreparedValues(normalized), &ranges, start, &group_mask, code_bits, code_mask.all_true())
+            } else if value_mask.all_true() {
+                dispatch_codes(codes, &PlainValues::<true> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true())
+            } else {
+                dispatch_codes(codes, &PlainValues::<false> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true())
             }
         });
         Ok(Some(partial(sums, empty, group_mask)))
@@ -158,54 +138,65 @@ fn partial(sums: PrimitiveArray, empty: BitBuffer, group_mask: Mask) -> ArrayRef
     .into_array()
 }
 
-fn reduce<
-    C: NativePType + AsPrimitive<usize>,
-    const CODES_VALID: bool,
-    const VALUES_VALID: bool,
->(
-    codes: &[C],
-    values: &[i32],
-    ranges: &GroupRanges,
-    base: usize,
-    groups: &Mask,
+/// One cache-sized normalized dictionary slot, never one record per input code.
+#[derive(Clone, Copy)]
+#[repr(C)]
+struct LookupValue { value: i32, valid: i32 }
+
+trait ValueLookup { fn get(&self, index: usize) -> LookupValue; }
+struct PreparedValues<'a>(&'a [LookupValue]);
+impl ValueLookup for PreparedValues<'_> {
+    #[inline]
+    fn get(&self, index: usize) -> LookupValue { self.0[index] }
+}
+struct PlainValues<'a, const VALID: bool> { values: &'a [i32], validity: BitBufferView<'a> }
+impl<const VALID: bool> ValueLookup for PlainValues<'_, VALID> {
+    #[inline]
+    fn get(&self, index: usize) -> LookupValue {
+        // A checked lookup also proves the index lies in the equal-length mask.
+        let value = self.values[index];
+        // SAFETY: this mask was executed for exactly values.len() slots.
+        let valid = VALID || unsafe { self.validity.value_unchecked(index) };
+        LookupValue { value: if valid { value } else { 0 }, valid: i32::from(valid) }
+    }
+}
+
+fn dispatch_codes<C: NativePType + AsPrimitive<usize>, L: ValueLookup>(
+    codes: &[C], lookup: &L, ranges: &GroupRanges, base: usize, groups: &Mask,
+    code_bits: BitBufferView<'_>, codes_valid: bool,
+) -> (PrimitiveArray, BitBuffer) {
+    if codes_valid { reduce::<C, L, true>(codes, lookup, ranges, base, groups, code_bits) }
+    else { reduce::<C, L, false>(codes, lookup, ranges, base, groups, code_bits) }
+}
+
+fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID: bool>(
+    codes: &[C], lookup: &L, ranges: &GroupRanges, base: usize, groups: &Mask,
     code_bits: BitBufferView<'_>,
-    value_bits: BitBufferView<'_>,
 ) -> (PrimitiveArray, BitBuffer) {
     debug_assert!(CODES_VALID || code_bits.len() == codes.len());
-    debug_assert!(VALUES_VALID || value_bits.len() == values.len());
     let mut empty = BitBufferMut::new_unset(groups.len());
     let sums = ranges.iter().enumerate().map(|(group, (offset, len))| {
-        if !groups.value(group) {
-            return 0_i64;
-        }
+        if !groups.value(group) { return 0_i64; }
         let offset = if len == 0 { 0 } else { offset - base };
         let mut sum = 0_i64;
-        let mut any = false;
+        let mut any = 0_i32;
         let codes = &codes[offset..offset + len];
         let mut add = |code: C| {
-            let index = code.as_();
-            // Retain a checked dictionary lookup, including for malformed codes.
-            let value = values[index];
-            // SAFETY: the checked value lookup proves index < values.len();
-            // this logical mask was executed for exactly that dictionary length.
-            if !VALUES_VALID && !unsafe { value_bits.value_unchecked(index) } {
-                return;
-            }
-            sum += i64::from(value);
-            any = true;
+            let slot = lookup.get(code.as_());
+            sum += i64::from(slot.value);
+            any |= slot.valid;
         };
         if CODES_VALID {
             for &code in codes { add(code); }
         } else {
-            // Reuse the library's word-wise set-bit iterator, avoiding a bit
-            // extraction/branch for every code and allocating no index vector.
+            // The library iterator visits validity words without allocating indices.
             for index in code_bits.slice(offset..offset + len).set_indices() {
-                // SAFETY: the bitmap slice and codes slice have identical len,
-                // and BitIndexIterator only yields positions inside that slice.
+                // SAFETY: the bitmap/code slices have identical len, and the
+                // library iterator only yields positions inside that bitmap.
                 add(unsafe { *codes.get_unchecked(index) });
             }
         }
-        if !any {
+        if any == 0 {
             // SAFETY: enumerate index is within the group-sized bitmap.
             unsafe { empty.set_unchecked(group) };
         }
