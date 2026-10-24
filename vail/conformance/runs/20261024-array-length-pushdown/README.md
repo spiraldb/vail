@@ -59,7 +59,8 @@ M3 Max; normal release/kache builds, native CPU flags, jobs2, no overlapping
 builds/tests/timed workloads. Baseline is exact main `669af5b0` (before the
 disjoint correlation change in `6656e247`), native `9ee229e8…db8b`. Candidate
 includes both. Each row uses serial A/B/B/A independent processes with 24 timed
-actions per process, 48 observations per artifact. Every action checks an exact
+actions per process: two process replicas per artifact, 48 within-process timed
+actions per artifact, not 48 independent process replicas. Every action checks an exact
 integer result; one untimed warmup precedes the observations.
 
 “Fresh” means a new public read/snapshot/proof cache for each action in an
@@ -119,6 +120,12 @@ file actions, baseline RSS high-water is311.25 ->315.24 MB and candidate357.17
 ->360.40 MB. Candidate increments100->200 and200->300 are344 KB and115 KB;
 there is no assertion that16 MiB is a heap limit or that this proves unlimited
 run memory behavior.
+
+Compressed raw software samples are committed in receipts. The baseline and
+initial shape samples use normal native37f05292 (main669) andb64c7baa
+(initial bc98) respectively; their adjacent profile JSON records provenance.
+The initial-read-many sample usesc5196829 (f871), and final-many uses exact
+5b681dc5 (adfd).
 
 Software samples show ordinary length reads traversing List/Struct/Int32 Arrow
 conversion; the computed path avoids element conversion. The final many-file
