@@ -56,7 +56,23 @@ def test_integer_clamps_in_nested_matrix_queries():
 
 
 def test_float_and_strict_reductions_retain_contract():
-    assert hl.eval(hl.min(float('nan'), 1.0)) == 1.0
-    assert hl.eval(hl.max(1.0, float('nan'))) == 1.0
+    assert math.isnan(hl.eval(hl.min(float('nan'), 1.0)))
+    assert math.isnan(hl.eval(hl.max(1.0, float('nan'))))
     assert math.isnan(hl.eval(hl.max(float('nan'), float('nan'))))
     assert hl.eval(hl.max(1, hl.missing(hl.tint32), filter_missing=False)) is None
+
+
+def test_integer_extrema_preserves_conditional_errors_and_argument_evaluation():
+    bad = hl.array([7])[2]
+    assert hl.eval(hl.if_else(False, hl.min(5, bad), 11)) == 11
+    with pytest.raises(Exception, match='out of bounds'):
+        hl.eval(hl.min(5, bad))
+
+
+def test_row_predicates_and_mixed_numeric_extrema():
+    table = hl.utils.range_table(21, n_partitions=4)
+    table = table.filter(table.idx % 2 == 0)
+    table = table.annotate(value=hl.max(hl.int64(-5), hl.min(table.idx - 8, 5)))
+    assert [r.value for r in table.collect()] == [-5, -5, -4, -2, 0, 2, 4, 5, 5, 5, 5]
+    assert table.value.dtype == hl.tint64
+    assert hl.eval(hl.min(hl.int64(5), hl.float64(2.5))) == 2.5
