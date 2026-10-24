@@ -148,18 +148,20 @@ impl ScalarFnVTable for ListField {
             .into_array()
             .try_downcast::<ListView>()
             .map_err(|_| vortex_err!("list field canonical shape mismatch"))?;
+        let list = super::list_project::clip_visible_elements(list, ctx)?;
         let mut elements = list.elements().clone();
         for (&(index, _), step) in path.0.iter().zip(&path.1) {
             let parent = elements.execute::<StructArray>(ctx)?;
             elements = step(parent, index)?;
         }
-        Ok(ListViewArray::try_new(
+        let result = ListViewArray::try_new(
             elements,
             list.offsets().clone(),
             list.sizes().clone(),
-            list.listview_validity(),
-        )?
-        .into_array())
+            list.validity()?,
+        )?;
+        // SAFETY: field extraction preserves every list offset and size.
+        Ok(unsafe { result.with_zero_copy_to_list(list.is_zero_copy_to_list()) }.into_array())
     }
 }
 

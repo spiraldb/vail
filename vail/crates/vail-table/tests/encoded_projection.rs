@@ -108,6 +108,21 @@ async fn native_nested_projection_and_global_sum_preserve_nulls_and_widening() {
                 vec![Some(i64::from(i32::MAX) * 2), None, Some(0), Some(3), None]
             }
         );
+        if filter_missing {
+            // Caller-visible resource contract, without inspecting operators.
+            let session = datafusion::prelude::SessionContext::new_with_config(
+                datafusion::prelude::SessionConfig::new().with_batch_size(1),
+            );
+            let context = session.task_ctx();
+            let plan = vail_table::plan::physical_with_context(&mapped, context.clone())
+                .await
+                .unwrap();
+            let small = datafusion_physical_plan::collect(plan, context)
+                .await
+                .unwrap();
+            assert_eq!(small.iter().map(|b| b.num_rows()).sum::<usize>(), 5);
+            assert!(small.iter().all(|b| b.num_rows() <= 1));
+        }
         let aggregate = GlobalsIR::aggregate(
             mapped,
             Expr::Aggregate {

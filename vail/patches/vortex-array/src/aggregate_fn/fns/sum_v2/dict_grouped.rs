@@ -90,8 +90,16 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         let empty_bits = BitBuffer::new_unset(0);
         let code_bits = code_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
         let value_bits = value_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
-        let code_bits = BitBufferView::new_with_offset(code_bits.inner().as_slice(), code_bits.len(), code_bits.offset());
-        let value_bits = BitBufferView::new_with_offset(value_bits.inner().as_slice(), value_bits.len(), value_bits.offset());
+        let code_bits = BitBufferView::new_with_offset(
+            code_bits.inner().as_slice(),
+            code_bits.len(),
+            code_bits.offset(),
+        );
+        let value_bits = BitBufferView::new_with_offset(
+            value_bits.inner().as_slice(),
+            value_bits.len(),
+            value_bits.offset(),
+        );
         // Small, reused dictionaries amortize a cardinality-sized normalization
         // and keep the value/validity pair in cache. Large dictionaries retain
         // the borrowed bitmap path rather than doubling their lookup footprint.
@@ -99,20 +107,60 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         let normalized = (!value_mask.all_true()
             && values.len() <= NORMALIZED_DICTIONARY_BYTES / size_of::<LookupValue>()
             && code_mask.true_count() >= values.len() * 4)
-            .then(|| values.as_slice::<i32>().iter().enumerate().map(|(index, &value)| {
-                let valid = value_bits.value(index);
-                LookupValue { value: if valid { value } else { 0 }, valid: i32::from(valid) }
-            }).collect::<Vec<_>>());
+            .then(|| {
+                values
+                    .as_slice::<i32>()
+                    .iter()
+                    .enumerate()
+                    .map(|(index, &value)| {
+                        let valid = value_bits.value(index);
+                        LookupValue {
+                            value: if valid { value } else { 0 },
+                            valid: i32::from(valid),
+                        }
+                    })
+                    .collect::<Vec<_>>()
+            });
         let (sums, empty) = match_each_integer_ptype!(codes.ptype(), |C| {
             let codes = codes.as_slice::<C>();
             let values = values.as_slice::<i32>();
             // Lookup and code-validity strategies are selected once per batch.
             if let Some(normalized) = &normalized {
-                dispatch_codes(codes, &PreparedValues(normalized), &ranges, start, &group_mask, code_bits, code_mask.all_true(), code_mask.density() >= 0.9)
+                dispatch_codes(
+                    codes,
+                    &PreparedValues(normalized),
+                    &ranges,
+                    start,
+                    &group_mask,
+                    code_bits,
+                    code_mask.all_true(),
+                )
             } else if value_mask.all_true() {
-                dispatch_codes(codes, &PlainValues::<true> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true(), code_mask.density() >= 0.9)
+                dispatch_codes(
+                    codes,
+                    &PlainValues::<true> {
+                        values,
+                        validity: value_bits,
+                    },
+                    &ranges,
+                    start,
+                    &group_mask,
+                    code_bits,
+                    code_mask.all_true(),
+                )
             } else {
-                dispatch_codes(codes, &PlainValues::<false> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true(), code_mask.density() >= 0.9)
+                dispatch_codes(
+                    codes,
+                    &PlainValues::<false> {
+                        values,
+                        validity: value_bits,
+                    },
+                    &ranges,
+                    start,
+                    &group_mask,
+                    code_bits,
+                    code_mask.all_true(),
+                )
             }
         });
         Ok(Some(partial(sums, empty, group_mask)))
@@ -141,15 +189,25 @@ fn partial(sums: PrimitiveArray, empty: BitBuffer, group_mask: Mask) -> ArrayRef
 /// One cache-sized normalized dictionary slot, never one record per input code.
 #[derive(Clone, Copy)]
 #[repr(C)]
-struct LookupValue { value: i32, valid: i32 }
+struct LookupValue {
+    value: i32,
+    valid: i32,
+}
 
-trait ValueLookup { fn get(&self, index: usize) -> LookupValue; }
+trait ValueLookup {
+    fn get(&self, index: usize) -> LookupValue;
+}
 struct PreparedValues<'a>(&'a [LookupValue]);
 impl ValueLookup for PreparedValues<'_> {
     #[inline]
-    fn get(&self, index: usize) -> LookupValue { self.0[index] }
+    fn get(&self, index: usize) -> LookupValue {
+        self.0[index]
+    }
 }
-struct PlainValues<'a, const VALID: bool> { values: &'a [i32], validity: BitBufferView<'a> }
+struct PlainValues<'a, const VALID: bool> {
+    values: &'a [i32],
+    validity: BitBufferView<'a>,
+}
 impl<const VALID: bool> ValueLookup for PlainValues<'_, VALID> {
     #[inline]
     fn get(&self, index: usize) -> LookupValue {
@@ -157,27 +215,43 @@ impl<const VALID: bool> ValueLookup for PlainValues<'_, VALID> {
         let value = self.values[index];
         // SAFETY: this mask was executed for exactly values.len() slots.
         let valid = VALID || unsafe { self.validity.value_unchecked(index) };
-        LookupValue { value: if valid { value } else { 0 }, valid: i32::from(valid) }
+        LookupValue {
+            value: if valid { value } else { 0 },
+            valid: i32::from(valid),
+        }
     }
 }
 
 fn dispatch_codes<C: NativePType + AsPrimitive<usize>, L: ValueLookup>(
-    codes: &[C], lookup: &L, ranges: &GroupRanges, base: usize, groups: &Mask,
-    code_bits: BitBufferView<'_>, codes_valid: bool, dense_codes: bool,
+    codes: &[C],
+    lookup: &L,
+    ranges: &GroupRanges,
+    base: usize,
+    groups: &Mask,
+    code_bits: BitBufferView<'_>,
+    codes_valid: bool,
 ) -> (PrimitiveArray, BitBuffer) {
-    if codes_valid { reduce::<C, L, true, false>(codes, lookup, ranges, base, groups, code_bits) }
-    else if dense_codes { reduce::<C, L, false, true>(codes, lookup, ranges, base, groups, code_bits) }
-    else { reduce::<C, L, false, false>(codes, lookup, ranges, base, groups, code_bits) }
+    if codes_valid {
+        reduce::<C, L, true>(codes, lookup, ranges, base, groups, code_bits)
+    } else {
+        reduce::<C, L, false>(codes, lookup, ranges, base, groups, code_bits)
+    }
 }
 
-fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID: bool, const CODE_RUNS: bool>(
-    codes: &[C], lookup: &L, ranges: &GroupRanges, base: usize, groups: &Mask,
+fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID: bool>(
+    codes: &[C],
+    lookup: &L,
+    ranges: &GroupRanges,
+    base: usize,
+    groups: &Mask,
     code_bits: BitBufferView<'_>,
 ) -> (PrimitiveArray, BitBuffer) {
     debug_assert!(CODES_VALID || code_bits.len() == codes.len());
     let mut empty = BitBufferMut::new_unset(groups.len());
     let sums = ranges.iter().enumerate().map(|(group, (offset, len))| {
-        if !groups.value(group) { return 0_i64; }
+        if !groups.value(group) {
+            return 0_i64;
+        }
         let offset = if len == 0 { 0 } else { offset - base };
         let mut sum = 0_i64;
         let mut any = 0_i32;
@@ -188,14 +262,8 @@ fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID
             any |= slot.valid;
         };
         if CODES_VALID {
-            for &code in codes { add(code); }
-        } else if CODE_RUNS {
-            // Dense masks expose contiguous runs: keep bitmap work outside the
-            // dictionary lookup loop and let the compiler optimize that loop.
-            for (start, end) in code_bits.slice(offset..offset + len).set_slices() {
-                // SAFETY: library run bounds lie in the bitmap slice, which has
-                // exactly the same length as this already-checked code slice.
-                for &code in unsafe { codes.get_unchecked(start..end) } { add(code); }
+            for &code in codes {
+                add(code);
             }
         } else {
             // The library iterator visits validity words without allocating indices.

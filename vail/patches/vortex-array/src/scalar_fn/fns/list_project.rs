@@ -18,15 +18,19 @@ use crate::ArrayRef;
 use crate::Canonical;
 use crate::ExecutionCtx;
 use crate::IntoArray;
+use crate::aggregate_fn::{GroupRanges, GroupedArray};
 use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
 use crate::arrays::struct_::StructArrayExt;
-use crate::arrays::{ListView, ListViewArray, StructArray};
+use crate::arrays::{ConstantArray, ListView, ListViewArray, PrimitiveArray, StructArray};
+use crate::dtype::Nullability;
 use crate::dtype::{DType, FieldName, FieldNames, StructFields};
 use crate::expr::Expression;
 use crate::expr::display::ExprDisplay;
+use crate::scalar::Scalar;
 use crate::scalar_fn::{
     Arity, ChildName, ExecutionArgs, ScalarFnId, ScalarFnVTable, ScalarFnVTableExt,
 };
+use vortex_buffer::BitBuffer;
 
 /// One or more field-name paths, relative to a struct (or list element struct).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -232,17 +236,116 @@ fn project_array(
                 .into_array()
                 .try_downcast::<ListView>()
                 .map_err(|_| vortex_err!("canonical list projection failed"))?;
+            // Clip before executing struct ancestors or their logical masks.
+            let list = clip_visible_elements(list, ctx)?;
             let elements = project_array(list.elements().clone(), paths, ctx)?;
-            Ok(ListViewArray::try_new(
+            let projected = ListViewArray::try_new(
                 elements,
                 list.offsets().clone(),
                 list.sizes().clone(),
-                list.listview_validity(),
-            )?
-            .into_array())
+                list.validity()?,
+            )?;
+            // SAFETY: field projection changes no list offsets or sizes.
+            Ok(
+                unsafe { projected.with_zero_copy_to_list(list.is_zero_copy_to_list()) }
+                    .into_array(),
+            )
         }
         other => vortex_bail!("project requires struct or list-of-struct, got {other}"),
     }
+}
+
+/// Bound parent-field/mask work by the visible, logically present child span.
+pub(crate) fn clip_visible_elements(
+    list: ListViewArray,
+    ctx: &mut ExecutionCtx,
+) -> VortexResult<ListViewArray> {
+    if list.is_empty() {
+        return empty_elements(list);
+    }
+    let validity = list.validity()?.execute_mask(list.len(), ctx)?;
+    if validity.all_false() {
+        return empty_elements(list);
+    }
+    if validity.all_true() && list.is_zero_copy_to_list() {
+        // Reuse Vortex's O(1) first/last bounds and lazy offset adjustment.
+        let (start, end) = list.referenced_element_bounds(ctx)?;
+        if start == 0 && end == list.elements().len() {
+            return Ok(list);
+        }
+        // SAFETY: the library computed exact bounds for this list representation.
+        return unsafe { list.trim_elements(start, end) };
+    }
+    let GroupRanges::ListView { ranges } = GroupedArray::from(list.clone()).group_ranges(ctx)?
+    else {
+        vortex_bail!("list view returned an incompatible range representation");
+    };
+    if validity.all_true() {
+        trim_ranges::<true>(list, &ranges, &BitBuffer::new_unset(0))
+    } else {
+        let bits = validity
+            .values()
+            .ok_or_else(|| vortex_err!("mixed list validity missing bitmap"))?
+            .bit_buffer();
+        trim_ranges::<false>(list, &ranges, bits)
+    }
+}
+
+fn empty_elements(list: ListViewArray) -> VortexResult<ListViewArray> {
+    let zero = ConstantArray::new(
+        Scalar::primitive(0_u64, Nullability::NonNullable),
+        list.len(),
+    )
+    .into_array();
+    ListViewArray::try_new(
+        list.elements().slice(0..0)?,
+        zero.clone(),
+        zero,
+        list.validity()?,
+    )
+}
+
+fn trim_ranges<const ALL_VALID: bool>(
+    list: ListViewArray,
+    ranges: &[(usize, usize)],
+    valid: &BitBuffer,
+) -> VortexResult<ListViewArray> {
+    let mut start = usize::MAX;
+    let mut end = 0usize;
+    for (row, &(offset, size)) in ranges.iter().enumerate() {
+        if size != 0 && (ALL_VALID || valid.value(row)) {
+            start = start.min(offset);
+            end = end.max(
+                offset
+                    .checked_add(size)
+                    .ok_or_else(|| vortex_err!("visible list range overflow"))?,
+            );
+        }
+    }
+    if start == usize::MAX {
+        return empty_elements(list);
+    }
+    if start == 0 && end == list.elements().len() {
+        return Ok(list);
+    }
+    let mut offsets = Vec::with_capacity(ranges.len());
+    let mut sizes = Vec::with_capacity(ranges.len());
+    for (row, &(offset, size)) in ranges.iter().enumerate() {
+        if size != 0 && (ALL_VALID || valid.value(row)) {
+            offsets.push((offset - start) as u64);
+            sizes.push(size as u64);
+        } else {
+            // Null/empty groups must not anchor the retained owner's bounds.
+            offsets.push(0_u64);
+            sizes.push(0_u64);
+        }
+    }
+    ListViewArray::try_new(
+        list.elements().slice(start..end)?,
+        PrimitiveArray::from_iter(offsets).into_array(),
+        PrimitiveArray::from_iter(sizes).into_array(),
+        list.validity()?,
+    )
 }
 
 fn project_struct(

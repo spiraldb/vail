@@ -12,7 +12,8 @@ use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
     SendableRecordBatchStream,
     execution_plan::{Boundedness, EmissionType},
-    stream::RecordBatchStreamAdapter,
+    metrics::{ExecutionPlanMetricsSet, SplitMetrics},
+    stream::{BatchSplitStream, RecordBatchStreamAdapter},
 };
 use futures::TryStreamExt;
 use std::{fmt, sync::Arc};
@@ -197,7 +198,9 @@ pub(crate) fn try_total(
         return Ok(None);
     };
     let Expr::Aggregate {
-        function, value: Some(value), ..
+        function,
+        value: Some(value),
+        ..
     } = expression
     else {
         return Ok(None);
@@ -219,7 +222,8 @@ pub(crate) fn try_total(
     // Aggregate scopes retain their input schema at the independent-consumer
     // boundary. Supply only dependencies actually consumed by this total,
     // rather than decoding original source columns that cannot be pruned later.
-    let tag = crate::plan::private_name(table.schema(), table.globals().schema(), "__vail_partition");
+    let tag =
+        crate::plan::private_name(table.schema(), table.globals().schema(), "__vail_partition");
     let provider = ComputedProvider {
         source: source.clone(),
         schema: Arc::new(Schema::new(vec![
@@ -230,8 +234,11 @@ pub(crate) fn try_total(
         keys: vec![],
     };
     let child = LogicalPlanBuilder::scan(
-        "vail_encoded_projection", provider_as_source(Arc::new(provider)), None,
-    )?.build()?;
+        "vail_encoded_projection",
+        provider_as_source(Arc::new(provider)),
+        None,
+    )?
+    .build()?;
     let mut rewritten = expression.clone();
     if let Expr::Aggregate { value, .. } = &mut rewritten {
         *value = Some(Arc::new(Expr::Column { name }));
@@ -321,6 +328,7 @@ impl TableProvider for ComputedProvider {
             indices,
             tag,
             properties,
+            metrics: ExecutionPlanMetricsSet::new(),
         }))
     }
 }
@@ -333,6 +341,7 @@ struct ComputedExec {
     indices: Vec<usize>,
     tag: usize,
     properties: Arc<PlanProperties>,
+    metrics: ExecutionPlanMetricsSet,
 }
 impl DisplayAs for ComputedExec {
     fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter) -> fmt::Result {
@@ -345,6 +354,9 @@ impl ExecutionPlan for ComputedExec {
     }
     fn properties(&self) -> &Arc<PlanProperties> {
         &self.properties
+    }
+    fn metrics(&self) -> Option<datafusion_physical_plan::metrics::MetricsSet> {
+        Some(self.metrics.clone_inner())
     }
     fn children(&self) -> Vec<&Arc<dyn ExecutionPlan>> {
         vec![]
@@ -372,7 +384,7 @@ impl ExecutionPlan for ComputedExec {
     fn execute(
         &self,
         partition: usize,
-        _: Arc<TaskContext>,
+        context: Arc<TaskContext>,
     ) -> DFResult<SendableRecordBatchStream> {
         if partition >= self.source.partition_rows().len() {
             return Err(DataFusionError::Execution(
@@ -397,9 +409,11 @@ impl ExecutionPlan for ComputedExec {
                 }
             }
         };
-        Ok(Box::pin(RecordBatchStreamAdapter::new(
-            output_schema,
+        let stream = Box::pin(RecordBatchStreamAdapter::new(output_schema, stream));
+        Ok(Box::pin(BatchSplitStream::new(
             stream,
+            context.session_config().batch_size(),
+            SplitMetrics::new(&self.metrics, partition),
         )))
     }
 }
