@@ -1,0 +1,21 @@
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+   Compiling vail-execution v0.1.0 (/home/danielking/finite-stddev-20261024/source/vail/crates/vail-execution)
+    Finished `release` profile [optimized] target(s) in 6.55s
+     Running tests/core_aggregates.rs (/home/danielking/cloud-scan-20261023/target/release/deps/core_aggregates-e3af88e1771ad0ab)
+
+running 4 tests
+test population_stdev_retains_numeric_constructor_contract ... ok
+test population_stdev_retracts_nonfinite_values_without_poisoning_native_state ... ok
+test mean_and_population_stdev_accept_sliced_nullable_batches ... ok
+test population_stdev_maps_empty_and_nonfinite_results_to_nan ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+

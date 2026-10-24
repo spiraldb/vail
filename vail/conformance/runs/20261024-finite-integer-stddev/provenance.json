@@ -1,0 +1,28 @@
+{
+  "base": {
+    "python": "/home/danielking/finite-stddev-20261024/base-env/lib/python3.11/site-packages/vail/__init__.py",
+    "native": "/home/danielking/finite-stddev-20261024/base-env/lib/python3.11/site-packages/vail/_native.abi3.so",
+    "native_sha256": "80228cbac7da77bd7a8b199798ef4d16534be729e3a04819613ef17ce650906d"
+  },
+  "candidate": {
+    "python": "/home/danielking/finite-stddev-20261024/candidate-env/lib/python3.11/site-packages/vail/__init__.py",
+    "native": "/home/danielking/finite-stddev-20261024/candidate-env/lib/python3.11/site-packages/vail/_native.abi3.so",
+    "native_sha256": "8375131226a8eb4c4942aedf69f26398e06bce717a2f11a596ec1c65e543959f"
+  },
+  "machine": {
+    "system": "Linux",
+    "node": "vail-bench-20261021",
+    "release": "6.8.0-1070-gcp",
+    "version": "#78~22.04.1-Ubuntu SMP Thu Sep 17 21:46:54 UTC 2026",
+    "machine": "x86_64",
+    "processor": "x86_64"
+  },
+  "baseline_source": "0eec407731c5b39829316f8edf3f463e544b6888",
+  "candidate_source": "f936285fe1b3ac09848950bfd38aa4b0cc34b7e3",
+  "source_sha256": {
+    "crates/vail-execution/src/native_stddev.rs": "c009f4e7690e930ccc3abbbe6d600a3cf2faba35bfd9494a078a2e7ce6cffa84",
+    "crates/vail-execution/tests/finite_stddev.rs": "9a9d3119e6374a373ba539c8121dbde3d85113cc11978766bd5f4d3ef67a1954",
+    "python/tests/test_finite_integer_stddev.py": "7e2dcccfc68b4a543a6bd1692a21bb91ab5d308af42e55be2ce1e16dd16cff36",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  }
+}
