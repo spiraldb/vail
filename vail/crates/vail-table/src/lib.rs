@@ -36,6 +36,7 @@ mod logical_scan;
 mod lookup;
 mod matrix_entries;
 mod nested_projection;
+mod computed_source;
 mod nested_scan;
 mod partition_grouping;
 mod partition_map;

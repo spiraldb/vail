@@ -555,6 +555,37 @@ impl SerializedArray {
         }
     }
 
+    /// Buffer descriptor indices referenced by this node, without reading payloads.
+    pub fn metadata_buffer_indices(&self) -> Vec<usize> {
+        self.flatbuffer().buffers().map(|buffers| buffers.iter().map(|index| index as usize).collect()).unwrap_or_default()
+    }
+
+    /// Lengths of this node's own buffers (rather than all tree buffers).
+    pub fn metadata_buffer_lengths(&self) -> VortexResult<Vec<usize>> {
+        let array = root::<fba::Array>(self.flatbuffer.as_ref())?;
+        let all = array.buffers();
+        self.metadata_buffer_indices().into_iter().map(|index| {
+            let all = all.as_ref().ok_or_else(|| vortex_err!("buffer descriptor index out of range"))?;
+            if index >= all.len() { vortex_bail!("buffer descriptor index out of range"); }
+            Ok(all.get(index).length() as usize)
+        }).collect()
+    }
+
+    /// Checked extent of all serialized buffer descriptors, excluding tree bytes.
+    pub fn metadata_buffer_extent(&self) -> VortexResult<usize> {
+        let array = root::<fba::Array>(self.flatbuffer.as_ref())?;
+        let mut extent = 0usize;
+        if let Some(buffers) = array.buffers() {
+            for buffer in buffers {
+                Alignment::try_from_untrusted_exponent(buffer.alignment_exponent())?;
+                extent = extent.checked_add(buffer.padding() as usize)
+                    .and_then(|n| n.checked_add(buffer.length() as usize))
+                    .ok_or_else(|| vortex_err!("serialized buffer extent overflow"))?;
+            }
+        }
+        Ok(extent)
+    }
+
     /// Returns the buffer lengths as stored in the flatbuffer metadata.
     ///
     /// This reads the buffer descriptors from the flatbuffer, which contain the

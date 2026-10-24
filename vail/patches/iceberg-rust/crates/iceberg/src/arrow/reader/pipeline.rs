@@ -71,6 +71,7 @@ impl ArrowReader {
             row_group_filtering_enabled: self.row_group_filtering_enabled,
             row_selection_enabled: self.row_selection_enabled,
             parquet_read_options: self.parquet_read_options,
+            computed_projection: self.computed_projection,
             scan_metrics: scan_metrics.clone(),
         };
 
@@ -118,6 +119,7 @@ const PRUNABLE_METADATA_FIELDS: &[i32] = &[
 /// [`ArrowReader::read`] call and cloned per task.
 #[derive(Clone)]
 struct FileScanTaskReader {
+    computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
     delete_file_loader: CachingDeleteFileLoader,
@@ -130,6 +132,10 @@ struct FileScanTaskReader {
 impl FileScanTaskReader {
     async fn process(self, task: FileScanTask) -> Result<ArrowRecordBatchStream> {
         match task.data_file_format() {
+            DataFileFormat::Parquet if self.computed_projection.is_some() => Err(Error::new(
+                ErrorKind::FeatureUnsupported,
+                "computed Vortex projection requires Vortex data files",
+            )),
             DataFileFormat::Parquet => self.process_parquet(task).await,
             DataFileFormat::Vortex => {
                 super::vortex::read_vortex_task(
@@ -138,6 +144,7 @@ impl FileScanTaskReader {
                     self.batch_size,
                     &self.delete_file_loader,
                     self.scan_metrics.bytes_read_counter().clone(),
+                    self.computed_projection,
                 )
                 .await
             }

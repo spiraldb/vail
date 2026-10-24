@@ -28,6 +28,19 @@ impl FillNullKernel for Dict {
         fill_value: &Scalar,
         ctx: &mut ExecutionCtx,
     ) -> VortexResult<Option<ArrayRef>> {
+        // A selection can retain a much larger dictionary. Searching every
+        // retained value to fill a few visible rows would defeat selective take.
+        // Existing canonical take kernels gather the selected rows first.
+        if array.values().len() > array.len() {
+            return Ok(Some(
+                array
+                    .array()
+                    .clone()
+                    .execute::<Canonical>(ctx)?
+                    .into_array()
+                    .fill_null(fill_value.clone())?,
+            ));
+        }
         // If the fill value already exists in the dictionary, we can simply rewrite the null codes
         // to point to the value.
         let found_fill_values = array
