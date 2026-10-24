@@ -1,7 +1,9 @@
-# List element validity: public proof blocked by capacity
+# List element validity: array-only public proof
 
-Production scalar source compiled on approved main66d92034, with no failed transparent GetField code. First build ec6cbd98 ended at301.44 seconds due five authored test ownership errors. Test-only fix6bb8db1b was composed at422e818a.
+Exact source422e818a634eafa669eaa1270ccafa0cf2c20776 is approved main66d92034 plus the reviewed scalar implementation and four new public tests. It contains no failed transparent Struct/GetField production changes. The whole existing encoded_projection target passed25/25 tests,0failures/ignored, in0.12s. This includes four new observable logical-ancestor, Boolean Sum/count-identity, shared-body/raw-sibling, and schema-bound serialization cases.
 
-After verified space recovery, the single approved cached relink started at1,292,800,000 free bytes. The1.1GiB disk floor stopped it at22.12 seconds, at1,089,277,952 free bytes. No runtime tests executed, and no new native wheel exists. This is not a correctness or performance proof. The unchanged accepted20f0 normal native remains preserved.
+After durable disk recovery, the normal native-only/jobs2/locked cached relink completed22.106s. Exact command/environment and artifact/source SHA256 are recorded. No native wheel was built or installed, and the accepted20f0 native remains untouched.
 
-No storage/layout/planner eligibility, selective IO or owner-bound claim is made. The shared target was released after confirming no compiler jobs remained. No retries are authorized.
+Earlier blocked attempts are retained honestly: the first build ended301.44s with five authored test ownership errors; the five clone-only corrections fixed these. One subsequent relink hit the1.1GiB disk floor. Neither earlier attempt executed runtime tests. The final successful attempt followed default uv-cache capacity recovery, under new explicit authorization.
+
+This is library array-operation correctness only. There are no layout/storage/translator/planner eligibility changes, and no selective IO, bounded descendant owner, native entry-count speedup or new benchmark claim. Existing resource test output is retained as whole-target output, not a new controlled performance experiment. Shared target was released immediately after the successful runtime gate.

@@ -1,0 +1,19 @@
+{
+  "source_revision": "422e818a634eafa669eaa1270ccafa0cf2c20776",
+  "base": "66d92034",
+  "exe": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/encoded_projection-f91cba2ad365c1a6",
+  "exe_sha256": "c17e4b34b1a5fa6e465b549b2ed15e01c7a834b160cb672dd62e91b5b13e2ae6",
+  "source_files": {
+    "patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs": "9b6c03282ff8f84bce547a4e745c529d20dec30172f60618b060d6a896aeb16d",
+    "patches/vortex-array/src/scalar_fn/fns/mod.rs": "fda73941c243384072e1d5ef8cd5488145b2e3aeff8ea4d8ba3bdf5080c12f54",
+    "patches/vortex-array/src/scalar_fn/session.rs": "4c5eaffd37bd840505d4197b64d4e76c2967afbe17bab8cadde30060606c66ac",
+    "crates/vail-table/tests/support/encoded_list_sum.rs": "21a85ed5ac4cddb8dcbd32bc8d16b2a3858a3c55817587659dd55a1841c18819"
+  },
+  "whole_target": {
+    "passed": 25,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 0.12
+  },
+  "scope": "array-only public correctness; no layout/storage/planner changes or selective-owner/IO claim"
+}
