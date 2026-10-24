@@ -49,3 +49,22 @@ def test_composite_failing_input_stays_behind_entry_presence_filter():
     assert empty.aggregate_entries(hl.struct(s=hl.agg.sum(empty.x[9]),n=hl.agg.count())) == hl.Struct(s=0,n=0)
     with pytest.raises(Exception, match="index|bounds|range"):
         m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x[9]),n=hl.agg.count()))
+
+
+def test_composite_shared_aggregate_dag_preserves_every_output():
+    m = hl.utils.range_matrix_table(3, 4, 2)
+    m = m.annotate_entries(x=hl.int32(m.row_idx + m.col_idx))
+    query = hl.struct(s=hl.agg.sum(m.x),n=hl.agg.count())
+    for _ in range(8):
+        query = hl.struct(a=query,b=query)
+    result = m.aggregate_entries(query)
+    frontier = [result]
+    for _ in range(8):
+        frontier = [child for node in frontier for child in (node.a,node.b)]
+    assert frontier == [hl.Struct(s=30,n=12)]*256
+
+
+def test_composite_floating_sum_retains_existing_aggregation_results():
+    m = hl.utils.range_matrix_table(2, 3, 1)
+    m = m.annotate_entries(x=hl.float64(m.row_idx + m.col_idx)/4)
+    assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x),n=hl.agg.count())) == hl.Struct(s=2.25,n=6)
