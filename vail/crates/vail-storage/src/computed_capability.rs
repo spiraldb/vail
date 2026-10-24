@@ -3,7 +3,7 @@
 //! This is deliberately a closed proof, not a codec-name blacklist. Unsupported
 //! valid metadata returns None and the caller retains its original DF expression.
 use crate::{Result, SnapshotReadPlan, StorageError};
-use futures::{FutureExt, StreamExt, future::BoxFuture};
+use futures::{FutureExt, future::BoxFuture};
 use prost::Message;
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
@@ -144,23 +144,47 @@ pub(crate) async fn prepare(
         false,
     );
     let expected = session.arrow().from_arrow_field(&field).map_err(invalid)?;
-    // Ordered results preserve source-file error/fallback precedence while IO
-    // futures overlap. One shared cumulative budget charges reads before their
-    // buffers are allocated, plus parsed metadata estimates after opening. It
-    // is not a strict peak-heap cap: footer parsing precedes its estimate, and
-    // library-owned allocations are not all included. Dropped read futures may
-    // leave already-dispatched blocking reads finishing in the background.
+    // Bound actual worker tasks, not only overlapping IO futures: footer and
+    // layout validation must not serialize on the physical-planning thread.
+    // Results are consumed in source-file order. Dropping JoinSet aborts active
+    // tasks; already-dispatched blocking reads may still finish. One shared
+    // cumulative budget charges reads before allocation and metadata estimates
+    // after parsing; it is not a strict peak-heap cap.
     let domains = {
-        let tasks = plan.files.iter().map(|file| {
-            prepare_file(file, &expected, &operands, &session, budget.clone())
-        }).collect::<Vec<_>>();
-        let mut files = futures::stream::iter(tasks).buffered(MAX_PREFLIGHT_FILES);
+        let expected = Arc::new(expected);
+        let prepared_operands = Arc::new(operands.clone());
+        let mut tasks = tokio::task::JoinSet::new();
+        let mut results = (0..plan.files.len()).map(|_| None).collect::<Vec<_>>();
         let mut domains = Vec::with_capacity(plan.files.len());
-        while let Some(domain) = files.next().await {
-            let Some(domain) = domain? else {
-                return Ok(None);
-            };
-            domains.push(domain);
+        let mut launched = 0;
+        while domains.len() < plan.files.len() {
+            while tasks.len() < MAX_PREFLIGHT_FILES && launched < plan.files.len() {
+                let index = launched;
+                launched += 1;
+                let plan = plan.clone();
+                let expected = expected.clone();
+                let operands = prepared_operands.clone();
+                let session = session.clone();
+                let budget = budget.clone();
+                tasks.spawn(async move {
+                    let domain = prepare_file(&plan.files[index], &expected, &operands,
+                        &session, budget).await;
+                    (index, domain)
+                });
+            }
+            let (index, domain) = tasks.join_next().await
+                .ok_or_else(|| invalid("missing metadata preparation task"))?
+                .map_err(invalid)?;
+            results[index] = Some(domain);
+            while let Some(domain) = results[domains.len()].take() {
+                let Some(domain) = domain? else {
+                    return Ok(None);
+                };
+                domains.push(domain);
+                if domains.len() == results.len() {
+                    break;
+                }
+            }
         }
         domains
     };
