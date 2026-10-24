@@ -1336,17 +1336,51 @@ async fn bounds(
     scan_bounds(prepared, &table.keys()[..join_key], fresh).await
 }
 
+fn forwarded_column<'a>(expr: &'a crate::ScalarIR, child: &TableRef) -> Option<&'a str> {
+    use crate::ScalarIR;
+    match expr {
+        ScalarIR::Column { name } => Some(name),
+        ScalarIR::GetField { value, name } => {
+            let ScalarIR::Struct { fields } = value.as_ref() else {
+                return None;
+            };
+            let (_, value) = fields.iter().find(|(field, _)| field == name)?;
+            forwarded_column(value, child)
+        }
+        ScalarIR::Cast { value, dtype } => {
+            let name = forwarded_column(value, child)?;
+            let source = vail_execution::expressions::Type::from_arrow(
+                child.schema().field_with_name(name).ok()?.data_type(),
+            )
+            .ok()?;
+            (source == *dtype).then_some(name)
+        }
+        _ => None,
+    }
+}
+
 pub(crate) fn inherited_bounds(
     table: &TableRef,
     join_key: usize,
 ) -> Result<Option<Vec<Option<Bound>>>> {
+    if table.keys().len() < join_key {
+        return Ok(None);
+    }
+    inherited_bounds_for(table, &table.keys()[..join_key])
+}
+
+// Trace requested key identity through metadata-only key attachment and row
+// projections. A projection may temporarily drop its key declaration while
+// retaining the same values; source bounds certify values, not wrapper names.
+fn inherited_bounds_for(table: &TableRef, keys: &[String]) -> Result<Option<Vec<Option<Bound>>>> {
+    let join_key = keys.len();
     match table.node() {
         TableNode::Prepared { .. } => match &table.partition_metadata {
-            Some(source) => inherited_bounds(source, join_key),
+            Some(source) => inherited_bounds_for(source, keys),
             None => Ok(None),
         },
         TableNode::Read { source }
-            if table.keys().len() >= join_key && source.keys == table.keys() =>
+            if source.keys.len() >= join_key && source.keys[..join_key] == *keys =>
         {
             let source_bounds = source.partition_typed_key_bounds()?;
             let mut result = Vec::with_capacity(source_bounds.len());
@@ -1376,7 +1410,8 @@ pub(crate) fn inherited_bounds(
         } if format == "legacy"
             && read.matrix.is_none()
             && join_key == 1
-            && table.keys().len() == 1 =>
+            && table.keys().len() == 1
+            && table.keys() == keys =>
         {
             // Hail intervals may overestimate actual endpoint rows. Treat them
             // as conservative envelopes; clipping keeps its residual predicate.
@@ -1387,7 +1422,7 @@ pub(crate) fn inherited_bounds(
             if component.int_key_bounds.len() != paths.len() || counts.len() != paths.len() {
                 return Ok(None);
             }
-            let name = &table.keys()[0];
+            let name = &keys[0];
             let dtype = table.schema().field_with_name(name)?.data_type();
             let endpoint = |value: i64| -> Option<ArrayRef> {
                 match dtype {
@@ -1424,7 +1459,7 @@ pub(crate) fn inherited_bounds(
         // just to rediscover each partition's endpoints.
         TableNode::Range {
             n, n_partitions, ..
-        } if join_key == 1 && table.keys().first().is_some_and(|key| key == "idx") => {
+        } if join_key == 1 && keys.first().is_some_and(|key| key == "idx") => {
             let mut result = Vec::with_capacity(*n_partitions);
             for partition in 0..*n_partitions {
                 let start = *n / *n_partitions * partition + partition.min(*n % *n_partitions);
@@ -1440,20 +1475,37 @@ pub(crate) fn inherited_bounds(
             }
             Ok(Some(result))
         }
-        TableNode::MapGlobals { child }
-        | TableNode::Filter { child, .. }
-        | TableNode::Explode { child, .. }
-            if child.keys() == table.keys() =>
-        {
-            inherited_bounds(child, join_key)
+        TableNode::MapGlobals { child } | TableNode::Filter { child, .. } => {
+            inherited_bounds_for(child, keys)
         }
-        TableNode::MapRows { child, fields, .. }
-            if forwards_keys(table, child, fields, join_key) =>
-        {
-            inherited_bounds(child, join_key)
+        TableNode::KeyBy {
+            child,
+            keys: declared,
+        } if declared.is_empty() => {
+            // Dropping declared keys changes metadata only; source values and
+            // physical partition boundaries remain available to later aliases.
+            inherited_bounds_for(child, keys)
         }
-        TableNode::FilterPartitions { child, parts, keep } if child.keys() == table.keys() => {
-            let Some(bounds) = inherited_bounds(child, join_key)? else {
+        TableNode::Explode { child, .. }
+            if child.keys() == table.keys() && table.keys() == keys =>
+        {
+            inherited_bounds_for(child, keys)
+        }
+        TableNode::MapRows { child, fields, .. } => {
+            let mut inputs = Vec::with_capacity(keys.len());
+            for key in keys {
+                let Some((_, expression)) = fields.iter().find(|(name, _)| name == key) else {
+                    return Ok(None);
+                };
+                let Some(input) = forwarded_column(expression, child) else {
+                    return Ok(None);
+                };
+                inputs.push(input.to_owned());
+            }
+            inherited_bounds_for(child, &inputs)
+        }
+        TableNode::FilterPartitions { child, parts, keep } => {
+            let Some(bounds) = inherited_bounds_for(child, keys)? else {
                 return Ok(None);
             };
             let picked = bounds

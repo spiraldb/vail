@@ -1,0 +1,25 @@
+ProjectionExec: expr=[row_idx@0 as row_idx, vail_semantic_kernel_array_filter_54708cdb232ded07(entries@1) as kept, vail_array_length_a77811b5509be746(vail_semantic_kernel_array_filter_4454babc5c62b22c(entries@1)) as n, 0 as __vail_partition]
+  OrderedConcatExec: children=1
+    TablePartitionViewExec: partition=0
+      VailConsumerScopeExec: consumer=2
+        SortExec: expr=[row_idx@0 ASC NULLS LAST, __vail_sort_ordinal@3 ASC], preserve_partitioning=[false]
+          BoundedWindowAggExec: wdw=[__vail_sort_ordinal: Field { "__vail_sort_ordinal": UInt64 }, frame: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW], mode=[Sorted]
+            OrderedConcatExec: children=2
+              TablePartitionViewExec: partition=0
+                VailConsumerScopeExec: consumer=1
+                  ProjectionExec: expr=[vail_semantic_kernel_get_field_b97b8e73c80c9055(named_struct(row_idx, idx@0)) as row_idx, vail_semantic_kernel_array_transform_76f1aa1b2857ecf4(vail_semantic_kernel_array_transform_35065dbb4577e356(vail_semantic_kernel_array_transform_981607cda3e60d50())) as entries, __vail_partition@1 as __vail_partition]
+                    VailSourcePartitions: 2
+                      CooperativeExec
+                        RangeExec: [0, 2)
+                      CooperativeExec
+                        RangeExec: [2, 3)
+              TablePartitionViewExec: partition=1
+                VailConsumerScopeExec: consumer=1
+                  ProjectionExec: expr=[vail_semantic_kernel_get_field_b97b8e73c80c9055(named_struct(row_idx, idx@0)) as row_idx, vail_semantic_kernel_array_transform_76f1aa1b2857ecf4(vail_semantic_kernel_array_transform_35065dbb4577e356(vail_semantic_kernel_array_transform_981607cda3e60d50())) as entries, __vail_partition@1 as __vail_partition]
+                    VailSourcePartitions: 2
+                      CooperativeExec
+                        RangeExec: [0, 2)
+                      CooperativeExec
+                        RangeExec: [2, 3)
+
+Struct(n=15, total=15)

@@ -1,0 +1,520 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 3K of event 'cpu-clock'
+# Event count (approx.): 33896906064
+#
+# Overhead  Command          Shared Object                     Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+# ........  ...............  ................................  ............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+     9.43%  python           libscipy_openblas64_-32a4b2a6.so  [.] blas_thread_server
+            |
+            ---blas_thread_server
+
+     6.60%  tokio-rt-worker  _native.abi3.so                   [.] _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+            |
+            ---_RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          
+               |--5.35%--_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+               |          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+               |          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+               |          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               |          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               |          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               |          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               |          0xffffffffffffffff
+               |          
+                --1.25%--_RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+                          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+                          _RNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB7_10SplitGroup5starts_0B9_
+                          0xffffffffffffffff
+
+     4.29%  tokio-rt-worker  _native.abi3.so                   [.] _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+            |
+            ---_RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          
+               |--3.19%--_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+               |          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+               |          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+               |          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               |          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               |          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               |          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               |          0xffffffffffffffff
+               |          
+                --1.09%--_RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+                          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+                          _RNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB7_10SplitGroup5starts_0B9_
+                          0xffffffffffffffff
+
+     2.92%  tokio-rt-worker  [kernel.kallsyms]                 [k] _raw_spin_unlock_irqrestore
+            |
+            ---_raw_spin_unlock_irqrestore
+               |          
+                --2.31%--try_to_wake_up
+                          wake_up_q
+                          |          
+                          |--1.16%--futex_wake
+                          |          do_futex
+                          |          __x64_sys_futex
+                          |          x64_sys_call
+                          |          do_syscall_64
+                          |          entry_SYSCALL_64_after_hwframe
+                          |          |          
+                          |          |--0.61%--syscall
+                          |          |          
+                          |           --0.55%--__lll_lock_wake_private
+                          |          
+                           --1.16%--rwsem_wake.isra.0
+                                     |          
+                                      --1.03%--up_write
+                                                do_mprotect_pkey
+                                                __x64_sys_mprotect
+                                                x64_sys_call
+                                                do_syscall_64
+                                                entry_SYSCALL_64_after_hwframe
+                                                __mprotect
+                                                0x720621ca3571
+                                                0x720621ca489c
+                                                |          
+                                                 --0.91%--malloc
+
+     2.74%  tokio-rt-worker  _native.abi3.so                   [.] _RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform13variable_size12build_extendlE0B8_.llvm.18096730490399550574
+            |
+            ---_RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform13variable_size12build_extendlE0B8_.llvm.18096730490399550574
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+               _RNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB7_10SplitGroup5starts_0B9_
+               0xffffffffffffffff
+
+     2.46%  tokio-rt-worker  _native.abi3.so                   [.] _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_3ops5range5RangejENCINvMNtNtCs7N2wUSrbeI5_12arrow_buffer6buffer7mutableNtB1v_13MutableBuffer12collect_boolNCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_bitsNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0E0ENtNtNtBa_6traits8iterator8Iterator4folduNCINvNvB4x_8for_each4callyNCINvMsj_NtCscHgRw1M2fX5_5alloc3vecINtB5K_3VecyE14extend_trustedBN_E0E0EB2W_
+            |
+            ---_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_3ops5range5RangejENCINvMNtNtCs7N2wUSrbeI5_12arrow_buffer6buffer7mutableNtB1v_13MutableBuffer12collect_boolNCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_bitsNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0E0ENtNtNtBa_6traits8iterator8Iterator4folduNCINvNvB4x_8for_each4callyNCINvMsj_NtCscHgRw1M2fX5_5alloc3vecINtB5K_3VecyE14extend_trustedBN_E0E0EB2W_
+               _RINvMs_NtNtCs7N2wUSrbeI5_12arrow_buffer6buffer7booleanNtB5_13BooleanBuffer12collect_boolNCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_bitsNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0EB1v_
+               |          
+                --2.19%--_RINvNtCs9FTdQ4z8jo9_12arrow_select4take10take_nullsNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+                          |          
+                           --1.52%--_RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+                                     _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+                                     _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+                                     _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+                                     _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+                                     _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                                     _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+                                     _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+                                     _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+                                     _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+                                     _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                                     _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+                                     0xffffffffffffffff
+
+     2.16%  tokio-rt-worker  _native.abi3.so                   [.] _RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform9primitive12build_extendlE0B8_.llvm.18096730490399550574
+            |
+            ---_RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform9primitive12build_extendlE0B8_.llvm.18096730490399550574
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               0xffffffffffffffff
+
+     2.16%  tokio-rt-worker  _native.abi3.so                   [.] _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecdEINtB2_12SpecFromIterdINtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB1q_5slice4iter4IteryENCINvNtCs9FTdQ4z8jo9_12arrow_select4take11take_nativedNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0EE9from_iterB2F_
+            |
+            ---_RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecdEINtB2_12SpecFromIterdINtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB1q_5slice4iter4IteryENCINvNtCs9FTdQ4z8jo9_12arrow_select4take11take_nativedNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0EE9from_iterB2F_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take11take_nativedNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          
+                --1.92%--_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+                          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+                          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+                          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+                          0xffffffffffffffff
+
+     2.04%  tokio-rt-worker  _native.abi3.so                   [.] _RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform9primitive12build_extenddE0B8_.llvm.18096730490399550574
+            |
+            ---_RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform9primitive12build_extenddE0B8_.llvm.18096730490399550574
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               0xffffffffffffffff
+
+     2.01%  tokio-rt-worker  _native.abi3.so                   [.] _RINvNtCs9FTdQ4z8jo9_12arrow_select4take10take_bytesINtNtCssQFFS8Tj5v_11arrow_array5types17GenericStringTypelENtBQ_10UInt64TypeEB4_
+            |
+            ---_RINvNtCs9FTdQ4z8jo9_12arrow_select4take10take_bytesINtNtCssQFFS8Tj5v_11arrow_array5types17GenericStringTypelENtBQ_10UInt64TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          
+               |--1.19%--_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+               |          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+               |          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+               |          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               |          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               |          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               |          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               |          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               |          0xffffffffffffffff
+               |          
+                --0.82%--_RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+                          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+                          _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+                          _RNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB7_10SplitGroup5starts_0B9_
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB1c_10SplitGroup5starts_0INtNtCscHgRw1M2fX5_5alloc4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollB1e_
+                          0xffffffffffffffff
+
+     1.82%  tokio-rt-worker  _native.abi3.so                   [.] _RNCNvNtCsfSJhml1cgMN_10arrow_data9transform22build_extend_null_bitss0_0B5_.llvm.16544854232326843659
+            |
+            ---_RNCNvNtCsfSJhml1cgMN_10arrow_data9transform22build_extend_null_bitss0_0B5_.llvm.16544854232326843659
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          
+                --1.61%--_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+                          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+                          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+                          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+                          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+                          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+                          0xffffffffffffffff
+
+     1.61%  tokio-rt-worker  _native.abi3.so                   [.] _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+            |
+            ---_RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+               _RNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB7_10SplitGroup5starts_0B9_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB1c_10SplitGroup5starts_0INtNtCscHgRw1M2fX5_5alloc4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollB1e_
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               0x720621c94a82
+               0x720621d268df
+
+     1.52%  tokio-rt-worker  _native.abi3.so                   [.] _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VeclEINtB2_12SpecFromIterlINtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB1q_5slice4iter4IteryENCINvNtCs9FTdQ4z8jo9_12arrow_select4take11take_nativelNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0EE9from_iterB2F_
+            |
+            ---_RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VeclEINtB2_12SpecFromIterlINtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB1q_5slice4iter4IteryENCINvNtCs9FTdQ4z8jo9_12arrow_select4take11take_nativelNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0EE9from_iterB2F_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take11take_nativelNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take14take_primitiveNtNtCssQFFS8Tj5v_11arrow_array5types9Int32TypeNtBT_10UInt64TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB20_5types10UInt64TypeE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3Y_8try_folduNCINvNvB3Y_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7B_5Break0E0B7B_E0IB7C_B7B_EEB2O_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB1g_5types10UInt64TypeE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB45_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtB29_5types10UInt64TypeE0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B4e_IB4c_INtNtB1B_3vec3VecB1w_EB4Y_EINtNtNtB4_6traits7collect12FromIteratorIB4c_B1w_B4Y_EE9from_iterBQ_E0B65_EB2X_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+               0xffffffffffffffff
+
+     1.43%  tokio-rt-worker  _native.abi3.so                   [.] _RINvNtNtCsfSJhml1cgMN_10arrow_data9transform5utils18try_extend_offsetslEB6_
+            |
+            ---_RINvNtNtCsfSJhml1cgMN_10arrow_data9transform5utils18try_extend_offsetslEB6_
+               _RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform13variable_size12build_extendlE0B8_.llvm.18096730490399550574
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               |          
+               |--0.91%--_RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_
+               |          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEB4_
+               |          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               |          _RNvNtCs8eGafpZmYjM_10vail_table14matrix_entries18build_output_batch
+               |          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3I_
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvNtCs8eGafpZmYjM_10vail_table14matrix_entries15emit_singletonss0_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB4Y_
+               |          _RNCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB7_17MatrixEntriesExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7execute0B9_.llvm.14296993411804218336
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXs4_NtCs8eGafpZmYjM_10vail_table14matrix_entriesNtB50_17MatrixEntriesExecNtNtB7_14execution_plan13ExecutionPlan7execute0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               |          _RNvXs0_NtCsdQQ1mDku6CU_12async_stream12async_streamINtB5_11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB3K_16PartitionSetExecNtNtCse4MAgqXzjG2_24datafusion_physical_plan14execution_plan13ExecutionPlan7executes_0ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB3M_
+               |          _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtCsdQQ1mDku6CU_12async_stream12async_stream11AsyncStreamINtNtCsc36rpYXAlPq_4core6result6ResultNtNtCssQFFS8Tj5v_11arrow_array12record_batch11RecordBatchNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvXsl_NtCs8eGafpZmYjM_10vail_table11partitionedNtB50_16PartitionSetExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB52_
+               |          _RNvXs0_NtNtCsc36rpYXAlPq_4core6future7poll_fnINtB5_6PollFnNCNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB14_10SplitGroup5starts_0s0_0ENtNtB7_6future6Future4pollB16_
+               |          _RNCNvMsc_NtCs8eGafpZmYjM_10vail_table11partitionedNtB7_10SplitGroup5starts_0B9_
+               |          0xffffffffffffffff
+               |          
+                --0.52%--_RNCNvNtNtCsfSJhml1cgMN_10arrow_data9transform9structure12build_extend0B7_.llvm.12336759436199750901
+                          _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+                          _RNCNvNtNtCsfSJhml1cgMN_10arrow_data9transform9structure12build_extend0B7_.llvm.12336759436199750901
+                          _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+                          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt32TypeNtBN_9Int32TypeEB4_
+                          _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt32TypeEB4_
+                          _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+                          _RNvMs3_NtCscyM5V4UuW11_17datafusion_common6scalarNtB5_11ScalarValue21list_to_array_of_size
+                          _RNvMs3_NtCscyM5V4UuW11_17datafusion_common6scalarNtB5_11ScalarValue16to_array_of_size
+                          _RNvMs0_NtCsgiwOebE7iqN_22datafusion_expr_common14columnar_valueNtB5_13ColumnarValue10into_array
+                          _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EEIB1e_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr21higher_order_function7ArgSlotEENCNvXs4_B3G_NtB3G_23HigherOrderFunctionExprB2c_8evaluate0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5P_8try_folduNCINvNvB5P_12try_for_each4callINtNtCscwegncljyBF_15datafusion_expr21higher_order_function13ValueOrLambdaNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueNtB9B_14LambdaArgumentEINtNtNtBc_3ops12control_flow11ControlFlowB9y_ENcNtBci_5Break0E0Bci_E0IBcj_Bci_EEB3I_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtCscwegncljyBF_15datafusion_expr21higher_order_function13ValueOrLambdaNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueNtBX_14LambdaArgumentEEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB44_3map3MapINtNtB44_3zip3ZipINtNtNtB48_5slice4iter4IterINtNtB6_4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EEIB5s_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr21higher_order_function7ArgSlotEENCNvXs4_B7E_NtB7E_23HigherOrderFunctionExprB6a_8evaluate0EINtNtB48_6result6ResultNtNtB48_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB7G_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EEIB1n_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr21higher_order_function7ArgSlotEENCNvXs4_B3P_NtB3P_23HigherOrderFunctionExprB2l_8evaluate0EINtNtCscwegncljyBF_15datafusion_expr21higher_order_function13ValueOrLambdaNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueNtB61_14LambdaArgumentEINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B8L_IB8J_INtNtB1R_3vec3VecB5Y_EB9v_EINtNtNtB4_6traits7collect12FromIteratorIB8J_B5Y_B9v_EE9from_iterBQ_E0BaM_EB3R_
+                          _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr21higher_order_functionNtB5_23HigherOrderFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                          _RNvXse_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16CompiledPhysicalNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                          _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EENCNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB3r_18ScalarFunctionExprB1W_8evaluate0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB53_8try_folduNCINvNvB53_12try_for_each4callNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueINtNtNtBc_3ops12control_flow11ControlFlowB8M_ENcNtB9X_5Break0E0B9X_E0IB9Y_B9X_EEB3t_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2w_3map3MapINtNtNtB2A_5slice4iter4IterINtNtB6_4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EENCNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5Q_18ScalarFunctionExprB4l_8evaluate0EINtNtB2A_6result6ResultNtNtB2A_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB5S_
+                          0xffffffffffffffff
+
+     1.40%  tokio-rt-worker  _native.abi3.so                   [.] _RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types10UInt32TypeE9unary_optINvNtCse6SLPPg0RSt_10arrow_cast4cast8num_castmtENtB1k_10UInt16TypeEB1X_
+            |
+            ---_RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types10UInt32TypeE9unary_optINvNtCse6SLPPg0RSt_10arrow_cast4cast8num_castmtENtB1k_10UInt16TypeEB1X_
+               _RINvNtCse6SLPPg0RSt_10arrow_cast4cast19cast_numeric_arraysNtNtCssQFFS8Tj5v_11arrow_array5types9Int32TypeNtBW_10UInt16TypeEB4_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1e_IB1E_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtB3b_5error10ArrowErrorEEB4Y_8try_folduNCINvNvB4Y_12try_for_each4callB1D_INtNtNtBc_3ops12control_flow11ControlFlowB1D_ENcNtB8d_5Break0E0B8d_E0IB8e_B8d_EEB3Y_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_3zip3ZipINtNtNtB2r_5slice4iter4IterBU_EIB3L_IBV_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtB4s_5error10ArrowErrorEEE9from_iterB5f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1n_IB1N_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EB1M_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB3k_5error10ArrowErrorENCINvXso_B5e_IB5c_INtNtB1R_3vec3VecB1M_EB5Y_EINtNtNtB4_6traits7collect12FromIteratorIB5c_B1M_B5Y_EE9from_iterBQ_E0B6H_EB47_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast21cast_struct_to_struct
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1e_IB1E_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtB3b_5error10ArrowErrorEEB4Y_8try_folduNCINvNvB4Y_12try_for_each4callB1D_INtNtNtBc_3ops12control_flow11ControlFlowB1D_ENcNtB8d_5Break0E0B8d_E0IB8e_B8d_EEB3Y_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_3zip3ZipINtNtNtB2r_5slice4iter4IterBU_EIB3L_IBV_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtB4s_5error10ArrowErrorEEE9from_iterB5f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1n_IB1N_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EB1M_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB3k_5error10ArrowErrorENCINvXso_B5e_IB5c_INtNtB1R_3vec3VecB1M_EB5Y_EINtNtNtB4_6traits7collect12FromIteratorIB5c_B1M_B5Y_EE9from_iterBQ_E0B6H_EB47_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast21cast_struct_to_struct
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1e_IB1E_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtB3b_5error10ArrowErrorEEB4Y_8try_folduNCINvNvB4Y_12try_for_each4callB1D_INtNtNtBc_3ops12control_flow11ControlFlowB1D_ENcNtB8d_5Break0E0B8d_E0IB8e_B8d_EEB3Y_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_3zip3ZipINtNtNtB2r_5slice4iter4IterBU_EIB3L_IBV_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtB4s_5error10ArrowErrorEEE9from_iterB5f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1n_IB1N_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EB1M_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB3k_5error10ArrowErrorENCINvXso_B5e_IB5c_INtNtB1R_3vec3VecB1M_EB5Y_EINtNtNtB4_6traits7collect12FromIteratorIB5c_B1M_B5Y_EE9from_iterBQ_E0B6H_EB47_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast21cast_struct_to_struct
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvNtNtCse6SLPPg0RSt_10arrow_cast4cast4list16cast_list_valueslEB6_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               0xffffffffffffffff
+
+     1.37%  tokio-rt-worker  libc.so.6                         [.] cfree
+            |
+            ---cfree
+
+     1.28%  tokio-rt-worker  libc.so.6                         [.] 0x00000000001a0b8a
+            |
+            ---0x720621da0b8a
+
+     1.06%  tokio-rt-worker  _native.abi3.so                   [.] _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateINtNtNtBc_5slice4iter4IterlEENCINvMNtCsfSJhml1cgMN_10arrow_data4dataNtB1Y_9ArrayData20validate_each_offsetlNCINvB1X_21validate_offsets_fulllE0E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvNvXs0_NtB8_4scanINtB4D_4ScanpppEB3K_8try_fold4scanINtNtBc_6result6ResultTjjENtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEjIB5m_TjINtNtNtBc_3ops5range5RangejEEB5L_EuIB5m_uB5L_ENCB1U_s_0NCINvNvB3K_12try_for_each4callB6B_B7h_NCB1U_s0_0E0E0INtNtB6N_12control_flow11ControlFlowB7h_EEB20_
+            |
+            ---_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateINtNtNtBc_5slice4iter4IterlEENCINvMNtCsfSJhml1cgMN_10arrow_data4dataNtB1Y_9ArrayData20validate_each_offsetlNCINvB1X_21validate_offsets_fulllE0E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvNvXs0_NtB8_4scanINtB4D_4ScanpppEB3K_8try_fold4scanINtNtBc_6result6ResultTjjENtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEjIB5m_TjINtNtNtBc_3ops5range5RangejEEB5L_EuIB5m_uB5L_ENCB1U_s_0NCINvNvB3K_12try_for_each4callB6B_B7h_NCB1U_s0_0E0E0INtNtB6N_12control_flow11ControlFlowB7h_EEB20_
+               _RINvMNtCsfSJhml1cgMN_10arrow_data4dataNtB3_9ArrayData21validate_offsets_fulllEB5_
+               _RNvMNtCsfSJhml1cgMN_10arrow_data4dataNtB2_9ArrayData15validate_values
+               _RNvMs3_NtCsfSJhml1cgMN_10arrow_data4dataNtB5_16ArrayDataBuilder5build
+               _RNvNvNtNtCs9C9fPvZfOJO_7iceberg5arrow11vortex_util20evolve_nested_fields6evolve
+               _RNvNtNtCs9C9fPvZfOJO_7iceberg5arrow11vortex_util20evolve_nested_fields
+               _RNvNvNtNtCs9C9fPvZfOJO_7iceberg5arrow11vortex_util20evolve_nested_fields6evolve
+               _RNvNtNtCs9C9fPvZfOJO_7iceberg5arrow11vortex_util20evolve_nested_fields
+               _RNvNvNtNtCs9C9fPvZfOJO_7iceberg5arrow11vortex_util20evolve_nested_fields6evolve
+               0xffffffffffffffff
+
+     0.94%  tokio-rt-worker  libc.so.6                         [.] malloc
+            |
+            ---malloc
+
+     0.79%  tokio-rt-worker  libc.so.6                         [.] 0x00000000001a110a
+            |
+            ---0x720621da110a
+
+     0.76%  tokio-rt-worker  [kernel.kallsyms]                 [k] do_user_addr_fault
+            |
+            ---do_user_addr_fault
+               exc_page_fault
+               asm_exc_page_fault
+
+     0.76%  tokio-rt-worker  libc.so.6                         [.] 0x00000000001a0880
+            |
+            ---0x720621da0880
+
+     0.67%  tokio-rt-worker  libc.so.6                         [.] 0x00000000000a3ed6
+            |
+            ---0x720621ca3ed6
+
+     0.67%  tokio-rt-worker  libc.so.6                         [.] 0x00000000001a0884
+            |
+            ---0x720621da0884
+
+     0.64%  tokio-rt-worker  _native.abi3.so                   [.] _RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types10UInt32TypeE9unary_optINvNtCse6SLPPg0RSt_10arrow_cast4cast8num_castmhENtB1k_9UInt8TypeEB1X_
+            |
+            ---_RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types10UInt32TypeE9unary_optINvNtCse6SLPPg0RSt_10arrow_cast4cast8num_castmhENtB1k_9UInt8TypeEB1X_
+               _RINvNtCse6SLPPg0RSt_10arrow_cast4cast19cast_numeric_arraysNtNtCssQFFS8Tj5v_11arrow_array5types9Int32TypeNtBW_9UInt8TypeEB4_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1e_IB1E_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtB3b_5error10ArrowErrorEEB4Y_8try_folduNCINvNvB4Y_12try_for_each4callB1D_INtNtNtBc_3ops12control_flow11ControlFlowB1D_ENcNtB8d_5Break0E0B8d_E0IB8e_B8d_EEB3Y_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_3zip3ZipINtNtNtB2r_5slice4iter4IterBU_EIB3L_IBV_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtB4s_5error10ArrowErrorEEE9from_iterB5f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1n_IB1N_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EB1M_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB3k_5error10ArrowErrorENCINvXso_B5e_IB5c_INtNtB1R_3vec3VecB1M_EB5Y_EINtNtNtB4_6traits7collect12FromIteratorIB5c_B1M_B5Y_EE9from_iterBQ_E0B6H_EB47_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast21cast_struct_to_struct
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1e_IB1E_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtB3b_5error10ArrowErrorEEB4Y_8try_folduNCINvNvB4Y_12try_for_each4callB1D_INtNtNtBc_3ops12control_flow11ControlFlowB1D_ENcNtB8d_5Break0E0B8d_E0IB8e_B8d_EEB3Y_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_3zip3ZipINtNtNtB2r_5slice4iter4IterBU_EIB3L_IBV_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtB4s_5error10ArrowErrorEEE9from_iterB5f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1n_IB1N_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EB1M_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB3k_5error10ArrowErrorENCINvXso_B5e_IB5c_INtNtB1R_3vec3VecB1M_EB5Y_EINtNtNtB4_6traits7collect12FromIteratorIB5c_B1M_B5Y_EE9from_iterBQ_E0B6H_EB47_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast21cast_struct_to_struct
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_3zip3ZipINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1e_IB1E_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtB3b_5error10ArrowErrorEEB4Y_8try_folduNCINvNvB4Y_12try_for_each4callB1D_INtNtNtBc_3ops12control_flow11ControlFlowB1D_ENcNtB8d_5Break0E0B8d_E0IB8e_B8d_EEB3Y_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_3zip3ZipINtNtNtB2r_5slice4iter4IterBU_EIB3L_IBV_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtB4s_5error10ArrowErrorEEE9from_iterB5f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_3zip3ZipINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEIB1n_IB1N_NtNtCs4rBjmHhJQrR_12arrow_schema5field5FieldEEENCNvNtCse6SLPPg0RSt_10arrow_cast4cast27cast_struct_fields_in_order0EB1M_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB3k_5error10ArrowErrorENCINvXso_B5e_IB5c_INtNtB1R_3vec3VecB1M_EB5Y_EINtNtNtB4_6traits7collect12FromIteratorIB5c_B1M_B5Y_EE9from_iterBQ_E0B6H_EB47_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast21cast_struct_to_struct
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RINvNtNtCse6SLPPg0RSt_10arrow_cast4cast4list16cast_list_valueslEB6_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               0xffffffffffffffff
+
+     0.61%  tokio-rt-worker  libc.so.6                         [.] 0x00000000000a288a
+            |
+            ---0x720621ca288a
+               cfree
+
+     0.58%  tokio-rt-worker  [kernel.kallsyms]                 [k] _copy_to_iter
+            |
+            ---_copy_to_iter
+               copy_page_to_iter
+               filemap_read
+               generic_file_read_iter
+               ext4_file_read_iter
+               vfs_read
+               ksys_read
+               __x64_sys_read
+               x64_sys_call
+               do_syscall_64
+               entry_SYSCALL_64_after_hwframe
+               read
+               _RNvXsa_NtCs6ZjlLoI6YmX_3std2fsNtB5_4FileNtNtB7_2io4Read4read
+               _RINvNtCs6ZjlLoI6YmX_3std2io18default_read_exactNtNtB4_2fs4FileECs9C9fPvZfOJO_7iceberg
+               _RNCNvXs6_NtNtNtCs9C9fPvZfOJO_7iceberg2io7storage8local_fsNtB7_15LocalFsFileReadNtNtBb_7file_io8FileRead4read0Bd_
+               _RNCNvXs6_NtNtCs9C9fPvZfOJO_7iceberg2io7file_ioINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtB7_8FileReadEL_EB1i_4read0Bb_.llvm.14961876284420988813
+               _RNCNvXs1_NtNtCs9C9fPvZfOJO_7iceberg5arrow12scan_metricsINtB7_16CountingFileReadINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtBb_2io7file_io8FileReadEL_EEB1P_4read0Bb_
+               _RNCNvXs6_NtNtCs9C9fPvZfOJO_7iceberg2io7file_ioINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtB7_8FileReadEL_EB1h_4read0Bb_.llvm.14961876284420988813
+               _RNCNvXNtNtNtCs9C9fPvZfOJO_7iceberg5arrow6reader6vortexNtB4_20FileReadVortexSourceNtNtCs1Kl4Lz3JMer_9vortex_io7read_at12VortexReadAt7read_at0Ba_.llvm.15499156749068574021
+               |          
+                --0.55%--_RNvXs5_NtNtCscSvGpEwpIQn_12futures_util6stream17futures_unorderedINtB5_16FuturesUnorderedNCNCNvYNtNtNtNtCs9C9fPvZfOJO_7iceberg5arrow6reader6vortex20FileReadVortexSourceNtNtCs1Kl4Lz3JMer_9vortex_io7read_at12VortexReadAt11read_ranges00ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB1E_
+                          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6stream6stream16buffer_unorderedINtB5_15BufferUnorderedINtNtB9_4iter4IterINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNCNCNvYNtNtNtNtCs9C9fPvZfOJO_7iceberg5arrow6reader6vortex20FileReadVortexSourceNtNtCs1Kl4Lz3JMer_9vortex_io7read_at12VortexReadAt11read_ranges00EEENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB2R_
+                          _RNvXs_NtNtCsaw8JW2JdPYG_11vortex_file8segments6sourceNtB4_16ReadRangeResultsNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6stream6stream11into_futureINtB5_12StreamFutureNtNtNtCsaw8JW2JdPYG_11vortex_file8segments6source16ReadRangeResultsENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCs9C9fPvZfOJO_7iceberg
+                          _RNvXs5_NtNtCscSvGpEwpIQn_12futures_util6stream17futures_unorderedINtB5_16FuturesUnorderedINtNtNtB7_6stream11into_future12StreamFutureNtNtNtCsaw8JW2JdPYG_11vortex_file8segments6source16ReadRangeResultsEENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextCs9C9fPvZfOJO_7iceberg
+                          _RNvXs1_NtNtCscSvGpEwpIQn_12futures_util6stream10select_allINtB5_9SelectAllNtNtNtCsaw8JW2JdPYG_11vortex_file8segments6source16ReadRangeResultsENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextCs9C9fPvZfOJO_7iceberg
+                          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6stream6stream7collectINtB5_7CollectINtNtNtCsaw8JW2JdPYG_11vortex_file8segments6source10ReadDriverINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs1Kl4Lz3JMer_9vortex_io7read_at12VortexReadAtEL_EEuENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCs9C9fPvZfOJO_7iceberg
+                          _RNvXs0_NtCsbrYPYbdYarM_7tracing10instrumentINtB5_12InstrumentedNCINvMNtNtCs1Kl4Lz3JMer_9vortex_io7runtime6handleNtB15_6Handle5spawnINtNtNtNtCscSvGpEwpIQn_12futures_util6stream6stream7collect7CollectINtNtNtCsaw8JW2JdPYG_11vortex_file8segments6source10ReadDriverINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtB19_7read_at12VortexReadAtEL_EEuEuE0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollCs9C9fPvZfOJO_7iceberg
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsgjlG0jsXtg_13custom_labels12asynchronous7LabeledINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1W_6future6future6Futurep6OutputuNtNtB1W_6marker4SendEL_EEEINtNtB2s_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCs1Kl4Lz3JMer_9vortex_io
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsgjlG0jsXtg_13custom_labels12asynchronous7LabeledINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB22_6future6future6Futurep6OutputuNtNtB22_6marker4SendEL_EEEINtNtB2y_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCs1Kl4Lz3JMer_9vortex_io
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+                          _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+                          _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+                          _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+                          _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                          _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                          _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                          _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                          0x720621c94a82
+                          0x720621d268df
+
+     0.55%  tokio-rt-worker  libc.so.6                         [.] 0x00000000000a3f01
+            |
+            ---0x720621ca3f01
+
+     0.52%  tokio-rt-worker  _native.abi3.so                   [.] _RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types9Int32TypeE9try_unaryNCINvNtCse6SLPPg0RSt_10arrow_cast4cast16try_numeric_castB1i_NtB1k_9Int64TypeE0B2O_NtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEB1X_
+            |
+            ---_RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types9Int32TypeE9try_unaryNCINvNtCse6SLPPg0RSt_10arrow_cast4cast16try_numeric_castB1i_NtB1k_9Int64TypeE0B2O_NtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEB1X_
+               _RINvNtCse6SLPPg0RSt_10arrow_cast4cast19cast_numeric_arraysNtNtCssQFFS8Tj5v_11arrow_array5types9Int32TypeNtBW_9Int64TypeEB4_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RNvMs0_NtCsgiwOebE7iqN_22datafusion_expr_common14columnar_valueNtB5_13ColumnarValue7cast_to
+               _RNvXs2_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr11expressions4castNtB5_8CastExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EEENCINvNtB2s_5utils43evaluate_expressions_to_arrays_with_metricsRINtNtB1U_3vec3VecB1P_EE0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5c_8try_folduNCINvNvB5c_12try_for_each4callIB1Q_DNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB8V_ENcNtB9L_5Break0E0B9L_E0IB9M_B9L_EECse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateINtNtNtB2r_5slice4iter4IterIBV_DNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EEENCINvNtB4w_5utils43evaluate_expressions_to_arrays_with_metricsRIBL_B4n_EE0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterCse4MAgqXzjG2_24datafusion_physical_plan
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EEENCINvNtB2B_5utils43evaluate_expressions_to_arrays_with_metricsRINtNtB23_3vec3VecB1Y_EE0EIB1Z_DNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B6e_IB6c_IB4X_B5l_EB6Y_EINtNtNtB4_6traits7collect12FromIteratorIB6c_B5l_B6Y_EE9from_iterBQ_E0B8f_ECse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvNtNtCse4MAgqXzjG2_24datafusion_physical_plan10aggregates16aggregate_stream15aggregate_batch
+               _RNvXs0_NtNtCscSvGpEwpIQn_12futures_util6stream6unfoldINtB5_6UnfoldNtNtNtCse4MAgqXzjG2_24datafusion_physical_plan10aggregates16aggregate_stream20AggregateStreamInnerNCNvMs_B14_NtB14_15AggregateStream3new0NCNCB2E_00ENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB18_
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6stream6stream4fuseINtB5_4FuseINtNtB9_6unfold6UnfoldNtNtNtCse4MAgqXzjG2_24datafusion_physical_plan10aggregates16aggregate_stream20AggregateStreamInnerNCNvMs_B1v_NtB1v_15AggregateStream3new0NCNCB35_00EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB1z_
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMs_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamNtB2V_32RecordBatchReceiverStreamBuilder9run_input0E0B2X_.llvm.12667479792823847913
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMs_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamNtB6o_32RecordBatchReceiverStreamBuilder9run_input0Es_0EB2b_4pollB6q_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               0x720621c94a82
+               0x720621d268df
+
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

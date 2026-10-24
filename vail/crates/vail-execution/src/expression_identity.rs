@@ -251,15 +251,61 @@ impl Hash for Expr {
 #[derive(Clone)]
 pub(crate) struct Identity {
     expression: Arc<Expr>,
+    canonical: Arc<Expr>,
     fingerprint: u64,
     nodes: usize,
 }
 impl Identity {
     pub(crate) fn new(expression: Expr) -> Self {
+        Self::from_canonical(expression, None)
+    }
+
+    /// Scalar semantic kernels separately expose their free input arguments
+    /// and effects. Only that contract opts into lexical-name equivalence.
+    pub(crate) fn with_bound_names(expression: Expr) -> Self {
+        // This optional optimization must not amplify planning for large
+        // generated programs. Exact original identity is always a safe fallback.
+        const MAX_NODES: usize = 1024;
+        let mut seen = HashSet::new();
+        let mut pending = vec![&expression];
+        let mut has_binder = false;
+        while let Some(node) = pending.pop() {
+            if !seen.insert(node as *const Expr as usize) {
+                continue;
+            }
+            if seen.len() > MAX_NODES {
+                return Self::new(expression);
+            }
+            has_binder |= matches!(node, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. }
+                | Expr::ArrayPredicate { .. } | Expr::ArrayFold { .. } | Expr::Switch { .. }
+                | Expr::AggArray { .. } | Expr::AggExplode { .. } | Expr::AggregateFold { .. });
+            let mut too_wide = false;
+            node.for_each_child(&mut |child| {
+                if pending.len() <= MAX_NODES {
+                    pending.push(child);
+                } else {
+                    too_wide = true;
+                }
+            });
+            if too_wide {
+                return Self::new(expression);
+            }
+        }
+        if !has_binder {
+            return Self::new(expression);
+        }
+        let canonical = alpha_identity(&expression);
+        Self::from_canonical(expression, canonical)
+    }
+
+    fn from_canonical(expression: Expr, canonical: Option<Expr>) -> Self {
+        let expression = Arc::new(expression);
+        let canonical = canonical.map(Arc::new).unwrap_or_else(|| expression.clone());
         let mut memo = HashMap::new();
-        let fingerprint = fingerprint(&expression, &mut memo);
+        let fingerprint = fingerprint(&canonical, &mut memo);
         Self {
-            expression: Arc::new(expression),
+            expression,
+            canonical,
             fingerprint,
             nodes: memo.len(),
         }
@@ -269,6 +315,156 @@ impl Identity {
         &self.expression
     }
 }
+
+/// Callback names are lexical implementation details, not semantic inputs.
+/// Canonicalize only the owned identity: execution retains the original names.
+/// Free names remain distinct, and the chosen namespace cannot capture them.
+fn alpha_identity(expression: &Expr) -> Option<Expr> {
+    fn summarize(node: &Expr, summaries: &mut HashMap<usize, HashSet<String>>) -> HashSet<String> {
+        let address = node as *const Expr as usize;
+        if let Some(names) = summaries.get(&address) {
+            return names.clone();
+        }
+        let mut names = HashSet::new();
+        if let Expr::LambdaVariable { name, .. } = node {
+            names.insert(name.clone());
+        }
+        let mut position = 0;
+        node.for_each_child(&mut |child| {
+            let mut child_names = summarize(child, summaries);
+            for binder in node.child_binders(position) {
+                child_names.remove(binder);
+            }
+            position += 1;
+            names.extend(child_names);
+        });
+        summaries.insert(address, names.clone());
+        names
+    }
+    let mut free_names = HashMap::new();
+    let free = summarize(expression, &mut free_names);
+    let mut prefix = "\0vail_bound_".to_owned();
+    while free.iter().any(|name| name.starts_with(&prefix)) {
+        prefix.push('_');
+    }
+    struct Normalizer {
+        prefix: String,
+        // Scope IDs are interned by lexical edge, not traversal occurrence.
+        // A shared expression reached repeatedly in one scope is rewritten once.
+        scopes: Vec<Vec<(String, String)>>,
+        edges: HashMap<(usize, Vec<String>), usize>,
+        free_names: HashMap<usize, HashSet<String>>,
+        memo: HashMap<(usize, usize, Vec<(String, Option<String>)>), Expr>,
+        remaining: usize,
+    }
+    impl Normalizer {
+        fn child_scope(&mut self, parent: usize, binders: Vec<&str>) -> usize {
+            if binders.is_empty() {
+                return parent;
+            }
+            let key = (
+                parent,
+                binders.iter().map(|name| (*name).to_owned()).collect(),
+            );
+            if let Some(id) = self.edges.get(&key) {
+                return *id;
+            }
+            let mut names = self.scopes[parent].clone();
+            for name in binders {
+                names.push((name.to_owned(), format!("{}{}", self.prefix, names.len())));
+            }
+            let id = self.scopes.len();
+            self.scopes.push(names);
+            self.edges.insert(key, id);
+            id
+        }
+        fn visit(&mut self, node: &Expr, scope: usize) -> Result<Expr, ()> {
+            let address = node as *const Expr as usize;
+            let depth = self.scopes[scope].len();
+            // Irrelevant enclosing binders must not multiply visits to a
+            // shared DAG. Only free names of this node can affect its result.
+            let mut captures = self.free_names[&address]
+                .iter()
+                .map(|name| {
+                    (
+                        name.clone(),
+                        self.scopes[scope]
+                            .iter()
+                            .rev()
+                            .find(|(original, _)| original == name)
+                            .map(|(_, bound)| bound.clone()),
+                    )
+                })
+                .collect::<Vec<_>>();
+            captures.sort_unstable();
+            let key = (address, depth, captures);
+            if let Some(result) = self.memo.get(&key) {
+                return Ok(result.clone());
+            }
+            if self.remaining == 0 {
+                return Err(());
+            }
+            self.remaining -= 1;
+            let mut position = 0;
+            let mut result = node
+                .try_map_original_children::<()>(|child| {
+                    let child_scope = self.child_scope(scope, node.child_binders(position));
+                    position += 1;
+                    self.visit(child, child_scope)
+                })?;
+            let canonical = |index| format!("{}{}", self.prefix, depth + index);
+            match &mut result {
+                Expr::LambdaVariable { name, .. } => {
+                    if let Some((_, bound)) = self.scopes[scope]
+                        .iter()
+                        .rev()
+                        .find(|(original, _)| original == name)
+                    {
+                        *name = bound.clone();
+                    }
+                }
+                Expr::ArrayMap { parameter, .. }
+                | Expr::ArrayFilter { parameter, .. }
+                | Expr::ArrayPredicate { parameter, .. }
+                | Expr::AggArray { parameter, .. }
+                | Expr::AggExplode { parameter, .. }
+                | Expr::Switch { parameter, .. } => *parameter = canonical(0),
+                Expr::ArrayFold {
+                    accumulator,
+                    parameter,
+                    ..
+                } => {
+                    *accumulator = canonical(0);
+                    *parameter = canonical(1);
+                }
+                Expr::AggregateFold {
+                    state_parameter,
+                    left_parameter,
+                    right_parameter,
+                    ..
+                } => {
+                    *state_parameter = canonical(0);
+                    *left_parameter = canonical(0);
+                    *right_parameter = canonical(1);
+                }
+                _ => {}
+            }
+            self.memo.insert(key, result.clone());
+            Ok(result)
+        }
+    }
+    Normalizer {
+        prefix,
+        scopes: vec![vec![]],
+        edges: HashMap::new(),
+        free_names,
+        memo: HashMap::new(),
+        remaining: 4096,
+    }
+    .visit(expression, 0)
+    .ok()
+}
+
 impl std::fmt::Debug for Identity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ExpressionIdentity")
@@ -279,7 +475,7 @@ impl std::fmt::Debug for Identity {
 }
 impl PartialEq for Identity {
     fn eq(&self, other: &Self) -> bool {
-        self.fingerprint == other.fingerprint && self.expression == other.expression
+        self.fingerprint == other.fingerprint && self.canonical == other.canonical
     }
 }
 impl Eq for Identity {}

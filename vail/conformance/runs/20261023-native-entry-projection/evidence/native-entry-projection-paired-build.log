@@ -1,0 +1,525 @@
+Using CPython 3.11.17 interpreter at: native-entry-projection/env/bin/python
+Creating virtual environment at: native-entry-projection/baseline-env
+Activate with: source native-entry-projection/baseline-env/bin/activate
+Using Python 3.11.17 environment at: native-entry-projection/baseline-env
+Resolved 12 packages in 6ms
+Installed 12 packages in 39ms
+ + iniconfig==2.3.1
+ + numpy==2.4.6
+ + packaging==26.3
+ + pandas==3.1.0
+ + pluggy==1.7.0
+ + psutil==7.2.2
+ + pygments==2.21.0
+ + pytest==9.1.1
+ + python-dateutil==3.0.0
+ + scipy==1.17.1
+ + six==1.17.0
+ + tzdata==2026.5
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.11 at /home/danielking/native-entry-projection/baseline-env/bin/python
+🔗 Found pyo3 bindings with abi3-py3.11 support
+📡 Using build options features from pyproject.toml
+   Compiling arrow-data v59.2.0 (/home/danielking/native-entry-projection/source/vail/patches/arrow-data)
+   Compiling vortex-array v0.86.1 (/home/danielking/native-entry-projection/source/vail/patches/vortex-array)
+   Compiling vail-ordering v0.1.0 (/home/danielking/native-entry-projection/source/vail/crates/vail-ordering)
+   Compiling iceberg-property-macro v0.10.1 (/home/danielking/native-entry-projection/source/vail/patches/iceberg-rust/crates/property-macro)
+   Compiling arrow-array v59.2.0 (/home/danielking/native-entry-projection/source/vail/patches/arrow-array)
+   Compiling arrow-select v59.2.0
+   Compiling arrow-row v59.2.0
+   Compiling arrow-arith v59.2.0
+   Compiling arrow-ord v59.2.0
+   Compiling arrow-ipc v59.2.0
+   Compiling arrow-string v59.2.0
+   Compiling parquet v59.2.0
+   Compiling arrow-cast v59.2.0
+   Compiling arrow-csv v59.2.0
+   Compiling arrow-json v59.2.0
+   Compiling arrow v59.2.0
+   Compiling datafusion-common v55.0.0 (/home/danielking/native-entry-projection/source/vail/patches/datafusion-common)
+   Compiling parquet-variant v59.2.0
+   Compiling parquet-variant-json v59.2.0
+   Compiling parquet-variant-compute v59.2.0
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling datafusion-functions v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0 (/home/danielking/native-entry-projection/source/vail/patches/datafusion-functions-aggregate)
+   Compiling datafusion-functions-window v55.0.0
+   Compiling datafusion-optimizer v55.0.0
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-session v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling datafusion-pruning v55.0.0
+   Compiling datafusion-catalog v55.0.0
+   Compiling datafusion-datasource-json v55.0.0
+   Compiling datafusion-datasource-arrow v55.0.0
+   Compiling datafusion-datasource-csv v55.0.0
+   Compiling datafusion-physical-optimizer v55.0.0
+   Compiling datafusion-datasource-parquet v55.0.0
+   Compiling datafusion-functions-table v55.0.0
+   Compiling datafusion-catalog-listing v55.0.0
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling vortex-runend v0.86.1
+   Compiling vortex-fastlanes v0.86.1
+   Compiling vortex-onpair v0.86.1
+   Compiling vortex-decimal-byte-parts v0.86.1
+   Compiling vortex-datetime-parts v0.86.1
+   Compiling vortex-pco v0.86.1
+   Compiling vortex-compressor v0.86.1
+   Compiling vortex-sparse v0.86.1
+   Compiling vortex-fsst v0.86.1
+   Compiling vortex-sequence v0.86.1
+   Compiling vortex-zigzag v0.86.1
+   Compiling vortex-zstd v0.86.1
+   Compiling vortex-scan v0.86.1
+   Compiling vortex-io v0.86.1
+   Compiling vortex-bytebool v0.86.1
+   Compiling vortex-ipc v0.86.1
+   Compiling vortex-arrow v0.86.1
+   Compiling vail-execution v0.1.0 (/home/danielking/native-entry-projection/source/vail/crates/vail-execution)
+   Compiling datafusion-sql v55.0.0
+   Compiling vortex-alp v0.86.1
+   Compiling datafusion v55.0.0
+   Compiling vortex-json v0.86.1
+   Compiling vortex-btrblocks v0.86.1
+   Compiling vortex-parquet-variant v0.86.1
+   Compiling vortex-layout v0.86.1 (/home/danielking/native-entry-projection/source/vail/patches/vortex-layout)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vortex-file v0.86.1
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+   Compiling vortex v0.86.1
+   Compiling iceberg v0.10.1 (/home/danielking/native-entry-projection/source/vail/patches/iceberg-rust/crates/iceberg)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-vcf v0.1.0 (/home/danielking/native-entry-projection/source/vail/crates/vail-vcf)
+   Compiling vail-storage v0.1.0 (/home/danielking/native-entry-projection/source/vail/crates/vail-storage)
+   Compiling vail-table v0.1.0 (/home/danielking/native-entry-projection/source/vail/crates/vail-table)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:722:20
+    |
+722 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+722 -                 if (!shape || !tail.is_empty()) {
+722 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:751:20
+    |
+751 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+751 -                 if (!shape || !tail.is_empty()) {
+751 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:761:20
+    |
+761 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+761 -                 if (!shape || !tail.is_empty()) {
+761 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:11:23
+   |
+11 |     coalesce_batches::CoalesceBatchesExec,
+   |                       ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:65:26
+   |
+65 |             || plan.is::<CoalesceBatchesExec>()
+   |                          ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:351:32
+    |
+351 |         || input.as_ref().is::<CoalesceBatchesExec>()
+    |                                ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:325:27
+    |
+325 |         coalesce_batches::CoalesceBatchesExec,
+    |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:66:31
+   |
+66 |         || plan.as_ref().is::<CoalesceBatchesExec>()
+   |                               ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:38:27
+   |
+38 |         coalesce_batches::CoalesceBatchesExec,
+   |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:457:31
+    |
+457 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/projection_broadcast.rs:374:26
+    |
+374 |             plan.clone().with_new_children(children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/wide_batch.rs:291:26
+    |
+291 |             plan.clone().with_new_children(rewritten_children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:313:9
+    |
+313 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `kind`
+   --> crates/vail-table/src/logical_scan.rs:630:26
+    |
+630 |     for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_kind`
+
+warning: fields `varid` and `rsid` are never read
+  --> crates/vail-table/src/bgen_source.rs:41:5
+   |
+30 | struct BgenOptions {
+   |        ----------- fields in this struct
+...
+41 |     varid: bool,
+   |     ^^^^^
+42 |     rsid: bool,
+   |     ^^^^
+   |
+   = note: `BgenOptions` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `owners` is never read
+  --> crates/vail-table/src/conditional_globals.rs:14:5
+   |
+ 9 | pub(crate) struct ConditionalNode {
+   |                   --------------- field in this struct
+...
+14 |     owners: [GlobalsRef; 3],
+   |     ^^^^^^
+   |
+   = note: `ConditionalNode` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `evaluate` is never used
+   --> crates/vail-table/src/count_explode.rs:418:8
+    |
+400 | impl ZipProgram {
+    | --------------- method in this implementation
+...
+418 |     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+    |        ^^^^^^^^
+
+warning: `vail-table` (lib) generated 17 warnings (run `cargo fix --lib -p vail-table` to apply 5 suggestions)
+   Compiling vail-python v0.1.0 (/home/danielking/native-entry-projection/source/vail/crates/vail-python)
+    Finished `release` profile [optimized] target(s) in 1m 25s
+📦 Including files matching "LICENSE"
+📦 Including files matching "licenses/HAIL.txt"
+📦 Including files matching "python/vail/reference_data/*.json"
+📦 Built wheel for abi3 Python ≥ 3.11 to /home/danielking/native-entry-projection/baseline-wheels/vail-0.1.0a1-cp311-abi3-manylinux_2_35_x86_64.whl
+Using Python 3.11.17 environment at: /home/danielking/native-entry-projection/baseline-env
+Resolved 3 packages in 159ms
+Prepared 1 package in 554ms
+Installed 2 packages in 13ms
+ + pyarrow==26.0.0
+ + vail==0.1.0a1 (from file:///home/danielking/native-entry-projection/baseline-wheels/vail-0.1.0a1-cp311-abi3-manylinux_2_35_x86_64.whl)
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+tar: Ignoring unknown extended header keyword 'LIBARCHIVE.xattr.com.apple.provenance'
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.11 at /home/danielking/native-entry-projection/env/bin/python
+🔗 Found pyo3 bindings with abi3-py3.11 support
+📡 Using build options features from pyproject.toml
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: `iceberg` (lib) generated 1 warning
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:722:20
+    |
+722 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+722 -                 if (!shape || !tail.is_empty()) {
+722 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:751:20
+    |
+751 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+751 -                 if (!shape || !tail.is_empty()) {
+751 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:761:20
+    |
+761 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+761 -                 if (!shape || !tail.is_empty()) {
+761 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:11:23
+   |
+11 |     coalesce_batches::CoalesceBatchesExec,
+   |                       ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:65:26
+   |
+65 |             || plan.is::<CoalesceBatchesExec>()
+   |                          ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:351:32
+    |
+351 |         || input.as_ref().is::<CoalesceBatchesExec>()
+    |                                ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:325:27
+    |
+325 |         coalesce_batches::CoalesceBatchesExec,
+    |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:66:31
+   |
+66 |         || plan.as_ref().is::<CoalesceBatchesExec>()
+   |                               ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:38:27
+   |
+38 |         coalesce_batches::CoalesceBatchesExec,
+   |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:457:31
+    |
+457 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/projection_broadcast.rs:374:26
+    |
+374 |             plan.clone().with_new_children(children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/wide_batch.rs:291:26
+    |
+291 |             plan.clone().with_new_children(rewritten_children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:313:9
+    |
+313 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `kind`
+   --> crates/vail-table/src/logical_scan.rs:630:26
+    |
+630 |     for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_kind`
+
+warning: fields `varid` and `rsid` are never read
+  --> crates/vail-table/src/bgen_source.rs:41:5
+   |
+30 | struct BgenOptions {
+   |        ----------- fields in this struct
+...
+41 |     varid: bool,
+   |     ^^^^^
+42 |     rsid: bool,
+   |     ^^^^
+   |
+   = note: `BgenOptions` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `owners` is never read
+  --> crates/vail-table/src/conditional_globals.rs:14:5
+   |
+ 9 | pub(crate) struct ConditionalNode {
+   |                   --------------- field in this struct
+...
+14 |     owners: [GlobalsRef; 3],
+   |     ^^^^^^
+   |
+   = note: `ConditionalNode` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `evaluate` is never used
+   --> crates/vail-table/src/count_explode.rs:418:8
+    |
+400 | impl ZipProgram {
+    | --------------- method in this implementation
+...
+418 |     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+    |        ^^^^^^^^
+
+warning: `vail-table` (lib) generated 17 warnings (run `cargo fix --lib -p vail-table` to apply 5 suggestions)
+    Finished `release` profile [optimized] target(s) in 0.41s
+📦 Including files matching "LICENSE"
+📦 Including files matching "licenses/HAIL.txt"
+📦 Including files matching "python/vail/reference_data/*.json"
+📦 Built wheel for abi3 Python ≥ 3.11 to /home/danielking/native-entry-projection/wheels/vail-0.1.0a1-cp311-abi3-manylinux_2_35_x86_64.whl
+Using Python 3.11.17 environment at: /home/danielking/native-entry-projection/env
+Resolved 3 packages in 3ms
+Prepared 1 package in 545ms
+Uninstalled 1 package in 4ms
+Installed 1 package in 2ms
+ ~ vail==0.1.0a1 (from file:///home/danielking/native-entry-projection/wheels/vail-0.1.0a1-cp311-abi3-manylinux_2_35_x86_64.whl)

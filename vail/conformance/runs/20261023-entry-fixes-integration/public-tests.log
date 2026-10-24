@@ -1,0 +1,14 @@
+........................................................................ [ 31%]
+........................................................................ [ 63%]
+........................................................................ [ 95%]
+..........                                                               [100%]
+============================= slowest 8 durations ==============================
+5.51s call     python/tests/test_array_agg_coordinate_dag.py::test_reused_aggregate_expression_in_array_callback
+4.04s call     python/tests/test_entry_projection.py::test_projected_entry_consumers[none]
+1.72s call     python/tests/test_table_joins.py::test_zip_shared_computed_source_preserves_scan_and_random_values_across_consumers
+0.94s call     python/tests/test_table_joins.py::test_many_way_zip_preserves_disjoint_interleaved_and_missing_domains
+0.77s call     python/tests/test_reduction_expression_sharing.py::test_reused_callback_dag_preserves_multiplicity
+0.58s call     python/tests/test_matrix_layout.py::test_chained_column_masks_gathers_metadata_and_missing_slots[7]
+0.52s call     python/tests/test_matrix_layout.py::test_chained_column_masks_gathers_metadata_and_missing_slots[3]
+0.48s call     python/tests/test_matrix_layout.py::test_chained_column_masks_gathers_metadata_and_missing_slots[1]
+226 passed in 21.06s

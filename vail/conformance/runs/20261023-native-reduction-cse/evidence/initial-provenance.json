@@ -1,0 +1,17 @@
+{
+  "source_revision": "a9c8325cdea8cfb32ba722c1a0dda576cb09a8f4",
+  "baseline_revision": "ec909af4963717a6d7a38b853ed16cd00b25450a",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "module": "/Users/danielking/.codex/worktrees/native-reduction-cse/vail/vail/python/vail/__init__.py",
+  "native": "/Users/danielking/.codex/worktrees/native-reduction-cse/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "7c225da707fe3b14b6536dc0b0453edd719b16ca6a33b4e9e9b40319e9a24e40",
+  "source_sha256": {
+    "crates/vail-execution/src/expression_identity.rs": "40d81dfed1ed36361ffaca2c7035b48aeb6f80f88402572b629910833704673a",
+    "crates/vail-execution/src/logical_expr.rs": "c19809c66c408cbda8882c9d40bfc894f8054c72b79466b7c97d32d345d3594c",
+    "python/tests/test_reduction_expression_sharing.py": "3da6361e0661c36a5589391895321f1ecd9f74ec60baf38cd9d9a819f18b5251",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  },
+  "build": "normal kache maturin develop --release --locked; CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0 RUSTFLAGS=-C target-cpu=native",
+  "target": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target",
+  "machine": "Apple M3 Max"
+}
