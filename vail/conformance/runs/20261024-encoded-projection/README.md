@@ -237,3 +237,33 @@ but no selective TakeExecute kernel in the pinned source; generic take can
 still canonicalize its retained compression block. The resource proof must
 account for that capability rather than assuming arbitrary take is bounded.
 No universal encoding-independent resource guarantee is claimed.
+
+
+## Follow-up 266ab06f: demonstrated bounds, remaining Pco blocker
+
+Normal artifact SHA256
+`4d763b48c46c26bf9093f30c1e291fc003007aabbf81a71957b0155c71e246d4`
+passes9public Rust and56Python tests. The Dict FillNull guard removes the
+observed hidden-owner scan. With128visible values across distant owner sizes
+10K/1M/40M, median query cost is31.96/29.96/29.88microseconds. Oversized
+primitive dictionaries:31.33/31.38/29.17microseconds. Oversized bitpacked
+dictionaries:38.92/38.75/38.75microseconds.40samples after5warmups; independent
+exact sums; input preparation excluded.
+
+Fresh12-action native unfiltered500M confirmation: main73.337ms /0.843319CPU s,
+candidate62.515ms /0.728825CPU s (1.173xwall,1.157xCPU). This remains BEFORE
+physical capability preflight/fallback, so is not the final merge measurement.
+
+A separate public Pco probe confirms the remaining general capability BLOCKER:
+128visible dictionary codes against10K/1M/10M retained nullable Pco values cost
+91.6microseconds/4.07ms/40.62ms. Exact sums pass, resource scaling fails. Pinned
+Pco has no selective take kernel; even its page-aware slice executes/ranks the
+unsliced validity bitmap. A generic take call is not a resource proof.
+
+The next design preserves original typed expressions and uses conservative
+metadata preflight. Only a small proven closed operation/layout composition
+receives a typed prepared certificate. Unknown/missing capability must choose
+the original Vail source plus ordinary DataFusion projection BEFORE encoded
+payload evaluation or partial output. No codec-name blacklist or inner-kernel
+None is accepted as a substitute. This design remains under review/development;
+no merge approval or universal boundedness is claimed.
