@@ -1,0 +1,21 @@
+# Native nested-list evolution: reuse validated offset ownership
+
+Source mainf3e6eadc; hypothesis established by actual public row take8 DP profile retained in sibling20261024-prepared-row-take/receipts. No production change or new build yet.
+
+## Evidence and actual caller
+
+The native Iceberg Vortex reader calls evolve_nested_fields after a validated Arrow batch is decoded and field IDs restored. The actual public entry pipeline sample contains recursive evolve → ArrayDataBuilder::build → validate_offsets_full/validate_each_offset. This is not a dormant compatibility node. In patches/iceberg-rust/crates/iceberg/src/arrow/vortex_util.rs:161, the List/LargeList/FixedSizeList branch converts its input to ArrayData, evolves its child (including schema changes), changes the field's data type, and calls ArrayDataBuilder::build even though the structural offsets were already validated. The branch is called per nested array/batch; schema/type dispatch is not per child entry, but buffer validation loops still traverse unchanged offsets repeatedly.
+
+## Compare safe options
+
+A query/schema-pair-prepared identity evolution plan could skip the entire recursive traversal when source and target descriptors agree in field IDs, order, names, types, nullability, metadata and physical representation. It must still normalize Utf8View and preserve real casts/defaults/missing-field evolution, and cannot use name-only equality or deep schema comparison per child batch. That may be valuable later, but its proof and invalidation scope are larger than the immediate observed offset rescan.
+
+The first proposed change is narrower: preserve all existing recursive child evolution and field metadata/type construction, and replace only List/LargeList ArrayDataBuilder rewrapping with safe typed Arrow ListArray/LargeListArray::try_new, borrowing the EXISTING validated OffsetBuffer and original parent null buffer. The constructor explicitly documents that it need not inspect individual offsets because OffsetBuffer validates them at construction. It still checks the last offset against the evolved child length, parent validity length, child nullability and exact field/child data type. No unsafe, build_unchecked, validation skip flag or schema-identity assumption. Type branches stay once per nested array/batch; no new per-entry decision. Do not initially modify FixedSizeList/Map/Struct branches: their invariants differ, and zero-width fixed-size lists require explicit row length.
+
+This preserves genuine schema evolution, missing fields/defaults, field IDs, extension metadata and ordering. Original logical parent validity stays attached, independently of child nulls. Sliced List offsets may start nonzero; evolved children must retain/check sufficient length. Child conversion remains through the existing pipeline, so Utf8View/binary normalization is unchanged. No universal buffer-owner release or memory-capacity claim.
+
+## Required public correctness/resource gates before acceptance
+
+Use public ArrowReaderBuilder/FileScanTask/VortexWriter boundaries for same-schema and evolved-schema nested list files: renamed/reordered/added fields by ID, integer widening, nullable struct parents versus nullable children, defined-empty/missing lists, nonzero-offset slices/multiple batches, field metadata and String/Utf8View normalization. Expected records/types are independent, not outputs of private evolve helpers. Existing Iceberg public reader tests for evolved schema and renamed nested fields already provide useful baseline cases; add list-specific cases only where missing. Vail Python native nested/array/matrix surfaces cover the user boundary.
+
+Reuse the same actual public take8 value pipeline and native source with baseline/candidate normal artifact provenance. Short actual profile should remove the repeated offset-validation frame under this branch; do not claim it removes all scan allocation/decode. Compare wall+CPU and process peak plus a simple unchanged scalar control; no hardware/ALU claim from software samples. No benchmark-name matching or speculative extra cold feature graph. Required source/test review before build and final resource review before main.
