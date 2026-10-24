@@ -144,7 +144,9 @@ pub(crate) async fn prepare(
         false,
     );
     let expected = session.arrow().from_arrow_field(&field).map_err(invalid)?;
-    // Bound actual worker tasks, not only overlapping IO futures: footer and
+    // Bound the outstanding ordered window, not only active worker tasks:
+    // a slow early file must not allow the rest of the query to be launched.
+    // Footer and
     // layout validation must not serialize on the physical-planning thread.
     // Results are consumed in source-file order. Dropping JoinSet aborts active
     // tasks; already-dispatched blocking reads may still finish. One shared
@@ -158,7 +160,7 @@ pub(crate) async fn prepare(
         let mut domains = Vec::with_capacity(plan.files.len());
         let mut launched = 0;
         while domains.len() < plan.files.len() {
-            while tasks.len() < MAX_PREFLIGHT_FILES && launched < plan.files.len() {
+            while launched - domains.len() < MAX_PREFLIGHT_FILES && launched < plan.files.len() {
                 let index = launched;
                 launched += 1;
                 let plan = plan.clone();
