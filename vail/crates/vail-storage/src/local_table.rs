@@ -725,10 +725,10 @@ impl LocalRead {
     /// Callers retain DataFusion operators above this source for global work.
     /// Prepare a fail-closed, immutable metadata proof for the requested dense
     /// integer-list operands. Positive and negative proofs are cached per snapshot.
-    async fn dense_list_projection_certificate(
+    async fn computed_projection_certificate(
         &self,
-        mut operands: Vec<Vec<String>>,
-    ) -> Result<Option<Arc<super::computed_capability::DenseListProjectionCertificate>>> {
+        mut operands: Vec<super::computed_capability::ComputedOperand>,
+    ) -> Result<Option<Arc<super::computed_capability::ComputedProjectionCertificate>>> {
         operands.sort();
         operands.dedup();
         let partitions = self
@@ -769,22 +769,23 @@ impl LocalRead {
     /// Trusted cross-crate preparation boundary for the closed native translator.
     ///
     /// The caller must have proved that the expression is a row-preserving pack
-    /// containing only top-level field passthroughs and skip-null widened i32
-    /// list-field sums over exactly `operands`, with the existing missing-list
+    /// containing only field passthroughs, Int32 ArrayLength over exactly ListLength
+    /// operands, and skip-null widened i32
+    /// list-field sums over exactly DenseI32Sum operands, with the existing missing-list
     /// guard/empty-zero semantics, no bindings/globals/effects or other operators,
     /// and the declared exact result schema. This is an execution-planner
     /// interface, not an arbitrary Vortex expression entrypoint. Physical-domain
     /// evidence is checked here before binding the immutable request; execution
     /// cannot substitute an expression or schema after that preparation.
     #[doc(hidden)]
-    pub async fn prepare_dense_list_projection(
+    pub async fn prepare_computed_projection(
         &self,
-        operands: Vec<Vec<String>>,
+        operands: Vec<super::computed_capability::ComputedOperand>,
         expression: vortex::expr::Expression,
         output_schema: Arc<Schema>,
     ) -> Result<Option<Arc<super::computed_capability::PreparedComputedProjection>>> {
         Ok(self
-            .dense_list_projection_certificate(operands)
+            .computed_projection_certificate(operands)
             .await?
             .map(|certificate| {
                 Arc::new(super::computed_capability::PreparedComputedProjection {

@@ -19,6 +19,7 @@ use datafusion_physical_plan::{
 use futures::TryStreamExt;
 use std::{fmt, sync::Arc};
 use vail_execution::expressions::{ArrayReduction, Expr, PrimitiveType, Type, UnaryOperator};
+use vail_storage::computed_capability::ComputedOperand;
 use vail_storage::local_table::{LocalRead, PartitionEvent};
 use vortex::dtype::Nullability;
 use vortex::expr::{Expression, fill_null, get_item, is_not_null, list_sum, lit, mask, pack, root};
@@ -44,9 +45,26 @@ fn translate(
     expr: &Expr,
     schema: &Schema,
     session: &VortexSession,
-) -> Option<(Expression, bool, Option<Vec<String>>)> {
+) -> Option<(Expression, bool, Option<ComputedOperand>)> {
     if let Expr::Column { name } = expr {
         return Some((get_item(name.as_str(), root()), false, None));
+    }
+    if let Expr::ArrayLength { value } = expr {
+        let Expr::Column { name } = value.as_ref() else {
+            return None;
+        };
+        let field = schema.field_with_name(name).ok()?;
+        if !matches!(field.data_type(), DataType::List(_)) {
+            return None;
+        }
+        return Some((
+            vortex::expr::cast(
+                vortex::expr::list_length(get_item(name.as_str(), root())),
+                vortex::dtype::DType::Primitive(vortex::dtype::PType::I32, Nullability::Nullable),
+            ),
+            true,
+            Some(ComputedOperand::ListLength(vec![name.clone()])),
+        ));
     }
     let Expr::ArrayReduce {
         operation: ArrayReduction::Sum,
@@ -136,7 +154,7 @@ fn translate(
             is_not_null(input),
         ),
         true,
-        Some(operand),
+        Some(ComputedOperand::DenseI32Sum(operand)),
     ))
 }
 
@@ -243,7 +261,7 @@ pub(crate) fn try_total(
         original_fields: vec![(name.clone(), value.as_ref().clone())],
         source: source.clone(),
         schema: Arc::new(Schema::new(vec![
-            Field::new(&name, DataType::Int64, true),
+            Field::new(&name, value.dtype(table.schema())?.to_arrow()?, true),
             Field::new(tag, DataType::UInt64, false),
         ])),
         expressions: vec![(name.clone(), projection)],
@@ -270,7 +288,7 @@ struct ComputedProvider {
     // the ordinary DataFusion source/projection before evaluating the payload.
     original_source: TableRef,
     original_fields: Vec<(String, Expr)>,
-    operands: Vec<Option<Vec<String>>>,
+    operands: Vec<Option<ComputedOperand>>,
     source: Arc<LocalRead>,
     schema: SchemaRef,
     expressions: Vec<(String, Expression)>,
@@ -391,7 +409,7 @@ impl TableProvider for ComputedProvider {
         );
         let Some(prepared) = self
             .source
-            .prepare_dense_list_projection(operands, expression, row_schema)
+            .prepare_computed_projection(operands, expression, row_schema)
             .await
             .map_err(|error| DataFusionError::External(Box::new(error)))?
         else {

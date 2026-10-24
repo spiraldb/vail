@@ -1,4 +1,4 @@
-//! Conservative, metadata-only proof for dense fixed-width integer-list reduction.
+//! Conservative metadata-only proofs for closed computed scan operations.
 //!
 //! This is deliberately a closed proof, not a codec-name blacklist. Unsupported
 //! valid metadata returns None and the caller retains its original DF expression.
@@ -33,12 +33,27 @@ const MAX_TREE_BYTES: usize = 64 * 1024;
 const MAX_QUERY_METADATA_BYTES: usize = 16 * 1024 * 1024;
 const MAX_DEPTH: usize = 48;
 
+/// Operand semantics selected once by the closed execution-planner translator.
+#[doc(hidden)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ComputedOperand {
+    DenseI32Sum(Vec<String>),
+    ListLength(Vec<String>),
+}
+impl ComputedOperand {
+    fn path(&self) -> &[String] {
+        match self {
+            Self::DenseI32Sum(path) | Self::ListLength(path) => path,
+        }
+    }
+}
+
 /// Immutable proof tied to one snapshot, exact logical operands and source ranges.
 #[derive(Debug)]
-pub struct DenseListProjectionCertificate {
+pub struct ComputedProjectionCertificate {
     pub(crate) plan: std::sync::Weak<SnapshotReadPlan>,
     pub(crate) partitions: Vec<Range<u64>>,
-    pub(crate) operands: Vec<Vec<String>>,
+    pub(crate) operands: Vec<ComputedOperand>,
     // Retain explicit physical-domain accounting; this is not a claim about
     // arbitrary filtered selections or arbitrary native Vortex encodings.
     pub(crate) metadata_bytes: usize,
@@ -50,7 +65,7 @@ pub struct DenseListProjectionCertificate {
 /// execution caller cannot replace its expression or result schema later.
 #[derive(Debug)]
 pub struct PreparedComputedProjection {
-    pub(crate) certificate: Arc<DenseListProjectionCertificate>,
+    pub(crate) certificate: Arc<ComputedProjectionCertificate>,
     pub(crate) expression: vortex::expr::Expression,
     pub(crate) output_schema: Arc<arrow_schema::Schema>,
 }
@@ -65,10 +80,15 @@ pub(crate) struct FileDomain {
     path: String,
     bytes: u64,
     rows: u64,
-    operands: Vec<(Vec<String>, Vec<OperandDomain>)>,
+    operands: Vec<(ComputedOperand, Vec<OperandDomain>)>,
 }
 #[derive(Debug)]
 enum OperandDomain {
+    ListShape {
+        rows: u64,
+        start: u64,
+        width: u64,
+    },
     DenseList {
         rows: u64,
         width: u64,
@@ -84,8 +104,8 @@ enum OperandDomain {
 pub(crate) async fn prepare(
     plan: Arc<SnapshotReadPlan>,
     partitions: Vec<Range<u64>>,
-    operands: Vec<Vec<String>>,
-) -> Result<Option<Arc<DenseListProjectionCertificate>>> {
+    operands: Vec<ComputedOperand>,
+) -> Result<Option<Arc<ComputedProjectionCertificate>>> {
     // No later source-row slicing, pruning or scan filter may narrow a certified
     // operand. Whole-file coverage is necessary, but not the validity proof.
     for file in &plan.files {
@@ -148,14 +168,32 @@ pub(crate) async fn prepare(
         };
         let mut operand_domains = Vec::new();
         for operand in &operands {
-            if !compatible_operand(&expected, opened.dtype(), operand) {
+            let path = operand.path();
+            let compatible = match operand {
+                ComputedOperand::DenseI32Sum(_) => {
+                    compatible_operand(&expected, opened.dtype(), path)
+                }
+                ComputedOperand::ListLength(_) => {
+                    compatible_shape_operand(&expected, opened.dtype(), path)
+                }
+            };
+            if !compatible {
                 return Ok(None);
             }
             let first = probe.domains.len();
-            if !probe
-                .operand(opened.footer().layout().clone(), operand, false, 0)
-                .await?
-            {
+            let supported = match operand {
+                ComputedOperand::DenseI32Sum(_) => {
+                    probe
+                        .operand(opened.footer().layout().clone(), path, false, 0)
+                        .await?
+                }
+                ComputedOperand::ListLength(_) => {
+                    probe
+                        .list_shape(opened.footer().layout().clone(), path, 0)
+                        .await?
+                }
+            };
+            if !supported {
                 return Ok(None);
             }
             operand_domains.push((operand.clone(), probe.domains.split_off(first)));
@@ -167,7 +205,7 @@ pub(crate) async fn prepare(
             operands: operand_domains,
         });
     }
-    Ok(Some(Arc::new(DenseListProjectionCertificate {
+    Ok(Some(Arc::new(ComputedProjectionCertificate {
         plan: Arc::downgrade(&plan),
         partitions,
         operands,
@@ -282,6 +320,125 @@ impl Probe<'_> {
                 return Ok(false);
             }
             self.integer_leaf(layout, false, depth + 1).await
+        })
+    }
+
+    /// Offset/validity-only proof: element layout payloads are never inspected.
+    fn list_shape<'a>(
+        &'a mut self,
+        layout: LayoutRef,
+        path: &'a [String],
+        depth: usize,
+    ) -> BoxFuture<'a, Result<bool>> {
+        Box::pin(async move {
+            if depth > MAX_DEPTH {
+                return Ok(false);
+            }
+            if layout.is::<Zoned>() {
+                let Some(data) = layout.slot(0).map_err(invalid)? else {
+                    return Ok(false);
+                };
+                return self.list_shape(data, path, depth + 1).await;
+            }
+            if layout.is::<Chunked>() {
+                let mut rows = 0u64;
+                for child in layout.children().map_err(invalid)? {
+                    rows = rows
+                        .checked_add(child.row_count())
+                        .ok_or_else(|| invalid("shape chunk rows overflow"))?;
+                    if !self.list_shape(child, path, depth + 1).await? {
+                        return Ok(false);
+                    }
+                }
+                return Ok(rows == layout.row_count());
+            }
+            if layout.is::<Struct>() {
+                if let Some(validity) = layout.slot(0).map_err(invalid)? {
+                    if validity.row_count() != layout.row_count() {
+                        return Err(invalid("struct validity row count mismatch"));
+                    }
+                    if !self.shape_validity(validity, depth + 1).await? {
+                        return Ok(false);
+                    }
+                }
+                let Some((name, tail)) = path.split_first() else {
+                    return Ok(false);
+                };
+                let Some(index) = layout
+                    .dtype()
+                    .as_struct_fields_opt()
+                    .and_then(|f| f.find(name))
+                else {
+                    return Ok(false);
+                };
+                let Some(field) = layout.slot(index + 1).map_err(invalid)? else {
+                    return Ok(false);
+                };
+                if field.row_count() != layout.row_count() {
+                    return Err(invalid("shape struct row count mismatch"));
+                }
+                return self.list_shape(field, tail, depth + 1).await;
+            }
+            let Some(list) = layout.as_opt::<List>() else {
+                return Ok(false);
+            };
+            if !path.is_empty() {
+                return Ok(false);
+            }
+            if let Some(validity) = list.validity().map_err(invalid)? {
+                if validity.row_count() != layout.row_count() {
+                    return Err(invalid("list validity row count mismatch"));
+                }
+                if !self.shape_validity(validity, depth + 1).await? {
+                    return Ok(false);
+                }
+            }
+            let Some((start, width, count)) = self
+                .sequence(list.offsets().map_err(invalid)?, depth + 1)
+                .await?
+            else {
+                return Ok(false);
+            };
+            let expected_count = layout
+                .row_count()
+                .checked_add(1)
+                .ok_or_else(|| invalid("shape offset count overflow"))?;
+            let end = width
+                .checked_mul(layout.row_count())
+                .and_then(|n| start.checked_add(n));
+            // Unlike SUM, length never visits the elements. Orphan children,
+            // nonzero starts and null elements do not enlarge this operation.
+            let element_rows = list.elements().map_err(invalid)?.row_count();
+            if count != expected_count
+                || width > i32::MAX as u64
+                || end.is_none_or(|end| end > element_rows)
+            {
+                return Ok(false);
+            }
+            self.domains.push(OperandDomain::ListShape {
+                rows: layout.row_count(),
+                start,
+                width,
+            });
+            Ok(true)
+        })
+    }
+
+    fn shape_validity<'a>(
+        &'a mut self,
+        layout: LayoutRef,
+        depth: usize,
+    ) -> BoxFuture<'a, Result<bool>> {
+        Box::pin(async move {
+            if !matches!(layout.dtype(), DType::Bool(Nullability::NonNullable)) {
+                return Ok(false);
+            }
+            // Plain bitmaps are bounded by their outer row domain; Constant true
+            // uses the existing bounded scalar inspection, not a bitmap read.
+            if self.scalar(layout.clone(), false, true, depth).await? {
+                return Ok(true);
+            }
+            self.all_valid(layout, depth).await
         })
     }
 
@@ -759,8 +916,8 @@ fn visit_buffers(
 
 pub(crate) type ProofCache = tokio::sync::Mutex<
     HashMap<
-        (Vec<Vec<String>>, Vec<(u64, u64)>),
-        Arc<tokio::sync::OnceCell<Option<Arc<DenseListProjectionCertificate>>>>,
+        (Vec<ComputedOperand>, Vec<(u64, u64)>),
+        Arc<tokio::sync::OnceCell<Option<Arc<ComputedProjectionCertificate>>>>,
     >,
 >;
 
@@ -781,4 +938,21 @@ fn compatible_operand(expected: &DType, actual: &DType, path: &[String]) -> bool
         (DType::List(left, _), DType::List(right, _)) => compatible_operand(left, right, path),
         _ => path.is_empty() && expected == actual,
     }
+}
+
+fn compatible_shape_operand(expected: &DType, actual: &DType, path: &[String]) -> bool {
+    if expected.nullability() != actual.nullability() {
+        return false;
+    }
+    if path.is_empty() {
+        return matches!(expected, DType::List(..)) && expected == actual;
+    }
+    let (DType::Struct(left, _), DType::Struct(right, _)) = (expected, actual) else {
+        return false;
+    };
+    let (head, tail) = path.split_first().expect("nonempty path");
+    let (Some(left), Some(right)) = (left.field(head), right.field(head)) else {
+        return false;
+    };
+    compatible_shape_operand(&left, &right, tail)
 }
