@@ -26,11 +26,12 @@ def test_composite_totals_nested_sparse_and_lazy(rows, cols):
 
 def test_composite_integer_precision_wrap_and_native_roundtrip(tmp_path):
     m = hl.utils.range_matrix_table(2, 3, 2)
-    m = m.annotate_entries(x=hl.if_else(m.col_idx == 0, hl.int64(9007199254740993), hl.int64(2)))
+    m = m.annotate_entries(x=hl.if_else(m.col_idx == 0, hl.int64(9007199254740993), hl.int64(2)), y=hl.int64(4611686018427387904))
     path = str(tmp_path / 'matrix.mt')
     m.write(path)
     m = hl.read_matrix_table(path)
     assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x), n=hl.agg.count())) == hl.Struct(s=18014398509481994,n=6)
+    assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.y), n=hl.agg.count())) == hl.Struct(s=-9223372036854775808,n=6)
 
 
 def test_composite_unsupported_reducers_and_columns_keep_results():
@@ -39,3 +40,12 @@ def test_composite_unsupported_reducers_and_columns_keep_results():
     assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x), mean=hl.agg.mean(m.x))) == hl.Struct(s=9,mean=1.5)
     assert m.aggregate_entries(hl.struct(s=hl.agg.sum(hl.int64(m.col_idx)), n=hl.agg.count())) == hl.Struct(s=6,n=6)
     assert m.aggregate_entries(hl.struct(s=hl.agg.filter(m.col_idx > 0, hl.agg.sum(m.x)), n=hl.agg.count())) == hl.Struct(s=8,n=6)
+
+
+def test_composite_failing_input_stays_behind_entry_presence_filter():
+    m = hl.utils.range_matrix_table(2, 3, 2)
+    m = m.annotate_entries(x=hl.array([m.col_idx]))
+    empty = m.filter_entries(False)
+    assert empty.aggregate_entries(hl.struct(s=hl.agg.sum(empty.x[9]),n=hl.agg.count())) == hl.Struct(s=0,n=0)
+    with pytest.raises(Exception, match="index|bounds|range"):
+        m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x[9]),n=hl.agg.count()))
