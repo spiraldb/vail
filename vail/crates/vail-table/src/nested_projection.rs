@@ -826,6 +826,12 @@ pub(crate) fn consumed_storage_paths<'a>(
             paths.extend(values.iter().cloned());
         }
     }
+    // Index descendants once: wide projections must not rescan every selected
+    // path for each validity/shape request. Metadata depth bounds ancestor work.
+    let mut descendant_prefixes = paths
+        .iter()
+        .flat_map(|path| (1..=path.len()).map(move |n| path[..n].to_vec()))
+        .collect::<HashSet<_>>();
     // First retain uncovered validity values, then shape. A retained entry
     // struct already supplies its surrounding list offsets and validity.
     for requests in [&deps.validities, &deps.shapes] {
@@ -834,10 +840,10 @@ pub(crate) fn consumed_storage_paths<'a>(
                 continue;
             }
             for request in requested {
-                if !paths
-                    .iter()
-                    .any(|selected| selected.starts_with(request) || request.starts_with(selected))
-                {
+                let covered = descendant_prefixes.contains(request)
+                    || (1..request.len()).any(|n| paths.contains(&request[..n]));
+                if !covered {
+                    descendant_prefixes.extend((1..=request.len()).map(|n| request[..n].to_vec()));
                     paths.insert(request.clone());
                 }
             }
