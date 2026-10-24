@@ -1,0 +1,47 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_composite_floating_sum_retains_existing_aggregation_results _______
+
+    def test_composite_floating_sum_retains_existing_aggregation_results():
+        m = hl.utils.range_matrix_table(2, 3, 1)
+        m = m.annotate_entries(x=hl.float64(m.row_idx + m.col_idx)/4)
+>       assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x),twice=hl.agg.sum(m.x * 2))) == hl.Struct(s=2.25,twice=4.5)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_composite_entry_totals.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/matrixtable.py:1752: in aggregate_entries
+    return self._aggregate("entry", expr, _localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/matrixtable.py:1743: in _aggregate
+    return table.aggregate(self._lower(expr, table), _localize=localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/__init__.py:1291: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x107c73060>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_f6d8106607400ccf returned a different number of rows than expected. Expected: 2, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:2043: FatalError
+=========================== short test summary info ============================
+FAILED python/tests/test_composite_entry_totals.py::test_composite_floating_sum_retains_existing_aggregation_results
+1 failed in 0.14s
