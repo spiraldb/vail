@@ -755,9 +755,15 @@ impl Probe<'_> {
             let bytes = if segment.length as usize <= MAX_CONSTANT_SEGMENT_BYTES {
                 // A proven tiny Constant segment may already be in the opener's
                 // footer-prefetch cache. Never request a whole unknown Flat.
-                let result = self.segment_source.request(*flat.segment_id()).await;
+                let result = self
+                    .segment_source
+                    .request((*flat.segment_id()).into())
+                    .await;
                 match result {
-                    Ok(bytes) => bytes.slice(padding..padding + length),
+                    Ok(bytes) => bytes
+                        .try_into_host()
+                        .map_err(invalid)?
+                        .slice(padding..padding + length),
                     Err(_) if self.reader.denied.load(Ordering::Relaxed) => return Ok(false),
                     Err(error) => return Err(invalid(error)),
                 }
