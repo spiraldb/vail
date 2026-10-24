@@ -203,6 +203,101 @@ pub(crate) fn access(value: &ArrayRef, accessor: CallAccessor) -> Result<ArrayRe
     })
 }
 
+// Select the index strategy during lowering; function addresses are not part of
+// semantic expression identity. Actual validity and ploidy remain data-dependent.
+#[derive(Debug, Clone)]
+pub(crate) struct PreparedIndex {
+    constant: Option<i32>,
+    kernel: fn(&[ArrayRef], Option<i32>) -> Result<ArrayRef, ExprError>,
+}
+impl PartialEq for PreparedIndex {
+    fn eq(&self, other: &Self) -> bool { self.constant == other.constant }
+}
+impl Eq for PreparedIndex {}
+impl std::hash::Hash for PreparedIndex {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(&self.constant, state);
+    }
+}
+impl PreparedIndex {
+    pub(crate) fn new(constant: Option<i32>) -> Self {
+        let kernel: fn(&[ArrayRef], Option<i32>) -> Result<ArrayRef, ExprError> = match constant {
+            Some(0) => call_index::<0, false>,
+            Some(1) => call_index::<1, false>,
+            Some(-1) => call_index::<-1, false>,
+            Some(-2) => call_index::<-2, false>,
+            Some(_) => invalid_call_index,
+            None => call_index::<0, true>,
+        };
+        Self { constant, kernel }
+    }
+    pub(crate) fn is_constant(&self) -> bool { self.constant.is_some() }
+    pub(crate) fn evaluate(&self, args: &[ArrayRef]) -> Result<ArrayRef, ExprError> {
+        (self.kernel)(args, self.constant)
+    }
+}
+
+// Every defined supported/unchecked Call exposes at most two alleles. An
+// impossible constant index needs only the first defined row for its error;
+// missing Calls still yield missing without raising an out-of-bounds error.
+fn invalid_call_index(args: &[ArrayRef], requested: Option<i32>) -> Result<ArrayRef, ExprError> {
+    let rows = CallRows::new(&args[0])?;
+    let nulls = rows.parent.logical_nulls();
+    if let Some(row) = (0..rows.parent.len()).find(|&row| nulls.as_ref().is_none_or(|n| n.is_valid(row))) {
+        let n = rows.ploidy.value(row);
+        let len = if n == 2 { 2 } else { usize::from(n > 0) };
+        return Err(ExprError::Invalid(format!(
+            "array index out of bounds: index={}, length={len}", requested.unwrap()
+        )));
+    }
+    Ok(arrow_array::new_null_array(&DataType::Int32, rows.parent.len()))
+}
+
+fn call_index<const INDEX: i32, const DYNAMIC: bool>(args: &[ArrayRef], _: Option<i32>) -> Result<ArrayRef, ExprError> {
+    let rows = CallRows::new(&args[0])?;
+    let indices = if DYNAMIC { Some(down::<Int32Array>(args[1].as_ref())?) } else { None };
+    let nulls = if let Some(indices) = indices {
+        NullBuffer::union(rows.parent.logical_nulls().as_ref(), indices.logical_nulls().as_ref())
+    } else { rows.parent.logical_nulls() };
+    // Only actual bitmap presence is bound per batch. The nullable check is
+    // compiled out of the dense loop; index/configuration selection is per query.
+    if nulls.as_ref().is_some_and(|n| n.null_count() != 0) {
+        call_index_values::<INDEX, DYNAMIC, true>(&rows, indices, nulls)
+    } else {
+        call_index_values::<INDEX, DYNAMIC, false>(&rows, indices, None)
+    }
+}
+
+fn call_index_values<const INDEX: i32, const DYNAMIC: bool, const NULLABLE: bool>(
+    rows: &CallRows<'_>, indices: Option<&Int32Array>, nulls: Option<NullBuffer>,
+) -> Result<ArrayRef, ExprError> {
+    let a = rows.first.values();
+    let b = rows.second.values();
+    let n = rows.ploidy.values();
+    let indices: &[i32] = if DYNAMIC { indices.unwrap().values() } else { &[] };
+    let validity = if NULLABLE { nulls.as_ref().unwrap().inner().clone() }
+        else { BooleanBuffer::new_unset(0) };
+    let mut values = Vec::with_capacity(rows.parent.len());
+    for row in 0..rows.parent.len() {
+        if NULLABLE && !validity.value(row) {
+            values.push(0);
+            continue;
+        }
+        let requested = if DYNAMIC { indices[row] } else { INDEX };
+        // Match the existing allele-list semantics even for unchecked storage:
+        // ploidy > 2 exposes just its first allele, rather than reading beyond it.
+        let len = if n[row] == 2 { 2_i64 } else { i64::from(n[row] > 0) };
+        let normalized = if requested < 0 { len + i64::from(requested) } else { i64::from(requested) };
+        if normalized < 0 || normalized >= len {
+            return Err(ExprError::Invalid(format!(
+                "array index out of bounds: index={requested}, length={len}"
+            )));
+        }
+        values.push(i32::from(if normalized == 0 { a[row] } else { b[row] }));
+    }
+    Ok(Arc::new(Int32Array::new(values.into(), nulls)))
+}
+
 fn boolean(len: usize, nulls: Option<NullBuffer>, f: impl FnMut(usize) -> bool) -> ArrayRef {
     Arc::new(BooleanArray::new(
         BooleanBuffer::collect_bool(len, f),

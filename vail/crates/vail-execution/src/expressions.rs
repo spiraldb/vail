@@ -3666,6 +3666,7 @@ enum HailKind {
     GetField(String),
     CallConstruct,
     CallAccess(crate::calls::CallAccessor),
+    CallIndex(crate::calls::PreparedIndex),
     Struct(Vec<String>),
     Interval,
     // DF flatten ignores inner validity. Compact null lists before flattening.
@@ -4702,6 +4703,7 @@ impl PhysicalExpr for HailPhysicalExpr {
                 HailKind::ToString(input_type) => hail_to_string(&args[0], input_type),
                 HailKind::CallConstruct => crate::calls::construct(&args[0], &self.dtype),
                 HailKind::CallAccess(accessor) => crate::calls::access(&args[0], *accessor),
+                HailKind::CallIndex(prepared) => prepared.evaluate(&args),
                 HailKind::GetField(name) => {
                     let parent = &args[0];
                     let st = parent
@@ -6574,6 +6576,24 @@ fn lower_uncached(
                 Arc::new(ConfigOptions::default()),
             )?)
         }
+        Expr::ArrayIndex { value, index }
+            if matches!(value.as_ref(), Expr::GetField { value: call, name }
+                if name == "__vail_call_alleles" && call.dtype_in_scope(schema, globals.schema(), scope, memo)?
+                    == Type::Primitive(PrimitiveType::Call)) =>
+        {
+            let Expr::GetField { value: call, .. } = value.as_ref() else { unreachable!() };
+            let constant = match index.as_ref() {
+                Expr::RuntimeLiteral { value: ScalarValue::Int32(value) } => *value,
+                Expr::Literal { value, .. } => value.as_i64().and_then(|x| i32::try_from(x).ok()),
+                _ => None,
+            };
+            let prepared = crate::calls::PreparedIndex::new(constant);
+            let mut args = vec![lower_cached(call, schema, globals, scope, memo, context)?];
+            if !prepared.is_constant() {
+                args.push(lower_cached(index, schema, globals, scope, memo, context)?);
+            }
+            custom(HailKind::CallIndex(prepared), args, dtype)
+        }
         Expr::ArrayIndex { value, index } => {
             // Python bind uses map([argument], parameter => body)[0]. There
             // is exactly one callback value per input row, so bind it directly
@@ -7315,6 +7335,89 @@ mod tests {
         )
         .unwrap()
     }
+    fn indexed_calls_batch(ploidy: Vec<u8>, valid: Vec<bool>, indices: Vec<Option<i32>>) -> RecordBatch {
+        use arrow_array::{UInt16Array, UInt8Array};
+        use arrow_buffer::NullBuffer;
+        let length = ploidy.len();
+        let call_type = Type::Primitive(PrimitiveType::Call).to_arrow().unwrap();
+        let DataType::Struct(fields) = &call_type else { unreachable!() };
+        let calls = StructArray::new(fields.clone(), vec![
+            Arc::new(UInt16Array::from_iter_values((0..length).map(|i| (i * 97) as u16))),
+            Arc::new(UInt16Array::from_iter_values((0..length).map(|i| u16::MAX - i as u16))),
+            Arc::new(UInt8Array::from(ploidy)),
+            Arc::new(BooleanArray::from(vec![false; length])),
+        ], Some(NullBuffer::from(valid)));
+        RecordBatch::try_new(Arc::new(Schema::new(vec![
+            Field::new("call", call_type, true),
+            Field::new("index", DataType::Int32, true),
+        ])), vec![Arc::new(calls), Arc::new(Int32Array::from(indices))]).unwrap()
+    }
+
+    fn call_index_expr(index: Expr) -> Expr {
+        Expr::ArrayIndex {
+            value: Arc::new(Expr::GetField {
+                value: Arc::new(Expr::Column { name: "call".into() }),
+                name: "__vail_call_alleles".into(),
+            }),
+            index: Arc::new(index),
+        }
+    }
+
+    #[test]
+    fn direct_call_index_matches_expected_alleles_for_slices_nulls_and_bounds() {
+        let batch = indexed_calls_batch(vec![2; 6], vec![true, true, false, true, true, true],
+            vec![Some(0), Some(-1), Some(i32::MIN), None, Some(1), Some(-2)]);
+        let expected = [
+            (Some(0), vec![Some(0), Some(97), None, Some(291), Some(388), Some(485)]),
+            (Some(1), vec![Some(65535), Some(65534), None, Some(65532), Some(65531), Some(65530)]),
+            (Some(-1), vec![Some(65535), Some(65534), None, Some(65532), Some(65531), Some(65530)]),
+            (Some(-2), vec![Some(0), Some(97), None, Some(291), Some(388), Some(485)]),
+            (None, vec![Some(0), Some(65534), None, None, Some(65531), Some(485)]),
+        ];
+        for (constant, values) in expected {
+            let index = if let Some(index) = constant {
+                Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(index)) }
+            } else { Expr::Column { name: "index".into() } };
+            let expr = call_index_expr(index);
+            for (offset, length) in [(0, 6), (1, 4)] {
+                let input = batch.slice(offset, length);
+                let output = lower(&expr, &input.schema()).unwrap().evaluate(&input).unwrap()
+                    .into_array(length).unwrap();
+                let expected: ArrayRef = Arc::new(Int32Array::from(values[offset..offset + length].to_vec()));
+                assert_eq!(output.to_data(), expected.to_data());
+            }
+        }
+        let mixed = indexed_calls_batch(vec![2, 1, 2, 0, 2, 1],
+            vec![true, true, false, true, true, true],
+            vec![Some(0), Some(-1), Some(i32::MIN), None, Some(1), Some(0)]);
+        let expr = call_index_expr(Expr::Column { name: "index".into() });
+        let output = lower(&expr, &mixed.schema()).unwrap().evaluate(&mixed).unwrap()
+            .into_array(6).unwrap();
+        let expected: ArrayRef = Arc::new(Int32Array::from(vec![Some(0), Some(97), None, None, Some(65531), Some(485)]));
+        assert_eq!(output.to_data(), expected.to_data());
+        for (ploidy, index) in [(0, 0), (1, 1), (1, -2), (2, 2), (2, i32::MIN), (3, 1)] {
+            let input = indexed_calls_batch(vec![ploidy], vec![true], vec![Some(index)]);
+            for expr in [call_index_expr(Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(index)) }),
+                         call_index_expr(Expr::Column { name: "index".into() })] {
+                let error = lower(&expr, &input.schema()).unwrap().evaluate(&input).unwrap_err();
+                assert!(error.to_string().contains("array index out of bounds"));
+            }
+        }
+    }
+
+    #[test]
+    fn direct_call_index_missing_index_suppresses_out_of_bounds() {
+        let batch = indexed_calls_batch(vec![0, 2], vec![true, false], vec![None, Some(i32::MAX)]);
+        let expr = call_index_expr(Expr::Column { name: "index".into() });
+        let output = lower(&expr, &batch.schema()).unwrap().evaluate(&batch).unwrap()
+            .into_array(batch.num_rows()).unwrap();
+        assert_eq!(output.null_count(), 2);
+        let missing = call_index_expr(Expr::RuntimeLiteral { value: ScalarValue::Int32(None) });
+        let output = lower(&missing, &batch.schema()).unwrap().evaluate(&batch).unwrap()
+            .into_array(batch.num_rows()).unwrap();
+        assert_eq!(output.null_count(), 2);
+    }
+
     #[test]
     fn aligned_presence_fast_body_preserves_promoted_result_type() {
         use arrow_buffer::{NullBuffer, OffsetBuffer};

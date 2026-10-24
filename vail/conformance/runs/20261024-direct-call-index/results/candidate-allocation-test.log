@@ -1,0 +1,19 @@
+   Compiling vail-execution v0.1.0 (/home/danielking/parallel-vcf-export/source/vail/crates/vail-execution)
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4302:14
+     |
+4302 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 1 warning (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 25.00s
+     Running tests/call_allocations.rs (/home/danielking/entries-count-candidate/target/release/deps/call_allocations-eb5d38a04df66205)
+
+running 1 test
+direct Call index: 8192 calls, 33256 allocated bytes
+test direct_call_index_allocates_only_primitive_output_not_allele_lists ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
