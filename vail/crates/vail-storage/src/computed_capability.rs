@@ -449,25 +449,52 @@ impl Probe<'_> {
             };
             if ctx.resolve(tree.encoding_id()) != Some(ArrayVTable::id(&Constant))
                 || tree.nchildren() != 0
-                || tree.nbuffers() != 0
+                || tree.metadata_buffer_indices() != [0]
+                || !matches!(layout.dtype(), DType::Bool(_))
             {
                 return Ok(false);
             }
-            let value = tree
-                .decode(
-                    layout.dtype(),
-                    usize::try_from(layout.row_count()).map_err(invalid)?,
-                    &ctx,
-                    self.session,
-                )
-                .map_err(invalid)?;
-            let Some(value) = value.as_opt::<Constant>() else {
+            // Constant serializes one scalar, not a bitmap: inspect this fixed
+            // bounded scalar with the pinned library validator. Never read a
+            // physical-domain validity bitmap to establish dense eligibility.
+            let lengths = tree.metadata_buffer_lengths().map_err(invalid)?;
+            let Some(&length) = lengths.first() else {
                 return Ok(false);
             };
-            if !matches!(layout.dtype(), DType::Bool(_)) {
+            if length > 16 {
                 return Ok(false);
             }
-            Ok(value.scalar().as_bool().value() == Some(true))
+            let extent = tree.metadata_buffer_extent().map_err(invalid)?;
+            let padding = extent
+                .checked_sub(length)
+                .ok_or_else(|| invalid("constant scalar descriptor underflow"))?;
+            let flat = layout
+                .as_opt::<Flat>()
+                .ok_or_else(|| invalid("constant layout is not flat"))?;
+            let segment = &self.segments[*flat.segment_id() as usize];
+            let offset = segment
+                .offset
+                .checked_add(padding as u64)
+                .ok_or_else(|| invalid("constant scalar offset overflow"))?;
+            *self.metadata_bytes = self
+                .metadata_bytes
+                .checked_add(length)
+                .ok_or_else(|| invalid("metadata budget overflow"))?;
+            if *self.metadata_bytes > MAX_QUERY_METADATA_BYTES {
+                return Ok(false);
+            }
+            self.file.seek(std::io::SeekFrom::Start(offset)).await?;
+            let mut bytes = [0u8; 16];
+            self.file.read_exact(&mut bytes[..length]).await?;
+            let value = vortex::scalar::ScalarValue::from_proto_bytes(
+                &bytes[..length],
+                layout.dtype(),
+                self.session,
+            )
+            .map_err(invalid)?;
+            let scalar =
+                vortex::scalar::Scalar::try_new(layout.dtype().clone(), value).map_err(invalid)?;
+            Ok(scalar.as_bool().value() == Some(true))
         })
     }
 
@@ -522,6 +549,24 @@ impl Probe<'_> {
         Box::pin(async move {
             if depth > MAX_DEPTH {
                 return Ok(false);
+            }
+            if layout.is::<Zoned>() {
+                let Some(data) = layout.slot(0).map_err(invalid)? else {
+                    return Ok(false);
+                };
+                return self.scalar(data, small, boolean, depth + 1).await;
+            }
+            if layout.is::<Chunked>() {
+                let mut rows = 0u64;
+                for child in layout.children().map_err(invalid)? {
+                    rows = rows
+                        .checked_add(child.row_count())
+                        .ok_or_else(|| invalid("scalar chunk row count overflow"))?;
+                    if !self.scalar(child, small, boolean, depth + 1).await? {
+                        return Ok(false);
+                    }
+                }
+                return Ok(rows == layout.row_count());
             }
             let Some((tree, ctx)) = self.tree(&layout).await? else {
                 return Ok(false);
