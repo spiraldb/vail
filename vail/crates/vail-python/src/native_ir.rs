@@ -1064,6 +1064,9 @@ impl NativeExpr {
     fn is_row_indexed(&self) -> bool {
         crate::random_binding::rows_referenced(&self.inner)
     }
+    fn is_pure(&self) -> bool {
+        self.inner.is_pure()
+    }
     fn contains_random(&self) -> bool {
         let mut found = false;
         self.inner.visit_unique(&mut |node| {

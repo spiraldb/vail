@@ -798,3 +798,83 @@ def reduce_list(
     result = walk(expr.to_ir(), contexts, fixed)
     return Expression(expr.dtype, base, _IR(
         result, refs, lookups, lexical_types=lexical_types | bound))
+
+
+def reduce_composite_totals(matrix, expr):
+    """Lower associative total bundles to row reductions and ordinary DF SUM.
+
+    Eligibility is decided once for the entire expression. Effectful or unsupported
+    reducers retain the established entry context and evaluation behavior.
+    """
+    from . import is_defined
+    from . import agg
+    from .collections import _function
+    from .matrixtable import _CELLS, _VALUE, _uses_axis_field, _uses_column_position
+    from .types import tint32, tint64, tfloat32, tfloat64
+
+    root = expr.to_ir()
+    if root.get("op") not in {"struct", "tuple"} or expr._lookup_refs:
+        return None
+    core = matrix._mir.core
+    leaves = []
+
+    def eligible(node):
+        if not isinstance(node, IR_NODE_TYPES):
+            return False
+        op = node.get("op")
+        if op == "struct":
+            return all(eligible(value) for _, value in node["fields"])
+        if op == "tuple":
+            return all(eligible(value) for value in node["elements"])
+        if (op != "aggregate" or matrix._is_scan_node(node)
+                or set(node.get("options") or {}) != {"__vail_result_type"}
+                or node.get("init")):
+            return False
+        function = node.get("function")
+        if function == "count":
+            leaves.append(node)
+            return True
+        if function != "sum":
+            return False
+        value = node.get("value")
+        dtype = type_from_wire(node["options"]["__vail_result_type"])
+        if (dtype not in (tint32, tint64, tfloat32, tfloat64)
+                or not value.is_pure() or _uses_axis_field(value, "col")
+                or _uses_column_position(value)):
+            return False
+        leaves.append(node)
+        return True
+
+    if not eligible(root) or not leaves:
+        return None
+
+    replacements = {}
+    for node in leaves:
+        key = node.node_identity()
+        if key in replacements:
+            continue
+        dtype = type_from_wire(node["options"]["__vail_result_type"])
+        if node["function"] == "count":
+            present = core[_CELLS].map(lambda cell: is_defined(cell[_VALUE]))
+            row_value = _function("__vail_list_reduce_count_where", [present], tint64)
+        else:
+            leaf = Expression(dtype, matrix, _IR(
+                node, expr._global_refs, expr._lookup_refs,
+                lexical_types=expr._lexical_types,
+            ))
+            row_value = reduce_list(matrix, leaf, core, None, direct_entry_sum=True)
+        replacements[key] = agg.sum(row_value).to_ir()
+
+    def rebuild(node):
+        if node.get("op") == "struct":
+            return {"op": "struct", "fields": [
+                [name, rebuild(value)] for name, value in node["fields"]]}
+        if node.get("op") == "tuple":
+            return {"op": "tuple", "elements": [rebuild(value) for value in node["elements"]]}
+        return replacements[node.node_identity()]
+
+    total = Expression(expr.dtype, core, _IR(
+        rebuild(root), expr._global_refs, expr._lookup_refs,
+        lexical_types=expr._lexical_types,
+    ))
+    return core, total
