@@ -1,0 +1,16 @@
+{
+  "source_revision": "2da14077ca1c03ca0ec09e3bf36de1c03e99144a",
+  "base_revision": "e688a4a4b59e4255c3955ef7a3575be6710b0767",
+  "python_origin": "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/__init__.py",
+  "native_origin": "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "69a06f57d61746e815cd843bb58a08efb912d214bb3c6da650d7c62e05d825bf",
+  "source_sha256": {
+    "crates/vail-table/src/provider.rs": "e275d2b1c60a3f15808014af740dae3cbd00c489e6cb6326c0e8f91347e7e454",
+    "python/tests/test_native_key_projection.py": "776b6babf0b0f51fc468579fdf28bed351d646bbcfa583fd22f920b5cfced871",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  },
+  "build": "normal kache maturin develop --release --locked; CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0 RUSTFLAGS=-C target-cpu=native",
+  "target": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target",
+  "fixture_bytes": 124601283,
+  "fixture_path": "/private/tmp/vail-wide-native-key.ht"
+}
