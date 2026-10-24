@@ -3,26 +3,33 @@
 //! This is deliberately a closed proof, not a codec-name blacklist. Unsupported
 //! valid metadata returns None and the caller retains its original DF expression.
 use crate::{Result, SnapshotReadPlan, StorageError};
-use futures::future::BoxFuture;
+use futures::{FutureExt, StreamExt, future::BoxFuture};
 use prost::Message;
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
-use std::sync::Arc;
-use tokio::io::{AsyncReadExt, AsyncSeekExt};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, AtomicUsize, Ordering},
+};
 use vortex::VortexSessionDefault;
 use vortex::array::ArrayVTable;
 use vortex::array::arrays::bool::BoolMetadata;
 use vortex::array::arrays::{Bool, Constant, Primitive};
+use vortex::array::buffer::BufferHandle;
+use vortex::array::memory::MemorySessionExt;
 use vortex::array::serde::SerializedArray;
 use vortex::arrow::ArrowSessionExt;
+use vortex::buffer::{Alignment, ByteBuffer};
 use vortex::dtype::{DType, Nullability, PType};
 use vortex::encodings::fastlanes::{BitPacked, BitPackedMetadata};
 use vortex::encodings::sequence::Sequence;
 use vortex::file::OpenOptionsSessionExt;
+use vortex::io::{CoalesceConfig, VortexReadAt, session::RuntimeSessionExt, std_file::FileReadAt};
 use vortex::layout::LayoutRef;
 use vortex::layout::layouts::{
     chunked::Chunked, dict::Dict, flat::Flat, list::List, struct_::Struct, zoned::Zoned,
 };
+use vortex::layout::segments::SegmentSource;
 use vortex::session::{VortexSession, registry::ReadContext};
 
 // The selected small dictionary, its nullable bitmap, prepared lookup records,
@@ -32,6 +39,8 @@ const MAX_DICTIONARY_VALUES: usize = (DICTIONARY_PREPARATION_BYTES - 8 * 1024) /
 const MAX_TREE_BYTES: usize = 64 * 1024;
 const MAX_QUERY_METADATA_BYTES: usize = 16 * 1024 * 1024;
 const MAX_DEPTH: usize = 48;
+const MAX_PREFLIGHT_FILES: usize = 8;
+const MAX_CONSTANT_SEGMENT_BYTES: usize = 256;
 
 /// Operand semantics selected once by the closed execution-planner translator.
 #[doc(hidden)]
@@ -128,90 +137,176 @@ pub(crate) async fn prepare(
         }
     }
     let session = VortexSession::default();
-    let mut metadata_bytes = 0usize;
-    let mut domains = Vec::new();
+    let budget = Arc::new(MetadataBudget::default());
     let field = arrow_schema::Field::new(
         "",
         arrow_schema::DataType::Struct(plan.schema.fields().clone()),
         false,
     );
     let expected = session.arrow().from_arrow_field(&field).map_err(invalid)?;
-    for file in &plan.files {
-        let path = crate::local_path(&file.identity.path)?;
-        if tokio::fs::metadata(&path).await?.len() != file.task.file_size_in_bytes() {
-            return Err(StorageError::Invalid("Vortex file size mismatch".into()));
-        }
-        let opened = session
-            .open_options()
-            .with_file_size(file.task.file_size_in_bytes())
-            .open_path(&path)
-            .await
-            .map_err(invalid)?;
-        if opened.row_count() != file.identity.row_count {
-            return Err(invalid("Vortex file row count mismatch"));
-        }
-        if let Some(bytes) = opened.footer().approx_byte_size() {
-            metadata_bytes = metadata_bytes
-                .checked_add(bytes)
-                .ok_or_else(|| invalid("metadata budget overflow"))?;
-            if metadata_bytes > MAX_QUERY_METADATA_BYTES {
+    // Ordered results preserve source-file error/fallback precedence while IO
+    // futures overlap. One shared budget reserves every read before allocation;
+    // it is not a separate allowance per concurrent file.
+    let domains = {
+        let mut files = futures::stream::iter(
+            plan.files
+                .iter()
+                .map(|file| prepare_file(file, &expected, &operands, &session, budget.clone())),
+        )
+        .buffered(MAX_PREFLIGHT_FILES);
+        let mut domains = Vec::with_capacity(plan.files.len());
+        while let Some(domain) = files.next().await {
+            let Some(domain) = domain? else {
                 return Ok(None);
-            }
-        }
-        let mut probe = Probe {
-            file: tokio::fs::File::open(&path).await?,
-            segments: opened.footer().segment_map(),
-            session: &session,
-            metadata_bytes: &mut metadata_bytes,
-            trees: HashMap::new(),
-            domains: Vec::new(),
-        };
-        let mut operand_domains = Vec::new();
-        for operand in &operands {
-            let path = operand.path();
-            let compatible = match operand {
-                ComputedOperand::DenseI32Sum(_) => {
-                    compatible_operand(&expected, opened.dtype(), path)
-                }
-                ComputedOperand::ListLength(_) => {
-                    compatible_shape_operand(&expected, opened.dtype(), path)
-                }
             };
-            if !compatible {
-                return Ok(None);
-            }
-            let first = probe.domains.len();
-            let supported = match operand {
-                ComputedOperand::DenseI32Sum(_) => {
-                    probe
-                        .operand(opened.footer().layout().clone(), path, false, 0)
-                        .await?
-                }
-                ComputedOperand::ListLength(_) => {
-                    probe
-                        .list_shape(opened.footer().layout().clone(), path, 0)
-                        .await?
-                }
-            };
-            if !supported {
-                return Ok(None);
-            }
-            operand_domains.push((operand.clone(), probe.domains.split_off(first)));
+            domains.push(domain);
         }
-        domains.push(FileDomain {
-            path: file.identity.path.clone(),
-            bytes: file.task.file_size_in_bytes(),
-            rows: file.identity.row_count,
-            operands: operand_domains,
-        });
-    }
+        domains
+    };
     Ok(Some(Arc::new(ComputedProjectionCertificate {
         plan: Arc::downgrade(&plan),
         partitions,
         operands,
-        metadata_bytes,
+        metadata_bytes: budget.used.load(Ordering::Relaxed),
         domains,
     })))
+}
+
+async fn prepare_file(
+    file: &crate::PlannedFile,
+    expected: &DType,
+    operands: &[ComputedOperand],
+    session: &VortexSession,
+    budget: Arc<MetadataBudget>,
+) -> Result<Option<FileDomain>> {
+    let path = crate::local_path(&file.identity.path)?;
+    if tokio::fs::metadata(&path).await?.len() != file.task.file_size_in_bytes() {
+        return Err(StorageError::Invalid("Vortex file size mismatch".into()));
+    }
+    let inner = FileReadAt::open_with_allocator(&path, session.handle(), session.allocator())
+        .map_err(invalid)?;
+    let reader = Arc::new(MetadataRead {
+        inner,
+        budget: budget.clone(),
+        denied: AtomicBool::new(false),
+    });
+    let opened = match session
+        .open_options()
+        .with_file_size(file.task.file_size_in_bytes())
+        .open(reader.clone())
+        .await
+    {
+        Ok(file) => file,
+        Err(_) if reader.denied.load(Ordering::Relaxed) => return Ok(None),
+        Err(error) => return Err(invalid(error)),
+    };
+    if opened.row_count() != file.identity.row_count {
+        return Err(invalid("Vortex file row count mismatch"));
+    }
+    if let Some(bytes) = opened.footer().approx_byte_size() {
+        if !budget.reserve(bytes) {
+            return Ok(None);
+        }
+    }
+    let mut probe = Probe {
+        reader,
+        segment_source: opened.segment_source(),
+        segments: opened.footer().segment_map(),
+        session,
+        budget,
+        trees: HashMap::new(),
+        domains: Vec::new(),
+    };
+    let mut operand_domains = Vec::new();
+    for operand in operands {
+        let path = operand.path();
+        let compatible = match operand {
+            ComputedOperand::DenseI32Sum(_) => compatible_operand(expected, opened.dtype(), path),
+            ComputedOperand::ListLength(_) => {
+                compatible_shape_operand(expected, opened.dtype(), path)
+            }
+        };
+        if !compatible {
+            return Ok(None);
+        }
+        let first = probe.domains.len();
+        let supported = match operand {
+            ComputedOperand::DenseI32Sum(_) => {
+                probe
+                    .operand(opened.footer().layout().clone(), path, false, 0)
+                    .await?
+            }
+            ComputedOperand::ListLength(_) => {
+                probe
+                    .list_shape(opened.footer().layout().clone(), path, 0)
+                    .await?
+            }
+        };
+        if !supported {
+            return Ok(None);
+        }
+        operand_domains.push((operand.clone(), probe.domains.split_off(first)));
+    }
+    Ok(Some(FileDomain {
+        path: file.identity.path.clone(),
+        bytes: file.task.file_size_in_bytes(),
+        rows: file.identity.row_count,
+        operands: operand_domains,
+    }))
+}
+
+/// Cumulative bytes across all in-flight files, never reset per file. Charging
+/// raw read buffers and parsed metadata bounds concurrent preparation and work.
+#[derive(Default)]
+struct MetadataBudget {
+    used: AtomicUsize,
+}
+impl MetadataBudget {
+    fn reserve(&self, bytes: usize) -> bool {
+        self.used
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |used| {
+                used.checked_add(bytes)
+                    .filter(|&n| n <= MAX_QUERY_METADATA_BYTES)
+            })
+            .is_ok()
+    }
+}
+
+struct MetadataRead {
+    inner: FileReadAt,
+    budget: Arc<MetadataBudget>,
+    denied: AtomicBool,
+}
+impl VortexReadAt for MetadataRead {
+    fn uri(&self) -> Option<&Arc<str>> {
+        self.inner.uri()
+    }
+    fn coalesce_config(&self) -> Option<CoalesceConfig> {
+        self.inner.coalesce_config()
+    }
+    fn concurrency(&self) -> usize {
+        self.inner.concurrency()
+    }
+    fn size(&self) -> BoxFuture<'static, vortex::error::VortexResult<u64>> {
+        self.inner.size()
+    }
+    fn read_at(
+        &self,
+        offset: u64,
+        length: usize,
+        alignment: Alignment,
+    ) -> BoxFuture<'static, vortex::error::VortexResult<BufferHandle>> {
+        if !self.budget.reserve(length) {
+            self.denied.store(true, Ordering::Relaxed);
+            return futures::future::ready(Err(std::io::Error::new(
+                std::io::ErrorKind::OutOfMemory,
+                "computed metadata budget exhausted",
+            )
+            .into()))
+            .boxed();
+        }
+        self.inner.read_at(offset, length, alignment)
+    }
 }
 
 fn invalid(error: impl std::fmt::Display) -> StorageError {
@@ -219,15 +314,32 @@ fn invalid(error: impl std::fmt::Display) -> StorageError {
 }
 
 struct Probe<'a> {
-    file: tokio::fs::File,
+    reader: Arc<MetadataRead>,
+    segment_source: Arc<dyn SegmentSource>,
     segments: &'a Arc<[vortex::file::SegmentSpec]>,
     session: &'a VortexSession,
-    metadata_bytes: &'a mut usize,
+    budget: Arc<MetadataBudget>,
     trees: HashMap<usize, (SerializedArray, ReadContext)>,
     domains: Vec<OperandDomain>,
 }
 
 impl Probe<'_> {
+    async fn read_metadata(&self, offset: u64, length: usize) -> Result<Option<ByteBuffer>> {
+        let result = self.reader.read_at(offset, length, Alignment::none()).await;
+        let buffer = match result {
+            Ok(buffer) => buffer,
+            Err(_) if self.reader.denied.load(Ordering::Relaxed) => return Ok(None),
+            Err(error) => return Err(invalid(error)),
+        };
+        Ok(Some(
+            buffer
+                .try_into_host()
+                .map_err(invalid)?
+                .await
+                .map_err(invalid)?,
+        ))
+    }
+
     fn operand<'a>(
         &'a mut self,
         layout: LayoutRef,
@@ -531,10 +643,10 @@ impl Probe<'_> {
                 .offset
                 .checked_add(u64::from(segment.length))
                 .ok_or_else(|| invalid("segment offset overflow"))?;
-            self.file.seek(std::io::SeekFrom::Start(end - 4)).await?;
-            let mut suffix = [0u8; 4];
-            self.file.read_exact(&mut suffix).await?;
-            let length = u32::from_le_bytes(suffix) as usize;
+            let Some(suffix) = self.read_metadata(end - 4, 4).await? else {
+                return Ok(None);
+            };
+            let length = u32::from_le_bytes(suffix.as_ref().try_into().map_err(invalid)?) as usize;
             if length > segment.length as usize - 4 {
                 return Err(invalid("array tree outside segment"));
             }
@@ -542,29 +654,16 @@ impl Probe<'_> {
                 return Ok(None);
             }
             payload_bytes = Some(segment.length as usize - 4 - length);
-            *self.metadata_bytes = self
-                .metadata_bytes
-                .checked_add(length + 4)
-                .ok_or_else(|| invalid("metadata budget overflow"))?;
-            if *self.metadata_bytes > MAX_QUERY_METADATA_BYTES {
+            let Some(bytes) = self.read_metadata(end - 4 - length as u64, length).await? else {
                 return Ok(None);
-            }
-            self.file
-                .seek(std::io::SeekFrom::Start(end - 4 - length as u64))
-                .await?;
-            let mut bytes = vec![0; length];
-            self.file.read_exact(&mut bytes).await?;
-            bytes.into()
+            };
+            bytes
         };
         if bytes.len() > MAX_TREE_BYTES {
             return Ok(None);
         }
         if flat.array_tree().is_some() {
-            *self.metadata_bytes = self
-                .metadata_bytes
-                .checked_add(bytes.len())
-                .ok_or_else(|| invalid("metadata budget overflow"))?;
-            if *self.metadata_bytes > MAX_QUERY_METADATA_BYTES {
+            if !self.budget.reserve(bytes.len()) {
                 return Ok(None);
             }
             payload_bytes = Some(
@@ -648,18 +747,23 @@ impl Probe<'_> {
                 .offset
                 .checked_add(padding as u64)
                 .ok_or_else(|| invalid("constant scalar offset overflow"))?;
-            *self.metadata_bytes = self
-                .metadata_bytes
-                .checked_add(length)
-                .ok_or_else(|| invalid("metadata budget overflow"))?;
-            if *self.metadata_bytes > MAX_QUERY_METADATA_BYTES {
-                return Ok(false);
-            }
-            self.file.seek(std::io::SeekFrom::Start(offset)).await?;
-            let mut bytes = [0u8; 16];
-            self.file.read_exact(&mut bytes[..length]).await?;
+            let bytes = if segment.length as usize <= MAX_CONSTANT_SEGMENT_BYTES {
+                // A proven tiny Constant segment may already be in the opener's
+                // footer-prefetch cache. Never request a whole unknown Flat.
+                let result = self.segment_source.request(*flat.segment_id()).await;
+                match result {
+                    Ok(bytes) => bytes.slice(padding..padding + length),
+                    Err(_) if self.reader.denied.load(Ordering::Relaxed) => return Ok(false),
+                    Err(error) => return Err(invalid(error)),
+                }
+            } else {
+                let Some(bytes) = self.read_metadata(offset, length).await? else {
+                    return Ok(false);
+                };
+                bytes
+            };
             let value = vortex::scalar::ScalarValue::from_proto_bytes(
-                &bytes[..length],
+                bytes.as_ref(),
                 layout.dtype(),
                 self.session,
             )
