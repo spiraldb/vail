@@ -180,3 +180,31 @@ mixed-null traversal uses the existing word-wise set-bit iterator.
 No current prototype is approved for merging. Final profiles, resource review,
 and exact-revision review remain required. Broader pushdown roadmap is tracked
 by the parent in investigations/VORTEX_PUSHDOWN_QUEUE.md.
+
+
+## Current steady profile, assembly, and actual CPU counters
+
+Current Time Profiler and CPU Counters traces are retained under
+`/private/tmp/encoded-resource-final{,-counters}.trace`; file checksums accompany
+this report. Parsing excludes the first4seconds (startup/warmup/pause).
+Steady dictionary reducer is38.1% of leaf CPU samples. Allocator, file reads,
+bitpacking and registry cleanup are other substantial costs. In particular,
+read_vortex_task currently constructs a default VortexSession PER FILE, which
+rebuilds/drops registry state. Reusing session state at an appropriate runtime
+scope is a general source-confirmed opportunity, not implemented here.
+
+The actual hottest ARM inner loop loads a u16 code, bounds-checks its dictionary
+index, loads a cache-resident value/validity record, sign-extends and accumulates
+into i64. It does not construct an expanded numeric child or Int64 entry array.
+No handwritten SIMD. The compiler emitted scalar dependent indexed loads;
+there is no evidence this is approaching arithmetic-unit capacity.
+
+Actual Apple CPU Counters steady cycle-weighted categories: Useful42.76%,
+Instruction Processing Bottleneck46.33%, Instruction Delivery Bottleneck6.20%,
+Discarded4.71%. These are instruction-bandwidth bottleneck categories, NOT
+arithmetic or SIMD utilization. Processing includes dependency/memory stalls;
+these counters do not measure DRAM bandwidth or establish ALU/FPU saturation.
+The exposed categories give no basis to claim the scan is hardware-limited.
+The independent one-source experiment further demonstrates an unresolved
+parallel-resource gap. Source scheduling and per-file session setup deserve
+attention before treating this prototype as a final optimized scan.
