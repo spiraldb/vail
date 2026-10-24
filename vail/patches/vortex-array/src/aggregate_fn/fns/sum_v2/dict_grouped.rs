@@ -108,11 +108,11 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
             let values = values.as_slice::<i32>();
             // Lookup and code-validity strategies are selected once per batch.
             if let Some(normalized) = &normalized {
-                dispatch_codes(codes, &PreparedValues(normalized), &ranges, start, &group_mask, code_bits, code_mask.all_true())
+                dispatch_codes(codes, &PreparedValues(normalized), &ranges, start, &group_mask, code_bits, code_mask.all_true(), code_mask.density() >= 0.9)
             } else if value_mask.all_true() {
-                dispatch_codes(codes, &PlainValues::<true> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true())
+                dispatch_codes(codes, &PlainValues::<true> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true(), code_mask.density() >= 0.9)
             } else {
-                dispatch_codes(codes, &PlainValues::<false> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true())
+                dispatch_codes(codes, &PlainValues::<false> { values, validity: value_bits }, &ranges, start, &group_mask, code_bits, code_mask.all_true(), code_mask.density() >= 0.9)
             }
         });
         Ok(Some(partial(sums, empty, group_mask)))
@@ -163,13 +163,14 @@ impl<const VALID: bool> ValueLookup for PlainValues<'_, VALID> {
 
 fn dispatch_codes<C: NativePType + AsPrimitive<usize>, L: ValueLookup>(
     codes: &[C], lookup: &L, ranges: &GroupRanges, base: usize, groups: &Mask,
-    code_bits: BitBufferView<'_>, codes_valid: bool,
+    code_bits: BitBufferView<'_>, codes_valid: bool, dense_codes: bool,
 ) -> (PrimitiveArray, BitBuffer) {
-    if codes_valid { reduce::<C, L, true>(codes, lookup, ranges, base, groups, code_bits) }
-    else { reduce::<C, L, false>(codes, lookup, ranges, base, groups, code_bits) }
+    if codes_valid { reduce::<C, L, true, false>(codes, lookup, ranges, base, groups, code_bits) }
+    else if dense_codes { reduce::<C, L, false, true>(codes, lookup, ranges, base, groups, code_bits) }
+    else { reduce::<C, L, false, false>(codes, lookup, ranges, base, groups, code_bits) }
 }
 
-fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID: bool>(
+fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID: bool, const CODE_RUNS: bool>(
     codes: &[C], lookup: &L, ranges: &GroupRanges, base: usize, groups: &Mask,
     code_bits: BitBufferView<'_>,
 ) -> (PrimitiveArray, BitBuffer) {
@@ -188,6 +189,14 @@ fn reduce<C: NativePType + AsPrimitive<usize>, L: ValueLookup, const CODES_VALID
         };
         if CODES_VALID {
             for &code in codes { add(code); }
+        } else if CODE_RUNS {
+            // Dense masks expose contiguous runs: keep bitmap work outside the
+            // dictionary lookup loop and let the compiler optimize that loop.
+            for (start, end) in code_bits.slice(offset..offset + len).set_slices() {
+                // SAFETY: library run bounds lie in the bitmap slice, which has
+                // exactly the same length as this already-checked code slice.
+                for &code in unsafe { codes.get_unchecked(start..end) } { add(code); }
+            }
         } else {
             // The library iterator visits validity words without allocating indices.
             for index in code_bits.slice(offset..offset + len).set_indices() {
