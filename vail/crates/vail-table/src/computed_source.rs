@@ -13,6 +13,7 @@ use datafusion_physical_plan::{
     SendableRecordBatchStream,
     execution_plan::{Boundedness, EmissionType},
     metrics::{ExecutionPlanMetricsSet, SplitMetrics},
+    projection::ProjectionExec,
     stream::{BatchSplitStream, RecordBatchStreamAdapter},
 };
 use futures::TryStreamExt;
@@ -39,9 +40,13 @@ fn path(expr: &Expr, parameter: &str) -> Option<Vec<String>> {
     }
 }
 
-fn translate(expr: &Expr, schema: &Schema, session: &VortexSession) -> Option<(Expression, bool)> {
+fn translate(
+    expr: &Expr,
+    schema: &Schema,
+    session: &VortexSession,
+) -> Option<(Expression, bool, Option<Vec<String>>)> {
     if let Expr::Column { name } = expr {
-        return Some((get_item(name.as_str(), root()), false));
+        return Some((get_item(name.as_str(), root()), false, None));
     }
     let Expr::ArrayReduce {
         operation: ArrayReduction::Sum,
@@ -115,6 +120,8 @@ fn translate(expr: &Expr, schema: &Schema, session: &VortexSession) -> Option<(E
     }
     let dtype = session.arrow().from_arrow_field(field).ok()?;
     let input = get_item(name.as_str(), root());
+    let mut operand = vec![name.clone()];
+    operand.extend(names.iter().cloned());
     let elements = vortex::array::scalar_fn::fns::list_field::list_field(
         input.clone(),
         &dtype,
@@ -129,6 +136,7 @@ fn translate(expr: &Expr, schema: &Schema, session: &VortexSession) -> Option<(E
             is_not_null(input),
         ),
         true,
+        Some(operand),
     ))
 }
 
@@ -145,13 +153,13 @@ pub(crate) fn try_lower(
         .iter()
         .map(|(name, expr)| {
             translate(expr, child.schema(), &session)
-                .map(|(e, reduction)| (name.clone(), e, reduction))
+                .map(|(e, reduction, operand)| (name.clone(), e, reduction, operand))
         })
         .collect::<Option<Vec<_>>>()
     else {
         return Ok(None);
     };
-    if !translated.iter().any(|(_, _, r)| *r) {
+    if !translated.iter().any(|(_, _, r, _)| *r) {
         return Ok(None);
     }
     let mut output = table
@@ -164,9 +172,15 @@ pub(crate) fn try_lower(
         crate::plan::private_name(table.schema(), table.globals().schema(), "__vail_partition");
     output.push(Field::new(tag, DataType::UInt64, false));
     let provider = ComputedProvider {
+        original_source: child.clone(),
+        original_fields: fields.to_vec(),
         source: source.clone(),
         schema: Arc::new(Schema::new(output)),
-        expressions: translated.into_iter().map(|(n, e, _)| (n, e)).collect(),
+        operands: translated
+            .iter()
+            .map(|(_, _, _, operand)| operand.clone())
+            .collect(),
+        expressions: translated.into_iter().map(|(n, e, _, _)| (n, e)).collect(),
         keys: child
             .keys()
             .iter()
@@ -211,7 +225,7 @@ pub(crate) fn try_total(
         return Ok(None);
     }
     let session = VortexSession::default();
-    let Some((projection, true)) = translate(value, table.schema(), &session) else {
+    let Some((projection, true, operand)) = translate(value, table.schema(), &session) else {
         return Ok(None);
     };
     let name = crate::plan::private_name(
@@ -225,12 +239,15 @@ pub(crate) fn try_total(
     let tag =
         crate::plan::private_name(table.schema(), table.globals().schema(), "__vail_partition");
     let provider = ComputedProvider {
+        original_source: table.clone(),
+        original_fields: vec![(name.clone(), value.as_ref().clone())],
         source: source.clone(),
         schema: Arc::new(Schema::new(vec![
             Field::new(&name, DataType::Int64, true),
             Field::new(tag, DataType::UInt64, false),
         ])),
         expressions: vec![(name.clone(), projection)],
+        operands: vec![operand],
         keys: vec![],
     };
     let child = LogicalPlanBuilder::scan(
@@ -248,11 +265,89 @@ pub(crate) fn try_total(
 
 #[derive(Debug)]
 struct ComputedProvider {
+    // Keep the original typed expressions until physical source capabilities
+    // have proved encoded evaluation safe. Unsupported capabilities must use
+    // the ordinary DataFusion source/projection before evaluating the payload.
+    original_source: TableRef,
+    original_fields: Vec<(String, Expr)>,
+    operands: Vec<Option<Vec<String>>>,
     source: Arc<LocalRead>,
     schema: SchemaRef,
     expressions: Vec<(String, Expression)>,
     keys: Vec<String>,
 }
+impl ComputedProvider {
+    /// The fallback keeps row expressions visible to DataFusion and begins at
+    /// the original source; no encoded evaluation or partial output precedes it.
+    async fn original_scan(
+        &self,
+        state: &dyn Session,
+        indices: &[usize],
+    ) -> DFResult<Arc<dyn ExecutionPlan>> {
+        let tag = self.original_fields.len();
+        let fields = indices
+            .iter()
+            .filter(|&&index| index != tag)
+            .map(|&index| self.original_fields[index].clone())
+            .collect::<Vec<_>>();
+        let paths = crate::nested_projection::map_rows_storage_paths(
+            &fields,
+            self.original_source.schema(),
+        );
+        let provider =
+            crate::provider::provider_with_nested_projection_paths(&self.original_source, paths)
+                .map_err(|error| DataFusionError::External(Box::new(error)))?;
+        let source_schema = provider.schema();
+        let source_tag = source_schema.fields().len() - 1;
+        let mut columns = std::collections::HashSet::new();
+        for (_, expression) in &fields {
+            expression.visit_unique(&mut |node| {
+                if let Expr::Column { name } = node {
+                    columns.insert(name.clone());
+                }
+            });
+        }
+        let projection = source_schema
+            .fields()
+            .iter()
+            .enumerate()
+            .filter_map(|(index, field)| {
+                (columns.contains(field.name()) || (index == source_tag && indices.contains(&tag)))
+                    .then_some(index)
+            })
+            .collect::<Vec<_>>();
+        let source_tag_name = source_schema.field(source_tag).name().clone();
+        let input = provider.scan(state, Some(&projection), &[], None).await?;
+        let df_schema = datafusion_common::DFSchema::try_from(input.schema().as_ref().clone())?;
+        let expressions = indices
+            .iter()
+            .map(|&index| {
+                let expression = if index == tag {
+                    datafusion_expr::col(&source_tag_name)
+                } else {
+                    vail_execution::logical_expr::lower_logical_with_bindings(
+                        &self.original_fields[index].1,
+                        &df_schema,
+                        self.original_source.globals().schema(),
+                        &Default::default(),
+                    )
+                    .map_err(|error| DataFusionError::External(Box::new(error)))?
+                };
+                Ok((
+                    state.create_physical_expr(expression, &df_schema)?,
+                    self.schema.field(index).name().clone(),
+                ))
+            })
+            .collect::<DFResult<Vec<_>>>()?;
+        let schema = self.schema.project(indices)?;
+        Ok(Arc::new(ProjectionExec::try_new_with_schema_metadata(
+            expressions,
+            input,
+            &schema,
+        )?))
+    }
+}
+
 #[async_trait::async_trait]
 impl TableProvider for ComputedProvider {
     fn schema(&self) -> SchemaRef {
@@ -263,7 +358,7 @@ impl TableProvider for ComputedProvider {
     }
     async fn scan(
         &self,
-        _: &dyn Session,
+        state: &dyn Session,
         projection: Option<&Vec<usize>>,
         _: &[DFExpr],
         _: Option<usize>,
@@ -272,6 +367,21 @@ impl TableProvider for ComputedProvider {
             .cloned()
             .unwrap_or_else(|| (0..self.schema.fields().len()).collect());
         let tag = self.expressions.len();
+        let operands = indices
+            .iter()
+            .filter_map(|&index| self.operands.get(index).and_then(Clone::clone))
+            .collect::<Vec<_>>();
+        if operands.is_empty() {
+            return self.original_scan(state, &indices).await;
+        }
+        let Some(certificate) = self
+            .source
+            .prepare_dense_list_projection(operands.clone())
+            .await
+            .map_err(|error| DataFusionError::External(Box::new(error)))?
+        else {
+            return self.original_scan(state, &indices).await;
+        };
         let fields = indices
             .iter()
             .filter(|&&i| i != tag)
@@ -321,6 +431,7 @@ impl TableProvider for ComputedProvider {
             Boundedness::Bounded,
         ));
         Ok(Arc::new(ComputedExec {
+            certificate,
             source: self.source.clone(),
             expression,
             row_schema,
@@ -334,6 +445,7 @@ impl TableProvider for ComputedProvider {
 }
 #[derive(Debug)]
 struct ComputedExec {
+    certificate: Arc<vail_storage::computed_capability::DenseListProjectionCertificate>,
     source: Arc<LocalRead>,
     expression: Expression,
     row_schema: SchemaRef,
@@ -393,6 +505,7 @@ impl ExecutionPlan for ComputedExec {
         }
         let mut input = self.source.computed_partition_batches(
             partition,
+            &self.certificate,
             self.expression.clone(),
             self.row_schema.clone(),
         );

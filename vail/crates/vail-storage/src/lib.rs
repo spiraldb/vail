@@ -4,6 +4,7 @@
 //! Iceberg's real catalog transaction, manifest, and snapshot implementation.
 //! Vortex file writing and reading are delegated to the pinned Iceberg PR.
 
+pub mod computed_capability;
 pub mod legacy;
 pub mod fragment_index;
 pub mod globals;
@@ -754,6 +755,7 @@ async fn stream_snapshot_internal(
 /// It contains no row batches and performs no whole-file reads.
 #[derive(Debug)]
 pub(crate) struct SnapshotReadPlan {
+    pub(crate) computed_proofs: computed_capability::ProofCache,
     table: Table,
     pub(crate) descriptor: SnapshotDescriptor,
     pub(crate) index: Option<FragmentIndex>,
@@ -1003,6 +1005,7 @@ pub(crate) async fn load_snapshot_read_plan(
         file_key_order_rank[position] = rank;
     }
     Ok(SnapshotReadPlan {
+        computed_proofs: Default::default(),
         table: table.clone(),
         descriptor,
         index,

@@ -723,13 +723,79 @@ impl LocalRead {
 
     /// Evaluate a typed row-preserving projection in the encoded Vortex scan.
     /// Callers retain DataFusion operators above this source for global work.
+    /// Prepare a fail-closed, immutable metadata proof for the requested dense
+    /// integer-list operands. Positive and negative proofs are cached per snapshot.
+    pub async fn prepare_dense_list_projection(
+        &self,
+        mut operands: Vec<Vec<String>>,
+    ) -> Result<Option<Arc<super::computed_capability::DenseListProjectionCertificate>>> {
+        operands.sort();
+        operands.dedup();
+        let partitions = self
+            .partition_offsets
+            .iter()
+            .zip(&self.entry.partition_rows)
+            .map(|(&start, &count)| {
+                start
+                    .checked_add(count as u64)
+                    .map(|end| start..end)
+                    .ok_or_else(|| StorageError::Invalid("source row range overflow".into()))
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let key = (
+            operands.clone(),
+            partitions.iter().map(|r| (r.start, r.end)).collect(),
+        );
+        let cell = {
+            let mut cache = self.plan.computed_proofs.lock().await;
+            if let Some(cell) = cache.get(&key) {
+                cell.clone()
+            } else if cache.len() < 16 {
+                cache
+                    .entry(key)
+                    .or_insert_with(|| Arc::new(tokio::sync::OnceCell::new()))
+                    .clone()
+            } else {
+                Arc::new(tokio::sync::OnceCell::new())
+            }
+        };
+        cell.get_or_try_init(|| {
+            super::computed_capability::prepare(self.plan.clone(), partitions, operands)
+        })
+        .await
+        .cloned()
+    }
+
     pub fn computed_partition_batches(
         &self,
         partition: usize,
+        certificate: &super::computed_capability::DenseListProjectionCertificate,
         expression: vortex::expr::Expression,
         output_schema: Arc<Schema>,
     ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
-        self.partition_batches_with_computation(partition, self.field_ids.as_slice(), Some((expression, output_schema)))
+        let expected = self
+            .partition_offsets
+            .get(partition)
+            .zip(self.entry.partition_rows.get(partition))
+            .and_then(|(&start, &count)| start.checked_add(count as u64).map(|end| start..end));
+        if !certificate
+            .plan
+            .upgrade()
+            .is_some_and(|plan| Arc::ptr_eq(&plan, &self.plan))
+            || expected.as_ref() != certificate.partitions.get(partition)
+        {
+            return futures::stream::once(async {
+                Err(StorageError::Invalid(
+                    "computed source certificate does not match immutable source selection".into(),
+                ))
+            })
+            .boxed();
+        }
+        self.partition_batches_with_computation(
+            partition,
+            self.field_ids.as_slice(),
+            Some((expression, output_schema)),
+        )
     }
 
     fn partition_batches_with_computation(
