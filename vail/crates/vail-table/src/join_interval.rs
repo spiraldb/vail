@@ -230,26 +230,46 @@ impl ClipSource {
                 // full prepared source clones every file's plan per join cell.
                 let scan = plan::source_partition(&self.source, index)?;
                 let keys = key_expressions(&scan, &self.source.keys()[..arity])?;
-                let filters = vec![
-                    crate::join_key::predicate(
+                let bound_filter = |values: &[ArrayRef], op| -> Result<Arc<dyn PhysicalExpr>> {
+                    if arity == 1
+                        && values.len() == 1
+                        && values[0].is_valid(0)
+                        && matches!(
+                            values[0].data_type(),
+                            arrow_schema::DataType::Int32 | arrow_schema::DataType::Int64
+                        )
+                    {
+                        return Ok(Arc::new(BinaryExpr::new(
+                            keys[0].clone(),
+                            op,
+                            Arc::new(datafusion_physical_expr::expressions::Literal::new(
+                                datafusion_common::ScalarValue::try_from_array(&values[0], 0)?,
+                            )),
+                        )));
+                    }
+                    Ok(crate::join_key::predicate(
                         &keys,
+                        values,
+                        op,
+                        scan.schema().as_ref(),
+                    )?)
+                };
+                let filters = vec![
+                    bound_filter(
                         lower,
                         if lower_inclusive {
                             Operator::GtEq
                         } else {
                             Operator::Gt
                         },
-                        scan.schema().as_ref(),
                     )?,
-                    crate::join_key::predicate(
-                        &keys,
+                    bound_filter(
                         upper,
                         if upper_inclusive {
                             Operator::LtEq
                         } else {
                             Operator::Lt
                         },
-                        scan.schema().as_ref(),
                     )?,
                 ];
                 // Keep the normal residual below; these predicates also enable
