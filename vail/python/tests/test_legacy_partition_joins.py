@@ -57,3 +57,13 @@ def test_hail_partition_membership_preserves_left_multiplicity(hail_join_data):
     assert [(row.k, row.lv) for row in left.anti_join(right).collect()] == [
         (0, 0), (2, 1), (10, 5), (14, 6), (None, 7),
     ]
+
+
+def test_concurrent_legacy_actions_keep_independent_cursors(hail_join_data):
+    from concurrent.futures import ThreadPoolExecutor
+
+    table = hl.Table.read_legacy(str(hail_join_data / "range-left.ht"))
+    with ThreadPoolExecutor(max_workers=4) as workers:
+        results = list(workers.map(lambda _: table.collect(), range(8)))
+    expected = [(key, key) for key in range(96)]
+    assert [[(row.k, row.lv) for row in rows] for rows in results] == [expected] * 8
