@@ -111,7 +111,7 @@ all-missing behavior for this concrete public input. It does not establish a
 pre-canonical encoded-owner bound, selective file IO, universal codec bound,
 allocation ceiling or leak result. The first10M legacy window raises process
 RSS207,936->349,808KiB; new windows inherit that allocator state and rise only
-144KiB then0KiB. These OS observations are not per-query peak attribution.
+128KiB then0KiB. These OS observations are not per-query peak attribution.
 
 The MIXED Boolean SUM control is an explicit cost tradeoff: present true/false,
 present EMPTY, present ALL-NULL and missing outer groups yield raw nullable
