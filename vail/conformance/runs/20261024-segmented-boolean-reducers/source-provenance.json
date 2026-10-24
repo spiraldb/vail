@@ -1,0 +1,12 @@
+{
+  "candidate_revision": "f11b40b5ef4144121fed9a8d59c52d621e97d07b",
+  "baseline_revision": "de71b289",
+  "branch": "dk/prepared-boolean-reducers",
+  "build": "normal release maturin --locked, kache,16jobs,incremental0",
+  "rustflags": "-C target-cpu=native",
+  "source_hashes_verified": {
+    "crates/vail-execution/src/list_aggregate/direct.rs": "6f639695001b1a815d6f8530d4b97603e75f87bcc106f1c26ea6794941564c33",
+    "python/tests/test_segmented_boolean_reducers.py": "f9c13d1ca416984274fc35aebc02ac0e4904c8e45726066c677e3146a9a4a446"
+  },
+  "receipts_tar_sha256": "913df6c6b666b1e1bee71fe875795accc2f0fbf0ee3e93268112faffc32d8e70"
+}

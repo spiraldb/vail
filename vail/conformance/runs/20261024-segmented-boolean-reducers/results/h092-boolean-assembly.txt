@@ -1,0 +1,472 @@
+
+/home/danielking/h092-boolean-reducers/env/lib/python3.11/site-packages/vail/_native.abi3.so:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+Disassembly of section .fini:
+
+Disassembly of section .text:
+
+00000000070047c0 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_>:
+ 70047c0:	41 57                	push   %r15
+ 70047c2:	41 56                	push   %r14
+ 70047c4:	53                   	push   %rbx
+ 70047c5:	48 83 ec 30          	sub    $0x30,%rsp
+ 70047c9:	48 89 f1             	mov    %rsi,%rcx
+ 70047cc:	49 89 d0             	mov    %rdx,%r8
+ 70047cf:	48 8b 77 08          	mov    0x8(%rdi),%rsi
+ 70047d3:	48 8b 57 10          	mov    0x10(%rdi),%rdx
+ 70047d7:	48 03 4f 18          	add    0x18(%rdi),%rcx
+ 70047db:	48 8d 7c 24 08       	lea    0x8(%rsp),%rdi
+ 70047e0:	ff 15 82 d2 df 03    	call   *0x3dfd282(%rip)        # ae01a68 <_DYNAMIC+0x9120>
+ 70047e6:	48 8b 4c 24 08       	mov    0x8(%rsp),%rcx
+ 70047eb:	48 8b 74 24 18       	mov    0x18(%rsp),%rsi
+ 70047f0:	48 8b 54 24 20       	mov    0x20(%rsp),%rdx
+ 70047f5:	48 8b 44 24 28       	mov    0x28(%rsp),%rax
+ 70047fa:	48 85 c0             	test   %rax,%rax
+ 70047fd:	74 63                	je     7004862 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0xa2>
+ 70047ff:	44 0f b6 14 d1       	movzbl (%rcx,%rdx,8),%r10d
+ 7004804:	48 8d 3c 30          	lea    (%rax,%rsi,1),%rdi
+ 7004808:	45 31 c9             	xor    %r9d,%r9d
+ 700480b:	49 89 f8             	mov    %rdi,%r8
+ 700480e:	49 c1 e8 03          	shr    $0x3,%r8
+ 7004812:	40 f6 c7 07          	test   $0x7,%dil
+ 7004816:	41 0f 95 c1          	setne  %r9b
+ 700481a:	4b 8d 3c 08          	lea    (%r8,%r9,1),%rdi
+ 700481e:	c4 42 cb f7 d2       	shrx   %rsi,%r10,%r10
+ 7004823:	48 83 ff 02          	cmp    $0x2,%rdi
+ 7004827:	0f 82 fc 01 00 00    	jb     7004a29 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x269>
+ 700482d:	4f 8d 44 08 ff       	lea    -0x1(%r8,%r9,1),%r8
+ 7004832:	41 be 01 00 00 00    	mov    $0x1,%r14d
+ 7004838:	49 83 f8 04          	cmp    $0x4,%r8
+ 700483c:	0f 82 b4 01 00 00    	jb     70049f6 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x236>
+ 7004842:	4c 8d 1c d5 00 00 00 	lea    0x0(,%rdx,8),%r11
+ 7004849:	00 
+ 700484a:	c4 e1 f9 6e c6       	vmovq  %rsi,%xmm0
+ 700484f:	49 83 f8 10          	cmp    $0x10,%r8
+ 7004853:	73 1f                	jae    7004874 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0xb4>
+ 7004855:	bb 01 00 00 00       	mov    $0x1,%ebx
+ 700485a:	45 31 c9             	xor    %r9d,%r9d
+ 700485d:	e9 0c 01 00 00       	jmp    700496e <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x1ae>
+ 7004862:	31 ff                	xor    %edi,%edi
+ 7004864:	48 85 d2             	test   %rdx,%rdx
+ 7004867:	0f 85 d1 01 00 00    	jne    7004a3e <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x27e>
+ 700486d:	31 c0                	xor    %eax,%eax
+ 700486f:	e9 e5 06 00 00       	jmp    7004f59 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x799>
+ 7004874:	c5 fd 6f 25 a4 98 66 	vmovdqa -0x699675c(%rip),%ymm4        # 66e120 <anon.60f138877c5347fe30d9f5636bc79373.4.llvm.3439615401863518787+0xc00>
+ 700487b:	f9 
+ 700487c:	c4 e2 7d 59 2d 9b 57 	vpbroadcastq -0x697a865(%rip),%ymm5        # 68a020 <anon.1325e13f7062bc20c98b51af2238e71a.56.llvm.2599200761974872445>
+ 7004883:	68 f9 
+ 7004885:	c4 e2 7d 59 35 a2 68 	vpbroadcastq -0x697975e(%rip),%ymm6        # 68b130 <anon.518e0ae44c370c6d4d1270a580f1a9b8.5.llvm.6440825048311179513>
+ 700488c:	68 f9 
+ 700488e:	c4 e2 7d 59 3d 31 87 	vpbroadcastq -0x69778cf(%rip),%ymm7        # 68cfc8 <anon.1325e13f7062bc20c98b51af2238e71a.51.llvm.2599200761974872445>
+ 7004895:	68 f9 
+ 7004897:	4d 89 c1             	mov    %r8,%r9
+ 700489a:	49 83 e1 f0          	and    $0xfffffffffffffff0,%r9
+ 700489e:	c4 c1 79 6e ca       	vmovd  %r10d,%xmm1
+ 70048a3:	c4 e2 7d 59 d0       	vpbroadcastq %xmm0,%ymm2
+ 70048a8:	4d 8d 54 0b 0d       	lea    0xd(%r11,%rcx,1),%r10
+ 70048ad:	c5 e1 ef db          	vpxor  %xmm3,%xmm3,%xmm3
+ 70048b1:	45 31 f6             	xor    %r14d,%r14d
+ 70048b4:	c4 41 39 ef c0       	vpxor  %xmm8,%xmm8,%xmm8
+ 70048b9:	c4 41 31 ef c9       	vpxor  %xmm9,%xmm9,%xmm9
+ 70048be:	49 8d 59 01          	lea    0x1(%r9),%rbx
+ 70048c2:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+ 70048c9:	1f 84 00 00 00 00 00 
+ 70048d0:	c4 02 7d 32 54 32 f4 	vpmovzxbq -0xc(%r10,%r14,1),%ymm10
+ 70048d7:	c4 02 7d 32 5c 32 f8 	vpmovzxbq -0x8(%r10,%r14,1),%ymm11
+ 70048de:	c4 02 7d 32 64 32 fc 	vpmovzxbq -0x4(%r10,%r14,1),%ymm12
+ 70048e5:	c4 02 7d 32 2c 32    	vpmovzxbq (%r10,%r14,1),%ymm13
+ 70048eb:	c5 8d 73 f4 03       	vpsllq $0x3,%ymm4,%ymm14
+ 70048f0:	49 83 c6 10          	add    $0x10,%r14
+ 70048f4:	c5 dd d4 e7          	vpaddq %ymm7,%ymm4,%ymm4
+ 70048f8:	c5 0d ef fd          	vpxor  %ymm5,%ymm14,%ymm15
+ 70048fc:	c5 0d fb f2          	vpsubq %ymm2,%ymm14,%ymm14
+ 7004900:	c5 05 fb fa          	vpsubq %ymm2,%ymm15,%ymm15
+ 7004904:	c5 0d db f6          	vpand  %ymm6,%ymm14,%ymm14
+ 7004908:	c5 05 db fe          	vpand  %ymm6,%ymm15,%ymm15
+ 700490c:	c4 42 ad 47 d6       	vpsllvq %ymm14,%ymm10,%ymm10
+ 7004911:	c4 42 9d 47 e6       	vpsllvq %ymm14,%ymm12,%ymm12
+ 7004916:	c5 ad eb c9          	vpor   %ymm1,%ymm10,%ymm1
+ 700491a:	c4 42 a5 47 d7       	vpsllvq %ymm15,%ymm11,%ymm10
+ 700491f:	c4 42 95 47 df       	vpsllvq %ymm15,%ymm13,%ymm11
+ 7004924:	c4 41 1d eb c0       	vpor   %ymm8,%ymm12,%ymm8
+ 7004929:	c5 ad eb db          	vpor   %ymm3,%ymm10,%ymm3
+ 700492d:	c4 41 25 eb c9       	vpor   %ymm9,%ymm11,%ymm9
+ 7004932:	4d 39 f1             	cmp    %r14,%r9
+ 7004935:	75 99                	jne    70048d0 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x110>
+ 7004937:	c5 e5 eb c9          	vpor   %ymm1,%ymm3,%ymm1
+ 700493b:	c5 bd eb c9          	vpor   %ymm1,%ymm8,%ymm1
+ 700493f:	c5 b5 eb c9          	vpor   %ymm1,%ymm9,%ymm1
+ 7004943:	c4 e3 7d 39 ca 01    	vextracti128 $0x1,%ymm1,%xmm2
+ 7004949:	c5 f1 eb ca          	vpor   %xmm2,%xmm1,%xmm1
+ 700494d:	c5 f9 70 d1 ee       	vpshufd $0xee,%xmm1,%xmm2
+ 7004952:	c5 f1 eb ca          	vpor   %xmm2,%xmm1,%xmm1
+ 7004956:	c4 c1 f9 7e ca       	vmovq  %xmm1,%r10
+ 700495b:	4d 39 c8             	cmp    %r9,%r8
+ 700495e:	0f 84 c5 00 00 00    	je     7004a29 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x269>
+ 7004964:	41 f6 c0 0c          	test   $0xc,%r8b
+ 7004968:	0f 84 ce 05 00 00    	je     7004f3c <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x77c>
+ 700496e:	c4 e1 f9 6e d3       	vmovq  %rbx,%xmm2
+ 7004973:	c4 e2 7d 59 1d b4 67 	vpbroadcastq -0x697984c(%rip),%ymm3        # 68b130 <anon.518e0ae44c370c6d4d1270a580f1a9b8.5.llvm.6440825048311179513>
+ 700497a:	68 f9 
+ 700497c:	c4 e2 7d 59 25 c3 83 	vpbroadcastq -0x6977c3d(%rip),%ymm4        # 68cd48 <anon.1325e13f7062bc20c98b51af2238e71a.57.llvm.2599200761974872445>
+ 7004983:	68 f9 
+ 7004985:	4d 89 c7             	mov    %r8,%r15
+ 7004988:	49 83 e7 fc          	and    $0xfffffffffffffffc,%r15
+ 700498c:	c4 c1 f9 6e ca       	vmovq  %r10,%xmm1
+ 7004991:	c4 e2 7d 59 c0       	vpbroadcastq %xmm0,%ymm0
+ 7004996:	4d 8d 54 0b 01       	lea    0x1(%r11,%rcx,1),%r10
+ 700499b:	c4 e2 7d 59 d2       	vpbroadcastq %xmm2,%ymm2
+ 70049a0:	c5 ed d4 15 58 f2 66 	vpaddq -0x6990da8(%rip),%ymm2,%ymm2        # 673c00 <anon.ddc8a926076f9bc1d1291948600c5610.260.llvm.17760497149350737147+0xa0>
+ 70049a7:	f9 
+ 70049a8:	4d 8d 77 01          	lea    0x1(%r15),%r14
+ 70049ac:	0f 1f 40 00          	nopl   0x0(%rax)
+ 70049b0:	c4 82 7d 32 2c 0a    	vpmovzxbq (%r10,%r9,1),%ymm5
+ 70049b6:	c5 cd 73 f2 03       	vpsllq $0x3,%ymm2,%ymm6
+ 70049bb:	49 83 c1 04          	add    $0x4,%r9
+ 70049bf:	c5 ed d4 d4          	vpaddq %ymm4,%ymm2,%ymm2
+ 70049c3:	c5 cd fb f0          	vpsubq %ymm0,%ymm6,%ymm6
+ 70049c7:	c5 cd db f3          	vpand  %ymm3,%ymm6,%ymm6
+ 70049cb:	c4 e2 d5 47 ee       	vpsllvq %ymm6,%ymm5,%ymm5
+ 70049d0:	c5 d5 eb c9          	vpor   %ymm1,%ymm5,%ymm1
+ 70049d4:	4d 39 cf             	cmp    %r9,%r15
+ 70049d7:	75 d7                	jne    70049b0 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x1f0>
+ 70049d9:	c4 e3 7d 39 c8 01    	vextracti128 $0x1,%ymm1,%xmm0
+ 70049df:	c5 f1 eb c0          	vpor   %xmm0,%xmm1,%xmm0
+ 70049e3:	c5 f9 70 c8 ee       	vpshufd $0xee,%xmm0,%xmm1
+ 70049e8:	c5 f9 eb c1          	vpor   %xmm1,%xmm0,%xmm0
+ 70049ec:	c4 c1 f9 7e c2       	vmovq  %xmm0,%r10
+ 70049f1:	4d 39 f8             	cmp    %r15,%r8
+ 70049f4:	74 33                	je     7004a29 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x269>
+ 70049f6:	4e 8d 0c f5 00 00 00 	lea    0x0(,%r14,8),%r9
+ 70049fd:	00 
+ 70049fe:	4c 8d 04 d1          	lea    (%rcx,%rdx,8),%r8
+ 7004a02:	49 29 f1             	sub    %rsi,%r9
+ 7004a05:	66 66 2e 0f 1f 84 00 	data16 cs nopw 0x0(%rax,%rax,1)
+ 7004a0c:	00 00 00 00 
+ 7004a10:	47 0f b6 1c 30       	movzbl (%r8,%r14,1),%r11d
+ 7004a15:	49 ff c6             	inc    %r14
+ 7004a18:	c4 42 b1 f7 db       	shlx   %r9,%r11,%r11
+ 7004a1d:	49 83 c1 08          	add    $0x8,%r9
+ 7004a21:	4d 09 da             	or     %r11,%r10
+ 7004a24:	4c 39 f7             	cmp    %r14,%rdi
+ 7004a27:	75 e7                	jne    7004a10 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x250>
+ 7004a29:	24 3f                	and    $0x3f,%al
+ 7004a2b:	c4 c2 f8 f5 c2       	bzhi   %rax,%r10,%rax
+ 7004a30:	f3 48 0f b8 f8       	popcnt %rax,%rdi
+ 7004a35:	48 85 d2             	test   %rdx,%rdx
+ 7004a38:	0f 84 2f fe ff ff    	je     700486d <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0xad>
+ 7004a3e:	48 85 f6             	test   %rsi,%rsi
+ 7004a41:	74 1c                	je     7004a5f <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x29f>
+ 7004a43:	41 89 f0             	mov    %esi,%r8d
+ 7004a46:	f7 de                	neg    %esi
+ 7004a48:	41 83 e0 3f          	and    $0x3f,%r8d
+ 7004a4c:	83 e6 3f             	and    $0x3f,%esi
+ 7004a4f:	48 83 fa 05          	cmp    $0x5,%rdx
+ 7004a53:	73 19                	jae    7004a6e <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x2ae>
+ 7004a55:	31 c0                	xor    %eax,%eax
+ 7004a57:	45 31 c9             	xor    %r9d,%r9d
+ 7004a5a:	e9 21 03 00 00       	jmp    7004d80 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x5c0>
+ 7004a5f:	48 83 fa 04          	cmp    $0x4,%rdx
+ 7004a63:	73 23                	jae    7004a88 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x2c8>
+ 7004a65:	31 c0                	xor    %eax,%eax
+ 7004a67:	31 f6                	xor    %esi,%esi
+ 7004a69:	e9 da 04 00 00       	jmp    7004f48 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x788>
+ 7004a6e:	c4 c1 f9 6e c0       	vmovq  %r8,%xmm0
+ 7004a73:	c4 e1 f9 6e ce       	vmovq  %rsi,%xmm1
+ 7004a78:	48 83 fa 11          	cmp    $0x11,%rdx
+ 7004a7c:	73 1d                	jae    7004a9b <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x2db>
+ 7004a7e:	45 31 c9             	xor    %r9d,%r9d
+ 7004a81:	31 c0                	xor    %eax,%eax
+ 7004a83:	e9 30 02 00 00       	jmp    7004cb8 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x4f8>
+ 7004a88:	48 83 fa 10          	cmp    $0x10,%rdx
+ 7004a8c:	0f 83 17 03 00 00    	jae    7004da9 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x5e9>
+ 7004a92:	31 f6                	xor    %esi,%esi
+ 7004a94:	31 c0                	xor    %eax,%eax
+ 7004a96:	e9 2e 04 00 00       	jmp    7004ec9 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x709>
+ 7004a9b:	c4 e2 7d 78 2d d2 52 	vpbroadcastb -0x66ead2e(%rip),%ymm5        # 919d76 <anon.979455d584c07e30014a9775f7d9b471.167.llvm.9055262099233048411+0x2b8>
+ 7004aa2:	91 f9 
+ 7004aa4:	c4 e2 7d 5a 35 13 76 	vbroadcasti128 -0x69889ed(%rip),%ymm6        # 67c0c0 <anon.67e9cd0f4141627cc67c7a7de1ba6662.909.llvm.14652029134274154541+0xab0>
+ 7004aab:	67 f9 
+ 7004aad:	89 d0                	mov    %edx,%eax
+ 7004aaf:	83 e0 0f             	and    $0xf,%eax
+ 7004ab2:	41 ba 10 00 00 00    	mov    $0x10,%r10d
+ 7004ab8:	c4 e2 7d 59 d0       	vpbroadcastq %xmm0,%ymm2
+ 7004abd:	c4 e2 7d 59 d9       	vpbroadcastq %xmm1,%ymm3
+ 7004ac2:	49 89 d1             	mov    %rdx,%r9
+ 7004ac5:	c5 d9 ef e4          	vpxor  %xmm4,%xmm4,%xmm4
+ 7004ac9:	c5 c1 ef ff          	vpxor  %xmm7,%xmm7,%xmm7
+ 7004acd:	c4 41 39 ef c0       	vpxor  %xmm8,%xmm8,%xmm8
+ 7004ad2:	c4 41 31 ef c9       	vpxor  %xmm9,%xmm9,%xmm9
+ 7004ad7:	c4 41 29 ef d2       	vpxor  %xmm10,%xmm10,%xmm10
+ 7004adc:	4c 0f 45 d0          	cmovne %rax,%r10
+ 7004ae0:	31 c0                	xor    %eax,%eax
+ 7004ae2:	4d 29 d1             	sub    %r10,%r9
+ 7004ae5:	66 66 2e 0f 1f 84 00 	data16 cs nopw 0x0(%rax,%rax,1)
+ 7004aec:	00 00 00 00 
+ 7004af0:	44 0f b6 5c c1 08    	movzbl 0x8(%rcx,%rax,8),%r11d
+ 7004af6:	c5 7e 6f 34 c1       	vmovdqu (%rcx,%rax,8),%ymm14
+ 7004afb:	c5 7e 6f 6c c1 20    	vmovdqu 0x20(%rcx,%rax,8),%ymm13
+ 7004b01:	c5 7e 6f 64 c1 40    	vmovdqu 0x40(%rcx,%rax,8),%ymm12
+ 7004b07:	c5 7e 6f 5c c1 60    	vmovdqu 0x60(%rcx,%rax,8),%ymm11
+ 7004b0d:	c4 41 79 6e fb       	vmovd  %r11d,%xmm15
+ 7004b12:	c4 63 01 20 7c c1 10 	vpinsrb $0x1,0x10(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b19:	01 
+ 7004b1a:	44 0f b6 5c c1 28    	movzbl 0x28(%rcx,%rax,8),%r11d
+ 7004b20:	c4 62 8d 45 f2       	vpsrlvq %ymm2,%ymm14,%ymm14
+ 7004b25:	c4 62 95 45 ea       	vpsrlvq %ymm2,%ymm13,%ymm13
+ 7004b2a:	c4 62 9d 45 e2       	vpsrlvq %ymm2,%ymm12,%ymm12
+ 7004b2f:	c4 62 a5 45 da       	vpsrlvq %ymm2,%ymm11,%ymm11
+ 7004b34:	c4 63 01 20 7c c1 18 	vpinsrb $0x2,0x18(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b3b:	02 
+ 7004b3c:	c4 63 01 20 7c c1 20 	vpinsrb $0x3,0x20(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b43:	03 
+ 7004b44:	c4 42 7d 32 ff       	vpmovzxbq %xmm15,%ymm15
+ 7004b49:	c4 62 85 47 fb       	vpsllvq %ymm3,%ymm15,%ymm15
+ 7004b4e:	c4 41 05 eb f6       	vpor   %ymm14,%ymm15,%ymm14
+ 7004b53:	c4 41 79 6e fb       	vmovd  %r11d,%xmm15
+ 7004b58:	c4 63 01 20 7c c1 30 	vpinsrb $0x1,0x30(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b5f:	01 
+ 7004b60:	44 0f b6 5c c1 48    	movzbl 0x48(%rcx,%rax,8),%r11d
+ 7004b66:	c4 63 01 20 7c c1 38 	vpinsrb $0x2,0x38(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b6d:	02 
+ 7004b6e:	c4 63 01 20 7c c1 40 	vpinsrb $0x3,0x40(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b75:	03 
+ 7004b76:	c4 42 7d 32 ff       	vpmovzxbq %xmm15,%ymm15
+ 7004b7b:	c4 62 85 47 fb       	vpsllvq %ymm3,%ymm15,%ymm15
+ 7004b80:	c4 41 05 eb ed       	vpor   %ymm13,%ymm15,%ymm13
+ 7004b85:	c4 41 79 6e fb       	vmovd  %r11d,%xmm15
+ 7004b8a:	c4 63 01 20 7c c1 50 	vpinsrb $0x1,0x50(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b91:	01 
+ 7004b92:	44 0f b6 5c c1 68    	movzbl 0x68(%rcx,%rax,8),%r11d
+ 7004b98:	c4 63 01 20 7c c1 58 	vpinsrb $0x2,0x58(%rcx,%rax,8),%xmm15,%xmm15
+ 7004b9f:	02 
+ 7004ba0:	c4 63 01 20 7c c1 60 	vpinsrb $0x3,0x60(%rcx,%rax,8),%xmm15,%xmm15
+ 7004ba7:	03 
+ 7004ba8:	c4 42 7d 32 ff       	vpmovzxbq %xmm15,%ymm15
+ 7004bad:	c4 62 85 47 fb       	vpsllvq %ymm3,%ymm15,%ymm15
+ 7004bb2:	c4 41 05 eb e4       	vpor   %ymm12,%ymm15,%ymm12
+ 7004bb7:	c4 41 79 6e fb       	vmovd  %r11d,%xmm15
+ 7004bbc:	c4 63 01 20 7c c1 70 	vpinsrb $0x1,0x70(%rcx,%rax,8),%xmm15,%xmm15
+ 7004bc3:	01 
+ 7004bc4:	c4 63 01 20 7c c1 78 	vpinsrb $0x2,0x78(%rcx,%rax,8),%xmm15,%xmm15
+ 7004bcb:	02 
+ 7004bcc:	c4 63 01 20 bc c1 80 	vpinsrb $0x3,0x80(%rcx,%rax,8),%xmm15,%xmm15
+ 7004bd3:	00 00 00 03 
+ 7004bd7:	48 83 c0 10          	add    $0x10,%rax
+ 7004bdb:	c4 42 7d 32 ff       	vpmovzxbq %xmm15,%ymm15
+ 7004be0:	c4 62 85 47 fb       	vpsllvq %ymm3,%ymm15,%ymm15
+ 7004be5:	c4 41 05 eb db       	vpor   %ymm11,%ymm15,%ymm11
+ 7004bea:	c5 0d db fd          	vpand  %ymm5,%ymm14,%ymm15
+ 7004bee:	c4 c1 0d 71 d6 04    	vpsrlw $0x4,%ymm14,%ymm14
+ 7004bf4:	c5 0d db f5          	vpand  %ymm5,%ymm14,%ymm14
+ 7004bf8:	c4 42 4d 00 ff       	vpshufb %ymm15,%ymm6,%ymm15
+ 7004bfd:	c4 42 4d 00 f6       	vpshufb %ymm14,%ymm6,%ymm14
+ 7004c02:	c4 41 0d fc f7       	vpaddb %ymm15,%ymm14,%ymm14
+ 7004c07:	c5 0d f6 f4          	vpsadbw %ymm4,%ymm14,%ymm14
+ 7004c0b:	c5 8d d4 ff          	vpaddq %ymm7,%ymm14,%ymm7
+ 7004c0f:	c5 15 db f5          	vpand  %ymm5,%ymm13,%ymm14
+ 7004c13:	c4 c1 15 71 d5 04    	vpsrlw $0x4,%ymm13,%ymm13
+ 7004c19:	c5 15 db ed          	vpand  %ymm5,%ymm13,%ymm13
+ 7004c1d:	c4 42 4d 00 f6       	vpshufb %ymm14,%ymm6,%ymm14
+ 7004c22:	c4 42 4d 00 ed       	vpshufb %ymm13,%ymm6,%ymm13
+ 7004c27:	c4 41 15 fc ee       	vpaddb %ymm14,%ymm13,%ymm13
+ 7004c2c:	c5 15 f6 ec          	vpsadbw %ymm4,%ymm13,%ymm13
+ 7004c30:	c4 41 15 d4 c0       	vpaddq %ymm8,%ymm13,%ymm8
+ 7004c35:	c5 1d db ed          	vpand  %ymm5,%ymm12,%ymm13
+ 7004c39:	c4 c1 1d 71 d4 04    	vpsrlw $0x4,%ymm12,%ymm12
+ 7004c3f:	c5 1d db e5          	vpand  %ymm5,%ymm12,%ymm12
+ 7004c43:	c4 42 4d 00 ed       	vpshufb %ymm13,%ymm6,%ymm13
+ 7004c48:	c4 42 4d 00 e4       	vpshufb %ymm12,%ymm6,%ymm12
+ 7004c4d:	c4 41 1d fc e5       	vpaddb %ymm13,%ymm12,%ymm12
+ 7004c52:	c5 1d f6 e4          	vpsadbw %ymm4,%ymm12,%ymm12
+ 7004c56:	c4 41 1d d4 c9       	vpaddq %ymm9,%ymm12,%ymm9
+ 7004c5b:	c5 25 db e5          	vpand  %ymm5,%ymm11,%ymm12
+ 7004c5f:	c4 c1 25 71 d3 04    	vpsrlw $0x4,%ymm11,%ymm11
+ 7004c65:	c5 25 db dd          	vpand  %ymm5,%ymm11,%ymm11
+ 7004c69:	c4 42 4d 00 e4       	vpshufb %ymm12,%ymm6,%ymm12
+ 7004c6e:	c4 42 4d 00 db       	vpshufb %ymm11,%ymm6,%ymm11
+ 7004c73:	c4 41 25 fc dc       	vpaddb %ymm12,%ymm11,%ymm11
+ 7004c78:	c5 25 f6 dc          	vpsadbw %ymm4,%ymm11,%ymm11
+ 7004c7c:	c4 41 25 d4 d2       	vpaddq %ymm10,%ymm11,%ymm10
+ 7004c81:	49 39 c1             	cmp    %rax,%r9
+ 7004c84:	0f 85 66 fe ff ff    	jne    7004af0 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x330>
+ 7004c8a:	c5 bd d4 d7          	vpaddq %ymm7,%ymm8,%ymm2
+ 7004c8e:	c5 b5 d4 d2          	vpaddq %ymm2,%ymm9,%ymm2
+ 7004c92:	c5 ad d4 d2          	vpaddq %ymm2,%ymm10,%ymm2
+ 7004c96:	c4 e3 7d 39 d3 01    	vextracti128 $0x1,%ymm2,%xmm3
+ 7004c9c:	c5 e9 d4 d3          	vpaddq %xmm3,%xmm2,%xmm2
+ 7004ca0:	c5 f9 70 da ee       	vpshufd $0xee,%xmm2,%xmm3
+ 7004ca5:	c5 e9 d4 d3          	vpaddq %xmm3,%xmm2,%xmm2
+ 7004ca9:	c4 e1 f9 7e d0       	vmovq  %xmm2,%rax
+ 7004cae:	41 83 fa 05          	cmp    $0x5,%r10d
+ 7004cb2:	0f 82 c8 00 00 00    	jb     7004d80 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x5c0>
+ 7004cb8:	c4 e2 7d 78 1d b5 50 	vpbroadcastb -0x66eaf4b(%rip),%ymm3        # 919d76 <anon.979455d584c07e30014a9775f7d9b471.167.llvm.9055262099233048411+0x2b8>
+ 7004cbf:	91 f9 
+ 7004cc1:	c4 e2 7d 5a 25 f6 73 	vbroadcasti128 -0x6988c0a(%rip),%ymm4        # 67c0c0 <anon.67e9cd0f4141627cc67c7a7de1ba6662.909.llvm.14652029134274154541+0xab0>
+ 7004cc8:	67 f9 
+ 7004cca:	4d 89 ca             	mov    %r9,%r10
+ 7004ccd:	41 89 d1             	mov    %edx,%r9d
+ 7004cd0:	41 83 e1 03          	and    $0x3,%r9d
+ 7004cd4:	41 bb 04 00 00 00    	mov    $0x4,%r11d
+ 7004cda:	c4 e2 7d 59 c0       	vpbroadcastq %xmm0,%ymm0
+ 7004cdf:	c4 e2 7d 59 c9       	vpbroadcastq %xmm1,%ymm1
+ 7004ce4:	c4 e1 f9 6e d0       	vmovq  %rax,%xmm2
+ 7004ce9:	c5 d1 ef ed          	vpxor  %xmm5,%xmm5,%xmm5
+ 7004ced:	4d 0f 45 d9          	cmovne %r9,%r11
+ 7004cf1:	49 89 d1             	mov    %rdx,%r9
+ 7004cf4:	4d 29 d9             	sub    %r11,%r9
+ 7004cf7:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+ 7004cfe:	00 00 
+ 7004d00:	42 0f b6 44 d1 08    	movzbl 0x8(%rcx,%r10,8),%eax
+ 7004d06:	c4 a1 7e 6f 34 d1    	vmovdqu (%rcx,%r10,8),%ymm6
+ 7004d0c:	c5 f9 6e f8          	vmovd  %eax,%xmm7
+ 7004d10:	c4 a3 41 20 7c d1 10 	vpinsrb $0x1,0x10(%rcx,%r10,8),%xmm7,%xmm7
+ 7004d17:	01 
+ 7004d18:	c4 e2 cd 45 f0       	vpsrlvq %ymm0,%ymm6,%ymm6
+ 7004d1d:	c4 a3 41 20 7c d1 18 	vpinsrb $0x2,0x18(%rcx,%r10,8),%xmm7,%xmm7
+ 7004d24:	02 
+ 7004d25:	c4 a3 41 20 7c d1 20 	vpinsrb $0x3,0x20(%rcx,%r10,8),%xmm7,%xmm7
+ 7004d2c:	03 
+ 7004d2d:	49 83 c2 04          	add    $0x4,%r10
+ 7004d31:	c4 e2 7d 32 ff       	vpmovzxbq %xmm7,%ymm7
+ 7004d36:	c4 e2 c5 47 f9       	vpsllvq %ymm1,%ymm7,%ymm7
+ 7004d3b:	c5 c5 eb f6          	vpor   %ymm6,%ymm7,%ymm6
+ 7004d3f:	c5 cd db fb          	vpand  %ymm3,%ymm6,%ymm7
+ 7004d43:	c5 cd 71 d6 04       	vpsrlw $0x4,%ymm6,%ymm6
+ 7004d48:	c5 cd db f3          	vpand  %ymm3,%ymm6,%ymm6
+ 7004d4c:	c4 e2 5d 00 ff       	vpshufb %ymm7,%ymm4,%ymm7
+ 7004d51:	c4 e2 5d 00 f6       	vpshufb %ymm6,%ymm4,%ymm6
+ 7004d56:	c5 cd fc f7          	vpaddb %ymm7,%ymm6,%ymm6
+ 7004d5a:	c5 cd f6 f5          	vpsadbw %ymm5,%ymm6,%ymm6
+ 7004d5e:	c5 cd d4 d2          	vpaddq %ymm2,%ymm6,%ymm2
+ 7004d62:	4d 39 d1             	cmp    %r10,%r9
+ 7004d65:	75 99                	jne    7004d00 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x540>
+ 7004d67:	c4 e3 7d 39 d0 01    	vextracti128 $0x1,%ymm2,%xmm0
+ 7004d6d:	c5 e9 d4 c0          	vpaddq %xmm0,%xmm2,%xmm0
+ 7004d71:	c5 f9 70 c8 ee       	vpshufd $0xee,%xmm0,%xmm1
+ 7004d76:	c5 f9 d4 c1          	vpaddq %xmm1,%xmm0,%xmm0
+ 7004d7a:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+ 7004d7f:	90                   	nop
+ 7004d80:	46 0f b6 54 c9 08    	movzbl 0x8(%rcx,%r9,8),%r10d
+ 7004d86:	c4 22 bb f7 1c c9    	shrx   %r8,(%rcx,%r9,8),%r11
+ 7004d8c:	49 ff c1             	inc    %r9
+ 7004d8f:	c4 42 c9 f7 d2       	shlx   %rsi,%r10,%r10
+ 7004d94:	4d 09 da             	or     %r11,%r10
+ 7004d97:	f3 4d 0f b8 d2       	popcnt %r10,%r10
+ 7004d9c:	4c 01 d0             	add    %r10,%rax
+ 7004d9f:	4c 39 ca             	cmp    %r9,%rdx
+ 7004da2:	75 dc                	jne    7004d80 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x5c0>
+ 7004da4:	e9 b0 01 00 00       	jmp    7004f59 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x799>
+ 7004da9:	c4 e2 7d 78 0d c4 4f 	vpbroadcastb -0x66eb03c(%rip),%ymm1        # 919d76 <anon.979455d584c07e30014a9775f7d9b471.167.llvm.9055262099233048411+0x2b8>
+ 7004db0:	91 f9 
+ 7004db2:	c4 e2 7d 5a 15 05 73 	vbroadcasti128 -0x6988cfb(%rip),%ymm2        # 67c0c0 <anon.67e9cd0f4141627cc67c7a7de1ba6662.909.llvm.14652029134274154541+0xab0>
+ 7004db9:	67 f9 
+ 7004dbb:	48 89 d6             	mov    %rdx,%rsi
+ 7004dbe:	48 83 e6 f0          	and    $0xfffffffffffffff0,%rsi
+ 7004dc2:	c5 f9 ef c0          	vpxor  %xmm0,%xmm0,%xmm0
+ 7004dc6:	31 c0                	xor    %eax,%eax
+ 7004dc8:	c5 e1 ef db          	vpxor  %xmm3,%xmm3,%xmm3
+ 7004dcc:	c5 d9 ef e4          	vpxor  %xmm4,%xmm4,%xmm4
+ 7004dd0:	c5 d1 ef ed          	vpxor  %xmm5,%xmm5,%xmm5
+ 7004dd4:	c5 c9 ef f6          	vpxor  %xmm6,%xmm6,%xmm6
+ 7004dd8:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+ 7004ddf:	00 
+ 7004de0:	c5 fe 6f 3c c1       	vmovdqu (%rcx,%rax,8),%ymm7
+ 7004de5:	c5 7e 6f 44 c1 20    	vmovdqu 0x20(%rcx,%rax,8),%ymm8
+ 7004deb:	c5 7e 6f 4c c1 40    	vmovdqu 0x40(%rcx,%rax,8),%ymm9
+ 7004df1:	c5 7e 6f 54 c1 60    	vmovdqu 0x60(%rcx,%rax,8),%ymm10
+ 7004df7:	48 83 c0 10          	add    $0x10,%rax
+ 7004dfb:	c5 45 db d9          	vpand  %ymm1,%ymm7,%ymm11
+ 7004dff:	c5 c5 71 d7 04       	vpsrlw $0x4,%ymm7,%ymm7
+ 7004e04:	c5 c5 db f9          	vpand  %ymm1,%ymm7,%ymm7
+ 7004e08:	c4 42 6d 00 db       	vpshufb %ymm11,%ymm2,%ymm11
+ 7004e0d:	c4 e2 6d 00 ff       	vpshufb %ymm7,%ymm2,%ymm7
+ 7004e12:	c5 a5 fc ff          	vpaddb %ymm7,%ymm11,%ymm7
+ 7004e16:	c5 c5 f6 f8          	vpsadbw %ymm0,%ymm7,%ymm7
+ 7004e1a:	c5 c5 d4 db          	vpaddq %ymm3,%ymm7,%ymm3
+ 7004e1e:	c5 bd db f9          	vpand  %ymm1,%ymm8,%ymm7
+ 7004e22:	c4 c1 3d 71 d0 04    	vpsrlw $0x4,%ymm8,%ymm8
+ 7004e28:	c5 3d db c1          	vpand  %ymm1,%ymm8,%ymm8
+ 7004e2c:	c4 e2 6d 00 ff       	vpshufb %ymm7,%ymm2,%ymm7
+ 7004e31:	c4 42 6d 00 c0       	vpshufb %ymm8,%ymm2,%ymm8
+ 7004e36:	c5 bd fc ff          	vpaddb %ymm7,%ymm8,%ymm7
+ 7004e3a:	c4 c1 3d 71 d1 04    	vpsrlw $0x4,%ymm9,%ymm8
+ 7004e40:	c5 c5 f6 f8          	vpsadbw %ymm0,%ymm7,%ymm7
+ 7004e44:	c5 3d db c1          	vpand  %ymm1,%ymm8,%ymm8
+ 7004e48:	c4 42 6d 00 c0       	vpshufb %ymm8,%ymm2,%ymm8
+ 7004e4d:	c5 c5 d4 e4          	vpaddq %ymm4,%ymm7,%ymm4
+ 7004e51:	c5 b5 db f9          	vpand  %ymm1,%ymm9,%ymm7
+ 7004e55:	c4 e2 6d 00 ff       	vpshufb %ymm7,%ymm2,%ymm7
+ 7004e5a:	c5 bd fc ff          	vpaddb %ymm7,%ymm8,%ymm7
+ 7004e5e:	c4 c1 3d 71 d2 04    	vpsrlw $0x4,%ymm10,%ymm8
+ 7004e64:	c5 c5 f6 f8          	vpsadbw %ymm0,%ymm7,%ymm7
+ 7004e68:	c5 3d db c1          	vpand  %ymm1,%ymm8,%ymm8
+ 7004e6c:	c4 42 6d 00 c0       	vpshufb %ymm8,%ymm2,%ymm8
+ 7004e71:	c5 c5 d4 ed          	vpaddq %ymm5,%ymm7,%ymm5
+ 7004e75:	c5 ad db f9          	vpand  %ymm1,%ymm10,%ymm7
+ 7004e79:	c4 e2 6d 00 ff       	vpshufb %ymm7,%ymm2,%ymm7
+ 7004e7e:	c5 bd fc ff          	vpaddb %ymm7,%ymm8,%ymm7
+ 7004e82:	c5 c5 f6 f8          	vpsadbw %ymm0,%ymm7,%ymm7
+ 7004e86:	c5 c5 d4 f6          	vpaddq %ymm6,%ymm7,%ymm6
+ 7004e8a:	48 39 c6             	cmp    %rax,%rsi
+ 7004e8d:	0f 85 4d ff ff ff    	jne    7004de0 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x620>
+ 7004e93:	c5 dd d4 c3          	vpaddq %ymm3,%ymm4,%ymm0
+ 7004e97:	c5 d5 d4 c0          	vpaddq %ymm0,%ymm5,%ymm0
+ 7004e9b:	c5 cd d4 c0          	vpaddq %ymm0,%ymm6,%ymm0
+ 7004e9f:	c4 e3 7d 39 c1 01    	vextracti128 $0x1,%ymm0,%xmm1
+ 7004ea5:	c5 f9 d4 c1          	vpaddq %xmm1,%xmm0,%xmm0
+ 7004ea9:	c5 f9 70 c8 ee       	vpshufd $0xee,%xmm0,%xmm1
+ 7004eae:	c5 f9 d4 c1          	vpaddq %xmm1,%xmm0,%xmm0
+ 7004eb2:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+ 7004eb7:	48 39 f2             	cmp    %rsi,%rdx
+ 7004eba:	0f 84 99 00 00 00    	je     7004f59 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x799>
+ 7004ec0:	f6 c2 0c             	test   $0xc,%dl
+ 7004ec3:	0f 84 7f 00 00 00    	je     7004f48 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x788>
+ 7004ec9:	c4 e2 7d 78 0d a4 4e 	vpbroadcastb -0x66eb15c(%rip),%ymm1        # 919d76 <anon.979455d584c07e30014a9775f7d9b471.167.llvm.9055262099233048411+0x2b8>
+ 7004ed0:	91 f9 
+ 7004ed2:	c4 e2 7d 5a 15 e5 71 	vbroadcasti128 -0x6988e1b(%rip),%ymm2        # 67c0c0 <anon.67e9cd0f4141627cc67c7a7de1ba6662.909.llvm.14652029134274154541+0xab0>
+ 7004ed9:	67 f9 
+ 7004edb:	49 89 f0             	mov    %rsi,%r8
+ 7004ede:	48 89 d6             	mov    %rdx,%rsi
+ 7004ee1:	48 83 e6 fc          	and    $0xfffffffffffffffc,%rsi
+ 7004ee5:	c4 e1 f9 6e c0       	vmovq  %rax,%xmm0
+ 7004eea:	c5 e1 ef db          	vpxor  %xmm3,%xmm3,%xmm3
+ 7004eee:	66 90                	xchg   %ax,%ax
+ 7004ef0:	c4 a1 7e 6f 24 c1    	vmovdqu (%rcx,%r8,8),%ymm4
+ 7004ef6:	49 83 c0 04          	add    $0x4,%r8
+ 7004efa:	c5 dd db e9          	vpand  %ymm1,%ymm4,%ymm5
+ 7004efe:	c5 dd 71 d4 04       	vpsrlw $0x4,%ymm4,%ymm4
+ 7004f03:	c5 dd db e1          	vpand  %ymm1,%ymm4,%ymm4
+ 7004f07:	c4 e2 6d 00 ed       	vpshufb %ymm5,%ymm2,%ymm5
+ 7004f0c:	c4 e2 6d 00 e4       	vpshufb %ymm4,%ymm2,%ymm4
+ 7004f11:	c5 dd fc e5          	vpaddb %ymm5,%ymm4,%ymm4
+ 7004f15:	c5 dd f6 e3          	vpsadbw %ymm3,%ymm4,%ymm4
+ 7004f19:	c5 dd d4 c0          	vpaddq %ymm0,%ymm4,%ymm0
+ 7004f1d:	4c 39 c6             	cmp    %r8,%rsi
+ 7004f20:	75 ce                	jne    7004ef0 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x730>
+ 7004f22:	c4 e3 7d 39 c1 01    	vextracti128 $0x1,%ymm0,%xmm1
+ 7004f28:	c5 f9 d4 c1          	vpaddq %xmm1,%xmm0,%xmm0
+ 7004f2c:	c5 f9 70 c8 ee       	vpshufd $0xee,%xmm0,%xmm1
+ 7004f31:	c5 f9 d4 c1          	vpaddq %xmm1,%xmm0,%xmm0
+ 7004f35:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+ 7004f3a:	eb 18                	jmp    7004f54 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x794>
+ 7004f3c:	49 83 c9 01          	or     $0x1,%r9
+ 7004f40:	4d 89 ce             	mov    %r9,%r14
+ 7004f43:	e9 ae fa ff ff       	jmp    70049f6 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x236>
+ 7004f48:	f3 4c 0f b8 04 f1    	popcnt (%rcx,%rsi,8),%r8
+ 7004f4e:	48 ff c6             	inc    %rsi
+ 7004f51:	4c 01 c0             	add    %r8,%rax
+ 7004f54:	48 39 f2             	cmp    %rsi,%rdx
+ 7004f57:	75 ef                	jne    7004f48 <_RINvNtNtCsdP38Dg95o5n_14vail_execution14list_aggregate6direct13bitmap_reduceKh2_Kb0_EB6_+0x788>
+ 7004f59:	48 01 f8             	add    %rdi,%rax
+ 7004f5c:	48 83 c4 30          	add    $0x30,%rsp
+ 7004f60:	5b                   	pop    %rbx
+ 7004f61:	41 5e                	pop    %r14
+ 7004f63:	41 5f                	pop    %r15
+ 7004f65:	c5 f8 77             	vzeroupper 
+ 7004f68:	c3                   	ret    
+
+Disassembly of section .plt:
