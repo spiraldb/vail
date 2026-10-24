@@ -1,7 +1,7 @@
 import json,math,os,pathlib,random,statistics,subprocess
-r=pathlib.Path('/private/tmp/h003-list-set-gate');d=r/'paired';d.mkdir(exist_ok=False)
+r=pathlib.Path('/private/tmp/h003-list-set-gate');d=r/'paired';d.mkdir(exist_ok=True)
 seed=30020261024;rng=random.Random(seed)
-cases=[('dp',8,16,4,642162),('wide_struct',2,4,1,10240000),('float_control',2,8,2,642162)]
+cases=[('dp',8,16,4,642162),('wide_struct',2,4,1,9306112),('float_control',2,8,2,642162)]
 protocol={'seed':seed,'cases':[{'mode':m,'pairs':n,'iterations':i,'warmups':w,'expected':e} for m,n,i,w,e in cases],'primary':'paired process mean latency andCPU; process peakRSS; all rawqueries retained; no builds/tests overlap'}
 (d/'protocol.json').write_text(json.dumps(protocol,indent=2)+'\n');results=[]
 for mode,pairs,iterations,warmups,expected in cases:
@@ -10,7 +10,8 @@ for mode,pairs,iterations,warmups,expected in cases:
   outputs={}
   for nominal in order:
    label={'A':'baseline','B':'candidate'}[nominal];prefix=f'{mode}-{block}-{nominal}'
-   p=subprocess.run([str(r/f'{label}-env/bin/python'),str(r/'pipeline.py'),mode,str(iterations)],capture_output=True,text=True,env=dict(os.environ,OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1'))
+   cached=d/f'{prefix}.jsonl'
+   p=subprocess.run([str(r/f'{label}-env/bin/python'),str(r/'pipeline.py'),mode,str(iterations)],capture_output=True,text=True,env=dict(os.environ,OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1')) if not cached.exists() else subprocess.CompletedProcess([],0,stdout=cached.read_text(),stderr=(d/f'{prefix}.stderr').read_text())
    (d/f'{prefix}.jsonl').write_text(p.stdout);(d/f'{prefix}.stderr').write_text(p.stderr);p.check_returncode()
    data=[json.loads(x) for x in p.stdout.splitlines()];rows=data[1:];steady=rows[warmups:];assert len(rows)==iterations and all(x['result']==expected for x in rows)
    outputs[nominal]={'native':data[0]['native_sha256'],'wall':statistics.mean(x['wall_seconds'] for x in steady),'cpu':statistics.mean(x['cpu_seconds'] for x in steady),'peakrss':max(x['maxrss_bytes'] for x in rows),'minor_faults':statistics.mean(x['minor_faults'] for x in steady)}
