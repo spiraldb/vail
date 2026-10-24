@@ -127,7 +127,7 @@ fn dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists() -> VortexR
     use vortex::array::arrays::DictArray;
     macro_rules! check_width {
         ($code:ty) => {
-            for null_codes in [false, true] {
+            for (null_codes, null_modulus) in [(false, 7), (true, 7), (true, 37)] {
                 for null_values in [false, true] {
                     let dictionary: Vec<Option<i32>> = (0..17)
                         .map(|i| {
@@ -140,7 +140,7 @@ fn dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists() -> VortexR
                         .collect();
                     let codes: Vec<Option<$code>> = (0..257)
                         .map(|i| {
-                            if null_codes && i % 7 == 0 {
+                            if null_codes && i % null_modulus == 0 {
                                 None
                             } else {
                                 Some(((i * 13) % 17) as $code)
