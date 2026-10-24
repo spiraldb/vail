@@ -39,6 +39,7 @@ use vortex_error::VortexResult;
 use vortex_mask::Mask;
 use vortex_session::VortexSession;
 use vortex_utils::aliases::dash_map::DashMap;
+use vortex_utils::aliases::hash_map::HashMap;
 
 use crate::ArrayFuture;
 use crate::LayoutReader;
@@ -412,50 +413,75 @@ struct PreparedElementProjection {
 fn prepare_element_projection(
     expr: &BoundExpression,
 ) -> VortexResult<Option<PreparedElementProjection>> {
-    fn collect(expr: &BoundExpression, chosen: &mut Option<ElementValidityPath>) -> bool {
-        if let Some(path) = expr.as_opt::<ListElementValidity>() {
-            if !expr.children()[0].is_root() {
-                return false;
-            }
-            return match chosen {
-                Some(existing) => existing == path,
-                None => {
-                    *chosen = Some(path.clone());
-                    true
-                }
-            };
+    // Retained exact identities keep shared DAGs linear in unique nodes.
+    fn summarize(
+        expr: &BoundExpression,
+        cache: &mut HashMap<ExactBoundExpr, Option<Option<ElementValidityPath>>>,
+    ) -> Option<Option<ElementValidityPath>> {
+        let key = ExactBoundExpr(expr.clone());
+        if let Some(summary) = cache.get(&key) {
+            return summary.clone();
         }
-        if expr.is_root() {
-            return false;
-        }
-        if (expr.is::<IsNotNull>() || expr.is::<IsNull>() || expr.is::<ListLength>())
+        let summary = if let Some(path) = expr.as_opt::<ListElementValidity>() {
+            expr.children()[0].is_root().then(|| Some(path.clone()))
+        } else if expr.is_root() {
+            None
+        } else if (expr.is::<IsNotNull>() || expr.is::<IsNull>() || expr.is::<ListLength>())
             && expr
                 .children()
                 .first()
                 .is_some_and(BoundExpression::is_root)
         {
-            return true;
-        }
-        expr.children().iter().all(|child| collect(child, chosen))
+            Some(None)
+        } else {
+            let mut chosen = None;
+            let mut compatible = true;
+            for child in expr.children() {
+                match summarize(child, cache) {
+                    None => {
+                        compatible = false;
+                        break;
+                    }
+                    Some(None) => {}
+                    Some(Some(body)) => {
+                        if chosen.as_ref().is_some_and(|existing| existing != &body) {
+                            compatible = false;
+                            break;
+                        }
+                        chosen = Some(body);
+                    }
+                }
+            }
+            compatible.then_some(chosen)
+        };
+        cache.insert(key, summary.clone());
+        summary
     }
-    fn rewrite(expr: &BoundExpression, output: &DType) -> VortexResult<BoundExpression> {
-        if expr.is::<ListElementValidity>() || expr.is_root() {
-            return Ok(BoundExpression::Root {
+    fn rewrite(
+        expr: &BoundExpression,
+        output: &DType,
+        cache: &mut HashMap<ExactBoundExpr, BoundExpression>,
+    ) -> VortexResult<BoundExpression> {
+        let key = ExactBoundExpr(expr.clone());
+        if let Some(rewritten) = cache.get(&key) {
+            return Ok(rewritten.clone());
+        }
+        let rewritten = if expr.is::<ListElementValidity>() || expr.is_root() {
+            BoundExpression::Root {
                 dtype: output.clone(),
-            });
-        }
-        let children = expr
-            .children()
-            .iter()
-            .map(|child| rewrite(child, output))
-            .collect::<VortexResult<Vec<_>>>()?;
-        expr.clone().with_children(children)
+            }
+        } else {
+            let children = expr
+                .children()
+                .iter()
+                .map(|child| rewrite(child, output, cache))
+                .collect::<VortexResult<Vec<_>>>()?;
+            expr.clone().with_children(children)?
+        };
+        cache.insert(key, rewritten.clone());
+        Ok(rewritten)
     }
-    let mut chosen = None;
-    if !collect(expr, &mut chosen) {
-        return Ok(None);
-    }
-    let Some(chosen) = chosen else {
+    let Some(Some(chosen)) = summarize(expr, &mut HashMap::new()) else {
         return Ok(None);
     };
     let input = chosen.input_dtype();
@@ -463,7 +489,7 @@ fn prepare_element_projection(
         return Ok(None);
     };
     let output = DType::List(Arc::new(DType::Bool(Nullability::NonNullable)), *outer);
-    let residual = rewrite(expr, &output)?;
+    let residual = rewrite(expr, &output, &mut HashMap::new())?;
     if residual.dtype() != expr.dtype() {
         return Ok(None);
     }
@@ -823,6 +849,7 @@ mod tests {
     use vortex_io::session::RuntimeSession;
     use vortex_io::session::RuntimeSessionExt;
     use vortex_utils::aliases::dash_map::DashMap;
+    use vortex_utils::aliases::hash_map::HashMap;
 
     use super::*;
     use crate::LayoutRef;
