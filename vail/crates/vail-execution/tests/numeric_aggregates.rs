@@ -427,7 +427,7 @@ async fn downsample_ignores_hidden_finite_points_under_null_records() {
     assert_eq!(x.values(), &[0., 1.]);
 }
 
-fn correlation_state_count(input: ArrayRef) -> u64 {
+fn correlation_state_count(input: ArrayRef, expected: u64) -> u64 {
     let schema = Schema::new(vec![Field::new("packed", input.data_type().clone(), true)]);
     let exprs: Vec<Arc<dyn PhysicalExpr>> = vec![Arc::new(Column::new("packed", 0))];
     let fields = [Arc::new(schema.field(0).clone())];
@@ -438,25 +438,37 @@ fn correlation_state_count(input: ArrayRef) -> u64 {
     )
     .unwrap()
     .unwrap();
-    let mut accumulator = udf
-        .accumulator(AccumulatorArgs {
-            return_field: Arc::new(Field::new("corr", DataType::Float64, true)),
-            schema: &schema,
-            ignore_nulls: true,
-            order_bys: &[],
-            is_reversed: false,
-            name: "corr",
-            is_distinct: false,
-            exprs: &exprs,
-            expr_fields: &fields,
-        })
-        .unwrap();
-    accumulator.update_batch(&[input]).unwrap();
+    let args = AccumulatorArgs {
+        return_field: Arc::new(Field::new("corr", DataType::Float64, true)),
+        schema: &schema,
+        ignore_nulls: true,
+        order_bys: &[],
+        is_reversed: false,
+        name: "corr",
+        is_distinct: false,
+        exprs: &exprs,
+        expr_fields: &fields,
+    };
+    let mut accumulator = udf.accumulator(args.clone()).unwrap();
+    accumulator.update_batch(&[input.clone()]).unwrap();
     let state = accumulator.state().unwrap();
     assert_eq!(state.len(), 6);
     let ScalarValue::UInt64(Some(count)) = state[0] else {
         panic!("expected public UInt64 count state")
     };
+    if expected != 0 {
+        for (seed, succeeds) in [
+            (u64::MAX - expected, true),
+            (u64::MAX - expected + 1, false),
+        ] {
+            let mut near_limit = udf.accumulator(args.clone()).unwrap();
+            let mut state: Vec<ArrayRef> =
+                vec![Arc::new(arrow_array::UInt64Array::from(vec![seed]))];
+            state.extend((0..5).map(|_| Arc::new(Float64Array::from(vec![0.0])) as ArrayRef));
+            near_limit.merge_batch(&state).unwrap();
+            assert_eq!(near_limit.update_batch(&[input.clone()]).is_ok(), succeeds);
+        }
+    }
     count
 }
 
@@ -494,7 +506,10 @@ async fn correlation_counts_offset_validities_and_parent_masks() {
                     })
                     .count();
                 let input = packed(&["x", "y"], vec![Arc::new(x), Arc::new(y)], parent);
-                assert_eq!(correlation_state_count(input.clone()), valid as u64);
+                assert_eq!(
+                    correlation_state_count(input.clone(), valid as u64),
+                    valid as u64
+                );
                 let result = aggregate("corr", input, serde_json::json!({})).await;
                 let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
                 match valid {
