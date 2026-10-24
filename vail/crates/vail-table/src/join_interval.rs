@@ -1,7 +1,7 @@
 //! Key-interval planning for independent Table join partitions.
 //!
-//! Bounds are metadata only. Certified Vortex fragment bounds are used for
-//! direct reads; operators that may change keys fall back to a streaming pass
+//! Bounds are metadata only. Certified Vortex fragments and Hail partition
+//! intervals support direct reads; operators that may change keys fall back to a streaming pass
 //! retaining just the first and last key of each prepared partition.
 use crate::{
     Result, TableError, TableIR, TableJoinKind, TableNode, TableRef,
@@ -1378,6 +1378,8 @@ pub(crate) fn inherited_bounds(
             && join_key == 1
             && table.keys().len() == 1 =>
         {
+            // Hail intervals may overestimate actual endpoint rows. Treat them
+            // as conservative envelopes; clipping keeps its residual predicate.
             let component = &read.component;
             let Some(counts) = read.counts.as_ref() else {
                 return Ok(None);
