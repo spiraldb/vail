@@ -8,7 +8,7 @@ use prost::Message;
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
 use std::sync::{
-    Arc,
+    Arc, Mutex,
     atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 use vortex::VortexSessionDefault;
@@ -190,6 +190,7 @@ async fn prepare_file(
         inner,
         budget: budget.clone(),
         denied: AtomicBool::new(false),
+        initial_read: Arc::new(Mutex::new(None)),
     });
     let opened = match session
         .open_options()
@@ -279,6 +280,18 @@ struct MetadataRead {
     inner: FileReadAt,
     budget: Arc<MetadataBudget>,
     denied: AtomicBool,
+    // Share the opener's first real allocation only for this file's preparation.
+    // Exact metadata subranges can then avoid duplicate tiny positional reads.
+    initial_read: Arc<Mutex<Option<(u64, BufferHandle)>>>,
+}
+impl MetadataRead {
+    fn cached_slice(&self, offset: u64, length: usize) -> Option<BufferHandle> {
+        let initial = self.initial_read.lock().ok()?;
+        let (start, buffer) = initial.as_ref()?;
+        let relative = usize::try_from(offset.checked_sub(*start)?).ok()?;
+        let end = relative.checked_add(length)?;
+        (end <= buffer.len()).then(|| buffer.slice(relative..end))
+    }
 }
 impl VortexReadAt for MetadataRead {
     fn uri(&self) -> Option<&Arc<str>> {
@@ -308,7 +321,17 @@ impl VortexReadAt for MetadataRead {
             .into()))
             .boxed();
         }
-        self.inner.read_at(offset, length, alignment)
+        let read = self.inner.read_at(offset, length, alignment);
+        let initial = self.initial_read.clone();
+        async move {
+            let buffer = read.await?;
+            if let Ok(mut initial) = initial.lock() {
+                if initial.is_none() {
+                    *initial = Some((offset, buffer.clone()));
+                }
+            }
+            Ok(buffer)
+        }.boxed()
     }
 }
 
@@ -328,7 +351,10 @@ struct Probe<'a> {
 
 impl Probe<'_> {
     async fn read_metadata(&self, offset: u64, length: usize) -> Result<Option<ByteBuffer>> {
-        let result = self.reader.read_at(offset, length, Alignment::none()).await;
+        let result = match self.reader.cached_slice(offset, length) {
+            Some(buffer) => Ok(buffer),
+            None => self.reader.read_at(offset, length, Alignment::none()).await,
+        };
         let buffer = match result {
             Ok(buffer) => buffer,
             Err(_) if self.reader.denied.load(Ordering::Relaxed) => return Ok(None),
