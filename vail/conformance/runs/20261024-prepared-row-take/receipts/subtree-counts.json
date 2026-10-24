@@ -1,0 +1,418 @@
+{
+  "counts": {
+    "take_subtree_root_inclusive_samples": 142,
+    "allocator_leaf_under_take": 66,
+    "allocator_leaf_elsewhere": 2703
+  },
+  "note": "raw all-thread calltree sample counts, notCPUpercent; parser depth based on sampleASCIIindent, firstListAggregate/TakeAccumulator perpath only",
+  "roots": [
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3900  [0x11ac0a208]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 2796  [0x11ac09db8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3068  [0x11ac09ec8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4076  [0x11ac0a2b8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 2796  [0x11ac09db8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4076  [0x11ac0a2b8]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3288  [0x11ac09fa4]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 164  [0x11ac09370]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      19,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 164  [0x11ac09370]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3068  [0x11ac09ec8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3068  [0x11ac09ec8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 2796  [0x11ac09db8]"
+    ],
+    [
+      3,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 2796  [0x11ac09db8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3900  [0x11ac0a208]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4076  [0x11ac0a2b8]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3068  [0x11ac09ec8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4076  [0x11ac0a2b8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      5,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 164  [0x11ac09370]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3068  [0x11ac09ec8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4288  [0x11ac0a38c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 1836  [0x11ac099f8]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 1836  [0x11ac099f8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3900  [0x11ac0a208]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4076  [0x11ac0a2b8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 2796  [0x11ac09db8]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4288  [0x11ac0a38c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4948  [0x11ac0a620]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3932  [0x11ac0a228]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4948  [0x11ac0a620]"
+    ],
+    [
+      3,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 3804  [0x11ac0a1a8]"
+    ],
+    [
+      2,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4032  [0x11ac0a28c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 1364  [0x11ac09820]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 2796  [0x11ac09db8]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4288  [0x11ac0a38c]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4948  [0x11ac0a620]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4096  [0x11ac0a2cc]"
+    ],
+    [
+      1,
+      "_RNvXNtCsfaCj5q3RDxu_14vail_execution14list_aggregateNtB2_13ListAggregateNtNtCsdbZcBK6DdD9_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_args  (in _native.abi3.so) + 4808  [0x11ac0a594]"
+    ]
+  ]
+}
