@@ -1,0 +1,86 @@
+......FF.                                                                [100%]
+=================================== FAILURES ===================================
+__________ test_composite_shared_aggregate_dag_preserves_every_output __________
+
+    def test_composite_shared_aggregate_dag_preserves_every_output():
+        m = hl.utils.range_matrix_table(3, 4, 2)
+        m = m.annotate_entries(x=hl.int32(m.row_idx + m.col_idx))
+        query = hl.struct(s=hl.agg.sum(m.x),n=hl.agg.count())
+        for _ in range(8):
+            query = hl.struct(a=query,b=query)
+        result = m.aggregate_entries(query, _localize=False)
+        for _ in range(8):
+            result = result.a
+>       assert hl.eval(result.s) == 30
+               ^^^^^^^^^^^^^^^^^
+
+test_composite_entry_totals.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x76e43ede1000>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_d33750d8234a8d7a returned a different number of rows than expected. Expected: 2, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+h092-segmented-reducers/env/lib/python3.11/site-packages/vail/__init__.py:2043: FatalError
+_______ test_composite_floating_sum_retains_existing_aggregation_results _______
+
+    def test_composite_floating_sum_retains_existing_aggregation_results():
+        m = hl.utils.range_matrix_table(2, 3, 1)
+        m = m.annotate_entries(x=hl.float64(m.row_idx + m.col_idx)/4)
+>       assert m.aggregate_entries(hl.struct(s=hl.agg.sum(m.x),twice=hl.agg.sum(m.x * 2))) == hl.Struct(s=2.25,twice=4.5)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_composite_entry_totals.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+h092-segmented-reducers/env/lib/python3.11/site-packages/vail/matrixtable.py:1746: in aggregate_entries
+    return self._aggregate("entry", expr, _localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+h092-segmented-reducers/env/lib/python3.11/site-packages/vail/matrixtable.py:1737: in _aggregate
+    return table.aggregate(self._lower(expr, table), _localize=localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+h092-segmented-reducers/env/lib/python3.11/site-packages/vail/__init__.py:1291: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x76e35ee34f20>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_f6d8106607400ccf returned a different number of rows than expected. Expected: 2, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+h092-segmented-reducers/env/lib/python3.11/site-packages/vail/__init__.py:2043: FatalError
+=========================== short test summary info ============================
+FAILED test_composite_entry_totals.py::test_composite_shared_aggregate_dag_preserves_every_output
+FAILED test_composite_entry_totals.py::test_composite_floating_sum_retains_existing_aggregation_results
+2 failed, 7 passed in 1.26s
