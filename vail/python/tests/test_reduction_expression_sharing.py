@@ -71,3 +71,19 @@ def test_reused_callback_dag_preserves_multiplicity():
         value = value + value
     assert table.select(value=value).value.collect() == [
         (3 + 2 * row) * (1 << 18) for row in range(3)]
+
+
+def test_filtered_list_features_keep_values_counts_and_distinct_captures():
+    table = hl.Table.parallelize([
+        {"xs": [1, None, 3, 5], "cutoff": 2},
+        {"xs": [], "cutoff": 4},
+        {"xs": None, "cutoff": 0},
+    ], schema=hl.tstruct(xs=hl.tarray(hl.tint32), cutoff=hl.tint32))
+    features = table.select(
+        kept=table.xs.filter(lambda item: hl.is_defined(item) & (item > table.cutoff)),
+        n=hl.len(table.xs.filter(lambda value: hl.is_defined(value) & (value > table.cutoff))),
+        higher=hl.len(table.xs.filter(lambda item: hl.is_defined(item) & (item > table.cutoff + 1))))
+    assert features.collect() == [
+        hl.Struct(kept=[3, 5], n=2, higher=1),
+        hl.Struct(kept=[], n=0, higher=0),
+        hl.Struct(kept=None, n=None, higher=None)]
