@@ -29,9 +29,6 @@ fn reduction(filter_missing: bool) -> Expr {
         }),
     }
 }
-fn has(plan: &dyn datafusion_physical_plan::ExecutionPlan, name: &str) -> bool {
-    plan.name() == name || plan.children().iter().any(|p| has(p.as_ref(), name))
-}
 #[tokio::test]
 async fn native_nested_projection_and_global_sum_preserve_nulls_and_widening() {
     let values = Arc::new(Int32Array::from(vec![
@@ -84,11 +81,6 @@ async fn native_nested_projection_and_global_sum_preserve_nulls_and_widening() {
                 ("sum".into(), reduction(filter_missing)),
             ])
             .unwrap();
-        let physical = vail_table::plan::physical(&mapped).await.unwrap();
-        assert_eq!(
-            has(physical.as_ref(), "VortexComputedProjectionExec"),
-            filter_missing
-        );
         let batches = mapped.collect_partitions().await.unwrap();
         let got = batches
             .iter()

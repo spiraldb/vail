@@ -193,42 +193,45 @@ pub(crate) fn try_total(
     table: &TableRef,
     expression: &Expr,
 ) -> Result<Option<(LogicalPlan, Expr)>> {
-    if !matches!(table.node(), TableNode::Read { .. }) {
+    let TableNode::Read { source } = table.node() else {
         return Ok(None);
-    }
+    };
     let Expr::Aggregate {
-        value: Some(value), ..
+        function, value: Some(value), ..
     } = expression
     else {
         return Ok(None);
     };
-    let session = VortexSession::default();
-    if !translate(value, table.schema(), &session).is_some_and(|(_, reduction)| reduction) {
+    // The initial total route is order-insensitive SUM. Order-sensitive
+    // consumers retain the ordinary source ordering contract.
+    if function != "sum" {
         return Ok(None);
     }
+    let session = VortexSession::default();
+    let Some((projection, true)) = translate(value, table.schema(), &session) else {
+        return Ok(None);
+    };
     let name = crate::plan::private_name(
         table.schema(),
         table.globals().schema(),
         "__vail_encoded_value",
     );
-    let mut fields = table
-        .schema()
-        .fields()
-        .iter()
-        .map(|f| {
-            (
-                f.name().clone(),
-                Expr::Column {
-                    name: f.name().clone(),
-                },
-            )
-        })
-        .collect::<Vec<_>>();
-    fields.push((name.clone(), value.as_ref().clone()));
-    let mapped = table.map_rows(fields.clone())?;
-    let Some(child) = try_lower(&mapped, table, &fields)? else {
-        return Ok(None);
+    // Aggregate scopes retain their input schema at the independent-consumer
+    // boundary. Supply only dependencies actually consumed by this total,
+    // rather than decoding original source columns that cannot be pruned later.
+    let tag = crate::plan::private_name(table.schema(), table.globals().schema(), "__vail_partition");
+    let provider = ComputedProvider {
+        source: source.clone(),
+        schema: Arc::new(Schema::new(vec![
+            Field::new(&name, DataType::Int64, true),
+            Field::new(tag, DataType::UInt64, false),
+        ])),
+        expressions: vec![(name.clone(), projection)],
+        keys: vec![],
     };
+    let child = LogicalPlanBuilder::scan(
+        "vail_encoded_projection", provider_as_source(Arc::new(provider)), None,
+    )?.build()?;
     let mut rewritten = expression.clone();
     if let Expr::Aggregate { value, .. } = &mut rewritten {
         *value = Some(Arc::new(Expr::Column { name }));

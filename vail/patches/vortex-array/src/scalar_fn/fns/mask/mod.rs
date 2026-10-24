@@ -109,6 +109,14 @@ impl ScalarFnVTable for Mask {
             return Ok(result);
         }
 
+        // A compressed child can reveal another encoding (notably Dict) in
+        // one execution step. Reapply existing mask-reduction rules at that
+        // boundary instead of canonicalizing through the revealed encoding.
+        // This lets downstream encoding-specific kernels consume masked codes.
+        if !input.is::<crate::columnar::AnyColumnar>() {
+            return input.execute(ctx)?.mask(mask_array);
+        }
+
         execute_canonical(input, mask_array, ctx)
     }
 

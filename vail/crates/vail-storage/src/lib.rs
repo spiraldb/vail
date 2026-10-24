@@ -1258,7 +1258,7 @@ pub(crate) fn stream_from_plan_with_projection(
                         if batch.num_columns() != output_schema_for_stream.fields().len() {
                             Err(StorageError::Invalid("computed source output schema mismatch".into()))?;
                         }
-                        batch.columns().to_vec()
+                        crate::local_table::normalize(&batch, output_schema_for_stream.clone())?.columns().to_vec()
                     } else {
                         project_positions.iter().map(|position| batch.column(*position).clone()).collect::<Vec<_>>()
                     };
