@@ -215,6 +215,8 @@ async fn renamed_struct_projection_keeps_selected_field_values() {
 
 /// Public, passing resource controls. Environment sizes affect only this test
 /// driver; production optimizer code has no workload-name/dimension dispatch.
+/// `execute` is plan+collect+validation end-to-end, not a kernel timer. External
+/// process CPU/RSS includes fixture construction and the correctness warmup.
 #[tokio::test]
 async fn public_valid_projection_resource_control() {
     use std::time::Instant;
@@ -342,6 +344,7 @@ async fn public_valid_projection_resource_control() {
         }
     };
     validate(frame.clone().collect().await.unwrap());
+    let measured_phase = if phase == "plan" { "planning_only" } else { "plan_collect_validate_end_to_end" };
     let started = Instant::now();
     for _ in 0..iterations {
         if phase == "plan" {
@@ -356,7 +359,7 @@ async fn public_valid_projection_resource_control() {
         }
     }
     eprintln!(
-        "PUBLIC_DF_RESOURCE mode={mode} phase={phase} width={width} output_count={output_count} rows={rows} iterations={iterations} wall_seconds={:.9}",
+        "PUBLIC_DF_RESOURCE mode={mode} phase={measured_phase} width={width} output_count={output_count} rows={rows} iterations={iterations} wall_seconds={:.9}",
         started.elapsed().as_secs_f64()
     );
 }
