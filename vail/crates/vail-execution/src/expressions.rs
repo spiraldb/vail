@@ -3677,7 +3677,7 @@ enum HailKind {
         step: bool,
     },
     ArrayReduce(ArrayReduction, bool),
-    IntegerListFieldSum(Vec<String>, bool),
+    IntegerListFieldSum(integer_list_sum::Prepared),
     Locus {
         operation: String,
         reference: Arc<ReferenceDefinition>,
@@ -4796,9 +4796,7 @@ impl PhysicalExpr for HailPhysicalExpr {
                 HailKind::ArraySlice { start, stop, step } => {
                     array_slice(&args, *start, *stop, *step, &self.dtype)
                 }
-                HailKind::IntegerListFieldSum(path, filter_missing) => {
-                    integer_list_sum::evaluate(&args[0], path, *filter_missing, &self.dtype)
-                }
+                HailKind::IntegerListFieldSum(prepared) => prepared.evaluate(&args[0]),
                 HailKind::ArrayReduce(operation, filter_missing) => {
                     array_reduce(&args[0], *operation, *filter_missing, &self.dtype)
                 }
@@ -6653,12 +6651,13 @@ fn lower_uncached(
                 if let Expr::ArrayMap { value: input, parameter, body } = value.as_ref() {
                     if let Type::Array { array } = input.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
                         integer_list_sum::projection(body, parameter, &array, &dtype)
-                            .map(|path| (input, path))
+                            .map(|path| (input, path, *array))
                     } else { None }
                 } else { None }
             } else { None };
-            if let Some((input, path)) = fusion {
-                custom(HailKind::IntegerListFieldSum(path, *filter_missing),
+            if let Some((input, path, element)) = fusion {
+                let prepared = integer_list_sum::Prepared::new(&element, path, *filter_missing, &dtype)?;
+                custom(HailKind::IntegerListFieldSum(prepared),
                     vec![lower_cached(input, schema, globals, scope, memo, context)?], dtype)
             } else {
                 custom(HailKind::ArrayReduce(*operation, *filter_missing),

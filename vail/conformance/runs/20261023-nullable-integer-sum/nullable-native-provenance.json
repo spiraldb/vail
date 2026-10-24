@@ -1,0 +1,13 @@
+{
+  "source_revision": "53a502870783b9ab3bd66a7695bd3cc23d25203e",
+  "module": "/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/python/vail/__init__.py",
+  "native": "/Users/danielking/.codex/worktrees/nullable-integer-sum/vail/vail/python/vail/_native.abi3.so",
+  "sha256": "a7caca703c6d225e311f332dab397e9d403e72bf3ca391b07102ae6ba49c71f3",
+  "source_sha256": {
+    "crates/vail-execution/src/expressions.rs": "0e6909e58fbb8228b787befcad58e0323b832a40fd93360bf16874f0ae076c0e",
+    "crates/vail-execution/src/integer_list_sum.rs": "5c5a51cf337b20e331a518c6ecdb8efc8b289fe4edc9ce75459da9aaed13becc",
+    "python/tests/test_nullable_integer_sum.py": "50df0cd5355430cf39f67bff8d466f7f818b6d60d076cefdc0b23a9b2582b23f",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  },
+  "build": "normal kache maturin develop --release --locked; jobs2; target-cpu=native; final span-fix build log"
+}

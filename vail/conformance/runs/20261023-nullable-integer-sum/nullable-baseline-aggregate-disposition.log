@@ -1,0 +1,113 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__ AggregateTests.test_integer_reducers_preserve_values_above_float_precision __
+
+self = <test_aggregate.AggregateTests testMethod=test_integer_reducers_preserve_values_above_float_precision>
+
+    def test_integer_reducers_preserve_values_above_float_precision(self):
+        value = 2**53 + 17
+        table = hl.Table.parallelize([{"x": value}], schema=hl.tstruct(x=hl.tint64))
+>       result = table.aggregate({"sum": hl.agg.sum(table.x),
+                                  "product": hl.agg.product(table.x),
+                                  "min": hl.agg.min(table.x),
+                                  "max": hl.agg.max(table.x),
+                                  "mean": hl.agg.mean(table.x),
+                                  "collect": hl.agg.collect(table.x),
+                                  "count_where": hl.agg.count_where(table.x > value - 1),
+                                  "fraction": hl.agg.fraction(table.x > value - 1),
+                                  "any": hl.agg.any(table.x > value - 1),
+                                  "all": hl.agg.all(table.x > value - 1),
+                                  "stats": hl.agg.stats(table.x)})
+
+python/tests/test_aggregate.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../entry-fixes-integration/vail/vail/python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+../../../entry-fixes-integration/vail/vail/python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+../../../entry-fixes-integration/vail/vail/python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../entry-fixes-integration/vail/vail/python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10cf60430>, <vail.expressions.Expression object at 0x10cf604a0>,...07b0>, <vail.expressions.Expression object at 0x10cf606d0>, <vail.expressions.StructExpression object at 0x10cf60ac0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+../../../entry-fixes-integration/vail/vail/python/vail/types.py:688: TypeError
+_________ AggregateTests.test_reducers_on_empty_and_all_missing_tables _________
+
+self = <test_aggregate.AggregateTests testMethod=test_reducers_on_empty_and_all_missing_tables>
+
+    def test_reducers_on_empty_and_all_missing_tables(self):
+        for table, expected_count, expected_values, expected_fraction in (
+            (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], None),
+            (hl.Table.parallelize([{"x": None, "b": None}, {"x": None, "b": None}],
+                                  schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 2, [None, None], 0.0),
+        ):
+            x, b = table.x, table.b
+>           result = table.aggregate({
+                "count": hl.agg.count(),
+                "sum": hl.agg.sum(x),
+                "product": hl.agg.product(x),
+                "min": hl.agg.min(x),
+                "max": hl.agg.max(x),
+                "mean": hl.agg.mean(x),
+                "collect": hl.agg.collect(x),
+                "count_where": hl.agg.count_where(b),
+                "fraction": hl.agg.fraction(b),
+                "any": hl.agg.any(b),
+                "all": hl.agg.all(b),
+                "stats": hl.agg.stats(x),
+            })
+
+python/tests/test_aggregate.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../entry-fixes-integration/vail/vail/python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+../../../entry-fixes-integration/vail/vail/python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+../../../entry-fixes-integration/vail/vail/python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../entry-fixes-integration/vail/vail/python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x10d0467a0>, <vail.expressions.Expression object at 0x10d047ca0>,...6dc0>, <vail.expressions.Expression object at 0x10d046ea0>, <vail.expressions.StructExpression object at 0x10d047290>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+../../../entry-fixes-integration/vail/vail/python/vail/types.py:688: TypeError
+=========================== short test summary info ============================
+FAILED python/tests/test_aggregate.py::AggregateTests::test_integer_reducers_preserve_values_above_float_precision
+FAILED python/tests/test_aggregate.py::AggregateTests::test_reducers_on_empty_and_all_missing_tables
+2 failed in 0.33s
