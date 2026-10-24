@@ -28,6 +28,13 @@ use crate::{Error, ErrorKind, Result};
 /// one runtime/session pair is retained; switching runtimes replaces the cache
 /// entry, while active readers keep their own cloned sessions. Mutable file,
 /// scan, expression-execution and metrics state remains owned by each reader.
+///
+/// This cache only constructs the pinned default configuration. Its Tokio
+/// RuntimeSession uses Vortex's static CurrentTokioRuntime dispatcher, which
+/// resolves Tokio's current handle for each operation. The ID is a conservative
+/// cache-selection boundary, not proof that a runtime is still alive; even a
+/// reused ID cannot resurrect a captured runtime here. Configured sessions must
+/// not be inserted into this cache.
 #[derive(Debug, Default)]
 pub struct VortexSessionCache(Mutex<Option<(tokio::runtime::Id, VortexSession)>>);
 
