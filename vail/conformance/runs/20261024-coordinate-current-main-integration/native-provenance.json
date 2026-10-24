@@ -1,0 +1,24 @@
+{
+  "assembly_source": "643571f4e83cacad1845908d0938f8dd68363357",
+  "git_status": "",
+  "python": "/Users/danielking/.codex/worktrees/encoded-list-reduction/vail/vail/python/vail/__init__.py",
+  "native": "/Users/danielking/.codex/worktrees/encoded-list-reduction/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "37f05292823446b7759ee09762e8ff6b0edde3f84ac85b73e882d4d7778cd30b",
+  "cargo_library": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/lib_native.dylib",
+  "cargo_library_sha256": "37f05292823446b7759ee09762e8ff6b0edde3f84ac85b73e882d4d7778cd30b",
+  "source_sha256": {
+    "crates/vail-execution/src/array_aggregate.rs": "9cfa305d6786f560ba5979efb2c05a0ab0b65542ba18b83dce502476129d85f5",
+    "python/tests/test_nullable_coordinate_runs.py": "7e41886d3c8cf607944b59de9e74d0db5d872eda1e35961d4519e429fb4a1756",
+    "crates/vail-table/src/computed_source.rs": "21fce1601879d6112b958dda9fefacb0b35b4ef765807f6d207b17eaf9628ba7",
+    "crates/vail-storage/src/local_table.rs": "2182b2aa2d429c34658ed04b3731c364b1b02e2af4195e71ff9aba0d883e0dc4",
+    "patches/iceberg-rust/crates/iceberg/src/arrow/reader/vortex.rs": "a832e1f38450d54f4d94312f259402eed2b8ff8899e90994cf931275459197f9",
+    "patches/vortex-layout/src/layouts/list/reader.rs": "434e4603d1f321375f3d898eaa9bcc4808b241a36a8e99fda89ba48cca9e5803",
+    "Cargo.lock": "b071be8c546bce1e64ffe5430df66d64390cfe5a7eb3d8001f0a56d6f8422cf8"
+  },
+  "build_flags": {
+    "RUSTFLAGS": "-C target-cpu=native",
+    "RUSTC_WRAPPER": "kache",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2"
+  }
+}

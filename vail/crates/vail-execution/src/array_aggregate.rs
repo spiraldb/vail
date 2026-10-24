@@ -11,13 +11,58 @@ use arrow_array::{
 use arrow_buffer::{BooleanBuffer, OffsetBuffer};
 use arrow_cast::cast;
 use arrow_schema::{DataType, Field, Schema};
-use arrow_select::{concat::concat, take::take};
+use arrow_select::take::take;
+use arrow_data::transform::MutableArrayData;
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{Accumulator, AggregateUDF, EmitTo, GroupsAccumulator};
 use datafusion_physical_expr::{
     aggregate::{AggregateExprBuilder, AggregateFunctionExpr},
     expressions::Column,
 };
+
+/// Callers validate the width of every defined list before using this helper.
+/// Keep one prepared coordinate kernel update per batch, preserving value order.
+fn coordinate_values(arrays: &ListArray, width: usize) -> Result<Option<ArrayRef>> {
+    let defined = arrays.len() - arrays.null_count();
+    if defined == 0 {
+        return Ok(None);
+    }
+    let selected = defined.checked_mul(width)
+        .ok_or_else(|| error("coordinate child count overflow"))?;
+    let offsets = arrays.value_offsets();
+    let start = offsets[0] as usize;
+    let length = (offsets[arrays.len()] - offsets[0]) as usize;
+    // Equal valid widths and monotonic offsets prove that missing lists hide
+    // no payload. Their bitmap can be fragmented without requiring compaction.
+    if length == selected {
+        return Ok(Some(arrays.values().slice(start, length)));
+    }
+    // Prepare Arrow's range-copy machinery once against the original child.
+    // Coalesced defined spans omit arbitrary hidden children without per-list
+    // ArrayRef slices or buffers/indices proportional to the hidden payload.
+    let data = arrays.values().to_data();
+    let mut output = MutableArrayData::new(vec![&data], false, selected);
+    let mut run: Option<(usize, usize)> = None;
+    for row in 0..arrays.len() {
+        if arrays.is_null(row) {
+            continue;
+        }
+        let start = offsets[row] as usize;
+        let end = offsets[row + 1] as usize;
+        match run {
+            Some((first, last)) if last == start => run = Some((first, end)),
+            Some((first, last)) => {
+                output.extend(0, first, last);
+                run = Some((start, end));
+            }
+            None => run = Some((start, end)),
+        }
+    }
+    if let Some((first, last)) = run {
+        output.extend(0, first, last);
+    }
+    Ok(Some(arrow_array::make_array(output.freeze())))
+}
 
 fn list_type(dtype: DataType) -> DataType {
     DataType::List(Arc::new(Field::new_list_field(dtype, true)))
@@ -187,7 +232,6 @@ impl Accumulator for CoordinateBundle {
             .first()
             .and_then(|a| a.as_any().downcast_ref::<ListArray>())
             .ok_or_else(|| error("coordinate bundle requires list input"))?;
-        let mut chunks = Vec::new();
         for row in 0..arrays.len() {
             if arrays.is_valid(row) {
                 let width = arrays.value_length(row) as usize;
@@ -203,22 +247,8 @@ impl Accumulator for CoordinateBundle {
         if width == 0 {
             return Ok(());
         }
-        let flat = if arrays.null_count() == 0 {
-            let offsets = arrays.value_offsets();
-            arrays.values().slice(
-                offsets[0] as usize,
-                (offsets[arrays.len()] - offsets[0]) as usize,
-            )
-        } else {
-            for row in 0..arrays.len() {
-                if arrays.is_valid(row) {
-                    chunks.push(arrays.value(row));
-                }
-            }
-            if chunks.is_empty() {
-                return Ok(());
-            }
-            concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
+        let Some(flat) = coordinate_values(arrays, width)? else {
+            return Ok(());
         };
         let packed = flat
             .as_any()
@@ -1176,7 +1206,6 @@ impl Accumulator for Coordinates {
             .first()
             .and_then(|a| a.as_any().downcast_ref::<ListArray>())
             .ok_or_else(|| error("coordinate aggregate requires a list"))?;
-        let mut chunks = Vec::new();
         for row in 0..arrays.len() {
             if arrays.is_valid(row) {
                 self.set_width(arrays.value_length(row) as usize)?;
@@ -1188,24 +1217,8 @@ impl Accumulator for Coordinates {
         if width == 0 {
             return Ok(());
         }
-        // For ordinary non-null arrays the child values are already contiguous
-        // Arrow storage. Missing lists may hide arbitrary children: omit them.
-        let flat = if arrays.null_count() == 0 {
-            let offsets = arrays.value_offsets();
-            arrays.values().slice(
-                offsets[0] as usize,
-                (offsets[arrays.len()] - offsets[0]) as usize,
-            )
-        } else {
-            for row in 0..arrays.len() {
-                if arrays.is_valid(row) {
-                    chunks.push(arrays.value(row));
-                }
-            }
-            if chunks.is_empty() {
-                return Ok(());
-            }
-            concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
+        let Some(flat) = coordinate_values(arrays, width)? else {
+            return Ok(());
         };
         if matches!(
             self.kernels,

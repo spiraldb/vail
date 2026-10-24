@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/__init__.py", line 1291, in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+  File "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/__init__.py", line 2043, in eval
+    data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail.utils.FatalError: Execution error: array_agg requires equal array lengths, found 2 and 4
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/danielking/h050-nullable-coordinate-runs/measure.py", line 13, in <module>
+    result=m.aggregate_entries(q)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/matrixtable.py", line 1752, in aggregate_entries
+    return self._aggregate("entry", expr, _localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/matrixtable.py", line 1743, in _aggregate
+    return table.aggregate(self._lower(expr, table), _localize=localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/__init__.py", line 1300, in aggregate
+    raise utils.FatalError(builtins.str(error)) from error
+vail.utils.FatalError: Execution error: array_agg requires equal array lengths, found 2 and 4
