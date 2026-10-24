@@ -114,7 +114,7 @@ impl AggregateUDFImpl for NativeStddevPop {
             // Keep the cast visible and shared with sibling aggregates. Only
             // its integer source proves finite values; Float32/64 do not.
             if let [Expr::Cast(cast)] = aggregate.params.args.as_slice()
-                && cast.data_type == DataType::Float64
+                && cast.field.data_type() == &DataType::Float64
                 && matches!(
                     info.get_data_type(&cast.expr)?,
                     DataType::Int32 | DataType::Int64
