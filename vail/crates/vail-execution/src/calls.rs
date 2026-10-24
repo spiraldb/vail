@@ -274,13 +274,16 @@ fn call_index_values<const INDEX: i32, const DYNAMIC: bool, const NULLABLE: bool
     let a = rows.first.values();
     let b = rows.second.values();
     let n = rows.ploidy.values();
+    let indices: &[i32] = if DYNAMIC { indices.unwrap().values() } else { &[] };
+    let validity = if NULLABLE { nulls.as_ref().unwrap().inner().clone() }
+        else { BooleanBuffer::new_unset(0) };
     let mut values = Vec::with_capacity(rows.parent.len());
     for row in 0..rows.parent.len() {
-        if NULLABLE && nulls.as_ref().unwrap().is_null(row) {
+        if NULLABLE && !validity.value(row) {
             values.push(0);
             continue;
         }
-        let requested = if DYNAMIC { indices.unwrap().value(row) } else { INDEX };
+        let requested = if DYNAMIC { indices[row] } else { INDEX };
         // Match the existing allele-list semantics even for unchecked storage:
         // ploidy > 2 exposes just its first allele, rather than reading beyond it.
         let len = if n[row] == 2 { 2_i64 } else { i64::from(n[row] > 0) };
