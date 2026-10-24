@@ -1,0 +1,34 @@
+{
+  "baseline_revision": "ca59e075706a76f83c94310508f2b50fb9ebdd5a",
+  "candidate_source_revision": "a5f0ca7b2194fbf2782672a9af857ac06e13e26e",
+  "stable_source": "/Users/danielking/.codex/worktrees/encoded-list-reduction/vail/vail",
+  "target": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target",
+  "flags": {
+    "RUSTFLAGS": "-C target-cpu=native",
+    "RUSTC_WRAPPER": "kache",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2"
+  },
+  "source_sha256": {
+    "crates/vail-execution/src/expressions.rs": "ef5017008e4da42c9831dea0ec87c41b4540505bf6bf0c8ef52d15a25146367a",
+    "crates/vail-execution/src/logical_expr.rs": "3edfb1537ca73cc1a4c590bfe216c0806c937a597b6f9b9747cf5de29581265e",
+    "crates/vail-execution/src/list_aggregate.rs": "d0fd5cd61dcb641bd21b038fe735a97bd602591d8b4936444805b8d67fcc43cb",
+    "python/tests/test_batched_list_sets.py": "5c53f0f6d9f9da09ca3eabb8d0fe772cccdd774a21fcacc7cdbc43e2101a95bd"
+  },
+  "artifacts": {
+    "baseline": {
+      "native_sha256": "a79f18bcdf9c0b8038cd6c968c8be6afbdd54218f7019aba328e654b307a0bba",
+      "wheel_sha256": "0baa264be4acefd924be91c305d8dbb25c9fe665ac88d0342e7dfb92e91dd5ba",
+      "wheel": "/private/tmp/h003-list-set-gate/baseline-wheels/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+      "env": "/private/tmp/h003-list-set-gate/baseline-env",
+      "public_passed": 420
+    },
+    "candidate": {
+      "native_sha256": "657d82c66a3e6f0074f5042b0f2a440853f0e8eb3cf382f3c21840475c3b66ec",
+      "wheel_sha256": "db9a6ec9f9cd2c64ecade00890f7a9844728cfd819dbe4a88cbffd7c9555edaa",
+      "wheel": "/private/tmp/h003-list-set-gate/candidate-wheels/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+      "env": "/private/tmp/h003-list-set-gate/candidate-env",
+      "public_passed": 420
+    }
+  }
+}

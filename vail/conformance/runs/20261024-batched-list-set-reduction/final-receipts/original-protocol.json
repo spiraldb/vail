@@ -1,0 +1,27 @@
+{
+  "seed": 30020261024,
+  "cases": [
+    {
+      "mode": "dp",
+      "pairs": 8,
+      "iterations": 16,
+      "warmups": 4,
+      "expected": 642162
+    },
+    {
+      "mode": "wide_struct",
+      "pairs": 2,
+      "iterations": 4,
+      "warmups": 1,
+      "expected": 10240000
+    },
+    {
+      "mode": "float_control",
+      "pairs": 2,
+      "iterations": 8,
+      "warmups": 2,
+      "expected": 642162
+    }
+  ],
+  "primary": "paired process mean latency andCPU; process peakRSS; all rawqueries retained; no builds/tests overlap"
+}
