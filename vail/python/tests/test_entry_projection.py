@@ -50,3 +50,17 @@ def test_empty_entry_projection_retains_cardinality():
     rows = m.entries().key_by().select().collect()
     assert len(rows) == 9
     assert all(row == hl.Struct() for row in rows)
+
+
+def test_changed_keys_keep_sorted_entry_semantics(tmp_path):
+    m = hl.range_matrix_table(9, 3, 4)
+    m = m.annotate_entries(value=m.row_idx * 10 + m.col_idx)
+    path = str(tmp_path / 'rekey.mt')
+    m.write(path)
+    m = hl.read_matrix_table(path)
+    m = m.key_rows_by(reversed=-m.row_idx)
+    m = m.select_entries('value').select_rows()
+    actual = m.entries().select('value').collect()
+    assert [(x.reversed, x.col_idx, x.value) for x in actual] == [
+        (-r, c, r * 10 + c) for r in reversed(range(9)) for c in range(3)
+    ]
