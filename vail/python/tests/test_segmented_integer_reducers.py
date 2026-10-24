@@ -45,3 +45,19 @@ def test_segmented_integer_filtered_and_nested_entries(dtype):
         x > 0, hl.agg.sum(x))))
     assert Counter(e.score for e in m.entries().collect()) == Counter(r + c for r in range(5) for c in range(4))
     assert m.aggregate_entries(hl.agg.sum(m.score)) == 70
+
+
+@pytest.mark.parametrize('dtype', [hl.tint32, hl.tint64])
+def test_segmented_integer_validity_across_bitmap_words(dtype):
+    rows = [{'idx': r, 'xs': [None if (j + r) % 11 == 0 else j - 70
+                              for j in range(130 + r % 7)]} for r in range(70)]
+    table = hl.Table.parallelize(rows, schema=hl.tstruct(idx=hl.tint32, xs=hl.tarray(dtype)),
+                                 n_partitions=3)
+    source = table.xs[3:-2]
+    result = table.select(idx=table.idx, value=source.aggregate(lambda x: hl.struct(
+        total=hl.agg.sum(x), lo=hl.agg.min(x), hi=hl.agg.max(x))))
+    expected = {}
+    for row in rows:
+        values = [x for x in row['xs'][3:-2] if x is not None]
+        expected[row['idx']] = hl.Struct(total=sum(values), lo=min(values), hi=max(values))
+    assert {row.idx: row.value for row in result.collect()} == expected
