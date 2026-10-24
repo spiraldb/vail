@@ -203,10 +203,11 @@ async fn prepare_file(
     if opened.row_count() != file.identity.row_count {
         return Err(invalid("Vortex file row count mismatch"));
     }
-    if let Some(bytes) = opened.footer().approx_byte_size() {
-        if !budget.reserve(bytes) {
-            return Ok(None);
-        }
+    let Some(bytes) = opened.footer().approx_byte_size() else {
+        return Ok(None);
+    };
+    if !budget.reserve(bytes) {
+        return Ok(None);
     }
     let mut probe = Probe {
         reader,
