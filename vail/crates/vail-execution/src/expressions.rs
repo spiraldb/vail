@@ -880,6 +880,13 @@ impl Expr {
         summarize(self, &mut std::collections::HashMap::new())
     }
 
+    /// Whether this expression and all children are deterministic and cannot
+    /// raise value-domain errors. Rewrites that change evaluation count or
+    /// context must retain effectful expressions on their original path.
+    pub fn is_pure(&self) -> bool {
+        crate::expression_effects::effects(self) == crate::expression_effects::Effects::Pure
+    }
+
     /// Whether this expression can be evaluated in an independent singleton
     /// global scope. Type hints do not establish lexical/source ownership.
     pub fn is_closed_scalar(&self) -> bool {

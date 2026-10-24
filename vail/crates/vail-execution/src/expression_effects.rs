@@ -69,6 +69,11 @@ pub(crate) fn effects(expr: &Expr) -> Effects {
         let own = match node {
             Expr::NestedFunction { function, .. } => nested_effects(function),
             Expr::StringFunction { function, .. } => string_effects(function),
+            // This virtual Call field rejects non-diploid values. A plain
+            // struct field using the reserved name is conservatively covered.
+            Expr::GetField { name, .. } if name == "__vail_call_unphased_diploid_gt_index" => {
+                Effects::MayError
+            }
             Expr::RuntimeLiteral { .. }
             | Expr::Literal { .. }
             | Expr::Column { .. }

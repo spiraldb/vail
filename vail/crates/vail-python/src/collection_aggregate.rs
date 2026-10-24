@@ -216,89 +216,101 @@ impl Rewrite<'_> {
                 if self.dtype(predicate)? != Type::Primitive(P::Bool) {
                     return Err(value_error("collection filter requires bool"));
                 }
-                // Mapping binds seeded callback positions just as ordinary array.map.
-                let selected = self.mapped(items.clone(), predicate)?;
-                let pair = Type::Struct {
-                    r#struct: vec![
-                        ("1".into(), self.element.clone()),
-                        ("2".into(), Type::Primitive(P::Bool)),
-                    ],
-                };
-                let zipped = if has_random(&items) || has_random(&selected) {
-                    // Historical random zip captures the arrays inside an
-                    // indexed map, adding that output position to their UID.
-                    let used = free_parameters(node)
-                        .into_iter()
-                        .chain(free_parameters(&items))
-                        .collect::<HashSet<_>>();
-                    let name = (0..)
-                        .map(|i| format!("{}_zip_{i}", self.parameter))
-                        .find(|name| !used.contains(name))
-                        .unwrap();
-                    let index = Arc::new(Expr::LambdaVariable {
-                        name: name.clone(),
-                        dtype: None,
-                    });
-                    let tuple = Expr::Struct {
-                        fields: vec![
-                            (
-                                "1".into(),
-                                Expr::ArrayIndex {
-                                    value: items.clone(),
-                                    index: index.clone(),
-                                },
-                            ),
-                            (
-                                "2".into(),
-                                Expr::ArrayIndex {
-                                    value: Arc::new(selected),
-                                    index,
-                                },
-                            ),
+                let values = if items.is_pure() && predicate.is_pure() && !has_random(body) {
+                    // Apply the original predicate through DataFusion's native
+                    // array_filter. No boolean-list/zip/unwrap intermediates.
+                    // Random and potentially failing inputs retain their exact
+                    // historical evaluation/UID context below.
+                    Expr::ArrayFilter {
+                        value: items,
+                        parameter: self.parameter.into(),
+                        predicate: predicate.clone(),
+                    }
+                } else {
+                    // Mapping binds seeded callback positions just as ordinary array.map.
+                    let selected = self.mapped(items.clone(), predicate)?;
+                    let pair = Type::Struct {
+                        r#struct: vec![
+                            ("1".into(), self.element.clone()),
+                            ("2".into(), Type::Primitive(P::Bool)),
                         ],
                     };
-                    let integer = |n| {
-                        Arc::new(Expr::Literal {
-                            dtype: Type::Primitive(P::Int32),
-                            value: serde_json::json!(n),
-                        })
+                    let zipped = if has_random(&items) || has_random(&selected) {
+                        // Historical random zip captures the arrays inside an
+                        // indexed map, adding that output position to their UID.
+                        let used = free_parameters(node)
+                            .into_iter()
+                            .chain(free_parameters(&items))
+                            .collect::<HashSet<_>>();
+                        let name = (0..)
+                            .map(|i| format!("{}_zip_{i}", self.parameter))
+                            .find(|name| !used.contains(name))
+                            .unwrap();
+                        let index = Arc::new(Expr::LambdaVariable {
+                            name: name.clone(),
+                            dtype: None,
+                        });
+                        let tuple = Expr::Struct {
+                            fields: vec![
+                                (
+                                    "1".into(),
+                                    Expr::ArrayIndex {
+                                        value: items.clone(),
+                                        index: index.clone(),
+                                    },
+                                ),
+                                (
+                                    "2".into(),
+                                    Expr::ArrayIndex {
+                                        value: Arc::new(selected),
+                                        index,
+                                    },
+                                ),
+                            ],
+                        };
+                        let integer = |n| {
+                            Arc::new(Expr::Literal {
+                                dtype: Type::Primitive(P::Int32),
+                                value: serde_json::json!(n),
+                            })
+                        };
+                        let range = Arc::new(Expr::StreamRange {
+                            start: integer(0),
+                            stop: Arc::new(Expr::ArrayLength {
+                                value: items.clone(),
+                            }),
+                            step: integer(1),
+                        });
+                        self.mapped_as(range, &tuple, &name, &Type::Primitive(P::Int32))?
+                    } else {
+                        Expr::NestedFunction {
+                            function: "arrays_zip".into(),
+                            args: vec![(*items).clone(), selected],
+                            dtype: Type::Array {
+                                array: Box::new(pair),
+                            },
+                        }
                     };
-                    let range = Arc::new(Expr::StreamRange {
-                        start: integer(0),
-                        stop: Arc::new(Expr::ArrayLength {
-                            value: items.clone(),
-                        }),
-                        step: integer(1),
+                    let variable = Arc::new(Expr::LambdaVariable {
+                        name: self.parameter.into(),
+                        dtype: None,
                     });
-                    self.mapped_as(range, &tuple, &name, &Type::Primitive(P::Int32))?
-                } else {
-                    Expr::NestedFunction {
-                        function: "arrays_zip".into(),
-                        args: vec![(*items).clone(), selected],
-                        dtype: Type::Array {
-                            array: Box::new(pair),
-                        },
+                    let filtered = Expr::ArrayFilter {
+                        value: Arc::new(zipped),
+                        parameter: self.parameter.into(),
+                        predicate: Arc::new(Expr::GetField {
+                            value: variable.clone(),
+                            name: "2".into(),
+                        }),
+                    };
+                    Expr::ArrayMap {
+                        value: Arc::new(filtered),
+                        parameter: self.parameter.into(),
+                        body: Arc::new(Expr::GetField {
+                            value: variable,
+                            name: "1".into(),
+                        }),
                     }
-                };
-                let variable = Arc::new(Expr::LambdaVariable {
-                    name: self.parameter.into(),
-                    dtype: None,
-                });
-                let filtered = Expr::ArrayFilter {
-                    value: Arc::new(zipped),
-                    parameter: self.parameter.into(),
-                    predicate: Arc::new(Expr::GetField {
-                        value: variable.clone(),
-                        name: "2".into(),
-                    }),
-                };
-                let values = Expr::ArrayMap {
-                    value: Arc::new(filtered),
-                    parameter: self.parameter.into(),
-                    body: Arc::new(Expr::GetField {
-                        value: variable,
-                        name: "1".into(),
-                    }),
                 };
                 self.walk(body, Arc::new(values))?
             }

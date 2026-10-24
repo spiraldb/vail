@@ -1,0 +1,65 @@
+{
+  "ad_sum": {
+    "baseline": {
+      "seconds": 0.4441087359999756,
+      "cpu_seconds": 12.110394186,
+      "minor_faults": 156038,
+      "major_faults": 0,
+      "peak_rss_kib": 1006228,
+      "result": 353709503
+    },
+    "candidate": {
+      "seconds": 0.437750559000051,
+      "cpu_seconds": 11.828197807999999,
+      "minor_faults": 125912,
+      "major_faults": 0,
+      "peak_rss_kib": 1014628,
+      "result": 353709503
+    },
+    "speedup": 1.0145246576370992,
+    "cpu_reduction": 0.0233019977439074,
+    "minor_fault_reduction": 0.19306835514425968
+  },
+  "ad_bundle": {
+    "baseline": {
+      "seconds": 0.8306172329999981,
+      "cpu_seconds": 22.399887445999994,
+      "minor_faults": 161296,
+      "major_faults": 0,
+      "peak_rss_kib": 1058256,
+      "result": 348882629
+    },
+    "candidate": {
+      "seconds": 0.7788273789999494,
+      "cpu_seconds": 21.262333326999993,
+      "minor_faults": 175734,
+      "major_faults": 0,
+      "peak_rss_kib": 1065364,
+      "result": 348882629
+    },
+    "speedup": 1.0664972179927077,
+    "cpu_reduction": 0.05078392120238695,
+    "minor_fault_reduction": -0.08951244916178958
+  },
+  "pl_count": {
+    "baseline": {
+      "seconds": 0.3631281409999474,
+      "cpu_seconds": 9.671134019,
+      "minor_faults": 145890,
+      "major_faults": 0,
+      "peak_rss_kib": 1021452,
+      "result": 122023331
+    },
+    "candidate": {
+      "seconds": 0.3298896109999987,
+      "cpu_seconds": 9.023247247,
+      "minor_faults": 113962,
+      "major_faults": 0,
+      "peak_rss_kib": 1004616,
+      "result": 122023331
+    },
+    "speedup": 1.1007565224597171,
+    "cpu_reduction": 0.0669918099291309,
+    "minor_fault_reduction": 0.2188498183562958
+  }
+}
