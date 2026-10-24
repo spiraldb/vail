@@ -251,15 +251,18 @@ impl Hash for Expr {
 #[derive(Clone)]
 pub(crate) struct Identity {
     expression: Arc<Expr>,
+    canonical: Arc<Expr>,
     fingerprint: u64,
     nodes: usize,
 }
 impl Identity {
     pub(crate) fn new(expression: Expr) -> Self {
+        let canonical = alpha_identity(&expression);
         let mut memo = HashMap::new();
-        let fingerprint = fingerprint(&expression, &mut memo);
+        let fingerprint = fingerprint(&canonical, &mut memo);
         Self {
             expression: Arc::new(expression),
+            canonical: Arc::new(canonical),
             fingerprint,
             nodes: memo.len(),
         }
@@ -268,6 +271,85 @@ impl Identity {
     pub(crate) fn expression(&self) -> &Expr {
         &self.expression
     }
+}
+
+/// Callback names are lexical implementation details, not semantic inputs.
+/// Canonicalize only the owned identity: execution retains the original names.
+/// Free names remain distinct, and the chosen namespace cannot capture them.
+fn alpha_identity(expression: &Expr) -> Expr {
+    let free = expression.free_parameters();
+    let mut prefix = "\0vail_bound_".to_owned();
+    while free.iter().any(|name| name.starts_with(&prefix)) {
+        prefix.push('_');
+    }
+    struct Normalizer {
+        prefix: String,
+        // Scope IDs are interned by lexical edge, not traversal occurrence.
+        // A shared expression reached repeatedly in one scope is rewritten once.
+        scopes: Vec<Vec<(String, String)>>,
+        edges: HashMap<(usize, Vec<String>), usize>,
+        memo: HashMap<(usize, usize), Expr>,
+    }
+    impl Normalizer {
+        fn child_scope(&mut self, parent: usize, binders: Vec<&str>) -> usize {
+            if binders.is_empty() {
+                return parent;
+            }
+            let key = (parent, binders.iter().map(|name| (*name).to_owned()).collect());
+            if let Some(id) = self.edges.get(&key) {
+                return *id;
+            }
+            let mut names = self.scopes[parent].clone();
+            for name in binders {
+                names.push((name.to_owned(), format!("{}{}", self.prefix, names.len())));
+            }
+            let id = self.scopes.len();
+            self.scopes.push(names);
+            self.edges.insert(key, id);
+            id
+        }
+        fn visit(&mut self, node: &Expr, scope: usize) -> Expr {
+            let key = (node as *const Expr as usize, scope);
+            if let Some(result) = self.memo.get(&key) {
+                return result.clone();
+            }
+            let mut position = 0;
+            let mut result = node.try_map_original_children::<std::convert::Infallible>(|child| {
+                let child_scope = self.child_scope(scope, node.child_binders(position));
+                position += 1;
+                Ok(self.visit(child, child_scope))
+            }).expect("identity traversal is infallible");
+            let depth = self.scopes[scope].len();
+            let canonical = |index| format!("{}{}", self.prefix, depth + index);
+            match &mut result {
+                Expr::LambdaVariable { name, .. } => {
+                    if let Some((_, bound)) = self.scopes[scope].iter().rev().find(|(original, _)| original == name) {
+                        *name = bound.clone();
+                    }
+                }
+                Expr::ArrayMap { parameter, .. }
+                | Expr::ArrayFilter { parameter, .. }
+                | Expr::ArrayPredicate { parameter, .. }
+                | Expr::AggArray { parameter, .. }
+                | Expr::AggExplode { parameter, .. }
+                | Expr::Switch { parameter, .. } => *parameter = canonical(0),
+                Expr::ArrayFold { accumulator, parameter, .. } => {
+                    *accumulator = canonical(0);
+                    *parameter = canonical(1);
+                }
+                Expr::AggregateFold { state_parameter, left_parameter, right_parameter, .. } => {
+                    *state_parameter = canonical(0);
+                    *left_parameter = canonical(0);
+                    *right_parameter = canonical(1);
+                }
+                _ => {}
+            }
+            self.memo.insert(key, result.clone());
+            result
+        }
+    }
+    Normalizer { prefix, scopes: vec![vec![]], edges: HashMap::new(), memo: HashMap::new() }
+        .visit(expression, 0)
 }
 impl std::fmt::Debug for Identity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -279,7 +361,7 @@ impl std::fmt::Debug for Identity {
 }
 impl PartialEq for Identity {
     fn eq(&self, other: &Self) -> bool {
-        self.fingerprint == other.fingerprint && self.expression == other.expression
+        self.fingerprint == other.fingerprint && self.canonical == other.canonical
     }
 }
 impl Eq for Identity {}
