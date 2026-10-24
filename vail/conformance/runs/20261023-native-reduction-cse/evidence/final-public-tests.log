@@ -1,0 +1,9 @@
+........................................................................ [ 80%]
+..................                                                       [100%]
+============================= slowest 5 durations ==============================
+8.01s call     python/tests/test_array_agg_coordinate_dag.py::test_reused_aggregate_expression_in_array_callback
+0.74s call     python/tests/test_reduction_expression_sharing.py::test_reused_callback_dag_preserves_multiplicity
+0.16s call     python/tests/test_reduction_expression_sharing.py::test_sibling_fractions_preserve_sparse_entries_and_missing_predicates[1]
+0.05s call     python/tests/test_array_map.py::test_variable_length_nested_arrays_and_round_trip
+0.04s call     python/tests/test_array_agg_coordinate_callbacks.py::test_grouped_matrix_coordinate_callbacks_preserve_column_alignment
+90 passed in 9.60s

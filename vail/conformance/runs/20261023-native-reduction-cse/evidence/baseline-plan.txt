@@ -1,0 +1,53 @@
+ScalarSubqueryExec: subqueries=1
+  ProjectionExec: expr=[row_idx@0 as row_idx, f1@1 as f1, f3@2 as f3, f5@3 as f5, f7@4 as f7, 0 as __vail_partition]
+    OrderedConcatExec: children=1
+      TablePartitionViewExec: partition=0
+        VailConsumerScopeExec: consumer=5
+          SortExec: expr=[row_idx@0 ASC NULLS LAST, __vail_sort_ordinal@6 ASC], preserve_partitioning=[false]
+            BoundedWindowAggExec: wdw=[__vail_sort_ordinal: Field { "__vail_sort_ordinal": UInt64 }, frame: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW], mode=[Sorted]
+              OrderedConcatExec: children=2
+                TablePartitionViewExec: partition=0
+                  VailConsumerScopeExec: consumer=4
+                    ProjectionExec: expr=[vail_semantic_kernel_get_field_adce3ecfc6974986(__vail_matrix_row@0) as row_idx, vail_semantic_kernel_get_field_9e583d55b7fc1b20(__vail_matrix_row@0) as f1, vail_semantic_kernel_get_field_f10fb42e0609a54a(__vail_matrix_row@0) as f3, vail_semantic_kernel_get_field_35a8661ba3a84e0b(__vail_matrix_row@0) as f5, vail_semantic_kernel_get_field_1cc1ce27d0e8af38(__vail_matrix_row@0) as f7, __vail_partition@1 as __vail_partition]
+                      ProjectionExec: expr=[named_struct(row_idx, vail_semantic_kernel_get_field_b97b8e73c80c9055(__vail_matrix_row@4), f1, CASE __common_expr_1@0 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_62634130131a8662(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_1@0 AS Float64) WHEN false THEN NaN END, f3, CASE __common_expr_2@1 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_eb094bf275355cfd(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_2@1 AS Float64) WHEN false THEN NaN END, f5, CASE __common_expr_3@2 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_0c4e65423af3d45a(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_3@2 AS Float64) WHEN false THEN NaN END, f7, CASE __common_expr_4@3 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_1d92c1442aa99759(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_4@3 AS Float64) WHEN false THEN NaN END) as __vail_matrix_row, __vail_partition@6 as __vail_partition]
+                        ProjectionExec: expr=[vail_semantic_kernel_hail_operation_8f10705493fd73b7(__vail_matrix_cells@1) as __common_expr_1, vail_semantic_kernel_hail_operation_34a63db7e17b46b4(__vail_matrix_cells@1) as __common_expr_2, vail_semantic_kernel_hail_operation_9caa6edcbe6106dd(__vail_matrix_cells@1) as __common_expr_3, vail_semantic_kernel_hail_operation_fa6abe7150db5194(__vail_matrix_cells@1) as __common_expr_4, __vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+                          ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, Projection(__vail_matrix_cells) as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+                            ProjectionExec: expr=[named_struct(row_idx, idx@0) as __vail_matrix_row, ProjectionBroadcast(vail_semantic_kernel_array_transform_d2cb49cc254413ca()) as __vail_matrix_cells, __vail_partition@1 as __vail_partition]
+                              VailSourcePartitions: 2
+                                CooperativeExec
+                                  RangeExec: [0, 2)
+                                CooperativeExec
+                                  RangeExec: [2, 3)
+                TablePartitionViewExec: partition=1
+                  VailConsumerScopeExec: consumer=4
+                    ProjectionExec: expr=[vail_semantic_kernel_get_field_adce3ecfc6974986(__vail_matrix_row@0) as row_idx, vail_semantic_kernel_get_field_9e583d55b7fc1b20(__vail_matrix_row@0) as f1, vail_semantic_kernel_get_field_f10fb42e0609a54a(__vail_matrix_row@0) as f3, vail_semantic_kernel_get_field_35a8661ba3a84e0b(__vail_matrix_row@0) as f5, vail_semantic_kernel_get_field_1cc1ce27d0e8af38(__vail_matrix_row@0) as f7, __vail_partition@1 as __vail_partition]
+                      ProjectionExec: expr=[named_struct(row_idx, vail_semantic_kernel_get_field_b97b8e73c80c9055(__vail_matrix_row@4), f1, CASE __common_expr_1@0 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_62634130131a8662(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_1@0 AS Float64) WHEN false THEN NaN END, f3, CASE __common_expr_2@1 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_eb094bf275355cfd(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_2@1 AS Float64) WHEN false THEN NaN END, f5, CASE __common_expr_3@2 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_0c4e65423af3d45a(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_3@2 AS Float64) WHEN false THEN NaN END, f7, CASE __common_expr_4@3 > 0 WHEN true THEN CAST(vail_restore_arrow_type_1c9d8c99e3e38305(__vail_list_reduce_count_where(vail_semantic_kernel_array_transform_1d92c1442aa99759(__vail_matrix_cells@5))) AS Float64) / CAST(__common_expr_4@3 AS Float64) WHEN false THEN NaN END) as __vail_matrix_row, __vail_partition@6 as __vail_partition]
+                        ProjectionExec: expr=[vail_semantic_kernel_hail_operation_8f10705493fd73b7(__vail_matrix_cells@1) as __common_expr_1, vail_semantic_kernel_hail_operation_34a63db7e17b46b4(__vail_matrix_cells@1) as __common_expr_2, vail_semantic_kernel_hail_operation_9caa6edcbe6106dd(__vail_matrix_cells@1) as __common_expr_3, vail_semantic_kernel_hail_operation_fa6abe7150db5194(__vail_matrix_cells@1) as __common_expr_4, __vail_matrix_row@0 as __vail_matrix_row, __vail_matrix_cells@1 as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+                          ProjectionExec: expr=[__vail_matrix_row@0 as __vail_matrix_row, Projection(__vail_matrix_cells) as __vail_matrix_cells, __vail_partition@2 as __vail_partition]
+                            ProjectionExec: expr=[named_struct(row_idx, idx@0) as __vail_matrix_row, ProjectionBroadcast(vail_semantic_kernel_array_transform_d2cb49cc254413ca()) as __vail_matrix_cells, __vail_partition@1 as __vail_partition]
+                              VailSourcePartitions: 2
+                                CooperativeExec
+                                  RangeExec: [0, 2)
+                                CooperativeExec
+                                  RangeExec: [2, 3)
+  ProjectionExec: expr=[named_struct(__vail_matrix_columns, vail_semantic_kernel_get_field_76be0fe81e1dc6ed(__vail_external_global_0@0)) as __vail_scalar_external_0]
+    CrossJoinExec
+      ProjectionExec: expr=[named_struct(value, value@0) as __vail_external_global_0]
+        UnboundActionExec: shared aggregate singleton remains unbound [diagnostic only; dependencies were not executed]
+          ProjectionExec: expr=[__vail_aggregate@0 as value]
+            CrossJoinExec
+              PlaceholderRowExec
+              ProjectionExec: expr=[CASE WHEN __vail_aggregate@0 IS NOT NULL THEN __vail_aggregate@0 ELSE [] END as __vail_aggregate]
+                AggregateExec: mode=Single, gby=[], aggr=[array_agg(named_struct(Utf8("__vail_matrix_col_id"), __vail_matrix_col_id, Utf8("__vail_matrix_col"), __vail_matrix_col)) RESPECT NULLS as __vail_aggregate]
+                  ProjectionExec: expr=[__vail_matrix_col_id@0 as __vail_matrix_col_id, __vail_matrix_col@1 as __vail_matrix_col]
+                    VailConsumerScopeExec: consumer=3
+                      OrderedConcatExec: children=1
+                        TablePartitionViewExec: partition=0
+                          VailConsumerScopeExec: consumer=2
+                            ProjectionExec: expr=[CAST(idx@0 AS Int64) as __vail_matrix_col_id, named_struct(col_idx, idx@0) as __vail_matrix_col, __vail_partition@1 as __vail_partition]
+                              VailSourcePartitions: 1
+                                CooperativeExec
+                                  RangeExec: [0, 5)
+      PlaceholderRowExec
+
+[Struct(row_idx=0, f1=0.4, f3=0.2, f5=0.0, f7=0.0), Struct(row_idx=1, f1=0.6, f3=0.2, f5=0.0, f7=0.0), Struct(row_idx=2, f1=0.6, f3=0.4, f5=0.2, f7=0.0)]

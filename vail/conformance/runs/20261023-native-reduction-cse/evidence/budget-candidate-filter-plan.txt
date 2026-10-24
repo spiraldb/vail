@@ -1,0 +1,26 @@
+ProjectionExec: expr=[row_idx@1 as row_idx, __common_expr_1@0 as kept, vail_array_length_a77811b5509be746(__common_expr_1@0) as n, __vail_partition@2 as __vail_partition]
+  ProjectionExec: expr=[vail_semantic_kernel_array_filter_a194a0d1749232a0(entries@1) as __common_expr_1, row_idx@0 as row_idx, 0 as __vail_partition]
+    OrderedConcatExec: children=1
+      TablePartitionViewExec: partition=0
+        VailConsumerScopeExec: consumer=2
+          SortExec: expr=[row_idx@0 ASC NULLS LAST, __vail_sort_ordinal@3 ASC], preserve_partitioning=[false]
+            BoundedWindowAggExec: wdw=[__vail_sort_ordinal: Field { "__vail_sort_ordinal": UInt64 }, frame: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW], mode=[Sorted]
+              OrderedConcatExec: children=2
+                TablePartitionViewExec: partition=0
+                  VailConsumerScopeExec: consumer=1
+                    ProjectionExec: expr=[vail_semantic_kernel_get_field_b97b8e73c80c9055(named_struct(row_idx, idx@0)) as row_idx, vail_semantic_kernel_array_transform_e7c8915d13d5bdf8(vail_semantic_kernel_array_transform_a30e8ebe8f725c66(vail_semantic_kernel_array_transform_9977d43266a83a6c())) as entries, __vail_partition@1 as __vail_partition]
+                      VailSourcePartitions: 2
+                        CooperativeExec
+                          RangeExec: [0, 2)
+                        CooperativeExec
+                          RangeExec: [2, 3)
+                TablePartitionViewExec: partition=1
+                  VailConsumerScopeExec: consumer=1
+                    ProjectionExec: expr=[vail_semantic_kernel_get_field_b97b8e73c80c9055(named_struct(row_idx, idx@0)) as row_idx, vail_semantic_kernel_array_transform_e7c8915d13d5bdf8(vail_semantic_kernel_array_transform_a30e8ebe8f725c66(vail_semantic_kernel_array_transform_9977d43266a83a6c())) as entries, __vail_partition@1 as __vail_partition]
+                      VailSourcePartitions: 2
+                        CooperativeExec
+                          RangeExec: [0, 2)
+                        CooperativeExec
+                          RangeExec: [2, 3)
+
+Struct(n=15, total=15)
