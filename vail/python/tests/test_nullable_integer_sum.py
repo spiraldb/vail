@@ -82,3 +82,23 @@ def test_nested_fields_keep_declared_positions_and_sibling_sums():
                               other=hl.sum(a.map(lambda x: x.payload.other)),
                               suffix=hl.sum(a.map(lambda x: x.suffix))))
     assert result == hl.Struct(depth=3, other=(1 << 40) + 7, suffix=71)
+
+
+def test_arrow_list_slice_with_large_hidden_child_owner():
+    import numpy as np
+    import pyarrow as pa
+    values = np.arange(128 * 1024, dtype=np.int32)
+    depth = pa.array(values, mask=(values % 7 == 0))
+    payload = pa.StructArray.from_arrays([depth], names=['depth'])
+    cells = pa.StructArray.from_arrays([payload], names=['payload'], mask=pa.array(values % 11 == 0))
+    lists = pa.ListArray.from_arrays(pa.array(np.arange(1025, dtype=np.int32) * 128), cells)
+    # Retain the large owner behind an interior two-row slice, with nonzero
+    # Arrow child/bitmap offsets. Test through the public Arrow import API.
+    selected = lists.slice(777, 2)
+    t = hl.Table.parallelize(pa.Table.from_arrays([selected], names=['items']))
+    result = t.select(total=hl.sum(t.items.map(lambda x: hl.int64(x.payload.depth)))).collect()
+    expected = [sum(i for i in range(row * 128, (row + 1) * 128) if i % 7 and i % 11)
+                for row in (777, 778)]
+    assert [x.total for x in result] == expected
+    empty = hl.Table.parallelize(pa.Table.from_arrays([lists.slice(777, 0)], names=['items']))
+    assert empty.select(total=hl.sum(empty.items.map(lambda x: hl.int64(x.payload.depth)))).collect() == []

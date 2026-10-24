@@ -180,7 +180,8 @@ impl Prepared {
 
 struct Input<'a, T: arrow_array::types::ArrowPrimitiveType> {
     lists: &'a ListArray,
-    values: &'a arrow_array::PrimitiveArray<T>,
+    values: arrow_array::PrimitiveArray<T>,
+    base: usize,
     list_nulls: Option<NullBuffer>,
     value_nulls: Option<NullBuffer>,
 }
@@ -193,7 +194,12 @@ fn input<'a, T: arrow_array::types::ArrowPrimitiveType>(
 ) -> Result<Input<'a, T>, ExprError> {
     let lists = list_array(array)?;
     let list_nulls = lists.logical_nulls().filter(|n| n.null_count() != 0);
-    let mut values = lists.values();
+    // A sliced ListArray retains its full child owner. Limit every bitmap
+    // operation to this batch's visible contiguous child span, then rebase row
+    // offsets. Array slices share data and do not copy child values.
+    let base = lists.value_offsets()[0] as usize;
+    let end = lists.value_offsets()[lists.len()] as usize;
+    let mut values = lists.values().slice(base, end - base);
     let mut parents = Vec::with_capacity(path.len() + 1);
     for &index in path {
         let parent = values
@@ -204,17 +210,20 @@ fn input<'a, T: arrow_array::types::ArrowPrimitiveType>(
         values = parent
             .columns()
             .get(index)
-            .ok_or_else(|| ExprError::Invalid("integer list sum field absent".into()))?;
+            .ok_or_else(|| ExprError::Invalid("integer list sum field absent".into()))?
+            .clone();
     }
     parents.push(values.logical_nulls());
     let value_nulls = NullBuffer::union_many(parents.iter().map(Option::as_ref));
     let values = values
         .as_any()
         .downcast_ref::<arrow_array::PrimitiveArray<T>>()
-        .ok_or_else(|| ExprError::Invalid("integer list sum primitive type changed".into()))?;
+        .ok_or_else(|| ExprError::Invalid("integer list sum primitive type changed".into()))?
+        .clone();
     Ok(Input {
         lists,
         values,
+        base,
         list_nulls,
         value_nulls,
     })
@@ -235,8 +244,9 @@ fn evaluate_same<T: arrow_array::ArrowNumericType, const FILTER_MISSING: bool>(
             output.push(None);
             continue;
         }
-        let start = input.lists.value_offsets()[row] as usize;
-        let len = input.lists.value_offsets()[row + 1] as usize - start;
+        let start = input.lists.value_offsets()[row] as usize - input.base;
+        let len =
+            (input.lists.value_offsets()[row + 1] - input.lists.value_offsets()[row]) as usize;
         let row = values.slice(start, len);
         output.push(if !FILTER_MISSING && row.null_count() != 0 {
             None
@@ -262,8 +272,8 @@ fn evaluate_wide<const FILTER_MISSING: bool>(
             output.push(None);
             continue;
         }
-        let start = input.lists.value_offsets()[row] as usize;
-        let end = input.lists.value_offsets()[row + 1] as usize;
+        let start = input.lists.value_offsets()[row] as usize - input.base;
+        let end = input.lists.value_offsets()[row + 1] as usize - input.base;
         let values = &input.values.values()[start..end];
         output.push(match &input.value_nulls {
             None => Some(sum_slice(values)),
@@ -294,7 +304,7 @@ fn sum_nullable<const FILTER_MISSING: bool>(
             sum = sum.wrapping_add(sum_slice(chunk));
         } else if !FILTER_MISSING {
             return None;
-        } else {
+        } else if mask != 0 {
             sum = sum.wrapping_add(sum_selected(chunk, mask));
         }
     }
@@ -305,7 +315,7 @@ fn sum_nullable<const FILTER_MISSING: bool>(
             sum = sum.wrapping_add(sum_slice(remainder));
         } else if !FILTER_MISSING {
             return None;
-        } else {
+        } else if mask != 0 {
             sum = sum.wrapping_add(sum_selected(remainder, mask));
         }
     }
