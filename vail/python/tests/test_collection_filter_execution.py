@@ -100,3 +100,13 @@ def test_filtered_nullable_structs_and_zero_field_structs():
     empty = hl.literal([{}, None, {}], hl.tarray(hl.tstruct()))
     assert hl.eval(empty.aggregate(lambda item: hl.agg.filter(hl.is_defined(item), hl.agg.count()))) == 2
     assert hl.eval(empty.aggregate(lambda item: hl.agg.filter(True, hl.agg.count()))) == 3
+
+
+def test_filtered_collection_call_predicate_keeps_value_domain_errors():
+    calls = hl.literal([hl.Call([0]), hl.Call([0, 1])], hl.tarray(hl.tcall))
+    with pytest.raises((ValueError, RuntimeError), match='ploidy'):
+        hl.eval(calls.aggregate(lambda c: hl.agg.filter(
+            c.unphased_diploid_gt_index() > 0, hl.agg.count())))
+    guarded = calls.aggregate(lambda c: hl.agg.filter(
+        hl.if_else(c.is_diploid(), c.unphased_diploid_gt_index() > 0, False), hl.agg.count()))
+    assert hl.eval(guarded) == 1
