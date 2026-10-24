@@ -208,7 +208,7 @@ pub(crate) fn access(value: &ArrayRef, accessor: CallAccessor) -> Result<ArrayRe
 #[derive(Debug, Clone)]
 pub(crate) struct PreparedIndex {
     constant: Option<i32>,
-    kernel: fn(&[ArrayRef]) -> Result<ArrayRef, ExprError>,
+    kernel: fn(&[ArrayRef], Option<i32>) -> Result<ArrayRef, ExprError>,
 }
 impl PartialEq for PreparedIndex {
     fn eq(&self, other: &Self) -> bool { self.constant == other.constant }
@@ -221,22 +221,38 @@ impl std::hash::Hash for PreparedIndex {
 }
 impl PreparedIndex {
     pub(crate) fn new(constant: Option<i32>) -> Self {
-        let (constant, kernel): (_, fn(&[ArrayRef]) -> Result<ArrayRef, ExprError>) = match constant {
-            Some(0) => (constant, call_index::<0, false>),
-            Some(1) => (constant, call_index::<1, false>),
-            Some(-1) => (constant, call_index::<-1, false>),
-            Some(-2) => (constant, call_index::<-2, false>),
-            _ => (None, call_index::<0, true>),
+        let kernel: fn(&[ArrayRef], Option<i32>) -> Result<ArrayRef, ExprError> = match constant {
+            Some(0) => call_index::<0, false>,
+            Some(1) => call_index::<1, false>,
+            Some(-1) => call_index::<-1, false>,
+            Some(-2) => call_index::<-2, false>,
+            Some(_) => invalid_call_index,
+            None => call_index::<0, true>,
         };
         Self { constant, kernel }
     }
     pub(crate) fn is_constant(&self) -> bool { self.constant.is_some() }
     pub(crate) fn evaluate(&self, args: &[ArrayRef]) -> Result<ArrayRef, ExprError> {
-        (self.kernel)(args)
+        (self.kernel)(args, self.constant)
     }
 }
 
-fn call_index<const INDEX: i32, const DYNAMIC: bool>(args: &[ArrayRef]) -> Result<ArrayRef, ExprError> {
+// Every defined supported/unchecked Call exposes at most two alleles. An
+// impossible constant index needs only the first defined row for its error;
+// missing Calls still yield missing without raising an out-of-bounds error.
+fn invalid_call_index(args: &[ArrayRef], requested: Option<i32>) -> Result<ArrayRef, ExprError> {
+    let rows = CallRows::new(&args[0])?;
+    if let Some(row) = (0..rows.parent.len()).find(|&row| rows.parent.is_valid(row)) {
+        let n = rows.ploidy.value(row);
+        let len = if n == 2 { 2 } else { usize::from(n > 0) };
+        return Err(ExprError::Invalid(format!(
+            "array index out of bounds: index={}, length={len}", requested.unwrap()
+        )));
+    }
+    Ok(arrow_array::new_null_array(&DataType::Int32, rows.parent.len()))
+}
+
+fn call_index<const INDEX: i32, const DYNAMIC: bool>(args: &[ArrayRef], _: Option<i32>) -> Result<ArrayRef, ExprError> {
     let rows = CallRows::new(&args[0])?;
     let indices = if DYNAMIC { Some(down::<Int32Array>(args[1].as_ref())?) } else { None };
     let nulls = if let Some(indices) = indices {
