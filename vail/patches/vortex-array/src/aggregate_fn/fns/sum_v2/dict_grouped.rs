@@ -87,7 +87,7 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         let values = dict.values().clone().execute::<PrimitiveArray>(ctx)?;
         // Resolve Mask enum representations once, before entry traversal.
         // All-valid specializations never access their empty placeholder view.
-        let empty_bits = BitBuffer::default();
+        let empty_bits = BitBuffer::new_unset(0);
         let code_bits = code_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
         let value_bits = value_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
         let code_bits = BitBufferView::new_with_offset(code_bits.inner().as_slice(), code_bits.len(), code_bits.offset());
