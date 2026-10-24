@@ -19,7 +19,9 @@ justifies that route. Existing Boolean count reductions use Arrow bitmaps.
 `diagnostic.py` runs public queries against the normally built baseline at
 /private/tmp/vail-export-join-integration-env. `baseline-diagnostic.log` retains
 all samples. Native sparse input contains filtered entries and missing values.
-No build or other timed workload overlapped this diagnostic.
+A separate integration build was active on the local host during diagnostics.
+These are directional shape comparisons, not isolated performance gates; final
+matched timings must run after builds stop.
 
 80M entries, four fractions, excluding first sample per mode:
 
