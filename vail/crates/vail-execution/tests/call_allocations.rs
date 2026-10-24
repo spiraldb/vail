@@ -509,3 +509,25 @@ fn aligned_map_column_metadata_allocations_do_not_scale_with_payload_bytes() {
         "metadata payload grew allocations from {small_bytes} to {wide_bytes} bytes"
     );
 }
+
+#[test]
+fn direct_call_index_allocates_only_primitive_output_not_allele_lists() {
+    let batch = calls(8192);
+    let expression = Expr::ArrayIndex {
+        value: Arc::new(Expr::GetField {
+            value: Arc::new(Expr::Column { name: "c".into() }),
+            name: "__vail_call_alleles".into(),
+        }),
+        index: Arc::new(Expr::RuntimeLiteral {
+            value: datafusion_common::ScalarValue::Int32(Some(0)),
+        }),
+    };
+    let (output, bytes) = evaluate_aligned_allocated_bytes(&batch, &expression);
+    assert_eq!(output.len(), batch.num_rows());
+    assert_eq!(output.null_count(), batch.column(0).null_count());
+    // Four bytes per result plus bounded expression bookkeeping. No child
+    // allele values, list offsets, per-row take indices or expanded index literal.
+    assert!(bytes <= 5 * batch.num_rows() + 8192,
+            "direct Call index allocated {bytes} bytes for {} calls", batch.num_rows());
+    eprintln!("direct Call index: {} calls, {bytes} allocated bytes", batch.num_rows());
+}
