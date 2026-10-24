@@ -712,6 +712,15 @@ fn lower(
                     .to_arrow()?,
             )
         }
+        Expr::ArrayReduce { .. } if crate::expressions::scalar_integer_extrema(expr).is_some() => {
+            let (operation, arguments) = crate::expressions::scalar_integer_extrema(expr).unwrap();
+            let function = match operation {
+                crate::expressions::ArrayReduction::Min => datafusion_functions::core::least(),
+                crate::expressions::ArrayReduction::Max => datafusion_functions::core::greatest(),
+                _ => unreachable!(),
+            };
+            function.call(arguments.iter().map(recurse).collect::<Result<Vec<_>, _>>()?)
+        }
         Expr::ArrayLength { value } => crate::array_length::udf().call(vec![recurse(value)?]),
         Expr::ArrayFlatten { value } => {
             datafusion_functions_nested::flatten::flatten_udf().call(vec![recurse(value)?])

@@ -1,0 +1,110 @@
+# Native entry computation: profiles and general optimizations
+
+This investigation uses genuine Hail-origin fixtures converted to native Vail
+storage. It does not measure the legacy reader. The baseline is the normal-built
+current-main baseline from the legacy join investigation, source base `6b6eb3b6`,
+native SHA256 `29b5998dc15b82534967b0ce4c749c561fbd24368259b9ef181ea13fef42ece9`.
+No extension binaries were copied as a build cache. The machine is the exclusive
+32-vCPU `vail-bench-20261021`; builds and timed queries do not overlap.
+
+## Warmed measurements
+
+Each public query is executed four times in one fresh Python process. The first
+sample is excluded; the following three form these medians. CPU time is summed
+process user/system time. Peak memory is process high-water RSS, not a per-query
+allocation total. Profile25 is the existing native profile matrix, not the
+billion-entry scaling fixture. These are diagnostic measurements, separate from
+the exhaustive scan and Hail comparison.
+
+| Query | Wall seconds | CPU seconds | Peak RSS GiB |
+|---|---:|---:|---:|
+| Direct matrix DP sum | 0.225 | 5.63 | 0.91 |
+| Entry-table DP sum | 0.940 | 19.47 | 3.10 |
+| 33 row aggregates | 1.136 | 26.56 | 1.08 |
+| 33 column aggregates | 0.736 | 16.49 | 1.10 |
+| Coverage counter/mean pipeline | 2.137 | 64.40 | 0.85 |
+| PL dosage annotation | 1.011 | 24.13 | 5.21 |
+| Global GQ stats | 0.408 | 10.28 | 0.95 |
+
+Direct and entry-table DP sums both return `353709503` on every sample. Row/column
+and coverage benchmark actions force complete result execution. PL dosage is
+annotation/materialization, not aggregation.
+
+## Confirmed opportunities
+
+1. **Scalar integer min/max unnecessarily constructs lists.** Coverage spends
+   approximately 30% inclusive in DataFusion `make_array`; source confirms
+   `min(100, x)` builds `[100, x]` per entry before reducing it. The candidate
+   lowers nonempty explicit integer min/max arguments directly to DataFusion's
+   `least`/`greatest`. This applies to arbitrary integer clamps and multiargument
+   extrema in tables, nested maps and matrix computations, independent of any
+   benchmark name, size or field. Floating-point and strict-missingness contracts
+   retain their current implementation until separately justified.
+
+2. **Custom entry expansion hides projection demand.** Entry-table scalar sum
+   spends significant self time in Arrow list/string gathering, offset copying
+   and MutableArrayData. The custom expansion emits all row/column/entry fields;
+   the scalar DP consumer discards most of them. The existing nested projection
+   pass explicitly treats expansion as consuming the child's entire output.
+   This needs a general projection contract, not a special sum rewrite.
+
+3. **Key proof loss can collapse parallelism.** Explicitly selecting only DP
+   reduces CPU but makes this query slower: about 5 seconds for combined narrow
+   row/column/entry selection, versus 0.94 seconds without selection. Selecting
+   entries alone takes about 9 seconds. `matrix_entry_partition_groups` falls
+   back to one concatenated stream if inherited key bounds cannot be proved.
+   Source key forwarding currently recognizes direct columns and identity casts,
+   while matrix reconstruction frequently re-expresses keys through struct fields.
+   Projection improvements must retain equivalent key/ordering properties rather
+   than trade decoding work for serialization.
+
+4. **Opaque sibling reductions block useful CSE.** The physical diagnostic plan
+   for four fractions over different thresholds contains four different semantic
+   kernels for the same entry-presence denominator. DataFusion shares repeated
+   use within each fraction, but cannot identify sibling kernels as equivalent.
+   Improve semantic identity/exposure instead of introducing a second bespoke CSE.
+
+5. **Array computation is mostly framework work, not just expensive math.**
+   Dosage samples include about 24.7% inclusive in DataFusion array-transform and
+   substantial CASE/indexing/allocation. `pow` alone is only about 1.4% self;
+   changing to a PL lookup cache is not supported as the leading optimization.
+   Row/column many-aggregate samples show indexing (~6–10% self) and ordinary
+   comparison/arithmetic kernels. Profiles include startup and small OpenBLAS
+   background-thread samples; inclusive percentages overlap. Some DWARF stacks
+   truncate at unknown frames, so these are direction-finding measurements rather
+   than a complete disjoint CPU accounting.
+
+## DataFusion integration contract
+
+The exact pinned version is **55.0.0**, from Cargo.lock. Its optimizer sequence
+includes `SimplifyExpressions`, `CommonSubexprEliminate`,
+`ExtractLeafExpressions`, `PushDownLeafProjections`, and `OptimizeProjections`
+(`datafusion-optimizer/src/optimizer.rs`, default rules). Scalar extrema now
+become ordinary logical ScalarFunction expressions before `state.optimize`, so
+those standard passes can see their arguments, constants and equality. Prepared
+nested callbacks also use the existing DataFusion physical ScalarFunctionExpr;
+no new runtime interpreter or custom scalar kernel is introduced.
+
+For future entry expansion changes, DataFusion 55's
+`ExecutionPlan::try_swapping_with_projection` is the physical projection hook;
+the default returns None. Logical extension input/expr rewriting and supported
+projection contracts must also allow required nested fields to reach scans.
+Provided ordering, required ordering and distribution are separate properties:
+unordered reductions must not inherit a requirement merely because the input
+can provide ordering. Existing count-demand fixes do not automatically establish
+this property for all aggregates.
+
+Pinned source references:
+
+- [DataFusion 55 optimizer sequence](https://github.com/apache/datafusion/blob/55.0.0/datafusion/optimizer/src/optimizer.rs)
+- [Common expression elimination, including volatility and conditional demands](https://github.com/apache/datafusion/blob/55.0.0/datafusion/optimizer/src/common_subexpr_eliminate.rs)
+- [ExecutionPlan projection/ordering contracts](https://github.com/apache/datafusion/blob/55.0.0/datafusion/physical-plan/src/execution_plan.rs)
+- [Least implementation and null behavior](https://github.com/apache/datafusion/blob/55.0.0/datafusion/functions/src/core/least.rs)
+- [Greatest implementation](https://github.com/apache/datafusion/blob/55.0.0/datafusion/functions/src/core/greatest.rs)
+
+## Candidate validation status
+
+Normal kache/maturin release build and public tests are in progress. No production
+performance improvement is claimed until matched candidate measurements complete.
+The projection/ordering/CSE issues remain separate queued general investigations;
+they are not bundled into the scalar extrema change.
