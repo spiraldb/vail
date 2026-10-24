@@ -7,8 +7,12 @@ use arrow_schema::{DataType, Field, Schema};
 use std::sync::Arc;
 use vail_execution::expressions::Type;
 use vail_storage::legacy::{Component, Dataset};
+use vortex::{VortexSessionDefault, session::VortexSession};
 #[derive(Debug)]
 pub struct Read {
+    // Plugin registries and execution machinery are shared across file scans;
+    // cursors, buffers and layout caches remain local to each execution.
+    pub session: VortexSession,
     pub component: Arc<Component>,
     pub counts: Arc<Option<Vec<u64>>>,
     pub matrix: Option<Arc<Matrix>>,
@@ -67,6 +71,7 @@ fn source(
         .as_ref()
         .map_or_else(|| rows.schema.clone(), |m| m.schema.clone());
     let descriptor = Arc::new(Read {
+        session: VortexSession::default(),
         component: Arc::new(rows),
         counts: Arc::new(counts),
         matrix,
