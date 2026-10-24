@@ -109,6 +109,14 @@ impl ScalarFnVTable for Mask {
             return Ok(result);
         }
 
+        // MaskReduce rules require a metadata-readable Boolean mask. Resolve
+        // that small bitmap before the value child, then let those rules retain
+        // the value encoding (e.g. mask Dict codes instead of expanding values).
+        if !mask_array.is::<crate::arrays::Bool>() {
+            let mask = mask_array.execute::<crate::arrays::BoolArray>(ctx)?;
+            return input.mask(mask.into_array());
+        }
+
         // A compressed child can reveal another encoding (notably Dict) in
         // one execution step. Reapply existing mask-reduction rules at that
         // boundary instead of canonicalizing through the revealed encoding.

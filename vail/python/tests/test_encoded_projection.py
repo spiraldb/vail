@@ -33,17 +33,18 @@ def test_native_wide_entry_schema_sum_and_empty_axes(tmp_path, rows, cols):
 def test_native_computed_projection_pruning_keeps_row_counts(tmp_path):
     import pyarrow as pa
     data = pa.Table.from_pylist([
-        {"items": [{"prefix": 91, "n": 2147483647}, {"prefix": 92, "n": 1}]},
-        {"items": [None, {"prefix": 93, "n": None}]},
-        {"items": []},
-        {"items": None},
-    ], schema=pa.schema([("items", pa.list_(pa.struct([
+        {"label": "one", "items": [{"prefix": 91, "n": 2147483647}, {"prefix": 92, "n": 1}]},
+        {"label": "two", "items": [None, {"prefix": 93, "n": None}]},
+        {"label": "three", "items": []},
+        {"label": "four", "items": None},
+    ], schema=pa.schema([("label", pa.string()), ("items", pa.list_(pa.struct([
         ("prefix", pa.int64()), ("n", pa.int32())])))]))
     path = str(tmp_path / "arrays.ht")
     hl.Table.parallelize(data).write(path)
     t = hl.read_table(path)
-    mapped = t.select(total=hl.sum(t.items.map(lambda x: hl.int64(x.n))))
+    mapped = t.select(label=t.label, total=hl.sum(t.items.map(lambda x: hl.int64(x.n))))
     assert mapped.count() == 4
     assert mapped.aggregate(hl.agg.count()) == 4
-    assert [r.total for r in mapped.collect()] == [2147483648, 0, 0, None]
+    assert [(r.label, r.total) for r in mapped.collect()] == [
+        ("one", 2147483648), ("two", 0), ("three", 0), ("four", None)]
     assert mapped.aggregate(hl.agg.sum(mapped.total)) == 2147483648
