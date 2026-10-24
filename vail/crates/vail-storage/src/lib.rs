@@ -755,7 +755,7 @@ async fn stream_snapshot_internal(
 /// It contains no row batches and performs no whole-file reads.
 #[derive(Debug)]
 pub(crate) struct SnapshotReadPlan {
-    vortex_sessions: Arc<iceberg::arrow::reader::VortexSessionCache>,
+    vortex_sessions: Arc<iceberg::arrow::VortexSessionCache>,
     pub(crate) computed_proofs: computed_capability::ProofCache,
     table: Table,
     pub(crate) descriptor: SnapshotDescriptor,

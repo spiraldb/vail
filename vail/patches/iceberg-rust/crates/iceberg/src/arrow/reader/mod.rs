@@ -17,6 +17,8 @@
 
 //! Parquet file data reader
 
+use std::sync::Arc;
+
 use crate::arrow::caching_delete_file_loader::CachingDeleteFileLoader;
 use crate::io::FileIO;
 use crate::runtime::Runtime;
