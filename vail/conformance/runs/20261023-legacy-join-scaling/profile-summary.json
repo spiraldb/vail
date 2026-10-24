@@ -1,0 +1,17 @@
+{
+  "scope": "inclusive CPU samples, except BLAS self; whole fresh Python worker; software cpu-clock99Hz; one profile each; not additive",
+  "frozen_e79_baseline": {
+    "filter_pushdown_inclusive_percent": 24.39,
+    "vortex_session_default_inclusive_percent": 15.94
+  },
+  "join_only_candidate": {
+    "filter_pushdown_inclusive_percent": 1.04,
+    "vortex_session_default_inclusive_percent": 40.72
+  },
+  "final_candidate": {
+    "filter_pushdown_inclusive_percent": 2.08,
+    "vortex_session_default_inclusive_percent": null,
+    "report_threshold_percent": 0.1,
+    "blas_thread_server_self_percent": 21.37
+  }
+}
