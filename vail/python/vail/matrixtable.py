@@ -1231,16 +1231,23 @@ class MatrixTable:
         shared = {}
         if axis in ("row", "col"):
             compatible = [(name, value) for name, value in fields
-                          if self._coordinate_column_aggregate_eligible(value)
-                          # The plain row fraction route has a distinct empty
-                          # identity (NaN); keep that existing route intact.
-                          and not (axis == "row" and value.to_ir().get("op") == "aggregate"
-                                   and value.to_ir().get("function") == "fraction")]
+                          if self._coordinate_column_aggregate_eligible(value)]
             if len(compatible) > 1:
                 reduced = self._axis_aggregates(
                     struct(**dict(compatible)), axis, base
                 )
                 shared = {name: reduced[name] for name, _ in compatible}
+                if axis == "row":
+                    # Plain row fractions return NaN for an empty entry scope.
+                    # The shared list reducer returns missing for that case;
+                    # restore the public identity after sharing its contexts.
+                    # Keep nested/filtered aggregate identities unchanged.
+                    from . import or_else
+                    from .types import tfloat64
+                    for name, value in compatible:
+                        node = value.to_ir()
+                        if node.get("op") == "aggregate" and node.get("function") == "fraction":
+                            shared[name] = or_else(shared[name], literal(float("nan"), tfloat64))
         prepared = [
             (
                 n,
