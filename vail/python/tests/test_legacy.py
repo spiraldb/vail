@@ -14,8 +14,8 @@ import vail as hl
 
 RESOURCES = Path(os.environ.get('VAIL_HAIL_RESOURCES', Path(__file__).resolve().parents[3] / 'hail/hail/hail/test/resources'))
 COMPAT = RESOURCES / 'backward_compatability'
-TABLES = sorted(COMPAT.glob('*/table/*.ht'))
-MATRICES = sorted(COMPAT.glob('*/matrix_table/*.hmt'))
+TABLES = sorted(path for path in COMPAT.glob('*/table/*.ht') if path.is_dir())
+MATRICES = sorted(path for path in COMPAT.glob('*/matrix_table/*.hmt') if path.is_dir())
 EVIDENCE = Path(__file__).resolve().parents[2] / 'conformance/runs/20261022-legacy-storage'
 
 

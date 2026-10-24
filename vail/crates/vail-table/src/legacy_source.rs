@@ -14,6 +14,7 @@ use std::{fmt, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub struct LegacySource {
+    sessions: Arc<crate::legacy::SessionCache>,
     schema: TableSchema,
     batch_size: usize,
     metrics: ExecutionPlanMetricsSet,
@@ -106,6 +107,7 @@ impl LegacySource {
     }
     pub fn new(schema: SchemaRef, read: Arc<crate::legacy::Read>, part: usize) -> Self {
         Self {
+            sessions: read.sessions.clone(),
             schema: TableSchema::from(schema.clone()),
             output_schema: schema,
             matrix: read.matrix.clone(),
@@ -317,22 +319,20 @@ impl FileOpener for LegacyOpener {
                     .copied()
                     .filter(|n| *n > 0)
                 {
-                    use vortex::{
-                        VortexSessionDefault,
-                        layout::{LayoutReader, scan::scan_builder::ScanBuilder},
-                        session::VortexSession,
-                    };
-                    let session = VortexSession::default();
-                    let reader = vail_storage::legacy::layout::LegacyLayoutReader::new(
-                        source.component.clone(),
-                        part,
-                        rows,
-                        projection,
-                        source.batch_size,
-                        decode_columns,
-                    )
-                    .map_err(external)?
-                    .with_decode_paths(decode_paths.clone());
+                    use vortex::layout::{LayoutReader, scan::scan_builder::ScanBuilder};
+                    let session = source.sessions.current();
+                    let reader =
+                        vail_storage::legacy::layout::LegacyLayoutReader::new_with_session(
+                            source.component.clone(),
+                            part,
+                            rows,
+                            projection,
+                            source.batch_size,
+                            decode_columns,
+                            session.clone(),
+                        )
+                        .map_err(external)?
+                        .with_decode_paths(decode_paths.clone());
                     // Sequential within a file; DataFusion schedules files independently.
                     // A single split in flight also bounds the layout's range cache.
                     let projection_expr = vortex::expr::select(
@@ -491,10 +491,8 @@ fn matrix_layout_stream(
     rows: u64,
 ) -> Result<futures::stream::BoxStream<'static, Result<RecordBatch>>> {
     use futures::TryStreamExt;
-    use vortex::{
-        VortexSessionDefault, layout::scan::scan_builder::ScanBuilder, session::VortexSession,
-    };
-    let session = VortexSession::default();
+    use vortex::layout::scan::scan_builder::ScanBuilder;
+    let session = source.sessions.current();
     let matrix = source.matrix.as_ref().unwrap();
     let schema = Arc::new(source.output_schema.project(&projection)?);
     let reader = vail_storage::legacy::matrix_layout::reader(

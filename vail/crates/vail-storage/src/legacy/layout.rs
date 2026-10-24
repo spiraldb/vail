@@ -50,7 +50,28 @@ impl LegacyLayoutReader {
         batch_size: usize,
         decode_columns: Option<Vec<usize>>,
     ) -> VortexResult<Self> {
-        let session = VortexSession::default();
+        Self::new_with_session(
+            component,
+            part,
+            rows,
+            projection,
+            batch_size,
+            decode_columns,
+            VortexSession::default(),
+        )
+    }
+
+    /// Reuse prepared plugin registries while retaining a separate file cursor,
+    /// row-range cache and decoder for this layout execution.
+    pub fn new_with_session(
+        component: Arc<Component>,
+        part: usize,
+        rows: u64,
+        projection: Vec<usize>,
+        batch_size: usize,
+        decode_columns: Option<Vec<usize>>,
+        session: VortexSession,
+    ) -> VortexResult<Self> {
         let schema = Arc::new(
             component
                 .schema

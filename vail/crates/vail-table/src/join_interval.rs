@@ -1,14 +1,14 @@
 //! Key-interval planning for independent Table join partitions.
 //!
-//! Bounds are metadata only. Certified Vortex fragment bounds are used for
-//! direct reads; operators that may change keys fall back to a streaming pass
+//! Bounds are metadata only. Certified Vortex fragments and Hail partition
+//! intervals support direct reads; operators that may change keys fall back to a streaming pass
 //! retaining just the first and last key of each prepared partition.
 use crate::{
     Result, TableError, TableIR, TableJoinKind, TableNode, TableRef,
     partitioned::{OrderedConcatExec, PreparedTable},
     plan::{self, PhysicalPlan, column},
 };
-use arrow_array::{Array, ArrayRef, Int32Array};
+use arrow_array::{Array, ArrayRef, Int32Array, Int64Array};
 use arrow_schema::{SchemaRef, SortOptions};
 use datafusion_execution::TaskContext;
 use datafusion_expr::Operator;
@@ -152,6 +152,12 @@ impl ClipSource {
                 }
                 Some(ranges)
             }
+            TableNode::TextRead {
+                paths,
+                format,
+                legacy: Some(read),
+                ..
+            } if format == "legacy" && read.matrix.is_none() && paths.len() == parts => None,
             TableNode::Range { n_partitions, .. } if *n_partitions == parts => None,
             _ => return Ok(None),
         };
@@ -214,6 +220,61 @@ impl ClipSource {
                     query,
                     range.clone(),
                 )
+            }
+            TableNode::TextRead {
+                format,
+                legacy: Some(read),
+                ..
+            } if format == "legacy" && read.matrix.is_none() => {
+                // Build only this file's scan. Resetting a PartitionView of the
+                // full prepared source clones every file's plan per join cell.
+                let scan = plan::source_partition(&self.source, index)?;
+                let keys = key_expressions(&scan, &self.source.keys()[..arity])?;
+                let bound_filter = |values: &[ArrayRef], op| -> Result<Arc<dyn PhysicalExpr>> {
+                    if arity == 1
+                        && values.len() == 1
+                        && values[0].is_valid(0)
+                        && matches!(
+                            values[0].data_type(),
+                            arrow_schema::DataType::Int32 | arrow_schema::DataType::Int64
+                        )
+                    {
+                        return Ok(Arc::new(BinaryExpr::new(
+                            keys[0].clone(),
+                            op,
+                            Arc::new(datafusion_physical_expr::expressions::Literal::new(
+                                datafusion_common::ScalarValue::try_from_array(&values[0], 0)?,
+                            )),
+                        )));
+                    }
+                    Ok(crate::join_key::predicate(
+                        &keys,
+                        values,
+                        op,
+                        scan.schema().as_ref(),
+                    )?)
+                };
+                let filters = vec![
+                    bound_filter(
+                        lower,
+                        if lower_inclusive {
+                            Operator::GtEq
+                        } else {
+                            Operator::Gt
+                        },
+                    )?,
+                    bound_filter(
+                        upper,
+                        if upper_inclusive {
+                            Operator::LtEq
+                        } else {
+                            Operator::Lt
+                        },
+                    )?,
+                ];
+                // Keep the normal residual below; these predicates also enable
+                // the legacy index's integer-key seek and block pruning.
+                plan::legacy_source_partition(&self.source, index, None, filters)?
             }
             TableNode::Range { .. }
                 if arity == 1 && self.source.keys().first().is_some_and(|key| key == "idx") =>
@@ -1304,6 +1365,57 @@ pub(crate) fn inherited_bounds(
                     })
                     .transpose()?,
                 );
+            }
+            Ok(Some(result))
+        }
+        TableNode::TextRead {
+            paths,
+            format,
+            legacy: Some(read),
+            ..
+        } if format == "legacy"
+            && read.matrix.is_none()
+            && join_key == 1
+            && table.keys().len() == 1 =>
+        {
+            // Hail intervals may overestimate actual endpoint rows. Treat them
+            // as conservative envelopes; clipping keeps its residual predicate.
+            let component = &read.component;
+            let Some(counts) = read.counts.as_ref() else {
+                return Ok(None);
+            };
+            if component.int_key_bounds.len() != paths.len() || counts.len() != paths.len() {
+                return Ok(None);
+            }
+            let name = &table.keys()[0];
+            let dtype = table.schema().field_with_name(name)?.data_type();
+            let endpoint = |value: i64| -> Option<ArrayRef> {
+                match dtype {
+                    arrow_schema::DataType::Int32 => {
+                        Some(Arc::new(Int32Array::from(vec![i32::try_from(value).ok()?])))
+                    }
+                    arrow_schema::DataType::Int64 => Some(Arc::new(Int64Array::from(vec![value]))),
+                    _ => None,
+                }
+            };
+            let mut result = Vec::with_capacity(paths.len());
+            for (bound, count) in component.int_key_bounds.iter().zip(counts) {
+                if *count == 0 {
+                    result.push(None);
+                    continue;
+                }
+                // Missing bounds mean unknown, not an empty partition. Fall
+                // back to endpoint discovery for null/unsupported keys.
+                let Some(bound) = bound.as_ref().filter(|bound| &bound.key == name) else {
+                    return Ok(None);
+                };
+                let (Some(first), Some(last)) = (endpoint(bound.min), endpoint(bound.max)) else {
+                    return Ok(None);
+                };
+                result.push(Some(Bound {
+                    first: vec![first],
+                    last: vec![last],
+                }));
             }
             Ok(Some(result))
         }
