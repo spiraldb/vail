@@ -17,7 +17,10 @@ def test_filtered_collection_numeric_bundle_nulls_and_shape(dtype):
             x > 0, hl.struct(n=hl.agg.count(), total=hl.agg.sum(x), xs=hl.agg.collect(x))))
         actual = hl.eval(result)
         assert (actual.n, actual.total) == (expected.n, expected.total)
-        assert actual.xs is None if expected.xs is None else Counter(actual.xs) == Counter(expected.xs)
+        if expected.xs is None:
+            assert actual.xs is None
+        else:
+            assert Counter(actual.xs) == Counter(expected.xs)
     values = hl.literal([None, 1, 1, 3], hl.tarray(dtype))
     result = hl.eval(values.aggregate(lambda x: hl.agg.filter(
         True, hl.struct(n=hl.agg.count(), xs=hl.agg.collect(x)))))
@@ -33,6 +36,9 @@ def test_filtered_collection_row_global_and_outer_lexical_captures():
     rows = table.select(metric=table.xs.aggregate(lambda x: hl.agg.filter(
         x > table.limit, hl.struct(n=hl.agg.count(), total=hl.agg.sum(x + table.offset))))).collect()
     assert Counter((row.metric.n, row.metric.total) for row in rows) == Counter([(2, 25), (0, 0), (0, 0)])
+    fixed = table.select(limit=table.limit, total=hl.array([None, 1, 4]).aggregate(
+        lambda x: hl.agg.filter(x > table.limit, hl.agg.sum(x + table.offset))))
+    assert {row.limit: row.total for row in fixed.collect()} == {0: 25, 3: 14, None: 0}
     nested = hl.array([0, 2]).map(lambda lower: hl.array([None, 1, 3]).aggregate(
         lambda x: hl.agg.filter(x > lower, hl.agg.sum(x + lower))))
     assert hl.eval(nested) == [4, 5]
