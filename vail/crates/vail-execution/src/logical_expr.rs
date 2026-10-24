@@ -650,8 +650,11 @@ fn lower(
                 ) =>
         {
             let dtype = expr.dtype_with_globals(schema.as_arrow(), globals)?.to_arrow()?;
-            let distinct = datafusion_functions_nested::set_ops::array_distinct_udf()
+            let input_type = args[0].dtype_with_globals(schema.as_arrow(), globals)?.to_arrow()?;
+            let compact = crate::list_aggregate::compact_defined_lists_udf(input_type)?
                 .call(vec![recurse(&args[0])?]);
+            let distinct = datafusion_functions_nested::set_ops::array_distinct_udf()
+                .call(vec![compact]);
             restore_type(distinct, dtype)
         }
         Expr::NestedFunction { function, args, .. } if function == "__vail_list_reduce_collect" => {

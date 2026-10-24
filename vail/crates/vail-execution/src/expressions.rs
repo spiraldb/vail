@@ -6198,9 +6198,14 @@ fn lower_uncached(
                 ) =>
         {
             let values = lower_cached(&args[0], schema, globals, scope, memo, context)?;
+            let input_type = values.data_type(schema)?;
+            let compact = Arc::new(ScalarFunctionExpr::try_new(
+                crate::list_aggregate::compact_defined_lists_udf(input_type)?,
+                vec![values], schema, Arc::new(ConfigOptions::default()),
+            )?);
             let distinct = Arc::new(ScalarFunctionExpr::try_new(
                 datafusion_functions_nested::set_ops::array_distinct_udf(),
-                vec![values],
+                vec![compact],
                 schema,
                 Arc::new(ConfigOptions::default()),
             )?);
