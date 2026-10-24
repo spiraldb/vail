@@ -1,0 +1,178 @@
+[
+  {
+    "mode": "rename",
+    "phase": "plan",
+    "width": 16,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.013492958499999999,
+      "candidate": 0.01263420825,
+      "ratio": 0.9363556739613482
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.027914749999999995,
+      "candidate": 0.020413250000000008,
+      "ratio": 0.7312711021950765
+    },
+    "maxrss_bytes": {
+      "baseline": 27029504,
+      "candidate": 26968064,
+      "ratio": 0.9977269283224731
+    }
+  },
+  {
+    "mode": "rename",
+    "phase": "plan",
+    "width": 64,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.03991485425,
+      "candidate": 0.0401730935,
+      "ratio": 1.0064697530493927
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.04730949999999999,
+      "candidate": 0.04766400000000001,
+      "ratio": 1.007493209609064
+    },
+    "maxrss_bytes": {
+      "baseline": 27295744,
+      "candidate": 27193344,
+      "ratio": 0.9962484993997599
+    }
+  },
+  {
+    "mode": "rename",
+    "phase": "plan",
+    "width": 256,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.15129596875,
+      "candidate": 0.15169266675,
+      "ratio": 1.0026219998013
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.16250949999999997,
+      "candidate": 0.16283750000000002,
+      "ratio": 1.0020183435429932
+    },
+    "maxrss_bytes": {
+      "baseline": 28102656,
+      "candidate": 27963392,
+      "ratio": 0.995044454161201
+    }
+  },
+  {
+    "mode": "wide",
+    "phase": "plan",
+    "width": 16,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.02980985425,
+      "candidate": 0.02468115625,
+      "ratio": 0.8279529327118397
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.03703275,
+      "candidate": 0.03171600000000001,
+      "ratio": 0.8564311319035179
+    },
+    "maxrss_bytes": {
+      "baseline": 27189248,
+      "candidate": 27058176,
+      "ratio": 0.9951792708647182
+    }
+  },
+  {
+    "mode": "wide",
+    "phase": "plan",
+    "width": 64,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.1042412605,
+      "candidate": 0.08622818775,
+      "ratio": 0.8271982450749432
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.11423799999999996,
+      "candidate": 0.09537850000000014,
+      "ratio": 0.8349104501129236
+    },
+    "maxrss_bytes": {
+      "baseline": 27754496,
+      "candidate": 27451392,
+      "ratio": 0.9890791027154664
+    }
+  },
+  {
+    "mode": "wide",
+    "phase": "plan",
+    "width": 256,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.401192302,
+      "candidate": 0.33188348975,
+      "ratio": 0.8272429159171653
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.42196825000000027,
+      "candidate": 0.3503502499999997,
+      "ratio": 0.8302763300319383
+    },
+    "maxrss_bytes": {
+      "baseline": 29614080,
+      "candidate": 28876800,
+      "ratio": 0.975103734439834
+    }
+  },
+  {
+    "mode": "many",
+    "phase": "plan",
+    "width": 16,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 0.15314463550000001,
+      "candidate": 0.151829354,
+      "ratio": 0.9914115078487354
+    },
+    "process_cpu_seconds": {
+      "baseline": 0.1639684999999998,
+      "candidate": 0.1623412500000003,
+      "ratio": 0.9900758377371294
+    },
+    "maxrss_bytes": {
+      "baseline": 27783168,
+      "candidate": 27705344,
+      "ratio": 0.9971988795518207
+    }
+  },
+  {
+    "mode": "many",
+    "phase": "plan",
+    "width": 64,
+    "iterations": 40,
+    "processes": 8,
+    "measured_wall_seconds": {
+      "baseline": 2.00150566675,
+      "candidate": 2.011479677,
+      "ratio": 1.0049832535654
+    },
+    "process_cpu_seconds": {
+      "baseline": 2.06126875,
+      "candidate": 2.0709485,
+      "ratio": 1.0046960155001623
+    },
+    "maxrss_bytes": {
+      "baseline": 34238464,
+      "candidate": 34197504,
+      "ratio": 0.9988036846512741
+    }
+  }
+]

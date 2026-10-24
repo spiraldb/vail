@@ -1,0 +1,40 @@
+
+running 1 test
+nested=false mode=replace: ERROR Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=false mode=extend: ERROR Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=false mode=distinct: values=[1, 2]
+nested=true mode=replace: ERROR Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=true mode=extend: ERROR Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=true mode=distinct: values=[1, 2]
+
+thread 'same_name_struct_schema_replacement_preserves_new_field' (23848969) panicked at crates/vail-table/tests/struct_field_projection_contract.rs:109:5:
+nested=false mode=replace: Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=false mode=extend: Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=true mode=replace: Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+nested=true mode=extend: Optimizer rule 'push_down_leaf_projections' failed
+caused by
+Error during planning: Field added not found in struct
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test same_name_struct_schema_replacement_preserves_new_field ... FAILED
+
+failures:
+
+failures:
+    same_name_struct_schema_replacement_preserves_new_field
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

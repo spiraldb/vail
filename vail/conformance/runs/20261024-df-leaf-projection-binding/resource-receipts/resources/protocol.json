@@ -1,0 +1,982 @@
+{
+  "seed": 94020261024,
+  "pairs_per_case": 4,
+  "cases": [
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8
+    }
+  ],
+  "order": [
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 0,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 1,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 2,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 3,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 4,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 5,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 16,
+      "rows": 32,
+      "iterations": 40,
+      "case": 6,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 64,
+      "rows": 32,
+      "iterations": 40,
+      "case": 7,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 40,
+      "case": 8,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 9,
+      "pair": 3,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 0,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 0,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 1,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 1,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 2,
+      "label": "baseline"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 2,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 3,
+      "label": "candidate"
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "case": 10,
+      "pair": 3,
+      "label": "baseline"
+    }
+  ],
+  "artifacts": {
+    "baseline": {
+      "source": "2e479637383f31794037d6f44b3eac788c2f1774",
+      "binary": "/private/tmp/vail-df-leaf-binding-gate/resource-baseline/public-df-control",
+      "sha256": "3c6c8b924b04cc37d705ccdcb26e0163ea8e5f59210187f4c8af54ad89e7b8b9",
+      "test_sha256": "91afabdb2e2619f8f0a834432728dde5492d69029dc7b0aaa3ee0db6e27ffb8d"
+    },
+    "candidate": {
+      "source": "4d5240d0d3063946888a6aa78fdfc0e10bc4c04e",
+      "binary": "/private/tmp/vail-df-leaf-binding-gate/resource-candidate/public-df-control",
+      "sha256": "bf903f802ced6277c12d6a9ae01675fbc621f3496edcb04b3c9cb1d2ec8f8dc3",
+      "test_sha256": "91afabdb2e2619f8f0a834432728dde5492d69029dc7b0aaa3ee0db6e27ffb8d"
+    }
+  },
+  "cpu_scope": "external process CPU includes fixture, warmup, planning/execution/validation; not kernel time",
+  "rss_scope": "/usr/bin/time maximum resident set size, whole child process",
+  "overall_budget_seconds": 180
+}
