@@ -427,6 +427,39 @@ async fn downsample_ignores_hidden_finite_points_under_null_records() {
     assert_eq!(x.values(), &[0., 1.]);
 }
 
+fn correlation_state_count(input: ArrayRef) -> u64 {
+    let schema = Schema::new(vec![Field::new("packed", input.data_type().clone(), true)]);
+    let exprs: Vec<Arc<dyn PhysicalExpr>> = vec![Arc::new(Column::new("packed", 0))];
+    let fields = [Arc::new(schema.field(0).clone())];
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "corr",
+        input.data_type(),
+        &serde_json::json!({}),
+    )
+    .unwrap()
+    .unwrap();
+    let mut accumulator = udf
+        .accumulator(AccumulatorArgs {
+            return_field: Arc::new(Field::new("corr", DataType::Float64, true)),
+            schema: &schema,
+            ignore_nulls: true,
+            order_bys: &[],
+            is_reversed: false,
+            name: "corr",
+            is_distinct: false,
+            exprs: &exprs,
+            expr_fields: &fields,
+        })
+        .unwrap();
+    accumulator.update_batch(&[input]).unwrap();
+    let state = accumulator.state().unwrap();
+    assert_eq!(state.len(), 6);
+    let ScalarValue::UInt64(Some(count)) = state[0] else {
+        panic!("expected public UInt64 count state")
+    };
+    count
+}
+
 #[tokio::test]
 async fn correlation_counts_offset_validities_and_parent_masks() {
     // Independent child offsets exercise Arrow's shifted bitmap words and tail.
@@ -460,12 +493,9 @@ async fn correlation_counts_offset_validities_and_parent_masks() {
                             && (masks & 2 == 0 || (i + y_offset) % 5 != 0)
                     })
                     .count();
-                let result = aggregate(
-                    "corr",
-                    packed(&["x", "y"], vec![Arc::new(x), Arc::new(y)], parent),
-                    serde_json::json!({}),
-                )
-                .await;
+                let input = packed(&["x", "y"], vec![Arc::new(x), Arc::new(y)], parent);
+                assert_eq!(correlation_state_count(input.clone()), valid as u64);
+                let result = aggregate("corr", input, serde_json::json!({})).await;
                 let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
                 match valid {
                     0 => assert!(result.is_null(0)),
