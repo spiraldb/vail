@@ -151,12 +151,10 @@ pub(crate) async fn prepare(
     // library-owned allocations are not all included. Dropped read futures may
     // leave already-dispatched blocking reads finishing in the background.
     let domains = {
-        let mut files = futures::stream::iter(
-            plan.files
-                .iter()
-                .map(|file| prepare_file(file, &expected, &operands, &session, budget.clone())),
-        )
-        .buffered(MAX_PREFLIGHT_FILES);
+        let tasks = plan.files.iter().map(|file| {
+            prepare_file(file, &expected, &operands, &session, budget.clone())
+        }).collect::<Vec<_>>();
+        let mut files = futures::stream::iter(tasks).buffered(MAX_PREFLIGHT_FILES);
         let mut domains = Vec::with_capacity(plan.files.len());
         while let Some(domain) = files.next().await {
             let Some(domain) = domain? else {
