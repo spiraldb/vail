@@ -31,7 +31,7 @@ Real Apple `CPU Counters` traces were recorded separately for ten seconds per pr
 
 ## Validation
 
-- Four new public semantic cases pass on both baseline and candidate: nested missing values, filtered/empty entry scopes, empty structs/cardinality, sliced/null/empty arrays, seeded values and guarded error scope.
-- Broad candidate suite: **103 passed, one failed**. The sole failing node `test_collection_aggregate_matrix_scope_and_lookup_context` is reproduced on the exact main native baseline, with the same existing expected-three/got-one row-count error (`baseline-scope-test.log`). No new failing node.
+- Five new public semantic cases pass on both baseline and candidate: nested missing values, filtered/empty entry scopes, empty structs/cardinality, sliced/null/empty arrays, seeded values, Call phase and guarded invalid-cast scope.
+- Broad candidate suite: **103 passed, one failed**; the additional Call/error-scope case also passes, for **104 distinct passing cases**. The sole failing node `test_collection_aggregate_matrix_scope_and_lookup_context` is reproduced on the exact main native baseline, with the same existing expected-three/got-one row-count error (`baseline-scope-test.log`). No new failing node.
 - Broad scope: collection aggregate/kernels, matrix array aggregates, collection reducers, row fractions, CSE, aggregate execution and complete public RNG suite.
 - Normal build log and installed module/source hashes retained. No compiled native artifact was copied or manually cached.

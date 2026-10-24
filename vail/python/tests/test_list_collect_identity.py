@@ -30,3 +30,10 @@ def test_collect_evaluates_value_once_and_keeps_error_scope():
     actual=hl.eval(values.aggregate(lambda x:hl.agg.collect(hl.rand_int32(100,seed=7)+x)))
     assert actual==expected
     assert hl.eval(hl.array([0,1,2]).aggregate(lambda x:hl.agg.filter(x>0,hl.agg.collect(hl.int32(hl.str(x))))))==[1,2]
+
+
+def test_collect_retains_call_phase_and_excludes_guarded_errors():
+    values=hl.array([hl.call(0,1,phased=True),hl.missing(hl.tcall),hl.call(1,1)])
+    assert hl.eval(values.aggregate(lambda x:hl.agg.collect(x)))==hl.eval(values)
+    strings=hl.array(['bad','1','2'])
+    assert hl.eval(strings.aggregate(lambda x:hl.agg.filter(x!='bad',hl.agg.collect(hl.int32(x)))))==[1,2]
