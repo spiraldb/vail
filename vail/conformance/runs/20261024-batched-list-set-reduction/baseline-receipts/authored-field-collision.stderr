@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/private/tmp/h003-row-set-profile.py", line 7, in <module>
+    expr=h.agg.sum(h.len(rows.distinct))
+                   ^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/h045-local-gate/candidate-env/lib/python3.12/site-packages/vail/collections.py", line 236, in length
+    value = as_expr(value)
+            ^^^^^^^^^^^^^^
+  File "/private/tmp/h045-local-gate/candidate-env/lib/python3.12/site-packages/vail/expressions.py", line 110, in as_expr
+    return literal(value)
+           ^^^^^^^^^^^^^^
+  File "/private/tmp/h045-local-gate/candidate-env/lib/python3.12/site-packages/vail/expressions.py", line 1106, in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+  File "/private/tmp/h045-local-gate/candidate-env/lib/python3.12/site-packages/vail/types.py", line 710, in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+TypeError: cannot infer a Vail type for method
