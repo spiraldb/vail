@@ -1,0 +1,7 @@
+# Fix-only candidate: correctness green, resource/composition gates pending
+
+Minimal pinned DataFusion55 fix productione1a006e1 was built normally fromcc4af4a8 (approvedmain66 plus fix/test/evidence only). No rejected transparent Struct route is present. The independent public DF contract now passes3/3 (eight replacement/extension/distinct/same-type-value cases plus rename and filter/sort/limit controls),0ignored/filtered,0.02s; test graph213.03s. Published upstream unchanged optimizer failed both replacement/extension shapes, while distinct alias controls passed, all recorded separately.
+
+Normal native wheel built235.14s and installed ordinarily into a separate environment, sourcecc4, native SHA256ae1a942a38dc05c810292dae056e57aa07ff116a1cccd34a3a94dbeb7bb0bca2. Broad public Python gate431/431 passes14.17s, including429prior cases plus2same-name schema replacement regressions. Baseline normal20f had429/429 plus supplemental2/2. No .so transplant.
+
+No performance win is inferred from fixing previously failing cases. Public valid projection planning/value control source is prepared but UNBUILT and resource gate pending. Final combined assembly must include subsequently merged af8 library API and rerun the required exact composition gate. This candidate is UNMERGED pending resource evidence and final independent review. The transparent route's initial67fail receipts and exact rejected normalnative artifact remain preserved separately; any route reintroduction requires its own composition review.
