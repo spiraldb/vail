@@ -55,5 +55,16 @@ def test_nullable_coordinate_float_order_nan_and_zero():
     assert result[0].s == 0.
     assert result[1].s == 0.
     assert result[1].lo == 0.
+    assert math.copysign(1., result[1].lo) == -1.
     assert math.isnan(result[2].s)
     assert result[2].lo == 2.
+
+
+def test_nullable_coordinate_nested_parent_and_child_validity():
+    table = hl.Table.parallelize([{'xs': [{'v': 1}, None]}, {'xs': None},
+                                 {'xs': [{'v': 3}, {'v': None}]}],
+        schema=hl.tstruct(xs=hl.tarray(hl.tstruct(v=hl.tint64))))
+    result = table.aggregate(hl.agg.array_agg(lambda x: hl.struct(
+        s=hl.agg.sum(x.v), parent=hl.agg.count_where(hl.is_defined(x)),
+        child=hl.agg.count_where(hl.is_defined(x.v))), table.xs))
+    assert [dict(x) for x in result] == [dict(s=4, parent=2, child=2), dict(s=0, parent=1, child=0)]
