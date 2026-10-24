@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/danielking/h089-measure-io.py", line 18, in <module>
+    print(json.dumps({'iteration':i,'query':a.query,'result':result if a.query=='bare' else dict(result),'seconds':elapsed,'cpu_seconds':used,'maxrss_kib':after.ru_maxrss,'minor_faults':after.ru_minflt-before.ru_minflt,'major_faults':after.ru_majflt-before.ru_majflt,'rchar_bytes':io_after['rchar']-io_before['rchar'],'disk_read_bytes':io_after['read_bytes']-io_before['read_bytes']}),flush=True)
+                                                                                                                   ^^^^^^^
+NameError: name 'elapsed' is not defined

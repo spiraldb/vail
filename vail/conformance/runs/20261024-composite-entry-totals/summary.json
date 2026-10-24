@@ -1,0 +1,82 @@
+{
+  "bare": {
+    "baseline": {
+      "seconds": 0.21061900000006517,
+      "cpu_seconds": 5.585774564000002,
+      "maxrss_kib": 932502.0,
+      "minor_faults": 85624.0,
+      "rchar_bytes": 978508642.0,
+      "disk_read_bytes": 0.0
+    },
+    "candidate": {
+      "seconds": 0.21286207399998602,
+      "cpu_seconds": 5.718713505000001,
+      "maxrss_kib": 939004.0,
+      "minor_faults": 93117.0,
+      "rchar_bytes": 978140631.5,
+      "disk_read_bytes": 0.0
+    },
+    "speedup": 0.9894623125774815,
+    "cpu_reduction": -0.02379955357611152
+  },
+  "two_sums": {
+    "baseline": {
+      "seconds": 0.35682443849998435,
+      "cpu_seconds": 9.205660273999998,
+      "maxrss_kib": 992096.0,
+      "minor_faults": 265445.5,
+      "rchar_bytes": 970785602.0,
+      "disk_read_bytes": 0.0
+    },
+    "candidate": {
+      "seconds": 0.22856651799997962,
+      "cpu_seconds": 6.1036577295,
+      "maxrss_kib": 944624.0,
+      "minor_faults": 75103.0,
+      "rchar_bytes": 979359071.5,
+      "disk_read_bytes": 0.0
+    },
+    "speedup": 1.5611404575888765,
+    "cpu_reduction": 0.3369668717040468
+  },
+  "sums_count": {
+    "baseline": {
+      "seconds": 0.36265824299994165,
+      "cpu_seconds": 9.42901131,
+      "maxrss_kib": 983524.0,
+      "minor_faults": 277679.5,
+      "rchar_bytes": 972017955.0,
+      "disk_read_bytes": 0.0
+    },
+    "candidate": {
+      "seconds": 0.21523479400002543,
+      "cpu_seconds": 5.64263433,
+      "maxrss_kib": 942460.0,
+      "minor_faults": 71071.5,
+      "rchar_bytes": 978517384.0,
+      "disk_read_bytes": 0.0
+    },
+    "speedup": 1.6849424586988422,
+    "cpu_reduction": 0.40156670254328075
+  },
+  "computed": {
+    "baseline": {
+      "seconds": 0.36360699800002294,
+      "cpu_seconds": 9.484335504999997,
+      "maxrss_kib": 983220.0,
+      "minor_faults": 278775.5,
+      "rchar_bytes": 971852114.5,
+      "disk_read_bytes": 0.0
+    },
+    "candidate": {
+      "seconds": 0.23997970250002254,
+      "cpu_seconds": 6.288749698,
+      "maxrss_kib": 957716.0,
+      "minor_faults": 113902.5,
+      "rchar_bytes": 979322546.0,
+      "disk_read_bytes": 0.0
+    },
+    "speedup": 1.515157299605323,
+    "cpu_reduction": 0.33693302027488725
+  }
+}

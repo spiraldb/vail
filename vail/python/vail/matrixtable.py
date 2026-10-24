@@ -1726,6 +1726,12 @@ class MatrixTable:
                     self, expr, core, None, direct_entry_sum=True
                 )
             return core.aggregate(aggregate_sum(row_total), _localize=localize)
+        if axis == "entry":
+            from .matrix_list_aggregates import reduce_composite_totals
+            reduced = reduce_composite_totals(self, expr)
+            if reduced is not None:
+                core, total = reduced
+                return core.aggregate(total, _localize=localize)
         table = self._context(
             axis, with_columns=_uses_axis_field(node, "col"),
             with_rows=_uses_axis_field(node, "row"),

@@ -798,3 +798,111 @@ def reduce_list(
     result = walk(expr.to_ir(), contexts, fixed)
     return Expression(expr.dtype, base, _IR(
         result, refs, lookups, lexical_types=lexical_types | bound))
+
+
+def reduce_composite_totals(matrix, expr):
+    """Lower exact associative integer total bundles to ordinary DF aggregates.
+
+    Eligibility and rewriting preserve DAG sharing. Floating-point sums keep
+    the original aggregation tree because regrouping can change their results.
+    """
+    from . import is_defined
+    from . import agg
+    from .collections import _function
+    from .matrixtable import _CELLS, _VALUE, _uses_axis_field, _uses_column_position
+
+    root = expr.to_ir()
+    if root.get("op") not in {"struct", "tuple"} or expr._lookup_refs:
+        return None
+    core = matrix._mir.core
+    leaves = {}
+    eligibility = {}
+    # Retain every native handle whose identity is cached throughout rewriting.
+    retained = {}
+    views = {}
+
+    def view(node):
+        identity = node.node_identity()
+        if identity not in views:
+            retained[identity] = node
+            # Struct children are inline Expr values: view() creates fresh Arc
+            # wrappers. Retain one view so discovery and substitution see the
+            # same child identities, as in the existing row-reducer walker.
+            views[identity] = node.view()
+        return views[identity]
+
+    def eligible(node):
+        if not isinstance(node, IR_NODE_TYPES):
+            return False
+        identity = node.node_identity()
+        if identity in eligibility:
+            return eligibility[identity]
+        retained[identity] = node
+        data = view(node)
+        op = data.get("op")
+        if op == "struct":
+            result = all(eligible(value) for _, value in data["fields"])
+        elif op == "tuple":
+            result = all(eligible(value) for value in data["elements"])
+        elif (op != "aggregate" or matrix._is_scan_node(node)
+                or set(node.get("options") or {}) != {"__vail_result_type"}
+                or node.get("init")):
+            result = False
+        elif node.get("function") == "count":
+            result = True
+            leaves[identity] = node
+        elif node.get("function") == "sum":
+            value = node.get("value")
+            dtype = type_from_wire(node["options"]["__vail_result_type"])
+            result = (dtype == tint64 and value.is_pure()
+                      and not _uses_axis_field(value, "col")
+                      and not _uses_column_position(value))
+            if result:
+                leaves[identity] = node
+        else:
+            result = False
+        eligibility[identity] = result
+        return result
+
+    if not eligible(root) or not leaves:
+        return None
+
+    replacements = {}
+    refs = dict(expr._global_refs)
+    for identity, node in leaves.items():
+        dtype = type_from_wire(node["options"]["__vail_result_type"])
+        if node["function"] == "count":
+            present = core[_CELLS].map(lambda cell: is_defined(cell[_VALUE]))
+            row_value = _function("__vail_list_reduce_count_where", [present], tint64)
+        else:
+            leaf = Expression(dtype, matrix, _IR(
+                node, expr._global_refs, expr._lookup_refs,
+                lexical_types=expr._lexical_types,
+            ))
+            row_value = reduce_list(matrix, leaf, core, None, direct_entry_sum=True)
+        refs.update(row_value._global_refs)
+        replacements[identity] = agg.sum(row_value).to_ir()
+
+    rebuilt = dict(replacements)
+
+    def rebuild(node):
+        identity = node.node_identity()
+        if identity in rebuilt:
+            return rebuilt[identity]
+        data = view(node)
+        if data.get("op") == "struct":
+            value = {"op": "struct", "fields": [
+                [name, rebuild(value)] for name, value in data["fields"]]}
+        else:
+            value = {"op": "tuple", "elements": [rebuild(value) for value in data["elements"]]}
+        # Native handles preserve shared children; a repeated Python dictionary
+        # alone would be expanded again by the native expression parser.
+        result = NativeExpr(value)
+        rebuilt[identity] = result
+        return result
+
+    total = Expression(expr.dtype, core, _IR(
+        rebuild(root), refs, expr._lookup_refs,
+        lexical_types=expr._lexical_types,
+    ))
+    return core, total
