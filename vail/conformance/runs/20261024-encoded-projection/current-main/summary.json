@@ -1,0 +1,38 @@
+{
+  "assembly_source": "e2bf8fdc6ceb2c081aba4531538b7571a602a472",
+  "main_parent": "a47b8f170462c95d81c68f23ade08938acc769e1",
+  "isolated_parent": "d621389d2f50d75a4c2b0b5f68a6062a97acbda6",
+  "native_sha256": "1193eb43b60995d3a8f00f875f348829a0557eee070899c91d8340b73d200c71",
+  "python_passed": 168,
+  "python_failed": 1,
+  "rust_passed": 9,
+  "existing_failure": "test_composite_floating_sum_retains_existing_aggregation_results",
+  "baseline_failure_verified": "historical H078 same UDF hash and expected2/got1 error; query has no native read",
+  "exact_a47_baseline_available": false,
+  "queries": {
+    "encoded-main-filtered-combined.jsonl": {
+      "n": 12,
+      "native_sha256": "1193eb43b60995d3a8f00f875f348829a0557eee070899c91d8340b73d200c71",
+      "median_wall": 0.07778822904219851,
+      "median_cpu": 0.9202705
+    },
+    "encoded-main-filtered-old-reference.jsonl": {
+      "n": 12,
+      "native_sha256": "69a06f57d61746e815cd843bb58a08efb912d214bb3c6da650d7c62e05d825bf",
+      "median_wall": 0.07529366650851443,
+      "median_cpu": 0.8987820000000002
+    },
+    "encoded-main-unfiltered-combined.jsonl": {
+      "n": 12,
+      "native_sha256": "1193eb43b60995d3a8f00f875f348829a0557eee070899c91d8340b73d200c71",
+      "median_wall": 0.06228652049321681,
+      "median_cpu": 0.7372845000000001
+    },
+    "encoded-main-unfiltered-old-reference.jsonl": {
+      "n": 12,
+      "native_sha256": "69a06f57d61746e815cd843bb58a08efb912d214bb3c6da650d7c62e05d825bf",
+      "median_wall": 0.07439295848598704,
+      "median_cpu": 0.8384715
+    }
+  }
+}

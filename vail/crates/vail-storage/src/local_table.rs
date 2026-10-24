@@ -718,6 +718,121 @@ impl LocalRead {
         partition: usize,
         field_ids: &[i32],
     ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        self.partition_batches_with_computation(partition, field_ids, None)
+    }
+
+    /// Evaluate a typed row-preserving projection in the encoded Vortex scan.
+    /// Callers retain DataFusion operators above this source for global work.
+    /// Prepare a fail-closed, immutable metadata proof for the requested dense
+    /// integer-list operands. Positive and negative proofs are cached per snapshot.
+    async fn dense_list_projection_certificate(
+        &self,
+        mut operands: Vec<Vec<String>>,
+    ) -> Result<Option<Arc<super::computed_capability::DenseListProjectionCertificate>>> {
+        operands.sort();
+        operands.dedup();
+        let partitions = self
+            .partition_offsets
+            .iter()
+            .zip(&self.entry.partition_rows)
+            .map(|(&start, &count)| {
+                start
+                    .checked_add(count as u64)
+                    .map(|end| start..end)
+                    .ok_or_else(|| StorageError::Invalid("source row range overflow".into()))
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let key = (
+            operands.clone(),
+            partitions.iter().map(|r| (r.start, r.end)).collect(),
+        );
+        let cell = {
+            let mut cache = self.plan.computed_proofs.lock().await;
+            if let Some(cell) = cache.get(&key) {
+                cell.clone()
+            } else if cache.len() < 16 {
+                cache
+                    .entry(key)
+                    .or_insert_with(|| Arc::new(tokio::sync::OnceCell::new()))
+                    .clone()
+            } else {
+                Arc::new(tokio::sync::OnceCell::new())
+            }
+        };
+        cell.get_or_try_init(|| {
+            super::computed_capability::prepare(self.plan.clone(), partitions, operands)
+        })
+        .await
+        .cloned()
+    }
+
+    /// Trusted cross-crate preparation boundary for the closed native translator.
+    ///
+    /// The caller must have proved that the expression is a row-preserving pack
+    /// containing only top-level field passthroughs and skip-null widened i32
+    /// list-field sums over exactly `operands`, with the existing missing-list
+    /// guard/empty-zero semantics, no bindings/globals/effects or other operators,
+    /// and the declared exact result schema. This is an execution-planner
+    /// interface, not an arbitrary Vortex expression entrypoint. Physical-domain
+    /// evidence is checked here before binding the immutable request; execution
+    /// cannot substitute an expression or schema after that preparation.
+    #[doc(hidden)]
+    pub async fn prepare_dense_list_projection(
+        &self,
+        operands: Vec<Vec<String>>,
+        expression: vortex::expr::Expression,
+        output_schema: Arc<Schema>,
+    ) -> Result<Option<Arc<super::computed_capability::PreparedComputedProjection>>> {
+        Ok(self
+            .dense_list_projection_certificate(operands)
+            .await?
+            .map(|certificate| {
+                Arc::new(super::computed_capability::PreparedComputedProjection {
+                    certificate,
+                    expression,
+                    output_schema,
+                })
+            }))
+    }
+
+    pub fn computed_partition_batches(
+        &self,
+        partition: usize,
+        prepared: &super::computed_capability::PreparedComputedProjection,
+    ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        let certificate = &prepared.certificate;
+        let expected = self
+            .partition_offsets
+            .get(partition)
+            .zip(self.entry.partition_rows.get(partition))
+            .and_then(|(&start, &count)| start.checked_add(count as u64).map(|end| start..end));
+        if !certificate
+            .plan
+            .upgrade()
+            .is_some_and(|plan| Arc::ptr_eq(&plan, &self.plan))
+            || expected.as_ref() != certificate.partitions.get(partition)
+        {
+            return futures::stream::once(async {
+                Err(StorageError::Invalid(
+                    "computed source certificate does not match immutable source selection".into(),
+                ))
+            })
+            .boxed();
+        }
+        self.partition_batches_with_computation(
+            partition,
+            self.field_ids.as_slice(),
+            Some((prepared.expression.clone(), prepared.output_schema.clone())),
+        )
+    }
+
+    fn partition_batches_with_computation(
+        &self,
+        partition: usize,
+        field_ids: &[i32],
+        computed: Option<(vortex::expr::Expression, Arc<Schema>)>,
+    ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        let has_computation = computed.is_some();
         let entry = self.entry.clone();
         let plan = self.plan.clone();
         let partition_offsets = self.partition_offsets.clone();
@@ -729,9 +844,10 @@ impl LocalRead {
             let start = partition_offsets[partition];
             let end = start.checked_add(count as u64)
                 .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
-            let (mut batches, _) = super::stream_from_plan_with_nested_projection(
+            let (mut batches, _) = super::stream_from_plan_with_projection(
                 plan, None, false, Some(start..end), Some(field_ids),
                 nested_projection_paths,
+                computed,
             )?;
             yield PartitionEvent::StartPartition;
             let mut emitted = 0u64;
@@ -744,7 +860,7 @@ impl LocalRead {
                     let local_start = (overlap_start - offset) as usize;
                     let length = (overlap_end - overlap_start) as usize;
                     let batch = batch.slice(local_start, length);
-                    let batch = if entry.empty_row {
+                    let batch = if entry.empty_row && !has_computation {
                         RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
                             &RecordBatchOptions::new().with_row_count(Some(length)))?
                     } else { batch };

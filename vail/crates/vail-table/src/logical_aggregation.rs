@@ -1344,7 +1344,13 @@ pub(crate) fn lower_logical_total(
     child: LogicalPlan,
     context: &mut crate::logical::LoweringContext,
 ) -> Result<Option<LogicalPlan>> {
-    let expression = coordinate_reductions(expression)?;
+    let pushed = if bindings.is_empty() { crate::computed_source::try_total(table, expression)? } else { None };
+    let (child, expression) = if let Some((child, expression)) = pushed {
+        (child, expression)
+    } else {
+        (child, expression.clone())
+    };
+    let expression = coordinate_reductions(&expression)?;
     let expression = &expression;
     if let Some(plan) = crate::logical_aggregate_init::lower(
         table,

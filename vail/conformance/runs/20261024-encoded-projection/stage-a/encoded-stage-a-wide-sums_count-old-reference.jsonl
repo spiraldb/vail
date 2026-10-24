@@ -1,0 +1,27 @@
+{"phase": "provenance", "native": "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/_native.abi3.so", "sha256": "69a06f57d61746e815cd843bb58a08efb912d214bb3c6da650d7c62e05d825bf", "query": "sums_count", "fixture": "/private/tmp/entries-profile25.mt", "rchar_bytes": null, "reason": "Linux proc io counters unavailable on macOS"}
+Traceback (most recent call last):
+  File "/private/tmp/encoded-stage-a-wide-measure.py", line 11, in <module>
+    reference=run()
+              ^^^^^
+  File "/private/tmp/encoded-stage-a-wide-measure.py", line 9, in run
+    r=m.aggregate_entries(query)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/matrixtable.py", line 1752, in aggregate_entries
+    return self._aggregate("entry", expr, _localize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/matrixtable.py", line 1731, in _aggregate
+    reduced = reduce_composite_totals(self, expr)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/matrix_list_aggregates.py", line 867, in reduce_composite_totals
+    if not eligible(root) or not leaves:
+           ^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/matrix_list_aggregates.py", line 844, in eligible
+    result = all(eligible(value) for _, value in data["fields"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/matrix_list_aggregates.py", line 844, in <genexpr>
+    result = all(eligible(value) for _, value in data["fields"])
+                 ^^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/matrix_list_aggregates.py", line 857, in eligible
+    result = (dtype == tint64 and value.is_pure()
+                                  ^^^^^^^^^^^^^
+AttributeError: 'builtins.NativeExpr' object has no attribute 'is_pure'

@@ -1110,6 +1110,11 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             fields,
             bindings,
         } => {
+            if bindings.is_empty() {
+                if let Some(plan) = crate::computed_source::try_lower(table, child, fields)? {
+                    return Ok(plan);
+                }
+            }
             let lowered_child = if matches!(child.node(), TableNode::Read { .. }) {
                 let paths = crate::nested_projection::map_rows_storage_paths(fields, child.schema());
                 if paths.is_empty() {

@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Copyright the Vortex contributors
 
 mod grouped;
+mod dict_grouped;
+pub(crate) use dict_grouped::DictGroupedSumV2EncodingKernel;
 
 pub(crate) use grouped::PrimitiveGroupedSumV2EncodingKernel;
 use vortex_error::VortexResult;

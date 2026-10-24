@@ -17,11 +17,15 @@ use vortex_array::arrays::ListArray;
 use vortex_array::builtins::ArrayBuiltins;
 use vortex_array::dtype::DType;
 use vortex_array::dtype::FieldMask;
+use vortex_array::dtype::FieldName;
 use vortex_array::dtype::Nullability;
 use vortex_array::dtype::PType;
 use vortex_array::expr::BoundExpression;
 use vortex_array::expr::Expression;
 use vortex_array::expr::root;
+use vortex_array::scalar_fn::fns::is_not_null::IsNotNull;
+use vortex_array::scalar_fn::fns::is_null::IsNull;
+use vortex_array::scalar_fn::fns::list_length::ListLength;
 use vortex_array::scalar_fn::fns::list_project::Project;
 use vortex_array::scalar_fn::fns::list_project::project_paths;
 use vortex_array::scalar_fn::fns::operators::Operator;
@@ -337,21 +341,45 @@ impl ListReader {
         row_range: &Range<u64>,
         expr: &BoundExpression,
     ) -> VortexResult<ArrayFuture> {
-        let Some(paths) = expr
-            .as_scalar()
-            .and_then(|scalar_fn| scalar_fn.as_opt::<Project>())
-        else {
+        let Some(paths) = nested_element_paths(expr) else {
             return self.fetch_raw_elements(row_range);
         };
-        if !expr.children()[0].is_root() {
+        if paths.is_empty() {
             return self.fetch_raw_elements(row_range);
         }
-        let projection = project_paths(&paths.0, Expression::Root, self.elements.dtype())?
+        let projection = project_paths(&paths, Expression::Root, self.elements.dtype())?
             .bind(self.elements.dtype())?;
         let row_count = usize::try_from(row_range.end - row_range.start)?;
         self.elements
             .projection_evaluation(row_range, &projection, MaskFuture::new_true(row_count))
     }
+}
+
+/// Infer element dependencies through arbitrary scalar expressions. A raw
+/// root use requires every element; shape/validity-only uses do not prevent a
+/// sibling's nested Project from pruning unused payload fields.
+fn nested_element_paths(expr: &BoundExpression) -> Option<Vec<Vec<FieldName>>> {
+    fn visit(expr: &BoundExpression, paths: &mut Vec<Vec<FieldName>>) -> bool {
+        if expr.is_root() {
+            return false;
+        }
+        if expr
+            .children()
+            .first()
+            .is_some_and(BoundExpression::is_root)
+        {
+            if let Some(project) = expr.as_opt::<Project>() {
+                paths.extend(project.0.iter().cloned());
+                return true;
+            }
+            if expr.is::<IsNull>() || expr.is::<IsNotNull>() || expr.is::<ListLength>() {
+                return true;
+            }
+        }
+        expr.children().iter().all(|child| visit(child, paths))
+    }
+    let mut paths = Vec::new();
+    visit(expr, &mut paths).then_some(paths)
 }
 
 fn is_root_list_project(expr: &BoundExpression) -> bool {

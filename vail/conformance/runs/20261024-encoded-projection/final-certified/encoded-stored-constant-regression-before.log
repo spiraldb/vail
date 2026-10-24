@@ -1,0 +1,92 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____________ test_native_stored_constant_integer_list_leaf[False] _____________
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-498/test_native_stored_constant_in0')
+missing = False
+
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_native_stored_constant_integer_list_leaf(tmp_path, missing):
+        t = hl.utils.range_table(1000, n_partitions=3)
+        value = hl.missing(hl.tint32) if missing else hl.int32(7)
+        t = t.annotate(items=hl.range(64).map(lambda _: hl.struct(n=value)))
+        path = str(tmp_path / "constant.ht")
+        t.write(path)
+        r = hl.read_table(path)
+>       assert r.aggregate(hl.agg.sum(hl.sum(r.items.map(
+            lambda e: hl.int64(e.n))))) == (0 if missing else 1000 * 64 * 7)
+
+python/tests/test_encoded_projection.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:1291: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x10950e490>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: invalid Vail descriptor or snapshot: invalid constant metadata
+
+python/vail/__init__.py:2043: ValueError
+_____________ test_native_stored_constant_integer_list_leaf[True] ______________
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-498/test_native_stored_constant_in1')
+missing = True
+
+    @pytest.mark.parametrize("missing", [False, True])
+    def test_native_stored_constant_integer_list_leaf(tmp_path, missing):
+        t = hl.utils.range_table(1000, n_partitions=3)
+        value = hl.missing(hl.tint32) if missing else hl.int32(7)
+        t = t.annotate(items=hl.range(64).map(lambda _: hl.struct(n=value)))
+        path = str(tmp_path / "constant.ht")
+        t.write(path)
+        r = hl.read_table(path)
+>       assert r.aggregate(hl.agg.sum(hl.sum(r.items.map(
+            lambda e: hl.int64(e.n))))) == (0 if missing else 1000 * 64 * 7)
+
+python/tests/test_encoded_projection.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:1291: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x109a7fe60>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: invalid Vail descriptor or snapshot: invalid constant metadata
+
+python/vail/__init__.py:2043: ValueError
+=========================== short test summary info ============================
+FAILED python/tests/test_encoded_projection.py::test_native_stored_constant_integer_list_leaf[False]
+FAILED python/tests/test_encoded_projection.py::test_native_stored_constant_integer_list_leaf[True]
+2 failed, 5 deselected in 0.23s
