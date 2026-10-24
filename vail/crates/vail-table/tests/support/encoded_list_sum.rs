@@ -972,7 +972,7 @@ fn element_validity_fixture() -> VortexResult<vortex::array::ArrayRef> {
     Ok(ListViewArray::try_new(
         entries,
         buffer![0u32, 2, 4, 0].into_array(),
-        buffer![2u32, 0, 3, 4].into_array(),
+        buffer![4u32, 0, 3, 4].into_array(),
         Validity::from_iter([true, true, true, false]),
     )?
     .into_array())
@@ -997,7 +997,7 @@ fn element_validity_map_has_true_boolean_type_and_logical_ancestor_masks() -> Vo
     let expected = ListViewArray::try_new(
         BoolArray::from_iter([true, false, false, false, true, true, true, true]).into_array(),
         buffer![0u32, 2, 4, 0].into_array(),
-        buffer![2u32, 0, 3, 4].into_array(),
+        buffer![4u32, 0, 3, 4].into_array(),
         Validity::from_iter([true, true, true, false]),
     )?
     .into_array();
@@ -1059,7 +1059,7 @@ fn element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types()
     );
     assert_arrays_eq(
         &actual.get_item("root_presence_sum")?,
-        &PrimitiveArray::from_option_iter([Some(2u64), None, Some(3), None]).into_array(),
+        &PrimitiveArray::from_option_iter([Some(3u64), None, Some(3), None]).into_array(),
         &mut ctx,
     );
     assert!(
