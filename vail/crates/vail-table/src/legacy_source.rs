@@ -14,7 +14,7 @@ use std::{fmt, sync::Arc};
 
 #[derive(Clone, Debug)]
 pub struct LegacySource {
-    session: vortex::session::VortexSession,
+    sessions: Arc<crate::legacy::SessionCache>,
     schema: TableSchema,
     batch_size: usize,
     metrics: ExecutionPlanMetricsSet,
@@ -107,7 +107,7 @@ impl LegacySource {
     }
     pub fn new(schema: SchemaRef, read: Arc<crate::legacy::Read>, part: usize) -> Self {
         Self {
-            session: read.session.clone(),
+            sessions: read.sessions.clone(),
             schema: TableSchema::from(schema.clone()),
             output_schema: schema,
             matrix: read.matrix.clone(),
@@ -320,7 +320,7 @@ impl FileOpener for LegacyOpener {
                     .filter(|n| *n > 0)
                 {
                     use vortex::layout::{LayoutReader, scan::scan_builder::ScanBuilder};
-                    let session = source.session.clone();
+                    let session = source.sessions.current();
                     let reader =
                         vail_storage::legacy::layout::LegacyLayoutReader::new_with_session(
                             source.component.clone(),
@@ -492,7 +492,7 @@ fn matrix_layout_stream(
 ) -> Result<futures::stream::BoxStream<'static, Result<RecordBatch>>> {
     use futures::TryStreamExt;
     use vortex::layout::scan::scan_builder::ScanBuilder;
-    let session = source.session.clone();
+    let session = source.sessions.current();
     let matrix = source.matrix.as_ref().unwrap();
     let schema = Arc::new(source.output_schema.project(&projection)?);
     let reader = vail_storage::legacy::matrix_layout::reader(

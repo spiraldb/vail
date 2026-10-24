@@ -12,11 +12,30 @@ use vortex::{VortexSessionDefault, session::VortexSession};
 pub struct Read {
     // Plugin registries and execution machinery are shared across file scans;
     // cursors, buffers and layout caches remain local to each execution.
-    pub session: VortexSession,
+    pub(crate) sessions: Arc<SessionCache>,
     pub component: Arc<Component>,
     pub counts: Arc<Option<Vec<u64>>>,
     pub matrix: Option<Arc<Matrix>>,
 }
+/// Retain one prepared registry set, bound to its execution runtime. Replacing
+/// the cache entry never changes sessions held by active scans on another runtime.
+#[derive(Debug, Default)]
+pub(crate) struct SessionCache(std::sync::Mutex<Option<(tokio::runtime::Id, VortexSession)>>);
+impl SessionCache {
+    pub(crate) fn current(&self) -> VortexSession {
+        let runtime = tokio::runtime::Handle::current().id();
+        let mut cached = self.0.lock().unwrap();
+        if let Some((id, session)) = cached.as_ref() {
+            if *id == runtime {
+                return session.clone();
+            }
+        }
+        let session = VortexSession::default();
+        *cached = Some((runtime, session.clone()));
+        session
+    }
+}
+
 #[derive(Debug)]
 pub struct Matrix {
     pub entries: Arc<Component>,
@@ -71,7 +90,7 @@ fn source(
         .as_ref()
         .map_or_else(|| rows.schema.clone(), |m| m.schema.clone());
     let descriptor = Arc::new(Read {
-        session: VortexSession::default(),
+        sessions: Arc::new(SessionCache::default()),
         component: Arc::new(rows),
         counts: Arc::new(counts),
         matrix,
