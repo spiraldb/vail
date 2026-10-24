@@ -43,6 +43,41 @@ fn grouped_sum_with_encoded_logical_mask_matches_nullable_values() -> VortexResu
 }
 
 #[test]
+fn nullable_dictionary_sizes_and_reuse_match_independent_sums() -> VortexResult<()> {
+    use vortex::array::arrays::DictArray;
+    for cardinality in [19usize, 3000] {
+        for reuse in [1usize, 9] {
+            let dictionary = (0..cardinality).map(|i|
+                (i % 11 != 0).then_some(i as i32 - 19)).collect::<Vec<_>>();
+            let codes = (0..cardinality * reuse).map(|i|
+                (i % 7 != 0).then_some(((i * 13 + 7) % cardinality) as u32)).collect::<Vec<_>>();
+            let spans = [(0, codes.len()), (codes.len() / 3, codes.len() / 3), (codes.len(), 0)];
+            let expected = spans.iter().map(|&(offset, len)| {
+                let present = codes[offset..offset + len].iter()
+                    .filter_map(|code| code.and_then(|i| dictionary[i as usize])).collect::<Vec<_>>();
+                (!present.is_empty()).then(|| present.into_iter().map(i64::from).sum::<i64>())
+            }).collect::<Vec<_>>();
+            let elements = DictArray::try_new(
+                PrimitiveArray::from_option_iter(codes).into_array(),
+                PrimitiveArray::from_option_iter(dictionary).into_array(),
+            )?.into_array();
+            let groups = ListViewArray::try_new(elements,
+                PrimitiveArray::from_iter(spans.iter().map(|&(offset, _)| offset as u32)).into_array(),
+                PrimitiveArray::from_iter(spans.iter().map(|&(_, len)| len as u32)).into_array(),
+                Validity::NonNullable,
+            )?.into_array();
+            let mut ctx = VortexSession::default().create_execution_ctx();
+            let mut accumulator = GroupedAccumulator::try_new(
+                SumV2, NumericalAggregateOpts::default(), DType::Primitive(PType::I32, Nullable),
+            )?;
+            accumulator.accumulate_list(&groups, &mut ctx)?;
+            assert_arrays_eq(&accumulator.finish()?, &PrimitiveArray::from_option_iter(expected).into_array(), &mut ctx);
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn grouped_dictionary_preserves_code_value_and_list_nulls() -> VortexResult<()> {
     use vortex::array::arrays::DictArray;
     let codes = PrimitiveArray::from_option_iter([
