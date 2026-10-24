@@ -54,7 +54,7 @@ def test_native_dense_projection_aliases_keys_globals_and_order(tmp_path):
     t = hl.utils.range_table(137, n_partitions=5)
     t = t.annotate(items=hl.range(41).map(
         lambda c: hl.struct(n=hl.int32(t.idx * 3 - c))))
-    t = t.annotate_globals(description="dense-list")
+    t = t.annotate_globals(description="dense-list", offset=hl.int64(7))
     path = str(tmp_path / "dense.ht")
     t.write(path)
     r = hl.read_table(path)
@@ -66,3 +66,9 @@ def test_native_dense_projection_aliases_keys_globals_and_order(tmp_path):
     # A shape-changing consumer must preserve ordinary relational semantics.
     filtered = mapped.filter(mapped.idx % 3 == 0)
     assert filtered.aggregate(hl.agg.sum(filtered.total)) == sum(expected[::3])
+
+    # Global-dependent arithmetic is outside the encoded subset and retains
+    # its original evaluation scope through the ordinary planner.
+    offset = r.index_globals().offset
+    assert r.aggregate(hl.agg.sum(hl.sum(r.items.map(
+        lambda e: hl.int64(e.n) + offset)))) == sum(expected) + 137 * 41 * 7
