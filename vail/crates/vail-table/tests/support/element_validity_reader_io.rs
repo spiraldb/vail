@@ -8,7 +8,7 @@ use vortex::array::arrays::{ListArray, PrimitiveArray, StructArray};
 use vortex::array::memory::MemorySessionExt;
 use vortex::array::stream::ArrayStreamAdapter;
 use vortex::array::validity::Validity;
-use vortex::array::{ArrayRef, IntoArray, buffer::BufferHandle};
+use vortex::array::{ArrayRef, IntoArray, VortexSessionExecute, buffer::BufferHandle};
 use vortex::buffer::Alignment;
 use vortex::dtype::FieldNames;
 use vortex::error::VortexResult;
@@ -108,9 +108,7 @@ fn fixture(rows: usize, width: usize) -> VortexResult<ArrayRef> {
     .into_array();
     let entry = StructArray::try_new(
         FieldNames::from(["selected", "e", "f", "g", "h"]),
-        std::iter::once(selected)
-            .chain(fields[4..].iter().cloned())
-            .collect(),
+        std::iter::once(selected).chain(fields[4..].iter().cloned()),
         len,
         Validity::from_iter((0..len).map(|i| i % 5 != 0)),
     )?
