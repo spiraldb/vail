@@ -49,6 +49,13 @@ impl Prepared {
             DataType::Int32 if matches!(function, "sum" | "product") => choose!(int32_wide),
             DataType::Int32 => choose!(int32),
             DataType::Int64 => choose!(int64),
+            DataType::Boolean => match function {
+                "any" => boolean_predicate::<0> as Evaluate,
+                "all" => boolean_predicate::<1> as Evaluate,
+                "count_where" => boolean_count::<2> as Evaluate,
+                "fraction" => boolean_fraction::<3> as Evaluate,
+                _ => return None,
+            },
             _ => return None,
         };
         Some(Self {
@@ -130,6 +137,101 @@ macro_rules! integer_kernel {
 integer_kernel!(int32_wide, Int32Array, Int64Builder, i64);
 integer_kernel!(int32, Int32Array, Int32Builder, i32);
 integer_kernel!(int64, Int64Array, Int64Builder, i64);
+
+// Boolean reductions borrow packed Arrow bitmaps. BitChunks describes only
+// the actual segment's bit alignment/length; no array header or validity count
+// is constructed. Null presence and operation are selected outside these loops.
+fn bitmap_reduce<const OP: u8, const NULLS: bool>(
+    values: &arrow_buffer::BooleanBuffer,
+    nulls: Option<&arrow_buffer::NullBuffer>,
+    start: usize,
+    len: usize,
+) -> usize {
+    use arrow_buffer::bit_chunk_iterator::BitChunks;
+    let bits = BitChunks::new(values.values(), values.offset() + start, len);
+    if NULLS {
+        let nulls = nulls.unwrap();
+        let valid = BitChunks::new(nulls.validity(), nulls.offset() + start, len);
+        let words = bits.iter_padded().zip(valid.iter_padded());
+        if OP == 0 {
+            usize::from(words.into_iter().any(|(v, n)| v & n != 0))
+        } else if OP == 1 {
+            usize::from(!words.into_iter().any(|(v, n)| !v & n != 0))
+        } else {
+            words.map(|(v, n)| (v & n).count_ones() as usize).sum()
+        }
+    } else if OP == 0 {
+        usize::from(bits.iter_padded().any(|v| v != 0))
+    } else if OP == 1 {
+        // The last partial word contains zero padding, so do not invert it
+        // without its length mask. Empty and all-missing lists have ALL=true.
+        if bits.iter().any(|v| v != u64::MAX) {
+            0
+        } else {
+            let tail = len % 64;
+            usize::from(tail == 0 || bits.remainder_bits() == (1_u64 << tail) - 1)
+        }
+    } else {
+        bits.iter_padded().map(|v| v.count_ones() as usize).sum()
+    }
+}
+
+macro_rules! boolean_kernel {
+    ($name:ident, $builder:ty, $finish:expr) => {
+        fn $name<const OP: u8>(lists: &ListArray) -> Result<ArrayRef> {
+            let values = lists
+                .values()
+                .as_any()
+                .downcast_ref::<BooleanArray>()
+                .ok_or_else(|| {
+                    exec_datafusion_err!("prepared Boolean reducer input type changed")
+                })?;
+            let logical_nulls = values.logical_nulls();
+            let nulls = logical_nulls.as_ref().filter(|n| n.null_count() != 0);
+            let list_logical_nulls = lists.logical_nulls();
+            let list_nulls = list_logical_nulls.as_ref().filter(|n| n.null_count() != 0);
+            fn run<const OP: u8, const NULLS: bool, const LIST_NULLS: bool>(
+                lists: &ListArray,
+                values: &BooleanArray,
+                nulls: Option<&arrow_buffer::NullBuffer>,
+                list_nulls: Option<&arrow_buffer::NullBuffer>,
+            ) -> ArrayRef {
+                let offsets = lists.value_offsets();
+                let mut output = <$builder>::with_capacity(lists.len());
+                for row in 0..lists.len() {
+                    if LIST_NULLS && !list_nulls.unwrap().is_valid(row) {
+                        output.append_null();
+                        continue;
+                    }
+                    let start = offsets[row] as usize;
+                    let len = (offsets[row + 1] - offsets[row]) as usize;
+                    let result = bitmap_reduce::<OP, NULLS>(values.values(), nulls, start, len);
+                    output.append_option(($finish)(result, len));
+                }
+                Arc::new(output.finish())
+            }
+            Ok(match (nulls.is_some(), list_nulls.is_some()) {
+                (false, false) => run::<OP, false, false>(lists, values, None, None),
+                (false, true) => run::<OP, false, true>(lists, values, None, list_nulls),
+                (true, false) => run::<OP, true, false>(lists, values, nulls, None),
+                (true, true) => run::<OP, true, true>(lists, values, nulls, list_nulls),
+            })
+        }
+    };
+}
+boolean_kernel!(
+    boolean_predicate,
+    BooleanBuilder,
+    |value: usize, _: usize| Some(value != 0)
+);
+boolean_kernel!(boolean_count, Int64Builder, |value: usize, _: usize| Some(
+    value as i64
+));
+boolean_kernel!(
+    boolean_fraction,
+    Float64Builder,
+    |value: usize, len: usize| { (len != 0).then(|| value as f64 / len as f64) }
+);
 
 /// Return None for reducers that still need the general accumulator adapter.
 /// Child values are cast once for the batch, never once per list. Sliced list
