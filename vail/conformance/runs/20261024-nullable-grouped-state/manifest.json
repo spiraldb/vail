@@ -1,0 +1,38 @@
+{
+  "source_revision": "d3cee402bd9ca40e685bb36b7eb3a8ff0c9688e8",
+  "production_base": "H0932cbfa705 atop mainf3e6eadc",
+  "public_rust_target": "encoded_projection",
+  "public_rust_results": {
+    "passed": 20,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "existing": 11,
+    "new": 9
+  },
+  "executable_sha256": "16635b1dc0b99974e526e4559e3e8f7675b0af84ece40cdf96fba47cca43e415",
+  "source_files": {
+    "patches/vortex-array/src/aggregate_fn/accumulator_grouped.rs": "b6ba06be746328150a10c3f1652dcbcfa39968ed97f8547218e5f128920fa895",
+    "patches/vortex-array/src/aggregate_fn/typed.rs": "fa3de1b3070aff8990489fd5427ceb7ade388aa5579433e0e414ff94bc1ea284",
+    "patches/vortex-array/src/aggregate_fn/erased.rs": "0fad5e29bfd01b94547dde31527f8feb15a13be40c54003158ece28f7d906818",
+    "patches/vortex-array/src/scalar_fn/fns/list_sum.rs": "03414fcd819ca0cd477cc9a6c1c0db6fe2e4e1bb9c08850de509354d69d6e168",
+    "crates/vail-table/tests/support/encoded_list_sum.rs": "c1a895bdb83b60315827f6df4a3e71687fa61c896312bcbe79584641251bee0a"
+  },
+  "receipts": {
+    "receipts/build.py": "e9b88bcf5c29b64f9ae6bd40bb9a10015d5a878280652277a5c276939073204b",
+    "receipts/build-disk.jsonl": "6637daa10f7a08efee22f1314b6001f5e54df6c2b1cf7df8870063b175b32a62",
+    "receipts/public-tests.log": "3234513a86936093cf2f1dbc85ac08c5780177fdaf5ff05f13f34f6a73571267",
+    "receipts/build-result.json": "957a717c22d972e86b75dc887a061cf169ed7bab93cc00588f309b867152bebf",
+    "receipts/build.log": "2771e0fab1a544c340c9c838c23495e1ff5903d2b245fc01e3503b7e789675cf"
+  },
+  "pending": [
+    "H093 public ReaderWriter2tests",
+    "exact combined normal wheel/Python gates",
+    "resource measurements and review"
+  ],
+  "limitations": [
+    "No planner eligibility expansion",
+    "No mixed-group selected-owner boundedness claim",
+    "No old H093 native used as evidence of grouped changes"
+  ]
+}
