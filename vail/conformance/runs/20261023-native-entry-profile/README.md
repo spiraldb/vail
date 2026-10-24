@@ -106,7 +106,7 @@ Pinned source references:
 
 The normal kache/maturin release build completed in 1m29s. Native SHA256 is
 `7f0d1fd074d799b69eb83cdab74c4810f8a1d8f49f99aa052b4cbb0b18a677ad`.
-Final public execution checks: **40 passed in 1.71 seconds**, covering scalar
+Final public execution checks: **40 passed in 1.72 seconds**, covering scalar
 extrema, entry sums, coordinate aggregate callbacks and strict entry inputs.
 The first test draft assumed floating NaNs were ignored; baseline execution
 showed the existing scalar API propagates NaN. That test oracle was corrected;
@@ -129,9 +129,19 @@ Both clamp formulations return **353404627** for every baseline and candidate
 sample. Coverage peak RSS drops 0.842 to 0.674 GiB. Candidate coverage samples no
 longer report `make_array` above the 0.5% inclusive report threshold; native
 DataFusion `least` is about 1.23% inclusive. Inclusive percentages overlap and
-must not be summed. The untouched dosage control differs about 5% in wall time
-while using less CPU; this short control warrants repeated comparisons before
-claiming no regressions. No Hail speedup is inferred from these new measurements.
+must not be summed. An initial approximately 5% dosage wall-time difference did
+not reproduce in three alternating baseline/candidate control rounds (nine warmed
+samples each): dosage **1.032 to 1.016 s**, GQ stats **0.40165 to 0.40159 s**, and
+33 row aggregates **1.149 to 1.138 s**. The corresponding CPU medians are
+24.59 to 24.47 s, 10.21 to 10.40 s, and 26.79 to 26.34 s. No Hail speedup is
+inferred from these new measurements.
 
 The projection/ordering/CSE issues remain separate queued general investigations;
 they are not bundled into the scalar extrema change.
+
+Raw CPU-clock profiles, self/inclusive reports, diagnostic plans and query receipts
+are preserved in `native-entry-complete-evidence.tar.gz`, SHA256
+`c400d6e4817f42891647bd5ab103fc81da13083e580c19c60d0f96bb32835170`.
+The archive was downloaded and independently checksum-verified before stopping
+the VM. Its final test log predates the last exception-type assertion tightening;
+the committed `evidence/final-tests.log` is the subsequent exact-test rerun.
