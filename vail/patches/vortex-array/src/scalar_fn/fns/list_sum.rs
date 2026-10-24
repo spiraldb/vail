@@ -13,8 +13,8 @@ use crate::Columnar;
 use crate::ExecutionCtx;
 use crate::IntoArray;
 use crate::aggregate_fn::AggregateFnVTable;
-use crate::aggregate_fn::DynGroupedAccumulator;
-use crate::aggregate_fn::GroupedAccumulator;
+use crate::aggregate_fn::DynListGroupedAccumulator;
+use crate::aggregate_fn::ListGroupedAccumulator;
 use crate::aggregate_fn::NumericalAggregateOpts;
 use crate::aggregate_fn::fns::sum_v2::SumV2;
 use crate::arrays::ConstantArray;
@@ -126,11 +126,11 @@ impl ScalarFnVTable for ListSum {
 /// Sum each list of a canonical `array` into one value per list.
 fn list_sum_impl(
     canonical: ArrayRef,
-    elem_dtype: DType,
+    _elem_dtype: DType,
     options: &NumericalAggregateOpts,
     ctx: &mut ExecutionCtx,
 ) -> VortexResult<ArrayRef> {
-    let mut acc = GroupedAccumulator::try_new(SumV2, *options, elem_dtype)?;
+    let mut acc = ListGroupedAccumulator::try_new(SumV2, *options, canonical.dtype().clone())?;
     acc.accumulate_list(&canonical, ctx)?;
     acc.finish()
 }

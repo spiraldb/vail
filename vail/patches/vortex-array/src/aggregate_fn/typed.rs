@@ -45,6 +45,11 @@ pub(super) trait DynAggregateFn: 'static + Send + Sync + super::sealed::Sealed {
     fn accumulator(&self, input_dtype: &DType) -> VortexResult<AccumulatorRef>;
     fn accumulator_grouped(&self, input_dtype: &DType) -> VortexResult<GroupedAccumulatorRef>;
 
+    fn accumulator_for_list(
+        &self,
+        list_dtype: &DType,
+    ) -> VortexResult<super::ListGroupedAccumulatorRef>;
+
     fn options_serialize(&self) -> VortexResult<Option<Vec<u8>>>;
     fn options_eq(&self, other_options: &dyn Any) -> bool;
     fn options_hash(&self, hasher: &mut dyn Hasher);
@@ -104,6 +109,17 @@ impl<V: AggregateFnVTable> DynAggregateFn for AggregateFnInner<V> {
             self.vtable.clone(),
             self.options.clone(),
             input_dtype.clone(),
+        )?))
+    }
+
+    fn accumulator_for_list(
+        &self,
+        list_dtype: &DType,
+    ) -> VortexResult<super::ListGroupedAccumulatorRef> {
+        Ok(Box::new(super::ListGroupedAccumulator::try_new(
+            self.vtable.clone(),
+            self.options.clone(),
+            list_dtype.clone(),
         )?))
     }
 

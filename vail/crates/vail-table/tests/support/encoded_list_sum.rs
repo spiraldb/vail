@@ -471,3 +471,293 @@ fn distant_list_groups_and_large_retained_dictionary_preserve_logical_values() -
     }
     Ok(())
 }
+
+// Complete-list grouped API: public values/schema tests, no plan/cache assertions.
+#[test]
+fn nullable_grouped_count_distinguishes_missing_empty_and_nan() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::fns::count::Count;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    let elements =
+        PrimitiveArray::from_option_iter([Some(1.0f64), Some(f64::NAN), None, Some(7.0)])
+            .into_array();
+    let groups = ListViewArray::try_new(
+        elements,
+        buffer![0u32, 2, 0, 2].into_array(),
+        buffer![3u32, 0, 3, 1].into_array(),
+        Validity::from_iter([true, true, false, true]),
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    for (options, expected) in [
+        (
+            NumericalAggregateOpts::include_nans(),
+            vec![Some(2u64), Some(0), None, Some(0)],
+        ),
+        (
+            NumericalAggregateOpts::default(),
+            vec![Some(1u64), Some(0), None, Some(0)],
+        ),
+    ] {
+        let mut acc = ListGroupedAccumulator::try_new(Count, options, groups.dtype().clone())?;
+        acc.accumulate_list(&groups, &mut ctx)?;
+        let result = acc.finish()?;
+        assert_eq!(result.dtype(), &DType::Primitive(PType::U64, Nullable));
+        assert_arrays_eq(
+            &result,
+            &PrimitiveArray::from_option_iter(expected).into_array(),
+            &mut ctx,
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn declared_nullable_all_valid_count_keeps_nullable_schema() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::fns::count::Count;
+    let groups = ListViewArray::try_new(
+        buffer![1i32, 2].into_array(),
+        buffer![0u32, 2].into_array(),
+        buffer![2u32, 0].into_array(),
+        Validity::AllValid,
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let aggregate = vortex::array::aggregate_fn::AggregateFn::new(
+        Count,
+        NumericalAggregateOpts::include_nans(),
+    )
+    .erased();
+    let mut acc = aggregate.accumulator_for_list(groups.dtype())?;
+    acc.accumulate_list(&groups, &mut ctx)?;
+    let result = acc.finish()?;
+    assert_eq!(result.dtype(), &DType::Primitive(PType::U64, Nullable));
+    assert_arrays_eq(
+        &result,
+        &PrimitiveArray::from_option_iter([Some(2u64), Some(0)]).into_array(),
+        &mut ctx,
+    );
+    // Scalar Count retains its non-null zero identity.
+    use vortex::array::aggregate_fn::{Accumulator, DynAccumulator};
+    let mut scalar = Accumulator::try_new(
+        Count,
+        NumericalAggregateOpts::include_nans(),
+        DType::Primitive(PType::I32, Nullable),
+    )?;
+    scalar.accumulate(
+        &PrimitiveArray::from_option_iter(Vec::<Option<i32>>::new()).into_array(),
+        &mut ctx,
+    )?;
+    let scalar = scalar.finish()?;
+    assert_eq!(
+        scalar,
+        vortex::scalar::Scalar::primitive(0u64, vortex::dtype::Nullability::NonNullable)
+    );
+    Ok(())
+}
+
+#[test]
+fn nullable_grouped_sum_preserves_present_null_and_outer_null() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    let groups = ListViewArray::try_new(
+        PrimitiveArray::from_option_iter([Some(5i32), None]).into_array(),
+        buffer![0u32, 1, 1, 0].into_array(),
+        buffer![1u32, 0, 1, 1].into_array(),
+        Validity::from_iter([true, true, true, false]),
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        SumV2,
+        NumericalAggregateOpts::default(),
+        groups.dtype().clone(),
+    )?;
+    acc.accumulate_list(&groups, &mut ctx)?;
+    let result = acc.finish()?;
+    assert_arrays_eq(
+        &result,
+        &PrimitiveArray::from_option_iter([Some(5i64), None, None, None]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}
+
+#[test]
+fn nullable_grouped_flush_pairs_multiple_batches_and_resets() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::fns::count::Count;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    let first = ListViewArray::try_new(
+        buffer![1i32, 2].into_array(),
+        buffer![0u32, 0, 2].into_array(),
+        buffer![2u32, 2, 0].into_array(),
+        Validity::from_iter([true, false, true]),
+    )?
+    .into_array();
+    let second = ListViewArray::try_new(
+        buffer![9i32].into_array(),
+        buffer![0u32, 1].into_array(),
+        buffer![1u32, 0].into_array(),
+        Validity::AllValid,
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        Count,
+        NumericalAggregateOpts::include_nans(),
+        first.dtype().clone(),
+    )?;
+    acc.accumulate_list(&first, &mut ctx)?;
+    acc.accumulate_list(&second, &mut ctx)?;
+    let flushed = acc.flush_groups()?;
+    // Reuse before finalizing the independent old typed partials.
+    acc.accumulate_list(&second, &mut ctx)?;
+    let later = acc.finish()?;
+    assert_arrays_eq(
+        &later,
+        &PrimitiveArray::from_option_iter([Some(1u64), Some(0)]).into_array(),
+        &mut ctx,
+    );
+    assert_arrays_eq(
+        &flushed.finish()?,
+        &PrimitiveArray::from_option_iter([Some(2u64), None, Some(0), Some(1), Some(0)])
+            .into_array(),
+        &mut ctx,
+    );
+    let empty = acc.finish()?;
+    assert_eq!(empty.len(), 0);
+    assert_eq!(empty.dtype(), &DType::Primitive(PType::U64, Nullable));
+    Ok(())
+}
+
+#[test]
+fn nullable_grouped_all_missing_and_zero_rows_have_real_null_outputs() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::fns::count::Count;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    let groups = ListViewArray::try_new(
+        buffer![7i32].into_array(),
+        buffer![0u32, 0].into_array(),
+        buffer![1u32, 1].into_array(),
+        Validity::AllInvalid,
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        Count,
+        NumericalAggregateOpts::include_nans(),
+        groups.dtype().clone(),
+    )?;
+    acc.accumulate_list(&groups, &mut ctx)?;
+    assert_arrays_eq(
+        &acc.finish()?,
+        &PrimitiveArray::from_option_iter([None::<u64>, None]).into_array(),
+        &mut ctx,
+    );
+    let zero = groups.slice(0..0)?;
+    acc.accumulate_list(&zero, &mut ctx)?;
+    let result = acc.finish()?;
+    assert_eq!(result.len(), 0);
+    assert_eq!(result.dtype(), &DType::Primitive(PType::U64, Nullable));
+    Ok(())
+}
+
+#[test]
+fn nullable_grouped_fixed_size_slice_and_logical_ancestor_masks() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::fns::count::Count;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    use vortex::array::arrays::{FixedSizeListArray, StructArray};
+    use vortex::expr::{get_item, root};
+    let parent = StructArray::try_from_iter_with_validity(
+        [(
+            "x",
+            PrimitiveArray::from_option_iter([
+                Some(10i32),
+                Some(20),
+                None,
+                Some(40),
+                Some(50),
+                Some(60),
+            ])
+            .into_array(),
+        )],
+        Validity::from_iter([true, false, true, true, true, false]),
+    )?
+    .into_array();
+    let field = get_item("x", root()).bind(parent.dtype())?;
+    let logical = parent.apply_bound(&field)?;
+    let groups =
+        FixedSizeListArray::try_new(logical, 2, Validity::from_iter([false, true, true]), 3)?
+            .into_array()
+            .slice(1..3)?;
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        Count,
+        NumericalAggregateOpts::include_nans(),
+        groups.dtype().clone(),
+    )?;
+    acc.accumulate_list(&groups, &mut ctx)?;
+    assert_arrays_eq(
+        &acc.finish()?,
+        &PrimitiveArray::from_option_iter([Some(1u64), Some(1)]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}
+
+#[test]
+fn nullable_grouped_boolean_sum_checks_raw_missing_before_normalization() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    use vortex::array::arrays::BoolArray;
+    let groups = ListViewArray::try_new(
+        BoolArray::from_iter([Some(true), Some(false), None]).into_array(),
+        buffer![0u32, 2, 2, 0].into_array(),
+        buffer![2u32, 0, 1, 2].into_array(),
+        Validity::from_iter([true, true, true, false]),
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        SumV2,
+        NumericalAggregateOpts::include_nans(),
+        groups.dtype().clone(),
+    )?;
+    acc.accumulate_list(&groups, &mut ctx)?;
+    assert_arrays_eq(
+        &acc.finish()?,
+        &PrimitiveArray::from_option_iter([Some(1u64), None, None, None]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}
+
+#[test]
+fn complete_list_api_rejects_different_declared_schema() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::fns::count::Count;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    let nonnull = ListViewArray::try_new(
+        buffer![1i32].into_array(),
+        buffer![0u32].into_array(),
+        buffer![1u32].into_array(),
+        Validity::NonNullable,
+    )?
+    .into_array();
+    let nullable = ListViewArray::try_new(
+        buffer![1i32].into_array(),
+        buffer![0u32].into_array(),
+        buffer![1u32].into_array(),
+        Validity::AllValid,
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        Count,
+        NumericalAggregateOpts::include_nans(),
+        nonnull.dtype().clone(),
+    )?;
+    assert!(acc.accumulate_list(&nullable, &mut ctx).is_err());
+    acc.accumulate_list(&nonnull, &mut ctx)?;
+    assert_arrays_eq(
+        &acc.finish()?,
+        &PrimitiveArray::from_iter([1u64]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}

@@ -103,6 +103,14 @@ impl AggregateFnRef {
     pub fn accumulator_grouped(&self, input_dtype: &DType) -> VortexResult<GroupedAccumulatorRef> {
         self.0.accumulator_grouped(input_dtype)
     }
+    /// Create an accumulator bound to a complete declared List or FixedSizeList dtype.
+    /// Missing outer groups produce nullable outputs independently of scalar states.
+    pub fn accumulator_for_list(
+        &self,
+        list_dtype: &DType,
+    ) -> VortexResult<super::ListGroupedAccumulatorRef> {
+        self.0.accumulator_for_list(list_dtype)
+    }
 }
 
 impl Debug for AggregateFnRef {
