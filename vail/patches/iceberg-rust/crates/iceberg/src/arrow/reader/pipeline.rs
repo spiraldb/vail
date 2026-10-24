@@ -63,6 +63,7 @@ impl ArrowReader {
         let scan_metrics = ScanMetrics::new();
 
         let task_reader = FileScanTaskReader {
+            vortex_sessions: self.vortex_sessions,
             batch_size: self.batch_size,
             file_io: self.file_io,
             delete_file_loader: self
@@ -119,6 +120,7 @@ const PRUNABLE_METADATA_FIELDS: &[i32] = &[
 /// [`ArrowReader::read`] call and cloned per task.
 #[derive(Clone)]
 struct FileScanTaskReader {
+    vortex_sessions: Arc<super::VortexSessionCache>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
@@ -145,6 +147,7 @@ impl FileScanTaskReader {
                     &self.delete_file_loader,
                     self.scan_metrics.bytes_read_counter().clone(),
                     self.computed_projection,
+                    &self.vortex_sessions,
                 )
                 .await
             }

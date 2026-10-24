@@ -43,6 +43,7 @@ mod projection;
 mod row_filter;
 mod row_lineage;
 pub(crate) mod vortex;
+mod vortex_session;
 pub use file_reader::ArrowFileReader;
 pub(crate) use options::ParquetReadOptions;
 use predicate_visitor::{CollectFieldIdVisitor, PredicateConverter};
@@ -50,9 +51,11 @@ use projection::{
     add_fallback_field_ids_to_arrow_schema, apply_name_mapping_to_arrow_schema,
     find_leaf_by_field_id,
 };
+pub use vortex_session::VortexSessionCache;
 
 /// Builder to create ArrowReader
 pub struct ArrowReaderBuilder {
+    vortex_sessions: Arc<VortexSessionCache>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
@@ -69,6 +72,7 @@ impl ArrowReaderBuilder {
         let num_cpus = available_parallelism().get();
 
         ArrowReaderBuilder {
+            vortex_sessions: Arc::default(),
             computed_projection: None,
             batch_size: None,
             file_io,
@@ -78,6 +82,14 @@ impl ArrowReaderBuilder {
             parquet_read_options: ParquetReadOptions::builder().build(),
             runtime,
         }
+    }
+
+    /// Share lazily prepared default Vortex registries across related readers.
+    /// The cache selects a session for the actual polling runtime, so it may
+    /// safely be shared by readers planned or executed on different runtimes.
+    pub fn with_vortex_session_cache(mut self, cache: Arc<VortexSessionCache>) -> Self {
+        self.vortex_sessions = cache;
+        self
     }
 
     /// Sets the max number of in flight data files that are being fetched
@@ -143,6 +155,7 @@ impl ArrowReaderBuilder {
     /// Build the ArrowReader.
     pub fn build(self) -> ArrowReader {
         ArrowReader {
+            vortex_sessions: self.vortex_sessions.clone(),
             computed_projection: self.computed_projection,
             batch_size: self.batch_size,
             file_io: self.file_io.clone(),
@@ -162,6 +175,7 @@ impl ArrowReaderBuilder {
 /// Reads data from Parquet files
 #[derive(Clone)]
 pub struct ArrowReader {
+    vortex_sessions: Arc<VortexSessionCache>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,

@@ -755,6 +755,7 @@ async fn stream_snapshot_internal(
 /// It contains no row batches and performs no whole-file reads.
 #[derive(Debug)]
 pub(crate) struct SnapshotReadPlan {
+    vortex_sessions: Arc<iceberg::arrow::reader::VortexSessionCache>,
     pub(crate) computed_proofs: computed_capability::ProofCache,
     table: Table,
     pub(crate) descriptor: SnapshotDescriptor,
@@ -1005,6 +1006,7 @@ pub(crate) async fn load_snapshot_read_plan(
         file_key_order_rank[position] = rank;
     }
     Ok(SnapshotReadPlan {
+        vortex_sessions: Arc::default(),
         computed_proofs: Default::default(),
         table: table.clone(),
         descriptor,
@@ -1241,7 +1243,9 @@ pub(crate) fn stream_from_plan_with_projection(
             }
             let task = task_with_projection_and_nested_paths(&file.task, &read_ids, nested_paths.as_deref())?;
             let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
-            let mut reader = plan_for_stream.table.reader_builder().with_data_file_concurrency_limit(1);
+            let mut reader = plan_for_stream.table.reader_builder()
+                .with_vortex_session_cache(plan_for_stream.vortex_sessions.clone())
+                .with_data_file_concurrency_limit(1);
             if let Some((expression, _)) = &computed {
                 reader = reader.with_computed_projection(expression.clone());
             }

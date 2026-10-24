@@ -81,13 +81,13 @@ pub(super) async fn read_vortex_task(
     delete_file_loader: &CachingDeleteFileLoader,
     bytes_read_counter: Arc<AtomicU64>,
     computed_projection: Option<Expression>,
+    sessions: &super::VortexSessionCache,
 ) -> Result<ArrowRecordBatchStream> {
     // Start loading the delete files concurrently with opening the data file.
     let delete_filter_rx = delete_file_loader.load_deletes(task.deletes(), task.schema_ref());
 
-    // The session captures the current tokio runtime handle at construction
-    // time, so it is created here, inside the runtime driving the scan.
-    let session = VortexSession::default();
+    // Acquire inside polling: planning may happen outside this runtime.
+    let session = sessions.current()?;
 
     let (vortex_file, file_size) = open_vortex_file(
         task.data_file_path(),
