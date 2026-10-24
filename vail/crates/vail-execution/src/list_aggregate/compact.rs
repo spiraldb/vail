@@ -252,6 +252,13 @@ mod tests {
             assert!(!lists.is_null(2));
             assert_eq!(lists.value_length(2), 0);
             assert_eq!(lists.value_length(3), 1);
+            let last = lists.value(3);
+            let last = last.as_any().downcast_ref::<StructArray>().unwrap();
+            assert!(!last.is_null(0));
+            assert_eq!(
+                ScalarValue::try_from_array(last.column(0), 0).unwrap(),
+                ScalarValue::Int32(Some(9))
+            );
             let scalar = evaluate(input.slice(1, 1), logical, true);
             assert!(scalar.is_null(0));
             let empty = evaluate(input.slice(0, 0), logical, false);
