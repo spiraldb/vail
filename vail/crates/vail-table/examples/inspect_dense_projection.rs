@@ -71,12 +71,7 @@ fn inspect<'a>(
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let path = std::env::args().nth(1).expect("native table path");
-    let operand = std::env::args().skip(2).collect::<Vec<_>>();
     let source = vail_storage::local_table::open_local(&path).await?;
-    println!(
-        "certificate {:?}",
-        source.prepare_dense_list_projection(vec![operand]).await?
-    );
     let path = PathBuf::from(
         source.descriptor().files[0]
             .path

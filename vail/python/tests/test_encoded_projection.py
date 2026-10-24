@@ -72,3 +72,15 @@ def test_native_dense_projection_aliases_keys_globals_and_order(tmp_path):
     offset = r.index_globals().offset
     assert r.aggregate(hl.agg.sum(hl.sum(r.items.map(
         lambda e: hl.int64(e.n) + offset)))) == sum(expected) + 137 * 41 * 7
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_native_stored_constant_integer_list_leaf(tmp_path, missing):
+    t = hl.utils.range_table(1000, n_partitions=3)
+    value = hl.missing(hl.tint32) if missing else hl.int32(7)
+    t = t.annotate(items=hl.range(64).map(lambda _: hl.struct(n=value)))
+    path = str(tmp_path / "constant.ht")
+    t.write(path)
+    r = hl.read_table(path)
+    assert r.aggregate(hl.agg.sum(hl.sum(r.items.map(
+        lambda e: hl.int64(e.n))))) == (0 if missing else 1000 * 64 * 7)

@@ -45,6 +45,21 @@ pub struct DenseListProjectionCertificate {
     pub(crate) domains: Vec<FileDomain>,
 }
 
+/// One immutable computed request bound to its physical-domain proof.
+/// Fields are inaccessible across the storage/execution crate boundary, so an
+/// execution caller cannot replace its expression or result schema later.
+#[derive(Debug)]
+pub struct PreparedComputedProjection {
+    pub(crate) certificate: Arc<DenseListProjectionCertificate>,
+    pub(crate) expression: vortex::expr::Expression,
+    pub(crate) output_schema: Arc<arrow_schema::Schema>,
+}
+impl PreparedComputedProjection {
+    pub fn expression(&self) -> &vortex::expr::Expression {
+        &self.expression
+    }
+}
+
 #[derive(Debug)]
 pub(crate) struct FileDomain {
     path: String,
@@ -602,8 +617,13 @@ fn scalar_tree(
         return Err(invalid("array encoding index out of range"));
     };
     if id == ArrayVTable::id(&Constant) {
-        if tree.nchildren() != 0 || tree.nbuffers() != 0 {
+        if tree.nchildren() != 0 {
             return Err(invalid("invalid constant metadata"));
+        }
+        // Numeric constants use a serialized scalar buffer in this version.
+        // They are valid input but outside this initial metadata-only leaf proof.
+        if tree.nbuffers() != 0 {
+            return Ok(false);
         }
         let value = tree.decode(dtype, len, ctx, session).map_err(invalid)?;
         return Ok(small

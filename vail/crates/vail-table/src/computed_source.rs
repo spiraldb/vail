@@ -374,14 +374,6 @@ impl TableProvider for ComputedProvider {
         if operands.is_empty() {
             return self.original_scan(state, &indices).await;
         }
-        let Some(certificate) = self
-            .source
-            .prepare_dense_list_projection(operands.clone())
-            .await
-            .map_err(|error| DataFusionError::External(Box::new(error)))?
-        else {
-            return self.original_scan(state, &indices).await;
-        };
         let fields = indices
             .iter()
             .filter(|&&i| i != tag)
@@ -397,6 +389,14 @@ impl TableProvider for ComputedProvider {
                     .collect::<Vec<_>>(),
             )?,
         );
+        let Some(prepared) = self
+            .source
+            .prepare_dense_list_projection(operands, expression, row_schema)
+            .await
+            .map_err(|error| DataFusionError::External(Box::new(error)))?
+        else {
+            return self.original_scan(state, &indices).await;
+        };
         let schema = Arc::new(self.schema.project(&indices)?);
         let mut equivalence = EquivalenceProperties::new(schema.clone());
         let keys = self
@@ -431,10 +431,8 @@ impl TableProvider for ComputedProvider {
             Boundedness::Bounded,
         ));
         Ok(Arc::new(ComputedExec {
-            certificate,
+            prepared,
             source: self.source.clone(),
-            expression,
-            row_schema,
             schema,
             indices,
             tag,
@@ -445,10 +443,8 @@ impl TableProvider for ComputedProvider {
 }
 #[derive(Debug)]
 struct ComputedExec {
-    certificate: Arc<vail_storage::computed_capability::DenseListProjectionCertificate>,
+    prepared: Arc<vail_storage::computed_capability::PreparedComputedProjection>,
     source: Arc<LocalRead>,
-    expression: Expression,
-    row_schema: SchemaRef,
     schema: SchemaRef,
     indices: Vec<usize>,
     tag: usize,
@@ -457,7 +453,11 @@ struct ComputedExec {
 }
 impl DisplayAs for ComputedExec {
     fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "VortexComputedProjectionExec: {}", self.expression)
+        write!(
+            f,
+            "VortexComputedProjectionExec: {}",
+            self.prepared.expression()
+        )
     }
 }
 impl ExecutionPlan for ComputedExec {
@@ -503,12 +503,9 @@ impl ExecutionPlan for ComputedExec {
                 "source partition out of range".into(),
             ));
         }
-        let mut input = self.source.computed_partition_batches(
-            partition,
-            &self.certificate,
-            self.expression.clone(),
-            self.row_schema.clone(),
-        );
+        let mut input = self
+            .source
+            .computed_partition_batches(partition, &self.prepared);
         let schema = self.schema.clone();
         let output_schema = schema.clone();
         let indices = self.indices.clone();
