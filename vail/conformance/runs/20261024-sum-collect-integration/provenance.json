@@ -1,0 +1,24 @@
+{
+  "assembly_revision": "dec8fea010bdb7aeb219f2af36416e1bbd804442",
+  "base_revision": "53d59fb5104d896505ec5023b346aba9e2909285",
+  "sum_revision": "d435dfe3add352c434c86fb81b0d80acc99f6e0a",
+  "collect_revision": "a8f4b080442e196e9bb1f8189d4d4b38ef023128",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "python_origin": "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/__init__.py",
+  "native_origin": "/Users/danielking/.codex/worktrees/sum-collect-integration/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "c06fe286cac22339fb6c6bc928f4aca9f630cc224dac443bfdcc96e730b931ee",
+  "source_sha256": {
+    "crates/vail-execution/src/expressions.rs": "01d01451784a0143811f1b9b8d2a2f7d9654f494d54f2bf0f6f85c4beb56b5b5",
+    "crates/vail-execution/src/integer_list_sum.rs": "5c5a51cf337b20e331a518c6ecdb8efc8b289fe4edc9ce75459da9aaed13becc",
+    "crates/vail-execution/src/logical_expr.rs": "b49aa170b22bbcfd3885dd58b459e5e94761fe079f064845d060a7ff4ef7a69a",
+    "crates/vail-execution/src/list_aggregate.rs": "212bc829c6ff60cdeb24b1394835047fc37916f1ab99a7efa5860c8eec7b10c3",
+    "python/tests/test_nullable_integer_sum.py": "50df0cd5355430cf39f67bff8d466f7f818b6d60d076cefdc0b23a9b2582b23f",
+    "python/tests/test_list_collect_identity.py": "d2da7251b3fb423d47dbd2048207ba92d91a49260561dafafbf0e7154d9ee4d9",
+    "python/tests/test_sum_collect_integration.py": "857efbc3dc5f7c03cc9fbd3cf013bcf5acd8ab5e15200d2f1dfe9b9741e2a436",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  },
+  "build": "normal kache maturin develop --release --locked; CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0 RUSTFLAGS=-C target-cpu=native",
+  "target": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target",
+  "baseline_env": "/private/tmp/vail-native-row-fusion-env",
+  "upstream_fixture_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+}

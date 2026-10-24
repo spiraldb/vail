@@ -1,0 +1,162 @@
+........................................F............................... [ 25%]
+.................F.F.................................................... [ 50%]
+........................................................................ [ 75%]
+........................................................................ [100%]
+=================================== FAILURES ===================================
+__________ test_collection_aggregate_matrix_scope_and_lookup_context ___________
+
+    def test_collection_aggregate_matrix_scope_and_lookup_context():
+        matrix = hl.range_matrix_table(3, 2)
+        matrix = matrix.annotate_entries(total=hl.array([1, 2]).aggregate(lambda x: hl.agg.sum(x + matrix.row_idx + matrix.col_idx)))
+>       assert matrix.total.collect() == [3, 5, 5, 7, 7, 9]
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_collection_aggregate.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/expressions.py:1034: in collect
+    return eval(result) if _localize else result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x110cf4040>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_47ec29a093d25b88 returned a different number of rows than expected. Expected: 3, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+python/vail/__init__.py:2043: FatalError
+__ AggregateTests.test_integer_reducers_preserve_values_above_float_precision __
+
+self = <test_aggregate.AggregateTests testMethod=test_integer_reducers_preserve_values_above_float_precision>
+
+    def test_integer_reducers_preserve_values_above_float_precision(self):
+        value = 2**53 + 17
+        table = hl.Table.parallelize([{"x": value}], schema=hl.tstruct(x=hl.tint64))
+>       result = table.aggregate({"sum": hl.agg.sum(table.x),
+                                  "product": hl.agg.product(table.x),
+                                  "min": hl.agg.min(table.x),
+                                  "max": hl.agg.max(table.x),
+                                  "mean": hl.agg.mean(table.x),
+                                  "collect": hl.agg.collect(table.x),
+                                  "count_where": hl.agg.count_where(table.x > value - 1),
+                                  "fraction": hl.agg.fraction(table.x > value - 1),
+                                  "any": hl.agg.any(table.x > value - 1),
+                                  "all": hl.agg.all(table.x > value - 1),
+                                  "stats": hl.agg.stats(table.x)})
+
+python/tests/test_aggregate.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x111022ff0>, <vail.expressions.Expression object at 0x111023b50>,...c190>, <vail.expressions.Expression object at 0x110cac3c0>, <vail.expressions.StructExpression object at 0x110cace40>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+python/vail/types.py:688: TypeError
+_________ AggregateTests.test_reducers_on_empty_and_all_missing_tables _________
+
+self = <test_aggregate.AggregateTests testMethod=test_reducers_on_empty_and_all_missing_tables>
+
+    def test_reducers_on_empty_and_all_missing_tables(self):
+        for table, expected_count, expected_values, expected_fraction in (
+            (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], None),
+            (hl.Table.parallelize([{"x": None, "b": None}, {"x": None, "b": None}],
+                                  schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 2, [None, None], 0.0),
+        ):
+            x, b = table.x, table.b
+>           result = table.aggregate({
+                "count": hl.agg.count(),
+                "sum": hl.agg.sum(x),
+                "product": hl.agg.product(x),
+                "min": hl.agg.min(x),
+                "max": hl.agg.max(x),
+                "mean": hl.agg.mean(x),
+                "collect": hl.agg.collect(x),
+                "count_where": hl.agg.count_where(b),
+                "fraction": hl.agg.fraction(b),
+                "any": hl.agg.any(b),
+                "all": hl.agg.all(b),
+                "stats": hl.agg.stats(x),
+            })
+
+python/tests/test_aggregate.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/vail/__init__.py:1279: in aggregate
+    expr = as_expr(expr)
+           ^^^^^^^^^^^^^
+python/vail/expressions.py:105: in as_expr
+    return dict_(value)
+           ^^^^^^^^^^^^
+python/vail/collections.py:159: in dict_
+    inferred = infer_type(builtins.dict(collection))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+python/vail/types.py:692: in infer_type
+    return tdict(infer_items(value.keys(), "keys"), infer_items(value.values(), "values"))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+items = dict_values([<vail.expressions.Expression object at 0x110b0eb90>, <vail.expressions.Expression object at 0x110b0eb20>,...f1b0>, <vail.expressions.Expression object at 0x110b0f290>, <vail.expressions.StructExpression object at 0x110b0f7d0>])
+label = 'values'
+
+    def infer_items(items, label):
+        result = None
+        for item in items:
+            if item is None:
+                continue
+            current = infer_type(item)
+            result = current if result is None else unify_types(result, current)
+            if result is None:
+>               raise TypeError(f"dictionary {label} have incompatible types")
+E               TypeError: dictionary values have incompatible types
+
+python/vail/types.py:688: TypeError
+============================= slowest 8 durations ==============================
+5.73s call     python/tests/test_array_agg_coordinate_dag.py::test_reused_aggregate_expression_in_array_callback
+4.05s call     python/tests/test_nullable_integer_sum.py::test_nested_sliced_sum_matches_python[0-dtype0-32]
+0.75s call     python/tests/test_reduction_expression_sharing.py::test_reused_callback_dag_preserves_multiplicity
+0.66s call     python/tests/test_matrix_layout.py::test_chained_column_masks_gathers_metadata_and_missing_slots[7]
+0.57s call     python/tests/test_matrix_layout.py::test_chained_column_masks_gathers_metadata_and_missing_slots[3]
+0.52s call     python/tests/test_matrix_layout.py::test_chained_column_masks_gathers_metadata_and_missing_slots[1]
+0.17s call     python/tests/test_agg_numeric.py::test_grouped_linreg_batches_rows_per_group_with_origins_weights_and_nulls
+0.11s call     python/tests/test_matrix_layout.py::test_native_snapshot_preserves_filtered_missing_and_empty_entries
+=========================== short test summary info ============================
+FAILED python/tests/test_collection_aggregate.py::test_collection_aggregate_matrix_scope_and_lookup_context
+FAILED python/tests/test_aggregate.py::AggregateTests::test_integer_reducers_preserve_values_above_float_precision
+FAILED python/tests/test_aggregate.py::AggregateTests::test_reducers_on_empty_and_all_missing_tables
+3 failed, 285 passed in 15.71s
