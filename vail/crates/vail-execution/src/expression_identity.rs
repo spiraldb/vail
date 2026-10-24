@@ -263,17 +263,39 @@ impl Identity {
     /// Scalar semantic kernels separately expose their free input arguments
     /// and effects. Only that contract opts into lexical-name equivalence.
     pub(crate) fn with_bound_names(expression: Expr) -> Self {
+        // This optional optimization must not amplify planning for large
+        // generated programs. Exact original identity is always a safe fallback.
+        const MAX_NODES: usize = 1024;
+        let mut seen = HashSet::new();
+        let mut pending = vec![&expression];
         let mut has_binder = false;
-        expression.visit_unique(&mut |node| {
+        while let Some(node) = pending.pop() {
+            if !seen.insert(node as *const Expr as usize) {
+                continue;
+            }
+            if seen.len() > MAX_NODES {
+                return Self::new(expression);
+            }
             has_binder |= matches!(node, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. }
                 | Expr::ArrayPredicate { .. } | Expr::ArrayFold { .. } | Expr::Switch { .. }
                 | Expr::AggArray { .. } | Expr::AggExplode { .. } | Expr::AggregateFold { .. });
-        });
+            let mut too_wide = false;
+            node.for_each_child(&mut |child| {
+                if pending.len() <= MAX_NODES {
+                    pending.push(child);
+                } else {
+                    too_wide = true;
+                }
+            });
+            if too_wide {
+                return Self::new(expression);
+            }
+        }
         if !has_binder {
             return Self::new(expression);
         }
         let canonical = alpha_identity(&expression);
-        Self::from_canonical(expression, Some(canonical))
+        Self::from_canonical(expression, canonical)
     }
 
     fn from_canonical(expression: Expr, canonical: Option<Expr>) -> Self {
@@ -297,7 +319,7 @@ impl Identity {
 /// Callback names are lexical implementation details, not semantic inputs.
 /// Canonicalize only the owned identity: execution retains the original names.
 /// Free names remain distinct, and the chosen namespace cannot capture them.
-fn alpha_identity(expression: &Expr) -> Expr {
+fn alpha_identity(expression: &Expr) -> Option<Expr> {
     fn summarize(node: &Expr, summaries: &mut HashMap<usize, HashSet<String>>) -> HashSet<String> {
         let address = node as *const Expr as usize;
         if let Some(names) = summaries.get(&address) {
@@ -333,6 +355,7 @@ fn alpha_identity(expression: &Expr) -> Expr {
         edges: HashMap<(usize, Vec<String>), usize>,
         free_names: HashMap<usize, HashSet<String>>,
         memo: HashMap<(usize, usize, Vec<(String, Option<String>)>), Expr>,
+        remaining: usize,
     }
     impl Normalizer {
         fn child_scope(&mut self, parent: usize, binders: Vec<&str>) -> usize {
@@ -355,7 +378,7 @@ fn alpha_identity(expression: &Expr) -> Expr {
             self.edges.insert(key, id);
             id
         }
-        fn visit(&mut self, node: &Expr, scope: usize) -> Expr {
+        fn visit(&mut self, node: &Expr, scope: usize) -> Result<Expr, ()> {
             let address = node as *const Expr as usize;
             let depth = self.scopes[scope].len();
             // Irrelevant enclosing binders must not multiply visits to a
@@ -376,16 +399,19 @@ fn alpha_identity(expression: &Expr) -> Expr {
             captures.sort_unstable();
             let key = (address, depth, captures);
             if let Some(result) = self.memo.get(&key) {
-                return result.clone();
+                return Ok(result.clone());
             }
+            if self.remaining == 0 {
+                return Err(());
+            }
+            self.remaining -= 1;
             let mut position = 0;
             let mut result = node
-                .try_map_original_children::<std::convert::Infallible>(|child| {
+                .try_map_original_children::<()>(|child| {
                     let child_scope = self.child_scope(scope, node.child_binders(position));
                     position += 1;
-                    Ok(self.visit(child, child_scope))
-                })
-                .expect("identity traversal is infallible");
+                    self.visit(child, child_scope)
+                })?;
             let canonical = |index| format!("{}{}", self.prefix, depth + index);
             match &mut result {
                 Expr::LambdaVariable { name, .. } => {
@@ -424,7 +450,7 @@ fn alpha_identity(expression: &Expr) -> Expr {
                 _ => {}
             }
             self.memo.insert(key, result.clone());
-            result
+            Ok(result)
         }
     }
     Normalizer {
@@ -433,8 +459,10 @@ fn alpha_identity(expression: &Expr) -> Expr {
         edges: HashMap::new(),
         free_names,
         memo: HashMap::new(),
+        remaining: 4096,
     }
     .visit(expression, 0)
+    .ok()
 }
 
 impl std::fmt::Debug for Identity {
