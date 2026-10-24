@@ -7364,36 +7364,43 @@ mod tests {
     }
 
     #[test]
-    fn direct_call_index_matches_materialized_list_for_slices_nulls_and_bounds() {
-        let batches = [
-            indexed_calls_batch(vec![2, 1, 2, 0, 2, 1], vec![true, true, false, true, true, true],
-                vec![Some(0), Some(-1), Some(i32::MIN), None, Some(1), Some(0)]),
-            indexed_calls_batch(vec![2; 8], vec![true; 8], vec![Some(-2); 8]),
-            // Underlying unchecked storage follows the existing Alleles accessor.
-            indexed_calls_batch(vec![0, 1, 2, 3], vec![true; 4], vec![Some(0); 4]),
+    fn direct_call_index_matches_expected_alleles_for_slices_nulls_and_bounds() {
+        let batch = indexed_calls_batch(vec![2; 6], vec![true, true, false, true, true, true],
+            vec![Some(0), Some(-1), Some(i32::MIN), None, Some(1), Some(-2)]);
+        let expected = [
+            (Some(0), vec![Some(0), Some(97), None, Some(291), Some(388), Some(485)]),
+            (Some(1), vec![Some(65535), Some(65534), None, Some(65532), Some(65531), Some(65530)]),
+            (Some(-1), vec![Some(65535), Some(65534), None, Some(65532), Some(65531), Some(65530)]),
+            (Some(-2), vec![Some(0), Some(97), None, Some(291), Some(388), Some(485)]),
+            (None, vec![Some(0), Some(65534), None, None, Some(65531), Some(485)]),
         ];
-        for original in batches {
-            for batch in [original.clone(), original.slice(1, original.num_rows() - 2)] {
-                let lists = crate::calls::access(batch.column(0), crate::calls::CallAccessor::Alleles).unwrap();
-                for constant in [None, Some(0), Some(1), Some(-1), Some(-2), Some(2), Some(i32::MIN)] {
-                    let (index, indices): (Expr, ArrayRef) = if let Some(index) = constant {
-                        (Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(index)) },
-                         Arc::new(Int32Array::from(vec![index; batch.num_rows()])))
-                    } else {
-                        (Expr::Column { name: "index".into() }, batch.column(1).clone())
-                    };
-                    let expr = call_index_expr(index);
-                    let lowered = lower(&expr, &batch.schema()).unwrap();
-                    assert!(lowered.to_string().contains("CallIndex"));
-                    let expected = array_index(&lists, &indices, &DataType::Int32);
-                    let actual = lowered.evaluate(&batch).map_err(ExprError::from)
-                        .and_then(|x| x.into_array(batch.num_rows()).map_err(ExprError::from));
-                    match (actual, expected) {
-                        (Ok(actual), Ok(expected)) => assert_eq!(actual.to_data(), expected.to_data()),
-                        (Err(actual), Err(expected)) => assert!(actual.to_string().contains(&expected.to_string())),
-                        (actual, expected) => panic!("direct={actual:?}, materialized={expected:?}"),
-                    }
-                }
+        for (constant, values) in expected {
+            let index = if let Some(index) = constant {
+                Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(index)) }
+            } else { Expr::Column { name: "index".into() } };
+            let expr = call_index_expr(index);
+            for (offset, length) in [(0, 6), (1, 4)] {
+                let input = batch.slice(offset, length);
+                let output = lower(&expr, &input.schema()).unwrap().evaluate(&input).unwrap()
+                    .into_array(length).unwrap();
+                let expected: ArrayRef = Arc::new(Int32Array::from(values[offset..offset + length].to_vec()));
+                assert_eq!(output.to_data(), expected.to_data());
+            }
+        }
+        let mixed = indexed_calls_batch(vec![2, 1, 2, 0, 2, 1],
+            vec![true, true, false, true, true, true],
+            vec![Some(0), Some(-1), Some(i32::MIN), None, Some(1), Some(0)]);
+        let expr = call_index_expr(Expr::Column { name: "index".into() });
+        let output = lower(&expr, &mixed.schema()).unwrap().evaluate(&mixed).unwrap()
+            .into_array(6).unwrap();
+        let expected: ArrayRef = Arc::new(Int32Array::from(vec![Some(0), Some(97), None, None, Some(65531), Some(485)]));
+        assert_eq!(output.to_data(), expected.to_data());
+        for (ploidy, index) in [(0, 0), (1, 1), (1, -2), (2, 2), (2, i32::MIN), (3, 1)] {
+            let input = indexed_calls_batch(vec![ploidy], vec![true], vec![Some(index)]);
+            for expr in [call_index_expr(Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(index)) }),
+                         call_index_expr(Expr::Column { name: "index".into() })] {
+                let error = lower(&expr, &input.schema()).unwrap().evaluate(&input).unwrap_err();
+                assert!(error.to_string().contains("array index out of bounds"));
             }
         }
     }
