@@ -16,10 +16,13 @@ use vortex_mask::Mask;
 use super::{SumV2, sum_v2_partial_fields};
 use crate::aggregate_fn::kernels::DynGroupedAggregateKernel;
 use crate::aggregate_fn::{AggregateFnRef, GroupRanges, GroupedArray};
+use crate::arrays::ListViewArray;
 use crate::arrays::dict::DictArraySlotsExt;
 use crate::arrays::{BoolArray, Dict, PrimitiveArray, StructArray};
+use crate::builtins::ArrayBuiltins;
 use crate::dtype::{DType, NativePType, Nullability, PType};
 use crate::match_each_integer_ptype;
+use crate::scalar_fn::fns::list_project::clip_visible_elements;
 use crate::validity::Validity;
 use crate::{ArrayRef, ExecutionCtx, IntoArray};
 
@@ -38,6 +41,17 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         {
             return Ok(None);
         }
+        if !groups.elements().is::<Dict>() {
+            return Ok(None);
+        }
+        // Direct grouped callers also need bounded work for distant list views.
+        let clipped;
+        let groups = if let GroupedArray::ListView(list) = groups {
+            clipped = GroupedArray::from(clip_visible_elements(list.clone(), ctx)?);
+            &clipped
+        } else {
+            groups
+        };
         let Some(dict) = groups.elements().as_opt::<Dict>() else {
             return Ok(None);
         };
@@ -63,14 +77,36 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                 group_mask,
             )));
         }
-        // A tiny visible slice must not force decoding an arbitrarily large
-        // retained dictionary. Let the existing representation-aware fallback
-        // handle dictionaries with more distinct slots than visible codes.
+        let codes = dict.codes().slice(start..end)?;
         if dict.values().len() > end - start {
-            return Ok(None);
+            // Do not materialize a full retained dictionary or its validity.
+            // Existing encoding-specific take kernels gather only visible codes;
+            // the primitive grouped kernel then reduces this bounded child.
+            let selected = dict.values().take(codes)?.execute::<PrimitiveArray>(ctx)?;
+            let ranges = ranges
+                .iter()
+                .enumerate()
+                .map(|(row, (offset, len))| {
+                    if len == 0 || !group_mask.value(row) {
+                        (0, 0)
+                    } else {
+                        ((offset - start) as u64, len as u64)
+                    }
+                })
+                .collect::<Vec<_>>();
+            let selected_groups = GroupedArray::from(ListViewArray::try_new(
+                selected.into_array(),
+                PrimitiveArray::from_iter(ranges.iter().map(|range| range.0)).into_array(),
+                PrimitiveArray::from_iter(ranges.iter().map(|range| range.1)).into_array(),
+                Validity::from_mask(group_mask, Nullability::Nullable),
+            )?);
+            return super::grouped::PrimitiveGroupedSumV2EncodingKernel.grouped_aggregate(
+                aggregate,
+                &selected_groups,
+                ctx,
+            );
         }
         // Decode only the codes and dictionary, never the expanded child.
-        let codes = dict.codes().slice(start..end)?;
         let code_mask = codes.validity()?.execute_mask(codes.len(), ctx)?;
         let value_mask = dict
             .values()

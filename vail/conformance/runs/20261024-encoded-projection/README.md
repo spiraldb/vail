@@ -208,3 +208,32 @@ The exposed categories give no basis to claim the scan is hardware-limited.
 The independent one-source experiment further demonstrates an unresolved
 parallel-resource gap. Source scheduling and per-file session setup deserve
 attention before treating this prototype as a final optimized scan.
+
+
+## Re-review exposed two additional resource failures
+
+The initial hidden-owner experiment selected contiguous rows plus null/empty
+hidden ranges. It did NOT establish bounds for distant valid child ranges or
+oversized retained dictionaries. Review correctly requested these additional
+cases. The first follow-up reused ListView selected-range rebuild and bounded
+the small-list take-index allocation by visible valid size, then gathered
+oversized dictionaries before primitive reduction. Its9Rust and56Python tests
+passed, but the public resource experiment STILL FAILED:128 visible values
+across distant owners10K/1M/40M took approximately30/139/4431microseconds.
+Oversized primitive/bitpacked dictionary variants had similar owner scaling.
+
+Actual Time Profiler of that failed probe attributes98.6% of steady leaf CPU to
+primitive compare_slice_constant inside Dict FillNullKernel. Existing take
+kernels zero nullable indices with fill_null(0); Dict FillNull searched EVERY
+retained dictionary value for0 before filling a tiny selected code array.
+This is a separate general library callee bug. Follow-up source now guards
+retained dictionary cardinality greater than logical array length BEFORE that
+search, canonicalizes only selected rows, and reuses primitive fill-null.
+Its build/probe results are pending; these blockers are not claimed closed.
+
+Primitive and bitpacked dictionaries have selective take (bitpacked's whole
+array crossover is bounded by8times selected count). Pco has page-aware slice
+but no selective TakeExecute kernel in the pinned source; generic take can
+still canonicalize its retained compression block. The resource proof must
+account for that capability rather than assuming arbitrary take is bounded.
+No universal encoding-independent resource guarantee is claimed.

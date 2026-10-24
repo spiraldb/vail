@@ -414,3 +414,60 @@ fn dictionary_all_missing_codes_or_values_yield_missing_group_sums() -> VortexRe
     }
     Ok(())
 }
+
+#[test]
+fn distant_list_groups_and_large_retained_dictionary_preserve_logical_values() -> VortexResult<()> {
+    use vortex::array::arrays::{DictArray, StructArray};
+    use vortex::dtype::FieldNames;
+    use vortex::expr::{fill_null, is_not_null, list_sum, lit, mask, root};
+    for large_dictionary in [false, true] {
+        let owner = 100_003usize;
+        let cardinality = if large_dictionary { owner } else { 103 };
+        let dictionary = PrimitiveArray::from_option_iter(
+            (0..cardinality).map(|i| (i % 13 != 0).then_some((i % 101) as i32 - 50)),
+        )
+        .into_array();
+        let codes = PrimitiveArray::from_option_iter(
+            (0..owner).map(|i| (i % 11 != 0).then_some((i % cardinality) as u32)),
+        )
+        .into_array();
+        let values = DictArray::try_new(codes, dictionary)?.into_array();
+        let elements = StructArray::try_new(
+            FieldNames::from(["DP"]),
+            vec![values],
+            owner,
+            Validity::from_iter((0..owner).map(|i| i % 17 != 0)),
+        )?
+        .into_array();
+        // Distant, reversed, overlapping, empty and missing groups. Missing
+        // groups deliberately retain a huge range whose payload must not matter.
+        let ranges = [(owner - 9, 7), (1, 5), (3, 8), (0, 0), (0, owner)];
+        let groups = ListViewArray::try_new(
+            elements,
+            PrimitiveArray::from_iter(ranges.map(|(offset, _)| offset as u32)).into_array(),
+            PrimitiveArray::from_iter(ranges.map(|(_, len)| len as u32)).into_array(),
+            Validity::from_iter([true, true, true, true, false]),
+        )?
+        .into_array();
+        let field = vortex::array::scalar_fn::fns::list_field::list_field(
+            root(),
+            groups.dtype(),
+            &["DP".into()],
+        )?;
+        let expr = mask(fill_null(list_sum(field), lit(0_i64)), is_not_null(root()));
+        let expected = PrimitiveArray::from_option_iter(ranges.into_iter().enumerate().map(
+            |(row, (offset, len))| {
+                (row != 4).then(|| {
+                    (offset..offset + len)
+                        .filter(|i| i % 11 != 0 && i % 17 != 0 && (i % cardinality) % 13 != 0)
+                        .map(|i| ((i % cardinality) % 101) as i64 - 50)
+                        .sum::<i64>()
+                })
+            },
+        ))
+        .into_array();
+        let mut ctx = VortexSession::default().create_execution_ctx();
+        assert_arrays_eq(&groups.apply(&expr)?, &expected, &mut ctx);
+    }
+    Ok(())
+}

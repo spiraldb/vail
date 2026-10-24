@@ -160,13 +160,23 @@ impl ListViewArray {
         let sizes_canonical = self.sizes().clone().execute::<PrimitiveArray>(ctx)?;
         let sizes_canonical =
             sizes_canonical.reinterpret_cast(sizes_canonical.ptype().to_unsigned());
-        let total: u64 = sizes_canonical
+        let validity = self.validity()?.execute_mask(self.len(), ctx)?;
+        let total = sizes_canonical
             .as_slice::<S>()
             .iter()
-            .map(|s| (*s).as_() as u64)
-            .sum();
+            .enumerate()
+            .filter(|(row, _)| validity.value(*row))
+            .try_fold(0_u64, |total, (_, size)| {
+                total
+                    .checked_add((*size).as_() as u64)
+                    .ok_or_else(|| vortex_err!("visible list size overflow"))
+            })?;
         if Self::should_use_take(total, self.len()) {
-            self.rebuild_with_take::<O, NewOffset, S>(ctx)
+            self.rebuild_with_take::<O, NewOffset, S>(
+                usize::try_from(total)
+                    .map_err(|_| vortex_err!("visible list size exceeds address space"))?,
+                ctx,
+            )
         } else {
             self.rebuild_with_piecewise::<NewOffset, S>(ctx)
         }
@@ -191,6 +201,7 @@ impl ListViewArray {
     /// `BufferMut<u64>`, perform a single `take`.
     fn rebuild_with_take<O: IntegerPType, NewOffset: IntegerPType, S: IntegerPType>(
         &self,
+        total_elements: usize,
         ctx: &mut ExecutionCtx,
     ) -> VortexResult<ListViewArray> {
         let new_offset_ptype = rebuilt_offset_ptype(self.offsets().dtype().as_ptype());
@@ -209,7 +220,7 @@ impl ListViewArray {
 
         let mut new_offsets = BufferMut::<NewOffset>::with_capacity(len);
         let mut new_sizes = BufferMut::<S>::with_capacity(len);
-        let mut take_indices = BufferMut::<u64>::with_capacity(self.elements().len());
+        let mut take_indices = BufferMut::<u64>::with_capacity(total_elements);
 
         // Resolve validity to a mask once instead of probing it per row: `execute_is_valid`
         // executes a scalar on every call for array-backed validity, which is O(len) work repeated

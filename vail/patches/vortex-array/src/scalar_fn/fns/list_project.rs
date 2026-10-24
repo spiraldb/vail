@@ -19,7 +19,7 @@ use crate::Canonical;
 use crate::ExecutionCtx;
 use crate::IntoArray;
 use crate::aggregate_fn::{GroupRanges, GroupedArray};
-use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt, ListViewRebuildMode};
 use crate::arrays::struct_::StructArrayExt;
 use crate::arrays::{ConstantArray, ListView, ListViewArray, PrimitiveArray, StructArray};
 use crate::dtype::Nullability;
@@ -281,13 +281,13 @@ pub(crate) fn clip_visible_elements(
         vortex_bail!("list view returned an incompatible range representation");
     };
     if validity.all_true() {
-        trim_ranges::<true>(list, &ranges, &BitBuffer::new_unset(0))
+        trim_ranges::<true>(list, &ranges, &BitBuffer::new_unset(0), ctx)
     } else {
         let bits = validity
             .values()
             .ok_or_else(|| vortex_err!("mixed list validity missing bitmap"))?
             .bit_buffer();
-        trim_ranges::<false>(list, &ranges, bits)
+        trim_ranges::<false>(list, &ranges, bits, ctx)
     }
 }
 
@@ -309,11 +309,22 @@ fn trim_ranges<const ALL_VALID: bool>(
     list: ListViewArray,
     ranges: &[(usize, usize)],
     valid: &BitBuffer,
+    ctx: &mut ExecutionCtx,
 ) -> VortexResult<ListViewArray> {
     let mut start = usize::MAX;
     let mut end = 0usize;
+    let mut contiguous = true;
+    let mut previous_end = None;
     for (row, &(offset, size)) in ranges.iter().enumerate() {
         if size != 0 && (ALL_VALID || valid.value(row)) {
+            if previous_end.is_some_and(|previous| previous != offset) {
+                contiguous = false;
+            }
+            previous_end = Some(
+                offset
+                    .checked_add(size)
+                    .ok_or_else(|| vortex_err!("visible list range overflow"))?,
+            );
             start = start.min(offset);
             end = end.max(
                 offset
@@ -325,7 +336,7 @@ fn trim_ranges<const ALL_VALID: bool>(
     if start == usize::MAX {
         return empty_elements(list);
     }
-    if start == 0 && end == list.elements().len() {
+    if contiguous && start == 0 && end == list.elements().len() {
         return Ok(list);
     }
     let mut offsets = Vec::with_capacity(ranges.len());
@@ -340,12 +351,19 @@ fn trim_ranges<const ALL_VALID: bool>(
             sizes.push(0_u64);
         }
     }
-    ListViewArray::try_new(
+    let trimmed = ListViewArray::try_new(
         list.elements().slice(start..end)?,
         PrimitiveArray::from_iter(offsets).into_array(),
         PrimitiveArray::from_iter(sizes).into_array(),
         list.validity()?,
-    )
+    )?;
+    if contiguous {
+        Ok(trimmed)
+    } else {
+        // A min/max envelope can contain an arbitrarily large unused gap.
+        // Reuse the library's range-aware take before any parent-mask execution.
+        trimmed.rebuild(ListViewRebuildMode::MakeZeroCopyToList, ctx)
+    }
 }
 
 fn project_struct(
