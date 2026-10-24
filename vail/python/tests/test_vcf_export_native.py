@@ -144,8 +144,10 @@ def test_parallel_export_orders_partitions_and_preserves_missing_entries(tmp_pat
 
 @pytest.mark.parametrize('suffix', ['.vcf', '.vcf.gz', '.vcf.bgz'])
 def test_parallel_export_late_failure_is_atomic(tmp_path, suffix):
-    matrix = source(tmp_path)
-    matrix = matrix.annotate_rows(rsid=hl.if_else(matrix.locus.position == 2, 'bad\nidentifier', 'valid'))
+    input_path = tmp_path / 'late.vcf'
+    input_path.write_text(HEADER + ''.join(f'1\t{row}\t.\tA\tC\t.\tPASS\t.\tGT\t0/1\t0/0\n' for row in range(1, 601)))
+    matrix = hl.import_vcf(input_path, min_partitions=7)
+    matrix = matrix.annotate_rows(rsid=hl.if_else(matrix.locus.position == 550, 'bad\nidentifier', 'valid'))
     output = tmp_path / ('out' + suffix)
     output.write_bytes(b'previous result\n')
     before = set(tmp_path.iterdir())
