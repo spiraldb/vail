@@ -281,7 +281,7 @@ fn sum_slice(values: &[i32]) -> i64 {
 }
 
 /// Inspect validity one word at a time. All-valid words take the vectorizable
-/// typed-slice reduction; mixed words visit set bits without a branch per value.
+/// typed-slice reduction; mixed words use a branch-free masked widening reduction.
 fn sum_nullable<const FILTER_MISSING: bool>(
     values: &[i32],
     nulls: &NullBuffer,
@@ -314,13 +314,22 @@ fn sum_nullable<const FILTER_MISSING: bool>(
 
 #[inline]
 fn sum_selected(values: &[i32], mut mask: u64) -> i64 {
-    let mut sum = 0_i64;
-    while mask != 0 {
-        let index = mask.trailing_zeros() as usize;
-        sum = sum.wrapping_add(i64::from(values[index]));
-        mask &= mask - 1;
+    // Independent accumulators expose a masked widening reduction to LLVM.
+    // No architecture-specific intrinsics or temporary value vector is needed.
+    let mut sums = [0_i64; 4];
+    let mut chunks = values.chunks_exact(4);
+    for chunk in &mut chunks {
+        for lane in 0..4 {
+            let valid = -(((mask >> lane) & 1) as i64);
+            sums[lane] = sums[lane].wrapping_add(i64::from(chunk[lane]) & valid);
+        }
+        mask >>= 4;
     }
-    sum
+    for (lane, &value) in chunks.remainder().iter().enumerate() {
+        let valid = -(((mask >> lane) & 1) as i64);
+        sums[lane] = sums[lane].wrapping_add(i64::from(value) & valid);
+    }
+    sums.into_iter().fold(0_i64, i64::wrapping_add)
 }
 
 #[cfg(test)]
