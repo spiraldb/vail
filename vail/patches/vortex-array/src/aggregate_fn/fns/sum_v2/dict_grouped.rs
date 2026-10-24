@@ -97,8 +97,8 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         // the borrowed bitmap path rather than doubling their lookup footprint.
         const NORMALIZED_DICTIONARY_BYTES: usize = 16 * 1024;
         let normalized = (!value_mask.all_true()
-            && values.len() <= NORMALIZED_DICTIONARY_BYTES / std::mem::size_of::<LookupValue>()
-            && codes.len() >= values.len() * 4)
+            && values.len() <= NORMALIZED_DICTIONARY_BYTES / size_of::<LookupValue>()
+            && code_mask.true_count() >= values.len() * 4)
             .then(|| values.as_slice::<i32>().iter().enumerate().map(|(index, &value)| {
                 let valid = value_bits.value(index);
                 LookupValue { value: if valid { value } else { 0 }, valid: i32::from(valid) }
