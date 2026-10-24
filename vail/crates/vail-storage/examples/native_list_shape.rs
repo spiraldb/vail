@@ -1,6 +1,6 @@
 //! Public-API IO/retained-owner experiment; no plan inspection or test hooks.
 use arrow_array::{Array, Int32Array, ListArray};
-use futures::TryStreamExt;
+use futures::{StreamExt, TryStreamExt};
 use iceberg::io::FileIO;
 use iceberg::table::StaticTable;
 use iceberg::{NamespaceIdent, TableIdent};
