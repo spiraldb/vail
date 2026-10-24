@@ -1,0 +1,57 @@
+{
+  "source": "4a28412bd78558e65bb7346a3465e0e2046d57d6",
+  "stage_a_main": "1af71dc161f47e3bc30751ac671d9e2de80ff7b8",
+  "native_sha256": "a4ab27766c04772d34b3ba66b611c84692bf164606c492cd3a0f550173fd5713",
+  "python_passed": 173,
+  "python_known_failed": 1,
+  "rust_passed": 9,
+  "queries": {
+    "encoded-stage-a-filtered-combined.jsonl": {
+      "n": 12,
+      "median_wall": 0.08100289554568008,
+      "median_cpu": 0.9129584999999991,
+      "result": 20969995813
+    },
+    "encoded-stage-a-unfiltered-combined.jsonl": {
+      "n": 12,
+      "median_wall": 0.06366052100202069,
+      "median_cpu": 0.7282759999999997,
+      "result": 20969995813
+    },
+    "encoded-stage-a-wide-bare-combined.jsonl": {
+      "n": 7,
+      "median_wall": 0.17242441698908806,
+      "median_cpu": 2.028537000000001,
+      "result": 353709503
+    },
+    "encoded-stage-a-wide-bare-old-reference.jsonl": {
+      "n": 7,
+      "median_wall": 0.2941863749874756,
+      "median_cpu": 3.3667690000000037,
+      "result": 353709503
+    },
+    "encoded-stage-a-wide-profile-workload.jsonl": {
+      "n": 30,
+      "median_wall": 0.16820266644936055,
+      "median_cpu": 1.9868244999999989,
+      "result": {
+        "dp": 353709503,
+        "gq": 1246497536,
+        "n": 63083475
+      }
+    },
+    "encoded-stage-a-wide-sums_count-combined.jsonl": {
+      "n": 7,
+      "median_wall": 0.18797845800872892,
+      "median_cpu": 2.0646560000000016,
+      "result": {
+        "dp": 353709503,
+        "gq": 1246497536,
+        "n": 63083475
+      }
+    },
+    "encoded-stage-a-wide-sums_count-old-reference.jsonl": {
+      "error": "historical native lacks is_pure required by mutable newer editable Python frontend; no comparative timing"
+    }
+  }
+}
