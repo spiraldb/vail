@@ -426,3 +426,51 @@ async fn downsample_ignores_hidden_finite_points_under_null_records() {
         .unwrap();
     assert_eq!(x.values(), &[0., 1.]);
 }
+
+#[tokio::test]
+async fn correlation_counts_offset_validities_and_parent_masks() {
+    // Independent child offsets exercise Arrow's shifted bitmap words and tail.
+    for &len in &[0usize, 1, 63, 64, 65, 129] {
+        for &(x_offset, y_offset) in &[(0, 0), (1, 7), (7, 63), (63, 64), (64, 65)] {
+            for masks in 0..4 {
+                let x = Float64Array::from(
+                    (0..len + x_offset)
+                        .map(|i| {
+                            (masks & 1 == 0 || i % 3 != 0).then_some((i - i.min(x_offset)) as f64)
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .slice(x_offset, len);
+                let y = Float64Array::from(
+                    (0..len + y_offset)
+                        .map(|i| {
+                            (masks & 2 == 0 || i % 5 != 0)
+                                .then_some(2.0 * (i - i.min(y_offset)) as f64 + 1.0)
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .slice(y_offset, len);
+                let parent = (0..len).map(|i| i % 7 != 0).collect::<Vec<_>>();
+                let valid = (0..len)
+                    .filter(|&i| {
+                        parent[i]
+                            && (masks & 1 == 0 || (i + x_offset) % 3 != 0)
+                            && (masks & 2 == 0 || (i + y_offset) % 5 != 0)
+                    })
+                    .count();
+                let result = aggregate(
+                    "corr",
+                    packed(&["x", "y"], vec![Arc::new(x), Arc::new(y)], parent),
+                    serde_json::json!({}),
+                )
+                .await;
+                let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+                match valid {
+                    0 => assert!(result.is_null(0)),
+                    1 => assert!(result.value(0).is_nan()),
+                    _ => assert!((result.value(0) - 1.0).abs() < 1e-12),
+                }
+            }
+        }
+    }
+}
