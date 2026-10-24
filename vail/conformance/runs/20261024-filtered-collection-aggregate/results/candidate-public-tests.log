@@ -1,0 +1,42 @@
+.............F.......................................................... [ 78%]
+....................                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_collection_aggregate_matrix_scope_and_lookup_context ___________
+
+    def test_collection_aggregate_matrix_scope_and_lookup_context():
+        matrix = hl.range_matrix_table(3, 2)
+        matrix = matrix.annotate_entries(total=hl.array([1, 2]).aggregate(lambda x: hl.agg.sum(x + matrix.row_idx + matrix.col_idx)))
+>       assert matrix.total.collect() == [3, 5, 5, 7, 7, 9]
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_collection_aggregate.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../h058-filtered-aggregate/env/lib/python3.11/site-packages/vail/expressions.py:1034: in collect
+    return eval(result) if _localize else result
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Expression object at 0x785774a0f4c0>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Internal error: UDF vail_semantic_kernel_hail_operation_47ec29a093d25b88 returned a different number of rows than expected. Expected: 3, Got: 1.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+../../../h058-filtered-aggregate/env/lib/python3.11/site-packages/vail/__init__.py:2043: FatalError
+=========================== short test summary info ============================
+FAILED python/tests/test_collection_aggregate.py::test_collection_aggregate_matrix_scope_and_lookup_context
+1 failed, 91 passed in 4.28s
