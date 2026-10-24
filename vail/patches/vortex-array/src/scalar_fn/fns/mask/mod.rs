@@ -114,7 +114,8 @@ impl ScalarFnVTable for Mask {
         // boundary instead of canonicalizing through the revealed encoding.
         // This lets downstream encoding-specific kernels consume masked codes.
         if !input.is::<crate::columnar::AnyColumnar>() {
-            return input.execute(ctx)?.mask(mask_array);
+            let executed: ArrayRef = input.execute(ctx)?;
+            return executed.mask(mask_array);
         }
 
         execute_canonical(input, mask_array, ctx)
