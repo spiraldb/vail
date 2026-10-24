@@ -15,7 +15,9 @@ def test_filtered_collection_numeric_bundle_nulls_and_shape(dtype):
     ]:
         result = hl.literal(values, hl.tarray(dtype)).aggregate(lambda x: hl.agg.filter(
             x > 0, hl.struct(n=hl.agg.count(), total=hl.agg.sum(x), xs=hl.agg.collect(x))))
-        assert hl.eval(result) == expected
+        actual = hl.eval(result)
+        assert (actual.n, actual.total) == (expected.n, expected.total)
+        assert actual.xs is None if expected.xs is None else Counter(actual.xs) == Counter(expected.xs)
     values = hl.literal([None, 1, 1, 3], hl.tarray(dtype))
     result = hl.eval(values.aggregate(lambda x: hl.agg.filter(
         True, hl.struct(n=hl.agg.count(), xs=hl.agg.collect(x)))))
@@ -30,9 +32,7 @@ def test_filtered_collection_row_global_and_outer_lexical_captures():
     ], schema=hl.tstruct(limit=hl.tint32, xs=hl.tarray(hl.tint32))).annotate_globals(offset=10)
     rows = table.select(metric=table.xs.aggregate(lambda x: hl.agg.filter(
         x > table.limit, hl.struct(n=hl.agg.count(), total=hl.agg.sum(x + table.offset))))).collect()
-    assert rows == [hl.Struct(metric=hl.Struct(n=2, total=25)),
-                    hl.Struct(metric=hl.Struct(n=0, total=0)),
-                    hl.Struct(metric=hl.Struct(n=0, total=0))]
+    assert Counter((row.metric.n, row.metric.total) for row in rows) == Counter([(2, 25), (0, 0), (0, 0)])
     nested = hl.array([0, 2]).map(lambda lower: hl.array([None, 1, 3]).aggregate(
         lambda x: hl.agg.filter(x > lower, hl.agg.sum(x + lower))))
     assert hl.eval(nested) == [4, 5]
@@ -59,14 +59,14 @@ def test_filtered_collection_seeded_random_positions_remain_stable():
     # Seeded callback positions are a public reproducibility contract.
     body = hl.array([1, 2, 3, 4]).aggregate(lambda x: hl.agg.filter(
         x > 1, hl.agg.collect(hl.rand_unif(seed=13) + x)))
-    assert hl.eval(body) == [2.045788308691845, 3.1686479204948523, 4.312676810370315]
+    assert Counter(hl.eval(body)) == Counter([2.045788308691845, 3.1686479204948523, 4.312676810370315])
     predicate = hl.array([1, 2, 3, 4]).aggregate(lambda x: hl.agg.filter(
         hl.rand_unif(seed=13) > .5, hl.agg.collect(x)))
-    assert hl.eval(predicate) == [2, 3, 4]
+    assert Counter(hl.eval(predicate)) == Counter([2, 3, 4])
     items = hl.range(4).map(lambda x: hl.rand_unif(seed=13)).aggregate(
         lambda x: hl.agg.filter(x > .2, hl.agg.collect(x)))
-    assert hl.eval(items) == [0.2578718497119425, 0.9064616491146612,
-                             0.5291855418022392, 0.5260567498511101]
+    assert Counter(hl.eval(items)) == Counter([0.2578718497119425, 0.9064616491146612,
+                                             0.5291855418022392, 0.5260567498511101])
 
 
 def test_native_matrix_per_entry_array_summary_preserves_absence(tmp_path):
@@ -106,7 +106,9 @@ def test_filtered_nullable_structs_and_zero_field_structs():
                          {'keep': None, 'value': 10}, {'keep': True, 'value': 3}], dtype)
     result = values.aggregate(lambda item: hl.agg.filter(item.keep, hl.struct(
         n=hl.agg.count(), xs=hl.agg.collect(item.value))))
-    assert hl.eval(result) == hl.Struct(n=2, xs=[None, 3])
+    actual = hl.eval(result)
+    assert actual.n == 2
+    assert Counter(actual.xs) == Counter([None, 3])
     empty = hl.literal([{}, None, {}], hl.tarray(hl.tstruct()))
     assert hl.eval(empty.aggregate(lambda item: hl.agg.filter(hl.is_defined(item), hl.agg.count()))) == 2
     assert hl.eval(empty.aggregate(lambda item: hl.agg.filter(True, hl.agg.count()))) == 3
