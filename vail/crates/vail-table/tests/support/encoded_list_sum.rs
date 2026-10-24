@@ -761,3 +761,33 @@ fn complete_list_api_rejects_different_declared_schema() -> VortexResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn nullable_grouped_combined_mean_preserves_count_and_sum_pairing() -> VortexResult<()> {
+    use vortex::array::aggregate_fn::combined::PairOptions;
+    use vortex::array::aggregate_fn::fns::mean::Mean;
+    use vortex::array::aggregate_fn::{DynListGroupedAccumulator, ListGroupedAccumulator};
+    let groups = ListViewArray::try_new(
+        PrimitiveArray::from_option_iter([Some(2.0f64), None, Some(6.0)]).into_array(),
+        buffer![0u32, 1, 0, 1].into_array(),
+        buffer![3u32, 0, 3, 1].into_array(),
+        Validity::from_iter([true, true, false, true]),
+    )?
+    .into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut acc = ListGroupedAccumulator::try_new(
+        Mean::combined(),
+        PairOptions(
+            NumericalAggregateOpts::default(),
+            NumericalAggregateOpts::default(),
+        ),
+        groups.dtype().clone(),
+    )?;
+    acc.accumulate_list(&groups, &mut ctx)?;
+    assert_arrays_eq(
+        &acc.finish()?,
+        &PrimitiveArray::from_option_iter([Some(4.0f64), None, None, None]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}
