@@ -267,3 +267,27 @@ the original Vail source plus ordinary DataFusion projection BEFORE encoded
 payload evaluation or partial output. No codec-name blacklist or inner-kernel
 None is accepted as a substitute. This design remains under review/development;
 no merge approval or universal boundedness is claimed.
+
+## Conservative physical eligibility and ordinary fallback (in progress)
+
+Source b9543b87 adds a metadata-only, closed dense-list capability proof before
+computed execution. It binds immutable snapshot/file/operand/partition identity,
+requires constant-step zero-based offsets exactly covering their child, proves
+ancestor validity from constant true metadata, and admits only bounded primitive,
+patch-free bitpacked, constant, or small-dictionary descendants. Dictionary
+preparation has a fixed64KiB cap including decoder scratch and validity. Unknown
+encodings (including Pco), variable/hidden/sparse coverage and unsupported schema
+changes retain the original typed expression and ordinary DataFusion source plus
+ProjectionExec before any computed payload evaluation. This is a narrow supported
+subset, not a promise that the ordinary reader is selected-value-bounded.
+
+The first public Python gate found51passes and6failures, preserved at
+`/private/tmp/encoded-certified-initial-python-gate.log`. The ordinary fallback
+mistakenly supplied the table globals schema to the logical lowerer even though
+its physical input is row-only. This skipped leading source columns when globals
+were present. Production df408be6 fixes that row-only lowering; the translator's
+closed syntax rejects Global/binding-dependent expressions before this route.
+Public tests now cover actual nonempty globals, aliases/key order and a separate
+global-dependent arithmetic reduction that must retain its ordinary planner.
+The exact restored-lock build and final gate/measurements are pending; earlier
+266ab06f speedups above must not be attributed to the certified revision.
