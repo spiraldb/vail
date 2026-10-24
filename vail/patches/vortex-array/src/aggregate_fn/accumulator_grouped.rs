@@ -491,6 +491,11 @@ impl ListGroupPartials {
             results.dtype() == &self.scalar_result_dtype,
             "Grouped finalizer changed scalar dtype"
         );
+        if self.present_count == self.group_count {
+            // All batches were one-to-one: retain the finalizer's original
+            // result representation and only widen declared nullability.
+            return results.cast(self.result_dtype);
+        }
         let mut offset = 0usize;
         let mut restored = Vec::with_capacity(self.mappings.len());
         let mut output_len = 0usize;
