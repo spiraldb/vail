@@ -101,3 +101,31 @@ Actual ARM assembly showed hidden Mask enum decisions and bounds checks in
 the per-code loop, plus bit-at-a-time validity extraction. The next version
 binds concrete borrowed bitmap views per batch and reuses the library's
 word-wise BitIndexIterator. Its improvement remains unclaimed until measured.
+
+## Concrete bitmap views, nullable records, and confirmation
+
+Typed borrowed bitmap views plus library set-bit iteration (`b905a505`, native
+SHA997001b8...) reduced the fourth prototype median to89.790ms /1.062947CPU
+seconds, versus76.623ms /0.892587CPU main: still slower. All exact sums passed.
+
+Cache-sized nullable dictionary records (`ff28d46d`, native SHA256
+`2dec41217f7c722202ac103beecfc6473e3445bb09d4fe10d01727af6674ca89`)
+reached approximate parity. A quiet 12-action confirmation measured main
+75.592ms /0.901650CPU seconds and candidate74.403ms /0.893676CPU seconds.
+Wall ranges overlap72–80ms; this does not establish a meaningful speedup.
+The preparation path is limited to16KiB and at least four present codes per
+dictionary slot; large/weak-reuse dictionaries retain borrowed bitmap lookup.
+The cache/amortization policy still requires broader resource validation.
+
+A public-API single-thread CPU experiment uses40.96Mslots, independent exact
+sums, two warmups and five samples per cardinality/density class. Card102
+measured19.37ms with all-valid codes, but33.95ms at99%valid and31.33ms at91%
+valid. Card3000 measured27.17ms,43.51ms,40.34ms respectively. Lower densities
+50%/5% measured18.38ms/4.58ms (card102),23.18ms/4.99ms (card3000).
+Thus bit-index work is a general dense-mask problem, independently of the
+periodic native fixture. The next candidate streams valid runs for dense code
+masks with the existing library iterator; its benefit is not yet measured.
+
+No prototype in this report is approved for merging. Existing resource-review
+blockers remain: visible-child clipping before parent-mask execution, session
+batch caps, and underparallelized source handling.
