@@ -212,3 +212,105 @@ async fn renamed_struct_projection_keeps_selected_field_values() {
         .collect();
     assert_eq!(values, vec![5, 6, 7]);
 }
+
+/// Public, passing resource controls. Environment sizes affect only this test
+/// driver; production optimizer code has no workload-name/dimension dispatch.
+#[tokio::test]
+async fn public_valid_projection_resource_control() {
+    use std::time::Instant;
+    let width = std::env::var("VAIL_DF_WIDTH")
+        .ok()
+        .map(|x| x.parse().unwrap())
+        .unwrap_or(16usize);
+    let rows = std::env::var("VAIL_DF_ROWS")
+        .ok()
+        .map(|x| x.parse().unwrap())
+        .unwrap_or(32i32);
+    let iterations = std::env::var("VAIL_DF_ITERATIONS")
+        .ok()
+        .map(|x| x.parse().unwrap())
+        .unwrap_or(1usize);
+    let mode = std::env::var("VAIL_DF_MODE").unwrap_or_else(|_| "rename".into());
+    let phase = std::env::var("VAIL_DF_PHASE").unwrap_or_else(|_| "execute".into());
+    let batch = RecordBatch::try_new(
+        Arc::new(Schema::new(vec![Field::new("idx", DataType::Int32, false)])),
+        vec![Arc::new(Int32Array::from_iter_values(0..rows))],
+    )
+    .unwrap();
+    let context = SessionContext::new();
+    let frame = context.read_batch(batch).unwrap();
+    let structure = |shift: i32| {
+        let mut args = Vec::with_capacity(width * 2);
+        for index in 0..width {
+            args.push(lit(format!("f{index}")));
+            args.push(col("idx") + lit(index as i32 + shift));
+        }
+        datafusion_functions::core::named_struct().call(args)
+    };
+    let frame = frame
+        .select(vec![col("idx"), structure(0).alias("original")])
+        .unwrap();
+    let (frame, base, shift) = match mode.as_str() {
+        "rename" => (
+            frame
+                .select(vec![col("original").alias("renamed")])
+                .unwrap(),
+            "renamed",
+            0i64,
+        ),
+        "wide" => (
+            frame.select(vec![structure(1).alias("fresh")]).unwrap(),
+            "fresh",
+            1i64,
+        ),
+        _ => panic!("unknown public control mode"),
+    };
+    let frame = frame
+        .select(vec![
+            datafusion_functions::core::get_field()
+                .call(vec![col(base), lit(format!("f{}", width - 1))])
+                .alias("value"),
+        ])
+        .unwrap();
+    let expected =
+        i64::from(rows) * i64::from(rows - 1) / 2 + i64::from(rows) * (width as i64 - 1 + shift);
+    let validate = |batches: Vec<RecordBatch>| {
+        let mut sum = 0i64;
+        let mut count = 0usize;
+        for batch in batches {
+            assert_eq!(batch.schema().fields().len(), 1);
+            assert_eq!(batch.schema().field(0).name(), "value");
+            assert_eq!(batch.schema().field(0).data_type(), &DataType::Int32);
+            let values = batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap();
+            assert_eq!(values.null_count(), 0);
+            count += values.len();
+            sum += values
+                .values()
+                .iter()
+                .map(|value| i64::from(*value))
+                .sum::<i64>();
+        }
+        assert_eq!(count, rows as usize);
+        assert_eq!(sum, expected);
+    };
+    validate(frame.clone().collect().await.unwrap());
+    let started = Instant::now();
+    for _ in 0..iterations {
+        if phase == "plan" {
+            let plan = frame.clone().into_optimized_plan().unwrap();
+            assert_eq!(plan.schema().fields().len(), 1);
+            assert_eq!(plan.schema().field(0).name(), "value");
+            assert_eq!(plan.schema().field(0).data_type(), &DataType::Int32);
+        } else {
+            validate(frame.clone().collect().await.unwrap());
+        }
+    }
+    eprintln!(
+        "PUBLIC_DF_RESOURCE mode={mode} phase={phase} width={width} rows={rows} iterations={iterations} wall_seconds={:.9}",
+        started.elapsed().as_secs_f64()
+    );
+}
