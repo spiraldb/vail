@@ -1,4 +1,6 @@
 //! Public IO receipt. This counts real FileReadAt traffic, not reader internals.
+//! Snapshots can overlap asynchronous prefetch: they are application-reader
+//! requests/completions, not phase-isolated physical-device IO or decode counts.
 use futures::{FutureExt, TryStreamExt, future::BoxFuture};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -193,7 +195,7 @@ async fn element_validity_public_file_io_receipt() -> VortexResult<()> {
         let scan_seconds = start.elapsed().as_secs_f64();
         let total = traffic.snapshot();
         eprintln!(
-            "ELEMENT_VALIDITY_PUBLIC_IO raw={raw} rows={rows} width={width} file_bytes={file_bytes} open_requested={} open_completed={} open_unique={} total_requested={} total_completed={} total_unique={} open_seconds={open_seconds} scan_and_value_check_seconds={scan_seconds} layout={:?}",
+            "ELEMENT_VALIDITY_PUBLIC_IO raw={raw} rows={rows} width={width} file_bytes={file_bytes} open_observed_requested={} open_observed_completed={} open_observed_unique={} total_requested={} total_completed={} total_unique={} open_seconds={open_seconds} scan_and_value_check_seconds={scan_seconds} layout={:?}",
             open.0,
             open.1,
             open.2,
