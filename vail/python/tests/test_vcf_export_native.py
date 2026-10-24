@@ -174,3 +174,14 @@ def test_parallel_bgzf_export_is_tabix_queryable(tmp_path):
     assert [int(line.split('\t')[1]) for line in selected] == list(range(7, 13))
     for row, line in zip(range(7, 13), selected, strict=True):
         assert line.split('\t')[9:] == [f'0/1:{row + col}' for col in range(samples)]
+
+
+def test_parallel_export_empty_matrix_has_one_complete_header(tmp_path):
+    import gzip
+    matrix = source(tmp_path).filter_rows(False)
+    output = tmp_path / 'empty.vcf.bgz'
+    hl.export_vcf(matrix, output)
+    text = gzip.open(output, 'rt').read()
+    assert text.count('#CHROM') == 1
+    assert all(line.startswith('#') for line in text.splitlines())
+    assert hl.import_vcf(output).count() == (0, 2)
