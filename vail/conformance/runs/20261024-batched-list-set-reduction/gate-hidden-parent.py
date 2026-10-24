@@ -13,7 +13,7 @@ values=np.full(hidden+4,7,dtype=np.int32);values[-2:]=9
 input=pa.ListArray.from_arrays(pa.array([0,2,hidden+2,hidden+4],type=pa.int32()),pa.array(values),mask=pa.array([False,True,False]))
 arrow=pa.table({'items':input})
 t=h.Table.parallelize(arrow,n_partitions=1)
-t=t.select(result=t.items.aggregate(lambda x:h.agg.collect_as_set(x)))
+t=t.select(result=t["items"].aggregate(lambda x:h.agg.collect_as_set(x)))
 print(json.dumps({'phase':'ready','pid':os.getpid(),'hidden':hidden,'visible_values':4,'native_sha256':hashlib.sha256(open(native.__file__,'rb').read()).hexdigest(),'producer_offsets':input.offsets.to_pylist(),'producer_peakrss':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss}),flush=True)
 for i in range(iterations):
  b=resource.getrusage(resource.RUSAGE_SELF);start=time.perf_counter();cpu=time.process_time();out=t.collect();after=resource.getrusage(resource.RUSAGE_SELF)
