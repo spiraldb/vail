@@ -1,0 +1,90 @@
+{
+  "bare": {
+    "baseline": {
+      "seconds": 0.218280864999997,
+      "cpu_seconds": 5.763510433999999,
+      "rchar_bytes": 978457012.5,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 939670.0,
+      "minor_faults": 84047.0,
+      "n": 6
+    },
+    "candidate": {
+      "seconds": 0.14675064999983078,
+      "cpu_seconds": 3.816485375,
+      "rchar_bytes": 981706033.5,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 900082.0,
+      "minor_faults": 29083.5,
+      "n": 6
+    },
+    "wall_speedup": 1.487426904073329,
+    "cpu_reduction": 0.33781929976462655
+  },
+  "two_sums": {
+    "baseline": {
+      "seconds": 0.21429206999982853,
+      "cpu_seconds": 5.577710343500001,
+      "rchar_bytes": 977298327.0,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 947712.0,
+      "minor_faults": 70586.0,
+      "n": 6
+    },
+    "candidate": {
+      "seconds": 0.15873653399967225,
+      "cpu_seconds": 4.119483402499999,
+      "rchar_bytes": 979569902.0,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 907572.0,
+      "minor_faults": 25514.0,
+      "n": 6
+    },
+    "wall_speedup": 1.3499858199012396,
+    "cpu_reduction": 0.2614382696834284
+  },
+  "sums_count": {
+    "baseline": {
+      "seconds": 0.21091540000043096,
+      "cpu_seconds": 5.634704090000001,
+      "rchar_bytes": 976587287.0,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 943460.0,
+      "minor_faults": 67431.5,
+      "n": 6
+    },
+    "candidate": {
+      "seconds": 0.15589060450020042,
+      "cpu_seconds": 3.9543707129999994,
+      "rchar_bytes": 980538328.0,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 908580.0,
+      "minor_faults": 26576.5,
+      "n": 6
+    },
+    "wall_speedup": 1.3529705698213506,
+    "cpu_reduction": 0.2982114677471912
+  },
+  "computed": {
+    "baseline": {
+      "seconds": 0.24644691750017955,
+      "cpu_seconds": 6.533376817500001,
+      "rchar_bytes": 978697669.0,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 953016.0,
+      "minor_faults": 94767.0,
+      "n": 6
+    },
+    "candidate": {
+      "seconds": 0.17578040250054983,
+      "cpu_seconds": 4.56201771,
+      "rchar_bytes": 980380259.5,
+      "disk_read_bytes": 0.0,
+      "maxrss_kib": 929684.0,
+      "minor_faults": 48363.5,
+      "n": 6
+    },
+    "wall_speedup": 1.4020158902492483,
+    "cpu_reduction": 0.30173663062256095
+  }
+}

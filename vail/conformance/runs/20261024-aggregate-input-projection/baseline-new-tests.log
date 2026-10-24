@@ -1,0 +1,41 @@
+F...                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_native_matrix_totals_keep_parent_validity_with_missing_selected_children _
+
+tmp_path = PosixPath('/tmp/pytest-of-danielking/pytest-14/test_native_matrix_totals_keep0')
+
+    def test_native_matrix_totals_keep_parent_validity_with_missing_selected_children(tmp_path):
+        m = hl.utils.range_matrix_table(3, 130, 2)
+        m = m.annotate_entries(
+            x=hl.or_missing(m.col_idx % 5 != 1, hl.int32(m.row_idx * 130 + m.col_idx)),
+            y=hl.or_missing(m.col_idx % 5 != 1, hl.int32(2)),
+            unused=hl.range(12),
+>       ).filter_entries(m.col_idx % 3 != 0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_aggregate_nested_projection.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+h089-boolean-integration/env/lib/python3.11/site-packages/vail/matrixtable.py:1553: in filter_entries
+    return self._filter("entry", expr, keep)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+h089-boolean-integration/env/lib/python3.11/site-packages/vail/matrixtable.py:1449: in _filter
+    expr = self._validate(expr, axis, aggregate=axis in ("row", "col"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x7fda7227ea10>
+expr = <vail.expressions.Expression object at 0x7fda721bfa00>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+h089-boolean-integration/env/lib/python3.11/site-packages/vail/matrixtable.py:587: ExpressionException
+=========================== short test summary info ============================
+FAILED test_aggregate_nested_projection.py::test_native_matrix_totals_keep_parent_validity_with_missing_selected_children
+1 failed, 3 passed in 0.65s
