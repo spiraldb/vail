@@ -16,7 +16,6 @@
     "patches/vortex-array/src/aggregate_fn/typed.rs": "fa3de1b3070aff8990489fd5427ceb7ade388aa5579433e0e414ff94bc1ea284",
     "patches/vortex-array/src/aggregate_fn/erased.rs": "0fad5e29bfd01b94547dde31527f8feb15a13be40c54003158ece28f7d906818",
     "patches/vortex-array/src/scalar_fn/fns/list_sum.rs": "03414fcd819ca0cd477cc9a6c1c0db6fe2e4e1bb9c08850de509354d69d6e168",
-    "crates/vail-table/tests/support/encoded_list_sum.rs": "cb202c42d0f061aa4c903d86e8c66e9a17c45fbb30354554e411c03fe34a990f",
     "patches/iceberg-rust/crates/iceberg/src/arrow/vortex_util.rs": "29971fc9b30c962fddd18ae8af1a00749d324503b33225615188c39abc723ed6",
     "crates/vail-storage/tests/native_list_evolution.rs": "9fdac912ecafc9032a42232982595fae2276115709559322d50c7004660e205e"
   },
@@ -353,5 +352,22 @@
         }
       }
     }
-  ]
+  ],
+  "source_file_scope": "Production sources at d3cee402 and normal-wheel df02a84e; production unchanged through e4b04f73 resource-test-only relink and documentation-only packaging.",
+  "initial_public_test_files": {
+    "source_revision": "d3cee402bd9ca40e685bb36b7eb3a8ff0c9688e8",
+    "files": {
+      "crates/vail-table/tests/support/encoded_list_sum.rs": "c1a895bdb83b60315827f6df4a3e71687fa61c896312bcbe79584641251bee0a"
+    },
+    "whole_target_passes": 20,
+    "executable_sha256": "16635b1dc0b99974e526e4559e3e8f7675b0af84ece40cdf96fba47cca43e415"
+  },
+  "resource_public_test_files": {
+    "source_revision": "e4b04f73e861da453b0780c9dae788cd06f740e3",
+    "files": {
+      "crates/vail-table/tests/support/encoded_list_sum.rs": "cb202c42d0f061aa4c903d86e8c66e9a17c45fbb30354554e411c03fe34a990f"
+    },
+    "whole_target_passes": 21,
+    "executable_sha256": "bd5c0adccdd0743ad644298d9edd73106f3277d48b39fa96af552d087e482df9"
+  }
 }
