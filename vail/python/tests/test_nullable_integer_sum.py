@@ -69,3 +69,16 @@ def test_native_matrix_sum_after_filters_and_nested_missingness(tmp_path, missin
     loaded = hl.read_matrix_table(path)
     assert loaded.aggregate_entries(hl.agg.sum(loaded.payload.depth)) == expected
     assert sum(x.total for x in loaded.annotate_rows(total=hl.agg.sum(loaded.payload.depth)).rows().collect()) == expected
+
+
+def test_nested_fields_keep_declared_positions_and_sibling_sums():
+    schema = hl.tarray(hl.tstruct(prefix=hl.tstr,
+        payload=hl.tstruct(other=hl.tint64, depth=hl.tint32), suffix=hl.tint32))
+    records = [hl.Struct(prefix='x', payload=hl.Struct(other=1 << 40, depth=3), suffix=19),
+               hl.Struct(prefix='y', payload=None, suffix=23), None,
+               hl.Struct(prefix='z', payload=hl.Struct(other=7, depth=None), suffix=29)]
+    a = hl.literal(records, schema)
+    result = hl.eval(hl.struct(depth=hl.sum(a.map(lambda x: hl.int64(x.payload.depth))),
+                              other=hl.sum(a.map(lambda x: x.payload.other)),
+                              suffix=hl.sum(a.map(lambda x: x.suffix))))
+    assert result == hl.Struct(depth=3, other=(1 << 40) + 7, suffix=71)
