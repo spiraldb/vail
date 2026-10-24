@@ -9,7 +9,7 @@
 //! existing canonical implementation and its overflow semantics.
 
 use num_traits::AsPrimitive;
-use vortex_buffer::{BitBuffer, BitBufferMut};
+use vortex_buffer::{BitBuffer, BitBufferMut, BitBufferView};
 use vortex_error::VortexResult;
 use vortex_mask::Mask;
 
@@ -85,6 +85,13 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
         }
         let codes = codes.execute::<PrimitiveArray>(ctx)?;
         let values = dict.values().clone().execute::<PrimitiveArray>(ctx)?;
+        // Resolve Mask enum representations once, before entry traversal.
+        // All-valid specializations never access their empty placeholder view.
+        let empty_bits = BitBuffer::default();
+        let code_bits = code_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
+        let value_bits = value_mask.values().map_or(&empty_bits, |v| v.bit_buffer());
+        let code_bits = BitBufferView::new_with_offset(code_bits.inner().as_slice(), code_bits.len(), code_bits.offset());
+        let value_bits = BitBufferView::new_with_offset(value_bits.inner().as_slice(), value_bits.len(), value_bits.offset());
         let (sums, empty) = match_each_integer_ptype!(codes.ptype(), |C| {
             let codes = codes.as_slice::<C>();
             let values = values.as_slice::<i32>();
@@ -96,8 +103,8 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     &ranges,
                     start,
                     &group_mask,
-                    &code_mask,
-                    &value_mask,
+                    code_bits,
+                    value_bits,
                 ),
                 (true, false) => reduce::<C, true, false>(
                     codes,
@@ -105,8 +112,8 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     &ranges,
                     start,
                     &group_mask,
-                    &code_mask,
-                    &value_mask,
+                    code_bits,
+                    value_bits,
                 ),
                 (false, true) => reduce::<C, false, true>(
                     codes,
@@ -114,8 +121,8 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     &ranges,
                     start,
                     &group_mask,
-                    &code_mask,
-                    &value_mask,
+                    code_bits,
+                    value_bits,
                 ),
                 (false, false) => reduce::<C, false, false>(
                     codes,
@@ -123,8 +130,8 @@ impl DynGroupedAggregateKernel for DictGroupedSumV2EncodingKernel {
                     &ranges,
                     start,
                     &group_mask,
-                    &code_mask,
-                    &value_mask,
+                    code_bits,
+                    value_bits,
                 ),
             }
         });
@@ -161,9 +168,11 @@ fn reduce<
     ranges: &GroupRanges,
     base: usize,
     groups: &Mask,
-    code_mask: &Mask,
-    value_mask: &Mask,
+    code_bits: BitBufferView<'_>,
+    value_bits: BitBufferView<'_>,
 ) -> (PrimitiveArray, BitBuffer) {
+    debug_assert!(CODES_VALID || code_bits.len() == codes.len());
+    debug_assert!(VALUES_VALID || value_bits.len() == values.len());
     let mut empty = BitBufferMut::new_unset(groups.len());
     let sums = ranges.iter().enumerate().map(|(group, (offset, len))| {
         if !groups.value(group) {
@@ -172,16 +181,29 @@ fn reduce<
         let offset = if len == 0 { 0 } else { offset - base };
         let mut sum = 0_i64;
         let mut any = false;
-        for (relative, code) in codes[offset..offset + len].iter().enumerate() {
-            if !CODES_VALID && !code_mask.value(offset + relative) {
-                continue;
+        let codes = &codes[offset..offset + len];
+        let mut add = |code: C| {
+            let index = code.as_();
+            // Retain a checked dictionary lookup, including for malformed codes.
+            let value = values[index];
+            // SAFETY: the checked value lookup proves index < values.len();
+            // this logical mask was executed for exactly that dictionary length.
+            if !VALUES_VALID && !unsafe { value_bits.value_unchecked(index) } {
+                return;
             }
-            let index = (*code).as_();
-            if !VALUES_VALID && !value_mask.value(index) {
-                continue;
-            }
-            sum += i64::from(values[index]);
+            sum += i64::from(value);
             any = true;
+        };
+        if CODES_VALID {
+            for &code in codes { add(code); }
+        } else {
+            // Reuse the library's word-wise set-bit iterator, avoiding a bit
+            // extraction/branch for every code and allocating no index vector.
+            for index in code_bits.slice(offset..offset + len).set_indices() {
+                // SAFETY: the bitmap slice and codes slice have identical len,
+                // and BitIndexIterator only yields positions inside that slice.
+                add(unsafe { *codes.get_unchecked(index) });
+            }
         }
         if !any {
             // SAFETY: enumerate index is within the group-sized bitmap.
