@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 #[tokio::test]
 async fn same_name_struct_schema_replacement_preserves_new_field() {
+    let mut failures = Vec::new();
     for nested in [false, true] {
         for mode in ["replace", "extend", "distinct"] {
             let batch = RecordBatch::try_new(
@@ -74,7 +75,14 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
                     .select(vec![get(col(target), "added").alias("value")])
                     .unwrap()
             };
-            let batches = frame.collect().await.unwrap();
+            let batches = match frame.collect().await {
+                Ok(batches) => batches,
+                Err(error) => {
+                    eprintln!("nested={nested} mode={mode}: ERROR {error}");
+                    failures.push(format!("nested={nested} mode={mode}: {error}"));
+                    continue;
+                }
+            };
             assert!(
                 batches
                     .iter()
@@ -95,6 +103,8 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
                 })
                 .collect();
             assert_eq!(values, vec![1, 2], "nested={nested} mode={mode}");
+            eprintln!("nested={nested} mode={mode}: values={values:?}");
         }
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
