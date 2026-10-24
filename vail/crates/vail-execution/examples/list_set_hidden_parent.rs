@@ -13,6 +13,7 @@ fn main() {
     let args: Vec<_> = std::env::args().collect();
     let hidden: usize = args[1].parse().unwrap();
     let iterations: usize = args[2].parse().unwrap();
+    let owners: usize = args.get(4).map(|x| x.parse().unwrap()).unwrap_or(1);
     let logical = args.get(3).map(String::as_str).unwrap_or("physical") == "logical";
     let mut values = vec![7; hidden.checked_add(4).unwrap()];
     values[hidden + 2] = 9;
@@ -33,6 +34,7 @@ fn main() {
     );
     let schema = Schema::new(vec![Field::new("items", input.data_type().clone(), true)]);
     let batch = RecordBatch::try_new(Arc::new(schema.clone()), vec![Arc::new(input)]).unwrap();
+    let retained_owners = (1..owners).map(|_| batch.clone()).collect::<Vec<_>>();
     let expr = Expr::NestedFunction {
         function: "__vail_list_reduce_collect_as_set".into(),
         args: vec![Expr::Column {
@@ -57,7 +59,7 @@ fn main() {
     };
     println!(
         "{}",
-        serde_json::json!({"phase":"ready","hidden":hidden,"visible_children":4,"logical":logical})
+        serde_json::json!({"phase":"ready","hidden":hidden,"visible_children":4,"logical":logical,"owners":owners})
     );
     for iteration in 0..iterations {
         let start = Instant::now();
@@ -79,4 +81,14 @@ fn main() {
             serde_json::json!({"iteration":iteration,"wall_seconds":elapsed,"result":[[7],null,[9]]})
         );
     }
+    std::hint::black_box(&retained_owners);
+    assert_eq!(
+        batch
+            .column(0)
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap()
+            .value_length(1),
+        i32::try_from(hidden).unwrap()
+    );
 }
