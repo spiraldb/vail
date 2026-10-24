@@ -222,7 +222,7 @@ fn input<'a, T: arrow_array::types::ArrowPrimitiveType>(
 
 /// Arrow owns same-width nullable reduction, including its SIMD selection.
 /// Headers and slices share primitive values; only logical bitmaps are combined.
-fn evaluate_same<T: arrow_array::types::ArrowNumericType, const FILTER_MISSING: bool>(
+fn evaluate_same<T: arrow_array::ArrowNumericType, const FILTER_MISSING: bool>(
     array: &ArrayRef,
     path: &[usize],
 ) -> Result<ArrayRef, ExprError> {
