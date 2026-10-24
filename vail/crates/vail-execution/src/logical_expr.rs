@@ -641,6 +641,19 @@ fn lower(
                 recurse(&args[1])?,
             )
         }
+        Expr::NestedFunction { function, args, .. }
+            if function == "__vail_list_reduce_collect_as_set"
+                && args.len() == 1
+                && crate::expression_effects::effects(expr) == crate::expression_effects::Effects::Pure
+                && crate::list_aggregate::batch_distinct_compatible(
+                    &args[0].dtype_with_globals(schema.as_arrow(), globals)?,
+                ) =>
+        {
+            let dtype = expr.dtype_with_globals(schema.as_arrow(), globals)?.to_arrow()?;
+            let distinct = datafusion_functions_nested::set_ops::array_distinct_udf()
+                .call(vec![recurse(&args[0])?]);
+            restore_type(distinct, dtype)
+        }
         Expr::NestedFunction { function, args, .. } if function == "__vail_list_reduce_collect" => {
             // The input already is the ordered collection, including missing
             // elements. Expose this identity to DataFusion rather than hiding

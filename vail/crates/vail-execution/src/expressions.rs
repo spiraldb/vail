@@ -6190,6 +6190,22 @@ fn lower_uncached(
             let no = Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
             boolean_case(base, yes, no, fallback)?
         }
+        Expr::NestedFunction { function, args, .. }
+            if function == "__vail_list_reduce_collect_as_set"
+                && args.len() == 1
+                && crate::list_aggregate::batch_distinct_compatible(
+                    &args[0].dtype_scoped(schema, globals.schema(), scope, memo, context)?,
+                ) =>
+        {
+            let values = lower_cached(&args[0], schema, globals, scope, memo, context)?;
+            let distinct = Arc::new(ScalarFunctionExpr::try_new(
+                datafusion_functions_nested::set_ops::array_distinct_udf(),
+                vec![values],
+                schema,
+                Arc::new(ConfigOptions::default()),
+            )?);
+            cast(distinct, schema, dtype.clone())?
+        }
         Expr::NestedFunction { function, args, .. } if function == "__vail_list_reduce_collect" => {
             // Preserve the list's values, offsets and logical validity. Typing
             // already validated the reducer's arity and output element type.

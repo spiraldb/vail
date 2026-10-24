@@ -94,6 +94,26 @@ pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
     })))
 }
 
+/// Select the ordinary DataFusion set kernel from the original logical type.
+/// Generic nested-function coercion erases Set/Dict/opaque descriptors, so this
+/// must run before that coercion in both logical and physical preparation.
+/// Floating values retain the existing reducer: array_distinct normalizes
+/// signed zero, unlike Hail's ordered set keys.
+pub(crate) fn batch_distinct_compatible(input: &crate::expressions::Type) -> bool {
+    use crate::expressions::{PrimitiveType, Type};
+    fn ordered_item(value: &Type) -> bool {
+        match value {
+            Type::Primitive(PrimitiveType::Int32 | PrimitiveType::Int64
+                | PrimitiveType::Bool | PrimitiveType::Str) => true,
+            Type::Array { array } => ordered_item(array),
+            Type::Struct { r#struct } => r#struct.iter().all(|(_, value)| ordered_item(value)),
+            Type::Tuple { tuple } => tuple.iter().all(ordered_item),
+            _ => false,
+        }
+    }
+    matches!(input, Type::Array { array } if ordered_item(array))
+}
+
 /// Physical lowering also prepares typed reducers for expressions inside a
 /// higher-order kernel, which do not pass through the logical simplifier.
 pub(crate) fn prepared_udf(name: &str, input: &DataType) -> Option<Arc<ScalarUDF>> {
