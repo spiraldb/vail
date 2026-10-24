@@ -1,0 +1,11 @@
+# H043 + H086 combined integration
+
+Assembly6c6038be6c044fde30af7812b010ad902ee2c13b, from main0eec407731c5b39829316f8edf3f463e544b6888. H043fe53156c and H086a63b7ee3 merge cleanly. Each of the seven production/test files matches its approved isolated candidate byte-for-byte (source-composition.json); no interaction edits. Native calls.rs/expressions.rs direct Call indexing and native_stddev.rs finite-input proof operate independently. DataFusion cast sharing, float/nonfinite semantics, Call logical nulls and bounds remain covered by public tests.
+
+## Exact normal artifact gate
+
+SECONDARY vail-tests-20261023 was verified idle; a fresh four-hour shutdown timer armed before work. Source extracted into the existing H086 stable checkout; changed Rust files explicitly touched to invalidate mtimes before builds and test graphs. Normal kache/maturin release compilation:16jobs, incremental0, RUSTFLAGS=-C target-cpu=native -C link-arg=-fuse-ld=lld. No manually copied native artifacts. Warm release compile1m15s plus wheel packaging. Dedicated environment normally installed the wheel. Installed native SHA2568d2bbdb67f2789c1c208834bfa5d6d3ccfbf0768682e0d5f243a5e39ecdeec58 equals its wheel-native hash. Complete provenance and source hashes retained.
+
+293 public tests pass, zero failures:283 Python covering both candidate suites, Call/genotype-index/split-multiallelic/likelihood, stats, coordinate stddev, numeric aggregation, row sharing, reduction CSE, RNG, list collect/shared reducers, nullable integer SUM and matrix-entry SUM;10 Rust covering direct index expected outputs/errors, real allocator, typed stddev merge/retract/filter/emission and existing stddev contracts. Allocator still records33256bytes for8192Calls, matching isolated candidate. No baseline failure exclusions needed.
+
+This integration gate makes no new performance claim. Isolated native resource/profile evidence is retained in the respective finite-integer-stddev and direct-call-index runs; production bytes are identical. All downloaded log/source/provenance checksums were verified against the VM, and source hashes independently match this local assembly. VM stopped after evidence download; disks preserve environments/wheels. Main is updated only by the parent after required final review.
