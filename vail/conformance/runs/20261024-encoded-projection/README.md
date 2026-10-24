@@ -53,3 +53,24 @@ The workload JSONL SHA256 is
 Subsequent fixes require fresh builds, semantic checks and measurements. Review
 also requires clipping visible child spans before ancestor extraction/masking,
 preserving session batch/entry budgets, and resolving underparallelized sources.
+
+## Second prototype, still slower
+
+Production source `3959714d`, native SHA256
+`75858264238d9df730bbbcba1a55529a414e26f1f88e87d8da006f9801bac15a`.
+Normal follow-up build took 5m34s. Repeated the same warmup + three action
+comparison in quiet conditions: baseline median 81.724ms / 0.891919 CPU seconds;
+candidate 99.898ms / 1.135964 CPU seconds. The prototype improved versus its
+first version but still took 1.22× wall time and 1.27× CPU time versus main.
+Every action returned the exact expected sum. Public Python gate: 56 passed,
+including the two formerly failing wide-schema cases and native string
+passthrough. This does not establish final resource acceptance.
+
+Second profile: Boolean take 15.74%, numeric take 14.83%, generic masked grouped
+SUM 14.38%, bitmap iteration 14.90% of leaf CPU samples. Unused Arrow conversion
+was removed. The dictionary grouped kernel still did not become the hot path.
+Pinned MaskReduceAdaptor declines reduction unless its Boolean mask is concrete
+Bool/Constant; encoded logical masks therefore prevented the Dict rule. The next
+prototype changes mask execution order to resolve only that bitmap first and
+reapply the existing encoding-specific mask rules. No improvement from that
+next change is claimed before its own build, correctness checks and timings.
