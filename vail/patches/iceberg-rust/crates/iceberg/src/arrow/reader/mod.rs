@@ -53,6 +53,7 @@ use projection::{
 
 /// Builder to create ArrowReader
 pub struct ArrowReaderBuilder {
+    computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
     concurrency_limit_data_files: usize,
@@ -68,6 +69,7 @@ impl ArrowReaderBuilder {
         let num_cpus = available_parallelism().get();
 
         ArrowReaderBuilder {
+            computed_projection: None,
             batch_size: None,
             file_io,
             concurrency_limit_data_files: num_cpus,
@@ -88,6 +90,15 @@ impl ArrowReaderBuilder {
     /// to something other than the default
     pub fn with_batch_size(mut self, batch_size: usize) -> Self {
         self.batch_size = Some(batch_size);
+        self
+    }
+
+    /// Apply a row-preserving Vortex expression before crossing the Arrow boundary.
+    /// The expression must return a struct. Ordinary Iceberg field projection
+    /// declares its input dependencies; the expression declares the output.
+    /// Schema evolution retains a correctness-preserving post-evolution fallback.
+    pub fn with_computed_projection(mut self, expression: ::vortex::expr::Expression) -> Self {
+        self.computed_projection = Some(expression);
         self
     }
 
@@ -132,6 +143,7 @@ impl ArrowReaderBuilder {
     /// Build the ArrowReader.
     pub fn build(self) -> ArrowReader {
         ArrowReader {
+            computed_projection: self.computed_projection,
             batch_size: self.batch_size,
             file_io: self.file_io.clone(),
             delete_file_loader: CachingDeleteFileLoader::new(
@@ -150,6 +162,7 @@ impl ArrowReaderBuilder {
 /// Reads data from Parquet files
 #[derive(Clone)]
 pub struct ArrowReader {
+    computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
     delete_file_loader: CachingDeleteFileLoader,

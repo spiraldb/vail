@@ -80,6 +80,7 @@ pub(super) async fn read_vortex_task(
     batch_size: Option<usize>,
     delete_file_loader: &CachingDeleteFileLoader,
     bytes_read_counter: Arc<AtomicU64>,
+    computed_projection: Option<Expression>,
 ) -> Result<ArrowRecordBatchStream> {
     // Start loading the delete files concurrently with opening the data file.
     let delete_filter_rx = delete_file_loader.load_deletes(task.deletes(), task.schema_ref());
@@ -220,6 +221,19 @@ pub(super) async fn read_vortex_task(
             root(),
         )
     };
+    // Computation can precede Arrow conversion when the on-disk schema is
+    // already the task schema. Otherwise retain the ordinary field-ID/schema
+    // evolution pipeline and apply the same expression to its result below.
+    // Virtual metadata/partition constants also remain in that fallback path.
+    let encoded_projection = computed_projection.as_ref().filter(|_| {
+        file_schema.as_ref() == task.schema_ref().as_ref()
+            && !task.project_field_ids().iter().any(|id| is_metadata_field(*id))
+            && task.partition_spec().is_none_or(|spec| spec.fields().is_empty())
+    });
+    if let Some(expression) = encoded_projection {
+        projection = expression.clone();
+    }
+    let computed_before_arrow = encoded_projection.is_some();
     // Keep the virtual position separate from user columns with the same name.
     let mut position_name = RESERVED_COL_NAME_POS.to_string();
     while projected_names.contains(&position_name) {
@@ -263,6 +277,9 @@ pub(super) async fn read_vortex_task(
     }
 
     let array_stream = scan_builder.into_array_stream().map_err(to_iceberg_error)?;
+    if array_stream.dtype().as_struct_fields_opt().is_none() {
+        return Err(Error::new(ErrorKind::DataInvalid, "computed scan projection must return a struct"));
+    }
 
     // Mirror the parquet pipeline: adapt file batches to the task schema.
     let mut record_batch_transformer_builder =
@@ -364,6 +381,7 @@ pub(super) async fn read_vortex_task(
     let mut execution_ctx = session.create_execution_ctx();
     let first_row_id = task.first_row_id();
     let task_schema = task.schema_ref();
+    let mut fallback_bound = None;
 
     let record_batch_stream = array_stream.map(move |chunk| {
         let chunk = chunk.map_err(to_iceberg_error)?;
@@ -372,6 +390,9 @@ pub(super) async fn read_vortex_task(
             .execute_arrow(chunk, Some(&arrow_field), &mut execution_ctx)
             .map_err(to_iceberg_error)?;
         let batch = RecordBatch::from(arrow_array.as_struct());
+        if computed_before_arrow {
+            return Ok(batch);
+        }
         let mut batch = attach_field_id_metadata(batch, &file_schema)?;
         if need_pos {
             let schema = batch.schema();
@@ -400,11 +421,30 @@ pub(super) async fn read_vortex_task(
         if project_row_id {
             batch = super::row_lineage::synthesize_row_id_column(batch, first_row_id)?;
         }
-        record_batch_transformer.process_record_batch(crate::arrow::evolve_nested_fields(
+        let batch = record_batch_transformer.process_record_batch(crate::arrow::evolve_nested_fields(
             batch,
             &task_schema,
             &session,
-        )?)
+        )?)?;
+        if let Some(expression) = &computed_projection {
+            let input = session.arrow().from_arrow_array(
+                Arc::new(arrow_array::StructArray::from(batch)), true,
+            ).map_err(to_iceberg_error)?;
+            if fallback_bound.is_none() {
+                    let bound = expression.bind(input.dtype()).map_err(to_iceberg_error)?;
+                    if bound.dtype().as_struct_fields_opt().is_none() {
+                        return Err(Error::new(ErrorKind::DataInvalid, "computed scan projection must return a struct"));
+                    }
+                    fallback_bound = Some(bound);
+            }
+            let bound = fallback_bound.as_ref().ok_or_else(|| Error::new(ErrorKind::Unexpected, "computed projection not bound"))?;
+            let result = input.apply_bound(bound).map_err(to_iceberg_error)?;
+            let output = session.arrow().execute_arrow(result, None, &mut execution_ctx)
+                .map_err(to_iceberg_error)?;
+            Ok(RecordBatch::from(output.as_struct()))
+        } else {
+            Ok(batch)
+        }
     });
 
     Ok(Box::pin(record_batch_stream) as ArrowRecordBatchStream)

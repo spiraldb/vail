@@ -1101,6 +1101,24 @@ pub(crate) fn stream_from_plan_with_nested_projection(
     futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
     Vec<Range<u64>>,
 )> {
+    stream_from_plan_with_projection(plan, queries, residual_filter, row_range, projection, nested_paths, None)
+}
+
+pub(crate) fn stream_from_plan_with_projection(
+    plan: Arc<SnapshotReadPlan>,
+    queries: Option<Vec<QueryInterval>>,
+    residual_filter: bool,
+    row_range: Option<Range<u64>>,
+    projection: Option<Vec<i32>>,
+    nested_paths: Option<Vec<Vec<String>>>,
+    computed: Option<(vortex::expr::Expression, Arc<arrow_schema::Schema>)>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    Vec<Range<u64>>,
+)> {
+    if computed.is_some() && residual_filter {
+        return Err(StorageError::Invalid("computed source projection requires source range filtering before the projection".into()));
+    }
     if let Some(rows) = &row_range {
         if rows.start > rows.end {
             return Err(StorageError::Invalid(
@@ -1177,7 +1195,11 @@ pub(crate) fn stream_from_plan_with_nested_projection(
     if plan.field_ids.is_empty() {
         output_ids.clear();
     }
-    let output_schema = projected_schema(&plan, &output_ids)?;
+    let output_schema = if let Some((_, schema)) = &computed {
+        schema.clone()
+    } else {
+        projected_schema(&plan, &output_ids)?
+    };
     let residual_query = if residual_filter {
         queries
             .as_ref()
@@ -1216,7 +1238,11 @@ pub(crate) fn stream_from_plan_with_nested_projection(
             }
             let task = task_with_projection_and_nested_paths(&file.task, &read_ids, nested_paths.as_deref())?;
             let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
-            let mut batches = plan_for_stream.table.reader_builder().with_data_file_concurrency_limit(1).build().read(tasks)?.stream();
+            let mut reader = plan_for_stream.table.reader_builder().with_data_file_concurrency_limit(1);
+            if let Some((expression, _)) = &computed {
+                reader = reader.with_computed_projection(expression.clone());
+            }
+            let mut batches = reader.build().read(tasks)?.stream();
             let mut decoded_rows = 0u64;
             while let Some(batch) = batches.try_next().await? {
                 let batch_offset = file.offset.checked_add(decoded_rows)
@@ -1228,7 +1254,14 @@ pub(crate) fn stream_from_plan_with_nested_projection(
                     filter_batch_range(&batch, &read_schema_for_stream, &read_ids, index.binding(), query)?
                 } else { batch };
                 if batch.num_rows() > 0 {
-                    let columns = project_positions.iter().map(|position| batch.column(*position).clone()).collect::<Vec<_>>();
+                    let columns = if computed.is_some() {
+                        if batch.num_columns() != output_schema_for_stream.fields().len() {
+                            Err(StorageError::Invalid("computed source output schema mismatch".into()))?;
+                        }
+                        batch.columns().to_vec()
+                    } else {
+                        project_positions.iter().map(|position| batch.column(*position).clone()).collect::<Vec<_>>()
+                    };
                     let batch = RecordBatch::try_new_with_options(output_schema_for_stream.clone(), columns,
                         &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
                     yield (batch_offset, batch);

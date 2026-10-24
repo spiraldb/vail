@@ -718,6 +718,27 @@ impl LocalRead {
         partition: usize,
         field_ids: &[i32],
     ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        self.partition_batches_with_computation(partition, field_ids, None)
+    }
+
+    /// Evaluate a typed row-preserving projection in the encoded Vortex scan.
+    /// Callers retain DataFusion operators above this source for global work.
+    pub fn computed_partition_batches(
+        &self,
+        partition: usize,
+        expression: vortex::expr::Expression,
+        output_schema: Arc<Schema>,
+    ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        self.partition_batches_with_computation(partition, self.field_ids.as_slice(), Some((expression, output_schema)))
+    }
+
+    fn partition_batches_with_computation(
+        &self,
+        partition: usize,
+        field_ids: &[i32],
+        computed: Option<(vortex::expr::Expression, Arc<Schema>)>,
+    ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        let has_computation = computed.is_some();
         let entry = self.entry.clone();
         let plan = self.plan.clone();
         let partition_offsets = self.partition_offsets.clone();
@@ -729,9 +750,10 @@ impl LocalRead {
             let start = partition_offsets[partition];
             let end = start.checked_add(count as u64)
                 .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
-            let (mut batches, _) = super::stream_from_plan_with_nested_projection(
+            let (mut batches, _) = super::stream_from_plan_with_projection(
                 plan, None, false, Some(start..end), Some(field_ids),
                 nested_projection_paths,
+                computed,
             )?;
             yield PartitionEvent::StartPartition;
             let mut emitted = 0u64;
@@ -744,7 +766,7 @@ impl LocalRead {
                     let local_start = (overlap_start - offset) as usize;
                     let length = (overlap_end - overlap_start) as usize;
                     let batch = batch.slice(local_start, length);
-                    let batch = if entry.empty_row {
+                    let batch = if entry.empty_row && !has_computation {
                         RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
                             &RecordBatchOptions::new().with_row_count(Some(length)))?
                     } else { batch };
