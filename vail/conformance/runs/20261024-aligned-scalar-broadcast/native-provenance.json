@@ -1,0 +1,28 @@
+{
+  "baseline": {
+    "python": "/home/danielking/aggregate-input-projection/env/lib/python3.11/site-packages/vail/__init__.py",
+    "native": "/home/danielking/aggregate-input-projection/env/lib/python3.11/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7d8f91914fb15cc069fe86a6782b05ad78ab047e11ceb8106ba9e71e66ba95c",
+    "wheel_native_sha256": "d7d8f91914fb15cc069fe86a6782b05ad78ab047e11ceb8106ba9e71e66ba95c",
+    "wheel_sha256": "25b352fc22eec52d412e8c4f660d134d8610eb326c4cd47aa8f0be8a8c3baf44"
+  },
+  "candidate": {
+    "python": "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/__init__.py",
+    "native": "/home/danielking/aligned-scalar-broadcast/env/lib/python3.11/site-packages/vail/_native.abi3.so",
+    "native_sha256": "9b577e3cca73600e204258c3ce47ce3f98054ba6125c785a743c61fab2fc0bc3",
+    "wheel_native_sha256": "9b577e3cca73600e204258c3ce47ce3f98054ba6125c785a743c61fab2fc0bc3",
+    "wheel_sha256": "c270e206b27799ee38cf6d8adf0ab31ec843a73cb22b22f4d33f5e779e55186f"
+  },
+  "source": "3f95200b24c3b0efa0122377aa848110e33fe991",
+  "baseline_source": "1af71dc161f47e3bc30751ac671d9e2de80ff7b8",
+  "source_sha256": {
+    "crates/vail-execution/src/aligned_matrix_map.rs": "3a2d2b86c8a246d35b4e0797427a2ea6be663bc44d8df77c2fd45093b9f88b85",
+    "crates/vail-execution/src/numeric_lists.rs": "7522a7b9bd2a4da0a7d0aaaeb0502acc0025077db13ff1db9b293958f470c5c7",
+    "crates/vail-execution/src/expressions.rs": "803052cfa3bb2c19970f6dbce1d0c58e6c86a01b1f133280a76ed742fb6701ad",
+    "python/tests/test_aligned_scalar_broadcast.py": "9a42defc0795469f13bb9d15786941c416a950dccff7c00d0208ec3a62920a85",
+    "crates/vail-table/src/nested_projection.rs": "be706b6ebdc2eb3cbcdb45a426f9e73ac9a26de17473702bfb481d720e7baa0b",
+    "crates/vail-table/src/logical.rs": "3463ce27aed2004a7bab19998e2397ea621d93cd2c6fc3ac9f04de3bb1417790",
+    "crates/vail-execution/src/list_aggregate/direct.rs": "6f639695001b1a815d6f8530d4b97603e75f87bcc106f1c26ea6794941564c33",
+    "Cargo.lock": "90406d3f78b98b5fa5be0b04ddf1367188f5fb18d3df906c4d28235ea29bf7cc"
+  }
+}
