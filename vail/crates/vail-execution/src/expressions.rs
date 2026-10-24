@@ -432,6 +432,21 @@ pub enum ArrayReduction {
     Max,
 }
 
+/// Explicit integer min/max arguments need no intermediate list. Retain the
+/// ordinary list reducer for strict missingness and floating-point contracts.
+pub(crate) fn scalar_integer_extrema(expr: &Expr) -> Option<(ArrayReduction, &[Expr])> {
+    let Expr::ArrayReduce { operation, filter_missing: true, value } = expr else {
+        return None;
+    };
+    if !matches!(operation, ArrayReduction::Min | ArrayReduction::Max) {
+        return None;
+    }
+    let Expr::Array { element_type: Type::Primitive(PrimitiveType::Int32 | PrimitiveType::Int64), elements } = value.as_ref() else {
+        return None;
+    };
+    (!elements.is_empty()).then_some((*operation, elements.as_slice()))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
 pub enum Expr {
@@ -6622,6 +6637,18 @@ fn lower_uncached(
             filter_missing,
             value,
         } => {
+            if let Some((operation, arguments)) = scalar_integer_extrema(expr) {
+                let function = match operation {
+                    ArrayReduction::Min => datafusion_functions::core::least(),
+                    ArrayReduction::Max => datafusion_functions::core::greatest(),
+                    _ => unreachable!(),
+                };
+                let arguments = arguments.iter().map(|argument|
+                    lower_cached(argument, schema, globals, scope, memo, context)
+                ).collect::<Result<Vec<_>, _>>()?;
+                Arc::new(ScalarFunctionExpr::try_new(function, arguments, schema,
+                    Arc::new(ConfigOptions::default()))?)
+            } else {
             let fusion = if *operation == ArrayReduction::Sum {
                 if let Expr::ArrayMap { value: input, parameter, body } = value.as_ref() {
                     if let Type::Array { array } = input.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
@@ -6636,6 +6663,7 @@ fn lower_uncached(
             } else {
                 custom(HailKind::ArrayReduce(*operation, *filter_missing),
                     vec![lower_cached(value, schema, globals, scope, memo, context)?], dtype)
+            }
             }
         },
         Expr::GetField { value, name } => {
