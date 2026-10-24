@@ -597,6 +597,19 @@ impl<V: AggregateFnVTable> DynListGroupedAccumulator for ListGroupedAccumulator<
             // Preserve the direct grouped-kernel path without rank expansion.
             self.present.accumulate_grouped_array(groups, ctx)?;
             GroupRestore::Contiguous(len)
+        } else if present_count == 0 {
+            // No offset/range or child evaluation is needed for absent groups.
+            GroupRestore::Compact {
+                indices: crate::arrays::ConstantArray::new(
+                    crate::scalar::Scalar::null(DType::Primitive(
+                        crate::dtype::PType::U64,
+                        crate::dtype::Nullability::Nullable,
+                    )),
+                    len,
+                )
+                .into_array(),
+                present_count: 0,
+            }
         } else {
             let ranges = groups.group_ranges(ctx)?;
             let mut offsets = Vec::with_capacity(present_count);
@@ -613,12 +626,12 @@ impl<V: AggregateFnVTable> DynListGroupedAccumulator for ListGroupedAccumulator<
                         u64::try_from(size)
                             .map_err(|_| vortex_err!("Group size does not fit u64"))?,
                     );
-                    ranks.push(Some(rank));
+                    ranks.push(rank);
                     rank = rank
                         .checked_add(1)
                         .ok_or_else(|| vortex_err!("Group rank overflow"))?;
                 } else {
-                    ranks.push(None);
+                    ranks.push(0u64);
                 }
             }
             // This construction establishes a dense one-to-one mapping in original
@@ -637,7 +650,14 @@ impl<V: AggregateFnVTable> DynListGroupedAccumulator for ListGroupedAccumulator<
                 self.present.accumulate_grouped_array(compact.into(), ctx)?;
             }
             GroupRestore::Compact {
-                indices: crate::arrays::PrimitiveArray::from_option_iter(ranks).into_array(),
+                indices: crate::arrays::PrimitiveArray::new(
+                    Buffer::from(ranks),
+                    crate::validity::Validity::from_mask(
+                        validity,
+                        crate::dtype::Nullability::Nullable,
+                    ),
+                )
+                .into_array(),
                 present_count,
             }
         };

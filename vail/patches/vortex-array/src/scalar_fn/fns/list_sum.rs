@@ -87,11 +87,6 @@ impl ScalarFnVTable for ListSum {
     ) -> VortexResult<ArrayRef> {
         let input = args.get(0)?;
 
-        let elem_dtype = match input.dtype() {
-            DType::List(elem, _) | DType::FixedSizeList(elem, ..) => elem.as_ref().clone(),
-            other => vortex_bail!("list_sum() requires List or FixedSizeList, got {other}"),
-        };
-
         let columnar = input.execute::<Columnar>(ctx)?;
 
         match columnar {
@@ -101,13 +96,10 @@ impl ScalarFnVTable for ListSum {
                     .into_array()
                     .execute::<Canonical>(ctx)?
                     .into_array();
-                let sum =
-                    list_sum_impl(one_row, elem_dtype, options, ctx)?.execute_scalar(0, ctx)?;
+                let sum = list_sum_impl(one_row, options, ctx)?.execute_scalar(0, ctx)?;
                 Ok(ConstantArray::new(sum, constant.len()).into_array())
             }
-            Columnar::Canonical(canonical) => {
-                list_sum_impl(canonical.into_array(), elem_dtype, options, ctx)
-            }
+            Columnar::Canonical(canonical) => list_sum_impl(canonical.into_array(), options, ctx),
         }
     }
 
@@ -126,7 +118,6 @@ impl ScalarFnVTable for ListSum {
 /// Sum each list of a canonical `array` into one value per list.
 fn list_sum_impl(
     canonical: ArrayRef,
-    _elem_dtype: DType,
     options: &NumericalAggregateOpts,
     ctx: &mut ExecutionCtx,
 ) -> VortexResult<ArrayRef> {
