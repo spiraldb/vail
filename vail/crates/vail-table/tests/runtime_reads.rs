@@ -14,8 +14,15 @@ fn runtime() -> tokio::runtime::Runtime {
         .unwrap()
 }
 
-fn fixture(path: &str) -> LocalRead {
-    runtime().block_on(async {
+fn fixture(path: &str) -> (tokio::runtime::Runtime, LocalRead) {
+    // Iceberg's Table separately borrows its IO runtime. Keep that documented
+    // owner alive while replacing the runtimes polling Vortex scan futures.
+    let io_runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(1)
+        .enable_all()
+        .build()
+        .unwrap();
+    let source = io_runtime.block_on(async {
         let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, true)]));
         let partitions = (0..4)
             .map(|p| {
@@ -43,7 +50,8 @@ fn fixture(path: &str) -> LocalRead {
         .await
         .unwrap();
         open_local(path).await.unwrap()
-    })
+    });
+    (io_runtime, source)
 }
 
 async fn assert_rows(source: &LocalRead) {
@@ -82,9 +90,9 @@ async fn assert_rows(source: &LocalRead) {
 #[test]
 fn reopened_snapshot_reads_after_previous_runtimes_are_destroyed() {
     let dir = tempfile::tempdir().unwrap();
-    let source = fixture(dir.path().join("native").to_str().unwrap());
-    // Opening the source used a runtime which is already destroyed. Every
-    // subsequent read creates and drops another, retaining the same source.
+    let (_io_runtime, source) = fixture(dir.path().join("native").to_str().unwrap());
+    // Each action creates and drops its polling runtime while retaining the
+    // same source. Iceberg's separate borrowed IO runtime remains alive.
     for _ in 0..4 {
         runtime().block_on(assert_rows(&source));
     }
@@ -93,7 +101,7 @@ fn reopened_snapshot_reads_after_previous_runtimes_are_destroyed() {
 #[test]
 fn cloned_snapshot_reads_on_concurrent_independent_runtimes() {
     let dir = tempfile::tempdir().unwrap();
-    let source = fixture(dir.path().join("native").to_str().unwrap());
+    let (_io_runtime, source) = fixture(dir.path().join("native").to_str().unwrap());
     let barrier = Arc::new(Barrier::new(2));
     std::thread::scope(|scope| {
         for _ in 0..2 {
