@@ -1,0 +1,26 @@
+{
+  "upstream_pr": "https://github.com/vortex-data/vortex/pull/10771",
+  "state": "DRAFT",
+  "base": "910f9933e8e2318c592c1eddcc2dfee8d24c6cd7",
+  "head": "58fd61e34d181553a60423defaebb381e9213b74",
+  "tested_merge": "615a967dfe3f77447d53aaedc44096c3b3977034",
+  "resource_run": 40121399516,
+  "attribution_run": 40121399664,
+  "usual_run": 40121399557,
+  "codspeed_run": 40121399657,
+  "resource_candidate_executable_sha256": "61b105bce023668e214f8d05fbb16d0ec1624777e3a8efb8818219bfa3076867",
+  "resource_baseline_executable_sha256": "af9c71b1db1bcbe2c6e3bf699a491bbb11dcd4417a9814b417ff7af600ed3b0b",
+  "assembly_candidate_executable_sha256": "5971099bb6676ebee7106d1743829b0561f22b7b9ad073cc3c80acdf139ebeb6",
+  "final_checks": {
+    "success": 77,
+    "skipped": 11,
+    "failure": 1,
+    "pending": 1
+  },
+  "blockers": [
+    "CodSpeed performance gate:8 regressions2 improvements; maintainer decision needed",
+    "Two human reviews required"
+  ],
+  "internal_review": "Explicit resource/latency tradeoff accepted; advisory only, not GitHub approval or performance gate waiver",
+  "no_further_variants": true
+}
