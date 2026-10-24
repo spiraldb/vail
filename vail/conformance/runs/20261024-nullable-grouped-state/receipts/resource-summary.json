@@ -1,0 +1,206 @@
+[
+  {
+    "owner": 10000,
+    "case": "mixed_bool_sum",
+    "expected": [
+      1.0,
+      null,
+      null,
+      null
+    ],
+    "results": {
+      "legacy": {
+        "median_seconds": 7.4375e-06,
+        "rss_before_kib": [
+          17024,
+          19168
+        ],
+        "rss_after_kib": [
+          18704,
+          19168
+        ]
+      },
+      "new": {
+        "median_seconds": 1.1646e-05,
+        "rss_before_kib": [
+          18800,
+          19152
+        ],
+        "rss_after_kib": [
+          19152,
+          19168
+        ]
+      }
+    }
+  },
+  {
+    "owner": 10000,
+    "case": "all_missing_pco_sum",
+    "expected": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "results": {
+      "legacy": {
+        "median_seconds": 2.2396e-05,
+        "rss_before_kib": [
+          19248,
+          19584
+        ],
+        "rss_after_kib": [
+          19440,
+          19584
+        ]
+      },
+      "new": {
+        "median_seconds": 4.207999999999999e-06,
+        "rss_before_kib": [
+          19440,
+          19584
+        ],
+        "rss_after_kib": [
+          19584,
+          19584
+        ]
+      }
+    }
+  },
+  {
+    "owner": 1000000,
+    "case": "mixed_bool_sum",
+    "expected": [
+      1.0,
+      null,
+      null,
+      null
+    ],
+    "results": {
+      "legacy": {
+        "median_seconds": 7.6255e-06,
+        "rss_before_kib": [
+          40832,
+          42880
+        ],
+        "rss_after_kib": [
+          42448,
+          42880
+        ]
+      },
+      "new": {
+        "median_seconds": 1.0895500000000001e-05,
+        "rss_before_kib": [
+          42528,
+          42864
+        ],
+        "rss_after_kib": [
+          42848,
+          42880
+        ]
+      }
+    }
+  },
+  {
+    "owner": 1000000,
+    "case": "all_missing_pco_sum",
+    "expected": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "results": {
+      "legacy": {
+        "median_seconds": 0.0015934375,
+        "rss_before_kib": [
+          42960,
+          53184
+        ],
+        "rss_after_kib": [
+          53040,
+          53184
+        ]
+      },
+      "new": {
+        "median_seconds": 4.3125e-06,
+        "rss_before_kib": [
+          53040,
+          53184
+        ],
+        "rss_after_kib": [
+          53184,
+          53184
+        ]
+      }
+    }
+  },
+  {
+    "owner": 10000000,
+    "case": "mixed_bool_sum",
+    "expected": [
+      1.0,
+      null,
+      null,
+      null
+    ],
+    "results": {
+      "legacy": {
+        "median_seconds": 7.5e-06,
+        "rss_before_kib": [
+          205872,
+          207856
+        ],
+        "rss_after_kib": [
+          207424,
+          207856
+        ]
+      },
+      "new": {
+        "median_seconds": 1.0874499999999999e-05,
+        "rss_before_kib": [
+          207504,
+          207840
+        ],
+        "rss_after_kib": [
+          207824,
+          207856
+        ]
+      }
+    }
+  },
+  {
+    "owner": 10000000,
+    "case": "all_missing_pco_sum",
+    "expected": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "results": {
+      "legacy": {
+        "median_seconds": 0.0170989165,
+        "rss_before_kib": [
+          207936,
+          349936
+        ],
+        "rss_after_kib": [
+          349808,
+          349936
+        ]
+      },
+      "new": {
+        "median_seconds": 4.1875e-06,
+        "rss_before_kib": [
+          349808,
+          349936
+        ],
+        "rss_after_kib": [
+          349936,
+          349936
+        ]
+      }
+    }
+  }
+]

@@ -1,7 +1,7 @@
 # Nullable grouped accumulator: first public runtime proof
 
-Not merge-ready: this receipt covers the Rust public target only. Native wheel,
-Python, H093 Reader/Writer and resource gates remain pending.
+The initial Rust receipt is followed below by completed native, Python, Reader/Writer
+and resource gates. Independent final review remains pending.
 
 The complete-list API keeps scalar Count non-null U64 while nullable declared
 outer groups produce nullable results. Missing groups are excluded from actual
@@ -81,3 +81,43 @@ skip range/child evaluation AFTER input canonical acquisition; a codec may do
 work during canonicalization. Mixed retained owners can still materialize through
 existing child kernels. Independent final review and any specifically requested
 owner-resource probe remain pending before merge.
+
+
+## Final bounded mixed/all-missing public resource proof
+
+Production and normal native20f0 are unchanged. Test-only resource sourcee4b04f73
+relinked the EXISTING graph in28.12seconds (120second budget), then the WHOLE
+target passed21/21. Together with Reader/Writer2/2 this is23Rust public tests;
+the exact combined normal native still has420Python passes. Executable
+SHA256bd5c0adccdd0743ad644298d9edd73106f3277d48b39fa96af552d087e482df9.
+
+Three separate, exclusive processes construct/compress REAL Pco children with
+10K/1M/10M values OUTSIDE timing. Input canonical acquisition also precedes the
+timed windows. Each case has exactly four output groups; ABBA compares legacy
+SumV2 and the new PUBLIC wrapper in the SAME executable, three warmups and six
+retained actions per window. Fresh ExecutionCtx construction and process RSS
+reads are outside timing. Raw results are asserted with no fill/post-mask;
+alias logical values/dtypes remain unchanged. The direct new-wrapper call
+prevents expression strictness/null folding from bypassing the tested code.
+
+| Pco owner values | Legacy all-missing SumV2 | New full-list wrapper |
+|---|---:|---:|
+|10,000|22.396us|4.208us|
+|1,000,000|1.593ms|4.313us|
+|10,000,000|17.099ms|4.188us|
+
+Both return four raw null F64 results. This demonstrates flat POST-CANONICAL
+all-missing behavior for this concrete public input. It does not establish a
+pre-canonical encoded-owner bound, selective file IO, universal codec bound,
+allocation ceiling or leak result. The first10M legacy window raises process
+RSS207,936->349,808KiB; new windows inherit that allocator state and rise only
+144KiB then0KiB. These OS observations are not per-query peak attribution.
+
+The MIXED Boolean SUM control is an explicit cost tradeoff: present true/false,
+present EMPTY, present ALL-NULL and missing outer groups yield raw nullable
+U64[1,null,null,null]. Legacy medians7.44–7.63us versus new10.87–11.65us are
+~3–4us slower for four tiny groups (~43–57%). The generic compact metadata,
+rank map and nullable Take setup cost is real; the flat500M all-valid control
+does not erase it. Independent review must accept this tradeoff or request a
+change. No benchmark-specific bypass, scalar-null-to-zero conversion or unsafe
+null representation is proposed. No additional experiment or build is pending.

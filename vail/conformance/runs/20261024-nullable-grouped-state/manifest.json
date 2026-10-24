@@ -16,13 +16,15 @@
     "patches/vortex-array/src/aggregate_fn/typed.rs": "fa3de1b3070aff8990489fd5427ceb7ade388aa5579433e0e414ff94bc1ea284",
     "patches/vortex-array/src/aggregate_fn/erased.rs": "0fad5e29bfd01b94547dde31527f8feb15a13be40c54003158ece28f7d906818",
     "patches/vortex-array/src/scalar_fn/fns/list_sum.rs": "03414fcd819ca0cd477cc9a6c1c0db6fe2e4e1bb9c08850de509354d69d6e168",
-    "crates/vail-table/tests/support/encoded_list_sum.rs": "c1a895bdb83b60315827f6df4a3e71687fa61c896312bcbe79584641251bee0a",
+    "crates/vail-table/tests/support/encoded_list_sum.rs": "cb202c42d0f061aa4c903d86e8c66e9a17c45fbb30354554e411c03fe34a990f",
     "patches/iceberg-rust/crates/iceberg/src/arrow/vortex_util.rs": "29971fc9b30c962fddd18ae8af1a00749d324503b33225615188c39abc723ed6",
     "crates/vail-storage/tests/native_list_evolution.rs": "9fdac912ecafc9032a42232982595fae2276115709559322d50c7004660e205e"
   },
   "receipts": {
+    "receipts/resource-public-tests.log": "6624a355978f2b125b7e3ec51cf2d248fc57af32f096dc0dfe34a5a1e4063f18",
     "receipts/build.py": "e9b88bcf5c29b64f9ae6bd40bb9a10015d5a878280652277a5c276939073204b",
     "receipts/storage-public-tests.log": "34c4ddd911c156dab5e08ae5b5b1502e9a15fb4e0cc08003932c1a2d568530ab",
+    "receipts/resource-summary.json": "23dfdc02bcab1f0e789ef1044beb8d07ae5461273808fdd686955327a8ddaac0",
     "receipts/list-sum-candidate.sample.txt.gz": "e8ec922f081232d6cc3d31f8bb5a17715de22b3967ee2dfcb63660e5f1d6f282",
     "receipts/storage-build-result.json": "64db598684ce2c91b1d603477abd57ae0c484cfeeac6b929476a748279ef781b",
     "receipts/wheel-install.log": "b0300b371ff3b29c1884a6da77a69b9ed98570fa6c78d03697aac39967ec135e",
@@ -31,10 +33,14 @@
     "receipts/candidate-public.log": "a28d60ae662ea0dad5ace34a6c280a52b8795b7e2cf2d119ebcddd02ef67d736",
     "receipts/list-sum-1-candidate.jsonl": "03e5f37f427104bc98808fbbc3ac3098047204d8ac66f03f6d43ed48bc00085c",
     "receipts/python-dependencies.log": "a2ee9b3d29b34a5a717c852c8205cd9aa829a6a3109888951870fc221dec80c1",
+    "receipts/resource-build-result.json": "b8494f558126bbaf0e83a8014c78fbe019145d3b5d8a9bc89be81def5a166ac4",
     "receipts/list-sum-3-baseline.jsonl": "dc485384ff228315d06883faeb3d16114cf80c0adfca69dbafe58ce6a6b6263a",
     "receipts/candidate-public.xml": "b6b3b88255d8bcba4c1f2e98a42296de7d492f026f3742437d789261f0885578",
     "receipts/storage-build-disk.jsonl": "6125cbd16ece1bdf0637211bd89f1fce8eb3747a6bcb9c78611b8a620cde8579",
+    "receipts/resource-build-disk.jsonl": "f896ae83d5265814b0780befe260d61b867db751d970ff3ea2cd025db1c29b3b",
+    "receipts/resource-owner-10000000.log": "4408e989a779e3dffa432fb1b4a8c465f2746cf3aa5e427d7cdd41906763f255",
     "receipts/list-sum-profile.stderr": "fff5ba19bdba3b921e21c748e2c21bde8d6263dfbef56d40fe42b86f542e545c",
+    "receipts/resource-owner-10000.log": "486cbd26e8b631a00b0b41c59628ad18d63101c92f2170f7bcda341cd381ecfe",
     "receipts/storage-build.log": "2c7c1dc57f865da511dd43b74f73856273672af62de32a527053cc9610e33658",
     "receipts/list-sum-profile.jsonl": "2aa8c372ba7a51982bcbc37a07f4b8afe4fa48e5594742cc5c5042f10bd1d500",
     "receipts/list-sum-0-baseline.jsonl": "fd9fcc6c7a660bcf42672e0ff6250c07e1e91273d032782663cd443953bb8b06",
@@ -43,16 +49,17 @@
     "receipts/candidate-public-command.json": "42eeee78a3b223509b59df025717acfaee299288dc43b9aeee861b4a311698f9",
     "receipts/list-sum-summary.json": "ef41fe58bfde967549dad5a47b202cf9dcdd4f95f4c334bfc536ccf4530d247b",
     "receipts/candidate-public-exit.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "receipts/resource-owner-1000000.log": "4f055bb7c626a464fffdec43ccf90d2b4dddc4e4ebc9f46aea5e71c619644364",
     "receipts/list-sum-2-candidate.jsonl": "f796813b469591eed4aa5b218d2657f26aa4f89d0db30140df868054bdebe225",
     "receipts/build-result.json": "957a717c22d972e86b75dc887a061cf169ed7bab93cc00588f309b867152bebf",
+    "receipts/resource-build.log": "b268a3aa20430a5fd4ab98623e5348fd7fe75281daa723d9e555468a710548bb",
     "receipts/wheel-build.log": "19b7158cfd451f82c318281d825500c16095906bd1f24ef82c06ade2743ecf92",
     "receipts/run-public-gate.py": "b536c7b35797058fed6493b1c062826b184851fea9466f601328175727cf67d3",
     "receipts/build.log": "2771e0fab1a544c340c9c838c23495e1ff5903d2b245fc01e3503b7e789675cf",
     "receipts/wheel-build-result.json": "1b6a9cfd7ba71aab6ff03af37221d9c666a0796da7ea22eb3216cf221e00e198"
   },
   "pending": [
-    "independent final resource/source review",
-    "optional public all-missing retained-Pco-owner resource probe if required"
+    "independent final resource/source review including mixed-group setup tradeoff"
   ],
   "limitations": [
     "No planner eligibility expansion",
@@ -131,5 +138,220 @@
       "maxrss": 0.9820232064062755
     }
   },
-  "documentation_only_main_merge": "14648174a672379b7b52af3c87fe72a464429db9"
+  "documentation_only_main_merge": "14648174a672379b7b52af3c87fe72a464429db9",
+  "resource_public_test_source": "e4b04f73e861da453b0780c9dae788cd06f740e3",
+  "resource_executable_sha256": "bd5c0adccdd0743ad644298d9edd73106f3277d48b39fa96af552d087e482df9",
+  "resource_whole_target_results": {
+    "passed": 21,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "wall_seconds": 0.11
+  },
+  "growing_owner_results": [
+    {
+      "owner": 10000,
+      "case": "mixed_bool_sum",
+      "expected": [
+        1.0,
+        null,
+        null,
+        null
+      ],
+      "results": {
+        "legacy": {
+          "median_seconds": 7.4375e-06,
+          "rss_before_kib": [
+            17024,
+            19168
+          ],
+          "rss_after_kib": [
+            18704,
+            19168
+          ]
+        },
+        "new": {
+          "median_seconds": 1.1646e-05,
+          "rss_before_kib": [
+            18800,
+            19152
+          ],
+          "rss_after_kib": [
+            19152,
+            19168
+          ]
+        }
+      }
+    },
+    {
+      "owner": 10000,
+      "case": "all_missing_pco_sum",
+      "expected": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "results": {
+        "legacy": {
+          "median_seconds": 2.2396e-05,
+          "rss_before_kib": [
+            19248,
+            19584
+          ],
+          "rss_after_kib": [
+            19440,
+            19584
+          ]
+        },
+        "new": {
+          "median_seconds": 4.207999999999999e-06,
+          "rss_before_kib": [
+            19440,
+            19584
+          ],
+          "rss_after_kib": [
+            19584,
+            19584
+          ]
+        }
+      }
+    },
+    {
+      "owner": 1000000,
+      "case": "mixed_bool_sum",
+      "expected": [
+        1.0,
+        null,
+        null,
+        null
+      ],
+      "results": {
+        "legacy": {
+          "median_seconds": 7.6255e-06,
+          "rss_before_kib": [
+            40832,
+            42880
+          ],
+          "rss_after_kib": [
+            42448,
+            42880
+          ]
+        },
+        "new": {
+          "median_seconds": 1.0895500000000001e-05,
+          "rss_before_kib": [
+            42528,
+            42864
+          ],
+          "rss_after_kib": [
+            42848,
+            42880
+          ]
+        }
+      }
+    },
+    {
+      "owner": 1000000,
+      "case": "all_missing_pco_sum",
+      "expected": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "results": {
+        "legacy": {
+          "median_seconds": 0.0015934375,
+          "rss_before_kib": [
+            42960,
+            53184
+          ],
+          "rss_after_kib": [
+            53040,
+            53184
+          ]
+        },
+        "new": {
+          "median_seconds": 4.3125e-06,
+          "rss_before_kib": [
+            53040,
+            53184
+          ],
+          "rss_after_kib": [
+            53184,
+            53184
+          ]
+        }
+      }
+    },
+    {
+      "owner": 10000000,
+      "case": "mixed_bool_sum",
+      "expected": [
+        1.0,
+        null,
+        null,
+        null
+      ],
+      "results": {
+        "legacy": {
+          "median_seconds": 7.5e-06,
+          "rss_before_kib": [
+            205872,
+            207856
+          ],
+          "rss_after_kib": [
+            207424,
+            207856
+          ]
+        },
+        "new": {
+          "median_seconds": 1.0874499999999999e-05,
+          "rss_before_kib": [
+            207504,
+            207840
+          ],
+          "rss_after_kib": [
+            207824,
+            207856
+          ]
+        }
+      }
+    },
+    {
+      "owner": 10000000,
+      "case": "all_missing_pco_sum",
+      "expected": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "results": {
+        "legacy": {
+          "median_seconds": 0.0170989165,
+          "rss_before_kib": [
+            207936,
+            349936
+          ],
+          "rss_after_kib": [
+            349808,
+            349936
+          ]
+        },
+        "new": {
+          "median_seconds": 4.1875e-06,
+          "rss_before_kib": [
+            349808,
+            349936
+          ],
+          "rss_after_kib": [
+            349936,
+            349936
+          ]
+        }
+      }
+    }
+  ]
 }
