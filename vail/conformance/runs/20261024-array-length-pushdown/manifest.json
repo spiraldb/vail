@@ -1,0 +1,72 @@
+{
+  "source_revision": "0f2d75c4db8cedc613985881bcc7e9d3a4772e51",
+  "production_build_revision": "adfd8a34",
+  "base_main": "6656e247",
+  "baseline_source": "669af5b0",
+  "baseline_native_sha256": "9ee229e8adb724fb3d06a676eaae5f407f07dd43668badc5824820021a52db8b",
+  "candidate_native_sha256": "5b681dc56dd3e64121fb0ec7abb8b6a12a38d20d13e6ebc3feab80c37d0a433e",
+  "flags": "RUSTFLAGS=-C target-cpu=native; RUSTC_WRAPPER=kache; CARGO_BUILD_JOBS=2; CARGO_INCREMENTAL=0; maturin develop --release --locked",
+  "source_files": {
+    "vail/crates/vail-storage/examples/native_list_shape.rs": "4dca064ca20e0ec67fc2ca14dfcf109892edcdb5a39d99485cfcb7865bfe46d8",
+    "vail/crates/vail-storage/src/computed_capability.rs": "52f765837e788c8829b114edc8d8243f0519ca7616a65900165970d2eff2d45d",
+    "vail/crates/vail-storage/src/local_table.rs": "7a5f85ed8a52c9df99d82d014c1f7a06463d1ee972f6623b02c3958c8d1bf507",
+    "vail/crates/vail-table/src/computed_source.rs": "2b568b045d09bc87e46f7f5278e30836f2204fbcaacae99fe40707e335935264",
+    "vail/crates/vail-table/tests/encoded_projection.rs": "ee040cf5b6a4b0b94a810ba03fb8d8a12e5575278eeb2bf603a9390cbc90e7c0",
+    "vail/python/tests/test_native_array_length_projection.py": "5206cea8a392e195c6dfe4a8f2d73cd14c984801c91ca8e61eceb5e0082adc3e"
+  },
+  "receipts": {
+    "receipts/final-dp-0-baseline.jsonl": "8fd0adf647885620429b5c5dbdf49c1644bd114a4aff09a0732913202009a1f6",
+    "receipts/final-small-3-baseline.jsonl": "083d395ca591269e0640aa21648c7cc1e7375885593e4aaa35a200a5e19cb714",
+    "receipts/final-small-1-candidate.jsonl": "43e31573da48cb75f99581a347e375cf5a26f7202abd038a582bcde6ed08fae9",
+    "receipts/measure.py": "8a933a3bc2e6e10e3ba4d12b2abf28b7bad66441a2150994eddc61b3f1db716f",
+    "receipts/final-python.log": "cea8b66a02eb35f2d53f6144770e8af0a2c946d104e8d8f5537eaaa877a7eca8",
+    "receipts/retained-owner.jsonl": "57ea52763acd616daeeac0e633b24eb3a0c3b1538df2c00c68f3fcdf8ef1e7ae",
+    "receipts/final-small-0-baseline.jsonl": "1f4baafaf44f2a7581ccfb0a2fd1933b9fb03479669c634f76c8bdef01bf8fe7",
+    "receipts/final-dp-3-baseline.jsonl": "fe057126022de5282144754b93d56c5aa8695451b827cb37bfc6315f4656a86c",
+    "receipts/final-rust.log": "659294582a984d29c8c426813ea9bd3824f089af7bfd0edd869a770ab0eb6a22",
+    "receipts/final-candidate-memory.jsonl": "074d95c429450afb3d2f20216692a3764fe8c69086953c6581a54fd5029ebda5",
+    "receipts/final-many-2-candidate.jsonl": "1d18d4eada9945c152447f73dd7556fce2388a78936caa1370143edb83d96fb2",
+    "receipts/final-many-warm-2-candidate.jsonl": "73bcc2a03dbd52c4f1e569adf276495ba99c5732cd474831eecc1dd40ffafd06",
+    "receipts/final-dp-2-candidate.jsonl": "45e772ba8ae52025f16d044c69bfd4f3af9e49b25f5b402b3a0b9df0d657311b",
+    "receipts/preflight-many.jsonl": "566f3f23f27c63d23f7a2f7d9222c5cd9281cd3e0630a19c2f732f7c6c3c0406",
+    "receipts/worker-many.jsonl": "5f3c23bfbd57b6c440a7dfce77a1ec44a7e5811a1dceb10680ab2a9ad96b825a",
+    "receipts/final-many-3-baseline.jsonl": "0d938098a1771ceea7b6c29ef4bef2c558b3f663f8ecd2e1bb2bd1173fca562b",
+    "receipts/initial-read-six.log": "19b7f09bf561d433e9b0ce705f27655eb8506152b96a173106580eae2fb74afc",
+    "receipts/final-small-2-candidate.jsonl": "d99d8d933705cb34bd8dac009c9e7e1075eeadb56029ca83076c653bf551b335",
+    "receipts/final-many-warm-3-baseline.jsonl": "80c10bbad0a13cffd367659b51ce76fd1f9e6355844eb9f68813f3fe316c7eff",
+    "receipts/final-profile.jsonl": "f2ee9add7df64fcc62e4e4cf50aaf575703f565ea1a91d75407f44ded389d7b7",
+    "receipts/final-baseline-memory.jsonl": "77ba42afb63cdec6e6eff22b48205f639425b1f48a169582fdc6d80c406d6f9b",
+    "receipts/final-python.xml": "36fd66abecc24f3398c0928d0cde4f6230329debe96ef12eeed58acf69cc8849",
+    "receipts/final-many-0-baseline.jsonl": "8e69a452326c49eb18ea048855b3b0af78da7fa80dbb01abd758d54442b48114",
+    "receipts/final-dp-1-candidate.jsonl": "dc117ce117d9622924ecba7362a2dd443ab98093f190e62636245765038f60cb",
+    "receipts/preflight-build-6.log": "9c557ed47bd61968ec93d99b2463bba8e343f58785acb6793a18f3e9aa4de1c5",
+    "receipts/final-many-warm-0-baseline.jsonl": "0ec88ad900dea06c82e6e1c1c9de1ea8a030f875f0f1abfd49ac94bb5f6a3c6b",
+    "receipts/adapter-io.jsonl": "0138ec0fd9fc403a3ac8311749d090b37da34d4b2166e25d00af73ae87465ba5",
+    "receipts/initial-read-many.jsonl": "b4c903d937d1e92f327b7dedbaa48274e04cb1f1e76e108c9cc483a5ac036c64",
+    "receipts/final-many-warm-1-candidate.jsonl": "8e145b3f8a512528f2f095a8189fc3bcbc11ef923906463414b27c36a19cd95d",
+    "receipts/final-many-1-candidate.jsonl": "d352c46068e6f4ff8419c6c7f08f2b837e75dbdc8e5ffe3a2a11b940422b623f"
+  },
+  "fixture_metadata": {
+    "/private/tmp/vail-array-length/dp500m.ht": {
+      "_vail_table.json": "e5806d511339086be93c6aee8baed49c7ea4ff87b818c8128032273bdfdd6a9c",
+      "generations/01a16eaa-391a-771a-8b91-fe8db4b956b8/metadata/00000-8fe8631c-1efa-4f3f-a0f0-f0aaadf886be.metadata.json": "d27e029d6456e0c8dec37f3460de18f6e94cc009de040d2ba2a42eef999b4ace",
+      "generations/01a16eaa-391a-771a-8b91-fe8db4b956b8/metadata/00001-1fbc76ac-36c2-4cc1-83c5-86158c6e303d.metadata.json": "bc45e8b02d39923984a85961e225bd3b3f74e858ff724d911413a62d1a34cad4",
+      "generations/01a16eaa-391a-771a-8b91-fe8db4b956b8/metadata/vail-288285472116214224-01a16eaa-3ba8-7425-b49b-de991e683c7c.json": "ef4961ed27b0c0f598a479bf6360a64f0769e9103c35eed499cbd79b59cac31b",
+      "generations/01a16eaa-391a-771a-8b91-fe8db4b956b8/metadata/vail-index-288285472116214224-01a16eaa-3ba3-72d4-b9ee-2612ac72973c.json": "ff5d1a3584a61abcf381be1b3dcbb82a686ab1019e70037891a99624ed0d7c72"
+    },
+    "/private/tmp/encoded-dense-small-128.ht": {
+      "_vail_table.json": "1de657e2438a8879222fdbc00f460c01d5c5678f541502578b2dc79bd9026207",
+      "generations/01a16e43-36f6-7508-b03f-f53cb38d2bea/metadata/00001-807d8677-52a8-4477-a0b7-12ef03611530.metadata.json": "83e84a025587781333fdfc7afa966599acb3f2023e4a46fd825aa01044f1b286",
+      "generations/01a16e43-36f6-7508-b03f-f53cb38d2bea/metadata/00000-93ddb891-8fd8-4748-97bd-ce85c0a8203e.metadata.json": "60dd57a52bb4d370a05bb93cd1391e2b92ff0e186234cc9f0cf195620fd338fc",
+      "generations/01a16e43-36f6-7508-b03f-f53cb38d2bea/metadata/vail-index-2011534271222050103-01a16e43-3835-74be-bb8f-59ed492b26ce.json": "b384467f0128e9836aa1f0b15fa617cd28a2ff9abf21652bf776c27241719f54",
+      "generations/01a16e43-36f6-7508-b03f-f53cb38d2bea/metadata/vail-2011534271222050103-01a16e43-3839-772e-b43f-7d9b4b4c8948.json": "1ece23f02ace61404d3a60460a5c5057911642af15c22d049b2fa3741221d720"
+    },
+    "/private/tmp/encoded-dense-small-1.ht": {
+      "_vail_table.json": "3069dc6fd445ee3caafa07974c8fe134f32299f44c8dde1803d09d850a404dc3",
+      "generations/01a16e43-364b-7725-bae4-c141bb0d9a5f/metadata/00001-19c21324-dda8-4375-8fb4-517abe35bb5b.metadata.json": "568695f8f9351e1c3d24560e2ea76560a231c3fb524d54b9b228c260ec466215",
+      "generations/01a16e43-364b-7725-bae4-c141bb0d9a5f/metadata/vail-3116893565496607173-01a16e43-368c-761b-832b-04c3db070860.json": "381272ce89405b89e35eb287360cf54a0317cedcfdbadeda7f66f0e051641198",
+      "generations/01a16e43-364b-7725-bae4-c141bb0d9a5f/metadata/vail-index-3116893565496607173-01a16e43-3687-73d1-8b1e-0167d63a6f0c.json": "0aceb7325cda32d30ac5200b16a4bcad0e1be92943538258f62c63f97dc79881",
+      "generations/01a16e43-364b-7725-bae4-c141bb0d9a5f/metadata/00000-76cd2dc9-7d63-4cdd-a3ae-520edc50628c.metadata.json": "641ab7260e8bd61cde529be2aca8c06ffbdcebb752c2d65e082703c1dfcb38b4"
+    }
+  }
+}
