@@ -952,7 +952,19 @@ pub(crate) fn lower_for_expressions_in_context<'a>(
     expressions: impl Iterator<Item = &'a vail_execution::expressions::Expr>,
     context: &mut LoweringContext,
 ) -> Result<LogicalPlan> {
-    let table = crate::nested_projection::prepare_vcf_for(table, expressions);
+    let expressions = expressions.collect::<Vec<_>>();
+    let table = crate::nested_projection::prepare_vcf_for(table, expressions.iter().copied());
+    if matches!(table.node(), TableNode::Read { .. }) {
+        let paths = crate::nested_projection::consumed_storage_paths(
+            expressions.iter().copied(), table.schema(),
+        );
+        if !paths.is_empty() {
+            // Consumer-specific projection must not enter the table-only cache:
+            // another aggregate may consume different children of this Read.
+            let provider = crate::provider::provider_with_nested_projection_paths(&table, paths)?;
+            return Ok(LogicalPlanBuilder::scan("vail_source", provider_as_source(provider), None)?.build()?);
+        }
+    }
     lower_inner(&table, context)
 }
 
@@ -1038,8 +1050,10 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
                 )?
                 .build()?)
         }
-        TableNode::Aggregate { child, keys, .. } => {
-            let input = lower_inner(child, context)?;
+        TableNode::Aggregate { child, keys, fields, .. } => {
+            let input = lower_for_expressions_in_context(
+                child, keys.iter().chain(fields).map(|(_, expression)| expression), context,
+            )?;
             match crate::logical_aggregation::lower_logical_grouped(table, input, context)? {
                 Some(plan) => {
                     let plan = if keys.is_empty() {

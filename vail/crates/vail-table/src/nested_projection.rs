@@ -67,6 +67,10 @@ pub(crate) fn map_rows_storage_paths(
     fields: &[(String, Expr)],
     schema: &arrow_schema::Schema,
 ) -> Vec<Vec<String>> {
+    storage_paths(map_rows_paths(fields), schema)
+}
+
+fn storage_paths(paths: Vec<Vec<String>>, schema: &arrow_schema::Schema) -> Vec<Vec<String>> {
     use vail_execution::expressions::Type;
     let top_fields = schema
         .fields()
@@ -74,7 +78,7 @@ pub(crate) fn map_rows_storage_paths(
         .map(|field| (field.name().as_str(), field.as_ref()))
         .collect::<HashMap<_, _>>();
     let mut roots = HashMap::new();
-    map_rows_paths(fields)
+    paths
         .into_iter()
         .map(|path| {
             let mut node: &StorageFields = roots.entry(path[0].clone()).or_insert_with(|| {
@@ -448,12 +452,12 @@ mod tests {
     }
 }
 
-// VCF-specific backward dependencies preserve lexical callback scopes and array
+// Backward source dependencies preserve lexical callback scopes and array
 // shape. Planning runs once at an action boundary, memoized by original node,
 // requested path, and an owning scope id. The source keeps its declared schema.
 use vail_vcf::DecodePath;
 #[derive(Default, Clone)]
-struct VcfNeeds {
+struct SourceNeeds {
     full: BTreeSet<String>,
     paths: BTreeMap<String, BTreeSet<Vec<String>>>,
     shapes: BTreeMap<String, BTreeSet<Vec<String>>>,
@@ -465,14 +469,14 @@ struct Scope<'a> {
     parent: usize,
 }
 #[derive(Default)]
-struct VcfDependencies<'a> {
+struct SourceDependencies<'a> {
     scopes: Vec<Scope<'a>>,
     scope_ids: HashMap<(usize, usize), usize>,
-    memo: HashMap<(usize, Vec<String>, usize, bool), VcfNeeds>,
-    validity_memo: HashMap<(usize, Vec<String>, usize), VcfNeeds>,
+    memo: HashMap<(usize, Vec<String>, usize, bool), SourceNeeds>,
+    validity_memo: HashMap<(usize, Vec<String>, usize), SourceNeeds>,
     structs: HashMap<usize, HashMap<&'a str, &'a Expr>>,
 }
-fn merge_deps(into: &mut VcfNeeds, other: VcfNeeds) {
+fn merge_deps(into: &mut SourceNeeds, other: SourceNeeds) {
     into.full.extend(other.full);
     for (root, paths) in other.shapes {
         into.shapes.entry(root).or_default().extend(paths);
@@ -484,7 +488,7 @@ fn merge_deps(into: &mut VcfNeeds, other: VcfNeeds) {
         into.validities.entry(root).or_default().extend(paths);
     }
 }
-impl<'a> VcfDependencies<'a> {
+impl<'a> SourceDependencies<'a> {
     fn scope(&mut self, node: &'a Expr, name: &str, value: &'a Expr, parent: usize) -> usize {
         let key = (node as *const Expr as usize, parent);
         if let Some(&id) = self.scope_ids.get(&key) {
@@ -499,15 +503,15 @@ impl<'a> VcfDependencies<'a> {
         self.scope_ids.insert(key, id);
         id
     }
-    fn collect(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> VcfNeeds {
+    fn collect(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> SourceNeeds {
         self.request(expr, tail, scope, false)
     }
-    fn request_validity(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> VcfNeeds {
+    fn request_validity(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> SourceNeeds {
         let key = (expr as *const Expr as usize, tail.to_vec(), scope);
         if let Some(result) = self.validity_memo.get(&key) {
             return result.clone();
         }
-        let mut result = VcfNeeds::default();
+        let mut result = SourceNeeds::default();
         match expr {
             Expr::MatrixField { axis, name, .. } if axis == "entry" => {
                 let mut path = vec!["__vail_matrix_cells".into(), "value".into(), name.clone()];
@@ -601,8 +605,8 @@ impl<'a> VcfDependencies<'a> {
         array: &'a Expr,
         tail: &[String],
         scope: usize,
-    ) -> VcfNeeds {
-        let mut result = VcfNeeds::default();
+    ) -> SourceNeeds {
+        let mut result = SourceNeeds::default();
         match array {
             Expr::ArrayMap {
                 value,
@@ -632,12 +636,18 @@ impl<'a> VcfDependencies<'a> {
         }
         result
     }
-    fn request(&mut self, expr: &'a Expr, tail: &[String], scope: usize, shape: bool) -> VcfNeeds {
+    fn request(
+        &mut self,
+        expr: &'a Expr,
+        tail: &[String],
+        scope: usize,
+        shape: bool,
+    ) -> SourceNeeds {
         let key = (expr as *const Expr as usize, tail.to_vec(), scope, shape);
         if let Some(result) = self.memo.get(&key) {
             return result.clone();
         }
-        let mut result = VcfNeeds::default();
+        let mut result = SourceNeeds::default();
         match expr {
             Expr::MatrixField { axis, name, .. } if axis == "entry" => {
                 let mut path = vec!["__vail_matrix_cells".into(), "value".into(), name.clone()];
@@ -794,7 +804,54 @@ impl<'a> VcfDependencies<'a> {
         result
     }
 }
-fn all_paths(deps: VcfNeeds) -> Vec<DecodePath> {
+/// Native readers can reuse selected descendant values to preserve parent
+/// logical validity and array shape. Uncovered validity/shape requests retain
+/// the entire requested value until readers support typed validity-only reads.
+pub(crate) fn consumed_storage_paths<'a>(
+    expressions: impl Iterator<Item = &'a Expr>,
+    schema: &arrow_schema::Schema,
+) -> Vec<Vec<String>> {
+    let mut analyzer = SourceDependencies::default();
+    let mut deps = SourceNeeds::default();
+    for expression in expressions {
+        merge_deps(&mut deps, analyzer.collect(expression, &[], 0));
+    }
+    let mut paths = deps
+        .full
+        .iter()
+        .map(|root| vec![root.clone()])
+        .collect::<BTreeSet<_>>();
+    for (root, values) in &deps.paths {
+        if !deps.full.contains(root) {
+            paths.extend(values.iter().cloned());
+        }
+    }
+    // First retain uncovered validity values, then shape. A retained entry
+    // struct already supplies its surrounding list offsets and validity.
+    for requests in [&deps.validities, &deps.shapes] {
+        for (root, requested) in requests {
+            if deps.full.contains(root) {
+                continue;
+            }
+            for request in requested {
+                if !paths
+                    .iter()
+                    .any(|selected| selected.starts_with(request) || request.starts_with(selected))
+                {
+                    paths.insert(request.clone());
+                }
+            }
+        }
+    }
+    let paths = storage_paths(paths.into_iter().collect(), schema);
+    if paths.iter().any(|path| path.len() > 1) {
+        paths
+    } else {
+        Vec::new()
+    }
+}
+
+fn all_paths(deps: SourceNeeds) -> Vec<DecodePath> {
     let value_paths = deps.paths.clone();
     let mut result = deps
         .full
@@ -878,7 +935,7 @@ pub(crate) fn prepare_vcf(table: &crate::TableRef) -> crate::TableRef {
                 validity: false,
             })
             .collect(),
-        &mut VcfDependencies::default(),
+        &mut SourceDependencies::default(),
     )
 }
 pub(crate) fn prepare_vcf_for<'a>(
@@ -888,8 +945,8 @@ pub(crate) fn prepare_vcf_for<'a>(
     if !vcf_source(table) {
         return table.clone();
     }
-    let mut analyzer = VcfDependencies::default();
-    let mut deps = VcfNeeds::default();
+    let mut analyzer = SourceDependencies::default();
+    let mut deps = SourceNeeds::default();
     for expression in expressions {
         merge_deps(&mut deps, analyzer.collect(expression, &[], 0));
     }
@@ -898,7 +955,7 @@ pub(crate) fn prepare_vcf_for<'a>(
 fn narrow_vcf_paths<'a>(
     table: &'a crate::TableRef,
     mut paths: Vec<DecodePath>,
-    analyzer: &mut VcfDependencies<'a>,
+    analyzer: &mut SourceDependencies<'a>,
 ) -> crate::TableRef {
     use crate::TableNode;
     let node = match table.node() {
@@ -926,7 +983,7 @@ fn narrow_vcf_paths<'a>(
                 .iter()
                 .map(|(name, expr)| (name, expr))
                 .collect::<HashMap<_, _>>();
-            let mut deps = VcfNeeds::default();
+            let mut deps = SourceNeeds::default();
             for path in paths {
                 if let Some(expr) = path.fields.first().and_then(|name| positions.get(name)) {
                     merge_deps(
