@@ -3666,6 +3666,7 @@ enum HailKind {
     GetField(String),
     CallConstruct,
     CallAccess(crate::calls::CallAccessor),
+    CallIndex(crate::calls::PreparedIndex),
     Struct(Vec<String>),
     Interval,
     // DF flatten ignores inner validity. Compact null lists before flattening.
@@ -4702,6 +4703,7 @@ impl PhysicalExpr for HailPhysicalExpr {
                 HailKind::ToString(input_type) => hail_to_string(&args[0], input_type),
                 HailKind::CallConstruct => crate::calls::construct(&args[0], &self.dtype),
                 HailKind::CallAccess(accessor) => crate::calls::access(&args[0], *accessor),
+                HailKind::CallIndex(prepared) => prepared.evaluate(&args),
                 HailKind::GetField(name) => {
                     let parent = &args[0];
                     let st = parent
@@ -6574,6 +6576,24 @@ fn lower_uncached(
                 Arc::new(ConfigOptions::default()),
             )?)
         }
+        Expr::ArrayIndex { value, index }
+            if matches!(value.as_ref(), Expr::GetField { value: call, name }
+                if name == "__vail_call_alleles" && call.dtype_in_scope(schema, globals.schema(), scope, memo)?
+                    == Type::Primitive(PrimitiveType::Call)) =>
+        {
+            let Expr::GetField { value: call, .. } = value.as_ref() else { unreachable!() };
+            let constant = match index.as_ref() {
+                Expr::RuntimeLiteral { value: ScalarValue::Int32(value) } => *value,
+                Expr::Literal { value, .. } => value.as_i64().and_then(|x| i32::try_from(x).ok()),
+                _ => None,
+            };
+            let prepared = crate::calls::PreparedIndex::new(constant);
+            let mut args = vec![lower_cached(call, schema, globals, scope, memo, context)?];
+            if !prepared.is_constant() {
+                args.push(lower_cached(index, schema, globals, scope, memo, context)?);
+            }
+            custom(HailKind::CallIndex(prepared), args, dtype)
+        }
         Expr::ArrayIndex { value, index } => {
             // Python bind uses map([argument], parameter => body)[0]. There
             // is exactly one callback value per input row, so bind it directly
@@ -7315,6 +7335,81 @@ mod tests {
         )
         .unwrap()
     }
+    fn indexed_calls_batch(ploidy: Vec<u8>, valid: Vec<bool>, indices: Vec<Option<i32>>) -> RecordBatch {
+        use arrow_array::{UInt16Array, UInt8Array};
+        use arrow_buffer::NullBuffer;
+        let length = ploidy.len();
+        let DataType::Struct(fields) = crate::calls::storage_type() else { unreachable!() };
+        let calls = StructArray::new(fields, vec![
+            Arc::new(UInt16Array::from_iter_values((0..length).map(|i| (i * 97) as u16))),
+            Arc::new(UInt16Array::from_iter_values((0..length).map(|i| u16::MAX - i as u16))),
+            Arc::new(UInt8Array::from(ploidy)),
+            Arc::new(BooleanArray::from(vec![false; length])),
+        ], Some(NullBuffer::from(valid)));
+        RecordBatch::try_new(Arc::new(Schema::new(vec![
+            Field::new("call", crate::calls::storage_type(), true),
+            Field::new("index", DataType::Int32, true),
+        ])), vec![Arc::new(calls), Arc::new(Int32Array::from(indices))]).unwrap()
+    }
+
+    fn call_index_expr(index: Expr) -> Expr {
+        Expr::ArrayIndex {
+            value: Arc::new(Expr::GetField {
+                value: Arc::new(Expr::Column { name: "call".into() }),
+                name: "__vail_call_alleles".into(),
+            }),
+            index: Arc::new(index),
+        }
+    }
+
+    #[test]
+    fn direct_call_index_matches_materialized_list_for_slices_nulls_and_bounds() {
+        let batches = [
+            indexed_calls_batch(vec![2, 1, 2, 0, 2, 1], vec![true, true, false, true, true, true],
+                vec![Some(0), Some(-1), Some(i32::MIN), None, Some(1), Some(0)]),
+            indexed_calls_batch(vec![2; 8], vec![true; 8], vec![Some(-2); 8]),
+            // Underlying unchecked storage follows the existing Alleles accessor.
+            indexed_calls_batch(vec![0, 1, 2, 3], vec![true; 4], vec![Some(0); 4]),
+        ];
+        for original in batches {
+            for batch in [original.clone(), original.slice(1, original.num_rows() - 2)] {
+                let lists = crate::calls::access(batch.column(0), crate::calls::CallAccessor::Alleles).unwrap();
+                for constant in [None, Some(0), Some(1), Some(-1), Some(-2), Some(2), Some(i32::MIN)] {
+                    let (index, indices): (Expr, ArrayRef) = if let Some(index) = constant {
+                        (Expr::RuntimeLiteral { value: ScalarValue::Int32(Some(index)) },
+                         Arc::new(Int32Array::from(vec![index; batch.num_rows()])))
+                    } else {
+                        (Expr::Column { name: "index".into() }, batch.column(1).clone())
+                    };
+                    let expr = call_index_expr(index);
+                    let lowered = lower(&expr, &batch.schema()).unwrap();
+                    assert!(lowered.to_string().contains("CallIndex"));
+                    let expected = array_index(&lists, &indices, &DataType::Int32);
+                    let actual = lowered.evaluate(&batch).map_err(ExprError::from)
+                        .and_then(|x| x.into_array(batch.num_rows()).map_err(ExprError::from));
+                    match (actual, expected) {
+                        (Ok(actual), Ok(expected)) => assert_eq!(actual.to_data(), expected.to_data()),
+                        (Err(actual), Err(expected)) => assert!(actual.to_string().contains(&expected.to_string())),
+                        (actual, expected) => panic!("direct={actual:?}, materialized={expected:?}"),
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn direct_call_index_missing_index_suppresses_out_of_bounds() {
+        let batch = indexed_calls_batch(vec![0, 2], vec![true, false], vec![None, Some(i32::MAX)]);
+        let expr = call_index_expr(Expr::Column { name: "index".into() });
+        let output = lower(&expr, &batch.schema()).unwrap().evaluate(&batch).unwrap()
+            .into_array(batch.num_rows()).unwrap();
+        assert_eq!(output.null_count(), 2);
+        let missing = call_index_expr(Expr::RuntimeLiteral { value: ScalarValue::Int32(None) });
+        let output = lower(&missing, &batch.schema()).unwrap().evaluate(&batch).unwrap()
+            .into_array(batch.num_rows()).unwrap();
+        assert_eq!(output.null_count(), 2);
+    }
+
     #[test]
     fn aligned_presence_fast_body_preserves_promoted_result_type() {
         use arrow_buffer::{NullBuffer, OffsetBuffer};
