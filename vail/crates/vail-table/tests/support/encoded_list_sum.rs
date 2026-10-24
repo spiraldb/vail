@@ -155,7 +155,7 @@ fn sliced_list_field_preserves_logical_masks_and_ignores_hidden_owner_rows() -> 
     });
     let mut ctx = VortexSession::default().create_execution_ctx();
     assert_arrays_eq(
-        &list.apply(&expression)?,
+        &list.clone().apply(&expression)?,
         &PrimitiveArray::from_option_iter([expected[0], expected[1], Some(0), None]).into_array(),
         &mut ctx,
     );

@@ -129,3 +129,54 @@ masks with the existing library iterator; its benefit is not yet measured.
 No prototype in this report is approved for merging. Existing resource-review
 blockers remain: visible-child clipping before parent-mask execution, session
 batch caps, and underparallelized source handling.
+
+
+## Current resource fixes and reproducible confirmation (3ad301e3)
+
+Current normal native SHA256 is
+`bd7dcca1a2d34820fdb8f763b063bc6dd57663a076709e53af3a4916e914ec59`.
+The candidate passes 8 public Rust integration tests and 56 Python tests,
+including logical ancestor nulls, independently sliced masks, public batch caps,
+and empty/null list groups retaining a large hidden child owner. No physical
+plan-name assertions are used. Session batch splitting now uses the existing
+BatchSplitStream, and list child clipping precedes ancestor-mask evaluation.
+
+Warm, isolated 12-action confirmation on the M3 Max (exact sum checked each
+query), comparing normal H078 main artifact SHA69a06f57...:
+
+| 500M-slot native matrix | Main median wall / CPU | Pushdown median wall / CPU | Wall speedup |
+| --- | --- | --- | --- |
+| Defined entries, nullable DP | 72.389 ms / 0.863420 s | 61.546 ms / 0.744743 s | 1.176x |
+| Filtered entries, nullable DP | 76.125 ms / 0.903811 s | 74.738 ms / 0.898885 s | 1.019x (parity) |
+
+Both use 32 source partitions. Earlier three-action measurements were noisier;
+these confirmations supersede them. The unfiltered fixture is written through
+public unfilter_entries().write, with the identical DP sum 20,969,995,813.
+
+A public writer also prepared a 500M-slot table with exactly one source
+partition: 500,000 rows x 1,000 list elements, nullable Int32 DP. Query:
+`t.aggregate(hl.agg.sum(hl.sum(t.items.map(lambda e: hl.int64(e.DP)))))`.
+Three-action preliminary medians: main331.186ms /0.507719CPU s, candidate
+296.375ms /0.355398CPU s (1.117x wall,1.429x CPU). Exact sum23,075,009,474.
+Both underutilize the machine (approximately1.2–1.5 concurrent cores). This is
+an unresolved general scan-work scheduling opportunity. Current storage row
+ranges select files but slice after whole-file decode; naive additional source
+lanes would duplicate decode and are not acceptable.
+
+Public hidden-owner resource experiment: two visible list rows with128 child
+values, two logical ancestor masks, and null/empty rows retaining hidden owner
+spans. Owner sizes10K/1M/40M measured query medians33.8/28.7/15.3microseconds;
+40M owner with8192 visible children measured26.3microseconds. Preparation was
+excluded. Tiny-time variation precludes comparing those individual medians,
+but query cost does not grow with the retained backing owner. Source is
+`examples/bench_list_clip.rs`, no private instrumentation or counters.
+
+The proposed >=90%-valid run traversal was REJECTED and removed. Although it
+slightly helped the periodic native fixture, randomized91%-valid masks became
+1.40–1.52x slower for cardinalities3000/102. The raw rejected experiment is
+retained rather than selecting an unvalidated density threshold. Current
+mixed-null traversal uses the existing word-wise set-bit iterator.
+
+No current prototype is approved for merging. Final profiles, resource review,
+and exact-revision review remain required. Broader pushdown roadmap is tracked
+by the parent in investigations/VORTEX_PUSHDOWN_QUEUE.md.
