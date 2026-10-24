@@ -120,3 +120,39 @@ entry-count operator. A generic list projection serves non-count consumers too.
   charged metadata estimate, not a strict parsed-heap/allocator bound.
 
 No implementation is authorized by this document; request design review first.
+
+## Concrete first implementation route and files (before code)
+
+Avoid designing an arbitrary lambda serialization/runtime cache for this closed
+first body. Existing ListField::FieldPath already resolves positions/requiredness
+and prepares field steps from schema once, serializes those choices, and validates
+the path at binding. A first ListElementExpr body can be the explicit typed
+operation LogicalValidity(FieldPath), returning Bool(non-null), rather than a
+foreign arbitrary callback. It generates the ordinary bound IsNotNull/GetItem
+expression for element-reader preparation; it is not interpreted once per entry.
+Existing expression protobuf can represent its outer scalar node as usual.
+
+Likely additive implementation surfaces:
+
+1. vortex-array scalar_fn: typed logical-validity element operation using the
+   existing prepared field path style; preserve full List/FixedSizeList outer
+   dtype and actual logical masks. Register it in the existing scalar session.
+   Ordinary in-memory fallback remains correct without a read-byte guarantee.
+2. vortex-layout ListReader preparation: recognize the exact root element
+   projection occurrence, pass its prepared validity body directly to the
+   element reader, and prepare residual outer expression with changed list type.
+   This is where decoding avoidance happens; no bare empty ProjectPaths hack.
+3. storage computed_capability: new distinct validity operand and closed
+   full-effective-domain/struct-validity proof; existing SUM/Length unchanged.
+   Only proven separately addressable validity layouts enter the first route.
+4. table computed_source translator: generic typed list predicate/reduction
+   expressions request that operand. Preserve original consumer tree and scopes
+   for whole-route fallback; no direct MatrixTable/DP/entry-name special cases.
+5. Public array/layout tests first, then native writer-reader correctness and
+   resource controls. No private plan-name assertions or test instrumentation.
+
+A general arbitrary body is a FUTURE extension requiring actual preparation
+and effect/serialization contracts. Storing an unbound Expr and rebinding it per
+batch, or a schema-hashed mutable cache in scalar options, would violate the
+query-preparation goal and is not proposed here. The closed field-validity body
+avoids that design detour while serving a broad record-presence query class.
