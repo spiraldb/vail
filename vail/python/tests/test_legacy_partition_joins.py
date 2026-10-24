@@ -45,3 +45,15 @@ def test_hail_partition_join_after_value_projection_and_filter(hail_join_data):
     assert [(row.k, row.lv, row.rv) for row in result.collect()] == [
         (key, key + 100, key - 13) for key in range(14, 80, 2)
     ]
+
+
+def test_hail_partition_membership_preserves_left_multiplicity(hail_join_data):
+    root = hail_join_data
+    left = hl.Table.read_legacy(str(root / "duplicates-left.ht"))
+    right = hl.Table.read_legacy(str(root / "duplicates-right.ht"))
+    assert [(row.k, row.lv) for row in left.semi_join(right).collect()] == [
+        (4, 2), (4, 3), (7, 4),
+    ]
+    assert [(row.k, row.lv) for row in left.anti_join(right).collect()] == [
+        (0, 0), (2, 1), (10, 5), (14, 6), (None, 7),
+    ]
