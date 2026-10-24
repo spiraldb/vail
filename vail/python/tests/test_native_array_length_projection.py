@@ -38,7 +38,7 @@ def test_native_list_length_variable_nested_and_missing_values(tmp_path):
     path = str(tmp_path / "variable.ht")
     hl.Table.parallelize(data, n_partitions=2).write(path)
     source = hl.read_table(path)
-    got = source.select(n=hl.len(source.items)).collect()
+    got = source.select("id", n=hl.len(source.items)).collect()
     assert [(row.id, row.n) for row in got] == [(i, None if v is None else len(v))
                                                for i, v in enumerate(values)]
 
