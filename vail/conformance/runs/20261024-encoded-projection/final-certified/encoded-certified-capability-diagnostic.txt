@@ -1,0 +1,115 @@
+certificate None
+vortex.struct rows=6272 dtype={__vail_matrix_row={row_idx=i32?}?, __vail_matrix_cells=list({value={DP=i32?}?}?)?, row_idx=i32?}
+ vortex.struct rows=6272 dtype={row_idx=i32?}?
+  vortex.flat rows=6272 dtype=bool
+   array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+  vortex.zoned rows=6272 dtype=i32?
+   vortex.flat rows=6272 dtype=i32?
+    array Some(Id("vortex.sequence")) metadata=[10, 2, 24, 0, 18, 2, 24, 2] buffers=Ok([])
+   vortex.flat rows=1 dtype={vortex.max()=i32?, vortex.min()=i32?, vortex.null_count()=u64?}
+    array Some(Id("vortex.struct")) metadata=[] buffers=Ok([])
+     array Some(Id("vortex.constant")) metadata=[] buffers=Ok([3])
+     array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+     array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+ vortex.zoned rows=6272 dtype=list({value={DP=i32?}?}?)?
+  vortex.list rows=6272 dtype=list({value={DP=i32?}?}?)?
+   vortex.struct rows=15680000 dtype={value={DP=i32?}?}?
+    vortex.flat rows=15680000 dtype=bool
+     array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+    vortex.struct rows=15680000 dtype={DP=i32?}?
+     vortex.flat rows=15680000 dtype=bool
+      array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+     vortex.zoned rows=15680000 dtype=i32?
+      vortex.dict rows=15680000 dtype=i32?
+       vortex.flat rows=102 dtype=i32?
+        array Some(Id("vortex.primitive")) metadata=[] buffers=Ok([408])
+         array Some(Id("vortex.bool")) metadata=[] buffers=Ok([13])
+       vortex.chunked rows=15680000 dtype=u16
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=524288 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([458752])
+        vortex.flat rows=475648 dtype=u16
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 7] buffers=Ok([416640])
+      vortex.flat rows=1915 dtype={vortex.max()=i32?, vortex.min()=i32?, vortex.null_count()=u64?}
+       array Some(Id("vortex.struct")) metadata=[] buffers=Ok([])
+        array Some(Id("vortex.constant")) metadata=[] buffers=Ok([3])
+        array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+        array Some(Id("vortex.dict")) metadata=[8, 5, 24, 1, 32, 1] buffers=Ok([])
+         array Some(Id("fastlanes.bitpacked")) metadata=[8, 3] buffers=Ok([768])
+         array Some(Id("vortex.primitive")) metadata=[] buffers=Ok([40])
+   vortex.zoned rows=6273 dtype=u64
+    vortex.flat rows=6273 dtype=u64
+     array Some(Id("vortex.sequence")) metadata=[10, 2, 32, 0, 18, 3, 24, 136, 39] buffers=Ok([])
+    vortex.flat rows=1 dtype={vortex.max()=u64?, vortex.min()=u64?, vortex.null_count()=u64?}
+     array Some(Id("vortex.struct")) metadata=[] buffers=Ok([])
+      array Some(Id("vortex.constant")) metadata=[] buffers=Ok([5])
+      array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+      array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+   vortex.flat rows=6272 dtype=bool
+    array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+  vortex.flat rows=1 dtype={vortex.null_count()=u64?}
+   array Some(Id("vortex.struct")) metadata=[] buffers=Ok([])
+    array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+ vortex.zoned rows=6272 dtype=i32?
+  vortex.flat rows=6272 dtype=i32?
+   array Some(Id("vortex.sequence")) metadata=[10, 2, 24, 0, 18, 2, 24, 2] buffers=Ok([])
+  vortex.flat rows=1 dtype={vortex.max()=i32?, vortex.min()=i32?, vortex.null_count()=u64?}
+   array Some(Id("vortex.struct")) metadata=[] buffers=Ok([])
+    array Some(Id("vortex.constant")) metadata=[] buffers=Ok([3])
+    array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
+    array Some(Id("vortex.constant")) metadata=[] buffers=Ok([2])
