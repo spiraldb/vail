@@ -267,7 +267,7 @@ impl AlignedMatrixMapExpr {
 impl AlignedMatrixMapExpr {
     fn evaluate_flat(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
         let entries = self.entries.evaluate(batch)?;
-        let entries = array_value(entries, "entry lists")?;
+        let entries = row_array_value(entries, batch.num_rows(), "entry lists")?;
         let entries = entries
             .as_any()
             .downcast_ref::<ListArray>()
@@ -275,7 +275,7 @@ impl AlignedMatrixMapExpr {
                 DataFusionError::Execution("aligned matrix map entries must be ListArray".into())
             })?;
         let rows = self.rows.evaluate(batch)?;
-        let rows = array_value(rows, "row records")?;
+        let rows = row_array_value(rows, batch.num_rows(), "row records")?;
         let rows = rows.as_any().downcast_ref::<StructArray>().ok_or_else(|| {
             DataFusionError::Execution("aligned matrix map rows must be StructArray".into())
         })?;
@@ -631,7 +631,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             return self.evaluate_flat(batch);
         }
         let entries = self.entries.evaluate(batch)?;
-        let entries = array_value(entries, "entry lists")?;
+        let entries = row_array_value(entries, batch.num_rows(), "entry lists")?;
         let entries = entries
             .as_any()
             .downcast_ref::<ListArray>()
@@ -639,7 +639,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
                 DataFusionError::Execution("aligned matrix map entries must be ListArray".into())
             })?;
         let rows = self.rows.evaluate(batch)?;
-        let rows = array_value(rows, "row records")?;
+        let rows = row_array_value(rows, batch.num_rows(), "row records")?;
         let rows = rows.as_any().downcast_ref::<StructArray>().ok_or_else(|| {
             DataFusionError::Execution("aligned matrix map rows must be StructArray".into())
         })?;
@@ -825,14 +825,25 @@ fn project_column_array(array: &ArrayRef, dtype: &DataType) -> Result<ArrayRef> 
     )?))
 }
 
-fn array_value(value: ColumnarValue, what: &str) -> Result<ArrayRef> {
-    match value {
-        ColumnarValue::Array(array) => Ok(array),
-        ColumnarValue::Scalar(value) => Ok(value.to_array()?),
-    }
-    .map_err(|error: DataFusionError| {
-        DataFusionError::Execution(format!("cannot materialize aligned {what}: {error}"))
-    })
+// Entries and row records are row-aligned inputs, unlike the singleton
+// columns/globals shared by the entire matrix. Constant folding can turn a
+// repeated row input into a Scalar; materialize that scalar once for this
+// batch before traversing its lists.
+fn row_array_value(value: ColumnarValue, rows: usize, what: &str) -> Result<ArrayRef> {
+    value
+        .into_array(rows)
+        .and_then(|array| {
+            if array.len() != rows {
+                return Err(DataFusionError::Execution(format!(
+                    "aligned {what} has {} rows, expected {rows}",
+                    array.len()
+                )));
+            }
+            Ok(array)
+        })
+        .map_err(|error: DataFusionError| {
+            DataFusionError::Execution(format!("cannot materialize aligned {what}: {error}"))
+        })
 }
 
 fn shared_list_values(value: ColumnarValue) -> Result<ArrayRef> {
