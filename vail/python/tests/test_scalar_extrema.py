@@ -23,6 +23,8 @@ def test_integer_extrema_project_and_reduce(dtype, lo, hi):
         (lo, 0, lo, hi), (-1, 0, -1, hi), (0, 0, None, hi), (0, hi, 0, hi),
     ]
     assert table.aggregate(hl.agg.count_where(table.upper >= 0)) == 4
+    nullable = table.annotate(value=hl.min(table.x, hl.missing(dtype)))
+    assert [r.value for r in nullable.collect()] == [lo, -1, None, hi]
 
 
 def test_extrema_missing_empty_singleton_and_promotion():

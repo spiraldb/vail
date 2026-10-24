@@ -102,9 +102,36 @@ Pinned source references:
 - [Least implementation and null behavior](https://github.com/apache/datafusion/blob/55.0.0/datafusion/functions/src/core/least.rs)
 - [Greatest implementation](https://github.com/apache/datafusion/blob/55.0.0/datafusion/functions/src/core/greatest.rs)
 
-## Candidate validation status
+## Candidate validation
 
-Normal kache/maturin release build and public tests are in progress. No production
-performance improvement is claimed until matched candidate measurements complete.
+The normal kache/maturin release build completed in 1m29s. Native SHA256 is
+`7f0d1fd074d799b69eb83cdab74c4810f8a1d8f49f99aa052b4cbb0b18a677ad`.
+Final public execution checks: **40 passed in 1.71 seconds**, covering scalar
+extrema, entry sums, coordinate aggregate callbacks and strict entry inputs.
+The first test draft assumed floating NaNs were ignored; baseline execution
+showed the existing scalar API propagates NaN. That test oracle was corrected;
+the production floating path remains unchanged.
+
+Matched baseline/candidate measurements use one warmup plus three samples,
+`OPENBLAS_NUM_THREADS=1` for both engines, genuine native profile25/coverage inputs,
+and no simultaneous workloads:
+
+| Pipeline | Baseline wall / CPU s | Candidate wall / CPU s | Wall speedup |
+|---|---:|---:|---:|
+| Coverage counter/mean | 2.142 / 64.57 | 0.905 / 26.58 | 2.37x |
+| Global clamped-entry sum | 1.017 / 27.17 | 0.274 / 6.76 | 3.72x |
+| Row clamped sums + total | 1.105 / 28.00 | 0.294 / 6.92 | 3.75x |
+| Unchanged 33 row aggregates | 1.131 / 26.62 | 1.121 / 26.02 | 1.01x |
+| Unchanged PL dosage | 0.974 / 24.24 | 1.025 / 23.61 | 0.95x |
+| Unchanged global GQ stats | 0.394 / 10.13 | 0.402 / 10.31 | 0.98x |
+
+Both clamp formulations return **353404627** for every baseline and candidate
+sample. Coverage peak RSS drops 0.842 to 0.674 GiB. Candidate coverage samples no
+longer report `make_array` above the 0.5% inclusive report threshold; native
+DataFusion `least` is about 1.23% inclusive. Inclusive percentages overlap and
+must not be summed. The untouched dosage control differs about 5% in wall time
+while using less CPU; this short control warrants repeated comparisons before
+claiming no regressions. No Hail speedup is inferred from these new measurements.
+
 The projection/ordering/CSE issues remain separate queued general investigations;
 they are not bundled into the scalar extrema change.
