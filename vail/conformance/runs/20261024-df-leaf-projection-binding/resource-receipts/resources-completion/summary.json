@@ -1,0 +1,72 @@
+{
+  "elapsed_seconds": 19.47329587501008,
+  "processes": 24,
+  "cases": [
+    {
+      "mode": "many",
+      "phase": "plan",
+      "width": 256,
+      "rows": 32,
+      "iterations": 2,
+      "measured_wall_seconds": {
+        "baseline_mean": 1.5579983125,
+        "candidate_mean": 1.586718656,
+        "ratio": 1.0184341300433852
+      },
+      "process_cpu_seconds": {
+        "baseline_mean": 2.359120999999999,
+        "candidate_mean": 2.3894742499999997,
+        "ratio": 1.01286633877618
+      },
+      "maxrss_bytes": {
+        "baseline_mean": 152469504,
+        "candidate_mean": 165085184,
+        "ratio": 1.08274231678487
+      }
+    },
+    {
+      "mode": "rename",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "measured_wall_seconds": {
+        "baseline_mean": 0.00917026025,
+        "candidate_mean": 0.00905822925,
+        "ratio": 0.9877832256723577
+      },
+      "process_cpu_seconds": {
+        "baseline_mean": 0.017597500000000696,
+        "candidate_mean": 0.01713475000000042,
+        "ratio": 0.9737036510867875
+      },
+      "maxrss_bytes": {
+        "baseline_mean": 29573120,
+        "candidate_mean": 29663232,
+        "ratio": 1.0030470914127423
+      }
+    },
+    {
+      "mode": "wide",
+      "phase": "execute",
+      "width": 64,
+      "rows": 100000,
+      "iterations": 8,
+      "measured_wall_seconds": {
+        "baseline_mean": 0.022094896,
+        "candidate_mean": 0.018584635500000002,
+        "ratio": 0.8411279917316652
+      },
+      "process_cpu_seconds": {
+        "baseline_mean": 0.03202924999999962,
+        "candidate_mean": 0.028185749999999107,
+        "ratio": 0.8800003122145988
+      },
+      "maxrss_bytes": {
+        "baseline_mean": 30384128,
+        "candidate_mean": 30281728,
+        "ratio": 0.9966298193583176
+      }
+    }
+  ]
+}
