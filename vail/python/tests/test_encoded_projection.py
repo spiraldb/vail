@@ -48,3 +48,21 @@ def test_native_computed_projection_pruning_keeps_row_counts(tmp_path):
     assert [(r.label, r.total) for r in mapped.collect()] == [
         ("one", 2147483648), ("two", 0), ("three", 0), ("four", None)]
     assert mapped.aggregate(hl.agg.sum(mapped.total)) == 2147483648
+
+
+def test_native_dense_projection_aliases_keys_globals_and_order(tmp_path):
+    t = hl.utils.range_table(137, n_partitions=5)
+    t = t.annotate(items=hl.range(41).map(
+        lambda c: hl.struct(n=hl.int32(t.idx * 3 - c))))
+    t = t.annotate_globals(description="dense-list")
+    path = str(tmp_path / "dense.ht")
+    t.write(path)
+    r = hl.read_table(path)
+    mapped = r.select(total=hl.sum(r.items.map(lambda e: hl.int64(e.n))))
+    expected = [sum(i * 3 - c for c in range(41)) for i in range(137)]
+    assert [(x.idx, x.total) for x in mapped.collect()] == list(enumerate(expected))
+    assert mapped.aggregate(hl.agg.sum(mapped.total)) == sum(expected)
+    assert hl.eval(mapped.index_globals().description) == "dense-list"
+    # A shape-changing consumer must preserve ordinary relational semantics.
+    filtered = mapped.filter(mapped.idx % 3 == 0)
+    assert filtered.aggregate(hl.agg.sum(filtered.total)) == sum(expected[::3])

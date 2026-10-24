@@ -328,7 +328,7 @@ impl ComputedProvider {
                     vail_execution::logical_expr::lower_logical_with_bindings(
                         &self.original_fields[index].1,
                         &df_schema,
-                        self.original_source.globals().schema(),
+                        &Schema::empty(),
                         &Default::default(),
                     )
                     .map_err(|error| DataFusionError::External(Box::new(error)))?
