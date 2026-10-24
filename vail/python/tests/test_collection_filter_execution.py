@@ -88,6 +88,16 @@ def test_native_matrix_per_entry_array_summary_preserves_absence(tmp_path):
         result = matrix.annotate_entries(metric=matrix.AD.aggregate(lambda x: hl.agg.filter(
             x > 1, hl.struct(n=hl.agg.count(), total=hl.agg.sum(x))))).entries()
         assert {(e.row_idx, e.col_idx): e.metric for e in result.collect()} == expected
+        captured = matrix.annotate_entries(metric=matrix.AD.aggregate(lambda x: hl.agg.filter(
+            x > matrix.row_idx, hl.struct(n=hl.agg.count(), total=hl.agg.sum(x + matrix.col_idx))))).entries()
+        expected_captured = {}
+        for r, c in expected:
+            if (r + c) % 4 == 0:
+                value = hl.Struct(n=None, total=None)
+            else:
+                value = hl.Struct(n=int(c > r), total=2 * c if c > r else 0)
+            expected_captured[r, c] = value
+        assert {(e.row_idx, e.col_idx): e.metric for e in captured.collect()} == expected_captured
 
 
 def test_filtered_nullable_structs_and_zero_field_structs():
