@@ -10,6 +10,123 @@ use arrow_array::{
 use arrow_schema::DataType;
 use datafusion_common::{Result, exec_datafusion_err};
 
+type Evaluate = fn(&ListArray) -> Result<ArrayRef>;
+
+/// Immutable descriptor selected by DataFusion when the argument type is known.
+#[derive(Debug, Clone)]
+pub(super) struct Prepared {
+    identity: (DataType, String),
+    evaluate: Evaluate,
+}
+impl PartialEq for Prepared {
+    fn eq(&self, other: &Self) -> bool {
+        self.identity == other.identity
+    }
+}
+impl Eq for Prepared {}
+impl std::hash::Hash for Prepared {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash(&self.identity, state);
+    }
+}
+impl Prepared {
+    pub(super) fn new(input: &DataType, function: &str) -> Option<Self> {
+        let DataType::List(field) = input else {
+            return None;
+        };
+        macro_rules! choose {
+            ($kernel:ident) => {
+                match function {
+                    "sum" => $kernel::<0> as Evaluate,
+                    "product" => $kernel::<1> as Evaluate,
+                    "min" => $kernel::<2> as Evaluate,
+                    "max" => $kernel::<3> as Evaluate,
+                    _ => return None,
+                }
+            };
+        }
+        let evaluate = match field.data_type() {
+            DataType::Int32 if matches!(function, "sum" | "product") => choose!(int32_wide),
+            DataType::Int32 => choose!(int32),
+            DataType::Int64 => choose!(int64),
+            _ => return None,
+        };
+        Some(Self {
+            identity: (input.clone(), function.to_owned()),
+            evaluate,
+        })
+    }
+    pub(super) fn evaluate(&self, lists: &ListArray) -> Result<ArrayRef> {
+        (self.evaluate)(lists)
+    }
+}
+
+// OP is chosen once per query. Nullable/dense traversal is chosen once per
+// batch from logical validity. Borrowed spans require no per-list Arrow header,
+// refcount changes, bitmap slicing, or null-count computation. Integer wrapping
+// matches Arrow and the dense loop leaves vectorization to LLVM.
+macro_rules! integer_kernel {
+    ($name:ident, $typed:ty, $builder:ty, $native:ty) => {
+        fn $name<const OP: u8>(lists: &ListArray) -> Result<ArrayRef> {
+            let values = lists
+                .values()
+                .as_any()
+                .downcast_ref::<$typed>()
+                .ok_or_else(|| exec_datafusion_err!("prepared list reducer input type changed"))?;
+            let logical_nulls = values.logical_nulls();
+            let nulls = logical_nulls.as_ref().filter(|n| n.null_count() != 0);
+            fn run<const OP: u8, const NULLS: bool>(
+                lists: &ListArray,
+                values: &$typed,
+                nulls: Option<&arrow_buffer::NullBuffer>,
+            ) -> ArrayRef {
+                let offsets = lists.value_offsets();
+                let raw = values.values();
+                let mut output = <$builder>::with_capacity(lists.len());
+                for row in 0..lists.len() {
+                    if lists.is_null(row) {
+                        output.append_null();
+                        continue;
+                    }
+                    let start = offsets[row] as usize;
+                    let end = offsets[row + 1] as usize;
+                    let mut value: $native = if OP == 1 { 1 } else { 0 };
+                    let mut present = OP < 2;
+                    for (relative, source) in raw[start..end].iter().enumerate() {
+                        if NULLS && !nulls.unwrap().is_valid(start + relative) {
+                            continue;
+                        }
+                        let next = *source as $native;
+                        if OP == 0 {
+                            value = value.wrapping_add(next);
+                        } else if OP == 1 {
+                            value = value.wrapping_mul(next);
+                        } else if !present || (OP == 2 && next < value) || (OP == 3 && next > value)
+                        {
+                            value = next;
+                        }
+                        present = true;
+                    }
+                    if present {
+                        output.append_value(value);
+                    } else {
+                        output.append_null();
+                    }
+                }
+                Arc::new(output.finish())
+            }
+            Ok(if nulls.is_some() {
+                run::<OP, true>(lists, values, nulls)
+            } else {
+                run::<OP, false>(lists, values, None)
+            })
+        }
+    };
+}
+integer_kernel!(int32_wide, Int32Array, Int64Builder, i64);
+integer_kernel!(int32, Int32Array, Int32Builder, i32);
+integer_kernel!(int64, Int64Array, Int64Builder, i64);
+
 /// Return None for reducers that still need the general accumulator adapter.
 /// Child values are cast once for the batch, never once per list. Sliced list
 /// offsets are rebased onto the referenced child range before reduction.

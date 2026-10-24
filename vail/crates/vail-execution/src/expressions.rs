@@ -6248,7 +6248,17 @@ fn lower_uncached(
             let function = Arc::new(ScalarFunctionExpr::try_new(
                 match special {
                     Some(udf) => Arc::new(udf),
-                    None => nested_function(function)?,
+                    None => {
+                        let prepared = if args.len() == 1 {
+                            crate::list_aggregate::prepared_udf(function, &args[0].data_type(schema)?)
+                        } else {
+                            None
+                        };
+                        match prepared {
+                            Some(udf) => udf,
+                            None => nested_function(function)?,
+                        }
+                    }
                 },
                 args,
                 schema,

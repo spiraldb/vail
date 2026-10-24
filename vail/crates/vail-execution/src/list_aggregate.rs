@@ -32,6 +32,7 @@ struct ListAggregate {
     function: String,
     direct_call_stats: bool,
     signature: Signature,
+    prepared: Option<direct::Prepared>,
 }
 
 /// Adapter descriptor shared by capability inquiry, construction and validation.
@@ -89,6 +90,21 @@ pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
         function: function.to_owned(),
         direct_call_stats,
         signature: Signature::any(arity, Volatility::Immutable),
+        prepared: None,
+    })))
+}
+
+/// Physical lowering also prepares typed reducers for expressions inside a
+/// higher-order kernel, which do not pass through the logical simplifier.
+pub(crate) fn prepared_udf(name: &str, input: &DataType) -> Option<Arc<ScalarUDF>> {
+    let function = name.strip_prefix(PREFIX)?;
+    let prepared = direct::Prepared::new(input, function)?;
+    Some(Arc::new(ScalarUDF::from(ListAggregate {
+        name: name.to_owned(),
+        function: function.to_owned(),
+        direct_call_stats: false,
+        signature: Signature::any(1, Volatility::Immutable),
+        prepared: Some(prepared),
     })))
 }
 
@@ -369,6 +385,27 @@ impl ScalarUDFImpl for ListAggregate {
             configured(&self.function, &input, 0)?.return_type(&[input])
         }
     }
+    fn simplify(
+        &self,
+        args: Vec<datafusion_expr::Expr>,
+        info: &datafusion_expr::simplify::SimplifyContext,
+    ) -> Result<datafusion_expr::simplify::ExprSimplifyResult> {
+        use datafusion_expr::simplify::ExprSimplifyResult;
+        if self.prepared.is_none() && args.len() == 1 {
+            let input = info.get_data_type(&args[0])?;
+            if let Some(prepared) = direct::Prepared::new(&input, &self.function) {
+                let udf = ScalarUDF::from(Self {
+                    name: self.name.clone(),
+                    function: self.function.clone(),
+                    direct_call_stats: false,
+                    signature: self.signature.clone(),
+                    prepared: Some(prepared),
+                });
+                return Ok(ExprSimplifyResult::Simplified(udf.call(args)));
+            }
+        }
+        Ok(ExprSimplifyResult::Original(args))
+    }
     fn invoke_with_args(&self, args: ScalarFunctionArgs) -> Result<ColumnarValue> {
         let scalar = args
             .args
@@ -381,6 +418,20 @@ impl ScalarUDFImpl for ListAggregate {
             .cloned()
             .map(|a| a.into_array(rows))
             .collect::<Result<Vec<_>>>()?;
+        if let Some(prepared) = &self.prepared {
+            let lists = arrays[0]
+                .as_any()
+                .downcast_ref::<ListArray>()
+                .ok_or_else(|| exec_datafusion_err!("list reducer requires Arrow lists"))?;
+            let result = prepared.evaluate(lists)?;
+            return if scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            };
+        }
         if self.direct_call_stats {
             if arrays.len() != 2 || arrays[0].data_type() != &DataType::Int32 {
                 return Err(exec_datafusion_err!(
@@ -407,10 +458,15 @@ impl ScalarUDFImpl for ListAggregate {
                 return Err(exec_datafusion_err!("collect requires list output"));
             };
             let result: ArrayRef = Arc::new(ListArray::new(
-                field.clone(), lists.offsets().clone(), lists.values().clone(), lists.nulls().cloned(),
+                field.clone(),
+                lists.offsets().clone(),
+                lists.values().clone(),
+                lists.nulls().cloned(),
             ));
             return if scalar {
-                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(&result, 0)?))
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
             } else {
                 Ok(ColumnarValue::Array(result))
             };
