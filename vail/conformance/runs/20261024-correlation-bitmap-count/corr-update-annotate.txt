@@ -1,0 +1,399 @@
+ Samples |	Source code & Disassembly of _native.abi3.so for cpu-clock (243 samples, percent: local period)
+---------------------------------------------------------------------------------------------------------------
+         :
+         :
+         :
+         : 3       Disassembly of section .text:
+         :
+         : 5       00000000070d1dc0 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch>:
+       0 :   70d1dc0:        push   %rbp
+       0 :   70d1dc1:        push   %r15
+       0 :   70d1dc3:        push   %r14
+       0 :   70d1dc5:        push   %r13
+       0 :   70d1dc7:        push   %r12
+       0 :   70d1dc9:        push   %rbx
+       0 :   70d1dca:        sub    $0xa8,%rsp
+       0 :   70d1dd1:        mov    %rsi,%r15
+       0 :   70d1dd4:        mov    %rdi,%rbx
+       0 :   70d1dd7:        lea    0x50(%rsp),%rdi
+       0 :   70d1ddc:        mov    %rdx,%rsi
+       0 :   70d1ddf:        mov    %rcx,%rdx
+       0 :   70d1de2:        call   70c2760 <vail_execution::advanced_numeric_aggregates::corr_pair>
+       0 :   70d1de7:        vmovups 0x58(%rsp),%xmm0
+       0 :   70d1ded:        mov    0x68(%rsp),%rcx
+       0 :   70d1df2:        mov    0x50(%rsp),%rax
+       0 :   70d1df7:        mov    %rcx,0x10(%rsp)
+       0 :   70d1dfc:        vmovaps %xmm0,(%rsp)
+       0 :   70d1e01:        cmp    $0xffffffffffffffff,%rax
+       0 :   70d1e05:        je     70d1e2b <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6b>
+       0 :   70d1e07:        vmovdqa (%rsp),%xmm0
+       0 :   70d1e0c:        mov    0x10(%rsp),%rdx
+       0 :   70d1e11:        mov    0x70(%rsp),%rcx
+       0 :   70d1e16:        mov    %rdx,0x18(%rbx)
+       0 :   70d1e1a:        vmovdqu %xmm0,0x8(%rbx)
+       0 :   70d1e1f:        mov    %rax,(%rbx)
+       0 :   70d1e22:        mov    %rcx,0x20(%rbx)
+       0 :   70d1e26:        jmp    70d22ac <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4ec>
+       0 :   70d1e2b:        vmovdqa (%rsp),%xmm0
+       0 :   70d1e30:        mov    0x10(%rsp),%rax
+       0 :   70d1e35:        mov    %rax,0x40(%rsp)
+       0 :   70d1e3a:        vmovdqa %xmm0,0x30(%rsp)
+       0 :   70d1e40:        cmp    $0x2,%rax
+       0 :   70d1e44:        jne    70d22dc <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x51c>
+       0 :   70d1e4a:        mov    0x38(%rsp),%r14
+       0 :   70d1e4f:        mov    %rbx,0x28(%rsp)
+       0 :   70d1e54:        mov    %r14,%rdi
+       0 :   70d1e57:        call   *0x3d1e13b(%rip)        # adeff98 <_DYNAMIC+0xc90>
+       0 :   70d1e5d:        mov    %rax,%r13
+       0 :   70d1e60:        lea    0x50(%rsp),%rdi
+       0 :   70d1e65:        mov    %rax,%rsi
+       0 :   70d1e68:        call   *0x18(%rdx)
+       0 :   70d1e6b:        vmovdqa 0x50(%rsp),%xmm0
+       0 :   70d1e71:        vpxor  -0x6a59a09(%rip),%xmm0,%xmm0        # 678470 <anon.f6ed82eaff7957668af3005f9a12bddc.860.llvm.3495519817842118891+0x3c0>
+       0 :   70d1e79:        vptest %xmm0,%xmm0
+       0 :   70d1e7e:        jne    70d22f7 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x537>
+       0 :   70d1e84:        lea    0x10(%r14),%rdi
+       0 :   70d1e88:        call   *0x3d1e10a(%rip)        # adeff98 <_DYNAMIC+0xc90>
+       0 :   70d1e8e:        mov    %rax,%r12
+       0 :   70d1e91:        lea    0x50(%rsp),%rdi
+       0 :   70d1e96:        mov    %rax,%rsi
+       0 :   70d1e99:        call   *0x18(%rdx)
+       0 :   70d1e9c:        movabs $0xf55300cdec022a3e,%rax
+       0 :   70d1ea6:        movabs $0xb9464c5a97843090,%rcx
+       0 :   70d1eb0:        xor    0x50(%rsp),%rcx
+       0 :   70d1eb5:        xor    0x58(%rsp),%rax
+       0 :   70d1eba:        or     %rcx,%rax
+       0 :   70d1ebd:        jne    70d2300 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x540>
+       0 :   70d1ec3:        mov    0x28(%r13),%rax
+       0 :   70d1ec7:        shr    $0x3,%rax
+       0 :   70d1ecb:        je     70d1f6a <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x1aa>
+       0 :   70d1ed1:        mov    0x30(%r13),%rcx
+       0 :   70d1ed5:        xor    %ebp,%ebp
+       0 :   70d1ed7:        xor    %edx,%edx
+       0 :   70d1ed9:        jmp    70d1eed <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x12d>
+       0 :   70d1edb:        nopl   0x0(%rax,%rax,1)
+       1 :   70d1ee0:        xor    %esi,%esi
+      14 :   70d1ee2:        add    %rsi,%rbp
+      14 :   70d1ee5:        inc    %rdx
+       1 :   70d1ee8:        cmp    %rdx,%rax
+       0 :   70d1eeb:        je     70d1f6c <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x1ac>
+       0 :   70d1eed:        test   %rcx,%rcx
+       0 :   70d1ef0:        je     70d1f1b <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x15b>
+       0 :   70d1ef2:        cmp    0x50(%r13),%rdx
+       8 :   70d1ef6:        jae    70d22c1 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x501>
+       0 :   70d1efc:        mov    0x48(%r13),%rdi
+       3 :   70d1f00:        mov    0x38(%r13),%rsi
+      12 :   70d1f04:        add    %rdx,%rdi
+       1 :   70d1f07:        mov    %rdi,%r8
+      22 :   70d1f0a:        shr    $0x3,%r8
+       1 :   70d1f0e:        and    $0x7,%edi
+       0 :   70d1f11:        movzbl (%rsi,%r8,1),%esi
+      36 :   70d1f16:        bt     %edi,%esi
+      10 :   70d1f19:        jae    70d1ee0 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x120>
+      20 :   70d1f1b:        cmpq   $0x0,0x30(%r12)
+      16 :   70d1f21:        je     70d1f60 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x1a0>
+       2 :   70d1f23:        cmp    0x50(%r12),%rdx
+       2 :   70d1f28:        jae    70d22c1 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x501>
+       0 :   70d1f2e:        mov    0x48(%r12),%rdi
+       3 :   70d1f33:        mov    0x38(%r12),%rsi
+       1 :   70d1f38:        add    %rdx,%rdi
+       0 :   70d1f3b:        mov    %rdi,%r8
+       0 :   70d1f3e:        shr    $0x3,%r8
+      23 :   70d1f42:        and    $0x7,%edi
+       0 :   70d1f45:        movzbl (%rsi,%r8,1),%r8d
+      25 :   70d1f4a:        xor    %esi,%esi
+       1 :   70d1f4c:        bt     %edi,%r8d
+       6 :   70d1f50:        setb   %sil
+      19 :   70d1f54:        jmp    70d1ee2 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x122>
+       0 :   70d1f56:        cs nopw 0x0(%rax,%rax,1)
+       0 :   70d1f60:        mov    $0x1,%esi
+       0 :   70d1f65:        jmp    70d1ee2 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x122>
+       0 :   70d1f6a:        xor    %ebp,%ebp
+       0 :   70d1f6c:        add    0x90(%r15),%rbp
+       0 :   70d1f73:        jb     70d230f <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x54f>
+       0 :   70d1f79:        mov    %r14,%rdi
+       0 :   70d1f7c:        call   *0x3d1ece6(%rip)        # adf0c68 <_DYNAMIC+0x1960>
+       0 :   70d1f82:        mov    %rax,%rbx
+       0 :   70d1f85:        lea    0x10(%r14),%rdi
+       0 :   70d1f89:        call   *0x3d1ecd9(%rip)        # adf0c68 <_DYNAMIC+0x1960>
+       0 :   70d1f8f:        cmp    %rax,%rbx
+       0 :   70d1f92:        jne    70d20f2 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x332>
+       0 :   70d1f98:        mov    %r14,%rdi
+       0 :   70d1f9b:        call   *0x3d1ecc7(%rip)        # adf0c68 <_DYNAMIC+0x1960>
+       0 :   70d1fa1:        test   %rax,%rax
+       0 :   70d1fa4:        je     70d2192 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x3d2>
+       0 :   70d1faa:        mov    %rax,%r13
+       0 :   70d1fad:        shr    $0x8,%r13
+       0 :   70d1fb1:        cmp    $0x1,%al
+       0 :   70d1fb3:        mov    %r15,0x90(%rsp)
+       0 :   70d1fbb:        movq   $0x0,0x80(%rsp)
+       0 :   70d1fc7:        movq   $0x0,0x98(%rsp)
+       0 :   70d1fd3:        sbb    $0xffffffffffffffff,%r13
+       0 :   70d1fd7:        jmp    70d2004 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x244>
+       0 :   70d1fd9:        nopl   0x0(%rax)
+       0 :   70d1fe0:        addq   $0xffffffffffffff00,0x98(%rsp)
+       0 :   70d1fec:        addq   $0x100,0x80(%rsp)
+       0 :   70d1ff8:        dec    %r13
+       0 :   70d1ffb:        test   %r13,%r13
+       0 :   70d1ffe:        je     70d2227 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x467>
+       0 :   70d2004:        mov    %r14,%rdi
+       0 :   70d2007:        call   *0x3d1ec5b(%rip)        # adf0c68 <_DYNAMIC+0x1960>
+       0 :   70d200d:        mov    %rax,%r12
+       0 :   70d2010:        add    0x98(%rsp),%r12
+       0 :   70d2018:        mov    $0x100,%eax
+       0 :   70d201d:        cmp    $0x100,%r12
+       0 :   70d2024:        cmovae %rax,%r12
+       0 :   70d2028:        mov    0x80(%rsp),%rsi
+       0 :   70d2030:        mov    %r14,%rdi
+       0 :   70d2033:        mov    %r12,%rdx
+       0 :   70d2036:        call   *0x3d1ec24(%rip)        # adf0c60 <_DYNAMIC+0x1958>
+       0 :   70d203c:        mov    %rax,0x50(%rsp)
+       0 :   70d2041:        mov    %rax,%r15
+       0 :   70d2044:        mov    %rdx,%rbx
+       0 :   70d2047:        mov    %r13,0xa0(%rsp)
+       0 :   70d204f:        mov    %rdx,0x58(%rsp)
+       0 :   70d2054:        mov    0x80(%rsp),%rsi
+       0 :   70d205c:        lea    0x10(%r14),%rdi
+       0 :   70d2060:        mov    %r12,%rdx
+       0 :   70d2063:        call   *0x3d1ebf7(%rip)        # adf0c60 <_DYNAMIC+0x1958>
+       0 :   70d2069:        mov    %r15,(%rsp)
+       0 :   70d206d:        mov    %rbx,0x8(%rsp)
+       0 :   70d2072:        mov    %rax,0x10(%rsp)
+       0 :   70d2077:        mov    %rdx,0x18(%rsp)
+       0 :   70d207c:        mov    0x90(%rsp),%rsi
+       0 :   70d2084:        mov    %rsp,%rdx
+       0 :   70d2087:        mov    $0x2,%ecx
+       0 :   70d208c:        lea    0x50(%rsp),%rdi
+       0 :   70d2091:        lea    -0x67b5630(%rip),%r8        # 91ca68 <anon.f6ed82eaff7957668af3005f9a12bddc.350.llvm.3495519817842118891+0x2e0>
+       0 :   70d2098:        mov    %r12,%r9
+       0 :   70d209b:        push   $0x1
+       0 :   70d209d:        push   $0x0
+       0 :   70d209f:        call   *0x3d32563(%rip)        # ae04608 <_DYNAMIC+0x15300>
+       0 :   70d20a5:        add    $0x10,%rsp
+       0 :   70d20a9:        mov    0x50(%rsp),%rbx
+       0 :   70d20ae:        cmp    $0xffffffffffffffff,%rbx
+       0 :   70d20b2:        jne    70d21af <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x3ef>
+       0 :   70d20b8:        mov    (%rsp),%rax
+       0 :   70d20bc:        lock decq (%rax)
+       2 :   70d20c0:        jne    70d20cb <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x30b>
+       0 :   70d20c2:        mov    %rsp,%rdi
+       0 :   70d20c5:        call   *0x3d1d4e5(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d20cb:        mov    0x10(%rsp),%rax
+       0 :   70d20d0:        lock decq (%rax)
+       0 :   70d20d4:        mov    0xa0(%rsp),%r13
+       0 :   70d20dc:        jne    70d1fe0 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x220>
+       0 :   70d20e2:        lea    0x10(%rsp),%rdi
+       0 :   70d20e7:        call   *0x3d1d4c3(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d20ed:        jmp    70d1fe0 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x220>
+       0 :   70d20f2:        call   *0x3d1d620(%rip)        # adef718 <_DYNAMIC+0x410>
+       0 :   70d20f8:        mov    $0x19,%edi
+       0 :   70d20fd:        mov    $0x1,%esi
+       0 :   70d2102:        mov    $0x19,%ebx
+       0 :   70d2107:        call   *0x3d1d613(%rip)        # adef720 <_DYNAMIC+0x418>
+       0 :   70d210d:        test   %rax,%rax
+       0 :   70d2110:        je     70d2349 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x589>
+       0 :   70d2116:        vmovdqu -0x67b4e3b(%rip),%xmm0        # 91d2e3 <anon.f6ed82eaff7957668af3005f9a12bddc.350.llvm.3495519817842118891+0xb5b>
+       0 :   70d211e:        vmovups -0x67b4e4c(%rip),%xmm1        # 91d2da <anon.f6ed82eaff7957668af3005f9a12bddc.350.llvm.3495519817842118891+0xb52>
+       0 :   70d2126:        mov    0x28(%rsp),%rdx
+       0 :   70d212b:        movq   $0xa,(%rdx)
+       0 :   70d2132:        movq   $0x19,0x8(%rdx)
+       0 :   70d213a:        mov    %rax,0x10(%rdx)
+       0 :   70d213e:        vmovdqu %xmm0,0x9(%rax)
+       0 :   70d2143:        vmovups %xmm1,(%rax)
+       0 :   70d2147:        mov    $0x18,%eax
+       0 :   70d214c:        mov    %rbx,(%rdx,%rax,1)
+       0 :   70d2150:        mov    $0x2,%eax
+       0 :   70d2155:        mov    %rdx,%rbx
+       0 :   70d2158:        mov    0x3d1d451(%rip),%r12        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d215f:        mov    $0x1,%r15d
+       0 :   70d2165:        sub    %rax,%r15
+       0 :   70d2168:        jmp    70d2181 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x3c1>
+       0 :   70d216a:        nopw   0x0(%rax,%rax,1)
+       0 :   70d2170:        add    $0x10,%r14
+       0 :   70d2174:        inc    %r15
+       0 :   70d2177:        cmp    $0x1,%r15
+       0 :   70d217b:        je     70d228e <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4ce>
+       0 :   70d2181:        mov    (%r14),%rax
+       0 :   70d2184:        lock decq (%rax)
+       0 :   70d2188:        jne    70d2170 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x3b0>
+       0 :   70d218a:        mov    %r14,%rdi
+       0 :   70d218d:        call   *%r12
+       0 :   70d2190:        jmp    70d2170 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x3b0>
+       0 :   70d2192:        mov    0x28(%rsp),%rbx
+       0 :   70d2197:        mov    %rbp,0x90(%r15)
+       0 :   70d219e:        mov    $0x2,%eax
+       0 :   70d21a3:        movq   $0xffffffffffffffff,(%rbx)
+       0 :   70d21aa:        jmp    70d2251 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x491>
+       0 :   70d21af:        vmovups 0x68(%rsp),%xmm0
+       0 :   70d21b5:        mov    (%rsp),%rax
+       0 :   70d21b9:        mov    0x58(%rsp),%r15
+       0 :   70d21be:        mov    0x60(%rsp),%r12
+       0 :   70d21c3:        vmovaps %xmm0,0x80(%rsp)
+       0 :   70d21cc:        lock decq (%rax)
+       0 :   70d21d0:        jne    70d21db <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x41b>
+       0 :   70d21d2:        mov    %rsp,%rdi
+       0 :   70d21d5:        call   *0x3d1d3d5(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d21db:        mov    0x10(%rsp),%rax
+       0 :   70d21e0:        lock decq (%rax)
+       0 :   70d21e4:        jne    70d21f1 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x431>
+       0 :   70d21e6:        lea    0x10(%rsp),%rdi
+       0 :   70d21eb:        call   *0x3d1d3bf(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d21f1:        vmovaps 0x80(%rsp),%xmm0
+       0 :   70d21fa:        mov    0x28(%rsp),%rcx
+       0 :   70d21ff:        mov    0x38(%rsp),%r14
+       0 :   70d2204:        mov    0x40(%rsp),%rax
+       0 :   70d2209:        mov    %rbx,(%rcx)
+       0 :   70d220c:        mov    %r15,0x8(%rcx)
+       0 :   70d2210:        mov    %r12,0x10(%rcx)
+       0 :   70d2214:        mov    %rcx,%rbx
+       0 :   70d2217:        vmovups %xmm0,0x18(%rcx)
+       0 :   70d221c:        test   %rax,%rax
+       0 :   70d221f:        jne    70d2158 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x398>
+       0 :   70d2225:        jmp    70d228e <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4ce>
+       0 :   70d2227:        mov    0x90(%rsp),%rcx
+       0 :   70d222f:        mov    0x28(%rsp),%rbx
+       0 :   70d2234:        mov    0x38(%rsp),%r14
+       0 :   70d2239:        mov    0x40(%rsp),%rax
+       0 :   70d223e:        mov    %rbp,0x90(%rcx)
+       0 :   70d2245:        movq   $0xffffffffffffffff,(%rbx)
+       0 :   70d224c:        test   %rax,%rax
+       0 :   70d224f:        je     70d228e <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4ce>
+       0 :   70d2251:        mov    0x3d1d358(%rip),%r12        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d2258:        mov    $0x1,%r15d
+       0 :   70d225e:        sub    %rax,%r15
+       0 :   70d2261:        jmp    70d227d <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4bd>
+       0 :   70d2263:        data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+       0 :   70d2270:        add    $0x10,%r14
+       0 :   70d2274:        inc    %r15
+       0 :   70d2277:        cmp    $0x1,%r15
+       0 :   70d227b:        je     70d228e <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4ce>
+       0 :   70d227d:        mov    (%r14),%rax
+       0 :   70d2280:        lock decq (%rax)
+       0 :   70d2284:        jne    70d2270 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4b0>
+       0 :   70d2286:        mov    %r14,%rdi
+       0 :   70d2289:        call   *%r12
+       0 :   70d228c:        jmp    70d2270 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4b0>
+       0 :   70d228e:        mov    0x30(%rsp),%rsi
+       0 :   70d2293:        test   %rsi,%rsi
+       0 :   70d2296:        je     70d22ac <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x4ec>
+       0 :   70d2298:        mov    0x38(%rsp),%rdi
+       0 :   70d229d:        shl    $0x4,%rsi
+       0 :   70d22a1:        mov    $0x8,%edx
+       0 :   70d22a6:        call   *0x3d1d2a4(%rip)        # adef550 <_DYNAMIC+0x248>
+       0 :   70d22ac:        mov    %rbx,%rax
+       0 :   70d22af:        add    $0xa8,%rsp
+       0 :   70d22b6:        pop    %rbx
+       0 :   70d22b7:        pop    %r12
+       0 :   70d22b9:        pop    %r13
+       0 :   70d22bb:        pop    %r14
+       0 :   70d22bd:        pop    %r15
+       0 :   70d22bf:        pop    %rbp
+       0 :   70d22c0:        ret
+       0 :   70d22c1:        lea    -0x67c2550(%rip),%rdi        # 90fd78 <anon.99e000bb72f9163adf67013150e79925.189.llvm.17704879911038033361>
+       0 :   70d22c8:        lea    0x3a44309(%rip),%rdx        # ab165d8 <anon.99e000bb72f9163adf67013150e79925.191.llvm.17704879911038033361>
+       0 :   70d22cf:        mov    $0x24,%esi
+       0 :   70d22d4:        call   *0x3d1d8f6(%rip)        # adefbd0 <_DYNAMIC+0x8c8>
+       0 :   70d22da:        jmp    70d2359 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x599>
+       0 :   70d22dc:        lea    -0x67b45c2(%rip),%rdi        # 91dd21 <anon.f6ed82eaff7957668af3005f9a12bddc.718.llvm.3495519817842118891+0x285>
+       0 :   70d22e3:        lea    0x3a5ba96(%rip),%rdx        # ab2dd80 <anon.f6ed82eaff7957668af3005f9a12bddc.555.llvm.3495519817842118891+0xb38>
+       0 :   70d22ea:        mov    $0x9b,%esi
+       0 :   70d22ef:        call   *0x3d1d30b(%rip)        # adef600 <_DYNAMIC+0x2f8>
+       0 :   70d22f5:        jmp    70d2359 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x599>
+       0 :   70d22f7:        lea    0x3a5ba52(%rip),%rdi        # ab2dd50 <anon.f6ed82eaff7957668af3005f9a12bddc.555.llvm.3495519817842118891+0xb08>
+       0 :   70d22fe:        jmp    70d2307 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x547>
+       0 :   70d2300:        lea    0x3a5ba61(%rip),%rdi        # ab2dd68 <anon.f6ed82eaff7957668af3005f9a12bddc.555.llvm.3495519817842118891+0xb20>
+       0 :   70d2307:        call   *0x3d1d4fb(%rip)        # adef808 <_DYNAMIC+0x500>
+       0 :   70d230d:        jmp    70d2359 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x599>
+       0 :   70d230f:        lea    0x50(%rsp),%rdi
+       0 :   70d2314:        call   70a4970 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::merge_batch::{closure#3}::{closure#0}>
+       0 :   70d2319:        vmovdqu 0x60(%rsp),%xmm0
+       0 :   70d231f:        mov    0x28(%rsp),%rdx
+       0 :   70d2324:        mov    0x70(%rsp),%rcx
+       0 :   70d2329:        mov    0x50(%rsp),%rax
+       0 :   70d232e:        mov    0x58(%rsp),%rbx
+       0 :   70d2333:        mov    %rcx,0x20(%rdx)
+       0 :   70d2337:        vmovdqu %xmm0,0x10(%rdx)
+       0 :   70d233c:        mov    %rax,(%rdx)
+       0 :   70d233f:        mov    $0x8,%eax
+       0 :   70d2344:        jmp    70d214c <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x38c>
+       0 :   70d2349:        mov    $0x1,%edi
+       0 :   70d234e:        mov    $0x19,%esi
+       0 :   70d2353:        call   *0x3d1d3cf(%rip)        # adef728 <_DYNAMIC+0x420>
+       0 :   70d2359:        ud2
+       0 :   70d235b:        mov    0x10(%rsp),%rcx
+       0 :   70d2360:        mov    %rax,%rbx
+       0 :   70d2363:        lock decq (%rcx)
+       0 :   70d2367:        jne    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d236d:        lea    0x10(%rsp),%rdi
+       0 :   70d2372:        call   *0x3d1d238(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d2378:        jmp    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d237d:        call   *0x3d1d1d5(%rip)        # adef558 <_DYNAMIC+0x250>
+       0 :   70d2383:        mov    0x10(%rsp),%rcx
+       0 :   70d2388:        mov    %rax,%rbx
+       0 :   70d238b:        lock decq (%rcx)
+       0 :   70d238f:        jne    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d2395:        lea    0x10(%rsp),%rdi
+       0 :   70d239a:        call   *0x3d1d210(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d23a0:        jmp    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d23a5:        call   *0x3d1d1ad(%rip)        # adef558 <_DYNAMIC+0x250>
+       0 :   70d23ab:        mov    %rax,%rbx
+       0 :   70d23ae:        test   %r15,%r15
+       0 :   70d23b1:        je     70d2411 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x651>
+       0 :   70d23b3:        add    $0x10,%r14
+       0 :   70d23b7:        neg    %r15
+       0 :   70d23ba:        jmp    70d23c9 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x609>
+       0 :   70d23bc:        nopl   0x0(%rax)
+       0 :   70d23c0:        add    $0x10,%r14
+       0 :   70d23c4:        dec    %r15
+       0 :   70d23c7:        je     70d2411 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x651>
+       0 :   70d23c9:        mov    (%r14),%rax
+       0 :   70d23cc:        lock decq (%rax)
+       0 :   70d23d0:        jne    70d23c0 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x600>
+       0 :   70d23d2:        mov    %r14,%rdi
+       0 :   70d23d5:        call   *%r12
+       0 :   70d23d8:        jmp    70d23c0 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x600>
+       0 :   70d23da:        call   *0x3d1d178(%rip)        # adef558 <_DYNAMIC+0x250>
+       0 :   70d23e0:        mov    %rax,%rbx
+       0 :   70d23e3:        mov    %rsp,%rdi
+       0 :   70d23e6:        call   7095470 <core::ptr::drop_glue::<[alloc::sync::Arc<dyn arrow_array::array::Array>; 2]>>
+       0 :   70d23eb:        jmp    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d23ed:        lock decq (%r15)
+       0 :   70d23f1:        mov    %rax,%rbx
+       0 :   70d23f4:        jne    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d23f6:        lea    0x50(%rsp),%rdi
+       0 :   70d23fb:        call   *0x3d1d1af(%rip)        # adef5b0 <_DYNAMIC+0x2a8>
+       0 :   70d2401:        jmp    70d2467 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a7>
+       0 :   70d2403:        call   *0x3d1d14f(%rip)        # adef558 <_DYNAMIC+0x250>
+       0 :   70d2409:        mov    %rax,%rbx
+       0 :   70d240c:        test   %r15,%r15
+       0 :   70d240f:        jne    70d2437 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x677>
+       0 :   70d2411:        mov    0x30(%rsp),%rsi
+       0 :   70d2416:        test   %rsi,%rsi
+       0 :   70d2419:        je     70d2471 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6b1>
+       0 :   70d241b:        mov    0x38(%rsp),%rdi
+       0 :   70d2420:        shl    $0x4,%rsi
+       0 :   70d2424:        mov    $0x8,%edx
+       0 :   70d2429:        call   *0x3d1d121(%rip)        # adef550 <_DYNAMIC+0x248>
+       0 :   70d242f:        mov    %rbx,%rdi
+       0 :   70d2432:        call   a9aad30 <_Unwind_Resume@plt>
+       0 :   70d2437:        add    $0x10,%r14
+       0 :   70d243b:        neg    %r15
+       0 :   70d243e:        jmp    70d2449 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x689>
+       0 :   70d2440:        add    $0x10,%r14
+       0 :   70d2444:        dec    %r15
+       0 :   70d2447:        je     70d2411 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x651>
+       0 :   70d2449:        mov    (%r14),%rax
+       0 :   70d244c:        lock decq (%rax)
+       0 :   70d2450:        jne    70d2440 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x680>
+       0 :   70d2452:        mov    %r14,%rdi
+       0 :   70d2455:        call   *%r12
+       0 :   70d2458:        jmp    70d2440 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x680>
+       0 :   70d245a:        call   *0x3d1d0f8(%rip)        # adef558 <_DYNAMIC+0x250>
+       0 :   70d2460:        jmp    70d2464 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a4>
+       0 :   70d2462:        jmp    70d2464 <<vail_execution::advanced_numeric_aggregates::CorrAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch+0x6a4>
+       0 :   70d2464:        mov    %rax,%rbx
+       0 :   70d2467:        lea    0x30(%rsp),%rdi
+       0 :   70d246c:        call   7095ae0 <_RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueINtNtCscHgRw1M2fX5_5alloc3vec3VecINtNtBG_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEECsdP38Dg95o5n_14vail_execution.llvm.3495519817842118891>
+       0 :   70d2471:        mov    %rbx,%rdi
+       0 :   70d2474:        call   a9aad30 <_Unwind_Resume@plt>
+       0 :   70d2479:        call   *0x3d1d0d9(%rip)        # adef558 <_DYNAMIC+0x250>

@@ -1339,9 +1339,20 @@ impl Accumulator for CorrAccumulator {
         };
         let x = x.as_any().downcast_ref::<Float64Array>().unwrap();
         let y = y.as_any().downcast_ref::<Float64Array>().unwrap();
-        let pair_count = (0..x.len())
-            .filter(|&row| x.is_valid(row) && y.is_valid(row))
-            .count() as u64;
+        // corr_pair preserves the equal-length StructArray children and folds
+        // parent validity into x. Select the batch validity representation once;
+        // Arrow handles independent bit offsets and zero-pads the final word.
+        let pair_count = match (x.nulls(), y.nulls()) {
+            (None, None) => x.len(),
+            (Some(nulls), None) | (None, Some(nulls)) => x.len() - nulls.null_count(),
+            (Some(left), Some(right)) => left
+                .inner()
+                .bit_chunks()
+                .iter_padded()
+                .zip(right.inner().bit_chunks().iter_padded())
+                .map(|(left, right)| (left & right).count_ones() as usize)
+                .sum(),
+        } as u64;
         let next_count = self
             .pair_count
             .checked_add(pair_count)

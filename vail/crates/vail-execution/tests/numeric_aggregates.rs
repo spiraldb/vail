@@ -426,3 +426,98 @@ async fn downsample_ignores_hidden_finite_points_under_null_records() {
         .unwrap();
     assert_eq!(x.values(), &[0., 1.]);
 }
+
+fn correlation_state_count(input: ArrayRef, expected: u64) -> u64 {
+    let schema = Schema::new(vec![Field::new("packed", input.data_type().clone(), true)]);
+    let exprs: Vec<Arc<dyn PhysicalExpr>> = vec![Arc::new(Column::new("packed", 0))];
+    let fields = [Arc::new(schema.field(0).clone())];
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "corr",
+        input.data_type(),
+        &serde_json::json!({}),
+    )
+    .unwrap()
+    .unwrap();
+    let args = AccumulatorArgs {
+        return_field: Arc::new(Field::new("corr", DataType::Float64, true)),
+        schema: &schema,
+        ignore_nulls: true,
+        order_bys: &[],
+        is_reversed: false,
+        name: "corr",
+        is_distinct: false,
+        exprs: &exprs,
+        expr_fields: &fields,
+    };
+    let mut accumulator = udf.accumulator(args.clone()).unwrap();
+    accumulator.update_batch(&[input.clone()]).unwrap();
+    let state = accumulator.state().unwrap();
+    assert_eq!(state.len(), 6);
+    let ScalarValue::UInt64(Some(count)) = state[0] else {
+        panic!("expected public UInt64 count state")
+    };
+    if expected != 0 {
+        for (seed, succeeds) in [
+            (u64::MAX - expected, true),
+            (u64::MAX - expected + 1, false),
+        ] {
+            let mut near_limit = udf.accumulator(args.clone()).unwrap();
+            let mut state: Vec<ArrayRef> =
+                vec![Arc::new(arrow_array::UInt64Array::from(vec![seed]))];
+            state.extend((0..5).map(|_| Arc::new(Float64Array::from(vec![0.0])) as ArrayRef));
+            near_limit.merge_batch(&state).unwrap();
+            assert_eq!(near_limit.update_batch(&[input.clone()]).is_ok(), succeeds);
+        }
+    }
+    count
+}
+
+#[tokio::test]
+async fn correlation_counts_offset_validities_and_parent_masks() {
+    // Independent child offsets exercise Arrow's shifted bitmap words and tail.
+    for &len in &[0usize, 1, 63, 64, 65, 129] {
+        for &(x_offset, y_offset) in &[(0, 0), (1, 7), (7, 63), (63, 64), (64, 65)] {
+            for masks in 0..8 {
+                let x = Float64Array::from(
+                    (0..len + x_offset)
+                        .map(|i| {
+                            (masks & 1 == 0 || i % 3 != 0).then_some((i - i.min(x_offset)) as f64)
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .slice(x_offset, len);
+                let y = Float64Array::from(
+                    (0..len + y_offset)
+                        .map(|i| {
+                            (masks & 2 == 0 || i % 5 != 0)
+                                .then_some(2.0 * (i - i.min(y_offset)) as f64 + 1.0)
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .slice(y_offset, len);
+                let parent = (0..len)
+                    .map(|i| masks & 4 == 0 || i % 7 != 0)
+                    .collect::<Vec<_>>();
+                let valid = (0..len)
+                    .filter(|&i| {
+                        parent[i]
+                            && (masks & 1 == 0 || (i + x_offset) % 3 != 0)
+                            && (masks & 2 == 0 || (i + y_offset) % 5 != 0)
+                    })
+                    .count();
+                let input = packed(&["x", "y"], vec![Arc::new(x), Arc::new(y)], parent);
+                assert_eq!(
+                    correlation_state_count(input.clone(), valid as u64),
+                    valid as u64
+                );
+                let result = aggregate("corr", input, serde_json::json!({})).await;
+                let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+                match valid {
+                    0 => assert!(result.is_null(0)),
+                    1 => assert!(result.value(0).is_nan()),
+                    _ => assert!((result.value(0) - 1.0).abs() < 1e-12),
+                }
+            }
+        }
+    }
+}
