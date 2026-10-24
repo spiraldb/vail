@@ -170,16 +170,10 @@ impl TableProvider for VailSourceProvider {
                         internal.push(index);
                     }
                 }
-                // Inexact filters still execute above the provider. Keep
-                // their referenced fields (and key fields) available until
-                // that residual predicate has run, then trim to `requested`.
-                for name in self.table.keys() {
-                    if let Ok(index) = self.schema.index_of(name)
-                        && !internal.contains(&index)
-                    {
-                        internal.push(index);
-                    }
-                }
+                // Inexact filters still execute above the provider. Retain
+                // their referenced fields, then trim to `requested`. Available
+                // source ordering is not a demand to read unused key fields;
+                // projected source properties omit unavailable orderings.
                 for filter in filters {
                     for column in filter.column_refs() {
                         if let Ok(index) = self.schema.index_of(&column.name)
