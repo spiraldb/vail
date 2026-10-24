@@ -8,7 +8,8 @@ def test_native_matrix_totals_keep_parent_validity_with_missing_selected_childre
         x=hl.or_missing(m.col_idx % 5 != 1, hl.int32(m.row_idx * 130 + m.col_idx)),
         y=hl.or_missing(m.col_idx % 5 != 1, hl.int32(2)),
         unused=hl.range(12),
-    ).filter_entries(m.col_idx % 3 != 0)
+    )
+    m = m.filter_entries(m.col_idx % 3 != 0)
     path = str(tmp_path / 'matrix.mt')
     m.write(path)
     m = hl.read_matrix_table(path)
@@ -50,3 +51,15 @@ def test_nested_array_shape_and_filtered_inputs_keep_semantics(tmp_path):
     t = t.filter(t.g == 1)
     assert t.aggregate(hl.agg.sum(hl.len(t.xs))) == 260
     assert t.aggregate(hl.agg.sum(hl.sum(t.xs.map(lambda e:e.y)))) == 4*sum(range(130))
+
+
+def test_wide_native_aggregate_projection_keeps_all_selected_results(tmp_path):
+    t = hl.utils.range_table(2, 1)
+    t = t.annotate(xs=hl.range(2).map(lambda i: hl.struct(**{
+        f'f{k}': i+k for k in range(64)})))
+    path = str(tmp_path / 'wide.ht')
+    t.write(path)
+    t = hl.read_table(path)
+    query = hl.struct(**{f's{k}':hl.agg.sum(hl.sum(t.xs.map(lambda e:e[f'f{k}'])))
+                        for k in range(32)})
+    assert t.aggregate(query) == hl.Struct(**{f's{k}':4*k+2 for k in range(32)})
