@@ -5,14 +5,15 @@ use arrow_buffer::{BooleanBuffer, NullBuffer};
 use arrow_schema::{DataType, Field, FieldRef};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{
-    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature,
-    function::{AccumulatorArgs, StateFieldsArgs},
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, Expr, GroupsAccumulator, Signature,
+    function::{AccumulatorArgs, AggregateFunctionSimplification, StateFieldsArgs},
 };
 use std::sync::Arc;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct NativeStddevPop {
     input: DataType,
+    finite_input: bool,
     signature: Signature,
 }
 
@@ -103,11 +104,41 @@ impl AggregateUDFImpl for NativeStddevPop {
         Ok(fields)
     }
 
-    fn accumulator(&self, args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
-        Ok(Box::new(NativeStddevAccumulator {
-            inner: native().inner().accumulator(args)?,
-            nonfinite_count: 0,
+    fn simplify(&self) -> Option<AggregateFunctionSimplification> {
+        if self.finite_input {
+            return None;
+        }
+        let mut finite = self.clone();
+        finite.finite_input = true;
+        Some(Box::new(move |mut aggregate, info| {
+            // Keep the cast visible and shared with sibling aggregates. Only
+            // its integer source proves finite values; Float32/64 do not.
+            if let [Expr::Cast(cast)] = aggregate.params.args.as_slice()
+                && cast.data_type == DataType::Float64
+                && matches!(
+                    info.get_data_type(&cast.expr)?,
+                    DataType::Int32 | DataType::Int64
+                )
+            {
+                aggregate.func = Arc::new(AggregateUDF::from(finite.clone()));
+            }
+            Ok(Expr::AggregateFunction(aggregate))
         }))
+    }
+
+    fn accumulator(&self, args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+        let inner = native().inner().accumulator(args)?;
+        Ok(if self.finite_input {
+            Box::new(NativeStddevAccumulator::<true> {
+                inner,
+                nonfinite_count: 0,
+            })
+        } else {
+            Box::new(NativeStddevAccumulator::<false> {
+                inner,
+                nonfinite_count: 0,
+            })
+        })
     }
 
     fn groups_accumulator_supported(&self, args: AccumulatorArgs) -> bool {
@@ -118,22 +149,33 @@ impl AggregateUDFImpl for NativeStddevPop {
         &self,
         args: AccumulatorArgs,
     ) -> Result<Box<dyn GroupsAccumulator>> {
-        Ok(Box::new(NativeStddevGroups {
-            inner: native().create_groups_accumulator(args)?,
-            nonfinite: Vec::new(),
-        }))
+        let inner = native().create_groups_accumulator(args)?;
+        Ok(if self.finite_input {
+            Box::new(NativeStddevGroups::<true> {
+                inner,
+                nonfinite: Vec::new(),
+            })
+        } else {
+            Box::new(NativeStddevGroups::<false> {
+                inner,
+                nonfinite: Vec::new(),
+            })
+        })
     }
 }
 
 #[derive(Debug)]
-struct NativeStddevAccumulator {
+struct NativeStddevAccumulator<const FINITE: bool> {
     inner: Box<dyn Accumulator>,
     nonfinite_count: u64,
 }
 
-impl Accumulator for NativeStddevAccumulator {
+impl<const FINITE: bool> Accumulator for NativeStddevAccumulator<FINITE> {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
         let values = cast_values(values)?;
+        if FINITE {
+            return self.inner.update_batch(&values);
+        }
         let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
         let (nonfinite_count, has_nonfinite) = nonfinite_count(input)?;
         self.nonfinite_count = self
@@ -183,6 +225,9 @@ impl Accumulator for NativeStddevAccumulator {
 
     fn retract_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
         let values = cast_values(values)?;
+        if FINITE {
+            return self.inner.retract_batch(&values);
+        }
         let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
         let (nonfinite, has_nonfinite) = nonfinite_count(input)?;
         self.inner
@@ -196,12 +241,12 @@ impl Accumulator for NativeStddevAccumulator {
     }
 }
 
-struct NativeStddevGroups {
+struct NativeStddevGroups<const FINITE: bool> {
     inner: Box<dyn GroupsAccumulator>,
     nonfinite: Vec<u64>,
 }
 
-impl GroupsAccumulator for NativeStddevGroups {
+impl<const FINITE: bool> GroupsAccumulator for NativeStddevGroups<FINITE> {
     fn update_batch(
         &mut self,
         values: &[ArrayRef],
@@ -222,6 +267,11 @@ impl GroupsAccumulator for NativeStddevGroups {
             ));
         }
         self.nonfinite.resize(total_groups, 0);
+        if FINITE {
+            return self
+                .inner
+                .update_batch(&casted, groups, filter, total_groups);
+        }
         let mut has_nonfinite = false;
         for (row, &group) in groups.iter().enumerate() {
             if input.is_valid(row) && !input.value(row).is_finite() {
@@ -308,6 +358,12 @@ impl GroupsAccumulator for NativeStddevGroups {
     ) -> Result<Vec<ArrayRef>> {
         let casted = cast_values(values)?;
         let input = casted[0].as_any().downcast_ref::<Float64Array>().unwrap();
+        if FINITE {
+            let mut states = self.inner.convert_to_state(&casted, filter)?;
+            // The public partial-state protocol retains its zero flag column.
+            states.push(Arc::new(UInt64Array::from(vec![0; input.len()])));
+            return Ok(states);
+        }
         let mut has_nonfinite = false;
         let nonfinite = input
             .iter()
@@ -330,7 +386,7 @@ impl GroupsAccumulator for NativeStddevGroups {
     }
 }
 
-impl NativeStddevGroups {
+impl<const FINITE: bool> NativeStddevGroups<FINITE> {
     fn emit_nonfinite(&mut self, count: usize, emit_to: EmitTo) -> Result<Vec<u64>> {
         if count > self.nonfinite.len() {
             return Err(DataFusionError::Execution(
@@ -358,6 +414,7 @@ pub(crate) fn udf(input: &DataType) -> Result<Arc<AggregateUDF>> {
     }
     Ok(Arc::new(AggregateUDF::from(NativeStddevPop {
         input: input.clone(),
+        finite_input: matches!(input, DataType::Int32 | DataType::Int64),
         signature: Signature::exact(vec![input.clone()], datafusion_expr::Volatility::Immutable),
     })))
 }
