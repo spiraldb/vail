@@ -1,0 +1,14 @@
+--- a/src/extract_leaf_expressions.rs
++++ b/src/extract_leaf_expressions.rs
+@@ -1039,6 +1039,11 @@
+             }
+             Ok(Some(merged_plan))
+         }
++        // An unmatched projection changes column bindings, even when an output
++        // name equals an input name. The generic router below proves ownership
++        // only by name, and must not move output-space expressions into the old
++        // input binding. The fully captured merge above substitutes bindings.
++        LogicalPlan::Projection(_) => Ok(None),
+         // Generic: handles Filter/Sort/Limit (via recursion),
+         // SubqueryAlias (with qualifier remap in try_push_into_inputs),
+         // Join, and anything else.

@@ -1,0 +1,15 @@
+
+running 1 test
+
+thread 'same_name_struct_schema_replacement_preserves_new_field' (23848282) panicked at crates/vail-table/tests/struct_field_projection_contract.rs:77:49:
+called `Result::unwrap()` on an `Err` value: Context("Optimizer rule 'push_down_leaf_projections' failed", Plan("Field added not found in struct"))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test same_name_struct_schema_replacement_preserves_new_field ... FAILED
+
+failures:
+
+failures:
+    same_name_struct_schema_replacement_preserves_new_field
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

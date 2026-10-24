@@ -145,3 +145,17 @@ This keeps child bounds/type/nullability checks without rescanning unchanged
 offsets. Nonnullable logical-child representation mismatches keep the original
 ArrayData construction path; FixedSizeList, Map and Struct handling is unchanged.
 No unsafe construction or schema-evolution bypass is introduced.
+
+# DataFusion leaf projection binding boundary
+
+`datafusion-optimizer/` is the published Apache DataFusion55.0.0 crate
+(Apache-2.0; LICENSE/NOTICE retained), archive SHA256
+`854445d9f7847e1e46089cf61b8d341a64382f14484e912c83a0f23b31216896`.
+`datafusion-optimizer-vail.patch` adds an explicit unmatched-Projection boundary
+to leaf extraction pushdown. The generic router proves ownership by column
+name, which does not prove binding identity when a projection replaces a same
+named Struct with a different type or value. Fully captured projection merges
+continue through the existing binding-substitution path; ordinary extraction
+and recovery and other optimizer rules remain enabled. Public DF DataFrame
+contract tests cover replacement, extension, distinct aliases and unchanged
+Struct type with changed values. No registry source is edited.

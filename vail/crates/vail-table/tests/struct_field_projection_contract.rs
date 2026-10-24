@@ -8,7 +8,7 @@ use std::sync::Arc;
 async fn same_name_struct_schema_replacement_preserves_new_field() {
     let mut failures = Vec::new();
     for nested in [false, true] {
-        for mode in ["replace", "extend", "distinct"] {
+        for mode in ["replace", "extend", "distinct", "same_type"] {
             let batch = RecordBatch::try_new(
                 Arc::new(Schema::new(vec![Field::new("idx", DataType::Int32, false)])),
                 vec![Arc::new(Int32Array::from(vec![0, 1]))],
@@ -20,6 +20,11 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
             };
             let get = |value, name: &str| {
                 datafusion_functions::core::get_field().call(vec![value, lit(name.to_owned())])
+            };
+            let selected = if mode == "same_type" {
+                "original"
+            } else {
+                "added"
             };
             let frame = if nested {
                 let frame = frame
@@ -37,14 +42,14 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
                         col("idx") + lit(1),
                     ])
                 } else {
-                    structure("added", col("idx") + lit(1))
+                    structure(selected, col("idx") + lit(1))
                 };
                 let target = if mode == "distinct" { "fresh" } else { "row" };
                 frame
                     .select(vec![structure("record", replacement).alias(target)])
                     .unwrap()
                     .select(vec![
-                        get(get(col(target), "record"), "added").alias("value"),
+                        get(get(col(target), "record"), selected).alias("value"),
                     ])
                     .unwrap()
             } else {
@@ -62,7 +67,7 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
                         col("idx") + lit(1),
                     ])
                 } else {
-                    structure("added", col("idx") + lit(1))
+                    structure(selected, col("idx") + lit(1))
                 };
                 let target = if mode == "distinct" {
                     "fresh"
@@ -72,7 +77,7 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
                 frame
                     .select(vec![replacement.alias(target)])
                     .unwrap()
-                    .select(vec![get(col(target), "added").alias("value")])
+                    .select(vec![get(col(target), selected).alias("value")])
                     .unwrap()
             };
             let batches = match frame.collect().await {
@@ -107,4 +112,50 @@ async fn same_name_struct_schema_replacement_preserves_new_field() {
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[tokio::test]
+async fn struct_leaf_values_survive_filter_sort_and_limit() {
+    let batch = RecordBatch::try_new(
+        Arc::new(Schema::new(vec![Field::new("idx", DataType::Int32, false)])),
+        vec![Arc::new(Int32Array::from(vec![0, 1, 2, 3]))],
+    )
+    .unwrap();
+    let frame = SessionContext::new()
+        .read_batch(batch)
+        .unwrap()
+        .select(vec![
+            col("idx"),
+            datafusion_functions::core::named_struct()
+                .call(vec![lit("value"), col("idx") + lit(10)])
+                .alias("record"),
+        ])
+        .unwrap()
+        .filter(col("idx").gt(lit(0)))
+        .unwrap()
+        .sort(vec![col("idx").sort(false, false)])
+        .unwrap()
+        .limit(0, Some(2))
+        .unwrap()
+        .select(vec![
+            datafusion_functions::core::get_field()
+                .call(vec![col("record"), lit("value")])
+                .alias("value"),
+        ])
+        .unwrap();
+    let batches = frame.collect().await.unwrap();
+    let values: Vec<_> = batches
+        .iter()
+        .flat_map(|batch| {
+            batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .iter()
+                .copied()
+        })
+        .collect();
+    assert_eq!(values, vec![13, 12]);
 }
