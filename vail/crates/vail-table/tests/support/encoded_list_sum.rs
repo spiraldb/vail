@@ -1072,7 +1072,8 @@ fn element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types()
 fn element_validity_serialization_retains_exact_original_schema_and_no_capture() -> VortexResult<()>
 {
     use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
-    use vortex::expr::{ExprSerializeProtoExt, deserialize_expr_proto, root};
+    use vortex::expr::proto::{ExprSerializeProtoExt, deserialize_expr_proto};
+    use vortex::expr::root;
     let input = element_validity_fixture()?;
     let expression =
         list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
