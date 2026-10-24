@@ -1,0 +1,59 @@
+{
+  "seed": 45020261024,
+  "blocks": [
+    {
+      "kind": "AB",
+      "order": "BA"
+    },
+    {
+      "kind": "AB",
+      "order": "AB"
+    },
+    {
+      "kind": "AB",
+      "order": "BA"
+    },
+    {
+      "kind": "AB",
+      "order": "BA"
+    },
+    {
+      "kind": "AA",
+      "order": "BA"
+    },
+    {
+      "kind": "AB",
+      "order": "AB"
+    },
+    {
+      "kind": "AA",
+      "order": "BA"
+    },
+    {
+      "kind": "AA",
+      "order": "AB"
+    },
+    {
+      "kind": "AB",
+      "order": "BA"
+    },
+    {
+      "kind": "AB",
+      "order": "AB"
+    },
+    {
+      "kind": "AA",
+      "order": "AB"
+    },
+    {
+      "kind": "AB",
+      "order": "AB"
+    }
+  ],
+  "iterations": 20,
+  "discard_warmups": 4,
+  "primary": "arithmetic mean of16steady queries/process; paired candidate/baseline ratios",
+  "secondary": "median latency/process; CPU seconds; faults/RSS",
+  "controls": "AA nominal A/B both use the identical baseline env/native",
+  "no_further_trials": true
+}
