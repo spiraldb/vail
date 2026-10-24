@@ -7339,15 +7339,16 @@ mod tests {
         use arrow_array::{UInt16Array, UInt8Array};
         use arrow_buffer::NullBuffer;
         let length = ploidy.len();
-        let DataType::Struct(fields) = crate::calls::storage_type() else { unreachable!() };
-        let calls = StructArray::new(fields, vec![
+        let call_type = Type::Primitive(PrimitiveType::Call).to_arrow().unwrap();
+        let DataType::Struct(fields) = &call_type else { unreachable!() };
+        let calls = StructArray::new(fields.clone(), vec![
             Arc::new(UInt16Array::from_iter_values((0..length).map(|i| (i * 97) as u16))),
             Arc::new(UInt16Array::from_iter_values((0..length).map(|i| u16::MAX - i as u16))),
             Arc::new(UInt8Array::from(ploidy)),
             Arc::new(BooleanArray::from(vec![false; length])),
         ], Some(NullBuffer::from(valid)));
         RecordBatch::try_new(Arc::new(Schema::new(vec![
-            Field::new("call", crate::calls::storage_type(), true),
+            Field::new("call", call_type, true),
             Field::new("index", DataType::Int32, true),
         ])), vec![Arc::new(calls), Arc::new(Int32Array::from(indices))]).unwrap()
     }
