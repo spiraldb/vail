@@ -10,6 +10,38 @@ use vortex::buffer::buffer;
 use vortex::dtype::{DType, Nullability::Nullable, PType};
 use vortex::error::VortexResult;
 use vortex::{VortexSessionDefault, array::VortexSessionExecute, session::VortexSession};
+
+#[test]
+fn grouped_sum_with_encoded_logical_mask_matches_nullable_values() -> VortexResult<()> {
+    use vortex::array::arrays::{BoolArray, DictArray};
+    use vortex::array::builtins::ArrayBuiltins;
+    let values = DictArray::try_new(
+        buffer![0u8, 1, 2, 0].into_array(),
+        PrimitiveArray::from_option_iter([Some(i32::MAX), Some(7), None]).into_array(),
+    )?.into_array();
+    let logical_mask = DictArray::try_new(
+        buffer![0u8, 1, 0, 0].into_array(),
+        BoolArray::from_iter([true, false]).into_array(),
+    )?.into_array();
+    let groups = ListViewArray::try_new(
+        values.mask(logical_mask)?,
+        buffer![0u32, 2, 1].into_array(),
+        buffer![2u32, 2, 1].into_array(),
+        Validity::NonNullable,
+    )?.into_array();
+    let mut ctx = VortexSession::default().create_execution_ctx();
+    let mut accumulator = GroupedAccumulator::try_new(
+        SumV2, NumericalAggregateOpts::default(), DType::Primitive(PType::I32, Nullable),
+    )?;
+    accumulator.accumulate_list(&groups, &mut ctx)?;
+    let result = accumulator.finish()?;
+    let expected = PrimitiveArray::from_option_iter([
+        Some(i64::from(i32::MAX)), Some(i64::from(i32::MAX)), None,
+    ]).into_array();
+    assert_arrays_eq(&result, &expected, &mut ctx);
+    Ok(())
+}
+
 #[test]
 fn grouped_dictionary_preserves_code_value_and_list_nulls() -> VortexResult<()> {
     use vortex::array::arrays::DictArray;
