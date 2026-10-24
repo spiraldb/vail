@@ -1,0 +1,9 @@
+# H089 on Boolean main: exact combined gate
+
+Frozen assembly2c1d47a8a7fd15990a64ddc3f18ff71770a403c7 merges approved H0897745db2f onto Boolean main8c7a0cf181610f43be1379509de9bd2c0436e346. No conflicts/manual source edits. All four H089 production/test files match approved7745db and Boolean direct.rs/test match main exactly (composition.json). Previous isolated performance/resource evidence remains in ../20261024-composite-entry-totals; no new combined timing claim.
+
+Normal cached kache/maturin release build in stable source/target:16jobs, incremental0, nativeCPU flags. Content hashes before/after archive overlay identify/touch changed Rust files, protecting against archive mtimes. Dedicated environment normally installs the new wheel. Installed native SHA2560c9d373cff054f916ad96474f89e36c07b53289b5e597694b6ddbaa8eb7ba980 matches native bytes in its wheel; source hashes independently match this exact checkout. No compiled artifacts copied manually.
+
+Combined full public gate:345passed,2known baseline failures,0errors/skips in17.81s. This includes H0899cases, Boolean4cases and prior333passing integrated surfaces. Float composite Expected2/Got1 and historical collection scope Expected3/Got1 remain exactly documented; shared-DAG public value passes. Call/error/seeded-RNG barriers, sparse/empty/global ownership, integer wrapping/precision, Bool bitmap boundaries, stddev and other reducers remain covered.
+
+Downloaded results archive SHA2564525fe861120409c4d66a44aae6e518925e28ad98803afd8cf2a6f4ff1dcdc2a verified. Full normal build log, source overlay, native/wheel provenance and JUnit retained. Direct trusted SSH used after gcloud refresh expired; no credential or trust changes. PRIMARY remains under H0894h shutdown guard and is handed to Mean owner after receipts, avoiding redundant restart. Parent performs required final acceptance/main merge; this branch does not update main.
