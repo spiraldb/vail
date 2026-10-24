@@ -1,0 +1,33 @@
+{
+  "baseline_revision": "ca59e075706a76f83c94310508f2b50fb9ebdd5a",
+  "candidate_production_revision": "9213c594",
+  "example_only_revision": "5af3779a",
+  "production_files_identical_between_wheel_and_example_test": true,
+  "source_sha256": {
+    "crates/vail-execution/src/expressions.rs": "f5486acf52ebdd2cfe5c87bbfea93f4852d786210dc926d33e53024c9ab3915b",
+    "crates/vail-execution/src/logical_expr.rs": "280deb026ab7a954b0549bd73f1cefa08cd91a88b1a4637417aaf74a0598b84f",
+    "crates/vail-execution/src/list_aggregate.rs": "26fa7fc9a44191a0e106e2126be16255a5a956f9cb6e07f4bda2f417de0e57a1",
+    "crates/vail-execution/src/list_aggregate/compact.rs": "731a1b2122678f4694d5ee44d7c772ad8fea133a64160748ddadb92ab085b650",
+    "python/tests/test_batched_list_sets.py": "5c53f0f6d9f9da09ca3eabb8d0fe772cccdd774a21fcacc7cdbc43e2101a95bd"
+  },
+  "normal_guarded_native_sha256": "918c64a35d20352eeb3ae5e59fa997d96a8f13e1288edb9dbb320ec278a2def6",
+  "baseline_native_sha256": "a79f18bcdf9c0b8038cd6c968c8be6afbdd54218f7019aba328e654b307a0bba",
+  "public_python_baseline_passed": 420,
+  "public_python_guarded_passed": 420,
+  "public_rust_passed": 2,
+  "hidden_resource_processes": 12,
+  "hidden_resource_queries": 96,
+  "paired_processes": 24,
+  "paired_queries": 304,
+  "artifact_note": "normal uv wheel installation; candidate-env replaced prior rejected wheel through installer; prior rejected wheel archive retained; no native transplantation",
+  "binary_sha256": {
+    "public_example": {
+      "path": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/examples/list_set_hidden_parent",
+      "sha256": "bb98574bec304a6e4de7a1a1c687de13390126e3ce9504a707f2d6d0b5280874"
+    },
+    "public_tests": {
+      "path": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/vail_execution-2afe74cecca73bd0",
+      "sha256": "e9285174f7bddb19230057e5dec875fa3e827f539472792197bc9acf81faa6b7"
+    }
+  }
+}

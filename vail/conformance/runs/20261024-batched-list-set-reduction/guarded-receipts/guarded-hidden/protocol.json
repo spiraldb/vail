@@ -1,0 +1,30 @@
+{
+  "binary": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/examples/list_set_hidden_parent",
+  "sha256": "bb98574bec304a6e4de7a1a1c687de13390126e3ce9504a707f2d6d0b5280874",
+  "production_revision": "9213c594",
+  "example_revision": "5af3779a",
+  "hidden_sizes": [
+    0,
+    1000000,
+    10000000
+  ],
+  "routes": [
+    "physical",
+    "logical"
+  ],
+  "owners": [
+    1,
+    3
+  ],
+  "iterations": 8,
+  "expected": [
+    [
+      7
+    ],
+    null,
+    [
+      9
+    ]
+  ],
+  "note": "input construction/preparation excluded from query wall; OS process CPU/RSS includes input producer; no allocation or universal owner release claim"
+}
