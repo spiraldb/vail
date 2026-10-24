@@ -67,7 +67,7 @@ def test_float_and_strict_reductions_retain_contract():
 def test_integer_extrema_preserves_conditional_errors_and_argument_evaluation():
     bad = hl.array([7])[2]
     assert hl.eval(hl.if_else(False, hl.min(5, bad), 11)) == 11
-    with pytest.raises(Exception, match='out of bounds'):
+    with pytest.raises(RuntimeError, match='out of bounds'):
         hl.eval(hl.min(5, bad))
 
 
