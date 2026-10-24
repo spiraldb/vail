@@ -1,4 +1,6 @@
 """Call indexing preserves list semantics without requiring an allele list."""
+from collections import Counter
+
 import pytest
 
 import vail as hl
@@ -53,6 +55,6 @@ def test_call_index_matrix_aggregates_and_sparse_entries(tmp_path):
             r for r in range(7) for c in range(5) if (r + c) % 3 != 0)
         assert matrix.aggregate_entries(hl.agg.sum(matrix.GT[-1])) == sum(
             c for r in range(7) for c in range(5) if (r + c) % 3 != 0)
-        assert [sorted(row["values"]) for row in matrix.annotate_rows(
-            values=hl.agg.collect(matrix.GT[1])).rows().collect()] == [
-                [c for c in range(5) if (r + c) % 3 != 0] for r in range(7)]
+        actual = {row.row_idx: Counter(row["values"]) for row in matrix.annotate_rows(
+            values=hl.agg.collect(matrix.GT[1])).rows().collect()}
+        assert actual == {r: Counter(c for c in range(5) if (r + c) % 3 != 0) for r in range(7)}
