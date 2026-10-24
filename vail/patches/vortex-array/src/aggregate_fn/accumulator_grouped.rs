@@ -583,6 +583,10 @@ impl<V: AggregateFnVTable> DynListGroupedAccumulator for ListGroupedAccumulator<
             _ => vortex_bail!("Canonical grouped input is not a list"),
         };
         let len = groups.len();
+        if len == 0 {
+            self.mappings.push(GroupRestore::Contiguous(0));
+            return Ok(());
+        }
         let validity = groups.group_validity(ctx)?;
         let present_count = validity.true_count();
         let new_present_count = self
