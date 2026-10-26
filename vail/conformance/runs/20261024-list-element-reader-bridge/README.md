@@ -9,3 +9,9 @@ Public writer/reader coverage adds direct Bool map/SumMap, observable logical an
 No storage capability/translator/native admission changes, no selected-owner proof, no new native wheel, no entry-count speedup or terminal count operator. Reader cache is reader-lifetime and grows with distinct exact expression identities; it does not retain values/masks/output data, but selector/schema hashing still occurs on lookups. Original nested-element fallback traversal is not a universal DAG-linearity guarantee.
 
 The shared target/source was released immediately after the whole30 run to the independent DF fix-only final gate. No main update has been made by this agent; independent final review is required.
+
+## Route-proof correction (source inspection,2026-10-26)
+
+The initial30test fixtures used bare WriteOptions. Pinned WriteStrategyBuilder defaults list decomposition OFF unless VORTEX_EXPERIMENTAL_LIST_LAYOUT=1. TableStrategy then routes List through its leaf writer rather than ListLayoutStrategy. The initial root Debug is insufficient to reconstruct its full children, and these tests do NOT establish execution of the newly modified ListReader. The passing results and equal bytes remain valid ordinary-fallback observations. This receipt is not final acceptance of the reader optimization.
+
+Actual Vail storage writing already explicitly enables structural lists (vail-storage/src/lib.rs488 and patched Iceberg vortex_writer.rs208–217). Test-only87937ebe changes the four new reader fixtures to use the public structural writer and records both flat/structural variants plus compact actual layout-child IDs in the IO receipt. That corrected source has NOT been built or run. It requires independent review and an explicit cached relink slot after the DF final gate. No native admission was expanded.

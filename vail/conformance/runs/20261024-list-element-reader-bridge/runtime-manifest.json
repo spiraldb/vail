@@ -32,6 +32,8 @@
     "No native wheel",
     "Prep-only DAG observations, no universal execution linearity",
     "IO fixture open snapshots can overlap async prefetch; application traffic, not physical device IO",
-    "Single concurrent whole-test run not controlled throughput experiment"
-  ]
+    "Single concurrent whole-test run not controlled throughput experiment",
+    "Initial public file fixtures did not explicitly enable structural List writer; new ListReader execution NOT established"
+  ],
+  "followup_source_unrun": "87937ebe"
 }
