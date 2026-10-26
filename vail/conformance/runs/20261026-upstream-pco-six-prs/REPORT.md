@@ -85,3 +85,7 @@ The multi-platform compact stock-ticker test reported actual 55,396 bytes versus
 PR6's SVE failure was a rustup network timeout before compilation, not a source failure. A fresh standard run is required rather than a source workaround.
 
 CodSpeed performance checks remain real outstanding signals: metadata-open cost rises in its independent model, retained-probe cases regress about 12–14%, and the existing 1,024-row scalar_access case regresses about 11%. The locked 26 cloud cases do not directly include that original scalar_access case. Model costs are not OS wall time, and their disagreement with near-parity retained cloud timings does not justify dismissing either measurement. Unrelated performance flags also appeared on the test-only PR2, whose production tree is unchanged. Human maintainer judgment remains required; these checks are not waived as infrastructure.
+
+## After-fix CI snapshot
+
+`ci-after-fixes-snapshot.json` supersedes the earlier failure snapshot. The current heads contain the minimal expected-size/format corrections; observed Rust source/platform failures have cleared. PR3 and PR6 still have a TSAN job in progress at this snapshot. CodSpeed performance gates remain failed on several PRs and are not waived; required human reviews remain outstanding. All six remain draft.
