@@ -88,4 +88,8 @@ CodSpeed performance checks remain real outstanding signals: metadata-open cost 
 
 ## After-fix CI snapshot
 
-`ci-after-fixes-snapshot.json` supersedes the earlier failure snapshot. The current heads contain the minimal expected-size/format corrections; observed Rust source/platform failures have cleared. PR3 and PR6 still have a TSAN job in progress at this snapshot. CodSpeed performance gates remain failed on several PRs and are not waived; required human reviews remain outstanding. All six remain draft.
+`ci-after-fixes-snapshot.json` supersedes the earlier failure snapshot. The current heads contain the minimal expected-size/format corrections; observed Rust source/platform failures have cleared. PR3 and PR6 had TSAN jobs in progress at that historical snapshot; both subsequently completed successfully. CodSpeed performance gates remain failed on several PRs and are not waived; required human reviews remain outstanding. All six remain draft.
+
+## Completed source CI audit
+
+The final current-head snapshot is `ci-complete-snapshot.json`. Both TSAN jobs completed successfully (PR3 at 22:05:51 UTC and PR6 at 22:06:26 UTC). Source/platform/formatting/TSAN failures are cleared; remaining CodSpeed performance checks and required human review are not waived. All six stay draft. No implementation head changed during this documentation-only reconciliation.
