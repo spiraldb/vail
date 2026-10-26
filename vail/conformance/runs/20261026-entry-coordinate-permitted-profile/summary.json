@@ -1,0 +1,69 @@
+{
+  "protocol_revision": "18d96543",
+  "sample_count": 5916,
+  "lost_samples": 0,
+  "output": [
+    315761156,
+    29304213
+  ],
+  "completed_actions": 11,
+  "postwarm_action_seconds_sum": 6.1802556659999865,
+  "six_second_window_limit": "checked after actions; final in-flight action overshoots nominal window by about0.18s; preserved, no rerun",
+  "all_actions_under_10seconds": true,
+  "process_highwater_bytes": 4109824000,
+  "profile_attribution": {
+    "UnnestStream": {
+      "inclusive": 48.33,
+      "self": 1.15,
+      "dso": "_native.abi3.so",
+      "mangled": "_RNvXsd_NtCse4MAgqXzjG2_24datafusion_physical_plan6unnestNtB5_12UnnestStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next",
+      "symbol": "<datafusion_physical_plan::unnest::UnnestStream as futures_core::stream::Stream>::poll_next"
+    },
+    "Arrow_take": {
+      "inclusive": 37.36,
+      "self": 0.0,
+      "dso": "_native.abi3.so",
+      "mangled": "_RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take",
+      "symbol": "arrow_select::take::take"
+    },
+    "Arrow_take_list": {
+      "inclusive": 23.51,
+      "self": 7.32,
+      "dso": "_native.abi3.so",
+      "mangled": "_RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeNtBN_9Int32TypeEB4_",
+      "symbol": "arrow_select::take::take_list::<arrow_array::types::UInt64Type, arrow_array::types::Int32Type>"
+    },
+    "MutableArrayData": {
+      "inclusive": 20.66,
+      "self": 4.92,
+      "dso": "_native.abi3.so",
+      "mangled": "_RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend",
+      "symbol": "<arrow_data::transform::MutableArrayData>::try_extend"
+    },
+    "Coordinates": {
+      "inclusive": 4.73,
+      "self": 2.33,
+      "dso": "_native.abi3.so",
+      "mangled": "_RNvXs7_NtCsdP38Dg95o5n_14vail_execution15array_aggregateNtB5_11CoordinatesNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch",
+      "symbol": "<vail_execution::array_aggregate::Coordinates as datafusion_expr_common::accumulator::Accumulator>::update_batch"
+    },
+    "DenseNumeric": {
+      "inclusive": 1.56,
+      "self": 1.54,
+      "dso": "_native.abi3.so",
+      "mangled": "_RINvMs0_NtCsdP38Dg95o5n_14vail_execution15array_aggregateNtB6_12DenseNumeric12update_innerKb0_EB8_",
+      "symbol": "<vail_execution::array_aggregate::DenseNumeric>::update_inner::<false>"
+    },
+    "take_bitmap_self": {
+      "self": 8.1,
+      "dso": "_native.abi3.so",
+      "mangled": "_RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_3ops5range5RangejENCINvMNtNtCs7N2wUSrbeI5_12arrow_buffer6buffer7mutableNtB1v_13MutableBuffer12collect_boolNCINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_bitsNtNtCssQFFS8Tj5v_11arrow_array5types10UInt64TypeEs0_0E0ENtNtNtBa_6traits8iterator8Iterator4folduNCINvNvB4x_8for_each4callyNCINvMsj_NtCscHgRw1M2fX5_5alloc3vecINtB5K_3VecyE14extend_trustedBN_E0E0EB2W_",
+      "symbol": "<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt64Type>::{closure#2}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt64Type>::{closure#2}>::{closure#0}>>::{closure#0}>::{closure#0}>"
+    }
+  },
+  "interpretation": "inclusive functions overlap and include upstream work; no projected speedup or ALU/bandwidth saturation claim",
+  "restored_value": 4,
+  "all_command_groups_finished": true,
+  "vm_status": "TERMINATED",
+  "comparison": "no new unprofiled latency comparison; earlier4-action measurements remain7dc4346e"
+}

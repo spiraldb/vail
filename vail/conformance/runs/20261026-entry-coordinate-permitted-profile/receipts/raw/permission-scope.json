@@ -1,0 +1,102 @@
+{
+  "host": "vail-bench-20261021",
+  "commands": [
+    {
+      "args": [
+        "sysctl",
+        "-n",
+        "kernel.perf_event_paranoid"
+      ],
+      "process_group": 1577,
+      "returncode": 0,
+      "stdout": "4\n",
+      "stderr": "",
+      "group_finished": true
+    },
+    {
+      "args": [
+        "sudo",
+        "-n",
+        "true"
+      ],
+      "process_group": 1578,
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "",
+      "group_finished": true
+    },
+    {
+      "args": [
+        "sudo",
+        "-n",
+        "sysctl",
+        "-w",
+        "kernel.perf_event_paranoid=2"
+      ],
+      "process_group": 1580,
+      "returncode": 0,
+      "stdout": "kernel.perf_event_paranoid = 2\n",
+      "stderr": "",
+      "group_finished": true
+    },
+    {
+      "args": [
+        "sysctl",
+        "-n",
+        "kernel.perf_event_paranoid"
+      ],
+      "process_group": 1582,
+      "returncode": 0,
+      "stdout": "2\n",
+      "stderr": "",
+      "group_finished": true
+    },
+    {
+      "args": [
+        "sudo",
+        "-n",
+        "sysctl",
+        "-w",
+        "kernel.perf_event_paranoid=4"
+      ],
+      "process_group": 1622,
+      "returncode": 0,
+      "stdout": "kernel.perf_event_paranoid = 4\n",
+      "stderr": "",
+      "group_finished": true
+    },
+    {
+      "args": [
+        "sysctl",
+        "-n",
+        "kernel.perf_event_paranoid"
+      ],
+      "process_group": 1624,
+      "returncode": 0,
+      "stdout": "4\n",
+      "stderr": "",
+      "group_finished": true
+    }
+  ],
+  "original": 4,
+  "write_attempted": true,
+  "restored": true,
+  "error": null,
+  "pending_command_groups": [],
+  "relaxed": 2,
+  "monitor_command": [
+    "python3",
+    "/home/danielking/h089-permitted-profile-20261026/monitor.py",
+    "sample",
+    "--python",
+    "/home/danielking/vail-presence-20261026/gate-8dcd426b/candidate-env/bin/python",
+    "--native-sha256",
+    "5a8613c794bbb932bfc4711f2d041a0ee850239fede532eb84120ed163f77ef2",
+    "--output",
+    "/home/danielking/h089-permitted-profile-20261026/receipts"
+  ],
+  "monitor_exitcode": 0,
+  "restored_value": 4,
+  "exitcode": 0,
+  "elapsed_seconds": 12.714028728999999
+}
