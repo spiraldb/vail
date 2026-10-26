@@ -1,7 +1,8 @@
 # Logical struct presence: separate source-only design
 
-No implementation/build/admission changes. Reader candidate615/f998 remains
-frozen; current-main compositionef35 is separate. Actual structural IO receipt
+No implementation/build/admission changes. Base is accepted main5850c7cf.
+The reader was merged with exact runtime sourceef35; this new design is separate.
+Actual structural IO receipt
 shows49.04%fewer application-reader bytes, not bitmap-only presence.
 
 ## Why a value dependency survives
