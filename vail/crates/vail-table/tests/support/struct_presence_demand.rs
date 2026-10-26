@@ -13,9 +13,23 @@ use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
 use vortex::{VortexSessionDefault, arrow::ArrowSessionExt, session::VortexSession};
 
 fn field(path: &[&str]) -> Expression {
-    path.iter()
-        .fold(root(), |value, name| get_item(*name, value))
+    path.iter().fold(get_item("record", root()), |value, name| {
+        get_item(*name, value)
+    })
 }
+// The public file-stats producer requires a nonnullable table envelope. Keep
+// the actual nullable source record intact as a normal nullable child field.
+fn envelope(input: ArrayRef) -> VortexResult<ArrayRef> {
+    let len = input.len();
+    Ok(StructArray::try_new(
+        FieldNames::from(["record"]),
+        vec![input],
+        len,
+        Validity::NonNullable,
+    )?
+    .into_array())
+}
+
 fn fixture() -> VortexResult<ArrayRef> {
     let n = 14;
     let number = DictArray::try_new(
@@ -122,10 +136,10 @@ async fn nested_struct_presence_uses_all_logical_ancestors_and_reuses_row_domain
     let path = directory.path().join("presence.vortex");
     session
         .write_options()
-        .write(
-            tokio::fs::File::create(&path).await.unwrap(),
-            ArrayStreamAdapter::new(input.dtype().clone(), futures::stream::iter([Ok(input)])),
-        )
+        .write(tokio::fs::File::create(&path).await.unwrap(), {
+            let stored = envelope(input.clone())?;
+            ArrayStreamAdapter::new(stored.dtype().clone(), futures::stream::iter([Ok(stored)]))
+        })
         .await?;
     let file = session
         .open_options()
@@ -192,20 +206,17 @@ async fn struct_presence_raw_and_unknown_consumers_keep_original_values() -> Vor
     let path = directory.path().join("raw-sibling.vortex");
     session
         .write_options()
-        .write(
-            tokio::fs::File::create(&path).await.unwrap(),
-            ArrayStreamAdapter::new(
-                input.dtype().clone(),
-                futures::stream::iter([Ok(input.clone())]),
-            ),
-        )
+        .write(tokio::fs::File::create(&path).await.unwrap(), {
+            let stored = envelope(input.clone())?;
+            ArrayStreamAdapter::new(stored.dtype().clone(), futures::stream::iter([Ok(stored)]))
+        })
         .await?;
     let file = session.open_options().open_path(&path).await?;
     let reader = file.layout_reader()?;
     let number = field(&["branch", "deep", "number"]);
     let expression = pack(
         [
-            ("raw", root()),
+            ("raw", field(&[])),
             ("defined", is_not_null(number.clone())),
             ("missing", is_null(number.clone())),
             ("filled", is_not_null(fill_null(number, lit(0.0f64)))),
@@ -335,18 +346,18 @@ async fn struct_presence_required_empty_and_dictionary_rows_are_logical() -> Vor
         let path = directory.path().join(format!("{case}.vortex"));
         session
             .write_options()
-            .write(
-                tokio::fs::File::create(&path).await.unwrap(),
-                ArrayStreamAdapter::new(input.dtype().clone(), futures::stream::iter([Ok(input)])),
-            )
+            .write(tokio::fs::File::create(&path).await.unwrap(), {
+                let stored = envelope(input.clone())?;
+                ArrayStreamAdapter::new(stored.dtype().clone(), futures::stream::iter([Ok(stored)]))
+            })
             .await?;
         let file = session.open_options().open_path(&path).await?;
         let reader = file.layout_reader()?;
         for missing in [false, true] {
             let expression = if missing {
-                is_null(root())
+                is_null(field(&[]))
             } else {
-                is_not_null(root())
+                is_not_null(field(&[]))
             }
             .bind(file.dtype())?;
             let actual = reader
