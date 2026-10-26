@@ -1127,6 +1127,11 @@ async fn element_validity_file_reader_preserves_boolean_domain_and_sum() -> Vort
     let path = directory.path().join("element-validity.vortex");
     session
         .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
         .write(
             tokio::fs::File::create(&path).await.unwrap(),
             ArrayStreamAdapter::new(dtype.clone(), futures::stream::iter([Ok(input)])),
@@ -1187,6 +1192,11 @@ async fn element_validity_file_reader_shared_body_and_raw_sibling_keep_original_
     let path = directory.path().join("element-validity-siblings.vortex");
     session
         .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
         .write(
             tokio::fs::File::create(&path).await.unwrap(),
             ArrayStreamAdapter::new(dtype.clone(), futures::stream::iter([Ok(input.clone())])),
@@ -1246,6 +1256,11 @@ async fn element_validity_file_reader_distinct_paths_and_bounded_mask_are_correc
     let path = directory.path().join("distinct-bounded.vortex");
     session
         .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
         .write(
             tokio::fs::File::create(&path).await.unwrap(),
             ArrayStreamAdapter::new(
@@ -1315,6 +1330,11 @@ async fn element_validity_reader_preparation_accepts_shared_expression_dags() ->
     let path = directory.path().join("shared-dag.vortex");
     session
         .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
         .write(
             tokio::fs::File::create(&path).await.unwrap(),
             ArrayStreamAdapter::new(
