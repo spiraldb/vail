@@ -77,3 +77,11 @@ All historical pre-new-only results and adverse results are retained in `raw-evi
 ## Current GitHub status snapshot
 
 `ci-snapshot.json` records the immutable heads and observed checks. All PRs remain draft. At capture, PR1 had no failing checks; PR2 had a failing CodSpeed analysis, and PR3–6 had failing Rust platform/lint checks as well as performance/pending checks. A read-only audit is classifying the exact job logs; these are not waived or labeled green by this report. Canceled checks are retained separately in the raw snapshot. Two human reviews remain required.
+
+## Concrete CI corrections after measurement
+
+The multi-platform compact stock-ticker test reported actual 55,396 bytes versus the pre-existing 55,344 expectation (+52 bytes after optional PCO metadata); its preceding semantic roundtrip passed. Only that existing expectation was updated in PR3. PR5's indexed-slice condition received the pinned formatter's brace layout. No new tests, weakened equality, performance policy, or production behavior was introduced. New standard CI runs validate these corrections. Final PR6 production bytes remain identical to the measured artifact; measured and current heads are separately recorded in provenance.json.
+
+PR6's SVE failure was a rustup network timeout before compilation, not a source failure. A fresh standard run is required rather than a source workaround.
+
+CodSpeed performance checks remain real outstanding signals: metadata-open cost rises in its independent model, retained-probe cases regress about 12–14%, and the existing 1,024-row scalar_access case regresses about 11%. The locked 26 cloud cases do not directly include that original scalar_access case. Model costs are not OS wall time, and their disagreement with near-parity retained cloud timings does not justify dismissing either measurement. Unrelated performance flags also appeared on the test-only PR2, whose production tree is unchanged. Human maintainer judgment remains required; these checks are not waived as infrastructure.
