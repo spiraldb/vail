@@ -17,6 +17,25 @@ use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
 use vortex::io::{CoalesceConfig, VortexReadAt, session::RuntimeSessionExt, std_file::FileReadAt};
 use vortex::{VortexSessionDefault, arrow::ArrowSessionExt, session::VortexSession};
 
+/// Mirror the public edition opt-in already used by Vail's Iceberg writer;
+/// enable only structural List, retaining all other edition enforcement.
+pub(super) fn structural_session() -> VortexResult<VortexSession> {
+    use vortex::editions::{
+        Edition, EditionDeclaration, EditionId, EditionMember, EditionSessionExt,
+    };
+    static STRUCTURAL_LIST_EDITION: EditionDeclaration = EditionDeclaration {
+        edition: Edition {
+            id: EditionId::new("iceberg-structural-list", 2026, 10, 0),
+            min_library_version: None,
+        },
+        added: &[EditionMember::layout(&"vortex.list")],
+    };
+    let session = VortexSession::default();
+    session.register_edition(&STRUCTURAL_LIST_EDITION)?;
+    session.enable_edition(STRUCTURAL_LIST_EDITION.edition.id)?;
+    Ok(session)
+}
+
 #[derive(Default)]
 struct Traffic {
     requested: AtomicU64,
@@ -150,7 +169,7 @@ async fn element_validity_public_file_io_receipt() -> VortexResult<()> {
     use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
     let (rows, width) = (64usize, 1024usize);
     let input = fixture(rows, width)?;
-    let session = VortexSession::default();
+    let session = structural_session()?;
     let directory = tempfile::tempdir().unwrap();
     let presence = list_element_validity(root(), input.dtype(), &["selected".into()])?;
     let expected = (0..rows)

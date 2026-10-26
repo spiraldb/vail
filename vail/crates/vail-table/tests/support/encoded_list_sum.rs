@@ -1122,7 +1122,7 @@ async fn element_validity_file_reader_preserves_boolean_domain_and_sum() -> Vort
     use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
     let input = element_validity_fixture()?;
     let dtype = input.dtype().clone();
-    let session = VortexSession::default();
+    let session = crate::element_validity_reader_io::structural_session()?;
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("element-validity.vortex");
     session
@@ -1187,7 +1187,7 @@ async fn element_validity_file_reader_shared_body_and_raw_sibling_keep_original_
     use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
     let input = element_validity_fixture()?;
     let dtype = input.dtype().clone();
-    let session = VortexSession::default();
+    let session = crate::element_validity_reader_io::structural_session()?;
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("element-validity-siblings.vortex");
     session
@@ -1251,7 +1251,7 @@ async fn element_validity_file_reader_distinct_paths_and_bounded_mask_are_correc
     use vortex::expr::{list_sum, pack, root};
     use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
     let input = element_validity_fixture()?;
-    let session = VortexSession::default();
+    let session = crate::element_validity_reader_io::structural_session()?;
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("distinct-bounded.vortex");
     session
@@ -1325,7 +1325,7 @@ async fn element_validity_reader_preparation_accepts_shared_expression_dags() ->
     use vortex::expr::{list_sum, root};
     use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
     let input = element_validity_fixture()?;
-    let session = VortexSession::default();
+    let session = crate::element_validity_reader_io::structural_session()?;
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("shared-dag.vortex");
     session
