@@ -213,3 +213,29 @@ fn empty_domains_and_repeated_data_updates_preserve_coordinate_state() {
     }
     assert_eq!(merged.evaluate().unwrap(), result(Some(vec![Some(14), Some(4)])));
 }
+
+#[test]
+fn selected_bitmap_combines_sliced_ancestor_masks_across_word_edges() {
+    let lists = Arc::new(ListArray::from_iter_primitive::<arrow_array::types::Int32Type, _, _>(
+        (0..140).map(|owner| if owner == 65 { None } else if owner == 66 || owner == 67 {
+            Some(vec![Some(900), Some(901), Some(902)])
+        } else { Some(vec![Some(1), Some(2)]) })
+    ));
+    let entry_nulls = NullBuffer::from((0..143).map(|index| index != 69).collect::<Vec<_>>()).slice(3, 140);
+    let entry = Arc::new(StructArray::new(
+        vec![Arc::new(Field::new("arbitrary", lists.data_type().clone(), true))].into(),
+        vec![lists], Some(entry_nulls),
+    ));
+    let cell_nulls = NullBuffer::from((0..145).map(|index| index != 72).collect::<Vec<_>>()).slice(5, 140);
+    let cells = Arc::new(StructArray::new(
+        vec![Arc::new(Field::new("value", entry.data_type().clone(), true))].into(),
+        vec![entry], Some(cell_nulls),
+    ));
+    let outer = ListArray::new(Arc::new(Field::new_list_field(cells.data_type().clone(), true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0, 1, 70, 73, 139, 140])), cells,
+        Some(NullBuffer::from(vec![false, true, false, true, false])));
+    let input: ArrayRef = Arc::new(outer.slice(1, 3));
+    let mut accumulator = aggregate(&input).create_accumulator().unwrap();
+    accumulator.update_batch(&[input]).unwrap();
+    assert_eq!(accumulator.evaluate().unwrap(), result(Some(vec![Some(132), Some(264)])));
+}

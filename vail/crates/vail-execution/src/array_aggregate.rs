@@ -530,6 +530,8 @@ pub fn owning_coordinate_sum_udaf(input: DataType, names: &[String]) -> Result<A
                 )?,
                 path: path.clone(),
                 runs: Vec::new(),
+                owners: Vec::new(),
+                validity: arrow_buffer::BooleanBufferBuilder::new(0),
             }))
         }),
     ))
@@ -542,30 +544,33 @@ struct OwningCoordinates {
     coordinates: Coordinates,
     path: Vec<usize>,
     runs: Vec<(usize, usize)>,
+    owners: Vec<(usize, usize)>,
+    validity: arrow_buffer::BooleanBufferBuilder,
 }
 impl OwningCoordinates {
-    fn update_selected<const OUTER_PRESENT: bool, const INNER_PRESENT: bool>(
-        &mut self, outer: &ListArray, arrays: &ListArray, ancestors: &[&arrow_buffer::NullBuffer],
+    fn update_selected<const MASKED: bool, const PACKED: bool>(
+        coordinates: &mut Coordinates,
+        runs: &mut Vec<(usize, usize)>,
+        owners: &[(usize, usize)],
+        arrays: &ListArray,
+        validity: &[u8],
+        validity_offset: usize,
     ) -> Result<()> {
-        let offsets = outer.value_offsets();
-        let selected = || {
-            (0..outer.len())
-                .filter(|&row| OUTER_PRESENT || outer.is_valid(row))
-                .flat_map(|row| offsets[row] as usize..offsets[row + 1] as usize)
-                .filter(|&owner| {
-                    INNER_PRESENT || (arrays.is_valid(owner) && ancestors.iter().all(|nulls| nulls.is_valid(owner)))
-                })
-        };
+        let selected = owners.iter().flat_map(|&(start, end)| start..end)
+            .enumerate().filter_map(|(packed, owner)| {
+                let index = if PACKED { packed } else { owner };
+                (!MASKED || arrow_buffer::bit_util::get_bit(validity, validity_offset + index))
+                    .then_some(owner)
+            });
         let offsets = arrays.value_offsets();
-        let runs = &mut self.runs;
         runs.clear();
         let mut count = 0usize;
         // Validate and coalesce only observed owners before touching primitive
         // backing data. Missing owners never establish a coordinate width.
-        for owner in selected() {
+        for owner in selected {
             let start = offsets[owner] as usize;
             let end = offsets[owner + 1] as usize;
-            self.coordinates.set_width(end - start)?;
+            coordinates.set_width(end - start)?;
             count = count.checked_add(1).ok_or_else(|| error("coordinate owner count overflow"))?;
             if let Some(last) = runs.last_mut().filter(|last| last.1 == start) {
                 last.1 = end;
@@ -573,7 +578,7 @@ impl OwningCoordinates {
                 runs.push((start, end));
             }
         }
-        let Some(width) = self.coordinates.width else { return Ok(()); };
+        let Some(width) = coordinates.width else { return Ok(()); };
         if width == 0 || count == 0 { return Ok(()); }
         let length = count.checked_mul(width).ok_or_else(|| error("coordinate child count overflow"))?;
         let flat = if runs.len() == 1 {
@@ -586,7 +591,7 @@ impl OwningCoordinates {
             }
             arrow_array::make_array(output.freeze())
         };
-        self.coordinates.update_flat(flat, None, width)
+        coordinates.update_flat(flat, None, width)
     }
 }
 impl Accumulator for OwningCoordinates {
@@ -611,12 +616,55 @@ impl Accumulator for OwningCoordinates {
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or_else(|| error("owning coordinate input changed list type"))?;
-        let inner_present = arrays.null_count() == 0 && ancestors.iter().all(|nulls| nulls.null_count() == 0);
-        match (outer.null_count() == 0, inner_present) {
-            (true, true) => self.update_selected::<true, true>(outer, arrays, &ancestors),
-            (true, false) => self.update_selected::<true, false>(outer, arrays, &ancestors),
-            (false, true) => self.update_selected::<false, true>(outer, arrays, &ancestors),
-            (false, false) => self.update_selected::<false, false>(outer, arrays, &ancestors),
+        // Build only the selected owner domain. All-valid outer lists need no
+        // row traversal; nullable outer gaps are skipped through Arrow's bitmap
+        // index iterator, without touching their child envelope.
+        self.owners.clear();
+        let offsets = outer.value_offsets();
+        if outer.null_count() == 0 {
+            if offsets[0] != offsets[outer.len()] {
+                self.owners.push((offsets[0] as usize, offsets[outer.len()] as usize));
+            }
+        } else {
+            for row in outer.nulls().expect("nullable outer list").valid_indices() {
+                let start = offsets[row] as usize;
+                let end = offsets[row + 1] as usize;
+                if start == end { continue; }
+                if let Some(last) = self.owners.last_mut().filter(|last| last.1 == start) {
+                    last.1 = end;
+                } else { self.owners.push((start, end)); }
+            }
+        }
+        // Nullability is bound once per batch. Width/span traversal consumes
+        // one bitmap, never a dynamic fold across Struct layers per entry.
+        if let Some(nulls) = arrays.nulls() { ancestors.push(nulls); }
+        ancestors.retain(|nulls| nulls.null_count() != 0);
+        match ancestors.as_slice() {
+            [] => Self::update_selected::<false, false>(
+                &mut self.coordinates, &mut self.runs, &self.owners, arrays, &[], 0),
+            [single] => Self::update_selected::<true, false>(
+                &mut self.coordinates, &mut self.runs, &self.owners, arrays,
+                single.inner().values(), single.inner().offset()),
+            [first, rest @ ..] => {
+                self.validity.truncate(0);
+                for &(start, end) in &self.owners {
+                    self.validity.append_packed_range(
+                        first.inner().offset() + start..first.inner().offset() + end,
+                        first.inner().values());
+                }
+                for mask in rest {
+                    let mut packed = 0;
+                    for &(start, end) in &self.owners {
+                        arrow_buffer::bit_util::apply_bitwise_binary_op(
+                            self.validity.as_slice_mut(), packed, mask.inner().values(),
+                            mask.inner().offset() + start, end - start, |left, right| left & right);
+                        packed += end - start;
+                    }
+                }
+                Self::update_selected::<true, true>(
+                    &mut self.coordinates, &mut self.runs, &self.owners, arrays,
+                    self.validity.as_slice(), 0)
+            }
         }
     }
     fn evaluate(&mut self) -> Result<ScalarValue> {
@@ -630,7 +678,8 @@ impl Accumulator for OwningCoordinates {
     }
     fn size(&self) -> usize {
         self.coordinates.size() + self.path.capacity() * std::mem::size_of::<usize>()
-            + self.runs.capacity() * std::mem::size_of::<(usize, usize)>()
+            + (self.runs.capacity() + self.owners.capacity()) * std::mem::size_of::<(usize, usize)>()
+            + self.validity.capacity().div_ceil(8)
     }
 }
 
