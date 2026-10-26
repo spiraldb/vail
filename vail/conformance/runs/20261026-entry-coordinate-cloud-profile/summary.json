@@ -1,0 +1,85 @@
+{
+  "protocol_revision": "753cb1b1",
+  "native_sha256": "5a8613c794bbb932bfc4711f2d041a0ee850239fede532eb84120ed163f77ef2",
+  "accepted_source": "8dcd426b5a62912e94e3c8a1f41dbf597cabf81b",
+  "production_equivalent_current_main": "1e19d9e45d1b018afbaba74e11f6c4a73f441ae1",
+  "result": [
+    315761156,
+    29304213
+  ],
+  "actions": [
+    {
+      "phase": "action",
+      "iteration": 0,
+      "wall_seconds": 4.079753402999998,
+      "cpu_seconds": 10.298660148,
+      "maxrss_bytes": 2511626240,
+      "minor_faults": 1306778,
+      "result": [
+        315761156,
+        29304213
+      ]
+    },
+    {
+      "phase": "action",
+      "iteration": 1,
+      "wall_seconds": 0.655303497999995,
+      "cpu_seconds": 15.568666505,
+      "maxrss_bytes": 3629207552,
+      "minor_faults": 811505,
+      "result": [
+        315761156,
+        29304213
+      ]
+    },
+    {
+      "phase": "action",
+      "iteration": 2,
+      "wall_seconds": 0.6397410609999952,
+      "cpu_seconds": 16.143659812,
+      "maxrss_bytes": 3848785920,
+      "minor_faults": 455722,
+      "result": [
+        315761156,
+        29304213
+      ]
+    },
+    {
+      "phase": "action",
+      "iteration": 3,
+      "wall_seconds": 0.6192715010000001,
+      "cpu_seconds": 15.320760083000003,
+      "maxrss_bytes": 3919241216,
+      "minor_faults": 323424,
+      "result": [
+        315761156,
+        29304213
+      ]
+    }
+  ],
+  "warmed_wall_median_seconds": 0.6397410609999952,
+  "warmed_cpu_median_seconds": 15.568666505,
+  "whole_process_highwater_bytes": 3919241216,
+  "diagnostic_plan_status": "UnboundActionExec diagnostic, not fully bound runtime topology proof",
+  "sample_status": {
+    "cleanup_pending_pids": [],
+    "command": [
+      "/home/danielking/vail-presence-20261026/gate-8dcd426b/candidate-env/bin/python",
+      "/home/danielking/h089-profile-20261026/confirm.py",
+      "sample",
+      "--native-sha256",
+      "5a8613c794bbb932bfc4711f2d041a0ee850239fede532eb84120ed163f77ef2"
+    ],
+    "exitcode": -15,
+    "abort_reason": "perf failed; stop without permission/config changes",
+    "elapsed_seconds": 2.0235612830000065,
+    "monitor_maxrss_kib": 3670312,
+    "sampler_exitcode": 255,
+    "monitoring": "/proc/status every250ms; monitoring overhead not subtracted"
+  },
+  "perf_permission": "perf_event_paranoid4; unprivileged cpu-clock:u record denied255; no configuration or privilege change/retry",
+  "raw_download_all_hashes_verified": true,
+  "vm_final_status": "TERMINATED",
+  "comparative_speedup_claim": false,
+  "cpu_stack_attribution_available": false
+}
