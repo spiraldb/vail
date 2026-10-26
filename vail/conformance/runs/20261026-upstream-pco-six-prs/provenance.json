@@ -1,0 +1,59 @@
+{
+  "base": "33675d9e39b6155dbad4e5fcc2122cf78d3f5385",
+  "reviewed_new_only_source": "e6af51dcb0bba4648d70509ee7aaa38d1df566fe",
+  "validated_combined_source": "f4a5403b2b0a9c522e0e9bdf6f60de9a43bca5b3",
+  "prs": {
+    "10824": {
+      "url": "https://github.com/vortex-data/vortex/pull/10824",
+      "branch": "dk/pco-selection-benchmarks",
+      "head": "2736d4cf926627c265bb8eba9a270183691d2a05",
+      "tree": "d32ec087c4f1faf1bb16cb07829a5ca18f3deced"
+    },
+    "10825": {
+      "url": "https://github.com/vortex-data/vortex/pull/10825",
+      "branch": "dk/pco-selection-contracts",
+      "head": "f56bcebfbeda930bd1619e09a79744282b12036c",
+      "tree": "e52a3be587236ed209a626c74baad74a54de2421"
+    },
+    "10827": {
+      "url": "https://github.com/vortex-data/vortex/pull/10827",
+      "branch": "dk/pco-logical-page-index",
+      "head": "326178f86d0056b9129fc9fdf3c2c7e973bbe174",
+      "tree": "c3d9968802b298e9872022552688105d6f4a5fb0"
+    },
+    "10828": {
+      "url": "https://github.com/vortex-data/vortex/pull/10828",
+      "branch": "dk/pco-selective-take",
+      "head": "1c60c36b96c0dd3f2bb09f619c5ef72f36054125",
+      "tree": "c77eb4b2180de7ef39a04e2f4ee3d5fc7aa101f9"
+    },
+    "10829": {
+      "url": "https://github.com/vortex-data/vortex/pull/10829",
+      "branch": "dk/pco-selective-ranges",
+      "head": "ff66413e87b0857f61c10a1e395e1e2f5a045f89",
+      "tree": "e4dd1b01521195ead0c1e62c827c920eeef352d5"
+    },
+    "10830": {
+      "url": "https://github.com/vortex-data/vortex/pull/10830",
+      "branch": "dk/pco-indexed-probes",
+      "head": "106106b14f0daf9534e95eaf5ce2a64b463f01e4",
+      "tree": "4b977e1fde79f5f417bc6960f76ff30bda7fb38e"
+    }
+  },
+  "production_equivalence": "Current final PR6 production byte-identical to f4a5403b2b; only existing upstream cfg(test) scenario restored with necessary Arc::make_mut type adaptation.",
+  "benchmark_executables": {
+    "baseline": "abd3d00d8d5fe4eb73fd849066b1bceed05d3bfe249f976ec66d624f689d8e40",
+    "pr3": "a08bdd07243b3a9083552d1c18525892838d9a86f345a8a8b8079ae43ee9728c",
+    "pr4": "08d9563a34a723aa601afe4a11a6a79d9a90cf962072d738150bba2f4c9061cc",
+    "pr5": "bad523f2c5338163299bb34c55059838c8e28fdb800de0d1631a5d9d25000d60",
+    "pr6": "7bde257100221803ffc71089dce54b0b577c5be5c772bb71076c7528f89bbef6"
+  },
+  "compatibility_executables": {
+    "new": "40b174d8c707ea1a2c932270a9af55748575c56883d3daa95a86f371b85ff188",
+    "old": "b9d00fd5fb892a6453a46a5ebaa28bd76442b999e453d96f4aef875d17d68df3",
+    "new-final": "6b6458726193bbf689e79b1dfc6c25c4c9f987e53fedacb15def7dc9cdbd984a"
+  },
+  "archive_sha256": "43b9feaa100009d8874c21a530cee0fdbd77ba7c1b96397204b2eb979e2e0f9a",
+  "captured_at_utc": "2026-10-26T21:44:00.929361+00:00",
+  "primary_vm_status": "TERMINATED (gcloud describe verified)"
+}
