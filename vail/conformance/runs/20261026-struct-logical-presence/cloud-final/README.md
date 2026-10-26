@@ -1,0 +1,13 @@
+# Final cloud validation: all gates passed
+
+Exact reviewed source8dcd426b5a62912e94e3c8a1f41dbf597cabf81b, based on accepted main5850c7cf, includes the source-reviewed terminal allocation delta14c8349a. This remote execution validates that previously unrun delta. No additional production/source changes, variants or retries occurred. The31MBsource export SHA and43critical source/test hashes were verified before execution.
+
+VMvail-bench-20261021 (pyspiral-dev/us-east1-b), exclusive after upstream handoff. Linuxx86_64, Rust/cargo1.98.0, kache1.2.2, managedPython3.12, exact pinned requirements. Normal native-only locked wheel built392.23s; table graph18.07s; storage graph224.18s. Jobs8; approved1200/600/600buildbudgets,180sruntime,10GiBfree floor. No budget/floor failure. The new wheel was installed normally into an independent environment, with frontend/native paths and unsetPYTHONPATH verified.
+
+**All431Python +40Rust passed, zero failures/ignored:** encoded_projection34, DataFusion contracts4, public storage Reader/Writer2. The Python pytest duration was21.80s; these are correctness gates, not throughput measurements. NativeSHA2565a8613c794bbb932bfc4711f2d041a0ee850239fede532eb84120ed163f77ef2; wheelSHA256a54550efc4b84ad6a957cff50c86deb8b5baeb29d033916249c4ce013d3209fb. Each test executable/log hash and the complete command/environment/output is retained.
+
+The unchanged structural fixture requests4,277,895bytes for full reads and82,127for presence; unique4,221,520vs82,127. Flat controls remain4,277,547requested for both. All independent outputs match; all48tiny/many fresh/reused observations remain raw. Open snapshots may overlap prefetch: these are application-reader bytes, not physical IO. Do not compare cloud wall times with prior M3 times as a speedup. The earlier matchedM3protocol established2,180,011→82,127requested/unique bytes for source0216; its adverse small raw controls and limited one-process observations remain explicit in../matched-envelope.
+
+One unused-import warning and existing upstream warnings are preserved. No adaptive cleanup or variant was introduced during the frozen gate. No native capability/translator/admission expansion, terminal count operator or universal selected-owner claim. Writer-normalized dictionary correctness is not proof that a particular dictionary codec survives serialization.
+
+The driver verified no same-user compiler/kache-child processes at completion, then VMcompute was explicitly released back to root/upstream. This is not an all-machine IO/network/cache-thread idleness claim. No more builds/tests/timing runs are queued by this agent. Parent-only merge still requires independent final review.

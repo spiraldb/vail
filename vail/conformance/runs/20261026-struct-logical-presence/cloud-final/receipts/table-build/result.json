@@ -1,0 +1,21 @@
+{
+  "stage": "table-build",
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "-p",
+    "vail-table",
+    "--test",
+    "encoded_projection",
+    "--test",
+    "struct_field_projection_contract",
+    "--no-run"
+  ],
+  "elapsed": 18.067087316999277,
+  "returncode": 0,
+  "stop_reason": null,
+  "minimum_free_bytes": 89770921984,
+  "log_sha256": "6953751623c905743ae0363250db9e6f3895186d68c5ab1dfc3ab6da3b8ce8a8"
+}

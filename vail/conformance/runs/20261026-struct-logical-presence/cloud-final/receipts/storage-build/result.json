@@ -1,0 +1,19 @@
+{
+  "stage": "storage-build",
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "-p",
+    "vail-storage",
+    "--test",
+    "native_list_evolution",
+    "--no-run"
+  ],
+  "elapsed": 224.1841755760006,
+  "returncode": 0,
+  "stop_reason": null,
+  "minimum_free_bytes": 88712101888,
+  "log_sha256": "7f2be1a21920e1c87cdb07ff430ab1e3ee29076325bfaefd0c2e9921001f7d7d"
+}

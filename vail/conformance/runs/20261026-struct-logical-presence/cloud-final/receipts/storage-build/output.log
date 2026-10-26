@@ -1,0 +1,267 @@
+   Compiling uuid v1.26.1
+   Compiling typenum v1.20.1
+   Compiling object_store v0.13.2
+   Compiling sqlparser v0.62.0
+   Compiling tokio-util v0.7.19
+   Compiling parquet v59.2.0
+   Compiling generic-array v0.14.7
+   Compiling nalgebra v0.33.3
+   Compiling nalgebra v0.34.1
+   Compiling vortex-array v0.86.1 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/patches/vortex-array)
+   Compiling parquet-variant v59.2.0
+   Compiling moka v0.12.16
+   Compiling crypto-common v0.1.7
+   Compiling inout v0.1.4
+   Compiling cipher v0.4.4
+   Compiling universal-hash v0.5.1
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling polyval v0.6.2
+   Compiling ctr v0.9.2
+   Compiling ghash v0.5.1
+   Compiling aes v0.8.4
+   Compiling parquet-variant-json v59.2.0
+   Compiling aead v0.5.2
+   Compiling apache-avro v0.21.0
+   Compiling datafusion-common v55.0.0 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/patches/datafusion-common)
+   Compiling parquet-variant-compute v59.2.0
+   Compiling aes-gcm v0.10.3
+   Compiling statrs v0.18.0
+   Compiling sha2 v0.10.9
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling vortex-runend v0.86.1
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling vortex-arrow v0.86.1
+   Compiling datafusion-functions v55.0.0
+   Compiling vortex-fastlanes v0.86.1 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/patches/vortex-fastlanes)
+   Compiling vortex-pco v0.86.1
+   Compiling vortex-alp v0.86.1
+   Compiling vortex-sparse v0.86.1
+   Compiling vortex-sequence v0.86.1
+   Compiling vortex-fsst v0.86.1
+   Compiling vortex-datetime-parts v0.86.1
+   Compiling vortex-onpair v0.86.1
+   Compiling vortex-zigzag v0.86.1
+   Compiling vortex-decimal-byte-parts v0.86.1
+   Compiling vortex-zstd v0.86.1
+   Compiling vortex-compressor v0.86.1
+   Compiling vortex-btrblocks v0.86.1
+   Compiling vortex-scan v0.86.1
+   Compiling vortex-io v0.86.1
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling vortex-layout v0.86.1 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/patches/vortex-layout)
+   Compiling vortex-json v0.86.1
+   Compiling vortex-bytebool v0.86.1
+   Compiling vortex-file v0.86.1
+   Compiling datafusion-session v55.0.0
+   Compiling vortex-parquet-variant v0.86.1
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/patches/datafusion-functions-aggregate)
+   Compiling vortex-ipc v0.86.1
+   Compiling vortex v0.86.1
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling iceberg v0.10.1 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/patches/iceberg-rust/crates/iceberg)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+   Compiling vail-execution v0.1.0 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/crates/vail-execution)
+   Compiling vail-storage v0.1.0 (/home/danielking/vail-presence-20261026/source-8dcd426b/vail/crates/vail-storage)
+warning: fields `operands`, `metadata_bytes`, and `domains` are never read
+  --> crates/vail-storage/src/computed_capability.rs:65:16
+   |
+62 | pub struct ComputedProjectionCertificate {
+   |            ----------------------------- fields in this struct
+...
+65 |     pub(crate) operands: Vec<ComputedOperand>,
+   |                ^^^^^^^^
+...
+68 |     pub(crate) metadata_bytes: usize,
+   |                ^^^^^^^^^^^^^^
+69 |     pub(crate) domains: Vec<FileDomain>,
+   |                ^^^^^^^
+   |
+   = note: `ComputedProjectionCertificate` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `path`, `bytes`, `rows`, and `operands` are never read
+  --> crates/vail-storage/src/computed_capability.rs:89:5
+   |
+88 | pub(crate) struct FileDomain {
+   |                   ---------- fields in this struct
+89 |     path: String,
+   |     ^^^^
+90 |     bytes: u64,
+   |     ^^^^^
+91 |     rows: u64,
+   |     ^^^^
+92 |     operands: Vec<(ComputedOperand, Vec<OperandDomain>)>,
+   |     ^^^^^^^^
+   |
+   = note: `FileDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `start`, and `width` are never read
+  --> crates/vail-storage/src/computed_capability.rs:97:9
+   |
+96 |     ListShape {
+   |     --------- fields in this variant
+97 |         rows: u64,
+   |         ^^^^
+98 |         start: u64,
+   |         ^^^^^
+99 |         width: u64,
+   |         ^^^^^
+   |
+   = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `width`, and `elements` are never read
+   --> crates/vail-storage/src/computed_capability.rs:102:9
+    |
+101 |     DenseList {
+    |     --------- fields in this variant
+102 |         rows: u64,
+    |         ^^^^
+103 |         width: u64,
+    |         ^^^^^
+104 |         elements: u64,
+    |         ^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `codes`, `values`, and `preparation_bound` are never read
+   --> crates/vail-storage/src/computed_capability.rs:107:9
+    |
+106 |     SmallDictionary {
+    |     --------------- fields in this variant
+107 |         codes: u64,
+    |         ^^^^^
+108 |         values: u64,
+    |         ^^^^^^
+109 |         preparation_bound: usize,
+    |         ^^^^^^^^^^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `vail-storage` (lib) generated 5 warnings
+warning: unused import: `crate::builtins::ArrayBuiltins`
+  --> patches/vortex-array/src/aggregate_fn/fns/sum_v2/dict_grouped.rs:22:5
+   |
+22 | use crate::builtins::ArrayBuiltins;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `ListViewArrayExt`
+ --> patches/vortex-array/src/scalar_fn/fns/list_field.rs:6:31
+  |
+6 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+  |                               ^^^^^^^^^^^^^^^^
+
+warning: unused import: `ListViewArrayExt`
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:16:31
+   |
+16 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+   |                               ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:19:49
+   |
+19 | use crate::expr::proto::{ExprSerializeProtoExt, deserialize_expr_proto};
+   |                                                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+   --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:137:44
+    |
+137 |         ElementValidityPath::from_selector(deserialize_expr_proto(
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vortex-array` (lib) generated 5 warnings (run `cargo fix --lib -p vortex-array` to apply 3 suggestions)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:55:24
+   |
+55 |                 output.extend(0, first, last);
+   |                        ^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:62:16
+   |
+62 |         output.extend(0, first, last);
+   |                ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:61:28
+   |
+61 |                     output.extend(0, first, last);
+   |                            ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:68:20
+   |
+68 |             output.extend(0, first, last);
+   |                    ^^^^^^
+
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4313:14
+     |
+4313 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 5 warnings (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 3m 42s
+  Executable tests/native_list_evolution.rs (/home/danielking/vail-presence-20261026/target/release/deps/native_list_evolution-b88a1476628c17f2)

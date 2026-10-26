@@ -1,0 +1,29 @@
+{
+  "uname": [
+    "Linux",
+    "vail-bench-20261021",
+    "6.8.0-1070-gcp",
+    "#78~22.04.1-Ubuntu SMP Thu Sep 17 21:46:54 UTC 2026",
+    "x86_64"
+  ],
+  "arguments": {
+    "out": "/home/danielking/vail-presence-20261026/gate-8dcd426b",
+    "target": "/home/danielking/vail-presence-20261026/target",
+    "python": "/home/danielking/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/bin/python3.12",
+    "uv": "uv",
+    "kache": "kache",
+    "jobs": 8,
+    "wheel_budget": 1200,
+    "table_budget": 600,
+    "storage_budget": 600,
+    "runtime_budget": 180,
+    "disk_floor_gib": 10.0
+  },
+  "env": {
+    "RUSTFLAGS": "-C target-cpu=native",
+    "RUSTC_WRAPPER": "kache",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "8",
+    "CARGO_TARGET_DIR": "/home/danielking/vail-presence-20261026/target"
+  }
+}

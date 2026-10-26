@@ -1,0 +1,13 @@
+[
+  "cargo",
+  "test",
+  "--release",
+  "--locked",
+  "-p",
+  "vail-table",
+  "--test",
+  "encoded_projection",
+  "--test",
+  "struct_field_projection_contract",
+  "--no-run"
+]
