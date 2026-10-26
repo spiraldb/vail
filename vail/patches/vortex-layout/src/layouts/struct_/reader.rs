@@ -289,7 +289,7 @@ fn expanded_struct_root(
 
 /// Capture-free, total field access only. Casts, masks, unknown functions and
 /// binding/scalar computation decline; their original evaluation is retained.
-fn pure_presence_path(expr: &BoundExpression) -> Option<(bool, Vec<FieldName>)> {
+fn pure_presence_path(expr: &BoundExpression, scope: &DType) -> Option<(bool, Vec<FieldName>)> {
     let missing = if expr.is::<IsNull>() {
         true
     } else if expr.is::<IsNotNull>() {
@@ -303,7 +303,7 @@ fn pure_presence_path(expr: &BoundExpression) -> Option<(bool, Vec<FieldName>)> 
         names.push(name.clone());
         child = child.children().first()?;
     }
-    if !child.is_root() {
+    if !child.is_root() || child.dtype() != scope {
         return None;
     }
     names.reverse();
@@ -324,6 +324,14 @@ fn expand_struct_root(
     } else {
         (expanded_root, None)
     };
+    let scope_dtype = DType::Struct(
+        fields.clone(),
+        if validity.is_some() {
+            Nullability::Nullable
+        } else {
+            Nullability::NonNullable
+        },
+    );
     let with_validity = |expr: BoundExpression| match validity {
         Some(validity) => mask(expr, validity.clone()),
         None => expr,
@@ -333,7 +341,7 @@ fn expand_struct_root(
     // of an arbitrary Mask/scalar. Keep the outer parent's logical validity as
     // a separate Boolean dependency before generated value masks obscure it.
     let replace_node = |node: &BoundExpression| -> VortexResult<Option<BoundExpression>> {
-        if let Some((missing, names)) = pure_presence_path(node) {
+        if let Some((missing, names)) = pure_presence_path(node, &scope_dtype) {
             let present = if let Some((first, tail)) = names.split_first() {
                 let index = fields
                     .find(first)
