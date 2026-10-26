@@ -555,38 +555,26 @@ impl OwningCoordinates {
                     INNER_PRESENT || (arrays.is_valid(owner) && ancestors.iter().all(|nulls| nulls.is_valid(owner)))
                 })
         };
-        let mut count = 0usize;
-        for owner in selected() {
-            self.coordinates
-                .set_width(arrays.value_length(owner) as usize)?;
-            count = count
-                .checked_add(1)
-                .ok_or_else(|| error("coordinate owner count overflow"))?;
-        }
-        let Some(width) = self.coordinates.width else {
-            return Ok(());
-        };
-        if width == 0 || count == 0 {
-            return Ok(());
-        }
-        let length = count
-            .checked_mul(width)
-            .ok_or_else(|| error("coordinate child count overflow"))?;
-        // Coalesce selected spans before touching any primitive backing data.
-        // Null inner owners (including arbitrarily large hidden spans), null
-        // ancestors and excluded outer owners have already been discarded.
         let offsets = arrays.value_offsets();
         let runs = &mut self.runs;
         runs.clear();
+        let mut count = 0usize;
+        // Validate and coalesce only observed owners before touching primitive
+        // backing data. Missing owners never establish a coordinate width.
         for owner in selected() {
             let start = offsets[owner] as usize;
             let end = offsets[owner + 1] as usize;
+            self.coordinates.set_width(end - start)?;
+            count = count.checked_add(1).ok_or_else(|| error("coordinate owner count overflow"))?;
             if let Some(last) = runs.last_mut().filter(|last| last.1 == start) {
                 last.1 = end;
             } else {
                 runs.push((start, end));
             }
         }
+        let Some(width) = self.coordinates.width else { return Ok(()); };
+        if width == 0 || count == 0 { return Ok(()); }
+        let length = count.checked_mul(width).ok_or_else(|| error("coordinate child count overflow"))?;
         let flat = if runs.len() == 1 {
             arrays.values().slice(runs[0].0, length)
         } else {
