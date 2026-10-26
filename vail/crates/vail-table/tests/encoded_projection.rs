@@ -229,3 +229,6 @@ async fn native_list_lengths_on_multithread_runtime() {
 
 #[path = "support/element_validity_reader_io.rs"]
 mod element_validity_reader_io;
+
+#[path = "support/struct_presence_demand.rs"]
+mod struct_presence_demand;
