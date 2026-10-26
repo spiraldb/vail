@@ -22,6 +22,51 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def active_compilers():
+    """Inspect same-user compilers and descendants of persistent kache servers.
+
+    Never signal the shared cache daemon or infer ownership from a PID alone.
+    A successful check is compiler-child idleness, not disk/network/CPU idleness.
+    """
+    compiler_names = {'cargo', 'rustc', 'maturin', 'cc', 'c++', 'gcc', 'g++',
+                      'clang', 'clang++', 'cc1', 'cc1plus', 'ld', 'ld.lld',
+                      'rust-lld', 'build-script-bu'}
+    processes = {}
+    for entry in Path('/proc').iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            status = (entry / 'status').read_text()
+            uid = int(re.search(r'^Uid:\s+(\d+)', status, re.M)[1])
+            if uid != os.getuid():
+                continue
+            tail = (entry / 'stat').read_text().rsplit(') ', 1)[1].split()
+            if tail[0] == 'Z':
+                continue
+            processes[int(entry.name)] = {
+                'pid': int(entry.name), 'ppid': int(tail[1]),
+                'name': (entry / 'comm').read_text().strip(),
+                'start_ticks': int(tail[19]),
+            }
+        except (OSError, ValueError, TypeError, IndexError):
+            continue  # A process may exit between these read-only snapshots.
+    cache_servers = {pid for pid, row in processes.items() if row['name'] == 'kache'}
+    active = []
+    for pid, row in processes.items():
+        parent = row['ppid']
+        seen = set()
+        below_cache = False
+        while parent in processes and parent not in seen:
+            if parent in cache_servers:
+                below_cache = True
+                break
+            seen.add(parent)
+            parent = processes[parent]['ppid']
+        if row['name'] in compiler_names or below_cache:
+            active.append(dict(row, below_kache=below_cache))
+    return active
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--out', type=Path, required=True)
@@ -61,6 +106,23 @@ def main():
         temporary = out / 'status.tmp'
         temporary.write_text(json.dumps(value, indent=2) + '\n')
         temporary.replace(out / 'status.json')
+
+    def verify_compiler_idle(label):
+        started = time.monotonic()
+        observations = []
+        while True:
+            active = active_compilers()
+            observations.append({'elapsed': time.monotonic() - started, 'active': active})
+            if not active or time.monotonic() - started >= args.runtime_budget:
+                break
+            status({'stage': 'verify-compiler-idle', 'after': label,
+                    'elapsed': time.monotonic() - started, 'active': active})
+            time.sleep(2)
+        result = {'after': label, 'compiler_idle': not active,
+                  'observations': observations,
+                  'scope': 'same-user compiler and kache-child processes only; no machine-idle claim'}
+        (out / f'idle-{label}.json').write_text(json.dumps(result, indent=2) + '\n')
+        return not active
 
     def run(name, command, budget, cwd=PACKAGE):
         stage = out / name
@@ -103,7 +165,9 @@ def main():
         status(result)
         print(json.dumps(result), flush=True)
         if process.returncode != 0 or reason:
-            raise RuntimeError(f'{name} failed; inspect {stage}')
+            idle = verify_compiler_idle(name)
+            status(dict(result, compiler_idle=idle, handoff_automatic=False))
+            raise RuntimeError(f'{name} failed; compiler_idle={idle}; inspect {stage}; no automatic handoff')
         return stage
 
     for name, command in [('rustc', ['rustc', '--version']), ('cargo', ['cargo', '--version']),
@@ -167,6 +231,10 @@ def main():
             artifacts.append({'target': test, 'passed': int(match[1]),
                               'exe_sha256': checksum, 'log_sha256': digest(result / 'output.log')})
     (out / 'runtime-artifacts.json').write_text(json.dumps(artifacts, indent=2) + '\n')
+    if not verify_compiler_idle('complete'):
+        status({'status': 'blocked', 'reason': 'compiler/cache children still active',
+                'handoff_automatic': False})
+        raise RuntimeError('Compiler/cache children remain active; do not hand off compute')
     status({'status': 'complete', 'source_revision': manifest['source_revision'],
             'python_passed': len(cases), 'rust_artifacts': artifacts})
 

@@ -52,3 +52,18 @@ traffic and independently checks values. Tiny/many-file windows are limited
 startup/reuse observations, not randomized trials or throughput/core-second/ALU
 claims. Linux/cloud timings must not be combined with earlier M3 timings as a
 speedup. No native capability/translator/admission expansion is included.
+
+## Approved cloud budgets and cache-child verification
+
+cloud-plan.json and invoke_cloud_gate.sh freeze jobs8, wheel1200s,
+table600s, storage600s, runtime180s and10GiBfree-space floor. Root supplies only
+the extracted source, new output, stable target and existing Python3.12paths.
+Do not upload/start until root releases the upstream owner's first compute slot.
+
+Timeout/floor/error stops only the driver's own process group. Persistent kache
+may already have dispatched compiler children in another group. The driver then
+observes same-user compilers and kache descendants through Linux/proc for at most
+180s, recording PID/start ticks, without signaling the cache daemon. Remaining
+workers make the gate blocked and prohibit automatic handoff. Successful final
+completion also verifies compiler-child idleness. This is not a general disk,
+network, cache-upload-thread or CPU-idle assertion; root still owns VM scheduling.

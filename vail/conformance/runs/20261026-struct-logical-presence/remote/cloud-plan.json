@@ -1,0 +1,11 @@
+{
+  "jobs": 8,
+  "wheel_budget_seconds": 1200,
+  "table_budget_seconds": 600,
+  "storage_budget_seconds": 600,
+  "runtime_budget_seconds": 180,
+  "disk_floor_gib": 10,
+  "compute_order": "Upstream agent has the first exclusive cloud slot; run only after root handoff",
+  "failure_behavior": "Terminate own process group, bounded 180-second compiler/kache-child idle verification; never kill shared cache daemon or automatically hand off on failure",
+  "successful_handoff_scope": "No same-user compiler/cache child processes; not a claim of all-machine disk/network/CPU idleness"
+}
