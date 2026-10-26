@@ -270,3 +270,166 @@ async fn element_validity_public_file_io_receipt() -> VortexResult<()> {
     }
     Ok(())
 }
+
+/// Small fixed workload controls. These record real reader traffic and elapsed
+/// time, without byte/latency assertions or claims of independent process trials.
+#[tokio::test]
+async fn element_validity_tiny_many_fresh_reused_reader_receipt() -> VortexResult<()> {
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    let session = structural_session()?;
+    let (rows, width) = (2usize, 3usize);
+    let input = fixture(rows, width)?;
+    let presence = list_element_validity(root(), input.dtype(), &["selected".into()])?;
+    let reduction = list_sum(presence.clone()).bind(input.dtype())?;
+    let length = vortex::expr::list_length(root()).bind(input.dtype())?;
+    let raw = root().bind(input.dtype())?;
+    let expected = (0..rows)
+        .map(|row| {
+            Some(
+                ((row * width)..((row + 1) * width))
+                    .filter(|i| i % 5 != 0 && i % 7 != 0)
+                    .count() as u64,
+            )
+        })
+        .collect::<Vec<_>>();
+    let sum_field = session.arrow().to_arrow_field("", reduction.dtype())?;
+    let length_field = session.arrow().to_arrow_field("", length.dtype())?;
+    let directory = tempfile::tempdir().unwrap();
+    let mut paths = Vec::new();
+    for i in 0..16 {
+        let path = directory.path().join(format!("tiny-{i}.vortex"));
+        session
+            .write_options()
+            .with_strategy(
+                vortex::file::WriteStrategyBuilder::default()
+                    .with_list_layout()
+                    .build(),
+            )
+            .write(
+                tokio::fs::File::create(&path).await.unwrap(),
+                ArrayStreamAdapter::new(
+                    input.dtype().clone(),
+                    futures::stream::iter([Ok(input.clone())]),
+                ),
+            )
+            .await?;
+        paths.push(path);
+    }
+    for count in [1usize, 16] {
+        for reuse in [false, true] {
+            let mut cached = Vec::new();
+            if reuse {
+                for path in &paths[..count] {
+                    let traffic = Arc::new(Traffic::default());
+                    let observed = Arc::new(ObservedFile {
+                        inner: FileReadAt::open_with_allocator(
+                            path,
+                            session.handle(),
+                            session.allocator(),
+                        )?,
+                        traffic: traffic.clone(),
+                    });
+                    cached.push((
+                        session.open_options().open(observed).await?.with_caching(),
+                        traffic,
+                    ));
+                }
+            }
+            for window in 0..4 {
+                let order = if window % 2 == 0 {
+                    ["raw", "length", "sum"]
+                } else {
+                    ["sum", "length", "raw"]
+                };
+                for kind in order {
+                    let before = cached
+                        .iter()
+                        .map(|(_, traffic)| traffic.snapshot().0)
+                        .sum::<u64>();
+                    let mut fresh_requested = 0;
+                    let mut checksum = 0u64;
+                    let start = std::time::Instant::now();
+                    for i in 0..count {
+                        let fresh = if reuse {
+                            None
+                        } else {
+                            let traffic = Arc::new(Traffic::default());
+                            let observed = Arc::new(ObservedFile {
+                                inner: FileReadAt::open_with_allocator(
+                                    &paths[i],
+                                    session.handle(),
+                                    session.allocator(),
+                                )?,
+                                traffic: traffic.clone(),
+                            });
+                            Some((session.open_options().open(observed).await?, traffic))
+                        };
+                        let file = match &fresh {
+                            Some((file, _)) => file,
+                            None => &cached[i].0,
+                        };
+                        let expression = match kind {
+                            "raw" => &raw,
+                            "length" => &length,
+                            _ => &reduction,
+                        };
+                        let chunks = file
+                            .scan()?
+                            .with_projection(expression.clone())
+                            .into_array_stream()?
+                            .try_collect::<Vec<_>>()
+                            .await?;
+                        let mut actual = Vec::new();
+                        let mut ctx = session.create_execution_ctx();
+                        for chunk in chunks {
+                            let output = if kind == "raw" {
+                                chunk.apply_bound(&reduction)?
+                            } else {
+                                chunk
+                            };
+                            let field = if kind == "length" {
+                                &length_field
+                            } else {
+                                &sum_field
+                            };
+                            let output =
+                                session
+                                    .arrow()
+                                    .execute_arrow(output, Some(field), &mut ctx)?;
+                            actual.extend(
+                                output
+                                    .as_any()
+                                    .downcast_ref::<arrow_array::UInt64Array>()
+                                    .unwrap()
+                                    .iter(),
+                            );
+                        }
+                        if kind == "length" {
+                            assert_eq!(actual, vec![Some(width as u64); rows]);
+                        } else {
+                            assert_eq!(actual, expected);
+                        }
+                        checksum += actual.into_iter().flatten().sum::<u64>();
+                        if let Some((_, traffic)) = &fresh {
+                            fresh_requested += traffic.snapshot().0;
+                        }
+                    }
+                    let seconds = start.elapsed().as_secs_f64();
+                    let requested = if reuse {
+                        cached
+                            .iter()
+                            .map(|(_, traffic)| traffic.snapshot().0)
+                            .sum::<u64>()
+                            - before
+                    } else {
+                        fresh_requested
+                    };
+                    eprintln!(
+                        "ELEMENT_VALIDITY_SMALL_READER files={count} reused={reuse} window={window} query={kind} requested_bytes={requested} scan_materialize_check_seconds={seconds} checksum={checksum}"
+                    );
+                }
+            }
+        }
+    }
+    Ok(())
+}
