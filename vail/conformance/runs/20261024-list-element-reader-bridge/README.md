@@ -19,3 +19,11 @@ Actual Vail storage writing already explicitly enables structural lists (vail-st
 ## Actual structural fixture gate (not yet successful)
 
 Exact794a2127 relink completed26.07s. Whole30:25passed/5failed in0.11s. Every structural fixture failed during writing with `Layout encoding vortex.list not permitted by ctx`, before reading. Default control now explicitly shows root Zoned→Flat and the same requested bytes. Actual structural ListReader execution remains unproved. Test-only27695137 mirrors Vail's public dedicated structural-list edition opt-in (register/enable only vortex.list, no disable-editions bypass); that correction is source-only and awaiting independent review/build authorization.
+
+## Actual edition-corrected structural reader proof
+
+Exactf99894de8c8d93fe908e302f0c8b6cb4e0b3e55c uses the same public structural-list edition declaration already enabled by Vail's writer; all other edition enforcement stays enabled. Normal cached relink24.06s. Whole30target:30passed/0failed/0ignored in0.13s. The actual layout outline is Zoned→List→Struct→nestedStruct with independent flat validity children and payload fields. The direct map, sums, logical ancestors, raw/distinct siblings, bounded mask, and shared-DAG correctness controls now exercise real structural files.
+
+Application-reader traffic: flat control still4,277,547requested bytes for both queries. Structural full read4,277,895requested/4,221,520unique; structural presence SumMap2,180,011requested+unique bytes,49.04%fewer requested. This is a partial payload omission result, NOT bitmap-only: about2MBremains and source audit is pending. Both public query outputs match independently calculated presence counts.
+
+These are one concurrent unit-test execution, not a controlled throughput benchmark. Tiny scan+materialization+checks timings and interleaved DAG-preparation diagnostics are retained raw but do not establish wall/core-second speedup. Open snapshots can overlap prefetch; these counters are application-reader requests/completions, not physical device reads. No native capability/translator/admission expansion, selected-owner bound or new native wheel. Target released immediately after runtime.
