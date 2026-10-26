@@ -190,3 +190,26 @@ fn hidden_coordinate_and_unused_sibling_growth_does_not_expand_query_allocations
     }
     assert!(bytes[1] <= bytes[0] + 4096, "excluded input growth expanded query allocations: {bytes:?}");
 }
+
+#[test]
+fn empty_domains_and_repeated_data_updates_preserve_coordinate_state() {
+    let absent = ordinary(vec![]);
+    let data = ordinary(vec![Some(vec![Some(3), None]), Some(vec![Some(4), Some(2)])]);
+    let aggregate = aggregate(&data);
+    let mut accumulator = aggregate.create_accumulator().unwrap();
+    accumulator.update_batch(&[absent.clone()]).unwrap();
+    assert_eq!(accumulator.evaluate().unwrap(), result(None));
+    for _ in 0..2 {
+        accumulator.update_batch(&[data.clone()]).unwrap();
+        accumulator.update_batch(&[absent.clone()]).unwrap();
+    }
+    assert_eq!(accumulator.evaluate().unwrap(), result(Some(vec![Some(14), Some(4)])));
+    let mut merged = aggregate.create_accumulator().unwrap();
+    for input in [&absent, &data, &absent, &data, &absent] {
+        let mut partial = aggregate.create_accumulator().unwrap();
+        partial.update_batch(&[input.clone()]).unwrap();
+        let states = partial.state().unwrap().iter().map(|state| state.to_array_of_size(1).unwrap()).collect::<Vec<_>>();
+        merged.merge_batch(&states).unwrap();
+    }
+    assert_eq!(merged.evaluate().unwrap(), result(Some(vec![Some(14), Some(4)])));
+}
