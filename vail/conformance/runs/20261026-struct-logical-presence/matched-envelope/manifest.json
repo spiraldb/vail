@@ -1,0 +1,49 @@
+{
+  "baseline_source": "267a5e1d63a93cc1eec034437a1b9d1be67989a1",
+  "candidate_source": "0216b791bdb6cd24ac9ab0c6df611917c68d3f53",
+  "base_main": "5850c7cf",
+  "baseline_runtime": {
+    "command": [
+      "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/encoded_projection-5989a01df6e6f29e",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "exe_sha256": "d41c70123aec67a087bb8f348e2ff4ab731a40ba61c239a6341bf1a2dcaeaf69",
+    "returncode": 0,
+    "log_sha256": "c067935c7cebead90844a64573e6096443b5ec93fda747dd8911c636d30bbd49"
+  },
+  "candidate_runtime": {
+    "command": [
+      "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/encoded_projection-5989a01df6e6f29e",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "exe_sha256": "022c74bd7f81a1ab94d61b66ee211135baaefede911e7286168dd830792edbd6",
+    "returncode": 0,
+    "log_sha256": "d7953272ff64d8d5c438838435e2f9b5e36044520c2de64e57c234e0e0f51e92"
+  },
+  "baseline_passed": 34,
+  "candidate_passed": 34,
+  "failed": 0,
+  "baseline_build_seconds": 22.10822606086731,
+  "candidate_build_seconds": 160.4244270324707,
+  "application_io": {
+    "old_presence_requested_and_unique": 2180011,
+    "new_presence_requested_and_unique": 82127,
+    "ratio": 26.54438856892374,
+    "requested_fraction_avoided": 0.9623272543120195,
+    "raw_requested_both": 4277895,
+    "raw_unique_both": 4221520,
+    "flat_requested_both": 4277547
+  },
+  "limits": [
+    "No native admission/translator change",
+    "No normal candidate wheel or broad Python gate yet",
+    "One process per version; build interval and OS/thermal state confound tiny timing comparisons",
+    "Four windows per small group are not independent process replicas",
+    "16-file reused raw observed+0.160ms median; all observations retained",
+    "Writer normalizes dictionary inputs: logical semantics only, no preserved dictionary codec claim",
+    "Application-reader bytes, not physical storage IO; open snapshot may overlap prefetch"
+  ],
+  "next_gate": "Current-main composition and normal wheel/Python/Rust gates must run on cloud; no more local timing/builds"
+}

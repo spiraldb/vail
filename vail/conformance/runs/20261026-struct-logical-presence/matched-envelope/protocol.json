@@ -1,0 +1,91 @@
+{
+  "baseline": "267a5e1d63a93cc1eec034437a1b9d1be67989a1",
+  "candidate": "0216b791bdb6cd24ac9ab0c6df611917c68d3f53",
+  "base_main": "5850c7cf",
+  "source_hashes": {
+    "vail/crates/vail-table/tests/encoded_projection.rs": "c983ca7e5feb60ce931f61983acaf8d16a1c07150e7ff81913eb0fdfc1b8d98f",
+    "vail/crates/vail-table/tests/support/element_validity_reader_io.rs": "cdb046a7f6727c2213db32f8be8a6efceceae7b36cead61de2c6bb51d0b46e55",
+    "vail/crates/vail-table/tests/support/struct_presence_demand.rs": "2c354f606384dff0451bfb3ec38fd507ab499ff85721ee14fc7e5c1ca353feca",
+    "vail/patches/vortex-layout/src/layouts/struct_/reader.rs": {
+      "baseline": "64b4ab30a9c73304a364041ced9ed7ce221cee1666846f51ee598dfd2ce85463",
+      "candidate": "3cbf69d8dbf7ffc991701909f851fb82cf3a95a5ae002b1eea44b74151391494"
+    }
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "-p",
+    "vail-table",
+    "--test",
+    "encoded_projection",
+    "--no-run"
+  ],
+  "proposed_budgets_seconds": {
+    "baseline_test_only": 120,
+    "candidate_graph": 600
+  },
+  "runtime": [
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "expected_tests": 34,
+  "fixed_windows": {
+    "large_io": {
+      "rows": 64,
+      "width": 1024,
+      "writer_variants": [
+        "default_flat",
+        "explicit_structural"
+      ],
+      "queries": [
+        "full_read_then_checked_sum",
+        "presence_sum"
+      ],
+      "runs_per_binary": 1
+    },
+    "tiny_many": {
+      "rows": 2,
+      "width": 3,
+      "file_counts": [
+        1,
+        16
+      ],
+      "reader_modes": [
+        "fresh",
+        "reused_with_caching"
+      ],
+      "windows_per_mode": 4,
+      "query_orders": [
+        [
+          "raw",
+          "length",
+          "sum"
+        ],
+        [
+          "sum",
+          "length",
+          "raw"
+        ]
+      ],
+      "checksum": "independent modulo5/7 oracle; width for length"
+    }
+  },
+  "resource_claims": [
+    "matched deterministic application-reader requested/completed/unique byte omission on unchanged fixture",
+    "public logical correctness",
+    "tiny/many startup and reuse costs as limited observations"
+  ],
+  "limitations": [
+    "one baseline process then one candidate process; not randomized ABBA",
+    "four windows share a process/readers and are not independent replicas",
+    "build interval/OS cache/thermal state can confound wall-time comparisons",
+    "no throughput/ALU/core-seconds speedup claim",
+    "no preserved dictionary encoding claim from writer-normalized logical correctness tests",
+    "no native admission expansion",
+    "no artifact copying, new features, separate targets or graph cycling"
+  ],
+  "producer_correction": "45d48528: nonnullable table envelope retaining nullable records and unchanged independent oracle",
+  "previous_attempt": "cde7: 31 PASS/3 producer failure; candidate NOT RUN"
+}

@@ -1,0 +1,30 @@
+{
+  "source": "0216b791bdb6cd24ac9ab0c6df611917c68d3f53",
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "-p",
+    "vail-table",
+    "--test",
+    "encoded_projection",
+    "--no-run"
+  ],
+  "env": {
+    "RUSTFLAGS": "-C target-cpu=native",
+    "RUSTC_WRAPPER": "kache",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TARGET_DIR": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target",
+    "MACOSX_DEPLOYMENT_TARGET": "11.0",
+    "PYO3_PYTHON": "/private/tmp/vail-encoded-main-integration-env/bin/python"
+  },
+  "pid": 50470,
+  "elapsed": 160.4244270324707,
+  "returncode": 0,
+  "stop_reason": null,
+  "initial_free_bytes": 124585385984,
+  "minimum_free_bytes": 124162596864,
+  "final_free_bytes": 124184543232
+}

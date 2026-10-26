@@ -1,0 +1,96 @@
+
+running 34 tests
+test element_validity_reader_io::element_validity_public_file_io_receipt ... ELEMENT_VALIDITY_PUBLIC_IO structural=false raw=true rows=64 width=1024 file_bytes=4214260 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=4277547 total_completed=4277547 total_unique=4214252 open_seconds=0.000533458 scan_and_value_check_seconds=0.001455833 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.flat rows=64 segments=[SegmentId(0)]", "root/1:vortex.flat rows=1 segments=[SegmentId(1)]"]
+ELEMENT_VALIDITY_PUBLIC_IO structural=false raw=false rows=64 width=1024 file_bytes=4214260 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=4277547 total_completed=4277547 total_unique=4214252 open_seconds=0.000052959 scan_and_value_check_seconds=0.000418375 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.flat rows=64 segments=[SegmentId(0)]", "root/1:vortex.flat rows=1 segments=[SegmentId(1)]"]
+ELEMENT_VALIDITY_PUBLIC_IO structural=true raw=true rows=64 width=1024 file_bytes=4221532 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=4277895 total_completed=4277895 total_unique=4221520 open_seconds=0.00043425 scan_and_value_check_seconds=0.000699042 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.list rows=64 segments=[]", "root/0/0:vortex.struct rows=65536 segments=[]", "root/0/0/0:vortex.flat rows=65536 segments=[SegmentId(0)]", "root/0/0/1:vortex.struct rows=65536 segments=[]", "root/0/0/1/0:vortex.flat rows=65536 segments=[SegmentId(1)]", "root/0/0/1/1:vortex.zoned rows=65536 segments=[]", "root/0/0/1/1/0:vortex.flat rows=65536 segments=[SegmentId(2)]", "root/0/0/1/1/1:vortex.flat rows=8 segments=[SegmentId(12)]", "root/0/0/1/2:vortex.zoned rows=65536 segments=[]", "root/0/0/1/2/0:vortex.flat rows=65536 segments=[SegmentId(3)]", "root/0/0/1/2/1:vortex.flat rows=8 segments=[SegmentId(13)]", "root/0/0/1/3:vortex.zoned rows=65536 segments=[]", "root/0/0/1/3/0:vortex.flat rows=65536 segments=[SegmentId(4)]", "root/0/0/1/3/1:vortex.flat rows=8 segments=[SegmentId(14)]", "root/0/0/1/4:vortex.zoned rows=65536 segments=[]", "root/0/0/1/4/0:vortex.flat rows=65536 segments=[SegmentId(5)]", "root/0/0/1/4/1:vortex.flat rows=8 segments=[SegmentId(15)]", "root/0/0/2:vortex.zoned rows=65536 segments=[]", "root/0/0/2/0:vortex.flat rows=65536 segments=[SegmentId(6)]", "root/0/0/2/1:vortex.flat rows=8 segments=[SegmentId(16)]", "root/0/0/3:vortex.zoned rows=65536 segments=[]", "root/0/0/3/0:vortex.flat rows=65536 segments=[SegmentId(7)]", "root/0/0/3/1:vortex.flat rows=8 segments=[SegmentId(17)]", "root/0/0/4:vortex.zoned rows=65536 segments=[]", "root/0/0/4/0:vortex.flat rows=65536 segments=[SegmentId(8)]", "root/0/0/4/1:vortex.flat rows=8 segments=[SegmentId(18)]", "root/0/0/5:vortex.zoned rows=65536 segments=[]", "root/0/0/5/0:vortex.flat rows=65536 segments=[SegmentId(9)]", "root/0/0/5/1:vortex.flat rows=8 segments=[SegmentId(19)]", "root/0/1:vortex.zoned rows=65 segments=[]", "root/0/1/0:vortex.flat rows=65 segments=[SegmentId(10)]", "root/0/1/1:vortex.flat rows=1 segments=[SegmentId(20)]", "root/0/2:vortex.flat rows=64 segments=[SegmentId(11)]", "root/1:vortex.flat rows=1 segments=[SegmentId(21)]"]
+ELEMENT_VALIDITY_PUBLIC_IO structural=true raw=false rows=64 width=1024 file_bytes=4221532 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=2180011 total_completed=2180011 total_unique=2180011 open_seconds=0.000051209 scan_and_value_check_seconds=0.000384708 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.list rows=64 segments=[]", "root/0/0:vortex.struct rows=65536 segments=[]", "root/0/0/0:vortex.flat rows=65536 segments=[SegmentId(0)]", "root/0/0/1:vortex.struct rows=65536 segments=[]", "root/0/0/1/0:vortex.flat rows=65536 segments=[SegmentId(1)]", "root/0/0/1/1:vortex.zoned rows=65536 segments=[]", "root/0/0/1/1/0:vortex.flat rows=65536 segments=[SegmentId(2)]", "root/0/0/1/1/1:vortex.flat rows=8 segments=[SegmentId(12)]", "root/0/0/1/2:vortex.zoned rows=65536 segments=[]", "root/0/0/1/2/0:vortex.flat rows=65536 segments=[SegmentId(3)]", "root/0/0/1/2/1:vortex.flat rows=8 segments=[SegmentId(13)]", "root/0/0/1/3:vortex.zoned rows=65536 segments=[]", "root/0/0/1/3/0:vortex.flat rows=65536 segments=[SegmentId(4)]", "root/0/0/1/3/1:vortex.flat rows=8 segments=[SegmentId(14)]", "root/0/0/1/4:vortex.zoned rows=65536 segments=[]", "root/0/0/1/4/0:vortex.flat rows=65536 segments=[SegmentId(5)]", "root/0/0/1/4/1:vortex.flat rows=8 segments=[SegmentId(15)]", "root/0/0/2:vortex.zoned rows=65536 segments=[]", "root/0/0/2/0:vortex.flat rows=65536 segments=[SegmentId(6)]", "root/0/0/2/1:vortex.flat rows=8 segments=[SegmentId(16)]", "root/0/0/3:vortex.zoned rows=65536 segments=[]", "root/0/0/3/0:vortex.flat rows=65536 segments=[SegmentId(7)]", "root/0/0/3/1:vortex.flat rows=8 segments=[SegmentId(17)]", "root/0/0/4:vortex.zoned rows=65536 segments=[]", "root/0/0/4/0:vortex.flat rows=65536 segments=[SegmentId(8)]", "root/0/0/4/1:vortex.flat rows=8 segments=[SegmentId(18)]", "root/0/0/5:vortex.zoned rows=65536 segments=[]", "root/0/0/5/0:vortex.flat rows=65536 segments=[SegmentId(9)]", "root/0/0/5/1:vortex.flat rows=8 segments=[SegmentId(19)]", "root/0/1:vortex.zoned rows=65 segments=[]", "root/0/1/0:vortex.flat rows=65 segments=[SegmentId(10)]", "root/0/1/1:vortex.flat rows=1 segments=[SegmentId(20)]", "root/0/2:vortex.flat rows=64 segments=[SegmentId(11)]", "root/1:vortex.flat rows=1 segments=[SegmentId(21)]"]
+ok
+test element_validity_reader_io::element_validity_tiny_many_fresh_reused_reader_receipt ... ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=0 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.000228417 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=0 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000139792 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=0 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.00019025 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=1 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.000163833 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=1 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000114542 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=1 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.00018825 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=2 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.000179167 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=2 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000101667 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=2 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.000154 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=3 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.00014925 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=3 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000102209 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=3 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.000168083 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=0 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000124333 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=0 query=length requested_bytes=0 scan_materialize_check_seconds=0.000037875 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=0 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000086292 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=1 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000061709 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=1 query=length requested_bytes=0 scan_materialize_check_seconds=0.000036167 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=1 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000075583 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=2 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000073709 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=2 query=length requested_bytes=0 scan_materialize_check_seconds=0.000037334 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=2 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000059875 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=3 query=sum requested_bytes=0 scan_materialize_check_seconds=0.00005925 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=3 query=length requested_bytes=0 scan_materialize_check_seconds=0.000035041 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=3 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000074667 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=0 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.00273 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=0 query=length requested_bytes=168512 scan_materialize_check_seconds=0.001573875 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=0 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002238625 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=1 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.00218425 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=1 query=length requested_bytes=168512 scan_materialize_check_seconds=0.001503584 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=1 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.002748125 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=2 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.002645375 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=2 query=length requested_bytes=168512 scan_materialize_check_seconds=0.00159275 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=2 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002289958 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=3 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002276333 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=3 query=length requested_bytes=168512 scan_materialize_check_seconds=0.001638708 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=3 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.002495375 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=0 query=raw requested_bytes=0 scan_materialize_check_seconds=0.00199075 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=0 query=length requested_bytes=0 scan_materialize_check_seconds=0.000547334 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=0 query=sum requested_bytes=0 scan_materialize_check_seconds=0.001217208 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=1 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000894667 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=1 query=length requested_bytes=0 scan_materialize_check_seconds=0.000541042 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=1 query=raw requested_bytes=0 scan_materialize_check_seconds=0.00107825 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=2 query=raw requested_bytes=0 scan_materialize_check_seconds=0.001067292 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=2 query=length requested_bytes=0 scan_materialize_check_seconds=0.000535167 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=2 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000867959 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=3 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000867667 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=3 query=length requested_bytes=0 scan_materialize_check_seconds=0.000537375 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=3 query=raw requested_bytes=0 scan_materialize_check_seconds=0.001064334 checksum=64
+ok
+test encoded_list_sum::complete_list_api_rejects_different_declared_schema ... ok
+test encoded_list_sum::declared_nullable_all_valid_count_keeps_nullable_schema ... ok
+test encoded_list_sum::dictionary_all_missing_codes_or_values_yield_missing_group_sums ... ok
+test encoded_list_sum::dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists ... ok
+test encoded_list_sum::distant_list_groups_and_large_retained_dictionary_preserve_logical_values ... ok
+test encoded_list_sum::element_validity_file_reader_distinct_paths_and_bounded_mask_are_correct ... ok
+test encoded_list_sum::element_validity_file_reader_preserves_boolean_domain_and_sum ... ok
+test encoded_list_sum::element_validity_file_reader_shared_body_and_raw_sibling_keep_original_values ... ok
+test encoded_list_sum::element_validity_map_has_true_boolean_type_and_logical_ancestor_masks ... ok
+test encoded_list_sum::element_validity_reader_preparation_accepts_shared_expression_dags ... ELEMENT_VALIDITY_DAG_PREPARATION depth=8 seconds=0.000012333
+ELEMENT_VALIDITY_DAG_PREPARATION depth=16 seconds=0.000010708
+ELEMENT_VALIDITY_DAG_PREPARATION depth=30 seconds=0.000023416
+ok
+test encoded_list_sum::element_validity_serialization_retains_exact_original_schema_and_no_capture ... ok
+test encoded_list_sum::element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types ... ok
+test encoded_list_sum::element_validity_sum_map_and_count_identity_preserve_outer_missingness ... ok
+test encoded_list_sum::grouped_dictionary_preserves_code_value_and_list_nulls ... ok
+test encoded_list_sum::grouped_sum_with_encoded_logical_mask_matches_nullable_values ... ok
+test encoded_list_sum::list_field_sum_preserves_nested_logical_nulls_and_zero_identity ... ok
+test encoded_list_sum::nullable_dictionary_sizes_and_reuse_match_independent_sums ... ok
+test encoded_list_sum::nullable_grouped_all_missing_and_zero_rows_have_real_null_outputs ... ok
+test encoded_list_sum::nullable_grouped_boolean_sum_checks_raw_missing_before_normalization ... ok
+test encoded_list_sum::nullable_grouped_combined_mean_preserves_count_and_sum_pairing ... ok
+test encoded_list_sum::nullable_grouped_count_distinguishes_missing_empty_and_nan ... ok
+test encoded_list_sum::nullable_grouped_fixed_size_slice_and_logical_ancestor_masks ... ok
+test encoded_list_sum::nullable_grouped_flush_pairs_multiple_batches_and_resets ... ok
+test encoded_list_sum::nullable_grouped_public_resource_windows ... GROUPED_RESOURCE {"case":"mixed_bool_sum","owner":10000,"output_groups":4,"canonical_acquired_before_timing":true,"raw_expected":[1.0,null,null,null],"windows":[{"window":0,"legacy":true,"seconds":[6.959e-6,6.75e-6,6.625e-6,6.667e-6,6.583e-6,6.542e-6],"rss_before_kib":45696,"rss_after_kib":45712},{"window":1,"legacy":false,"seconds":[0.000010125,9.875e-6,9.75e-6,9.75e-6,9.542e-6,9.542e-6],"rss_before_kib":45776,"rss_after_kib":45776},{"window":2,"legacy":false,"seconds":[9.708e-6,9.667e-6,9.625e-6,9.458e-6,9.458e-6,9.5e-6],"rss_before_kib":45776,"rss_after_kib":45776},{"window":3,"legacy":true,"seconds":[7e-6,6.75e-6,6.708e-6,6.75e-6,6.5e-6,6.625e-6],"rss_before_kib":45776,"rss_after_kib":45776}],"limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"}
+GROUPED_RESOURCE {"case":"all_missing_pco_sum","owner":10000,"output_groups":4,"canonical_acquired_before_timing":true,"raw_expected":[null,null,null,null],"windows":[{"window":0,"legacy":true,"seconds":[0.000020542,0.000020375,0.000020208,0.000020125,0.000020083,0.000020209],"rss_before_kib":45808,"rss_after_kib":45904},{"window":1,"legacy":false,"seconds":[3.875e-6,3.834e-6,3.709e-6,3.709e-6,3.709e-6,3.708e-6],"rss_before_kib":45904,"rss_after_kib":45904},{"window":2,"legacy":false,"seconds":[4.833e-6,4.792e-6,4.583e-6,3.709e-6,3.625e-6,3.667e-6],"rss_before_kib":45904,"rss_after_kib":45904},{"window":3,"legacy":true,"seconds":[0.00002075,0.000020542,0.000020375,0.000020334,0.000020209,0.00002025],"rss_before_kib":45904,"rss_after_kib":45904}],"limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"}
+ok
+test encoded_list_sum::nullable_grouped_sum_preserves_present_null_and_outer_null ... ok
+test encoded_list_sum::sliced_list_field_preserves_logical_masks_and_ignores_hidden_owner_rows ... ok
+test native_list_lengths_on_current_thread_runtime ... ok
+test native_list_lengths_on_multithread_runtime ... ok
+test native_nested_projection_and_global_sum_preserve_nulls_and_widening ... ok
+test struct_presence_demand::nested_struct_presence_uses_all_logical_ancestors_and_reuses_row_domains ... ok
+test struct_presence_demand::struct_presence_raw_and_unknown_consumers_keep_original_values ... ok
+test struct_presence_demand::struct_presence_required_empty_and_dictionary_rows_are_logical ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+

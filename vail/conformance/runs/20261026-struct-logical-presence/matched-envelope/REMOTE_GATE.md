@@ -1,0 +1,7 @@
+# Remote validation requirements
+
+Transfer tracked source at the final reviewed descendant of candidate0216b791 (baseline267a5e1d only needed for repeated matched evidence). No private fixture data: public tests generate files deterministically. Preserve Cargo.lock and all patches; use the workspace's normal Rust toolchain, kache, target-cpu=native and one stable target/features graph. Do not copy native artifacts.
+
+Build the ordinary locked release wheel with maturin and install normally into an independent Python environment. The prior public gate used Python3.12,pytest9.1.1,numpy2.5.4,pyarrow26.0.0; use the exact available supported pinned environment on the VM and record it. Run the same431public Python cases from the prior reader integration receipt. Rust public targets: vail-table encoded_projection(34serial), struct_field_projection_contract(4), vail-storage native_list_evolution(2). Capture actual commands, compiler/runtime, source/executable/wheel/native hashes and all failures.
+
+Tests generate the real IO fixture and1/16small files; collect requested/completed/unique bytes and all fixed windows, preserving their non-throughput limitations. A Linux/cloud artifact is a different architecture/environment from M3; do not mix local and remote wall-time measurements as a speedup comparison. Review current-main composition before build if upstream DataFusion backports merge.
