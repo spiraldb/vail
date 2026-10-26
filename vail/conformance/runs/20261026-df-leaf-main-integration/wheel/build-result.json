@@ -1,0 +1,29 @@
+{
+  "source": "f5f37d6e09d828d4438aa3afb0512c4e6335df66",
+  "command": [
+    "/private/tmp/vail-encoded-projection-env/bin/maturin",
+    "build",
+    "--release",
+    "--locked",
+    "--interpreter",
+    "/private/tmp/vail-encoded-main-integration-env/bin/python",
+    "--out",
+    "/private/tmp/vail-df-leaf-main-integration/wheels"
+  ],
+  "env": {
+    "RUSTFLAGS": "-C target-cpu=native",
+    "RUSTC_WRAPPER": "kache",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TARGET_DIR": "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target",
+    "MACOSX_DEPLOYMENT_TARGET": "11.0",
+    "PYO3_PYTHON": "/private/tmp/vail-encoded-main-integration-env/bin/python"
+  },
+  "pid": 29273,
+  "elapsed": 344.8418769836426,
+  "returncode": 0,
+  "stop_reason": null,
+  "initial_free_bytes": 128820015104,
+  "minimum_free_bytes": 127966269440,
+  "final_free_bytes": 127948365824
+}

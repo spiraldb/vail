@@ -1,0 +1,32 @@
+
+running 25 tests
+test encoded_list_sum::complete_list_api_rejects_different_declared_schema ... ok
+test encoded_list_sum::declared_nullable_all_valid_count_keeps_nullable_schema ... ok
+test encoded_list_sum::nullable_grouped_all_missing_and_zero_rows_have_real_null_outputs ... ok
+test encoded_list_sum::grouped_sum_with_encoded_logical_mask_matches_nullable_values ... ok
+test encoded_list_sum::grouped_dictionary_preserves_code_value_and_list_nulls ... ok
+test encoded_list_sum::element_validity_map_has_true_boolean_type_and_logical_ancestor_masks ... ok
+test encoded_list_sum::list_field_sum_preserves_nested_logical_nulls_and_zero_identity ... ok
+test encoded_list_sum::dictionary_all_missing_codes_or_values_yield_missing_group_sums ... ok
+test encoded_list_sum::element_validity_serialization_retains_exact_original_schema_and_no_capture ... ok
+test encoded_list_sum::element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types ... ok
+test encoded_list_sum::element_validity_sum_map_and_count_identity_preserve_outer_missingness ... ok
+test encoded_list_sum::nullable_grouped_boolean_sum_checks_raw_missing_before_normalization ... ok
+test encoded_list_sum::nullable_grouped_count_distinguishes_missing_empty_and_nan ... ok
+test encoded_list_sum::nullable_grouped_combined_mean_preserves_count_and_sum_pairing ... ok
+test encoded_list_sum::nullable_grouped_fixed_size_slice_and_logical_ancestor_masks ... ok
+test encoded_list_sum::nullable_grouped_sum_preserves_present_null_and_outer_null ... ok
+test encoded_list_sum::nullable_grouped_flush_pairs_multiple_batches_and_resets ... ok
+test encoded_list_sum::distant_list_groups_and_large_retained_dictionary_preserve_logical_values ... ok
+test encoded_list_sum::sliced_list_field_preserves_logical_masks_and_ignores_hidden_owner_rows ... ok
+test encoded_list_sum::nullable_dictionary_sizes_and_reuse_match_independent_sums ... ok
+test encoded_list_sum::dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists ... ok
+GROUPED_RESOURCE {"case":"mixed_bool_sum","owner":10000,"output_groups":4,"canonical_acquired_before_timing":true,"raw_expected":[1.0,null,null,null],"windows":[{"window":0,"legacy":true,"seconds":[0.000012125,0.000016375,0.00001375,0.000010666,0.000010875,0.000012042],"rss_before_kib":30096,"rss_after_kib":33152},{"window":1,"legacy":false,"seconds":[0.000026709,0.0000235,0.000015334,0.000016875,0.000016958,0.000014],"rss_before_kib":36096,"rss_after_kib":39008},{"window":2,"legacy":false,"seconds":[0.000014917,0.000014541,0.000014917,0.0000165,0.00001725,0.00001525],"rss_before_kib":41376,"rss_after_kib":43680},{"window":3,"legacy":true,"seconds":[7.667e-6,8.958e-6,9.167e-6,7.834e-6,7.792e-6,7.917e-6],"rss_before_kib":45728,"rss_after_kib":47200}],"limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"}
+GROUPED_RESOURCE {"case":"all_missing_pco_sum","owner":10000,"output_groups":4,"canonical_acquired_before_timing":true,"raw_expected":[null,null,null,null],"windows":[{"window":0,"legacy":true,"seconds":[0.0000235,0.000024208,0.000025834,0.000025291,0.000023708,0.00002425],"rss_before_kib":49456,"rss_after_kib":50496},{"window":1,"legacy":false,"seconds":[4.375e-6,4.5e-6,4.333e-6,4.25e-6,4.167e-6,4.334e-6],"rss_before_kib":53248,"rss_after_kib":53248},{"window":2,"legacy":false,"seconds":[4.458e-6,4.375e-6,4.25e-6,4.292e-6,4.208e-6,4.25e-6],"rss_before_kib":53248,"rss_after_kib":53376},{"window":3,"legacy":true,"seconds":[0.000023083,0.000022958,0.000022958,0.000022667,0.000022834,0.000022875],"rss_before_kib":53520,"rss_after_kib":53520}],"limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"}
+test encoded_list_sum::nullable_grouped_public_resource_windows ... ok
+test native_list_lengths_on_multithread_runtime ... ok
+test native_list_lengths_on_current_thread_runtime ... ok
+test native_nested_projection_and_global_sum_preserve_nulls_and_widening ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
