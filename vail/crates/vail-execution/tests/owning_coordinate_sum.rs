@@ -1,5 +1,7 @@
 //! Observable results and lifecycle of the owner-preserving coordinate adapter.
 use std::sync::Arc;
+use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 
 use arrow_array::{Array, ArrayRef, Int32Array, Int64Array, ListArray, StructArray};
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
@@ -7,6 +9,37 @@ use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::ScalarValue;
 use datafusion_physical_expr::{aggregate::{AggregateExprBuilder, AggregateFunctionExpr}, expressions::Column};
 use vail_execution::array_aggregate::owning_coordinate_sum_udaf;
+
+thread_local! {
+    static ALLOCATED_BYTES: Cell<Option<usize>> = const { Cell::new(None) };
+}
+struct CountingAllocator;
+fn record(bytes: usize) {
+    let _ = ALLOCATED_BYTES.try_with(|count| {
+        if let Some(value) = count.get() { count.set(Some(value.saturating_add(bytes))); }
+    });
+}
+// Only allocation byte volume on the invoking test thread is recorded. Input
+// construction and query preparation are outside the measured API operation.
+unsafe impl GlobalAlloc for CountingAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        record(layout.size());
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        record(layout.size());
+        unsafe { System.alloc_zeroed(layout) }
+    }
+    unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, size: usize) -> *mut u8 {
+        record(size);
+        unsafe { System.realloc(pointer, layout, size) }
+    }
+    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
+        unsafe { System.dealloc(pointer, layout) }
+    }
+}
+#[global_allocator]
+static ALLOCATOR: CountingAllocator = CountingAllocator;
 
 // Owners 0 and 3 are observed. Owner 1 is excluded by a missing outer list;
 // owner 2 is an included missing inner list with an arbitrarily large hidden
@@ -109,4 +142,51 @@ fn multiple_updates_and_partial_merge_orders_keep_unknown_distinct_from_empty() 
         }
         assert!(failed, "defined empty and nonempty coordinate widths disagree");
     }
+}
+
+#[test]
+fn ancestor_nulls_and_nonzero_slices_exclude_hidden_ragged_arrays() {
+    let inner = Arc::new(ListArray::from_iter_primitive::<arrow_array::types::Int32Type, _, _>([
+        Some(vec![Some(999)]), Some(vec![Some(3), None]), Some(vec![Some(999)]), Some(vec![Some(4), Some(8)]),
+    ]));
+    let entry = Arc::new(StructArray::new(
+        vec![Arc::new(Field::new("arbitrary", inner.data_type().clone(), true))].into(),
+        vec![inner], Some(NullBuffer::from(vec![true, true, false, true])),
+    ));
+    let cells = Arc::new(StructArray::from(vec![(Arc::new(Field::new("value", entry.data_type().clone(), true)), entry as ArrayRef)]));
+    let outer = ListArray::new(Arc::new(Field::new_list_field(cells.data_type().clone(), true)),
+        OffsetBuffer::from_lengths([1, 2, 1]), cells, None);
+    let input: ArrayRef = Arc::new(outer.slice(1, 2));
+    let mut accumulator = aggregate(&input).create_accumulator().unwrap();
+    accumulator.update_batch(&[input]).unwrap();
+    assert_eq!(accumulator.evaluate().unwrap(), result(Some(vec![Some(7), Some(8)])));
+}
+
+#[test]
+fn integer_sum_keeps_existing_widening_and_wrapping() {
+    let inner = Arc::new(ListArray::from_iter_primitive::<arrow_array::types::Int64Type, _, _>([
+        Some(vec![Some(i64::MAX), None]), Some(vec![Some(1), None]),
+    ]));
+    let entry = Arc::new(StructArray::from(vec![(Arc::new(Field::new("arbitrary", inner.data_type().clone(), true)), inner as ArrayRef)]));
+    let cells = Arc::new(StructArray::from(vec![(Arc::new(Field::new("value", entry.data_type().clone(), true)), entry as ArrayRef)]));
+    let input: ArrayRef = Arc::new(ListArray::new(Arc::new(Field::new_list_field(cells.data_type().clone(), true)),
+        OffsetBuffer::from_lengths([2]), cells, None));
+    let mut accumulator = aggregate(&input).create_accumulator().unwrap();
+    accumulator.update_batch(&[input]).unwrap();
+    assert_eq!(accumulator.evaluate().unwrap(), result(Some(vec![Some(i64::MIN), Some(0)])));
+}
+
+#[test]
+fn hidden_coordinate_and_unused_sibling_growth_does_not_expand_query_allocations() {
+    let mut bytes = Vec::new();
+    for hidden in [1, 262_145] {
+        let input = hidden_input(hidden);
+        let mut accumulator = aggregate(&input).create_accumulator().unwrap();
+        ALLOCATED_BYTES.with(|counter| counter.set(Some(0)));
+        let update = accumulator.update_batch(&[input]);
+        bytes.push(ALLOCATED_BYTES.with(|counter| counter.replace(None).unwrap()));
+        update.unwrap();
+        assert_eq!(accumulator.evaluate().unwrap(), result(Some(vec![Some(11), Some(22)])));
+    }
+    assert!(bytes[1] <= bytes[0] + 4096, "excluded input growth expanded query allocations: {bytes:?}");
 }
