@@ -1083,7 +1083,9 @@ fn element_validity_serialization_retains_exact_original_schema_and_no_capture()
     let mut ctx = session.create_execution_ctx();
     assert_arrays_eq(
         &input.clone().apply_bound(&restored.bind(input.dtype())?)?,
-        &input.clone().apply_bound(&expression.bind(input.dtype())?)?,
+        &input
+            .clone()
+            .apply_bound(&expression.bind(input.dtype())?)?,
         &mut ctx,
     );
     // Same positions/nullability but a different field name is a different
@@ -1105,5 +1107,272 @@ fn element_validity_serialization_retains_exact_original_schema_and_no_capture()
         *nullable,
     );
     assert!(restored.bind(&renamed).is_err());
+    Ok(())
+}
+
+/// Public writer/reader check: all expected values are independent of the map
+/// implementation, and nullable ancestors are observed inside a present list.
+#[tokio::test]
+async fn element_validity_file_reader_preserves_boolean_domain_and_sum() -> VortexResult<()> {
+    use futures::TryStreamExt;
+    use vortex::array::arrays::BoolArray;
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::array::stream::ArrayStreamAdapter;
+    use vortex::expr::{list_sum, root};
+    use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
+    let input = element_validity_fixture()?;
+    let dtype = input.dtype().clone();
+    let session = crate::element_validity_reader_io::structural_session()?;
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("element-validity.vortex");
+    session
+        .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
+        .write(
+            tokio::fs::File::create(&path).await.unwrap(),
+            ArrayStreamAdapter::new(dtype.clone(), futures::stream::iter([Ok(input)])),
+        )
+        .await?;
+    let file = session.open_options().open_path(&path).await?;
+    let mapped = list_element_validity(root(), &dtype, &["selected".into(), "leaf".into()])?;
+    let expected_map = ListViewArray::try_new(
+        BoolArray::from_iter([true, false, false, false, true, true, true, true]).into_array(),
+        buffer![0u32, 2, 4, 0].into_array(),
+        buffer![4u32, 0, 3, 4].into_array(),
+        Validity::from_iter([true, true, true, false]),
+    )?
+    .into_array();
+    for (expression, expected) in [
+        (mapped.clone(), expected_map),
+        (
+            list_sum(mapped),
+            PrimitiveArray::from_option_iter([Some(1u64), None, Some(3), None]).into_array(),
+        ),
+    ] {
+        let bound = expression.bind(file.dtype())?;
+        let chunks = file
+            .scan()?
+            .with_projection(bound.clone())
+            .into_array_stream()?
+            .try_collect::<Vec<_>>()
+            .await?;
+        let mut ctx = session.create_execution_ctx();
+        let mut offset = 0;
+        for chunk in chunks {
+            assert_eq!(chunk.dtype(), bound.dtype());
+            assert_arrays_eq(
+                &chunk,
+                &expected.slice(offset..offset + chunk.len())?,
+                &mut ctx,
+            );
+            offset += chunk.len();
+        }
+        assert_eq!(offset, expected.len());
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn element_validity_file_reader_shared_body_and_raw_sibling_keep_original_values()
+-> VortexResult<()> {
+    use futures::TryStreamExt;
+    use vortex::array::builtins::ArrayBuiltins;
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::array::stream::ArrayStreamAdapter;
+    use vortex::expr::{list_sum, pack, root};
+    use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
+    let input = element_validity_fixture()?;
+    let dtype = input.dtype().clone();
+    let session = crate::element_validity_reader_io::structural_session()?;
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("element-validity-siblings.vortex");
+    session
+        .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
+        .write(
+            tokio::fs::File::create(&path).await.unwrap(),
+            ArrayStreamAdapter::new(dtype.clone(), futures::stream::iter([Ok(input.clone())])),
+        )
+        .await?;
+    let file = session.open_options().open_path(&path).await?;
+    for raw in [false, true] {
+        let body = list_element_validity(root(), &dtype, &["selected".into(), "leaf".into()])?;
+        let mut fields = vec![
+            ("first", list_sum(body.clone())),
+            ("second", list_sum(body)),
+        ];
+        if raw {
+            fields.push(("raw", root()));
+        }
+        let expression =
+            pack(fields, vortex::dtype::Nullability::NonNullable).bind(file.dtype())?;
+        let chunks = file
+            .scan()?
+            .with_projection(expression.clone())
+            .into_array_stream()?
+            .try_collect::<Vec<_>>()
+            .await?;
+        let sums = PrimitiveArray::from_option_iter([Some(1u64), None, Some(3), None]).into_array();
+        let mut ctx = session.create_execution_ctx();
+        let mut offset = 0;
+        for chunk in chunks {
+            assert_eq!(chunk.dtype(), expression.dtype());
+            let expected = sums.slice(offset..offset + chunk.len())?;
+            assert_arrays_eq(&chunk.get_item("first")?, &expected, &mut ctx);
+            assert_arrays_eq(&chunk.get_item("second")?, &expected, &mut ctx);
+            if raw {
+                assert_arrays_eq(
+                    &chunk.get_item("raw")?,
+                    &input.slice(offset..offset + chunk.len())?,
+                    &mut ctx,
+                );
+            }
+            offset += chunk.len();
+        }
+        assert_eq!(offset, 4);
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn element_validity_file_reader_distinct_paths_and_bounded_mask_are_correct()
+-> VortexResult<()> {
+    use vortex::array::MaskFuture;
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::array::stream::ArrayStreamAdapter;
+    use vortex::expr::{list_sum, pack, root};
+    use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
+    let input = element_validity_fixture()?;
+    let session = crate::element_validity_reader_io::structural_session()?;
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("distinct-bounded.vortex");
+    session
+        .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
+        .write(
+            tokio::fs::File::create(&path).await.unwrap(),
+            ArrayStreamAdapter::new(
+                input.dtype().clone(),
+                futures::stream::iter([Ok(input.clone())]),
+            ),
+        )
+        .await?;
+    let file = session.open_options().open_path(&path).await?;
+    let leaf = list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
+    let parent = list_element_validity(root(), input.dtype(), &[])?;
+    let distinct = pack(
+        [
+            ("leaf", list_sum(leaf.clone())),
+            ("parent", list_sum(parent)),
+        ],
+        vortex::dtype::Nullability::NonNullable,
+    )
+    .bind(file.dtype())?;
+    let reader = file.layout_reader()?;
+    let mut ctx = session.create_execution_ctx();
+    let actual = reader
+        .projection_evaluation(&(0..4), &distinct, MaskFuture::new_true(4))?
+        .await?;
+    use vortex::array::builtins::ArrayBuiltins;
+    assert_arrays_eq(
+        &actual.get_item("leaf")?,
+        &PrimitiveArray::from_option_iter([Some(1u64), None, Some(3), None]).into_array(),
+        &mut ctx,
+    );
+    assert_arrays_eq(
+        &actual.get_item("parent")?,
+        &PrimitiveArray::from_option_iter([Some(3u64), None, Some(3), None]).into_array(),
+        &mut ctx,
+    );
+    let sum = list_sum(leaf).bind(file.dtype())?;
+    let bounded = reader
+        .projection_evaluation(
+            &(1..4),
+            &sum,
+            MaskFuture::ready(vortex::mask::Mask::from_iter([false, true, true])),
+        )?
+        .await?;
+    assert_eq!(bounded.dtype(), sum.dtype());
+    assert_arrays_eq(
+        &bounded,
+        &PrimitiveArray::from_option_iter([Some(3u64), None]).into_array(),
+        &mut ctx,
+    );
+    Ok(())
+}
+
+#[tokio::test]
+async fn element_validity_reader_preparation_accepts_shared_expression_dags() -> VortexResult<()> {
+    use vortex::array::MaskFuture;
+    use vortex::array::scalar_fn::fns::list_element_validity::list_element_validity;
+    use vortex::array::scalar_fn::{
+        ScalarFnVTableExt,
+        fns::{binary::Binary, operators::Operator},
+    };
+    use vortex::array::stream::ArrayStreamAdapter;
+    use vortex::expr::{list_sum, root};
+    use vortex::file::{OpenOptionsSessionExt, WriteOptionsSessionExt};
+    let input = element_validity_fixture()?;
+    let session = crate::element_validity_reader_io::structural_session()?;
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("shared-dag.vortex");
+    session
+        .write_options()
+        .with_strategy(
+            vortex::file::WriteStrategyBuilder::default()
+                .with_list_layout()
+                .build(),
+        )
+        .write(
+            tokio::fs::File::create(&path).await.unwrap(),
+            ArrayStreamAdapter::new(
+                input.dtype().clone(),
+                futures::stream::iter([Ok(input.clone())]),
+            ),
+        )
+        .await?;
+    let file = session.open_options().open_path(&path).await?;
+    let reader = file.layout_reader()?;
+    let body = list_element_validity(root(), input.dtype(), &["selected".into(), "leaf".into()])?;
+    let mut expression = list_sum(body).bind(file.dtype())?;
+    for depth in 1..=30 {
+        expression = Binary.try_new_bound_expr(Operator::Add, [expression.clone(), expression])?;
+        if depth == 6 {
+            let actual = reader
+                .projection_evaluation(&(0..4), &expression, MaskFuture::new_true(4))?
+                .await?;
+            let mut ctx = session.create_execution_ctx();
+            assert_arrays_eq(
+                &actual,
+                &PrimitiveArray::from_option_iter([Some(64u64), None, Some(192), None])
+                    .into_array(),
+                &mut ctx,
+            );
+        }
+        if [8, 16, 30].contains(&depth) {
+            // Public preparation only: dropping the unevaluated future deliberately
+            // separates DAG preparation scalability from repeated arithmetic work.
+            let start = std::time::Instant::now();
+            let prepared =
+                reader.projection_evaluation(&(0..4), &expression, MaskFuture::new_true(4))?;
+            drop(prepared);
+            eprintln!(
+                "ELEMENT_VALIDITY_DAG_PREPARATION depth={depth} seconds={}",
+                start.elapsed().as_secs_f64()
+            );
+        }
+    }
     Ok(())
 }

@@ -3,12 +3,13 @@
 
 use vortex_array::dtype::DType;
 use vortex_array::dtype::Nullability;
-use vortex_array::expr::BoundExpression;
 use vortex_array::expr::bound::not;
+use vortex_array::expr::{BoundExpression, ExactBoundExpr};
 use vortex_array::scalar_fn::fns::is_not_null::IsNotNull;
 use vortex_array::scalar_fn::fns::is_null::IsNull;
 use vortex_array::scalar_fn::fns::list_length::ListLength;
 use vortex_error::VortexResult;
+use vortex_utils::aliases::hash_map::HashMap;
 
 /// The minimal set of list children an expression needs for evaluation.
 ///
@@ -28,23 +29,31 @@ pub(super) enum ListChildrenNeeded {
 
 /// The minimal set of list children needed to evaluate a bound expression.
 pub(super) fn get_necessary_bound_list_children(expr: &BoundExpression) -> ListChildrenNeeded {
-    if is_bound_null_root(expr) {
-        return ListChildrenNeeded::Validity;
+    fn visit(
+        expr: &BoundExpression,
+        cache: &mut HashMap<ExactBoundExpr, ListChildrenNeeded>,
+    ) -> ListChildrenNeeded {
+        let key = ExactBoundExpr(expr.clone());
+        if let Some(result) = cache.get(&key) {
+            return *result;
+        }
+        let result = if is_bound_null_root(expr) {
+            ListChildrenNeeded::Validity
+        } else if is_bound_list_length_root(expr) {
+            ListChildrenNeeded::OffsetsAndValidity
+        } else if expr.is_root() {
+            ListChildrenNeeded::All
+        } else {
+            expr.children()
+                .iter()
+                .map(|child| visit(child, cache))
+                .max()
+                .unwrap_or(ListChildrenNeeded::Validity)
+        };
+        cache.insert(key, result);
+        result
     }
-
-    if is_bound_list_length_root(expr) {
-        return ListChildrenNeeded::OffsetsAndValidity;
-    }
-
-    if expr.is_root() {
-        return ListChildrenNeeded::All;
-    }
-
-    expr.children()
-        .iter()
-        .map(get_necessary_bound_list_children)
-        .max()
-        .unwrap_or(ListChildrenNeeded::Validity)
+    visit(expr, &mut HashMap::new())
 }
 
 fn is_bound_null_root(expr: &BoundExpression) -> bool {

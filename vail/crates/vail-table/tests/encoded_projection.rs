@@ -226,3 +226,6 @@ async fn native_list_lengths_on_current_thread_runtime() {
 async fn native_list_lengths_on_multithread_runtime() {
     native_list_lengths_on_polling_runtime().await;
 }
+
+#[path = "support/element_validity_reader_io.rs"]
+mod element_validity_reader_io;

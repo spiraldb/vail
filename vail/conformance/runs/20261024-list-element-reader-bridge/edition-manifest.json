@@ -1,0 +1,26 @@
+{
+  "source": "f99894de8c8d93fe908e302f0c8b6cb4e0b3e55c",
+  "exe_sha256": "5d1b2e96aa73085ff0e5171a73dcee67e288a5e28752634882a41e26d276987c",
+  "passed": 30,
+  "failed": 0,
+  "seconds": 0.13,
+  "proof": "Actual public structural writer+reader via explicitly enabled structural-list edition, tree Zoned\u2192List\u2192Struct\u2192nestedStruct",
+  "io_application_reader": {
+    "flat_file_bytes": 4214260,
+    "flat_full_requested": 4277547,
+    "flat_presence_requested": 4277547,
+    "structural_file_bytes": 4221532,
+    "structural_full_requested": 4277895,
+    "structural_full_unique": 4221520,
+    "structural_presence_requested": 2180011,
+    "structural_presence_unique": 2180011,
+    "requested_reduction_fraction": 0.4904010032971824
+  },
+  "limitations": [
+    "Not bitmap-only: selected payload appears retained; source audit pending",
+    "No native admission/translator changes",
+    "No controlled wall/CPU/RSS throughput evidence",
+    "Whole-target concurrent output interleaves tiny preparation timings; not scaling proof",
+    "Application reader IO, not physical storage-device bytes; open snapshots may overlap prefetch"
+  ]
+}

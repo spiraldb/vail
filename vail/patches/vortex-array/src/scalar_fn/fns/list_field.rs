@@ -24,6 +24,30 @@ pub struct FieldPath(Vec<(usize, bool)>, Vec<FieldStep>);
 type FieldStep = fn(StructArray, usize) -> VortexResult<ArrayRef>;
 
 impl FieldPath {
+    /// Reconstruct the ordinary element field expression from the prepared path.
+    /// Layout readers use this once while preparing child projections, rather
+    /// than interpreting field positions for each element.
+    pub fn element_expression(&self, dtype: &DType) -> VortexResult<Expression> {
+        let mut dtype = dtype.clone();
+        let mut expression = crate::expr::root();
+        for &(index, _) in &self.0 {
+            let DType::Struct(fields, _) = dtype else {
+                vortex_bail!("list field element expression requires struct");
+            };
+            let name = fields
+                .names()
+                .get(index)
+                .ok_or_else(|| vortex_err!("list field index missing"))?
+                .clone();
+            dtype = fields
+                .fields()
+                .nth(index)
+                .ok_or_else(|| vortex_err!("list field index missing"))?;
+            expression = crate::expr::get_item(name, expression);
+        }
+        Ok(expression)
+    }
+
     fn new(fields: Vec<(usize, bool)>) -> Self {
         let steps = fields
             .iter()
