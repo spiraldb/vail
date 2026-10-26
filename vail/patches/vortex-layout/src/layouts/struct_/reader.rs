@@ -14,10 +14,10 @@ use vortex_array::dtype::Nullability;
 use vortex_array::dtype::StructFields;
 use vortex_array::expr::BoundExpression;
 use vortex_array::expr::ExactBoundExpr;
-use vortex_array::expr::bound::get_item;
 use vortex_array::expr::bound::mask;
 use vortex_array::expr::bound::not;
 use vortex_array::expr::bound::pack;
+use vortex_array::expr::bound::{and, get_item, is_not_null, lit};
 use vortex_array::expr::make_bound_free_field_annotator;
 use vortex_array::expr::root;
 use vortex_array::expr::transform::BoundPartitionedExpr;
@@ -287,6 +287,29 @@ fn expanded_struct_root(
     })
 }
 
+/// Capture-free, total field access only. Casts, masks, unknown functions and
+/// binding/scalar computation decline; their original evaluation is retained.
+fn pure_presence_path(expr: &BoundExpression) -> Option<(bool, Vec<FieldName>)> {
+    let missing = if expr.is::<IsNull>() {
+        true
+    } else if expr.is::<IsNotNull>() {
+        false
+    } else {
+        return None;
+    };
+    let mut child = expr.children().first()?;
+    let mut names = Vec::new();
+    while let Some(name) = child.as_opt::<GetItem>() {
+        names.push(name.clone());
+        child = child.children().first()?;
+    }
+    if !child.is_root() {
+        return None;
+    }
+    names.reverse();
+    Some((missing, names))
+}
+
 fn expand_struct_root(
     expr: BoundExpression,
     expanded_root: &BoundExpression,
@@ -306,119 +329,157 @@ fn expand_struct_root(
         None => expr,
     };
 
-    Ok(expr
-        .transform_down(|node| {
-            if node.is_root() {
-                return Ok(Transformed {
-                    value: expanded_root.clone(),
-                    changed: true,
-                    order: TraversalOrder::Skip,
-                });
-            }
-
-            let Some(scalar_fn) = node.as_scalar() else {
-                return Ok(Transformed::no(node));
-            };
-            if !node
-                .children()
-                .first()
-                .is_some_and(BoundExpression::is_root)
-            {
-                return Ok(Transformed::no(node));
-            }
-
-            if let Some(field_name) = scalar_fn.as_opt::<GetItem>() {
-                let idx = fields.find(field_name).ok_or_else(|| {
-                    vortex_err!("Field {field_name} not found while expanding struct root")
-                })?;
-                let child = packed.children()[idx].clone();
-                return Ok(Transformed {
-                    value: with_validity(child),
-                    changed: true,
-                    order: TraversalOrder::Skip,
-                });
-            }
-
-            if let Some(selection) = scalar_fn.as_opt::<Select>() {
-                let names = selection.normalize_to_included_fields(fields.names())?;
-                let children: Vec<_> = names
-                    .iter()
-                    .map(|name| {
-                        let idx = fields.find(name).vortex_expect(
-                            "normalized selection fields must exist in the struct root",
-                        );
-                        packed.children()[idx].clone()
-                    })
-                    .collect();
-                return Ok(Transformed {
-                    value: with_validity(pack(
-                        names.into_iter().zip(children),
-                        Nullability::NonNullable,
-                    )),
-                    changed: true,
-                    order: TraversalOrder::Skip,
-                });
-            }
-
-            if let Some(paths) = scalar_fn.as_opt::<Project>() {
-                let mut names = Vec::new();
-                let mut children = Vec::new();
-                for name in fields.names().iter() {
-                    let matching: Vec<_> = paths
-                        .0
-                        .iter()
-                        .filter(|path| path.first() == Some(name))
-                        .collect();
-                    if matching.is_empty() {
-                        continue;
-                    }
-                    names.push(name.clone());
-                    let descendants: Vec<_> = matching
-                        .iter()
-                        .filter_map(|path| path.get(1..))
-                        .filter(|path| !path.is_empty())
-                        .map(|path| path.to_vec())
-                        .collect();
-                    let idx = fields.find(name).vortex_expect("project path field exists");
-                    let child = packed.children()[idx].clone();
-                    if matching.iter().any(|path| path.len() == 1) || descendants.is_empty() {
-                        children.push(child);
-                    } else {
-                        children.push(project_paths_bound(&descendants, child)?);
-                    }
+    // Presence of a pure source field path is a typed demand, not a rewrite
+    // of an arbitrary Mask/scalar. Keep the outer parent's logical validity as
+    // a separate Boolean dependency before generated value masks obscure it.
+    let replace_node = |node: &BoundExpression| -> VortexResult<Option<BoundExpression>> {
+        if let Some((missing, names)) = pure_presence_path(node) {
+            let present = if let Some((first, tail)) = names.split_first() {
+                let index = fields
+                    .find(first)
+                    .ok_or_else(|| vortex_err!("Field {first} missing in presence path"))?;
+                let mut value = packed.children()[index].clone();
+                for name in tail {
+                    value = get_item(name.clone(), value);
                 }
-                return Ok(Transformed {
-                    value: with_validity(pack(
-                        names.into_iter().zip(children),
-                        Nullability::NonNullable,
-                    )),
-                    changed: true,
-                    order: TraversalOrder::Skip,
-                });
-            }
-
-            let Some(validity) = validity else {
-                return Ok(Transformed::no(node));
+                let child = if value.dtype().is_nullable() {
+                    is_not_null(value)
+                } else {
+                    lit(true)
+                };
+                match validity {
+                    Some(parent) => and(child, parent.clone()),
+                    None => child,
+                }
+            } else {
+                validity.cloned().unwrap_or_else(|| lit(true))
             };
+            return Ok(Some(if missing { not(present) } else { present }));
+        }
+        if node.is_root() {
+            return Ok(Some(expanded_root.clone()));
+        }
 
-            // You can alternatively call optimize_recursive but this is cheaper
-            if scalar_fn.is::<IsNotNull>() {
-                return Ok(Transformed {
-                    value: validity.clone(),
-                    changed: true,
-                    order: TraversalOrder::Skip,
-                });
+        let Some(scalar_fn) = node.as_scalar() else {
+            return Ok(None);
+        };
+        if !node
+            .children()
+            .first()
+            .is_some_and(BoundExpression::is_root)
+        {
+            return Ok(None);
+        }
+
+        if let Some(field_name) = scalar_fn.as_opt::<GetItem>() {
+            let idx = fields.find(field_name).ok_or_else(|| {
+                vortex_err!("Field {field_name} not found while expanding struct root")
+            })?;
+            let child = packed.children()[idx].clone();
+            return Ok(Some(with_validity(child)));
+        }
+
+        if let Some(selection) = scalar_fn.as_opt::<Select>() {
+            let names = selection.normalize_to_included_fields(fields.names())?;
+            let children: Vec<_> = names
+                .iter()
+                .map(|name| {
+                    let idx = fields
+                        .find(name)
+                        .vortex_expect("normalized selection fields must exist in the struct root");
+                    packed.children()[idx].clone()
+                })
+                .collect();
+            return Ok(Some(with_validity(pack(
+                names.into_iter().zip(children),
+                Nullability::NonNullable,
+            ))));
+        }
+
+        if let Some(paths) = scalar_fn.as_opt::<Project>() {
+            let mut names = Vec::new();
+            let mut children = Vec::new();
+            for name in fields.names().iter() {
+                let matching: Vec<_> = paths
+                    .0
+                    .iter()
+                    .filter(|path| path.first() == Some(name))
+                    .collect();
+                if matching.is_empty() {
+                    continue;
+                }
+                names.push(name.clone());
+                let descendants: Vec<_> = matching
+                    .iter()
+                    .filter_map(|path| path.get(1..))
+                    .filter(|path| !path.is_empty())
+                    .map(|path| path.to_vec())
+                    .collect();
+                let idx = fields.find(name).vortex_expect("project path field exists");
+                let child = packed.children()[idx].clone();
+                if matching.iter().any(|path| path.len() == 1) || descendants.is_empty() {
+                    children.push(child);
+                } else {
+                    children.push(project_paths_bound(&descendants, child)?);
+                }
             }
-            if scalar_fn.is::<IsNull>() {
-                return Ok(Transformed {
-                    value: not(validity.clone()),
-                    changed: true,
-                    order: TraversalOrder::Skip,
-                });
-            }
-            Ok(Transformed::no(node))
-        })?
-        .into_inner())
+            return Ok(Some(with_validity(pack(
+                names.into_iter().zip(children),
+                Nullability::NonNullable,
+            ))));
+        }
+
+        let Some(validity) = validity else {
+            return Ok(None);
+        };
+
+        // You can alternatively call optimize_recursive but this is cheaper
+        if scalar_fn.is::<IsNotNull>() {
+            return Ok(Some(validity.clone()));
+        }
+        if scalar_fn.is::<IsNull>() {
+            return Ok(Some(not(validity.clone())));
+        }
+        Ok(None)
+    };
+
+    // Iterative retained-identity memoization preserves sharing and avoids a
+    // recursive setup walk (or stack growth) over repeated expression DAG edges.
+    let mut prepared = HashMap::<ExactBoundExpr, BoundExpression>::new();
+    let mut pending = vec![(expr.clone(), false)];
+    while let Some((node, finish)) = pending.pop() {
+        let key = ExactBoundExpr(node.clone());
+        if prepared.contains_key(&key) {
+            continue;
+        }
+        if finish {
+            let children = node
+                .children()
+                .iter()
+                .map(|child| {
+                    prepared
+                        .get(&ExactBoundExpr(child.clone()))
+                        .cloned()
+                        .ok_or_else(|| vortex_err!("Unprepared struct expression child"))
+                })
+                .collect::<VortexResult<Vec<_>>>()?;
+            prepared.insert(key, node.with_children(children)?);
+        } else if let Some(replaced) = replace_node(&node)? {
+            prepared.insert(key, replaced);
+        } else {
+            pending.push((node.clone(), true));
+            pending.extend(
+                node.children()
+                    .iter()
+                    .rev()
+                    .cloned()
+                    .map(|child| (child, false)),
+            );
+        }
+    }
+    prepared
+        .remove(&ExactBoundExpr(expr))
+        .ok_or_else(|| vortex_err!("Missing prepared struct expression"))
 }
 
 fn step_into_struct_field(
