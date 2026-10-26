@@ -487,7 +487,8 @@ pub fn owning_coordinate_sum_udaf(input: DataType, names: &[String]) -> Result<A
         return Err(error("owning coordinate sum requires direct integer lists"));
     }
     let primitive = element.data_type().clone();
-    let inner = crate::aggregates::aggregate_udf("sum", Some(&primitive))?;
+    let inner = crate::aggregates::aggregate_udf("sum", Some(&primitive))
+        .map_err(|error| DataFusionError::Plan(error.to_string()))?;
     let schema = Arc::new(Schema::new(vec![Field::new(
         "element",
         primitive.clone(),
