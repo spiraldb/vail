@@ -1,5 +1,7 @@
 # Unrun matched cloud resource gate
 
+Superseded for execution by the frozen scripts and guards in `cloud/PROTOCOL.md`.
+
 No VM is started by this proposal. Root must authorize the exact runtime protocol
 and normal Linux candidate build before execution. No local benchmark is proposed.
 
@@ -32,7 +34,7 @@ def coordinate_query():
     return m.aggregate_entries(h.agg.array_agg(lambda x: h.agg.sum(x), m.AD))
 ```
 
-Every completed action must return the full independently established output
+Every completed action must return the full previously recorded baseline output
 `[315761156, 29304213]`; stop on a constructor, plan or action failure. A private
 plan may be saved diagnostically, never substituted for public output. Do not
 change coordinate bodies/field names/options to make admission succeed.
