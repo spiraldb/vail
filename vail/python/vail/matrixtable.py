@@ -1727,7 +1727,11 @@ class MatrixTable:
                 )
             return core.aggregate(aggregate_sum(row_total), _localize=localize)
         if axis == "entry":
-            from .matrix_list_aggregates import reduce_composite_totals
+            from .matrix_list_aggregates import reduce_owning_coordinate_sum, reduce_composite_totals
+            owning = reduce_owning_coordinate_sum(self, expr)
+            if owning is not None:
+                core, total = owning
+                return core.aggregate(total, _localize=localize)
             reduced = reduce_composite_totals(self, expr)
             if reduced is not None:
                 core, total = reduced

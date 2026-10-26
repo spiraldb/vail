@@ -504,6 +504,31 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
 }
 fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
     let f = &reducer.function;
+    if f == "__coordinate_owning_sum" {
+        if reducer
+            .options
+            .as_object()
+            .is_none_or(|options| options.len() != 1)
+        {
+            return Err(TableError::Invalid(
+                "invalid owning coordinate options".into(),
+            ));
+        }
+        let names: Vec<String> = serde_json::from_value(
+            reducer
+                .options
+                .get("path")
+                .cloned()
+                .ok_or_else(|| TableError::Invalid("missing owning coordinate path".into()))?,
+        )
+        .map_err(|_| TableError::Invalid("invalid owning coordinate path".into()))?;
+        let input =
+            dtype.ok_or_else(|| TableError::Invalid("missing owning coordinate input".into()))?;
+        return Ok(vail_execution::array_aggregate::owning_coordinate_sum_udaf(
+            input.clone(),
+            &names,
+        )?);
+    }
     if f == "__coordinate_bundle" {
         let Some(DataType::List(element)) = dtype else {
             return Err(TableError::Invalid(

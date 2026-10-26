@@ -460,6 +460,191 @@ pub fn coordinate_udaf(
     ))
 }
 
+/// Reduce a direct integer-list field across owners without materializing entry
+/// structs. The full input type and resolved field path participate in semantic
+/// identity; no schema lookup is performed in the owner traversal.
+pub fn owning_coordinate_sum_udaf(input: DataType, names: &[String]) -> Result<Arc<AggregateUDF>> {
+    let DataType::List(outer_field) = &input else {
+        return Err(error("owning coordinate sum requires outer lists"));
+    };
+    let mut dtype = outer_field.data_type();
+    let mut path = Vec::with_capacity(names.len());
+    for name in names {
+        let DataType::Struct(fields) = dtype else {
+            return Err(error("owning coordinate path requires ordinary structs"));
+        };
+        let index = fields
+            .iter()
+            .position(|field| field.name() == name)
+            .ok_or_else(|| error("owning coordinate field is absent"))?;
+        path.push(index);
+        dtype = fields[index].data_type();
+    }
+    let DataType::List(element) = dtype else {
+        return Err(error("owning coordinate field requires a list"));
+    };
+    if path.is_empty() || !matches!(element.data_type(), DataType::Int32 | DataType::Int64) {
+        return Err(error("owning coordinate sum requires direct integer lists"));
+    }
+    let primitive = element.data_type().clone();
+    let inner = crate::aggregates::aggregate_udf("sum", Some(&primitive))?;
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "element",
+        primitive.clone(),
+        true,
+    )]));
+    let aggregate = Arc::new(
+        AggregateExprBuilder::new(inner, vec![Arc::new(Column::new("element", 0))])
+            .schema(schema)
+            .alias("coordinate")
+            .build()?,
+    );
+    let state_types = aggregate
+        .state_fields()?
+        .iter()
+        .map(|field| list_type(field.data_type().clone()))
+        .chain(std::iter::once(DataType::Int64))
+        .collect();
+    let output = list_type(aggregate.field().data_type().clone());
+    let empty = ScalarValue::Int64(Some(0));
+    let identity = (
+        input.clone(),
+        path.clone(),
+        aggregate.fun().clone(),
+        empty.clone(),
+    );
+    Ok(crate::kernel_identity::aggregate_named(
+        "vail_owning_coordinate_sum",
+        identity,
+        vec![input],
+        output,
+        state_types,
+        Arc::new(move |_| {
+            Ok(Box::new(OwningCoordinates {
+                coordinates: Coordinates::new(
+                    aggregate.clone(),
+                    empty.clone(),
+                    primitive.clone(),
+                    primitive.clone(),
+                )?,
+                path: path.clone(),
+                runs: Vec::new(),
+            }))
+        }),
+    ))
+}
+
+/// A selected owner domain is never represented as a fabricated contiguous
+/// ListArray. Borrow fields first, then copy only observed primitive spans.
+#[derive(Debug)]
+struct OwningCoordinates {
+    coordinates: Coordinates,
+    path: Vec<usize>,
+    runs: Vec<(usize, usize)>,
+}
+impl OwningCoordinates {
+    fn update_selected<const OUTER_PRESENT: bool, const INNER_PRESENT: bool>(
+        &mut self, outer: &ListArray, arrays: &ListArray, ancestors: &[&arrow_buffer::NullBuffer],
+    ) -> Result<()> {
+        let offsets = outer.value_offsets();
+        let selected = || {
+            (0..outer.len())
+                .filter(|&row| OUTER_PRESENT || outer.is_valid(row))
+                .flat_map(|row| offsets[row] as usize..offsets[row + 1] as usize)
+                .filter(|&owner| {
+                    INNER_PRESENT || (arrays.is_valid(owner) && ancestors.iter().all(|nulls| nulls.is_valid(owner)))
+                })
+        };
+        let mut count = 0usize;
+        for owner in selected() {
+            self.coordinates
+                .set_width(arrays.value_length(owner) as usize)?;
+            count = count
+                .checked_add(1)
+                .ok_or_else(|| error("coordinate owner count overflow"))?;
+        }
+        let Some(width) = self.coordinates.width else {
+            return Ok(());
+        };
+        if width == 0 || count == 0 {
+            return Ok(());
+        }
+        let length = count
+            .checked_mul(width)
+            .ok_or_else(|| error("coordinate child count overflow"))?;
+        // Coalesce selected spans before touching any primitive backing data.
+        // Null inner owners (including arbitrarily large hidden spans), null
+        // ancestors and excluded outer owners have already been discarded.
+        let offsets = arrays.value_offsets();
+        let runs = &mut self.runs;
+        runs.clear();
+        for owner in selected() {
+            let start = offsets[owner] as usize;
+            let end = offsets[owner + 1] as usize;
+            if let Some(last) = runs.last_mut().filter(|last| last.1 == start) {
+                last.1 = end;
+            } else {
+                runs.push((start, end));
+            }
+        }
+        let flat = if runs.len() == 1 {
+            arrays.values().slice(runs[0].0, length)
+        } else {
+            let data = arrays.values().to_data();
+            let mut output = MutableArrayData::new(vec![&data], false, length);
+            for &(start, end) in runs.iter() {
+                output.extend(0, start, end);
+            }
+            arrow_array::make_array(output.freeze())
+        };
+        self.coordinates.update_flat(flat, None, width)
+    }
+}
+impl Accumulator for OwningCoordinates {
+    fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let outer = values
+            .first()
+            .and_then(|value| value.as_any().downcast_ref::<ListArray>())
+            .ok_or_else(|| error("owning coordinate sum requires outer lists"))?;
+        let mut value = outer.values().as_ref();
+        let mut ancestors = Vec::with_capacity(self.path.len());
+        for &index in &self.path {
+            let structure = value
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .ok_or_else(|| error("owning coordinate input changed type"))?;
+            if let Some(nulls) = structure.nulls() {
+                ancestors.push(nulls);
+            }
+            value = structure.column(index).as_ref();
+        }
+        let arrays = value
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| error("owning coordinate input changed list type"))?;
+        let inner_present = arrays.null_count() == 0 && ancestors.iter().all(|nulls| nulls.null_count() == 0);
+        match (outer.null_count() == 0, inner_present) {
+            (true, true) => self.update_selected::<true, true>(outer, arrays, &ancestors),
+            (true, false) => self.update_selected::<true, false>(outer, arrays, &ancestors),
+            (false, true) => self.update_selected::<false, true>(outer, arrays, &ancestors),
+            (false, false) => self.update_selected::<false, false>(outer, arrays, &ancestors),
+        }
+    }
+    fn evaluate(&mut self) -> Result<ScalarValue> {
+        self.coordinates.evaluate()
+    }
+    fn state(&mut self) -> Result<Vec<ScalarValue>> {
+        self.coordinates.state()
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
+        self.coordinates.merge_batch(states)
+    }
+    fn size(&self) -> usize {
+        self.coordinates.size() + self.path.capacity() * std::mem::size_of::<usize>()
+            + self.runs.capacity() * std::mem::size_of::<(usize, usize)>()
+    }
+}
+
 /// Reusable typed numeric vectors, with a compile-time arithmetic operation.
 #[derive(Debug)]
 struct DenseNumeric {

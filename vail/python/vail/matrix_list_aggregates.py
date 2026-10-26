@@ -800,6 +800,44 @@ def reduce_list(
         result, refs, lookups, lexical_types=lexical_types | bound))
 
 
+def reduce_owning_coordinate_sum(matrix, expr):
+    """Admit one complete global identity-coordinate integer SUM query.
+
+    No eligible-leaf rewriting: mixed aggregates and computed/effectful inputs
+    retain the complete original entry relation and its evaluation domain.
+    """
+    from .agg import _aggregate
+    from .matrixtable import _CELLS, _VALUE
+
+    root = expr.to_ir()
+    if (expr._lookup_refs or not isinstance(root, IR_NODE_TYPES)
+            or root.get("op") != "agg_array" or expr.dtype != tarray(tint64)):
+        return None
+    source = root.get("value")
+    body = root.get("body")
+    if (not isinstance(source, IR_NODE_TYPES) or not _entry_field_input(source)
+            or not isinstance(body, IR_NODE_TYPES) or body.get("op") != "aggregate"
+            or body.get("function") != "sum" or body.get("init")
+            or set(body.get("options") or {}) != {"__vail_result_type"}
+            or type_from_wire(body["options"]["__vail_result_type"]) != tint64):
+        return None
+    variable = body.get("value")
+    if (not isinstance(variable, IR_NODE_TYPES)
+            or variable.get("op") != "lambda_variable"
+            or variable.get("name") != root.get("parameter")):
+        return None
+    name = source.get("name")
+    # A direct field's original schema descriptor must agree before admission;
+    # the executable adapter resolves it again against the final Arrow schema.
+    dtype = matrix.entry.dtype[name]
+    if dtype not in (tarray(tint32), tarray(tint64)):
+        return None
+    core = matrix._mir.core
+    total = _aggregate("__coordinate_owning_sum", core[_CELLS], expr.dtype,
+                       options={"path": [_VALUE, name]})
+    return core, total
+
+
 def reduce_composite_totals(matrix, expr):
     """Lower exact associative integer total bundles to ordinary DF aggregates.
 
