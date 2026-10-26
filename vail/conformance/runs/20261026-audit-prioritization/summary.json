@@ -1,0 +1,318 @@
+{
+  "item_count": 95,
+  "requested_base": "5850c7cf",
+  "latest_observed_main": "62aa7d21",
+  "base_update": "While triaging, scoped presence production+evidence merged; only production delta from585 is patches/vortex-layout/src/layouts/struct_/reader.rs. Item current source hashes refer to585; H095 references the62aa update separately.",
+  "original_ledger_path": "/Users/danielking/.codex/worktrees/legacy-layout/vail/vail/conformance/runs/20261023-hot-loop-branch-audit/TODO.json",
+  "original_ledger_sha256": "365d0a10271c8ecd98226d7655442903f397c42d76ba0ba47582a06e839297a0",
+  "original_fields_preserved": true,
+  "original_audit_coverage": "4298functions/197files on pinned original snapshot; not95activeinvestigations",
+  "states": {
+    "resolved": 6,
+    "deferred": 60,
+    "profiled": 3,
+    "queued": 26
+  },
+  "dispositions": {
+    "close_already_addressed": 6,
+    "defer_insufficient_impact": 29,
+    "defer_failed_resource_gate": 1,
+    "merge_with_other": 46,
+    "pursue": 9,
+    "defer_dormant_public_path": 1,
+    "pursue_later": 2,
+    "defer_pending_decision": 1
+  },
+  "source_hash_matches": 63,
+  "priority_changes": [
+    {
+      "id": "H002",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H004",
+      "old": "P1",
+      "new": "P3"
+    },
+    {
+      "id": "H005",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H006",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H007",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H012",
+      "old": "P2",
+      "new": "P1"
+    },
+    {
+      "id": "H013",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H016",
+      "old": "P1",
+      "new": "P3"
+    },
+    {
+      "id": "H019",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H026",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H028",
+      "old": "P2",
+      "new": "P1"
+    },
+    {
+      "id": "H029",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H030",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H035",
+      "old": "P1",
+      "new": "P3"
+    },
+    {
+      "id": "H036",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H043",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H045",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H046",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H048",
+      "old": "P1",
+      "new": "P3"
+    },
+    {
+      "id": "H051",
+      "old": "P2",
+      "new": "P1"
+    },
+    {
+      "id": "H054",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H055",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H060",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H061",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H062",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H084",
+      "old": "P2",
+      "new": "P3"
+    },
+    {
+      "id": "H085",
+      "old": "P2",
+      "new": "P1"
+    },
+    {
+      "id": "H086",
+      "old": "P1",
+      "new": "P2"
+    },
+    {
+      "id": "H092",
+      "old": "P1",
+      "new": "P2"
+    }
+  ],
+  "packages": [
+    {
+      "key": "entry_totals",
+      "rank": 1,
+      "title": "Global entry aggregate preparation",
+      "effort": "L",
+      "risk": "High semantics/effects/state risk; high structural payoff hypothesis",
+      "proof": "Confirm current public coordinate/stats aggregate actually reaches Unnest/take/concat; then reuse native partial/final state on outer lists. Stop if scan/decode dominates or the public graph already avoids relation construction.",
+      "items": [
+        "H089"
+      ]
+    },
+    {
+      "key": "matrix_layout",
+      "rank": 2,
+      "title": "Entry relation projection and axis/capture layout",
+      "effort": "L",
+      "risk": "High ordering/alignment/null-parent risk",
+      "proof": "Separate entries() projection from transpose/captured-row fallback in current public plans. Preserve keys/distribution while reducing requested fields and intermediate batches. Stop if selected path is not reached or copying cannot be removed without equivalent materialization.",
+      "items": [
+        "H008",
+        "H012",
+        "H028",
+        "H051",
+        "H052"
+      ]
+    },
+    {
+      "key": "multivariate",
+      "rank": 3,
+      "title": "Multivariate predictor access and numerical workspace",
+      "effort": "M-L",
+      "risk": "High floating/numerical/cache-validity risk",
+      "proof": "Recheck actual public multivariate profile; distinguish predictor selection and scratch from essential QR. Reuse Faer/native grouped machinery; stop if workspace/setup is negligible or the exact numerical/control resource gate regresses.",
+      "items": [
+        "H027",
+        "H047"
+      ]
+    },
+    {
+      "key": "genomic",
+      "rank": 4,
+      "title": "Genomic array expansion and typed entry access",
+      "effort": "M-L",
+      "risk": "High index/ploidy/null/error-order risk",
+      "proof": "Profile public VDS local_to_global and one HTS/call_stats pipeline separately. Prefer reusable scatter/fill, direct Call construction and borrowed typed spans. Drop any subtask not reached by its public API or dominated by required math/IO.",
+      "items": [
+        "H007",
+        "H015",
+        "H040",
+        "H085",
+        "H086"
+      ]
+    },
+    {
+      "key": "numeric_casts",
+      "rank": 5,
+      "title": "Generic native aggregate source-typed input",
+      "effort": "M-L",
+      "risk": "High arithmetic/merge/retract/CSE risk",
+      "proof": "Profile actual table/grouped SUM/AVG/stats inputs, not already-specialized direct matrix SUM. Reuse DF state/math and remove only measured widened payload copies; stop if cast sharing/kernel semantics or resource controls make replacement lose.",
+      "items": [
+        "H024",
+        "H042",
+        "H043",
+        "H045"
+      ]
+    },
+    {
+      "key": "grouped_collections",
+      "rank": 6,
+      "title": "Prepared grouped collections and bounded representative selection",
+      "effort": "M-L",
+      "risk": "Medium-high order/duplicate/null risk",
+      "proof": "Profile group_by reducers and to_matrix_table duplicate-coordinate reduction. Keep DF group/state integration; replace collect-for-last only after representative order proof. Stop if hashing/sorting dominates and no materialization reduction is possible.",
+      "items": [
+        "H031",
+        "H091"
+      ]
+    },
+    {
+      "key": "scans",
+      "rank": 7,
+      "title": "Vector scan-state finalization and indexed scan setup",
+      "effort": "L",
+      "risk": "High recurrence/effects/ordering/state risk",
+      "proof": "Profile one common public scalar and coordinate/indexed scan. Measure factory/state-slice/evaluate costs; use vector finalizers/native groups where possible, retaining true recurrences. Stop rather than recognize benchmark callbacks or reassociate arbitrary folds.",
+      "items": [
+        "H017",
+        "H018",
+        "H020",
+        "H023",
+        "H044"
+      ]
+    },
+    {
+      "key": "intervals",
+      "rank": 8,
+      "title": "Indexed matrix intervals through the native source",
+      "effort": "M-L",
+      "risk": "High interval endpoint/key/pruning correctness risk",
+      "proof": "Compare actual public narrow-region plan and requested bytes against indexed read_matrix_table(_intervals). Reuse standard source projection/filter; stop if ordinary pushdown already eliminates the scan or required lineage cannot be proved.",
+      "items": [
+        "H039",
+        "H080",
+        "H081",
+        "H088"
+      ]
+    },
+    {
+      "key": "optimizer_fields",
+      "rank": 9,
+      "title": "Transparent pure fields after a proven DF correctness prerequisite",
+      "effort": "L",
+      "risk": "High optimizer binding/type/effect and planning-scaling risk",
+      "proof": "Blocked pending explicit companion decision. No implementation until retained public binding cases pass; then separately review pure GetField route and actual eligible pipeline/planning controls. Stop on wrong values, schema errors, quadratic planning or effect changes.",
+      "items": [
+        "H094"
+      ]
+    },
+    {
+      "key": "text_io",
+      "rank": 10,
+      "title": "Later: typed vector text sinks and reusable compression",
+      "effort": "M-L",
+      "risk": "Medium-high format/ordering/buffer-retention risk",
+      "proof": "First profile real parallel public export/import path. Reuse Arrow formatting or compressor reset only with exact Hail/VCF/BGZF contracts; stop if final filesystem/compression dominates or temporary stripes increase bytes/peak memory.",
+      "items": [
+        "H014",
+        "H021",
+        "H025",
+        "H033",
+        "H055",
+        "H057",
+        "H064",
+        "H067",
+        "H068",
+        "H079"
+      ]
+    }
+  ],
+  "semantics": "queued = prioritized after source audit but no current profile; profiled may be historical, explicitly labeled. deferred = no current work. resolved = original scoped issue completed, not blanket subsystem closure. No implementing/validating task is invented from old todo/owner labels.",
+  "historical_fields_exact_equality_verified": true,
+  "all95_public_pipeline_class_and_decision_present": true
+}
