@@ -1,0 +1,13 @@
+# Current-main reader integration: final gate
+
+Exact source ef35f107266d34f81523fdeb546b249406a145f7 composes the reviewed reader with main eb707b1e, retaining its accepted DataFusion fix. The automatic composition had no conflicts or interaction edits. The later upstream-only replacement experiment failed independently and is NOT included. Separate Mask/presence design70c899a4 is also NOT included.
+
+All final gates passed on exact source: normal wheel333.49s;431Python tests;30reader/encoded Rust tests;4DataFusion contracts;2public storage Reader/Writer tests. Zero failures/ignored. Test graphs built104.48s and237.12s, inside separate300s budgets. Native installed normally into an independent environment; both installed frontend/native paths were verified with no PYTHONPATH override. Native SHA25699fb5ebbdf51c3ade1f7cc0ff427001651fb49fe87beedf112b7a2c3f46ad68d; wheelb3b83ca69222ccfb9a629a3c1006bb950ef676f690df1de346e8c48bd64ad99f. No native artifact was manually copied.
+
+The reader30gate retains raw sibling, distinct map, direct map, SumMap, list-length, current-thread/multithread, logical-null, schema/serialization, bounded-mask and shared-DAG controls. The storage gate retains sliced parent/child-null schema evolution. DAG observations are preparation-only and do not prove universal execution or fallback linearity. All raw commands, logs, JUnit output, source hashes and executable hashes are retained.
+
+Actual structural file tree: Zoned→List→Struct→nestedStruct, with independent validity children. Real application-reader requests: structural full4,277,895bytes, presence2,180,011bytes (49.04%fewer); unique4,221,520vs2,180,011. Flat control remains4,277,547requested for both. These are application requests/completions, not physical device IO, and open snapshots may overlap prefetch. Tiny unit-test scan+materialization/check timings do NOT establish controlled throughput/core-second speedup. About2MBselected nested-struct payload remains due presence-through-parent-Mask dependency; bitmap-only decoding is not claimed.
+
+No native capability/translator/admission changes, count-specific operator or selected-owner bound. Reader caches retain prepared expressions/types only for reader lifetime, but grow with distinct exact identities and still perform semantic hashing. Existing ordinary fallback paths do not gain a universal DAG-linearity guarantee. Earlier flat-only and writer-edition failures remain explicitly documented in20261024-list-element-reader-bridge.
+
+The exclusive source/target/timing slot was released immediately after final runtime. No further builds or experiments are pending. Independent final review and parent-only main merge remain required.

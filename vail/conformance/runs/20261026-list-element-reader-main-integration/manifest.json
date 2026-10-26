@@ -1,0 +1,69 @@
+{
+  "source_revision": "ef35f107266d34f81523fdeb546b249406a145f7",
+  "base_main": "eb707b1e",
+  "native": {
+    "frontend_path": "/private/tmp/vail-reader-main-integration/candidate-env/lib/python3.12/site-packages/vail/__init__.py",
+    "native_path": "/private/tmp/vail-reader-main-integration/candidate-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "99fb5ebbdf51c3ade1f7cc0ff427001651fb49fe87beedf112b7a2c3f46ad68d",
+    "cwd": "/Users/danielking/.codex/worktrees/encoded-list-reduction/vail/vail",
+    "pythonpath": null,
+    "source": "ef35f107266d34f81523fdeb546b249406a145f7",
+    "wheel_sha256": "b3b83ca69222ccfb9a629a3c1006bb950ef676f690df1de346e8c48bd64ad99f"
+  },
+  "passed": {
+    "python": 431,
+    "reader_rust": 30,
+    "df_contracts_rust": 4,
+    "storage_reader_writer_rust": 2
+  },
+  "failed": 0,
+  "build_seconds": {
+    "normal_wheel": 333.49044036865234,
+    "table_tests": 104.47927713394165,
+    "storage_tests": 237.12458181381226
+  },
+  "table_artifacts": [
+    {
+      "name": "tests/encoded_projection.rs",
+      "command": [
+        "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/encoded_projection-5989a01df6e6f29e",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "exe_sha256": "40c1cdea9f4173b0a48a80a7967f0910585d5b4a886cd75dcee60a221c442381",
+      "log_sha256": "5147900a6759366943ca1c9eaf0b2ccb6bba3f9fe8e34330e70a18e1416c5fdf"
+    },
+    {
+      "name": "tests/struct_field_projection_contract.rs",
+      "command": [
+        "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/struct_field_projection_contract-5dc2f7c97feea954",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "exe_sha256": "bf903f802ced6277c12d6a9ae01675fbc621f3496edcb04b3c9cb1d2ec8f8dc3",
+      "log_sha256": "7fba9875a9aa6688e4ffb1ad6f2a404f93acd758325f47669fa4c15b62db5e05"
+    }
+  ],
+  "storage_artifact": {
+    "name": "tests/native_list_evolution.rs",
+    "command": [
+      "/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/native_list_evolution-89c888e4fa5f29a7",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "returncode": 0,
+    "exe_sha256": "f81e9bb554b7338c0d18e760c4f713a5613276aa26b6bff2c1eca6dbcca211ab",
+    "log_sha256": "34c4ddd911c156dab5e08ae5b5b1502e9a15fb4e0cc08003932c1a2d568530ab"
+  },
+  "limitations": [
+    "No native capability/translator admission expansion",
+    "Partial application-reader omission only; selected target payload retained",
+    "No controlled throughput/core-seconds/memory-bandwidth claim",
+    "Reader cache lifetime bounds ownership, not number of distinct exact-expression keys",
+    "Semantic selector/schema hashing remains on cache lookup",
+    "Earlier default-flat and edition-failure evidence preserved in previous receipt"
+  ],
+  "mask_normalization": "Separate design70c899a4 only, not included in source"
+}

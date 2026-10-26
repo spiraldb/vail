@@ -1,0 +1,18 @@
+
+running 4 tests
+test public_valid_projection_resource_control ... PUBLIC_DF_RESOURCE mode=rename phase=plan_collect_validate_end_to_end width=16 output_count=1 rows=32 iterations=1 wall_seconds=0.000679292
+ok
+test renamed_struct_projection_keeps_selected_field_values ... ok
+test same_name_struct_schema_replacement_preserves_new_field ... nested=false mode=replace: values=[1, 2]
+nested=false mode=extend: values=[1, 2]
+nested=false mode=distinct: values=[1, 2]
+nested=false mode=same_type: values=[1, 2]
+nested=true mode=replace: values=[1, 2]
+nested=true mode=extend: values=[1, 2]
+nested=true mode=distinct: values=[1, 2]
+nested=true mode=same_type: values=[1, 2]
+ok
+test struct_leaf_values_survive_filter_sort_and_limit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
