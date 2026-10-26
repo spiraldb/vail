@@ -532,6 +532,7 @@ pub fn owning_coordinate_sum_udaf(input: DataType, names: &[String]) -> Result<A
                 runs: Vec::new(),
                 owners: Vec::new(),
                 validity: arrow_buffer::BooleanBufferBuilder::new(0),
+                validity_rhs: arrow_buffer::BooleanBufferBuilder::new(0),
             }))
         }),
     ))
@@ -546,6 +547,7 @@ struct OwningCoordinates {
     runs: Vec<(usize, usize)>,
     owners: Vec<(usize, usize)>,
     validity: arrow_buffer::BooleanBufferBuilder,
+    validity_rhs: arrow_buffer::BooleanBufferBuilder,
 }
 impl OwningCoordinates {
     fn update_selected<const MASKED: bool, const PACKED: bool>(
@@ -653,13 +655,17 @@ impl Accumulator for OwningCoordinates {
                         first.inner().values());
                 }
                 for mask in rest {
-                    let mut packed = 0;
+                    self.validity_rhs.truncate(0);
                     for &(start, end) in &self.owners {
-                        arrow_buffer::bit_util::apply_bitwise_binary_op(
-                            self.validity.as_slice_mut(), packed, mask.inner().values(),
-                            mask.inner().offset() + start, end - start, |left, right| left & right);
-                        packed += end - start;
+                        self.validity_rhs.append_packed_range(
+                            mask.inner().offset() + start..mask.inner().offset() + end,
+                            mask.inner().values());
                     }
+                    // A whole offset-zero operation cannot overwrite another
+                    // selected span's following bits at a short byte boundary.
+                    arrow_buffer::bit_util::apply_bitwise_binary_op(
+                        self.validity.as_slice_mut(), 0, self.validity_rhs.as_slice(),
+                        0, self.validity_rhs.len(), |left, right| left & right);
                 }
                 Self::update_selected::<true, true>(
                     &mut self.coordinates, &mut self.runs, &self.owners, arrays,
@@ -680,6 +686,7 @@ impl Accumulator for OwningCoordinates {
         self.coordinates.size() + self.path.capacity() * std::mem::size_of::<usize>()
             + (self.runs.capacity() + self.owners.capacity()) * std::mem::size_of::<(usize, usize)>()
             + self.validity.capacity().div_ceil(8)
+            + self.validity_rhs.capacity().div_ceil(8)
     }
 }
 
