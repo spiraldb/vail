@@ -453,8 +453,18 @@ fn expand_struct_root(
 
     // Iterative retained-identity memoization preserves sharing and avoids a
     // recursive setup walk (or stack growth) over repeated expression DAG edges.
+    if let Some(terminal) = replace_node(&expr)? {
+        return Ok(terminal);
+    }
     let mut prepared = HashMap::<ExactBoundExpr, BoundExpression>::new();
-    let mut pending = vec![(expr.clone(), false)];
+    let mut pending = vec![(expr.clone(), true)];
+    pending.extend(
+        expr.children()
+            .iter()
+            .rev()
+            .cloned()
+            .map(|child| (child, false)),
+    );
     while let Some((node, finish)) = pending.pop() {
         let key = ExactBoundExpr(node.clone());
         if prepared.contains_key(&key) {
