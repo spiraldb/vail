@@ -1,0 +1,37 @@
+{
+  "runtime_source": "bd97e7b98676051fce1b0b2d9067f7276f3c34ea",
+  "equivalent_private_source": "35e69188",
+  "base": "af8ae9c7",
+  "exe_sha256": "b68d1b15127a016d092446ad326a199db66be27624ed5cc7185ffaa80efd1c8b",
+  "source_hashes": {
+    "patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs": "6b46043452ae5f4e3c9afcc003092e2aaf7818394d007ed0dbe967436d73d6d9",
+    "patches/vortex-array/src/scalar_fn/fns/list_field.rs": "f129c6102da2f2394415e3736a8da837a0f8090f5ad436bcb70ff847b760fee9",
+    "patches/vortex-layout/src/layouts/list/reader.rs": "4e57880845b327354802651e65e56ab2eae8cd6f6c30766edb415ed29f24df62",
+    "patches/vortex-layout/src/layouts/list/expr.rs": "3913f804cc562ffc5cb29dd773f87c601f02d14fe5eb6bbe299f141fd92fa2aa",
+    "crates/vail-table/tests/support/encoded_list_sum.rs": "667fd64bd03bf3cd8d9a38bddf67b774dc8083f0286e65a85a1c1f711d23355e",
+    "crates/vail-table/tests/support/element_validity_reader_io.rs": "026fe609d0f0b79c4a6e713a81adb5f48f2dae193089e4e9d9df6dd775d48349",
+    "crates/vail-table/tests/encoded_projection.rs": "b8bef9698bcb0a17f55906250fae360f3b854fb2dd6a971731c0c88813a50040"
+  },
+  "runtime": {
+    "passed": 30,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 0.33
+  },
+  "io": {
+    "file_bytes": 4214260,
+    "raw_requested": 4277547,
+    "presence_requested": 4277547,
+    "raw_unique": 4214252,
+    "presence_unique": 4214252,
+    "claim": "NO read-byte reduction; root Zoned known, nested layout not captured by Debug"
+  },
+  "limitations": [
+    "No native capability or translator changes",
+    "No selective-owner bound",
+    "No native wheel",
+    "Prep-only DAG observations, no universal execution linearity",
+    "IO fixture open snapshots can overlap async prefetch; application traffic, not physical device IO",
+    "Single concurrent whole-test run not controlled throughput experiment"
+  ]
+}
