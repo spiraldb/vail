@@ -43,6 +43,14 @@ fn fixture_layout(hidden: usize, duplicate_batches: bool, large: bool) -> TableR
     let unused = Arc::new(list(Arc::new(Int32Array::from(vec![17; hidden])),
         vec![0, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32],
         Some(NullBuffer::from(vec![false, true, true, true, true, true])))) as ArrayRef;
+    // Combine a defined, unused nested payload with a distinct logical-null
+    // sibling sharing its large backing owner. Null ancestors remain below.
+    let null_list = unused.as_any().downcast_ref::<ListArray>().unwrap();
+    let defined_list = Arc::new(ListArray::try_new(
+        Arc::new(Field::new("item", DataType::Int32, true)), null_list.offsets().clone(),
+        null_list.values().clone(), None,
+    ).unwrap()) as ArrayRef;
+    let unused = Arc::new(structure(&["defined", "hidden"], vec![defined_list, unused], None)) as ArrayRef;
     let entries = Arc::new(structure(&["value", "unused"], vec![
         Arc::new(Int32Array::from(vec![10, 11, 20, 21, 30, 31])), unused,
     ], Some(NullBuffer::from(vec![true, false, true, true, true, true])))) as ArrayRef;
@@ -123,7 +131,8 @@ async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
         assert_eq!(actual, vec![(0, 0, 10), (1, 0, 30), (1, 1, 31)]);
         observations.push(allocated);
     }
-    // The added16MB source owner belongs only to an unused null List field.
+    // The added16MB source owner belongs only to an unused nested Struct,
+    // with both defined data and a null List sibling.
     // Allow ordinary planner/runtime variation, never a payload-sized copy.
     eprintln!("public allocation bytes (small, growing hidden owner): {observations:?}");
     assert!(observations[1] < observations[0].saturating_add(2 * 1024 * 1024),
@@ -140,7 +149,8 @@ fn process_written_bytes() -> u64 {
 #[cfg(target_os = "linux")]
 #[tokio::test]
 async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields() {
-    // Two original source batches each retain a40MB hidden owner. Their
+    // Two original source batches each retain a40MB owner counted in
+    // both unused nested siblings by the unchanged Arrow-size mechanism. Their
     // ORIGINAL charges exceed the unchanged64MiB budget in both artifacts.
     // Producer construction is outside the observed temporary-write interval.
     let source = fixture_batches(10_000_000, true);
