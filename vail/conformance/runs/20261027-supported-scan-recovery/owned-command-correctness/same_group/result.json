@@ -1,0 +1,65 @@
+{
+  "returncode": -15,
+  "error": "TimeoutError('Command/readiness deadline')",
+  "owned_group_clean": true,
+  "elapsed_seconds": 0.33465466706547886,
+  "identity": {
+    "pid": 12186,
+    "host_uid": 501,
+    "host_euid": 501,
+    "popen_after_monotonic": 904704.22382175,
+    "retired": true,
+    "pgid": 12186,
+    "sid": 12186,
+    "spawn_members": [
+      {
+        "pid": 12186,
+        "ppid": 12165,
+        "pgid": 12186,
+        "uid": 501,
+        "sid": 12186,
+        "start": "Tue Oct 27 03:04:43 2026    "
+      }
+    ],
+    "leader": {
+      "pid": 12186,
+      "ppid": 12165,
+      "pgid": 12186,
+      "uid": 501,
+      "sid": 12186,
+      "start": "Tue Oct 27 03:04:43 2026    "
+    },
+    "popen_before_monotonic": 904704.221927916
+  },
+  "cleanup_observations": [
+    {
+      "observed_monotonic": 904704.414160125,
+      "leader_status": null,
+      "members": [
+        {
+          "pid": 12186,
+          "ppid": 12165,
+          "pgid": 12186,
+          "uid": 501,
+          "sid": 12186,
+          "start": "Tue Oct 27 03:04:43 2026    "
+        },
+        {
+          "pid": 12188,
+          "ppid": 12186,
+          "pgid": 12186,
+          "uid": 501,
+          "sid": 12186,
+          "start": "Tue Oct 27 03:04:43 2026    "
+        }
+      ],
+      "signal_attempted": 15
+    },
+    {
+      "observed_monotonic": 904704.556301416,
+      "leader_status": -15,
+      "members": []
+    }
+  ],
+  "identity_precision": "OS ps lstart seconds; read-check/signal non-atomic, not reuse proof"
+}

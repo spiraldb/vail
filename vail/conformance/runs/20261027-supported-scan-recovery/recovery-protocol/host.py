@@ -4,69 +4,45 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 GCLOUD='/Users/danielking/projects/google-cloud-sdk/bin/gcloud'
 VM='vail-bench-20261021';IDENTITY=['--project=pyspiral-dev','--zone=us-east1-b']
-REMOTE=Path('/home/danielking/supported-scan-metadata-20261027')
+REMOTE=Path('/home/danielking/supported-scan-metadata-20261027-attempt-2')
 p=argparse.ArgumentParser();p.add_argument('--out',required=True);a=p.parse_args();out=Path(a.out).resolve()
 if not out.is_relative_to('/private/tmp') or out.exists():raise RuntimeError('Fresh owned local /private/tmp output required')
 out.mkdir();record={'error':None,'owned_vm':False,'guest_complete':False,'download_verified':False,'provider_stopped':False,'unresolved_host_groups':[]}
 def digest(path):
  with Path(path).open('rb') as source:return hashlib.file_digest(source,'sha256').hexdigest()
-def stop_owned(proc):
- if proc is None:return
- def complete():
-  exited=proc.poll() is not None
-  try:os.killpg(proc.pid,0)
-  except ProcessLookupError:return exited
-  return False
- for sig in (signal.SIGTERM,signal.SIGKILL):
-  if complete():return
-  try:os.killpg(proc.pid,sig)
-  except ProcessLookupError:pass
-  deadline=time.monotonic()+3
-  while time.monotonic()<deadline:
-   if complete():return
-   time.sleep(.05)
- if not complete():raise RuntimeError(f'Owned group unresolved:{proc.pid}')
-def run(name,command,seconds):
- folder=out/name;folder.mkdir();(folder/'command.json').write_text(json.dumps(command,indent=2)+'\n');proc=None;error=None;clean=False;started=time.monotonic()
- try:
-  with (folder/'stdout').open('wb') as stdout,(folder/'stderr').open('wb') as stderr:
-   proc=subprocess.Popen(command,stdout=stdout,stderr=stderr,start_new_session=True)
-   while proc.poll() is None:
-    if time.monotonic()-started>seconds:raise TimeoutError(f'{name}:{seconds}s')
-    if (folder/'stdout').stat().st_size+(folder/'stderr').stat().st_size>2*1024**2:raise RuntimeError('2MiB command log cap')
-    time.sleep(.05)
-   if (folder/'stdout').stat().st_size+(folder/'stderr').stat().st_size>2*1024**2:raise RuntimeError('2MiB command log cap')
- except BaseException as e:error=repr(e)
- finally:
-  # Interruptions stay failures; bounded cleanup completes before another command.
-  handlers={sig:signal.signal(sig,signal.SIG_IGN) for sig in (signal.SIGINT,signal.SIGTERM,signal.SIGHUP)}
-  try:stop_owned(proc);clean=True
-  except BaseException as e:error=f'{error}; cleanup:{e!r}';record['unresolved_host_groups'].append(None if proc is None else proc.pid)
-  for sig,h in handlers.items():signal.signal(sig,h)
-  result={'returncode':None if proc is None else proc.returncode,'error':error,'owned_group_clean':clean,'elapsed_seconds':time.monotonic()-started}
-  (folder/'result.json').write_text(json.dumps(result,indent=2)+'\n')
- if error:raise RuntimeError(f'{name}:{error}')
- return result,(folder/'stdout').read_text()
-def require(name,command,seconds):
- result,text=run(name,command,seconds)
+from owned import execute
+def run(name,command,seconds,*,deadline=None):
+ result,text=execute(command,out/name,seconds,deadline=deadline)
+ if not result['owned_group_clean']:record['unresolved_host_groups'].append(result.get('identity'))
+ if result['error']:raise RuntimeError(f"{name}:{result['error']}")
+ return result,text
+def require(name,command,seconds,*,deadline=None):
+ result,text=run(name,command,seconds,deadline=deadline)
  if result['returncode']!=0:raise RuntimeError(f'{name}:exit{result["returncode"]}')
  return text
 def gcloud(*args):return [GCLOUD,'compute',*args,*IDENTITY]
-def ssh(name,command,seconds):return require(name,gcloud('ssh',VM,'--quiet','--command',command),seconds)
+SSHFLAGS=['--ssh-flag=-oConnectTimeout=10','--ssh-flag=-oConnectionAttempts=1','--ssh-flag=-oBatchMode=yes','--ssh-flag=-oControlMaster=no','--ssh-flag=-oControlPath=none']
+def ssh(name,command,seconds):return require(name,gcloud('ssh',VM,'--quiet',*SSHFLAGS,'--command',command),seconds)
 def stop_vm():
- stop_error=None;describe_error=None
- try:require('provider-stop',gcloud('instances','stop',VM,'--quiet'),120)
+ started=time.monotonic();stop_error=None;describe_errors=[]
+ try:require('provider-stop',gcloud('instances','stop',VM,'--async','--quiet'),18,deadline=started+30)
  except BaseException as error:
   stop_error=repr(error);record['provider_stop_error']=stop_error
- # Always observe provider state, even when STOP failed or timed out.
- try:
-  provider=json.loads(require('provider-after',gcloud('instances','describe',VM,'--format=json(status,scheduling)'),30))
-  record['provider_final_status']=provider.get('status','UNKNOWN')
-  record['provider_stopped']=provider.get('status')=='TERMINATED'
- except BaseException as error:
-  describe_error=repr(error);record['provider_describe_error']=describe_error;record['provider_final_status']='UNKNOWN'
- if stop_error or describe_error or not record['provider_stopped']:
-  raise RuntimeError(f'Provider cleanup failed: stop={stop_error}; describe={describe_error}; status={record.get("provider_final_status","UNKNOWN")}')
+ deadline=min(started+210,time.monotonic()+180);attempt=0
+ while True:
+  remaining=deadline-time.monotonic()
+  if remaining<=12:break
+  try:
+   result,text=run(f'provider-after-{attempt}',gcloud('instances','describe',VM,'--format=json(status,scheduling)'),min(18,remaining-12),deadline=min(deadline,time.monotonic()+30))
+   if result['returncode']!=0:raise RuntimeError(f"describe exit{result['returncode']}")
+   provider=json.loads(text);record['provider_final_status']=provider.get('status','UNKNOWN');record['provider_stopped']=provider.get('status')=='TERMINATED'
+   if record['provider_stopped']:break
+  except BaseException as error:
+   describe_errors.append(repr(error));record['provider_final_status']='UNKNOWN'
+  attempt+=1;time.sleep(min(2,max(0,deadline-time.monotonic()-12)))
+ record['provider_describe_errors']=describe_errors
+ if stop_error or describe_errors or not record['provider_stopped']:
+  raise RuntimeError(f'Provider cleanup failed: stop={stop_error}; describe={describe_errors}; status={record.get("provider_final_status","UNKNOWN")}')
 def interrupted(sig,frame):raise InterruptedError(f'signal{sig}')
 for sig in (signal.SIGINT,signal.SIGTERM,signal.SIGHUP):signal.signal(sig,interrupted)
 try:
@@ -81,14 +57,15 @@ try:
  if provider['status']!='TERMINATED' or provider['scheduling']['instanceTerminationAction']!='STOP' or not 0<int(provider['scheduling']['maxRunDuration']['seconds'])<=900:raise RuntimeError('Provider STOP bound not verified before boot')
  record['owned_vm']=True # Set BEFORE start: timeout may still leave a running VM.
  require('provider-start',gcloud('instances','start',VM,'--quiet'),120)
- ready=False;deadline=time.monotonic()+60
- for attempt in range(6):
-  if time.monotonic()>=deadline:break
-  result,_=run(f'ssh-readiness-{attempt}',gcloud('ssh',VM,'--quiet','--command','true'),min(8,max(1,deadline-time.monotonic())))
+ ready=False;deadline=time.monotonic()+90
+ for attempt in range(2):
+  remaining=deadline-time.monotonic()
+  if remaining<=12:break
+  result,_=run(f'ssh-readiness-{attempt}',gcloud('ssh',VM,'--quiet',*SSHFLAGS,'--command','true'),min(48,remaining-12),deadline=min(deadline,time.monotonic()+60))
   if result['returncode']==0:ready=True;break
-  time.sleep(2)
- if not ready:raise RuntimeError('Boot SSH readiness deadline; no metadata workload retry')
- ssh('guest-guard','sudo -n systemd-run --unit=supported-scan-metadata-deadline --on-active=12m /usr/sbin/shutdown -h now',15)
+  time.sleep(min(2,max(0,deadline-time.monotonic()-12)))
+ if not ready:raise RuntimeError('90s boot readiness including identity/cleanup; no metadata workload retry')
+ ssh('guest-guard','sudo -n systemd-run --unit=supported-scan-metadata-attempt2-deadline --on-active=12m /usr/sbin/shutdown -h now',15)
  ssh('fresh-protocol',f'test ! -e {shlex.quote(str(REMOTE))} && mkdir -p {shlex.quote(str(REMOTE/"protocol"))}',10)
  require('upload',gcloud('scp',str(HERE/'guest.py'),f'{VM}:{REMOTE}/protocol/guest.py','--quiet'),30)
  text=ssh('guest-metadata',shlex.join(['python3',str(REMOTE/'protocol/guest.py'),'--out',str(REMOTE/'attempt-1'),'--expected-sha',assets['guest.py']]),150)
