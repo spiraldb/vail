@@ -1,0 +1,62 @@
+{
+  "runner_sha256": "f71cedf90ef24a00bc7fc41937342c5792e9df78c7b8549b14170b2b03868d67",
+  "upstream_sha256": {
+    "benchmark_analysis.py": "8ba34a543d20f31d6b005bb78a05f34a5f8d9cae355688c002cd32dc53651992",
+    "benchmark_combiner.py": "719953826c207d00d19e874679ef0f1025fee2c7d0d1f9afd66211e88e063e76",
+    "benchmark_linalg.py": "4e1ba72aa9267925b95e770fa25b290045011b0fc377671e0835a25180957caf",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "benchmark_methods.py": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "benchmark_sentinel.py": "93b58ceaa907b3d8ed4041f686275182e9d72a5e880de635c46bdcbbc78810fc",
+    "benchmark_shuffle.py": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 600.0,
+  "fixture_timeout_seconds": 120.0,
+  "data_dir": "/home/danielking/cloud-scan-20261023/data",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_profile_mt",
+      "id": "benchmark_matrix_table::test_write_profile_mt",
+      "args": [
+        "profile25_mt",
+        "tmp_path"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.293913858999986,
+      "telemetry": {
+        "cpu_seconds": 38.61,
+        "average_cores": 8.991110999936899,
+        "peak_rss_gib": 3.6775588989257812,
+        "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 33.96,
+          "system_time": 4.65,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 784482304
+        },
+        "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+        "directory": "/home/danielking/final-supported-scan-20261027/results/rep1/case-0165/telemetry/vail/benchmark_matrix_table--test_write_profile_mt"
+      },
+      "fixture_seconds": 0.192,
+      "elapsed_seconds": 4.82
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

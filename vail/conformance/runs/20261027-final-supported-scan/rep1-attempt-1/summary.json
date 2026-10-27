@@ -1,0 +1,50 @@
+{
+  "source": "cda227eca9f88667c5bb2995d05f27e41921c205",
+  "completed": 470,
+  "total": 470,
+  "statuses": {
+    "passed": 469,
+    "failed": 1
+  },
+  "versions": {
+    "old": 179,
+    "current": 179,
+    "hail": 112
+  },
+  "phase_seconds": 4050.19245595,
+  "eligible_execution_samples": 466,
+  "planning_samples": 3,
+  "passed_incomplete_measurement": [],
+  "failures": [
+    {
+      "case_id": "benchmark_combiner::test_import_gvcf_force_count",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "failed",
+      "error": "ModuleNotFoundError: No module named 'test'",
+      "actual_sample": false,
+      "measurement_complete_finite_positive": false
+    }
+  ],
+  "worker_sessions_clean": 470,
+  "host_commands_clean": 54,
+  "host_probe_children_reaped": 108,
+  "runtime_gate": {
+    "runtime_gate_receipt": {
+      "accepted_after_sha256": "10336362969668a993f301cf9739bec829af15dc2969cc58f1bb3c2138f42d18",
+      "original_enrollment_sha256": "01a1d7c2137b8e2bf167e7d185feb86f86d3ea0a4359c1af08bd66584b193648",
+      "artifacts_equal_accepted": true,
+      "input_check": {
+        "files": 17568,
+        "canonical_set_verified": true,
+        "full_sha256": false,
+        "seconds": 4.5918820029999985
+      },
+      "stage": "rep1"
+    },
+    "sha256": "533e67aa4f281025a4b2e80022cc9d189de6ced505f86368414cc2997512f956"
+  },
+  "provider_final_status": "TERMINATED",
+  "archive_sha256": "2965845059800c70abb53fdd275cf9b3714ff9f31051e7da80180ad08296269a",
+  "scope": "ONE independent process/version/mode so far; three-repetition comparison incomplete; final input fullSHA still pending"
+}
