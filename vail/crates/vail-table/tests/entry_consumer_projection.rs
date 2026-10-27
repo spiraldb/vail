@@ -282,3 +282,53 @@ async fn nested_struct_leaf_projection_omits_unused_payload_before_entry_materia
             "unused nested entry payload grew allocations: {observations:?}");
     }
 }
+
+#[tokio::test]
+async fn shared_deep_prefix_preparation_tracks_unique_demand_nodes() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut incremental = Vec::new();
+    for (depth, width) in [(16, 64), (64, 256)] {
+        let source = fixture_nested_layout(8, false, false, Some(depth));
+        // Same public input schema and values, with no entries demand rewrite.
+        // Its ordinary type-checking allocations remain a separate control.
+        let control = source.cache().await.unwrap();
+        assert_eq!(source.schema(), control.schema());
+        let mut prefix = Arc::new(Expr::Column { name: "meta".into() });
+        for _ in 0..depth {
+            prefix = Arc::new(Expr::GetField { value: prefix, name: "child".into() });
+        }
+        let fields = || {
+            let mut fields = ["r", "c"].into_iter().map(|name|
+                (name.into(), Expr::Column { name: name.into() })).collect::<Vec<_>>();
+            fields.extend((0..width).map(|i| ((if i == 0 { "value".into() } else { format!("value_{i}") }),
+                Expr::GetField { value: prefix.clone(), name: "value".into() })));
+            fields
+        };
+        let measure = |table: &TableRef, fields| {
+            ALLOCATED.store(0, Ordering::Relaxed);
+            MEASURING.store(true, Ordering::Relaxed);
+            let prepared = table.map_rows(fields);
+            MEASURING.store(false, Ordering::Relaxed);
+            (prepared.unwrap(), ALLOCATED.load(Ordering::Relaxed))
+        };
+        let (_, control_bytes) = measure(&control, fields());
+        let (projected, entry_bytes) = measure(&source, fields());
+        let extra = entry_bytes.saturating_sub(control_bytes);
+        eprintln!("public shared-prefix logical preparation depth={depth} width={width}: control={control_bytes} entries={entry_bytes} incremental={extra}");
+        incremental.push(extra);
+        assert_eq!(values(&projected).await, vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))]);
+        for partition in projected.collect_partitions().await.unwrap() {
+            for batch in partition {
+                let expected = batch.column_by_name("value").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+                for i in 1..width {
+                    let actual = batch.column_by_name(&format!("value_{i}")).unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+                    assert_eq!(actual.iter().collect::<Vec<_>>(), expected.iter().collect::<Vec<_>>());
+                }
+            }
+        }
+    }
+    // Four times as many unique prefix/leaf nodes, with generous fixed room
+    // for ordinary metadata construction; prohibit the old per-leaf path walk.
+    assert!(incremental[1] < incremental[0].saturating_mul(8).saturating_add(128 * 1024),
+        "shared-prefix demand preparation grew with repeated complete paths: {incremental:?}");
+}
