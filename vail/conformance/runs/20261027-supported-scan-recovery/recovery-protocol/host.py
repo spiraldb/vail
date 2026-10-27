@@ -54,10 +54,19 @@ def require(name,command,seconds):
 def gcloud(*args):return [GCLOUD,'compute',*args,*IDENTITY]
 def ssh(name,command,seconds):return require(name,gcloud('ssh',VM,'--quiet','--command',command),seconds)
 def stop_vm():
- require('provider-stop',gcloud('instances','stop',VM,'--quiet'),120)
- provider=json.loads(require('provider-after',gcloud('instances','describe',VM,'--format=json(status,scheduling)'),30))
- record['provider_stopped']=provider['status']=='TERMINATED'
- if not record['provider_stopped']:raise RuntimeError('Provider not verified TERMINATED')
+ stop_error=None;describe_error=None
+ try:require('provider-stop',gcloud('instances','stop',VM,'--quiet'),120)
+ except BaseException as error:
+  stop_error=repr(error);record['provider_stop_error']=stop_error
+ # Always observe provider state, even when STOP failed or timed out.
+ try:
+  provider=json.loads(require('provider-after',gcloud('instances','describe',VM,'--format=json(status,scheduling)'),30))
+  record['provider_final_status']=provider.get('status','UNKNOWN')
+  record['provider_stopped']=provider.get('status')=='TERMINATED'
+ except BaseException as error:
+  describe_error=repr(error);record['provider_describe_error']=describe_error;record['provider_final_status']='UNKNOWN'
+ if stop_error or describe_error or not record['provider_stopped']:
+  raise RuntimeError(f'Provider cleanup failed: stop={stop_error}; describe={describe_error}; status={record.get("provider_final_status","UNKNOWN")}')
 def interrupted(sig,frame):raise InterruptedError(f'signal{sig}')
 for sig in (signal.SIGINT,signal.SIGTERM,signal.SIGHUP):signal.signal(sig,interrupted)
 try:
