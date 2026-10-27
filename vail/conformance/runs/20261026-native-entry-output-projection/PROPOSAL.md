@@ -89,9 +89,11 @@ and remaining work.”
    raw input positions, private narrow-frame positions, key aliases, partition
    tag, and output schema during query preparation. Use separate prepared row,
    column and entry index vectors; no field-name/type decisions in entry loops.
-   The descriptor binds projection/schema/key/offset provenance and exact child
-   lengths, parent masks, empty-Struct length and original offset ownership. It
-   cannot be publicly fabricated or carried across a type-changing rewrite.
+   Preparation binds schema/indices/key/offset contracts and provenance. EACH
+   batch view then binds its actual child lengths, parent masks, empty-Struct
+   length and original offset owners through safe constructors; preparation
+   cannot pre-certify unknown runtime buffers. The private descriptor cannot be
+   publicly fabricated or carried across a type-changing rewrite.
    All keys and the private tag remain demanded internally. Initial key-retaining
    scope leaves the original composite ordering meaningful; rebind key columns
    against the new schema/DF projection mapping, never claim sorting by a suffix
@@ -162,6 +164,10 @@ patch. Bind a valid projected extension before that boundary instead.
 Use existing Arrow Struct projection, safe List/LargeList reconstruction with
 validated offsets, existing Arrow slice/take/concat and IPC spill, plus DF
 projection/schema property utilities. No handwritten SIMD or new dependency.
+
+Copies in unchanged upstream column realignment (matrix_arrays take) are also
+outside this local operator change and need separate profile attribution. No
+claim removes all unused-field copies across the whole graph.
 
 Initial source execution/IO remains unchanged. Existing SourceDependencies,
 provider_with_nested_projection_paths and native Vortex scan/layout projection
