@@ -2,7 +2,25 @@
 use arrow_array::{Array, ArrayRef, Int32Array, ListArray, RecordBatch, StructArray};
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Fields, Schema};
-use std::sync::Arc;
+use std::{alloc::{GlobalAlloc, Layout, System}, sync::{Arc, atomic::{AtomicBool, AtomicUsize, Ordering}}};
+
+struct CountingAllocator;
+static MEASURING: AtomicBool = AtomicBool::new(false);
+static ALLOCATED: AtomicUsize = AtomicUsize::new(0);
+unsafe impl GlobalAlloc for CountingAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        if MEASURING.load(Ordering::Relaxed) { ALLOCATED.fetch_add(layout.size(), Ordering::Relaxed); }
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) { unsafe { System.dealloc(pointer, layout) } }
+    unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, size: usize) -> *mut u8 {
+        if MEASURING.load(Ordering::Relaxed) { ALLOCATED.fetch_add(size, Ordering::Relaxed); }
+        unsafe { System.realloc(pointer, layout, size) }
+    }
+}
+#[global_allocator]
+static ALLOCATOR: CountingAllocator = CountingAllocator;
+
 use vail_execution::expressions::{Expr, Type};
 use vail_table::{TableIR, TableRef, globals::{GlobalBindings, GlobalsIR}};
 
@@ -70,4 +88,29 @@ async fn selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consu
     assert_eq!(values(&projected).await, expected);
     assert_eq!(values(&source).await, expected);
     assert_eq!(values(&projected).await, expected);
+}
+
+
+#[tokio::test]
+async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
+    // Fixture construction/allocation is deliberately outside the measurement.
+    // Only the public projection+collect action is counted; returned values
+    // independently force the selected payload and missing ancestors.
+    let mut observations = Vec::new();
+    for hidden in [1024, 4_000_000] {
+        let source = fixture(hidden);
+        let selected = source.map_rows(["r", "c", "value"].into_iter()
+            .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
+        ALLOCATED.store(0, Ordering::Relaxed);
+        MEASURING.store(true, Ordering::Relaxed);
+        let actual = values(&selected).await;
+        MEASURING.store(false, Ordering::Relaxed);
+        let allocated = ALLOCATED.load(Ordering::Relaxed);
+        assert_eq!(actual, vec![(0, 0, 10), (1, 0, 30), (1, 1, 31)]);
+        observations.push(allocated);
+    }
+    // The added16MB source owner belongs only to an unused null List field.
+    // Allow ordinary planner/runtime variation, never a payload-sized copy.
+    assert!(observations[1] < observations[0].saturating_add(2 * 1024 * 1024),
+        "public query allocations grew with unused hidden owner: {observations:?}");
 }
