@@ -1,0 +1,364 @@
+warning: unused import: `crate::builtins::ArrayBuiltins`
+  --> patches/vortex-array/src/aggregate_fn/fns/sum_v2/dict_grouped.rs:22:5
+   |
+22 | use crate::builtins::ArrayBuiltins;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `ListViewArrayExt`
+ --> patches/vortex-array/src/scalar_fn/fns/list_field.rs:6:31
+  |
+6 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+  |                               ^^^^^^^^^^^^^^^^
+
+warning: unused import: `ListViewArrayExt`
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:16:31
+   |
+16 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+   |                               ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:19:49
+   |
+19 | use crate::expr::proto::{ExprSerializeProtoExt, deserialize_expr_proto};
+   |                                                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+   --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:137:44
+    |
+137 |         ElementValidityPath::from_selector(deserialize_expr_proto(
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vortex-array` (lib) generated 5 warnings (run `cargo fix --lib -p vortex-array` to apply 3 suggestions)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:55:24
+   |
+55 |                 output.extend(0, first, last);
+   |                        ^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:62:16
+   |
+62 |         output.extend(0, first, last);
+   |                ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+   --> crates/vail-execution/src/array_aggregate.rs:592:24
+    |
+592 |                 output.extend(0, start, end);
+    |                        ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:61:28
+   |
+61 |                     output.extend(0, first, last);
+   |                            ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:68:20
+   |
+68 |             output.extend(0, first, last);
+   |                    ^^^^^^
+
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4313:14
+     |
+4313 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 6 warnings (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: fields `operands`, `metadata_bytes`, and `domains` are never read
+  --> crates/vail-storage/src/computed_capability.rs:65:16
+   |
+62 | pub struct ComputedProjectionCertificate {
+   |            ----------------------------- fields in this struct
+...
+65 |     pub(crate) operands: Vec<ComputedOperand>,
+   |                ^^^^^^^^
+...
+68 |     pub(crate) metadata_bytes: usize,
+   |                ^^^^^^^^^^^^^^
+69 |     pub(crate) domains: Vec<FileDomain>,
+   |                ^^^^^^^
+   |
+   = note: `ComputedProjectionCertificate` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `path`, `bytes`, `rows`, and `operands` are never read
+  --> crates/vail-storage/src/computed_capability.rs:89:5
+   |
+88 | pub(crate) struct FileDomain {
+   |                   ---------- fields in this struct
+89 |     path: String,
+   |     ^^^^
+90 |     bytes: u64,
+   |     ^^^^^
+91 |     rows: u64,
+   |     ^^^^
+92 |     operands: Vec<(ComputedOperand, Vec<OperandDomain>)>,
+   |     ^^^^^^^^
+   |
+   = note: `FileDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `start`, and `width` are never read
+  --> crates/vail-storage/src/computed_capability.rs:97:9
+   |
+96 |     ListShape {
+   |     --------- fields in this variant
+97 |         rows: u64,
+   |         ^^^^
+98 |         start: u64,
+   |         ^^^^^
+99 |         width: u64,
+   |         ^^^^^
+   |
+   = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `width`, and `elements` are never read
+   --> crates/vail-storage/src/computed_capability.rs:102:9
+    |
+101 |     DenseList {
+    |     --------- fields in this variant
+102 |         rows: u64,
+    |         ^^^^
+103 |         width: u64,
+    |         ^^^^^
+104 |         elements: u64,
+    |         ^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `codes`, `values`, and `preparation_bound` are never read
+   --> crates/vail-storage/src/computed_capability.rs:107:9
+    |
+106 |     SmallDictionary {
+    |     --------------- fields in this variant
+107 |         codes: u64,
+    |         ^^^^^
+108 |         values: u64,
+    |         ^^^^^^
+109 |         preparation_bound: usize,
+    |         ^^^^^^^^^^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `vail-storage` (lib) generated 5 warnings
+   Compiling vail-table v0.1.0 (/Users/danielking/.codex/worktrees/encoded-list-reduction/vail/vail/crates/vail-table)
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:732:20
+    |
+732 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+732 -                 if (!shape || !tail.is_empty()) {
+732 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:761:20
+    |
+761 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+761 -                 if (!shape || !tail.is_empty()) {
+761 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:771:20
+    |
+771 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+771 -                 if (!shape || !tail.is_empty()) {
+771 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:11:23
+   |
+11 |     coalesce_batches::CoalesceBatchesExec,
+   |                       ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:65:26
+   |
+65 |             || plan.is::<CoalesceBatchesExec>()
+   |                          ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:351:32
+    |
+351 |         || input.as_ref().is::<CoalesceBatchesExec>()
+    |                                ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:325:27
+    |
+325 |         coalesce_batches::CoalesceBatchesExec,
+    |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:66:31
+   |
+66 |         || plan.as_ref().is::<CoalesceBatchesExec>()
+   |                               ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:38:27
+   |
+38 |         coalesce_batches::CoalesceBatchesExec,
+   |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:457:31
+    |
+457 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/projection_broadcast.rs:374:26
+    |
+374 |             plan.clone().with_new_children(children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/wide_batch.rs:291:26
+    |
+291 |             plan.clone().with_new_children(rewritten_children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:313:9
+    |
+313 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `kind`
+   --> crates/vail-table/src/logical_scan.rs:630:26
+    |
+630 |     for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_kind`
+
+warning: fields `varid` and `rsid` are never read
+  --> crates/vail-table/src/bgen_source.rs:41:5
+   |
+30 | struct BgenOptions {
+   |        ----------- fields in this struct
+...
+41 |     varid: bool,
+   |     ^^^^^
+42 |     rsid: bool,
+   |     ^^^^
+   |
+   = note: `BgenOptions` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `owners` is never read
+  --> crates/vail-table/src/conditional_globals.rs:14:5
+   |
+ 9 | pub(crate) struct ConditionalNode {
+   |                   --------------- field in this struct
+...
+14 |     owners: [GlobalsRef; 3],
+   |     ^^^^^^
+   |
+   = note: `ConditionalNode` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `evaluate` is never used
+   --> crates/vail-table/src/count_explode.rs:418:8
+    |
+400 | impl ZipProgram {
+    | --------------- method in this implementation
+...
+418 |     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+    |        ^^^^^^^^
+
+warning: `vail-table` (lib) generated 17 warnings (run `cargo fix --lib -p vail-table` to apply 5 suggestions)
+    Finished `release` profile [optimized] target(s) in 3.16s
+     Running tests/entry_consumer_projection.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/entry_consumer_projection-dfa73c8b94cfbadc)
+
+running 3 tests
+test growing_unused_hidden_owner_does_not_grow_query_allocations ... public allocation bytes (small, growing hidden owner): [1444545, 28017217]
+
+thread 'growing_unused_hidden_owner_does_not_grow_query_allocations' (27557131) panicked at crates/vail-table/tests/entry_consumer_projection.rs:169:5:
+public query allocations grew with unused hidden owner: [1444545, 28017217]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test selected_large_list_offsets_preserve_logical_missingness ... ok
+test selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consumer ... ok
+
+failures:
+
+failures:
+    growing_unused_hidden_owner_does_not_grow_query_allocations
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p vail-table --test entry_consumer_projection`
