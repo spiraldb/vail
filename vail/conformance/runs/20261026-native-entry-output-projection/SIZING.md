@@ -1,4 +1,6 @@
-# H051 sizing checkpoint: safe scalar fallback, not performance-clear
+# H051 output resource policy
+
+The opening whole-owner proposal below is WITHDRAWN, not an endorsed invariant. Only the final root policy decision governs implementation.
 
 No runtime narrowing is wired. Original source ID and complete `batch_memory_size` are captured before any view and remain the EXACT KeyRun and singleton charging inputs. The following sidecar concerns only output batch row limits; it cannot alter64MiB spill decisions or8192singleton caps.
 

@@ -1341,8 +1341,8 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                     key_indices,
                     columns_global: columns_global.clone(),
                     column_struct: col_struct_field.clone(),
-                    row_field_names: row_type.iter().map(|field| field.name().clone()).collect(),
-                    col_field_names: column_type.iter().map(|field| field.name().clone()).collect(),
+                    row_field_names: row_type.iter().filter(|field| table.schema().index_of(field.name()).is_ok()).map(|field| field.name().clone()).collect(),
+                    col_field_names: column_type.iter().filter(|field| table.schema().index_of(field.name()).is_ok()).map(|field| field.name().clone()).collect(),
                     value_field: value_field.clone(),
                     output_schema: table.schema().clone(),
                     output_partition_tag: schema

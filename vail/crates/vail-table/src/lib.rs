@@ -1063,12 +1063,19 @@ impl TableIR {
                 )));
             }
         }
+        let projected_child = if bindings.is_empty() {
+            fields.iter().map(|(_, expr)| match expr {
+                ScalarIR::Column { name } => Some(name.clone()),
+                _ => None,
+            }).collect::<Option<std::collections::HashSet<_>>>()
+                .and_then(|names| self.with_entries_output_fields(&names))
+        } else { None };
         Ok(Self::new(
             schema,
             self.keys.clone(),
             self.globals.clone(),
             TableNode::MapRows {
-                child: self.clone(),
+                child: projected_child.unwrap_or_else(|| self.clone()),
                 fields,
                 bindings,
             },

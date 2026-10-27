@@ -164,6 +164,114 @@ pub(crate) struct Config {
     pub global_schema: SchemaRef,
 }
 
+/// A consumer's nested field selection, prepared before stream execution.
+/// Indices bind declared schemas; each safe Arrow projection still validates
+/// the actual batch lengths/null masks and retains original offset owners.
+#[derive(Clone, Debug)]
+struct EntryProjection {
+    input_schema: SchemaRef,
+    row_indices: Vec<usize>,
+    value_index: usize,
+    entry_indices: Vec<usize>,
+    column_index: usize,
+    column_indices: Vec<usize>,
+}
+
+impl EntryProjection {
+    fn prepare(input_schema: SchemaRef, config: &Config) -> datafusion_common::Result<Option<Self>> {
+        fn fields(dtype: &DataType) -> datafusion_common::Result<&arrow_schema::Fields> {
+            match dtype {
+                DataType::Struct(fields) => Ok(fields),
+                _ => Err(DataFusionError::Plan("matrix projection requires struct fields".into())),
+            }
+        }
+        fn item(dtype: &DataType) -> datafusion_common::Result<&DataType> {
+            match dtype {
+                DataType::List(field) | DataType::LargeList(field) => Ok(field.data_type()),
+                _ => Err(DataFusionError::Plan("matrix projection requires list fields".into())),
+            }
+        }
+        let row = fields(input_schema.field(config.row_struct).data_type())?;
+        let cells = fields(item(input_schema.field(config.cells).data_type())?)?;
+        let value_index = cells.iter().position(|field| field.name() == &config.value_field)
+            .ok_or_else(|| DataFusionError::Plan("matrix projection value field absent".into()))?;
+        let entries = fields(cells[value_index].data_type())?;
+        let global_index = config.global_schema.index_of(&config.columns_global)?;
+        let columns = fields(item(config.global_schema.field(global_index).data_type())?)?;
+        let column_index = columns.iter().position(|field| field.name() == &config.column_struct)
+            .ok_or_else(|| DataFusionError::Plan("matrix projection column field absent".into()))?;
+        let column_fields = fields(columns[column_index].data_type())?;
+        let selected = |source: &arrow_schema::Fields| source.iter().enumerate()
+            .filter(|(_, field)| config.output_schema.index_of(field.name()).is_ok())
+            .map(|(index, _)| index).collect::<Vec<_>>();
+        let row_indices = selected(row);
+        let entry_indices = selected(entries);
+        let column_indices = selected(column_fields);
+        if row_indices.len() == row.len() && entry_indices.len() == entries.len()
+            && column_indices.len() == column_fields.len() {
+            return Ok(None);
+        }
+        Ok(Some(Self { input_schema, row_indices, value_index, entry_indices,
+                       column_index, column_indices }))
+    }
+
+    fn select_struct(array: &StructArray, indices: &[usize]) -> datafusion_common::Result<StructArray> {
+        Ok(StructArray::try_new_with_length(
+            indices.iter().map(|&index| array.fields()[index].clone()).collect::<Vec<_>>().into(),
+            indices.iter().map(|&index| array.column(index).clone()).collect(),
+            array.nulls().cloned(), array.len(),
+        )?)
+    }
+
+    fn rows(&self, batch: RecordBatch, config: &Config) -> datafusion_common::Result<RecordBatch> {
+        if batch.schema().as_ref() != self.input_schema.as_ref() {
+            return Err(DataFusionError::Execution("matrix projection input schema changed".into()));
+        }
+        let row = downcast_struct(batch.column(config.row_struct).clone(), "matrix row")?;
+        let cells = batch.column(config.cells);
+        let values = downcast_struct(list_child_values(cells)?, "matrix cells")?;
+        let entries = downcast_struct(values.column(self.value_index).clone(), "matrix entry values")?;
+        let entries = Arc::new(Self::select_struct(&entries, &self.entry_indices)?) as ArrayRef;
+        // Only the entry-value Struct is needed by expansion. Preserve the
+        // cell ancestor validity even when the selected Struct has no fields.
+        let field = values.fields()[self.value_index].as_ref().clone()
+            .with_data_type(entries.data_type().clone());
+        let values = Arc::new(StructArray::try_new_with_length(
+            vec![Arc::new(field)].into(), vec![entries], values.nulls().cloned(), values.len(),
+        )?) as ArrayRef;
+        let cells: ArrayRef = if let Some(list) = cells.as_any().downcast_ref::<ListArray>() {
+            let field = match list.data_type() { DataType::List(field) => field, _ => unreachable!() };
+            Arc::new(ListArray::try_new(Arc::new(field.as_ref().clone().with_data_type(values.data_type().clone())),
+                                      list.offsets().clone(), values, list.nulls().cloned())?)
+        } else if let Some(list) = cells.as_any().downcast_ref::<LargeListArray>() {
+            let field = match list.data_type() { DataType::LargeList(field) => field, _ => unreachable!() };
+            Arc::new(LargeListArray::try_new(Arc::new(field.as_ref().clone().with_data_type(values.data_type().clone())),
+                                           list.offsets().clone(), values, list.nulls().cloned())?)
+        } else {
+            return Err(DataFusionError::Execution("matrix projection cell representation changed".into()));
+        };
+        let mut arrays = batch.columns().to_vec();
+        arrays[config.row_struct] = Arc::new(Self::select_struct(&row, &self.row_indices)?);
+        arrays[config.cells] = cells;
+        let fields = batch.schema().fields().iter().zip(&arrays).map(|(field, array)|
+            Arc::new(field.as_ref().clone().with_data_type(array.data_type().clone()))).collect::<Vec<_>>();
+        Ok(RecordBatch::try_new_with_options(
+            Arc::new(Schema::new_with_metadata(fields, batch.schema().metadata().clone())), arrays,
+            &RecordBatchOptions::new().with_row_count(Some(batch.num_rows())),
+        )?)
+    }
+
+    fn columns(&self, columns: Arc<StructArray>) -> datafusion_common::Result<Arc<StructArray>> {
+        let original = downcast_struct(columns.column(self.column_index).clone(), "matrix columns")?;
+        let selected = Arc::new(Self::select_struct(&original, &self.column_indices)?) as ArrayRef;
+        let field = columns.fields()[self.column_index].as_ref().clone()
+            .with_data_type(selected.data_type().clone());
+        Ok(Arc::new(StructArray::try_new_with_length(
+            vec![Arc::new(field)].into(), vec![selected], columns.nulls().cloned(), columns.len(),
+        )?))
+    }
+}
+
 /// Cache one globals batch across all independently executable entry ranges.
 /// The cache is an execution-plan node so reset_plan_states resets it once and
 /// preserves the shared identity for every output partition.
@@ -276,6 +384,7 @@ pub(crate) struct MatrixEntriesExec {
     rows: PhysicalPlan,
     columns: PhysicalPlan,
     config: Config,
+    projection: Option<EntryProjection>,
     count_only: bool,
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
@@ -288,6 +397,7 @@ impl MatrixEntriesExec {
             rows: self.rows.clone(),
             columns: self.columns.clone(),
             config: self.config.clone(),
+            projection: self.projection.clone(),
             count_only: true,
             schema: schema.clone(),
             properties: properties(schema, EmissionType::Incremental),
@@ -298,6 +408,7 @@ impl MatrixEntriesExec {
         columns: PhysicalPlan,
         config: Config,
     ) -> datafusion_common::Result<Self> {
+        let projection = EntryProjection::prepare(rows.schema(), &config)?;
         let mut fields = config.output_schema.fields().to_vec();
         let tag_name = config.output_partition_tag.clone();
         fields.push(Arc::new(Field::new(tag_name, DataType::UInt64, false)));
@@ -330,6 +441,7 @@ impl MatrixEntriesExec {
             rows,
             columns,
             config,
+            projection,
             count_only: false,
             schema,
             properties,
@@ -398,6 +510,7 @@ impl ExecutionPlan for MatrixEntriesExec {
         let config = self.config.clone();
         let schema = self.schema.clone();
         let count_only = self.count_only;
+        let projection = self.projection.clone();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
@@ -430,6 +543,10 @@ impl ExecutionPlan for MatrixEntriesExec {
                     }
                     return;
                 }
+                let columns = match &projection {
+                    Some(projection) => projection.columns(columns)?,
+                    None => columns,
+                };
                 let mut run = KeyRun::default();
                 let mut singleton_rows = Vec::<RecordBatch>::new();
                 let mut singleton_bytes = 0usize;
@@ -441,7 +558,13 @@ impl ExecutionPlan for MatrixEntriesExec {
                     if batch.num_rows() == 0 { continue; }
                     let current_batch_id = source_batch_id;
                     source_batch_id = source_batch_id.wrapping_add(1);
+                    // Input-retention/spill accounting uses the ORIGINAL full
+                    // producer batch. Projected output sizing is independent.
                     let source_batch_bytes = batch_memory_size(&batch);
+                    let batch = match &projection {
+                        Some(projection) => projection.rows(batch, &config)?,
+                        None => batch,
+                    };
                     let key_columns = config.key_indices.iter().map(|&i| batch.column(i).clone()).collect::<Vec<_>>();
                     let options = vec![SortOptions { descending: false, nulls_first: false }; key_columns.len()];
                     let within = if key_columns.is_empty() { vec![] } else {
