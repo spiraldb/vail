@@ -112,12 +112,12 @@ def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, o
     for _ in range(depth):
         nested = hl.struct(child=nested, unused=special)
     m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+    m = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0)
     capture = m.meta
     for _ in range(depth):
         capture = capture.child
     source = m.rows().collect()
-    rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
-        score=hl.sum(capture['values'])).entries().collect()
+    rows = m.select_entries(score=hl.sum(capture['values'])).entries().collect()
     assert [(x.row_idx, x.col_idx, x.score) for x in rows] == [
         (r, c, None if r == 1 else r + 1)
         for r in range(4) for c in range(3) if (r + c) % 4 != 0]
