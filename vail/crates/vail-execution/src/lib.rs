@@ -27,6 +27,7 @@ pub mod aggregate_contract;
 mod aggregate_identity;
 pub mod aggregates;
 mod aligned_matrix_map;
+pub use aligned_matrix_map::PreparedArrayProjection;
 pub mod array_aggregate_scan;
 mod array_fold;
 pub mod array_length;

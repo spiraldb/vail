@@ -298,6 +298,32 @@ impl CaptureView {
     }
 }
 
+/// A query-prepared borrowed projection with exact physical descriptors.
+/// Selected leaves must already have compatible representations. This performs
+/// no scalar conversion, and safe Arrow constructors preserve masks and lengths.
+#[derive(Clone, Debug)]
+pub struct PreparedArrayProjection {
+    source: DataType,
+    output: DataType,
+    view: CaptureView,
+}
+impl PreparedArrayProjection {
+    /// Return no view when the requested descriptor is unchanged.
+    pub fn prepare(source: &DataType, selected: &DataType) -> Result<Option<Self>> {
+        let view = CaptureView::prepare(source, selected).ok_or_else(||
+            DataFusionError::Plan("array projection requires compatible selected physical fields".into()))?;
+        Ok(view.map(|view| Self { source: source.clone(), output: view.dtype(), view }))
+    }
+    pub fn source_type(&self) -> &DataType { &self.source }
+    /// Actual prepared fields include the source metadata and nullability.
+    pub fn output_type(&self) -> &DataType { &self.output }
+    /// Bind after the caller has validated this batch's complete source schema
+    /// against the prepared source descriptor, as for other positional kernels.
+    pub fn bind_validated(&self, source: &ArrayRef) -> Result<ArrayRef> {
+        self.view.bind(source)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub(crate) struct RowCaptureView {
     bundle_index: usize,
