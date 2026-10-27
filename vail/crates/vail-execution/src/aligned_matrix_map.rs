@@ -216,8 +216,8 @@ struct StructCaptureView {
 impl StructCaptureView {
     fn prepare(source: &DataType, selected: &DataType) -> Option<Option<Self>> {
         let (DataType::Struct(source), DataType::Struct(selected)) = (source, selected) else {
-            // Admission permits only primitive or primitive-list leaves, so
-            // this comparison cannot repeatedly traverse a Struct subtree.
+            // Selected non-Struct children must already have the declared
+            // representation. Unselected children need no conversion.
             return (source == selected).then_some(None);
         };
         let indices = source.iter().enumerate().map(|(index, field)| (field.name(), index))

@@ -6120,14 +6120,6 @@ fn lower_uncached(
                     nodes[node].fields.get(name).map(|&node| (name.clone(), projected_row_type(child, node, nodes)))
                 }).collect() }
             }
-            fn ordinary_capture(ty: &Type) -> bool {
-                match ty {
-                    Type::Primitive(value) => *value != PrimitiveType::Call,
-                    Type::Struct { r#struct: fields } => fields.iter().all(|(_, ty)| ordinary_capture(ty)),
-                    Type::Array { array } => matches!(array.as_ref(), Type::Primitive(value) if *value != PrimitiveType::Call),
-                    _ => false,
-                }
-            }
             let mut row_demands = std::collections::BTreeMap::new();
             let mut row_demand_nodes = Vec::new();
             if !scalar_rows { row_demand(body, &mut row_demands, &mut row_demand_nodes, &mut HashMap::new(), &mut HashSet::new()); }
@@ -6136,7 +6128,7 @@ fn lower_uncached(
             let mut capture_keys = Vec::new();
             let mut row_capture_views = Vec::new();
             for (key, ty) in captures {
-                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. }) && ordinary_capture(&ty) {
+                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. }) {
                     key.1.as_ref().and_then(|name| row_demands.get(name))
                         .filter(|demand| demand.compatible && demand.original == ty)
                         .map(|demand| projected_row_type(&ty, demand.node, &row_demand_nodes)).unwrap_or_else(|| ty.clone())

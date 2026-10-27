@@ -534,6 +534,10 @@ fn direct_call_index_allocates_only_primitive_output_not_allele_lists() {
 
 
 fn nested_row_capture_input(payload_bytes: usize) -> (RecordBatch, Expr) {
+    nested_row_capture_with_unused_call(payload_bytes, None)
+}
+
+fn nested_row_capture_with_unused_call(payload_bytes: usize, depth: Option<usize>) -> (RecordBatch, Expr) {
     let count = 128usize;
     let mut present = vec![true; count * 3]; present[1] = false;
     let entry_values: ArrayRef = Arc::new(StructArray::new_empty_fields(count * 3, Some(NullBuffer::from(present))));
@@ -556,14 +560,34 @@ fn nested_row_capture_input(payload_bytes: usize) -> (RecordBatch, Expr) {
         vec![small, Arc::new(StringArray::from(vec![payload.as_str();4]))],
         Some(NullBuffer::from(vec![true,true,true,false])),
     ));
+    let meta = if let Some(depth) = depth {
+        let value = meta.as_any().downcast_ref::<StructArray>().unwrap();
+        let call = calls(4).column(0).clone();
+        let mut fields = value.fields().to_vec();
+        fields.push(Arc::new(Field::new("unused_call", call.data_type().clone(), true)));
+        let mut children = value.columns().to_vec();
+        children.push(call);
+        let mut nested: ArrayRef = Arc::new(StructArray::new(
+            fields.into(), children, value.nulls().cloned()));
+        for _ in 0..depth {
+            nested = Arc::new(StructArray::from(vec![(
+                Arc::new(Field::new("child", nested.data_type().clone(), true)), nested,
+            )]));
+        }
+        nested
+    } else { meta };
     let meta_type = Type::from_arrow(meta.data_type()).unwrap();
     let fields: ArrayRef = Arc::new(StructArray::from(vec![(Arc::new(Field::new("meta", meta.data_type().clone(), true)),meta)]));
     let rows: ArrayRef = Arc::new(StructArray::from(vec![(Arc::new(Field::new("__vail_aligned_row", fields.data_type().clone(), true)),fields)]));
     let schema = Arc::new(Schema::new(vec![Field::new("entries",entries.data_type().clone(),true),Field::new("rows",rows.data_type().clone(),true)]));
     let batch = RecordBatch::try_new(schema,vec![entries,rows]).unwrap();
     let captured = Expr::AlignedMapInput { axis:"row".into(),name:Some("meta".into()),dtype:meta_type };
+    let mut selected = captured;
+    for _ in 0..depth.unwrap_or(0) {
+        selected = Expr::GetField { value: Arc::new(selected), name: "child".into() };
+    }
     let sum = Expr::ArrayReduce { operation:ArrayReduction::Sum,filter_missing:true,
-        value:Arc::new(Expr::GetField { value:Arc::new(captured),name:"small".into() }) };
+        value:Arc::new(Expr::GetField { value:Arc::new(selected),name:"small".into() }) };
     let body = Expr::IfElse {
         condition:Arc::new(Expr::AlignedMapInput { axis:"entry_present".into(),name:None,dtype:Type::Primitive(PrimitiveType::Bool) }),
         consequent:Arc::new(sum),alternate:Arc::new(Expr::Literal { dtype:Type::Primitive(PrimitiveType::Int32),value:serde_json::Value::Null }),
@@ -595,4 +619,26 @@ fn flat_nested_row_capture_drops_unused_payload_before_nonidentity_take_and_deco
     }
     eprintln!("public nested capture runtime allocations (small,wide): {sizes:?}");
     assert!(sizes[1] < sizes[0].saturating_add(1_000_000), "unused row sibling grew allocations: {sizes:?}");
+}
+
+#[test]
+fn unused_call_siblings_at_any_struct_depth_do_not_grow_capture_allocations() {
+    for depth in [0, 3] {
+        let mut sizes = Vec::new();
+        for bytes in [8, 64 * 1024] {
+            let (batch, expression) = nested_row_capture_with_unused_call(bytes, Some(depth));
+            let (output, allocated) = evaluate_aligned_allocated_bytes(&batch, &expression);
+            let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+            let actual = lists.iter().map(|row| row.map(|array|
+                array.as_any().downcast_ref::<Int32Array>().unwrap().iter().collect::<Vec<_>>()
+            )).collect::<Vec<_>>();
+            let mut first = vec![Some(3); 128]; first[1] = None;
+            assert_eq!(actual, vec![Some(first), Some(vec![]),
+                                   Some(vec![Some(11); 128]), Some(vec![None; 128])]);
+            sizes.push(allocated);
+        }
+        eprintln!("unused Call sibling depth {depth} runtime allocations: {sizes:?}");
+        assert!(sizes[1] < sizes[0].saturating_add(1_000_000),
+                "unused payload with Call sibling grew allocations at depth {depth}: {sizes:?}");
+    }
 }

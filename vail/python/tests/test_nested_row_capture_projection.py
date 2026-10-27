@@ -95,3 +95,30 @@ def test_deep_shared_capture_prefixes_preserve_selected_and_whole_values(whole_p
                 saved = saved.child
             assert saved['values'] == [row.row_idx, 1]
             assert saved.discarded == 'leaf-payload'
+
+
+@pytest.mark.parametrize('depth', [0, 3])
+@pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+    m = hl.range_matrix_table(4, 3, 2)
+    special = {
+        'call': lambda: hl.call(m.row_idx % 2, 1),
+        'set': lambda: hl.set([m.row_idx, 9]),
+        'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+        'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+    }[opaque]()
+    nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                       unused=hl.str(m.row_idx) + 'x' * 1024)
+    for _ in range(depth):
+        nested = hl.struct(child=nested, unused=special)
+    m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+    capture = m.meta
+    for _ in range(depth):
+        capture = capture.child
+    source = m.rows().collect()
+    rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+        score=hl.sum(capture['values'])).entries().collect()
+    assert [(x.row_idx, x.col_idx, x.score) for x in rows] == [
+        (r, c, None if r == 1 else r + 1)
+        for r in range(4) for c in range(3) if (r + c) % 4 != 0]
+    assert m.rows().collect() == source
