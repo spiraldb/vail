@@ -157,7 +157,7 @@ def test_array_capture_shape_element_and_field_validity_are_distinct():
                      call=hl.call(m.row_idx % 2, 1))
     items = hl.or_missing(m.row_idx != 1, hl.array([leaf, hl.missing(leaf.dtype)]))
     m = m.annotate_rows(meta=hl.struct(items=items, unused='outer'))
-    items = m.meta.items
+    items = m.meta['items']
     rows = m.select_entries(
         values=items.map(lambda x: x.value),
         length=hl.len(items),
@@ -168,9 +168,9 @@ def test_array_capture_shape_element_and_field_validity_are_distinct():
     assert [(x.row_idx, x.col_idx) for x in rows] == [(r, c) for r in range(4) for c in range(3)]
     for row in rows:
         if row.row_idx == 1:
-            assert (row.values, row.length, row.element_defined, row.value_defined, row.constant) == (None,) * 5
+            assert (row['values'], row.length, row.element_defined, row.value_defined, row.constant) == (None,) * 5
         else:
-            assert row.values == [None if row.row_idx == 2 else row.row_idx, None]
+            assert row['values'] == [None if row.row_idx == 2 else row.row_idx, None]
             assert row.length == 2
             assert row.element_defined == [True, False]
             assert row.value_defined == [row.row_idx != 2, False]
@@ -187,16 +187,16 @@ def test_nested_array_capture_maps_union_leaves_and_preserve_whole_consumers():
         m.row_idx != 1, hl.array([outer, hl.missing(outer.dtype)]))))
     source = m.rows().collect()
     rows = m.select_entries(
-        values=m.meta.items.map(lambda x: x.children.map(lambda y: y.value)),
-        others=m.meta.items.map(lambda x: x.children.map(lambda y: y.other)),
+        values=m.meta['items'].map(lambda x: x.children.map(lambda y: y.value)),
+        others=m.meta['items'].map(lambda x: x.children.map(lambda y: y.other)),
     ).entries().collect()
     assert [(x.row_idx, x.col_idx) for x in rows] == [(r, c) for r in range(4) for c in range(2)]
     for row in rows:
-        assert row.values == (None if row.row_idx == 1 else [[row.row_idx, None], None])
+        assert row['values'] == (None if row.row_idx == 1 else [[row.row_idx, None], None])
         assert row.others == (None if row.row_idx == 1 else [[row.row_idx + 10, None], None])
-    whole = m.select_entries(saved=m.meta.items,
-                             values=m.meta.items.map(lambda x: x.children.map(lambda y: y.value))).entries().collect()
+    whole = m.select_entries(saved=m.meta['items'],
+                             values=m.meta['items'].map(lambda x: x.children.map(lambda y: y.value))).entries().collect()
     assert [(x.row_idx, x.col_idx) for x in whole] == [(r, c) for r in range(4) for c in range(2)]
     for row in whole:
-        assert row.saved == source[row.row_idx].meta.items
-        assert row.values == (None if row.row_idx == 1 else [[row.row_idx, None], None])
+        assert row.saved == source[row.row_idx].meta['items']
+        assert row['values'] == (None if row.row_idx == 1 else [[row.row_idx, None], None])
