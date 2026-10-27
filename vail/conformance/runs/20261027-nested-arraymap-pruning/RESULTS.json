@@ -1,0 +1,79 @@
+{
+  "scope": "Prepared nested ArrayMap capture element demand and borrowed List/Struct views before aligned-map row selection/REE materialization.",
+  "candidate_source": "5931cdcf2",
+  "baseline_source": "73201cc4c",
+  "baseline_test_only": "10ea47776",
+  "gates": {
+    "candidate_rust": {
+      "passed": 10,
+      "failed": 0,
+      "preexisting_ignored": 1
+    },
+    "baseline_identical_rust": {
+      "passed": 9,
+      "failed": 1,
+      "preexisting_ignored": 1,
+      "failed_case": "mapped_array_struct_capture_drops_unused_element_payload"
+    },
+    "baseline_normal_python": 23,
+    "candidate_normal_python": 23,
+    "candidate_broad_python": 461
+  },
+  "allocated_runtime_bytes": {
+    "boundary": "public lower prepares outside allocator; public physical evaluate inside allocator; fixtures excluded",
+    "unused_element_payload_bytes": [
+      8,
+      65536
+    ],
+    "baseline": [
+      76248,
+      101117144
+    ],
+    "candidate": [
+      46982,
+      46982
+    ]
+  },
+  "semantic_controls": [
+    "nested maps and leaf union",
+    "whole plus projected consumers",
+    "typed lambda parameter rebinding",
+    "shape-only length and constant map",
+    "missing list versus missing element versus missing leaf",
+    "empty arrays and zero-field element Struct views",
+    "nonidentity entry selection and missing entries",
+    "nonnull selected primitive under identical nullable Struct mask",
+    "65,536-value external owner and separate interior hidden span"
+  ],
+  "constructor_domain": {
+    "external_owner": "Safe recursive List view clips to referenced first..last offsets BEFORE constructing projected Struct views. Nonzero origins rebase one offsets buffer; zero origins borrow offsets.",
+    "limitation": "Safe Arrow validation can still scan nullable/nonnullable masks across the referenced envelope, including interior spans hidden by null lists or unused rows. No live-element-bounded or CPU-cost claim."
+  },
+  "history": [
+    {
+      "log": "stage1-python-baseline.log",
+      "failure": "Two new tests initially used items/values Python attribute names colliding with methods; explicit field access fixed; subsequent23 pass."
+    },
+    {
+      "log": "stage1-rust-large-candidate.log",
+      "failure": "LargeList fixture setup Type::from_arrow unsupported."
+    },
+    {
+      "log": "stage1-rust-final-candidate.log",
+      "failure": "Explicit logical declaration confirmed existing public lower also rejects physical LargeList before capture specialization. LargeList addition/fixture removed; unsupported API followup remains open."
+    }
+  ],
+  "not_claimed": [
+    "throughput speedup",
+    "source read or decompression savings",
+    "physical disk IO savings",
+    "owner memory release",
+    "LargeList public API support",
+    "general pruning across arbitrary opaque operations"
+  ],
+  "next": [
+    "Nested entries consumer GetField demand and DataFusion/provider source bridge remain active separately.",
+    "Physical LargeList logical type inference limitation remains open; no unrelated API fix bundled."
+  ],
+  "local_resources": "Normal release builds/tests nice10 jobs2 kache; no local benchmarks/profiles or cloud work."
+}

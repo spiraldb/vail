@@ -1,0 +1,46 @@
+....................FF                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_array_capture_shape_element_and_field_validity_are_distinct _______
+
+    def test_array_capture_shape_element_and_field_validity_are_distinct():
+        m = hl.range_matrix_table(4, 3, 2)
+        leaf = hl.struct(value=hl.or_missing(m.row_idx != 2, m.row_idx),
+                         unused=hl.str(m.row_idx) + 'x' * 1024,
+                         call=hl.call(m.row_idx % 2, 1))
+        items = hl.or_missing(m.row_idx != 1, hl.array([leaf, hl.missing(leaf.dtype)]))
+        m = m.annotate_rows(meta=hl.struct(items=items, unused='outer'))
+        items = m.meta.items
+        rows = m.select_entries(
+>           values=items.map(lambda x: x.value),
+                   ^^^^^^^^^
+            length=hl.len(items),
+            element_defined=items.map(lambda x: hl.is_defined(x)),
+            value_defined=items.map(lambda x: hl.is_defined(x.value)),
+            constant=items.map(lambda x: 7),
+        ).entries().collect()
+E       AttributeError: 'function' object has no attribute 'map'
+
+vail/python/tests/test_nested_row_capture_projection.py:162: AttributeError
+___ test_nested_array_capture_maps_union_leaves_and_preserve_whole_consumers ___
+
+    def test_nested_array_capture_maps_union_leaves_and_preserve_whole_consumers():
+        m = hl.range_matrix_table(4, 2, 2)
+        inner = hl.struct(value=m.row_idx, other=m.row_idx + 10,
+                          unused=hl.str(m.row_idx) + 'z' * 1024,
+                          call=hl.call(m.row_idx % 2, 1))
+        outer = hl.struct(children=hl.array([inner, hl.missing(inner.dtype)]), unused='outer')
+        m = m.annotate_rows(meta=hl.struct(items=hl.or_missing(
+            m.row_idx != 1, hl.array([outer, hl.missing(outer.dtype)]))))
+        source = m.rows().collect()
+        rows = m.select_entries(
+>           values=m.meta.items.map(lambda x: x.children.map(lambda y: y.value)),
+                   ^^^^^^^^^^^^^^^^
+            others=m.meta.items.map(lambda x: x.children.map(lambda y: y.other)),
+        ).entries().collect()
+E       AttributeError: 'function' object has no attribute 'map'
+
+vail/python/tests/test_nested_row_capture_projection.py:190: AttributeError
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_nested_row_capture_projection.py::test_array_capture_shape_element_and_field_validity_are_distinct
+FAILED vail/python/tests/test_nested_row_capture_projection.py::test_nested_array_capture_maps_union_leaves_and_preserve_whole_consumers
+2 failed, 20 passed in 0.75s
