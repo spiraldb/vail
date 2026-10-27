@@ -1,0 +1,15 @@
+[
+  "cargo",
+  "test",
+  "--release",
+  "--locked",
+  "--offline",
+  "-p",
+  "vail-table",
+  "--test",
+  "entry_consumer_projection",
+  "--message-format=json-render-diagnostics",
+  "--",
+  "--test-threads=1",
+  "--nocapture"
+]

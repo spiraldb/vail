@@ -1,0 +1,16 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--quiet",
+  "--ssh-flag=-oConnectTimeout=10",
+  "--ssh-flag=-oConnectionAttempts=1",
+  "--ssh-flag=-oBatchMode=yes",
+  "--ssh-flag=-oControlMaster=no",
+  "--ssh-flag=-oControlPath=none",
+  "--command",
+  "test ! -e /home/danielking/nested-entry-linux-tests-20261027-attempt-2 && mkdir -p /home/danielking/nested-entry-linux-tests-20261027-attempt-2",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b"
+]

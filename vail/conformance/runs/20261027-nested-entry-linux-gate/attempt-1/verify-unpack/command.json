@@ -1,0 +1,16 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--quiet",
+  "--ssh-flag=-oConnectTimeout=10",
+  "--ssh-flag=-oConnectionAttempts=1",
+  "--ssh-flag=-oBatchMode=yes",
+  "--ssh-flag=-oControlMaster=no",
+  "--ssh-flag=-oControlPath=none",
+  "--command",
+  "cd /home/danielking/nested-entry-linux-tests-20261027 && echo '7c133d538ea66a01606c4c08928e3f01b42bdcfe2164252b9feb3d566adc0ac5  protocol.tar.gz' | sha256sum -c - && tar -xzf protocol.tar.gz",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b"
+]
