@@ -1,7 +1,10 @@
 """Bounded read-only source metadata inventory; no import/query/build/install."""
 import argparse,hashlib,json,os,signal,tarfile,time
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('--out',required=True);a=p.parse_args();out=Path(a.out)
+p=argparse.ArgumentParser();p.add_argument('--out',required=True);p.add_argument('--expected-sha',required=True);a=p.parse_args()
+with Path(__file__).open('rb') as source:
+ if hashlib.file_digest(source,'sha256').hexdigest()!=a.expected_sha:raise RuntimeError('Guest script fingerprint differs')
+out=Path(a.out)
 if not out.is_absolute() or not out.is_relative_to('/home/danielking') or out.exists():raise RuntimeError('Fresh owned output required')
 out.mkdir(parents=True);signal.alarm(120);root=Path('/home/danielking/cloud-scan-20261023');record={'files':{},'stat_only':{},'missing':[]};copied=0;hashed=0
 for directory in Path('/proc').iterdir():
