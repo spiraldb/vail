@@ -42,7 +42,7 @@ if 'GQ' not in m.entry.dtype or m.entry.dtype['GQ'] != h.tint32:
 t = m.entries()
 narrow = t.select('GQ')
 # Explicit all-user-field selection remains the unchanged full-output route.
-full = t.select(*[name for name in t.row.dtype.fields if name not in t.key.dtype.fields])
+full = t.select(*[name for name in t.row.dtype if name not in t.key.dtype])
 def consumed(table):
     return table.aggregate(h.struct(total=h.agg.sum(table.GQ),
         present=h.agg.count_where(h.is_defined(table.GQ)),
