@@ -6065,33 +6065,60 @@ fn lower_uncached(
             // This map belongs to ONE aligned-map binding/lowering context.
             // Typed root identities are compared once, while all leaf/callback
             // uses union demand for that same row binding.
-            struct RowDemand {
-                original: Type,
-                roots: HashSet<usize>,
-                compatible: bool,
-                demand: ColumnDemand,
-            }
-            fn row_path(expr: &Expr) -> Option<(&str, &Type, usize, Vec<String>)> {
-                match expr {
-                    Expr::AlignedMapInput { axis, name: Some(name), dtype } if axis == "row" =>
-                        Some((name, dtype, expr as *const Expr as usize, vec![])),
+            #[derive(Default)]
+            struct RowDemandNode { all: bool, fields: std::collections::BTreeMap<String, usize> }
+            struct RowDemand { original: Type, roots: HashSet<usize>, compatible: bool, node: usize }
+            fn row_path(
+                expr: &Expr, demands: &mut std::collections::BTreeMap<String, RowDemand>,
+                nodes: &mut Vec<RowDemandNode>, memo: &mut HashMap<usize, Option<usize>>,
+            ) -> Option<usize> {
+                let identity = expr as *const Expr as usize;
+                if let Some(cached) = memo.get(&identity) { return *cached; }
+                let node = match expr {
+                    Expr::AlignedMapInput { axis, name: Some(name), dtype } if axis == "row" => {
+                        let demand = demands.entry(name.clone()).or_insert_with(|| {
+                            let node = nodes.len(); nodes.push(RowDemandNode::default());
+                            RowDemand { original: dtype.clone(), roots: HashSet::new(), compatible: true, node }
+                        });
+                        if demand.roots.insert(identity) && demand.original != *dtype { demand.compatible = false; }
+                        Some(demand.node)
+                    }
                     Expr::GetField { value, name } => {
-                        let (binding, dtype, root, mut path) = row_path(value)?;
-                        path.push(name.clone()); Some((binding, dtype, root, path))
+                        row_path(value, demands, nodes, memo).map(|parent| {
+                            if nodes[parent].all { return parent; }
+                            if let Some(child) = nodes[parent].fields.get(name) { return *child; }
+                            let child = nodes.len(); nodes.push(RowDemandNode::default());
+                            nodes[parent].fields.insert(name.clone(), child); child
+                        })
                     }
                     _ => None,
+                };
+                memo.insert(identity, node); node
+            }
+            fn cover_row_path(node: usize, nodes: &mut [RowDemandNode]) {
+                // Each existing node is covered at most once. Cached paths to
+                // covered descendants remain valid; future children collapse
+                // to the already-covered ancestor without walking a prefix.
+                if nodes[node].all { return; }
+                nodes[node].all = true;
+                for child in std::mem::take(&mut nodes[node].fields).into_values() {
+                    cover_row_path(child, nodes);
                 }
             }
-            fn row_demand(expr: &Expr, demands: &mut std::collections::BTreeMap<String, RowDemand>, seen: &mut HashSet<usize>) {
+            fn row_demand(
+                expr: &Expr, demands: &mut std::collections::BTreeMap<String, RowDemand>,
+                nodes: &mut Vec<RowDemandNode>, memo: &mut HashMap<usize, Option<usize>>, seen: &mut HashSet<usize>,
+            ) {
                 if !seen.insert(expr as *const Expr as usize) { return; }
-                if let Some((name, dtype, root, path)) = row_path(expr) {
-                    let demand = demands.entry(name.to_owned()).or_insert_with(|| RowDemand {
-                        original: dtype.clone(), roots: HashSet::new(), compatible: true,
-                        demand: ColumnDemand::default(),
-                    });
-                    if demand.roots.insert(root) && demand.original != *dtype { demand.compatible = false; }
-                    demand.demand.insert(&path);
-                } else { expr.visit_children(&mut |child| row_demand(child, demands, seen)); }
+                if let Some(node) = row_path(expr, demands, nodes, memo) { cover_row_path(node, nodes); }
+                else { expr.visit_children(&mut |child| row_demand(child, demands, nodes, memo, seen)); }
+            }
+            fn projected_row_type(ty: &Type, node: usize, nodes: &[RowDemandNode]) -> Type {
+                if nodes[node].all { return ty.clone(); }
+                let Type::Struct { r#struct: fields } = ty else { return ty.clone(); };
+                Type::Struct { r#struct: fields.iter().filter_map(|(name, child)| {
+                    nodes[node].fields.get(name).map(|&node| (name.clone(), projected_row_type(child, node, nodes)))
+                }).collect() }
             }
             fn ordinary_capture(ty: &Type) -> bool {
                 match ty {
@@ -6102,7 +6129,8 @@ fn lower_uncached(
                 }
             }
             let mut row_demands = std::collections::BTreeMap::new();
-            if !scalar_rows { row_demand(body, &mut row_demands, &mut HashSet::new()); }
+            let mut row_demand_nodes = Vec::new();
+            if !scalar_rows { row_demand(body, &mut row_demands, &mut row_demand_nodes, &mut HashMap::new(), &mut HashSet::new()); }
             let row_frame_type = rows.data_type(schema)?;
             let mut names = std::collections::BTreeMap::new();
             let mut capture_keys = Vec::new();
@@ -6111,7 +6139,7 @@ fn lower_uncached(
                 let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. }) && ordinary_capture(&ty) {
                     key.1.as_ref().and_then(|name| row_demands.get(name))
                         .filter(|demand| demand.compatible && demand.original == ty)
-                        .map(|demand| demand.demand.projected(&ty)).unwrap_or_else(|| ty.clone())
+                        .map(|demand| projected_row_type(&ty, demand.node, &row_demand_nodes)).unwrap_or_else(|| ty.clone())
                 } else { ty.clone() };
                 let mut selected_arrow = selected.to_arrow()?;
                 let view = if selected != ty {

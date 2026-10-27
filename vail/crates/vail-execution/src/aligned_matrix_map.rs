@@ -215,23 +215,26 @@ struct StructCaptureView {
 }
 impl StructCaptureView {
     fn prepare(source: &DataType, selected: &DataType) -> Option<Option<Self>> {
-        if source == selected { return Some(None); }
         let (DataType::Struct(source), DataType::Struct(selected)) = (source, selected) else {
-            return None;
+            // Admission permits only primitive or primitive-list leaves, so
+            // this comparison cannot repeatedly traverse a Struct subtree.
+            return (source == selected).then_some(None);
         };
         let indices = source.iter().enumerate().map(|(index, field)| (field.name(), index))
             .collect::<HashMap<_, _>>();
         let mut fields = Vec::with_capacity(selected.len());
         let mut children = Vec::with_capacity(selected.len());
-        for field in selected {
+        let mut changed = source.len() != selected.len();
+        for (selected_index, field) in selected.iter().enumerate() {
             let index = *indices.get(field.name())?;
             let child = Self::prepare(source[index].data_type(), field.data_type())?;
+            changed |= index != selected_index || child.is_some();
             let dtype = child.as_ref().map(|view| DataType::Struct(view.fields.clone()))
                 .unwrap_or_else(|| source[index].data_type().clone());
             fields.push(Arc::new(source[index].as_ref().clone().with_data_type(dtype)));
             children.push((index, child.map(Box::new)));
         }
-        Some(Some(Self { fields: fields.into(), children }))
+        Some(changed.then(|| Self { fields: fields.into(), children }))
     }
     fn bind(&self, source: &ArrayRef) -> Result<ArrayRef> {
         let values = source.as_any().downcast_ref::<StructArray>().ok_or_else(||
