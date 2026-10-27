@@ -1,0 +1,80 @@
+{
+  "returncode": -15,
+  "error": "TimeoutError('Command/readiness deadline')",
+  "owned_group_clean": true,
+  "elapsed_seconds": 0.385073084034957,
+  "identity": {
+    "pid": 13087,
+    "host_uid": 501,
+    "host_euid": 501,
+    "popen_after_monotonic": 905320.120439416,
+    "retired": true,
+    "pgid": 13087,
+    "sid": 13087,
+    "spawn_members": [
+      {
+        "pid": 13087,
+        "ppid": 13072,
+        "pgid": 13087,
+        "uid": 501,
+        "sid": 13087,
+        "start": "Tue Oct 27 03:14:59 2026    "
+      }
+    ],
+    "leader": {
+      "pid": 13087,
+      "ppid": 13072,
+      "pgid": 13087,
+      "uid": 501,
+      "sid": 13087,
+      "start": "Tue Oct 27 03:14:59 2026    "
+    },
+    "popen_before_monotonic": 905320.119439041
+  },
+  "cleanup_observations": [
+    {
+      "observed_monotonic": 905320.354246333,
+      "leader_status": null,
+      "members": [
+        {
+          "pid": 13087,
+          "ppid": 13072,
+          "pgid": 13087,
+          "uid": 501,
+          "sid": 13087,
+          "start": "Tue Oct 27 03:14:59 2026    "
+        }
+      ],
+      "signal_attempted": 15
+    },
+    {
+      "observed_monotonic": 905320.504377375,
+      "leader_status": -15,
+      "members": []
+    }
+  ],
+  "identity_probes": [
+    {
+      "pid": 13088,
+      "reaped": true,
+      "error": null,
+      "kill_error": null,
+      "returncode": 0
+    },
+    {
+      "pid": 13089,
+      "reaped": true,
+      "error": null,
+      "kill_error": null,
+      "returncode": 0
+    },
+    {
+      "pid": 13090,
+      "reaped": true,
+      "error": null,
+      "kill_error": null,
+      "returncode": 0
+    }
+  ],
+  "identity_precision": "OS ps lstart seconds; read-check/signal non-atomic, not reuse proof"
+}
