@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/danielking/h051-matched-20261026/protocol/compare.py", line 43, in <module>
+    stage = guarded(command, out / f'{index:02d}-{version}', out, environment(), 60, query=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danielking/h051-matched-20261026/protocol/common.py", line 119, in guarded
+    raise RuntimeError(json.dumps(receipt))
+RuntimeError: {"command": ["/home/danielking/h089-matched-20261026/run-4/gate/candidate-env/bin/python", "/home/danielking/h051-matched-20261026/protocol/worker.py", "baseline", "--lock", "/home/danielking/h051-matched-20261026/run-1/gate/artifact-lock.json"], "elapsed_seconds": 0.5541207999999926, "returncode": 1, "error": "RuntimeError('child exited 1')", "owned_groups_clean": true, "monitor_maxrss_bytes": 84885504, "rss_scope": "whole child process; includes construction and warmups", "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"}

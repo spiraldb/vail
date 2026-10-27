@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "frontend": "/home/danielking/h089-matched-20261026/run-4/gate/candidate-env/lib/python3.12/site-packages/vail",
+    "native": "/home/danielking/h089-matched-20261026/run-4/gate/candidate-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "6cb1fe232e4b352e1f41caf92530445ec58cfa364ddbdf93c58a7c667cf051ec",
+    "python": "/home/danielking/h089-matched-20261026/run-4/gate/candidate-env/bin/python",
+    "source": "c3f3155ee90f6ff6735bdcc731a71bf9f0181879"
+  },
+  "candidate": {
+    "frontend": "/home/danielking/h051-matched-20261026/run-1/gate/candidate-env/lib/python3.12/site-packages/vail",
+    "native": "/home/danielking/h051-matched-20261026/run-1/gate/candidate-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "ec71f970260859c2510490dc8d48d48538d45bad1b364887a60f60f1479e2b63",
+    "python": "/home/danielking/h051-matched-20261026/run-1/gate/candidate-env/bin/python",
+    "source": "4902bc56e8fd3cd2fb8aedc25ab1b9e444155725"
+  },
+  "wheel_sha256": "b4bb001f66e5f3d4912f8ffb7e2e908e099b43dd9f23a9143c236f50b71c884f",
+  "rust_cases": 4,
+  "public_cases": 438,
+  "candidate_source_files_verified": 2100,
+  "expected_protocol_sha256": "aac4062bf99630362da0f4c11270d8be8fde802d637f05713ce49170ffca4387",
+  "protocol_files": {
+    "ASSETS.json": "a2f40c637e2c9923004f0fd15c52be8461f7a85a7f1c3153f17367e2bbe1ae67",
+    "bundle.py": "0281be83b407bc2464f0ac657f5b285d06acd90c93588f046b16e5c90969702b",
+    "common.py": "f1ee089fa83606d83d82e10a5403bf0ad235762e29b71ba7611eec7be400cc25",
+    "compare.py": "e588b14024e7d19b7fd2490e572340de8293db5b298d12af07faf50c22b1a769",
+    "controller.py": "a5f94855d2dff57ce3a609ddc2c0a87aae06c62426d435f89bf9026c4e545f0a",
+    "expected.json": "aac4062bf99630362da0f4c11270d8be8fde802d637f05713ce49170ffca4387",
+    "frozen_public_tests/test_transparent_struct_fields.py": "b46e8ce65f2b97e7fad69f82cb5e5e9defd982673bea72a4098f725d8ca14fe3",
+    "host_run.py": "8dd845acc3f7205406722408c919c42db58a4a51383bb5f5f30f58e4d00d62c1",
+    "pack.py": "abc67889e795f194aeb967d9e5bb636a953fd930598a76cfe2ee2d5307587171",
+    "preflight.py": "33b68041e4a58f3b05629269624479513db9f9859536bc4d04b0531be8d6ad08",
+    "prepare.py": "5a26a257b6fcb430f198b6919fbc7051733e071df9a74b82599b6adab88e0926",
+    "worker.py": "4eee2345388692e7ab3104e7f250a928a941e38a963066b2dfb2154405aeef4d"
+  }
+}
