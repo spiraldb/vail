@@ -660,6 +660,8 @@ fn mapped_array_struct_capture_drops_unused_element_payload() {
             Some(NullBuffer::from(vec![true, true, true, false])),
         ));
         let ty = Type::from_arrow(items.data_type()).unwrap();
+        let Type::Array { array: element_type } = &ty else { unreachable!() };
+        let element_type = element_type.as_ref().clone();
         let fields: ArrayRef = Arc::new(StructArray::from(vec![(
             Arc::new(Field::new("meta", items.data_type().clone(), true)), items,
         )]));
@@ -677,7 +679,7 @@ fn mapped_array_struct_capture_drops_unused_element_payload() {
                 value: Arc::new(Expr::AlignedMapInput { axis: "row".into(), name: Some("meta".into()), dtype: ty }),
                 parameter: "item".into(),
                 body: Arc::new(Expr::GetField {
-                    value: Arc::new(Expr::LambdaVariable { name: "item".into(), dtype: None }),
+                    value: Arc::new(Expr::LambdaVariable { name: "item".into(), dtype: Some(element_type) }),
                     name: "value".into(),
                 }),
             }),
