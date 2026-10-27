@@ -1013,27 +1013,18 @@ impl TableIR {
     /// Derive a consumer-local entries contract before any logical schema is
     /// frozen. The executable producer and its shared globals remain unchanged.
     /// Unsupported nodes retain their original contract for whole-route fallback.
-    fn with_entries_output_fields(self: &Arc<Self>, names: &std::collections::HashSet<String>) -> Option<TableRef> {
-        if self.keys.iter().any(|key| !names.contains(key)) {
+    fn with_entries_output_schema(self: &Arc<Self>, schema: SchemaRef) -> Option<TableRef> {
+        if self.keys.iter().any(|key| schema.index_of(key).is_err()) || schema.as_ref() == self.schema.as_ref() {
             return None;
         }
         let node = match &self.node {
             TableNode::MatrixEntriesByKeyRuns { .. } => self.node.clone(),
             TableNode::MapGlobals { child } if self.keys == child.keys => TableNode::MapGlobals {
-                child: child.with_entries_output_fields(names)?,
+                child: child.with_entries_output_schema(schema.clone())?,
             },
             _ => return None,
         };
-        let fields = self.schema.fields().iter()
-            .filter(|field| names.contains(field.name()))
-            .cloned().collect::<Vec<_>>();
-        if fields.len() == self.schema.fields().len() {
-            return None;
-        }
-        Some(Self::new(
-            Arc::new(Schema::new_with_metadata(fields, self.schema.metadata().clone())),
-            self.keys.clone(), self.globals.clone(), node,
-        ))
+        Some(Self::new(schema, self.keys.clone(), self.globals.clone(), node))
     }
 
     pub fn map_rows(self: &Arc<Self>, fields: Vec<(String, ScalarIR)>) -> Result<TableRef> {
@@ -1065,11 +1056,8 @@ impl TableIR {
             }
         }
         let projected_child = if bindings.is_empty() {
-            fields.iter().map(|(_, expr)| match expr {
-                ScalarIR::Column { name } => Some(name.clone()),
-                _ => None,
-            }).collect::<Option<std::collections::HashSet<_>>>()
-                .and_then(|names| self.with_entries_output_fields(&names))
+            nested_projection::entries_projection_schema(&fields, self.schema())
+                .and_then(|schema| self.with_entries_output_schema(schema))
         } else { None };
         Ok(Self::new(
             schema,

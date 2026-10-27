@@ -5,6 +5,8 @@
 //! opaque or whole-container use marks the source column as fully required.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::sync::Arc;
+use arrow_schema::{DataType, Field, Fields, Schema, SchemaRef};
 use vail_execution::expressions::Expr;
 
 #[derive(Clone)]
@@ -1099,4 +1101,43 @@ fn narrow_vcf_paths<'a>(
         _ => return table.clone(),
     };
     table.replacing_node(node)
+}
+
+/// Derive an ordinary Column/GetField consumer schema from its exact Arrow
+/// fields. Logical opaque accessors retain their whole storage value.
+pub(crate) fn entries_projection_schema(
+    fields: &[(String, Expr)], schema: &Schema,
+) -> Option<SchemaRef> {
+    #[derive(Default)]
+    struct Demand { whole: bool, children: BTreeMap<String, Demand> }
+    fn root(mut value: &Expr) -> Option<&str> {
+        loop { match value {
+            Expr::Column { name } => return Some(name),
+            Expr::GetField { value: child, .. } => value = child,
+            _ => return None,
+        } }
+    }
+    fn project(source: &DataType, demand: &Demand) -> DataType {
+        if demand.whole { return source.clone(); }
+        let DataType::Struct(source) = source else { return source.clone(); };
+        let fields: Fields = source.iter().filter_map(|field| demand.children.get(field.name()).map(|child|
+            Arc::new(field.as_ref().clone().with_data_type(project(field.data_type(), child)))
+        )).collect::<Vec<_>>().into();
+        DataType::Struct(fields)
+    }
+    let names = fields.iter().map(|(_, expression)| root(expression))
+        .collect::<Option<HashSet<_>>>()?;
+    let mut demands = BTreeMap::<String, Demand>::new();
+    for path in map_rows_storage_paths(fields, schema) {
+        let mut node = demands.entry(path[0].clone()).or_default();
+        for name in &path[1..] { node = node.children.entry(name.clone()).or_default(); }
+        node.whole = true;
+    }
+    let selected = schema.fields().iter().filter(|field| names.contains(field.name().as_str()))
+        .map(|field| match demands.get(field.name()) {
+            None => field.clone(),
+            Some(demand) => Arc::new(Field::new(field.name(), project(field.data_type(), demand), field.is_nullable())
+                .with_metadata(field.metadata().clone())),
+        }).collect::<Vec<_>>();
+    Some(Arc::new(Schema::new_with_metadata(selected, schema.metadata().clone())))
 }
