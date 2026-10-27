@@ -15,7 +15,7 @@ a = p.parse_args()
 out = Path(a.output).resolve()
 out.mkdir(parents=True, exist_ok=False)
 record = dict(original=None, write_attempted=False, restored=False, error=None,
-              pending_command_groups=[], owned_groups_clean=False, event='cpu-clock:u', frequency=99, requested_sample_seconds=3)
+              pending_command_groups=[], owned_groups_clean=False, confirmation_cleanup_verified=False, event='cpu-clock:u', frequency=99, requested_sample_seconds=3)
 query = sampler = None
 def command(args, timeout=10):
     proc = None
@@ -59,8 +59,13 @@ try:
     record['original'] = original
     if original != 4: raise RuntimeError('Expected captured guest setting4; stop')
     command(['/usr/bin/sudo', '-n', 'true'], 5)
-    guarded([EXPECTED['python'], HERE/'worker.py', 'confirm', '--stop-launch', out/'stop-launch'],
-            out/'confirm', out, environment(), 60, query=True)
+    try:
+        guarded([EXPECTED['python'], HERE/'worker.py', 'confirm', '--stop-launch', out/'stop-launch'],
+                out/'confirm', out, environment(), 60, query=True)
+    finally:
+        # A failed/absent retained receipt cannot certify the confirmation group.
+        confirmation = json.loads((out/'confirm'/'result.json').read_text())
+        record['confirmation_cleanup_verified'] = confirmation.get('owned_groups_clean') is True
     record['write_attempted'] = True
     command(['/usr/bin/sudo', '-n', '/usr/sbin/sysctl', '-w', 'kernel.perf_event_paranoid=2'])
     if int(command(['/usr/sbin/sysctl', '-n', 'kernel.perf_event_paranoid'])) != 2:
@@ -128,7 +133,8 @@ finally:
         except BaseException as error:
             groups_clean = False
             record['error'] = f'{record["error"]}; cleanup:{error!r}'
-    record['owned_groups_clean'] = groups_clean and not record['pending_command_groups']
+    record['owned_groups_clean'] = (groups_clean and record['confirmation_cleanup_verified']
+                                    and not record['pending_command_groups'])
     if record['pending_command_groups']:
         record['error'] = f'{record["error"]}; unresolved privileged command group; stop VM immediately'
     elif record['original'] is not None:

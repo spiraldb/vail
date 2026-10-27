@@ -57,6 +57,7 @@ def guarded(command, output, cwd, env, seconds, *, query=False):
     (output / 'command.json').write_text(json.dumps(list(map(str, command)), indent=2)+'\n')
     process = None
     error = None
+    cleanup_verified = False
     started = time.monotonic()
     maxrss = 0
     previous = {}
@@ -103,11 +104,12 @@ def guarded(command, output, cwd, env, seconds, *, query=False):
             signal.signal(sig, signal.SIG_IGN)
         try:
             stop_owned(process)
+            cleanup_verified = True
         except BaseException as failure:
             error = f'{error}; cleanup: {failure!r}'
         receipt = dict(command=list(map(str, command)), elapsed_seconds=time.monotonic()-started,
                        returncode=None if process is None else process.returncode,
-                       error=error, monitor_maxrss_bytes=maxrss,
+                       error=error, owned_groups_clean=cleanup_verified, monitor_maxrss_bytes=maxrss,
                        rss_scope='whole child process; includes construction and warmups',
                        monitoring='50ms /proc RSS/action watchdog; overhead not subtracted')
         (output / 'result.json').write_text(json.dumps(receipt, indent=2)+'\n')
