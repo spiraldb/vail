@@ -1,0 +1,19 @@
+# H042 original integer mean attempt1 — failed completion gate, defer
+
+The exact45d6b2109 protocol's single confirmation completed, but the single CPU-sample attempt failed the final gate with `RuntimeError('Incomplete/over-budget sample actions')`. This is **not an accepted completed profile**. No report/attribution was run, no mean query was replaced, and there was no retry, extra action, control query, build or implementation. Preserve the explicit exit: defer this route investigation, leaving broader H042 open and the native AVG API constraint unchanged.
+
+## Completed observations
+
+Existing normal production517/main1d-production-equivalent Linux native4761,69frontend files, original input metadata/DPInt32 and thread/environment pins passed. Every completed action retained all2,535 unique column keys and original losslessly tagged means, with None/NaN/+Inf/-Inf/finitehex separate. Twelve sample-process full results passed declared shape/class/domain and finite relative1e-8/absolute1e-10 consistency against confirmation. These observed real-data means are not independent numerical oracles.
+
+Confirmation:3.792826seconds wall/5.083353core-seconds. Sample process: twelve actions, first0.806097seconds/7.426807CPU, subsequent actions0.255571–0.288941seconds/5.524082–6.113983CPU. First-to-last completed-action window2.992904813seconds. This near-three-second action window is not itself proof of a completed three-second recording; the supervisor's gate remains failed. The final condition combines action-count/window, sampler return status and file-size checks; the receipt does not identify the individual failed predicate or retain sampler return code. Do not invent a precise causal explanation from the final generic error. The archived perf.data is nonempty47,137,340bytes and perf stderr says5,562 samples/44.930MB captured, but those facts do not override the failed gate.
+
+No actual MeanGroupsAccumulator/cast_values/Arrow numeric-cast attribution, coordinate DenseRatio bypass assertion, allocated-byte estimate, bandwidth saturation claim, or optimization decision can be made from this incomplete diagnostic. Partial perf.data is retained but deliberately unanalyzed. The source audit still shows a possible generic Float64 allocation boundary, not its current measured contribution. The standard DataFusion55 AVG interface gap is unchanged; no private AVG copy, cast deletion, alternative arithmetic/state/retract/NaN/CSE changes are justified.
+
+Action timing includes public collect, Python shape/consistency validation, encode and sort; stdout JSON follows the measured action but remains in the process/profile. Whole-process monitor peak983,379,968bytes includes fixture/query/runtime/output work, not allocated bytes or native AVG-only memory. Warm repetition is not independent trials or a benchmark comparison.
+
+## Cleanup and evidence
+
+Captured original guestparanoid4, temporary2, verified restored4; confirmation/query/sampler/command owned process groups positively clean, pendingcommands empty. Six script/configuration assets plus manifest unchanged, original query/missingness/no-imputation retained. Existing budgets60sexternal/10saction/6GiB/free10GiB/6spostfirst/12actions; provider1800sSTOP verified beforeboot plus guest28minute guard. Download receipt archive SHA verified, proactive providerSTOP, independently described **TERMINATED**. Host failure retained with scope_verified:true; no hidden rerun or recovery boot.
+
+`host/receipts.tar.gz` preserves exact original partial perf.data and all original guest outputs. `raw/` holds exact unpacked files except duplicate perf.data. SHA256.json authenticates all packaged originals and this report. No acceptance as a successful profile is requested, and no additional VM activity is proposed. Both VMs remain off.
