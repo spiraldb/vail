@@ -1,0 +1,14 @@
+{
+  "scheduling": {
+    "automaticRestart": true,
+    "instanceTerminationAction": "STOP",
+    "maxRunDuration": {
+      "nanos": 0,
+      "seconds": "4500"
+    },
+    "onHostMaintenance": "MIGRATE",
+    "preemptible": false,
+    "provisioningModel": "STANDARD"
+  },
+  "status": "STOPPING"
+}
