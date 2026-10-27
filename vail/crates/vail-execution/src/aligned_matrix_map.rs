@@ -308,7 +308,7 @@ pub struct PreparedArrayProjection {
     view: CaptureView,
 }
 impl PreparedArrayProjection {
-    /// Return no view when the requested descriptor is unchanged.
+    /// Return no view when no structural field projection is required.
     pub fn prepare(source: &DataType, selected: &DataType) -> Result<Option<Self>> {
         let view = CaptureView::prepare(source, selected).ok_or_else(||
             DataFusionError::Plan("array projection requires compatible selected physical fields".into()))?;
