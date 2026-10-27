@@ -1,0 +1,9 @@
+# ENROLL stage — passed, preflight not started
+
+Exact reviewed protocol d5f5d620ade63e11a2477c18dd06027f527f8b2d ran ENROLL ONLY. InitialTERMINATED/provider4500sSTOP beforeboot, single bounded guest enrollment, archive SHA `d2382a7803991b1394d13869f03538c9a5dbaee3eca023978d805341dbb930ff` and proactiveproviderTERMINATED/STOP all passed. No engine import/query/build/benchmark action occurred. Runtime inventory imports standard importlib.metadata only.
+
+FullSHA enrollment:34 exact supported input roots,17,568 canonical files,8,240,691,997 bytes;53.77s input enrollment,58.33s whole gueststage.23supported fixture keys bound all roots; native markers exist, no conversion. Old603/current4761 frontends+native and Hailjar34b643 all exact. ActualPython:current3.12.15/old3.11.17/Hail3.11.17; packageinventories retained verbatim. Current sourceproduction equality517↔acceptedmain remains the local source proof; no source/binary copying or transplant occurred.
+
+IMPORTANT newly observed preflight prerequisite:current environment has9packages and NOpsutil; old and Hail environments havepsutil7.2.2. The frozen retirement/telemetry helper importspsutil. ENROLL does not use it, so enrollment passed, but PREFLIGHT must NOT be launched until root reviews scoped dependency provisioning or another explicit solution. No installation, interpreter substitution or query retry was performed. This is an infrastructure prerequisite, not a Vail workload failure. Remaining stages NOT authorized.
+
+Final fullpayload rehash has NOT run; enrollment is the frozen initial identity against which everyphase/finalcheck will compare sets/stats/SHA. No claim of completed matched input identity yet.Exact hostcommand count:36; positively reaped probes:72. Allcleanup positive; no provider errors.85supplemental omission and112/67upstream denominator unchanged.
