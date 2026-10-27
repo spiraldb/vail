@@ -80,7 +80,7 @@ def test_deep_shared_capture_prefixes_preserve_selected_and_whole_values(whole_p
     prefix = capture
     for _ in range(depth):
         capture = capture.child
-    selected = {'score': hl.sum(capture.values)}
+    selected = {'score': hl.sum(capture['values'])}
     if whole_prefix:
         selected['saved'] = prefix
     rows = m.select_entries(**selected).entries().collect()
@@ -90,5 +90,5 @@ def test_deep_shared_capture_prefixes_preserve_selected_and_whole_values(whole_p
             saved = row.saved
             for _ in range(depth):
                 saved = saved.child
-            assert saved.values == [row.row_idx, 1]
+            assert saved['values'] == [row.row_idx, 1]
             assert saved.discarded == 'leaf-payload'
