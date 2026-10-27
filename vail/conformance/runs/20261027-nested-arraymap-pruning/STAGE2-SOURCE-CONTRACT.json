@@ -5,16 +5,24 @@
     "existing_boundary": "Iceberg CountingFileRead increments requested range length; FileReadVortexSource.read_at delegates directly to that FileRead, including footer/data/delete reads. ScanResult exposes cloneable ScanMetrics.",
     "current_gap": "vail-storage stream_from_plan_with_projection discards ScanResult.metrics when immediately taking stream().",
     "minimal_ownership_proposal": [
-      "A small cloneable public storage ReadMetrics wrapping one Arc<AtomicU64>; requested_bytes() reads its total. LocalRead.with_read_metrics returns an immutable reader clone with an optional execution-local handle. No global observer or per-entry callback.",
-      "stream_from_plan_with_projection retains existing Iceberg ScanMetrics for each file and adds its final requested byte count to the optional execution-local aggregate via a drop guard, including errors/cancellation. No per-file handle accumulation.",
-      "SourceExec creates an execution-local storage handle and maps it to its ordinary DataFusion ExecutionPlanMetricsSet counter bytes_requested via a stream-lifetime drop guard; each execution/partition owns its own accounting, even when LocalRead/SnapshotReadPlan/session caches are shared.",
-      "No extra atomic increment at each read: upstream counter already exists; aggregate updates once per file and once per execution. Other storage callers pass no metrics and keep normal behavior."
+      "Use the existing public Iceberg ScanMetrics as the sole live AtomicU64 domain. Make its new() constructor public and add ArrowReaderBuilder.with_scan_metrics(ScanMetrics); read() uses the supplied domain or creates its current fresh default. No additional counter or per-file handle list.",
+      "LocalRead.with_scan_metrics returns an immutable execution-local clone carrying an optional caller-owned ScanMetrics. Thread it to the ordinary reader builder for every native source read path. Shared SnapshotReadPlan and VortexSessionCache never carry execution metric domains.",
+      "Each SourceExec.execute creates a FRESH ScanMetrics and registers a normal DataFusion CustomMetricValue referring to that live domain, with existing partition labels. A reused/concurrently executed SourceExec gets separate domains; plan metrics may aggregate the separate execution domains by the standard DF API.",
+      "CustomMetricValue exposes instantaneous observed attempted bytes. Its new_empty() has no live source, only a fresh snapshot accumulator; aggregate() adds each source current value to the accumulator and NEVER mutates a live scan counter. Calling standard DF metric aggregation repeatedly is non-destructive.",
+      "No terminal snapshot or task-retirement race: the metric continues to observe its counter if background read producers outlive stream cancellation. Report cancellation observations as instantaneous lower bounds, never terminal completed totals without retirement proof.",
+      "Public partitioned::prepare already returns PreparedTable.parts containing the actual normal ExecutionPlan objects; tests can execute these normal plans and inspect public DataFusion metrics. No new TableIR query-execution handle or observer API is needed."
     ],
     "scope_limits": [
       "Attempted range lengths, not successful-completion bytes, physical disk traffic, decompression, or bandwidth.",
       "Data-file/footer/delete reader requests; snapshot/catalog metadata opened before execution is outside this counter.",
-      "Error/cancel counts retained; source metric total must not be reused across independent consumers or execution calls."
-    ]
+      "Error/cancel counts retained; source metric total must not be reused across independent consumers or execution calls.",
+      "Successful source proof drains normal streams; read count is observed at collection time, not an assertion that every background task is retired. Do not infer absence of future requests from stream-drop alone.",
+      "One upstream AtomicU64 increment per attempted range remains; zero additional per-read increments, no global hook, no caller installed callback."
+    ],
+    "api_source_verification": {
+      "DataFusion": "Pinned datafusion-physical-expr-common55.0.0 metrics CustomMetricValue has new_empty/aggregate/as_any/as_usize/is_eq; MetricBuilder.build accepts MetricValue::Custom. Standard MetricsSet.sum creates new_empty then accumulates each metric; no source mutation required.",
+      "Iceberg": "ScanMetrics currently alreadypublic/reexported and Clone, new/private constructor holds one Arc<AtomicU64>; ArrowReader::read currently always constructs new. CountingFileRead increments range length before awaiting FileRead."
+    }
   },
   "nested_entries_contract": {
     "current_source_points": [
