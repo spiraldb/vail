@@ -35,5 +35,11 @@
     "Array element demand beyond reviewed ordinary ArrayMap and opaque producer composition remains unsupported until separately implemented/proved.",
     "Safe Arrow constructor masks can scan interior referenced envelopes."
   ],
-  "resources": "Local correctness/allocation/requested-byte tests allowed nice10/jobs2; no local benchmark/profile or cloud work."
+  "resources": "Local correctness/allocation/requested-byte tests allowed nice10/jobs2; no local benchmark/profile or cloud work.",
+  "prepared_view_contract": {
+    "source": "Retain exact physical source DataType in a small opaque prepared descriptor. EntryProjection validates the original full input schema before binding; that existing batch guard discharges descriptor validity for all nested bind_validated calls. No redundant deep schema comparison per nested field or per entry.",
+    "output": "Prepare and retain the ACTUAL output DataType returned by reused CaptureView fields, including original Field metadata/nullability and any selected positional reorder. Consumer schema/EntryProjection uses this actual descriptor, not an assumed logical to_arrow shape.",
+    "API": "A thin public PreparedArrayProjection wrapper re-exported by vail-execution; internal CaptureView enum stays private. prepare(source,selected) returns no view if unchanged or a prepared descriptor/error if incompatible. source_type()/output_type() expose immutable descriptors; bind_validated(array) borrows projected children through the existing safe constructors under the validated-source contract.",
+    "boundaries": "Ordinary Struct child narrowing; selected opaque values remain whole. Outer supported entries List/LargeList envelope clipping uses original typed offset width, no new row-capture LargeList logical inference support. Null masks and explicit empty Struct lengths remain observable."
+  }
 }
