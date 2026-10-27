@@ -15,7 +15,7 @@ a = p.parse_args()
 out = Path(a.output).resolve()
 out.mkdir(parents=True, exist_ok=False)
 record = dict(original=None, write_attempted=False, restored=False, error=None,
-              pending_command_groups=[], event='cpu-clock:u', frequency=99, requested_sample_seconds=3)
+              pending_command_groups=[], owned_groups_clean=False, event='cpu-clock:u', frequency=99, requested_sample_seconds=3)
 query = sampler = None
 def command(args, timeout=10):
     proc = None
@@ -122,9 +122,13 @@ except BaseException as error:
 finally:
     signal.alarm(0)
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGALRM): signal.signal(sig, signal.SIG_IGN)
+    groups_clean = True
     for proc in (query, sampler):
         try: stop_owned(proc)
-        except BaseException as error: record['error'] = f'{record["error"]}; cleanup:{error!r}'
+        except BaseException as error:
+            groups_clean = False
+            record['error'] = f'{record["error"]}; cleanup:{error!r}'
+    record['owned_groups_clean'] = groups_clean and not record['pending_command_groups']
     if record['pending_command_groups']:
         record['error'] = f'{record["error"]}; unresolved privileged command group; stop VM immediately'
     elif record['original'] is not None:
