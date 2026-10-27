@@ -206,15 +206,34 @@ fn prepare_row_captures(
     Ok(result)
 }
 
-/// A query-prepared ordinary-Struct view. Binding only borrows selected
+/// Query-prepared Struct and list views. Binding only borrows selected
 /// children and validates their actual lengths/null masks with safe Arrow APIs.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct StructCaptureView {
     fields: Fields,
-    children: Vec<(usize, Option<Box<StructCaptureView>>)>,
+    children: Vec<(usize, Option<Box<CaptureView>>)>,
 }
-impl StructCaptureView {
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum CaptureView {
+    Struct(StructCaptureView),
+    List { item: FieldRef, child: Box<CaptureView> },
+}
+impl CaptureView {
+    fn dtype(&self) -> DataType {
+        match self {
+            Self::Struct(view) => DataType::Struct(view.fields.clone()),
+            Self::List { item, .. } => DataType::List(item.clone()),
+        }
+    }
     fn prepare(source: &DataType, selected: &DataType) -> Option<Option<Self>> {
+        if let (DataType::List(source), DataType::List(selected)) = (source, selected)
+        {
+            let child = Self::prepare(source.data_type(), selected.data_type())?;
+            return Some(child.map(|child| Self::List {
+                item: Arc::new(source.as_ref().clone().with_data_type(child.dtype())),
+                child: Box::new(child),
+            }));
+        }
         let (DataType::Struct(source), DataType::Struct(selected)) = (source, selected) else {
             // Selected non-Struct children must already have the declared
             // representation. Unselected children need no conversion.
@@ -234,21 +253,47 @@ impl StructCaptureView {
         let fields = children.iter().map(|(index, child)| match child {
             None => source[*index].clone(),
             Some(view) => Arc::new(Field::new(source[*index].name(),
-                DataType::Struct(view.fields.clone()), source[*index].is_nullable())
+                view.dtype(), source[*index].is_nullable())
                 .with_metadata(source[*index].metadata().clone())),
         }).collect::<Vec<_>>().into();
-        Some(Some(Self { fields, children }))
+        Some(Some(Self::Struct(StructCaptureView { fields, children })))
+    }
+    fn bind_list(
+        list: &ListArray, item: &FieldRef, child: &Self,
+    ) -> Result<ArrayRef> {
+        let offsets = list.offsets();
+        let first = offsets[0];
+        let start = first as usize;
+        let stop = offsets[offsets.len() - 1] as usize;
+        // Safe Struct constructors may scan child validity. Exclude the owner
+        // outside this list's referenced envelope before building child views.
+        let values = list.values().slice(start, stop - start);
+        let offsets = if start == 0 { offsets.clone() } else {
+            OffsetBuffer::new(ScalarBuffer::from(offsets.iter().map(|offset| *offset - first).collect::<Vec<_>>()))
+        };
+        Ok(Arc::new(ListArray::try_new(
+            item.clone(), offsets, child.bind(&values)?, list.nulls().cloned(),
+        )?))
     }
     fn bind(&self, source: &ArrayRef) -> Result<ArrayRef> {
+        let view = match self {
+            Self::Struct(view) => view,
+            Self::List { item, child } => {
+                let list = source.as_any().downcast_ref::<ListArray>().ok_or_else(||
+                    DataFusionError::Execution("row capture view requires ListArray".into()))?;
+                return Self::bind_list(list, item, child);
+            }
+
+        };
         let values = source.as_any().downcast_ref::<StructArray>().ok_or_else(||
             DataFusionError::Execution("row capture view requires StructArray".into()))?;
-        let arrays = self.children.iter().map(|(index, child)| {
+        let arrays = view.children.iter().map(|(index, child)| {
             let array = values.columns().get(*index).ok_or_else(||
                 DataFusionError::Execution("row capture source fields changed".into()))?;
             match child { Some(view) => view.bind(array), None => Ok(array.clone()) }
         }).collect::<Result<Vec<_>>>()?;
         Ok(Arc::new(StructArray::try_new_with_length(
-            self.fields.clone(), arrays, values.nulls().cloned(), values.len(),
+            view.fields.clone(), arrays, values.nulls().cloned(), values.len(),
         )?))
     }
 }
@@ -260,7 +305,7 @@ pub(crate) struct RowCaptureView {
     // Keep the original typed binding in equality/hash even when the frame
     // exposes only selected fields; schema contexts must not alias in CSE.
     source_type: DataType,
-    view: StructCaptureView,
+    view: CaptureView,
 }
 impl RowCaptureView {
     pub(crate) fn prepare(rows: &DataType, name: &str, selected: &DataType) -> Option<Self> {
@@ -268,7 +313,7 @@ impl RowCaptureView {
         let bundle_index = bundle.iter().position(|field| field.name() == "__vail_aligned_row")?;
         let DataType::Struct(fields) = bundle[bundle_index].data_type() else { return None; };
         let field_index = fields.iter().position(|field| field.name() == name)?;
-        StructCaptureView::prepare(fields[field_index].data_type(), selected)?
+        CaptureView::prepare(fields[field_index].data_type(), selected)?
             .map(|view| Self { bundle_index, field_index,
                 source_type: fields[field_index].data_type().clone(), view })
     }

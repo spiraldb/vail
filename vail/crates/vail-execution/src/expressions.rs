@@ -6066,14 +6066,19 @@ fn lower_uncached(
             // Typed root identities are compared once, while all leaf/callback
             // uses union demand for that same row binding.
             #[derive(Default)]
-            struct RowDemandNode { all: bool, fields: std::collections::BTreeMap<String, usize> }
+            struct RowDemandNode {
+                all: bool,
+                fields: std::collections::BTreeMap<String, usize>,
+                element: Option<usize>,
+            }
             struct RowDemand { original: Type, roots: HashSet<usize>, compatible: bool, node: usize }
             fn row_path(
                 expr: &Expr, demands: &mut std::collections::BTreeMap<String, RowDemand>,
-                nodes: &mut Vec<RowDemandNode>, memo: &mut HashMap<usize, Option<usize>>,
+                nodes: &mut Vec<RowDemandNode>, memo: &mut HashMap<(usize, usize), Option<usize>>,
+                bindings: &[(String, Option<usize>)], context: usize,
             ) -> Option<usize> {
                 let identity = expr as *const Expr as usize;
-                if let Some(cached) = memo.get(&identity) { return *cached; }
+                if let Some(cached) = memo.get(&(identity, context)) { return *cached; }
                 let node = match expr {
                     Expr::AlignedMapInput { axis, name: Some(name), dtype } if axis == "row" => {
                         let demand = demands.entry(name.clone()).or_insert_with(|| {
@@ -6083,8 +6088,10 @@ fn lower_uncached(
                         if demand.roots.insert(identity) && demand.original != *dtype { demand.compatible = false; }
                         Some(demand.node)
                     }
+                    Expr::LambdaVariable { name, .. } => bindings.iter().rev()
+                        .find(|(bound, _)| bound == name).and_then(|(_, node)| *node),
                     Expr::GetField { value, name } => {
-                        row_path(value, demands, nodes, memo).map(|parent| {
+                        row_path(value, demands, nodes, memo, bindings, context).map(|parent| {
                             if nodes[parent].all { return parent; }
                             if let Some(child) = nodes[parent].fields.get(name) { return *child; }
                             let child = nodes.len(); nodes.push(RowDemandNode::default());
@@ -6093,45 +6100,88 @@ fn lower_uncached(
                     }
                     _ => None,
                 };
-                memo.insert(identity, node); node
+                memo.insert((identity, context), node); node
             }
             fn cover_row_path(node: usize, nodes: &mut [RowDemandNode]) {
-                // Each existing node is covered at most once. Cached paths to
-                // covered descendants remain valid; future children collapse
-                // to the already-covered ancestor without walking a prefix.
                 if nodes[node].all { return; }
                 nodes[node].all = true;
                 for child in std::mem::take(&mut nodes[node].fields).into_values() {
                     cover_row_path(child, nodes);
                 }
+                if let Some(element) = nodes[node].element.take() { cover_row_path(element, nodes); }
             }
             fn row_demand(
                 expr: &Expr, demands: &mut std::collections::BTreeMap<String, RowDemand>,
-                nodes: &mut Vec<RowDemandNode>, memo: &mut HashMap<usize, Option<usize>>, seen: &mut HashSet<usize>,
+                nodes: &mut Vec<RowDemandNode>, memo: &mut HashMap<(usize, usize), Option<usize>>,
+                seen: &mut HashSet<(usize, usize)>, bindings: &mut Vec<(String, Option<usize>)>,
+                context: usize, next_context: &mut usize, mapped: &mut HashSet<usize>,
             ) {
-                if !seen.insert(expr as *const Expr as usize) { return; }
-                if let Some(node) = row_path(expr, demands, nodes, memo) { cover_row_path(node, nodes); }
-                else { expr.visit_children(&mut |child| row_demand(child, demands, nodes, memo, seen)); }
+                let identity = expr as *const Expr as usize;
+                if !seen.insert((identity, context)) { return; }
+                if let Expr::ArrayMap { value, parameter, body } = expr {
+                    if let Some(parent) = row_path(value, demands, nodes, memo, bindings, context) {
+                        let element = if let Some(element) = nodes[parent].element { element } else {
+                            let element = nodes.len();
+                            nodes.push(RowDemandNode { all: nodes[parent].all, ..Default::default() });
+                            nodes[parent].element = Some(element); element
+                        };
+                        mapped.insert(identity);
+                        let nested = *next_context; *next_context += 1;
+                        bindings.push((parameter.clone(), Some(element)));
+                        row_demand(body, demands, nodes, memo, seen, bindings, nested, next_context, mapped);
+                        bindings.pop();
+                        return;
+                    }
+                }
+                // Shape and logical validity are observable even with no
+                // payload fields. Empty Struct views retain their masks/length.
+                if let Expr::ArrayLength { value } | Expr::IsMissing { value } = expr {
+                    if row_path(value, demands, nodes, memo, bindings, context).is_some() { return; }
+                }
+                if let Some(node) = row_path(expr, demands, nodes, memo, bindings, context) {
+                    cover_row_path(node, nodes);
+                } else {
+                    let mut position = 0;
+                    expr.visit_children(&mut |child| {
+                        let names = expr.child_binders(position); position += 1;
+                        let original = bindings.len();
+                        bindings.extend(names.iter().map(|name| ((*name).to_owned(), None)));
+                        let child_context = if names.is_empty() { context } else {
+                            let nested = *next_context; *next_context += 1; nested
+                        };
+                        row_demand(child, demands, nodes, memo, seen, bindings, child_context, next_context, mapped);
+                        bindings.truncate(original);
+                    });
+                }
             }
-            fn projected_row_type(ty: &Type, node: usize, nodes: &[RowDemandNode]) -> Type {
-                if nodes[node].all { return ty.clone(); }
-                let Type::Struct { r#struct: fields } = ty else { return ty.clone(); };
-                Type::Struct { r#struct: fields.iter().filter_map(|(name, child)| {
-                    nodes[node].fields.get(name).map(|&node| (name.clone(), projected_row_type(child, node, nodes)))
-                }).collect() }
+            fn projected_row_type(ty: &Type, node: &RowDemandNode, nodes: &[RowDemandNode]) -> Type {
+                if node.all { return ty.clone(); }
+                match ty {
+                    Type::Struct { r#struct: fields } => Type::Struct {
+                        r#struct: fields.iter().filter_map(|(name, child)| {
+                            node.fields.get(name).map(|&id| (name.clone(), projected_row_type(child, &nodes[id], nodes)))
+                        }).collect(),
+                    },
+                    Type::Array { array } => Type::Array { array: Box::new(projected_row_type(
+                        array, node.element.map(|id| &nodes[id]).unwrap_or(&RowDemandNode::default()), nodes,
+                    )) },
+                    _ => ty.clone(),
+                }
             }
             let mut row_demands = std::collections::BTreeMap::new();
             let mut row_demand_nodes = Vec::new();
-            if !scalar_rows { row_demand(body, &mut row_demands, &mut row_demand_nodes, &mut HashMap::new(), &mut HashSet::new()); }
+            let mut mapped_captures = HashSet::new();
+            if !scalar_rows { row_demand(body, &mut row_demands, &mut row_demand_nodes,
+                &mut HashMap::new(), &mut HashSet::new(), &mut Vec::new(), 0, &mut 1, &mut mapped_captures); }
             let row_frame_type = rows.data_type(schema)?;
             let mut names = std::collections::BTreeMap::new();
             let mut capture_keys = Vec::new();
             let mut row_capture_views = Vec::new();
             for (key, ty) in captures {
-                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. }) {
+                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. } | Type::Array { .. }) {
                     key.1.as_ref().and_then(|name| row_demands.get(name))
                         .filter(|demand| demand.compatible && demand.original == ty)
-                        .map(|demand| projected_row_type(&ty, demand.node, &row_demand_nodes)).unwrap_or_else(|| ty.clone())
+                        .map(|demand| projected_row_type(&ty, &row_demand_nodes[demand.node], &row_demand_nodes)).unwrap_or_else(|| ty.clone())
                 } else { ty.clone() };
                 let mut selected_arrow = selected.to_arrow()?;
                 let view = if selected != ty {
@@ -6154,32 +6204,52 @@ fn lower_uncached(
             fn rewrite_batch_inputs(
                 expr: &Expr,
                 names: &std::collections::BTreeMap<(String, Option<String>), String>,
-                memo: &mut std::collections::HashMap<usize, Expr>,
+                mapped: &HashSet<usize>, memo: &mut HashMap<(usize, usize), Expr>,
             ) -> Result<Expr, ExprError> {
-                let id = expr as *const Expr as usize;
-                if let Some(cached) = memo.get(&id) {
-                    return Ok(cached.clone());
-                }
-                let rewritten = if let Expr::AlignedMapInput { axis, name, .. } = expr {
-                    let column = match axis.as_str() {
-                        "entry" => crate::aligned_matrix_map::ENTRY_COLUMN.to_owned(),
-                        "col" => crate::aligned_matrix_map::COLUMN_COLUMN.to_owned(),
-                        "entry_present" => {
-                            crate::aligned_matrix_map::ENTRY_PRESENT_COLUMN.to_owned()
-                        }
-                        _ => names
-                            .get(&(axis.clone(), name.clone()))
-                            .cloned()
-                            .ok_or_else(|| {
-                                ExprError::Invalid("missing aligned batch capture".into())
-                            })?,
+                fn walk(
+                    expr: &Expr,
+                    names: &std::collections::BTreeMap<(String, Option<String>), String>,
+                    mapped: &HashSet<usize>, memo: &mut HashMap<(usize, usize), Expr>,
+                    bindings: &mut Vec<(String, bool)>, context: usize, next_context: &mut usize,
+                ) -> Result<Expr, ExprError> {
+                    let identity = expr as *const Expr as usize;
+                    if let Some(cached) = memo.get(&(identity, context)) { return Ok(cached.clone()); }
+                    let rewritten = if let Expr::AlignedMapInput { axis, name, .. } = expr {
+                        let column = match axis.as_str() {
+                            "entry" => crate::aligned_matrix_map::ENTRY_COLUMN.to_owned(),
+                            "col" => crate::aligned_matrix_map::COLUMN_COLUMN.to_owned(),
+                            "entry_present" => crate::aligned_matrix_map::ENTRY_PRESENT_COLUMN.to_owned(),
+                            _ => names.get(&(axis.clone(), name.clone())).cloned()
+                                .ok_or_else(|| ExprError::Invalid("missing aligned batch capture".into()))?,
+                        };
+                        Expr::Column { name: column }
+                    } else if let Expr::LambdaVariable { name, .. } = expr
+                        && bindings.iter().rev().find(|(bound, _)| bound == name).is_some_and(|(_, projected)| *projected)
+                    {
+                        // The original body was type checked above. Rebind a
+                        // projected map parameter from its actual array input.
+                        Expr::LambdaVariable { name: name.clone(), dtype: None }
+                    } else {
+                        let mut position = 0;
+                        expr.try_map_original_children(|child| {
+                            let child_position = position; position += 1;
+                            let bound_names = expr.child_binders(child_position);
+                            let projected = child_position == 1 && mapped.contains(&identity)
+                                && matches!(expr, Expr::ArrayMap { .. });
+                            let original = bindings.len();
+                            bindings.extend(bound_names.iter().map(|name| ((*name).to_owned(), projected)));
+                            let child_context = if bound_names.is_empty() { context } else {
+                                let nested = *next_context; *next_context += 1; nested
+                            };
+                            let output = walk(child, names, mapped, memo, bindings, child_context, next_context);
+                            bindings.truncate(original);
+                            output
+                        })?
                     };
-                    Expr::Column { name: column }
-                } else {
-                    expr.try_map_original_children(|child| rewrite_batch_inputs(child, names, memo))?
-                };
-                memo.insert(id, rewritten.clone());
-                Ok(rewritten)
+                    memo.insert((identity, context), rewritten.clone());
+                    Ok(rewritten)
+                }
+                walk(expr, names, mapped, memo, &mut Vec::new(), 0, &mut 1)
             }
             // Python's aligned map wraps the body in an entry-presence guard.
             // Prepare its consequent once for batches whose entry parents are
@@ -6191,9 +6261,9 @@ fn lower_uncached(
                 _ => None,
             };
             let all_present = all_present.map(|value|
-                rewrite_batch_inputs(value, &names, &mut Default::default())
+                rewrite_batch_inputs(value, &names, &mapped_captures, &mut Default::default())
             ).transpose()?;
-            let body = rewrite_batch_inputs(body, &names, &mut Default::default())?;
+            let body = rewrite_batch_inputs(body, &names, &mapped_captures, &mut Default::default())?;
             let capture_types = body_fields[3..].iter().map(|f| f.data_type().clone()).collect();
             let body_schema = Schema::new(body_fields);
             // The lexical binder stores its inputs in Arrow batch columns.
