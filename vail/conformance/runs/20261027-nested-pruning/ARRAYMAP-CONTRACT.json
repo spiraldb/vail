@@ -1,0 +1,38 @@
+{
+  "status": "concrete Stage 1 source contract; implementation not yet added",
+  "scope": "Project ordinary Struct fields through ArrayMap-owned List/LargeList paths inside a row capture; preserve atomic logical leaf representations.",
+  "demand_domains": {
+    "whole": "Retain the entire subtree when observed as a value or consumed by an unsupported operation. Union dominates all weaker demand.",
+    "shape": "ArrayMap and ArrayLength require outer list validity, offsets and length even when body is constant and no element field is requested.",
+    "parent_validity": "GetField must propagate null ancestors; an empty selected Struct still retains its logical validity and exact length.",
+    "element_validity": "A selected element Struct retains its validity even with zero fields; is_defined(element) and null input element lambda semantics must match original.",
+    "field_validity": "is_defined(element.field) requires that field\u2019s logical parent/own validity, not merely its siblings. Primitive/atomic leaf buffers remain unchanged in this stage.",
+    "payload": "Only demanded ordinary Struct children are borrowed; selected atomic leaf descriptors must already match and are never silently cast."
+  },
+  "analysis": [
+    "Extend the existing trie with an element edge distinct from named Struct edges and an explicit shape/validity-only use, retaining whole-use dominance. No cloned root-to-leaf path vectors.",
+    "ArrayMap over a resolvable captured array path binds its element parameter to the element edge in a distinct lexical context; traverse body demand there rather than marking the whole input value. Nested arrays/maps repeat the same transfer.",
+    "Memoize original expression identity together with lexical binding context and exact capture identity/type. Shared callback bodies under different bindings cannot share an unqualified demand memo. Whole and leaf consumers union into the same source binding.",
+    "ArrayLength and IsMissing may use shape/validity-only demand where semantics are known; unfamiliar collection operators or dynamic whole-value consumers mark the affected subtree whole, not an unrelated capture.",
+    "Original body typing validates declared lambda types. Projected callback schemas and corresponding typed variable descriptors must be rebuilt consistently in the same lexical scope before lowering; no name-only global rewrite."
+  ],
+  "prepared_view": [
+    "Compile a typed recursive Struct/List/LargeList view once per query from the selected physical type.",
+    "At batch binding borrow original child ArrayRefs, offsets and null buffers; preserve full physical child length and sliced offset ownership, including hidden null ranges. Use safe Arrow constructors and count their mask-validation cost.",
+    "Empty selected Structs use explicit original length and original null mask. Never replace an omitted payload with a different observable validity or fabricate contiguous offsets.",
+    "Selected logical Call/Set/Dict/Locus/array leaves are atomic with exact physical compatibility; unused surrounding siblings do not block pruning. Any needed conversion retains the whole affected capture until separately supported.",
+    "Retained backing owners are not claimed released. Original source/spill retention charges and producer computations/effects remain unchanged."
+  ],
+  "public_oracles": [
+    "Constant map over nullable List<Struct> with no selected fields; length and is_defined array/element controls, null elements versus missing outer array, empty lists.",
+    "Nested Array<Struct<Array<Struct>>> selecting one primitive/list field, selected-null field and null ancestor; complete nested Option outputs with unused defined and hidden payload growth.",
+    "Shared whole-plus-leaf demand, two distinct leaf callbacks, lexical shadowing and reused callback DAGs under different parameters, explicit typed lambda descriptors.",
+    "Selected logical leaf values/types plus unused logical sibling at every ordinary Struct level.",
+    "Allocation counterfactual with fixture construction/query preparation outside counting; unchanged baseline must reproduce growth, candidate must not. Full/whole paths remain semantic controls."
+  ],
+  "claims_excluded": [
+    "No source IO pruning or requested-byte claim from this capture-only stage",
+    "No recursive null compaction, owner-release, throughput or SIMD claim",
+    "No benchmark VM use or changes to frozen comparison artifacts"
+  ]
+}
