@@ -1,0 +1,420 @@
+........FFFFFFFF                                                         [100%]
+=================================== FAILURES ===================================
+_ test_unused_logical_siblings_do_not_block_nested_capture_projection[call-0] __
+
+depth = 0, opaque = 'call'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10bf96690>
+expr = <vail.expressions.Expression object at 0x10bf19b60>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+_ test_unused_logical_siblings_do_not_block_nested_capture_projection[call-3] __
+
+depth = 3, opaque = 'call'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10bf6f110>
+expr = <vail.expressions.Expression object at 0x10c74a9d0>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+__ test_unused_logical_siblings_do_not_block_nested_capture_projection[set-0] __
+
+depth = 0, opaque = 'set'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10b992210>
+expr = <vail.expressions.Expression object at 0x10c74b300>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+__ test_unused_logical_siblings_do_not_block_nested_capture_projection[set-3] __
+
+depth = 3, opaque = 'set'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10bf95820>
+expr = <vail.expressions.Expression object at 0x10c74aa40>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+_ test_unused_logical_siblings_do_not_block_nested_capture_projection[dict-0] __
+
+depth = 0, opaque = 'dict'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10b384f20>
+expr = <vail.expressions.Expression object at 0x10c74a5e0>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+_ test_unused_logical_siblings_do_not_block_nested_capture_projection[dict-3] __
+
+depth = 3, opaque = 'dict'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10bf6eba0>
+expr = <vail.expressions.Expression object at 0x10be75fc0>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+_ test_unused_logical_siblings_do_not_block_nested_capture_projection[nested_array-0] _
+
+depth = 0, opaque = 'nested_array'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10b36da30>
+expr = <vail.expressions.Expression object at 0x10b3907b0>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+_ test_unused_logical_siblings_do_not_block_nested_capture_projection[nested_array-3] _
+
+depth = 3, opaque = 'nested_array'
+
+    @pytest.mark.parametrize('depth', [0, 3])
+    @pytest.mark.parametrize('opaque', ['call', 'set', 'dict', 'nested_array'])
+    def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, opaque):
+        m = hl.range_matrix_table(4, 3, 2)
+        special = {
+            'call': lambda: hl.call(m.row_idx % 2, 1),
+            'set': lambda: hl.set([m.row_idx, 9]),
+            'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+            'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+        }[opaque]()
+        nested = hl.struct(values=hl.array([m.row_idx, 1]), special=special,
+                           unused=hl.str(m.row_idx) + 'x' * 1024)
+        for _ in range(depth):
+            nested = hl.struct(child=nested, unused=special)
+        m = m.annotate_rows(meta=hl.or_missing(m.row_idx != 1, nested))
+        capture = m.meta
+        for _ in range(depth):
+            capture = capture.child
+        source = m.rows().collect()
+>       rows = m.filter_entries((m.row_idx + m.col_idx) % 4 != 0).select_entries(
+            score=hl.sum(capture['values'])).entries().collect()
+
+vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1400: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1344: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:1147: in _project_axis
+    self._validate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.matrixtable.MatrixTable object at 0x10b351580>
+expr = <vail.expressions.Expression object at 0x10b379f50>, axis = 'entry'
+aggregate = False, allow_row_initializers = False
+
+    def _validate(self, expr, axis, *, aggregate=False, allow_row_initializers=False):
+        expr = as_expr(expr)
+        if expr.source is not None and expr.source is not self:
+>           raise ExpressionException(
+                "expression source mismatch: fields belong to another dataset"
+            )
+E           vail.expressions.ExpressionException: expression source mismatch: fields belong to another dataset
+
+vail-h012-gate/final-env/lib/python3.12/site-packages/vail/matrixtable.py:587: ExpressionException
+=========================== short test summary info ============================
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[call-0]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[call-3]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[set-0]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[set-3]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[dict-0]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[dict-3]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[nested_array-0]
+FAILED vail-nested-pruning/vail/python/tests/test_nested_row_capture_projection.py::test_unused_logical_siblings_do_not_block_nested_capture_projection[nested_array-3]
+8 failed, 8 passed in 1.12s
