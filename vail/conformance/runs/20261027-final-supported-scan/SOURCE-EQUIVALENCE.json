@@ -1,0 +1,19 @@
+{
+  "compiled_source": "517c87538d58689e864af795015020e908de0be0",
+  "compared_checkpoint": "17678c24e5db50c7d8539246783fe693c99c7ef0",
+  "command": [
+    "git",
+    "diff",
+    "--quiet",
+    "517c87538d58689e864af795015020e908de0be0",
+    "17678c24e5db50c7d8539246783fe693c99c7ef0",
+    "--",
+    "vail/crates",
+    "vail/python/vail",
+    "vail/Cargo.toml",
+    "vail/Cargo.lock",
+    "vail/vendor"
+  ],
+  "exit_code": 0,
+  "scope": "Exact tracked production source equality for listed paths; normalnative4761 gate fingerprints retained separately; docs/harness additions excluded; not dependency/runtime equivalence"
+}

@@ -7,6 +7,9 @@ THREADS={'OMP_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','MKL_NUM_THREADS':'1',
 def main():
  p=argparse.ArgumentParser();p.add_argument('--phase',choices=['preflight','rep1','rep2','rep3'],required=True);p.add_argument('--out',required=True);p.add_argument('--enrollment',required=True);a=p.parse_args()
  out=Path(a.out);out.mkdir(exist_ok=False);started=time.monotonic();cap=3600 if a.phase=='preflight' else 7200
+ policy=json.loads((HERE/'policy.json').read_text())
+ pool=json.loads((HERE/'positive-support-pool.json').read_text())
+ if set(policy['cases']) & {c['case_id'] for c in pool['cases']}:raise RuntimeError('Policy excluded case in schedule')
  lock=json.loads((HERE/'artifact-lock.json').read_text());schedule=json.loads((HERE/'schedule.json').read_text())['jobs'];tiers={c['case_id']:c for c in json.loads((HERE/'evidence-tiers.json').read_text())['cases']}
  from enroll import artifacts,check
  artifacts();check(a.enrollment)
@@ -30,12 +33,17 @@ def main():
    if a.phase!='preflight' and (job['case_id'],required) not in passed:
     results.append({**job,'status':'withheld_current_preflight_failed','actual_sample':False});continue
    folder=out/f'case-{index:04}';folder.mkdir();engine='hail' if job['version']=='hail' else'vail'
-   env=os.environ.copy();env.pop('PYTHONPATH',None);env.update(THREADS);env.update(VAIL_SCAN_MODE=job['mode'],VAIL_BENCHMARK_UPSTREAM=str(HERE/'upstream'),VAIL_BENCHMARK_TELEMETRY_DIR=str(folder/'telemetry'),FINAL_SCAN_CASE_DIRECTORY=str(folder))
+   env=os.environ.copy();env.pop('PYTHONPATH',None);env.update(THREADS);env['FINAL_SCAN_VERSION']=job['version'];env.update(VAIL_SCAN_MODE=job['mode'],VAIL_BENCHMARK_UPSTREAM=str(HERE/'upstream'),VAIL_BENCHMARK_TELEMETRY_DIR=str(folder/'telemetry'),FINAL_SCAN_CASE_DIRECTORY=str(folder))
    command=[lock[job['version']]['python'],str(HERE/'upstream_benchmark_coverage.py'),'--engine',engine,'--case',job['case_id'],'--timeout','600','--fixture-timeout','120','--data-dir','/home/danielking/cloud-scan-20261023/data','--output',str(folder/'result.json')]
    (folder/'command.json').write_text(json.dumps(command)+'\n')
    with (folder/'stdout').open('wb') as stdout,(folder/'stderr').open('wb') as stderr:
     proc=subprocess.Popen(command,env=env,stdout=stdout,stderr=stderr,start_new_session=True)
-    try:proc.wait(timeout=750)
+    try:
+     case_start=time.monotonic()
+     while proc.poll() is None:
+      if time.monotonic()-case_start>=750:raise TimeoutError('750s case cap')
+      if (folder/'stdout').stat().st_size+(folder/'stderr').stat().st_size>32*1024**2:raise RuntimeError('32MiB case log cap')
+      time.sleep(.1)
     except BaseException:
      # Outer ownership/cleanup is uncertain: retain it, abort phase; host STOP FIRST.
      proc.kill()
@@ -52,5 +60,6 @@ def main():
   check(a.enrollment)
  except BaseException as error:failure=repr(error);raise
  finally:
+  (out/'results.json').write_text(json.dumps(results,indent=2)+'\n')
   (out/'phase-result.json').write_text(json.dumps({'failure':failure,'seconds':time.monotonic()-started,'jobs_completed':len(results),'job_count':len(jobs),'requires_stop_before_collection':failure is not None})+'\n')
 if __name__=='__main__':main()

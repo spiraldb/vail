@@ -1,5 +1,5 @@
 """Finite input/artifact enrollment outside all benchmark action windows."""
-import argparse,hashlib,json,os,sys,time
+import argparse,hashlib,json,os,sys,time,subprocess
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 MAX_BYTES=256*1024**3;MAX_FILES=250000;SECONDS=3600;MAX_JSON=128*1024**2
@@ -30,6 +30,12 @@ def artifacts():
  if sha(Path(hail['jar']))!=hail['jar_sha256']:raise RuntimeError('Hail jar mismatch')
  if not Path(hail['python']).is_file():raise RuntimeError('Missing Hail interpreter')
  observed['hail']=hail
+ runtime_code="import importlib.metadata as m,json,platform,sys;print(json.dumps({'python':sys.version,'executable':sys.executable,'platform':platform.platform(),'packages':sorted([(d.metadata['Name'],d.version) for d in m.distributions()])}))"
+ for name in ('current','old','hail'):
+  env=os.environ.copy();env.pop('PYTHONPATH',None)
+  completed=subprocess.run([lock[name]['python'],'-c',runtime_code],env=env,capture_output=True,text=True,timeout=30,check=True)
+  if len(completed.stdout)>1024**2:raise RuntimeError('1MiB runtime metadata cap')
+  observed[name]={**observed[name],'runtime':json.loads(completed.stdout)}
  return observed
 
 def input_roots():
@@ -78,7 +84,7 @@ def roster():
  return result
 
 def check(roster_path,full=False):
- data=json.loads(Path(roster_path).read_text());start=time.monotonic()
+ data=json.loads(Path(roster_path).read_text());data=data.get('inputs',data);start=time.monotonic()
  for raw,entry in data['files'].items():
   if time.monotonic()-start>SECONDS:raise TimeoutError('3600s input recheck cap')
   p=Path(raw);s=p.stat()

@@ -449,6 +449,12 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue, start_ev
                                 "spark.ui.enabled": "false"})
         else:
             hl = vail
+        frozen=json.loads((Path(__file__).parent/'artifact-lock.json').read_text())
+        if engine=='hail':
+            if hl.__version__!=frozen['hail']['version']:raise RuntimeError('Hail runtime version differs')
+        else:
+            expected=Path(frozen[os.environ['FINAL_SCAN_VERSION']]['frontend']).resolve()
+            if Path(vail.__file__).resolve().parent!=expected:raise RuntimeError('Vail import path differs')
         if engine == "vail" and os.environ.get("VAIL_SCAN_MODE") == "vail-hail":
             _install_legacy_boundary(hl)
         if engine == "vail" and (case["module"] == "benchmark_analysis.py" or (case["module"] == "benchmark_combiner.py" and case["name"] != "test_import_gvcf_force_count")):
