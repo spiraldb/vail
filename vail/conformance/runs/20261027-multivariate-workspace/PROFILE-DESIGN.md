@@ -12,9 +12,9 @@ Proposed public query (the final executable must preserve this shape):
 m = hl.read_matrix_table(FIXTURE)
 m = m.annotate_rows(__h047_x=hl.float64(m.locus.position) / 1000000.0)
 m = m.annotate_cols(__h047_fit=hl.agg.linreg(
-    hl.float64(hl.or_else(m.DP, 0)), [1.0, m.__h047_x]))
+    hl.float64(hl.or_else(m.DP, 0)), [1.0, m['__h047_x']]))
 c = m.cols()
-results = c.select(fit=c.__h047_fit).collect()
+results = c.select(fit=c['__h047_fit']).collect()
 ```
 
 DP must actually be Int32 and present, locus valid and finite, exact matrix dimensions as enrolled. The producer may contain filtered entries: any such validity can legitimately choose the ordinary grouped fallback. Do not force all-validness, change filtering, or replace fields to make a desired fast path execute. Fully encode every column key and every result field into retained JSON; require exactly all2,535 unique column keys, full `n`/coefficient/statistics shape, no partial `.n` or first-fit-only consumption. Real-data fits are observations, not an independent numerical oracle. A later optimization would need independent analytic/tolerance tests before acceptance.
