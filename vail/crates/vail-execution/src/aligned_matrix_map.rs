@@ -229,7 +229,8 @@ impl CaptureView {
     fn prepare(source: &DataType, selected: &DataType) -> Option<Option<Self>> {
         let large = matches!(source, DataType::LargeList(_));
         if let (DataType::List(source), DataType::List(selected))
-            | (DataType::LargeList(source), DataType::LargeList(selected)) = (source, selected)
+            | (DataType::LargeList(source), DataType::LargeList(selected))
+            | (DataType::LargeList(source), DataType::List(selected)) = (source, selected)
         {
             let child = Self::prepare(source.data_type(), selected.data_type())?;
             return Some(child.map(|child| Self::List {
