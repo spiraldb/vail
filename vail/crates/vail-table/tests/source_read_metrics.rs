@@ -10,16 +10,17 @@ use datafusion_physical_plan::metrics::{Metric, MetricsSet};
 use datafusion_physical_plan::{ExecutionPlan, SendableRecordBatchStream};
 use futures::{TryStreamExt, join};
 use vail_storage::local_table::open_local;
+use vail_table::partitioned::PreparedTable;
 use vail_table::{TableIR, partitioned};
 
-async fn fixture(path: &str) -> Arc<dyn ExecutionPlan> {
+async fn fixture(path: &str) -> PreparedTable {
     TableIR::range(97, 1)
         .unwrap()
         .write(path, false)
         .await
         .unwrap();
     let table = TableIR::read(path).await.unwrap();
-    partitioned::prepare(table).await.unwrap().physical_plan()
+    partitioned::prepare(table).await.unwrap()
 }
 
 fn requested(plan: &Arc<dyn ExecutionPlan>) -> Vec<Arc<Metric>> {
@@ -66,15 +67,30 @@ async fn values(stream: SendableRecordBatchStream) -> Vec<i32> {
 #[tokio::test]
 async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation() {
     let dir = tempdir().unwrap();
-    let plan = fixture(dir.path().join("table").to_str().unwrap()).await;
+    let prepared = fixture(dir.path().join("table").to_str().unwrap()).await;
+    let plan = prepared.physical_plan();
     assert!(requested(&plan).is_empty());
-    let first = values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()).await;
+    let first = values(
+        prepared
+            .start_action()
+            .unwrap()
+            .execute(0, Arc::new(TaskContext::default()))
+            .unwrap(),
+    )
+    .await;
     assert_eq!(first, (0..97).collect::<Vec<_>>());
     let domains = requested(&plan);
     assert_eq!(domains.len(), 1);
     let first_bytes = domains[0].value().as_usize();
     assert!(first_bytes > 0);
-    let second = values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()).await;
+    let second = values(
+        prepared
+            .start_action()
+            .unwrap()
+            .execute(0, Arc::new(TaskContext::default()))
+            .unwrap(),
+    )
+    .await;
     assert_eq!(second, first);
     let domains = requested(&plan);
     assert_eq!(domains.len(), 2);
@@ -107,8 +123,20 @@ async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation(
     );
 
     let (left, right) = join!(
-        values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()),
-        values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()),
+        values(
+            prepared
+                .start_action()
+                .unwrap()
+                .execute(0, Arc::new(TaskContext::default()))
+                .unwrap()
+        ),
+        values(
+            prepared
+                .start_action()
+                .unwrap()
+                .execute(0, Arc::new(TaskContext::default()))
+                .unwrap()
+        ),
     );
     assert_eq!(left, first);
     assert_eq!(right, first);
@@ -121,7 +149,8 @@ async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation(
 #[tokio::test]
 async fn canceled_source_retains_its_observed_attempted_bytes() {
     let dir = tempdir().unwrap();
-    let plan = fixture(dir.path().join("table").to_str().unwrap()).await;
+    let prepared = fixture(dir.path().join("table").to_str().unwrap()).await;
+    let plan = prepared.physical_plan();
     let mut stream = plan.execute(0, Arc::new(TaskContext::default())).unwrap();
     assert!(stream.try_next().await.unwrap().is_some());
     let domains = requested(&plan);
@@ -139,7 +168,7 @@ async fn missing_real_file_fails_without_fabricated_read_requests() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("table");
     let path = path.to_str().unwrap();
-    let plan = fixture(path).await;
+    let plan = fixture(path).await.physical_plan();
     let source = open_local(path).await.unwrap();
     let file = &source.descriptor().files[0].path;
     remove_file(file.strip_prefix("file://").unwrap_or(file)).unwrap();
