@@ -289,10 +289,13 @@ async fn shared_deep_prefix_preparation_tracks_unique_demand_nodes() {
     let mut incremental = Vec::new();
     for (depth, width) in [(16, 64), (64, 256)] {
         let source = fixture_nested_layout(8, false, false, Some(depth));
-        // Same public input schema and values, with no entries demand rewrite.
-        // Its ordinary type-checking allocations remain a separate control.
-        let control = source.cache().await.unwrap();
-        assert_eq!(source.schema(), control.schema());
+        // A referenced external constant retains the existing full-capture
+        // route. It controls ordinary type checking on the SAME source/DAG;
+        // the one extra scalar expression is constant-size preparation work.
+        let control_schema = Arc::new(Schema::new(vec![Field::new("token", DataType::Int32, false)]));
+        let control_type = Type::from_arrow(&DataType::Struct(control_schema.fields().clone())).unwrap();
+        let control_global = GlobalsIR::arrow_literal(RecordBatch::try_new(control_schema,
+            vec![Arc::new(Int32Array::from(vec![0]))]).unwrap()).unwrap();
         let mut prefix = Arc::new(Expr::Column { name: "meta".into() });
         for _ in 0..depth {
             prefix = Arc::new(Expr::GetField { value: prefix, name: "child".into() });
@@ -304,15 +307,20 @@ async fn shared_deep_prefix_preparation_tracks_unique_demand_nodes() {
                 Expr::GetField { value: prefix.clone(), name: "value".into() })));
             fields
         };
-        let measure = |table: &TableRef, fields| {
+        let measure = |fields, bindings| {
             ALLOCATED.store(0, Ordering::Relaxed);
             MEASURING.store(true, Ordering::Relaxed);
-            let prepared = table.map_rows(fields);
+            let prepared = source.map_rows_bound(fields, bindings);
             MEASURING.store(false, Ordering::Relaxed);
             (prepared.unwrap(), ALLOCATED.load(Ordering::Relaxed))
         };
-        let (_, control_bytes) = measure(&control, fields());
-        let (projected, entry_bytes) = measure(&source, fields());
+        let mut control_fields = fields();
+        control_fields.push(("__prep_control".into(), Expr::GetField {
+            value: Arc::new(Expr::ExternalGlobal { reference: "prep".into(), dtype: control_type }),
+            name: "token".into(),
+        }));
+        let (_, control_bytes) = measure(control_fields, GlobalBindings::from([("prep".into(), control_global)]));
+        let (projected, entry_bytes) = measure(fields(), GlobalBindings::new());
         let extra = entry_bytes.saturating_sub(control_bytes);
         eprintln!("public shared-prefix logical preparation depth={depth} width={width}: control={control_bytes} entries={entry_bytes} incremental={extra}");
         incremental.push(extra);
