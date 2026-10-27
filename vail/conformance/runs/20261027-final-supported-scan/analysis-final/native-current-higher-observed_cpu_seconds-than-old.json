@@ -1,0 +1,236 @@
+[
+  {
+    "case_id": "benchmark_table::test_table_range_join[1000000000,1000]",
+    "current_over_comparator": 1.5000000000000004,
+    "comparator_over_current": 0.6666666666666665,
+    "current_greater": true,
+    "old": 0.020000000000000004,
+    "current": 0.030000000000000013,
+    "hail": 11.79
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "current_over_comparator": 1.2759295499021526,
+    "comparator_over_current": 0.7837423312883437,
+    "current_greater": true,
+    "old": 5.11,
+    "current": 6.52,
+    "hail": 45.42
+  },
+  {
+    "case_id": "benchmark_methods::test_export_vcf",
+    "current_over_comparator": 1.1506077153426109,
+    "comparator_over_current": 0.8691059399877523,
+    "current_greater": true,
+    "old": 56.76999999999999,
+    "current": 65.32000000000001,
+    "hail": 64.07
+  },
+  {
+    "case_id": "benchmark_sentinel::test_sentinel_read_gunzip",
+    "current_over_comparator": 1.0614859094790778,
+    "comparator_over_current": 0.9420756234915526,
+    "current_greater": true,
+    "old": 11.71,
+    "current": 12.430000000000001,
+    "hail": 12.12
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,1000]",
+    "current_over_comparator": 1.0606617647058825,
+    "comparator_over_current": 0.9428076256499132,
+    "current_greater": true,
+    "old": 5.439999999999999,
+    "current": 5.77,
+    "hail": 75.37
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,100]",
+    "current_over_comparator": 1.0550458715596331,
+    "comparator_over_current": 0.9478260869565217,
+    "current_greater": true,
+    "old": 1.09,
+    "current": 1.1500000000000001,
+    "hail": 44.06000000000001
+  },
+  {
+    "case_id": "benchmark_table::test_table_aggregate_downsample_dense",
+    "current_over_comparator": 1.0391547545059043,
+    "comparator_over_current": 0.9623205741626794,
+    "current_greater": true,
+    "old": 112.63,
+    "current": 117.04,
+    "hail": 57.63
+  },
+  {
+    "case_id": "benchmark_table::test_table_aggregate_counter",
+    "current_over_comparator": 1.036818851251841,
+    "comparator_over_current": 0.9644886363636364,
+    "current_greater": true,
+    "old": 33.95,
+    "current": 35.2,
+    "hail": 35.68000000000001
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,10]",
+    "current_over_comparator": 1.035294117647059,
+    "comparator_over_current": 0.9659090909090908,
+    "current_greater": true,
+    "old": 0.8500000000000001,
+    "current": 0.8800000000000001,
+    "hail": 18.55
+  },
+  {
+    "case_id": "benchmark_table::test_table_scan_sum_1k_partitions",
+    "current_over_comparator": 1.034188034188034,
+    "comparator_over_current": 0.9669421487603307,
+    "current_greater": true,
+    "old": 1.1700000000000002,
+    "current": 1.21,
+    "hail": 36.31999999999999
+  },
+  {
+    "case_id": "benchmark_methods::test_split_multi_hts",
+    "current_over_comparator": 1.0326591021213616,
+    "comparator_over_current": 0.9683737817695395,
+    "current_greater": true,
+    "old": 101.35,
+    "current": 104.66,
+    "hail": 55.44
+  },
+  {
+    "case_id": "benchmark_methods::test_import_vcf_write",
+    "current_over_comparator": 1.0324160054026676,
+    "comparator_over_current": 0.9686017988552738,
+    "current_greater": true,
+    "old": 59.23,
+    "current": 61.150000000000006,
+    "hail": 64.9
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_write_profile_mt",
+    "current_over_comparator": 1.0318693090519548,
+    "comparator_over_current": 0.9691149753438879,
+    "current_greater": true,
+    "old": 37.34,
+    "current": 38.53,
+    "hail": 33.72
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+    "current_over_comparator": 1.0301624129930391,
+    "comparator_over_current": 0.9707207207207209,
+    "current_greater": true,
+    "old": 17.240000000000006,
+    "current": 17.76,
+    "hail": 73.69999999999999
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+    "current_over_comparator": 1.0290620871862617,
+    "comparator_over_current": 0.9717586649550706,
+    "current_greater": true,
+    "old": 7.569999999999999,
+    "current": 7.79,
+    "hail": 17.229999999999997
+  },
+  {
+    "case_id": "benchmark_table::test_group_by_collect_per_row",
+    "current_over_comparator": 1.0276497695852536,
+    "comparator_over_current": 0.9730941704035874,
+    "current_greater": true,
+    "old": 4.34,
+    "current": 4.46,
+    "hail": 26.099999999999998
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+    "current_over_comparator": 1.0197409006785936,
+    "comparator_over_current": 0.9806412583182093,
+    "current_greater": true,
+    "old": 16.21,
+    "current": 16.53,
+    "hail": 24.749999999999996
+  },
+  {
+    "case_id": "benchmark_table::test_table_aggregate_linreg",
+    "current_over_comparator": 1.0194887370286,
+    "comparator_over_current": 0.9808838133068523,
+    "current_greater": true,
+    "old": 39.510000000000005,
+    "current": 40.279999999999994,
+    "hail": 53.010000000000005
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_take_row",
+    "current_over_comparator": 1.0113960113960114,
+    "comparator_over_current": 0.9887323943661972,
+    "current_greater": true,
+    "old": 3.51,
+    "current": 3.55,
+    "hail": 12.420000000000002
+  },
+  {
+    "case_id": "benchmark_table::test_table_read_force_count_ints",
+    "current_over_comparator": 1.0107526881720432,
+    "comparator_over_current": 0.9893617021276594,
+    "current_greater": true,
+    "old": 1.8599999999999997,
+    "current": 1.88,
+    "hail": 14.45
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+    "current_over_comparator": 1.0077133615327194,
+    "comparator_over_current": 0.9923456790123458,
+    "current_greater": true,
+    "old": 40.190000000000005,
+    "current": 40.5,
+    "hail": 21.060000000000002
+  },
+  {
+    "case_id": "benchmark_methods::test_variant_qc",
+    "current_over_comparator": 1.0077132486388385,
+    "comparator_over_current": 0.9923457901846015,
+    "current_greater": true,
+    "old": 22.04,
+    "current": 22.21,
+    "hail": 29.169999999999995
+  },
+  {
+    "case_id": "benchmark_table::test_table_range_means",
+    "current_over_comparator": 1.0071942446043165,
+    "comparator_over_current": 0.992857142857143,
+    "current_greater": true,
+    "old": 8.34,
+    "current": 8.399999999999999,
+    "hail": 12.1
+  },
+  {
+    "case_id": "benchmark_table::test_table_import_strings",
+    "current_over_comparator": 1.0063572790845519,
+    "comparator_over_current": 0.9936828806064435,
+    "current_greater": true,
+    "old": 15.73,
+    "current": 15.83,
+    "hail": 30.790000000000003
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+    "current_over_comparator": 1.0039923954372625,
+    "comparator_over_current": 0.996023480401439,
+    "current_greater": true,
+    "old": 52.599999999999994,
+    "current": 52.81,
+    "hail": 408.9700000000001
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_import_bgen_info_score",
+    "current_over_comparator": 1.002465078060805,
+    "comparator_over_current": 0.9975409836065574,
+    "current_greater": true,
+    "old": 85.19,
+    "current": 85.39999999999999,
+    "hail": 198.06000000000003
+  }
+]

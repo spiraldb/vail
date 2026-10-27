@@ -1,0 +1,128 @@
+[
+  {
+    "case_id": "benchmark_sentinel::test_sentinel_read_gunzip",
+    "current_over_comparator": 1.0629105995606385,
+    "comparator_over_current": 0.9408128966004825,
+    "current_greater": true,
+    "old": 10.569107601000042,
+    "current": 11.234016496999857,
+    "hail": 10.835496797999895
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,10]",
+    "current_over_comparator": 1.058805588813957,
+    "comparator_over_current": 0.9444604472858618,
+    "current_greater": true,
+    "old": 0.08058618399991246,
+    "current": 0.08532510200029719,
+    "hail": 3.337941910000154
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+    "current_over_comparator": 1.056865858799207,
+    "comparator_over_current": 0.9461938728309219,
+    "current_greater": true,
+    "old": 4.110959702999992,
+    "current": 4.344732957000019,
+    "hail": 20.049287609000032
+  },
+  {
+    "case_id": "benchmark_table::test_union_partitions_table[100,1000]",
+    "current_over_comparator": 1.0513631552576286,
+    "comparator_over_current": 0.9511461334736975,
+    "current_greater": true,
+    "old": 2.519594470999891,
+    "current": 2.649008793000121,
+    "hail": 5.028083950000109
+  },
+  {
+    "case_id": "benchmark_table::test_group_by_collect_per_row",
+    "current_over_comparator": 1.0344160469093375,
+    "comparator_over_current": 0.9667290090750554,
+    "current_greater": true,
+    "old": 0.3464852030001566,
+    "current": 0.35840985400000136,
+    "hail": 3.1634267999997974
+  },
+  {
+    "case_id": "benchmark_methods::test_split_multi_hts",
+    "current_over_comparator": 1.032958878020696,
+    "comparator_over_current": 0.9680927491674692,
+    "current_greater": true,
+    "old": 71.41692986399994,
+    "current": 73.77075174400011,
+    "hail": 6.365519179000103
+  },
+  {
+    "case_id": "benchmark_table::test_table_scan_sum_1k_partitions",
+    "current_over_comparator": 1.0226587920770485,
+    "comparator_over_current": 0.9778432530453018,
+    "current_greater": true,
+    "old": 0.2376746289996845,
+    "current": 0.24306004900017797,
+    "hail": 4.1398405079999065
+  },
+  {
+    "case_id": "benchmark_methods::test_import_vcf_write",
+    "current_over_comparator": 1.0202763541393556,
+    "comparator_over_current": 0.9801266058386117,
+    "current_greater": true,
+    "old": 25.08320670000012,
+    "current": 25.59180268199998,
+    "hail": 24.599570680999932
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,1000]",
+    "current_over_comparator": 1.016030160904066,
+    "comparator_over_current": 0.9842227509370367,
+    "current_greater": true,
+    "old": 0.43565538999973796,
+    "current": 0.4426390160001574,
+    "hail": 6.5885366560000875
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+    "current_over_comparator": 1.0136766855896093,
+    "comparator_over_current": 0.986507842407706,
+    "current_greater": true,
+    "old": 0.7927834509999911,
+    "current": 0.8036261009999635,
+    "hail": 3.0593081289999873
+  },
+  {
+    "case_id": "benchmark_table::test_join_partitions_table[1000,100]",
+    "current_over_comparator": 1.0089385994067106,
+    "comparator_over_current": 0.9911405912986512,
+    "current_greater": true,
+    "old": 2.327883491999728,
+    "current": 2.348691510000208,
+    "hail": 4.693419833000007
+  },
+  {
+    "case_id": "benchmark_table::test_table_range_join[1000000000,1000]",
+    "current_over_comparator": 1.0062484846768511,
+    "comparator_over_current": 0.9937903164357482,
+    "current_greater": true,
+    "old": 0.009032590000060736,
+    "current": 0.009089030000268394,
+    "hail": 2.4050500670000474
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,100]",
+    "current_over_comparator": 1.0020737160229918,
+    "comparator_over_current": 0.9979305753760094,
+    "current_greater": true,
+    "old": 0.08273987299980945,
+    "current": 0.08291145200018946,
+    "hail": 3.9401009490002252
+  },
+  {
+    "case_id": "benchmark_table::test_union_partitions_table[1000,10]",
+    "current_over_comparator": 1.0005818785588338,
+    "comparator_over_current": 0.9994184598269239,
+    "current_greater": true,
+    "old": 2.492099043000053,
+    "current": 2.493549141999665,
+    "hail": 6.257270972999777
+  }
+]

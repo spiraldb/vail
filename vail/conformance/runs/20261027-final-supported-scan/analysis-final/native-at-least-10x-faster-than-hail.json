@@ -1,0 +1,206 @@
+[
+  {
+    "case_id": "benchmark_table::test_table_range_join[1000000000,1000]",
+    "hail_over_current_wall": 264.6102022910066,
+    "hail_wall": 2.4050500670000474,
+    "current_wall": 0.009089030000268394
+  },
+  {
+    "case_id": "benchmark_table::test_table_key_by_shuffle",
+    "hail_over_current_wall": 111.76857647619315,
+    "hail_wall": 5.216683856000145,
+    "current_wall": 0.04667397599996548
+  },
+  {
+    "case_id": "benchmark_table::test_table_annotate_many_flat",
+    "hail_over_current_wall": 101.66151375028313,
+    "hail_wall": 2.773248629000136,
+    "current_wall": 0.027279237999664474
+  },
+  {
+    "case_id": "benchmark_table::test_read_force_count_partitions[10]",
+    "hail_over_current_wall": 92.33052548258799,
+    "hail_wall": 2.4293517589999283,
+    "current_wall": 0.02631146900012027
+  },
+  {
+    "case_id": "benchmark_table::test_read_force_count_partitions[100]",
+    "hail_over_current_wall": 83.71567593874686,
+    "hail_wall": 2.64334741499988,
+    "current_wall": 0.031575297999552276
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+    "hail_over_current_wall": 73.21601264395422,
+    "hail_wall": 3.1478171790000715,
+    "current_wall": 0.04299356199999238
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_scan_count_cols_2",
+    "hail_over_current_wall": 71.97174610403961,
+    "hail_wall": 2.555021672999942,
+    "current_wall": 0.03550034299996696
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_cols_show",
+    "hail_over_current_wall": 70.37510183399813,
+    "hail_wall": 3.494772946000012,
+    "current_wall": 0.049659224000038193
+  },
+  {
+    "case_id": "benchmark_shuffle::test_shuffle_key_by_aggregate_bad_locality",
+    "hail_over_current_wall": 63.600627378691705,
+    "hail_wall": 14.915066189000072,
+    "current_wall": 0.23451130600005854
+  },
+  {
+    "case_id": "benchmark_table::test_table_group_by_aggregate_unsorted",
+    "hail_over_current_wall": 57.333170034782974,
+    "hail_wall": 5.249677944999803,
+    "current_wall": 0.09156441100003576
+  },
+  {
+    "case_id": "benchmark_table::test_table_range_force_count",
+    "hail_over_current_wall": 52.48899693734525,
+    "hail_wall": 2.246705221999946,
+    "current_wall": 0.042803356000149506
+  },
+  {
+    "case_id": "benchmark_table::test_table_group_by_aggregate_sorted",
+    "hail_over_current_wall": 49.21205982096014,
+    "hail_wall": 4.354021294000177,
+    "current_wall": 0.08847468099975231
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+    "hail_over_current_wall": 49.13574254161174,
+    "hail_wall": 2.7182354650000207,
+    "current_wall": 0.05532094000000143
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,100]",
+    "hail_over_current_wall": 47.5217940820916,
+    "hail_wall": 3.9401009490002252,
+    "current_wall": 0.08291145200018946
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,10]",
+    "hail_over_current_wall": 39.12028033659459,
+    "hail_wall": 3.337941910000154,
+    "current_wall": 0.08532510200029719
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_take_col",
+    "hail_over_current_wall": 38.37734294899824,
+    "hail_wall": 1.8067206840000836,
+    "current_wall": 0.047077795000063816
+  },
+  {
+    "case_id": "benchmark_shuffle::test_shuffle_key_by_aggregate_good_locality",
+    "hail_over_current_wall": 28.32020438234652,
+    "hail_wall": 6.943699704999972,
+    "current_wall": 0.2451853669999764
+  },
+  {
+    "case_id": "benchmark_table::test_read_force_count_partitions[1000]",
+    "hail_over_current_wall": 25.53609959826027,
+    "hail_wall": 3.7409578460001285,
+    "current_wall": 0.1464968380000755
+  },
+  {
+    "case_id": "benchmark_table::test_table_foreign_key_join[1000000,1000]",
+    "hail_over_current_wall": 23.46724698755523,
+    "hail_wall": 8.559517634999793,
+    "current_wall": 0.3647431519998463
+  },
+  {
+    "case_id": "benchmark_table::test_table_big_aggregate_compilation",
+    "hail_over_current_wall": 19.981583325411865,
+    "hail_wall": 48.36835963199974,
+    "current_wall": 2.42064699499997
+  },
+  {
+    "case_id": "benchmark_table::test_table_aggregate_array_sum",
+    "hail_over_current_wall": 19.64754315932161,
+    "hail_wall": 3.007664905999718,
+    "current_wall": 0.15308096699982343
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_rows_show",
+    "hail_over_current_wall": 19.41873874993541,
+    "hail_wall": 3.387751178999906,
+    "current_wall": 0.17445783799996661
+  },
+  {
+    "case_id": "benchmark_table::test_table_import_ints",
+    "hail_over_current_wall": 19.357424193075534,
+    "hail_wall": 17.17609223599993,
+    "current_wall": 0.8873129019998487
+  },
+  {
+    "case_id": "benchmark_table::test_table_big_aggregate_compile_and_execute",
+    "hail_over_current_wall": 19.209594026458863,
+    "hail_wall": 49.75355346299966,
+    "current_wall": 2.5900366969999595
+  },
+  {
+    "case_id": "benchmark_table::test_table_scan_sum_1k_partitions",
+    "hail_over_current_wall": 17.032171782360148,
+    "hail_wall": 4.1398405079999065,
+    "current_wall": 0.24306004900017797
+  },
+  {
+    "case_id": "benchmark_shuffle::test_shuffle_order_by_10m_int",
+    "hail_over_current_wall": 16.875315864803177,
+    "hail_wall": 8.735651996999877,
+    "current_wall": 0.5176585770000202
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+    "hail_over_current_wall": 16.791280038405517,
+    "hail_wall": 14.54351815699988,
+    "current_wall": 0.866135168000028
+  },
+  {
+    "case_id": "benchmark_table::test_write_range_table[10000000,1000]",
+    "hail_over_current_wall": 14.884672199790323,
+    "hail_wall": 6.5885366560000875,
+    "current_wall": 0.4426390160001574
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+    "hail_over_current_wall": 14.548015124422916,
+    "hail_wall": 2.8050701680001566,
+    "current_wall": 0.19281463100014662
+  },
+  {
+    "case_id": "benchmark_table::test_table_import_strings",
+    "hail_over_current_wall": 13.895074772804692,
+    "hail_wall": 9.16240464900011,
+    "current_wall": 0.6593994489999204
+  },
+  {
+    "case_id": "benchmark_table::test_table_show",
+    "hail_over_current_wall": 13.000335326009573,
+    "hail_wall": 4.110159898999882,
+    "current_wall": 0.31615799100018194
+  },
+  {
+    "case_id": "benchmark_table::test_table_read_force_count_ints",
+    "hail_over_current_wall": 12.97539961784463,
+    "hail_wall": 3.466264032000254,
+    "current_wall": 0.26714121600025464
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_write_range_matrix_table_p100",
+    "hail_over_current_wall": 12.391665596340324,
+    "hail_wall": 4.258291184999962,
+    "current_wall": 0.3436415510000188
+  },
+  {
+    "case_id": "benchmark_table::test_join_partitions_table[10,10]",
+    "hail_over_current_wall": 10.640136801552142,
+    "hail_wall": 2.646392746999936,
+    "current_wall": 0.24871792500016454
+  }
+]
