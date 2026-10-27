@@ -60,7 +60,7 @@ impl ArrowReader {
     /// Returns a [`ScanResult`] containing the record batch stream and scan metrics.
     pub fn read(self, tasks: FileScanTaskStream) -> Result<ScanResult> {
         let concurrency_limit_data_files = self.concurrency_limit_data_files;
-        let scan_metrics = ScanMetrics::new();
+        let scan_metrics = self.scan_metrics.unwrap_or_else(ScanMetrics::new);
 
         let task_reader = FileScanTaskReader {
             vortex_sessions: self.vortex_sessions,

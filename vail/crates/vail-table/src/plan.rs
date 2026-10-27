@@ -34,6 +34,7 @@ use datafusion_physical_plan::{
     projection::ProjectionExec,
     sorts::sort::SortExec,
     stream::RecordBatchStreamAdapter,
+    metrics::{ExecutionPlanMetricsSet, MetricsSet},
     union::UnionExec,
     unnest::{ListUnnest, UnnestExec},
 };
@@ -113,6 +114,7 @@ enum Source {
 #[derive(Debug)]
 struct SourceExec {
     source: Source,
+    metrics: ExecutionPlanMetricsSet,
     cache: Arc<PlanProperties>,
     row_schema: SchemaRef,
 }
@@ -208,6 +210,7 @@ impl ExecutionPlan for SourceExec {
     fn properties(&self) -> &Arc<PlanProperties> {
         &self.cache
     }
+    fn metrics(&self) -> Option<MetricsSet> { Some(self.metrics.clone_inner()) }
     fn apply_expressions(
         &self,
         _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
@@ -236,7 +239,15 @@ impl ExecutionPlan for SourceExec {
                 "invalid source partition".into(),
             ));
         }
-        let source = self.source.clone();
+        let source = match &self.source {
+            Source::ReadPartition(source, part) => Source::ReadPartition(
+                Arc::new(source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition))), *part),
+            Source::ReadPartitionProjected(source, part, fields) => Source::ReadPartitionProjected(
+                Arc::new(source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition))), *part, fields.clone()),
+            Source::ReadPartitionNested(source, part, fields, paths) => Source::ReadPartitionNested(
+                Arc::new(source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition))), *part, fields.clone(), paths.clone()),
+            source => source.clone(),
+        };
         let schema = self.schema();
         let output_schema = schema.clone();
         let row_schema = self.row_schema.clone();
@@ -527,6 +538,7 @@ fn source_partition_with_selection(
             &[]
         };
         return Ok(Arc::new(SourceExec {
+            metrics: ExecutionPlanMetricsSet::new(),
             source: if nested_paths.is_empty() {
                 Source::ReadPartitionProjected(source.clone(), part, field_ids)
             } else {
@@ -564,6 +576,7 @@ fn source_partition_with_selection(
         _ => return Err(TableError::Invalid("not a partitioned source".into())),
     };
     Ok(Arc::new(SourceExec {
+        metrics: ExecutionPlanMetricsSet::new(),
         source,
         cache: source_properties(schema, table.keys())?,
         row_schema,
@@ -674,6 +687,7 @@ impl ExecutionPlan for RangePartitionExec {
 }
 pub(crate) fn globals_scan(source: Arc<LocalRead>, schema: SchemaRef) -> PhysicalPlan {
     Arc::new(SourceExec {
+        metrics: ExecutionPlanMetricsSet::new(),
         source: Source::Globals(source),
         cache: properties(schema.clone(), EmissionType::Incremental),
         row_schema: schema,

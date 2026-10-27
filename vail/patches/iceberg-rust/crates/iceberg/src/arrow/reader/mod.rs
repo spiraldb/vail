@@ -20,6 +20,7 @@
 use std::sync::Arc;
 
 use crate::arrow::caching_delete_file_loader::CachingDeleteFileLoader;
+use crate::arrow::ScanMetrics;
 use crate::io::FileIO;
 use crate::runtime::Runtime;
 use crate::util::available_parallelism;
@@ -58,6 +59,7 @@ pub use vortex_session::VortexSessionCache;
 /// Builder to create ArrowReader
 pub struct ArrowReaderBuilder {
     vortex_sessions: Arc<VortexSessionCache>,
+    scan_metrics: Option<ScanMetrics>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
@@ -75,6 +77,7 @@ impl ArrowReaderBuilder {
 
         ArrowReaderBuilder {
             vortex_sessions: Arc::default(),
+            scan_metrics: None,
             computed_projection: None,
             batch_size: None,
             file_io,
@@ -91,6 +94,12 @@ impl ArrowReaderBuilder {
     /// safely be shared by readers planned or executed on different runtimes.
     pub fn with_vortex_session_cache(mut self, cache: Arc<VortexSessionCache>) -> Self {
         self.vortex_sessions = cache;
+        self
+    }
+
+    /// Share an existing live requested-byte counter across related file reads.
+    pub fn with_scan_metrics(mut self, metrics: ScanMetrics) -> Self {
+        self.scan_metrics = Some(metrics);
         self
     }
 
@@ -158,6 +167,7 @@ impl ArrowReaderBuilder {
     pub fn build(self) -> ArrowReader {
         ArrowReader {
             vortex_sessions: self.vortex_sessions.clone(),
+            scan_metrics: self.scan_metrics,
             computed_projection: self.computed_projection,
             batch_size: self.batch_size,
             file_io: self.file_io.clone(),
@@ -178,6 +188,7 @@ impl ArrowReaderBuilder {
 #[derive(Clone)]
 pub struct ArrowReader {
     vortex_sessions: Arc<VortexSessionCache>,
+    scan_metrics: Option<ScanMetrics>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,

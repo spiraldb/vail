@@ -812,7 +812,8 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         let row_schema = self.row_schema.clone();
         let schema = self.schema.clone();
         let field_ids = self.field_ids.clone();
-        let source = source.with_nested_projection_paths(self.nested_projection_paths.clone());
+        let source = source.with_nested_projection_paths(self.nested_projection_paths.clone())
+            .with_scan_metrics(crate::read_metrics::register(&self.metrics, partition));
         let mut batches =
             source.projected_interval_batches_in_rows(&queries, start..end, &field_ids);
         let concurrency = self.concurrency.clone();
