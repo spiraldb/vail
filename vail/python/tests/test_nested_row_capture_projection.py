@@ -26,6 +26,8 @@ def test_whole_capture_use_preserves_actual_unused_values_and_shared_source():
     m = matrix()
     source_rows = m.rows().collect()
     result = m.select_entries(score=hl.sum(m.meta.small) + m.v, saved=m.meta).entries().collect()
+    assert [(x.row_idx, x.col_idx) for x in result] == [
+        (r,c) for r in range(4) for c in range(3) if (r+c)%4 != 0]
     for row in result:
         if row.row_idx == 1:
             assert row.saved is None and row.score is None
@@ -84,6 +86,7 @@ def test_deep_shared_capture_prefixes_preserve_selected_and_whole_values(whole_p
     if whole_prefix:
         selected['saved'] = prefix
     rows = m.select_entries(**selected).entries().collect()
+    assert [(x.row_idx,x.col_idx) for x in rows] == [(r,c) for r in range(2) for c in range(2)]
     for row in rows:
         assert row.score == row.row_idx + 1
         if whole_prefix:

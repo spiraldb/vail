@@ -586,10 +586,11 @@ fn flat_nested_row_capture_drops_unused_payload_before_nonidentity_take_and_deco
         let (batch,expression) = nested_row_capture_input(bytes);
         let (output,allocated) = evaluate_aligned_allocated_bytes(&batch,&expression);
         let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
-        assert_eq!(lists.value_offsets(), &[0,128,128,256,384]);
-        let values = lists.values().as_any().downcast_ref::<Int32Array>().unwrap();
-        let expected = (0..384).map(|index| if index==1 || index>=256 {None} else if index<128 {Some(3)} else {Some(11)}).collect::<Vec<_>>();
-        assert_eq!(values.iter().collect::<Vec<_>>(), expected);
+        let actual = lists.iter().map(|row| row.map(|array|
+            array.as_any().downcast_ref::<Int32Array>().unwrap().iter().collect::<Vec<_>>()
+        )).collect::<Vec<_>>();
+        let mut first = vec![Some(3);128]; first[1] = None;
+        assert_eq!(actual, vec![Some(first),Some(vec![]),Some(vec![Some(11);128]),Some(vec![None;128])]);
         sizes.push(allocated);
     }
     eprintln!("public nested capture runtime allocations (small,wide): {sizes:?}");
