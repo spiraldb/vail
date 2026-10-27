@@ -173,7 +173,9 @@ finally:
    record['scope_clean']=all(c['owned_group_clean'] for c in record['commands'].values())
   except BaseException as error:record['restoration_error']=repr(error)
  (OUT/'result.json').write_text(json.dumps(record,indent=2)+'\n')
-if not record['scope_clean']:raise SystemExit(1)
+if not record['scope_clean']:
+ print(json.dumps({'error':record['error'],'safe_to_restore':record['safe_to_restore'],'candidate_restored':record['candidate_restored'],'restoration_error':record.get('restoration_error'),'commands':list(record['commands'])}),file=sys.stderr,flush=True)
+ raise SystemExit(1)
 remaining();archive=HERE.parent/'receipt.tar.gz';total=0
 with tarfile.open(archive,'w:gz') as target:
  for path in sorted(OUT.rglob('*')):
