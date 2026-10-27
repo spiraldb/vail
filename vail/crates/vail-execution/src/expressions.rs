@@ -6178,7 +6178,7 @@ fn lower_uncached(
             let mut capture_keys = Vec::new();
             let mut row_capture_views = Vec::new();
             for (key, ty) in captures {
-                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. }) {
+                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. } | Type::Array { .. }) {
                     key.1.as_ref().and_then(|name| row_demands.get(name))
                         .filter(|demand| demand.compatible && demand.original == ty)
                         .map(|demand| projected_row_type(&ty, &row_demand_nodes[demand.node], &row_demand_nodes)).unwrap_or_else(|| ty.clone())

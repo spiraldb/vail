@@ -642,3 +642,55 @@ fn unused_call_siblings_at_any_struct_depth_do_not_grow_capture_allocations() {
                 "unused payload with Call sibling grew allocations at depth {depth}: {sizes:?}");
     }
 }
+
+#[test]
+fn mapped_array_struct_capture_drops_unused_element_payload() {
+    let mut sizes = Vec::new();
+    for bytes in [8, 64 * 1024] {
+        let (batch, mut expression) = nested_row_capture_input(8);
+        let values: ArrayRef = Arc::new(StructArray::new(
+            vec![Field::new("value", DataType::Int32, true), Field::new("unused", DataType::Utf8, true)].into(),
+            vec![Arc::new(Int32Array::from(vec![1, 2, 3, 4, 5, 6, 7, 8])),
+                 Arc::new(StringArray::from(vec!["x".repeat(bytes); 8]))],
+            Some(NullBuffer::from(vec![true, false, true, true, true, true, true, true])),
+        ));
+        let items: ArrayRef = Arc::new(ListArray::new(
+            Arc::new(Field::new("item", values.data_type().clone(), true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0, 2, 4, 6, 8])), values,
+            Some(NullBuffer::from(vec![true, true, true, false])),
+        ));
+        let ty = Type::from_arrow(items.data_type()).unwrap();
+        let fields: ArrayRef = Arc::new(StructArray::from(vec![(
+            Arc::new(Field::new("meta", items.data_type().clone(), true)), items,
+        )]));
+        let rows: ArrayRef = Arc::new(StructArray::from(vec![(
+            Arc::new(Field::new("__vail_aligned_row", fields.data_type().clone(), true)), fields,
+        )]));
+        let batch = RecordBatch::try_new(Arc::new(Schema::new(vec![
+            batch.schema().field(0).clone(), Field::new("rows", rows.data_type().clone(), true),
+        ])), vec![batch.column(0).clone(), rows]).unwrap();
+        let Expr::AlignedMatrixMap { body, .. } = &mut expression else { unreachable!() };
+        let Expr::IfElse { consequent, .. } = Arc::make_mut(body) else { unreachable!() };
+        *consequent = Arc::new(Expr::ArrayReduce {
+            operation: ArrayReduction::Sum, filter_missing: true,
+            value: Arc::new(Expr::ArrayMap {
+                value: Arc::new(Expr::AlignedMapInput { axis: "row".into(), name: Some("meta".into()), dtype: ty }),
+                parameter: "item".into(),
+                body: Arc::new(Expr::GetField {
+                    value: Arc::new(Expr::LambdaVariable { name: "item".into(), dtype: None }),
+                    name: "value".into(),
+                }),
+            }),
+        });
+        let (output, allocated) = evaluate_aligned_allocated_bytes(&batch, &expression);
+        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+        let actual = lists.iter().map(|row| row.map(|array|
+            array.as_any().downcast_ref::<Int32Array>().unwrap().iter().collect::<Vec<_>>()
+        )).collect::<Vec<_>>();
+        let mut first = vec![Some(1); 128]; first[1] = None;
+        assert_eq!(actual, vec![Some(first), Some(vec![]), Some(vec![Some(11); 128]), Some(vec![None; 128])]);
+        sizes.push(allocated);
+    }
+    eprintln!("mapped array Struct runtime allocations: {sizes:?}");
+    assert!(sizes[1] < sizes[0] + 1_000_000, "unused mapped element payload grew allocations: {sizes:?}");
+}
