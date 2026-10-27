@@ -105,12 +105,19 @@ and remaining work.”
    List/LargeList offsets, original key aliases and internal tag. Use safe Arrow
    Struct projection/constructors and cloned validated OffsetBuffers with the
    prepared Fields. No take/concat/ArrayMap/payload copy constructs this view.
+   Safe Struct constructors may still inspect logical_nulls and
+   parent.contains(child_nulls), scanning large masks: there is no O(fields),
+   metadata-only or zero-work claim. Include large nullable-mask controls and
+   constructor-callee attribution; no unsafe/build_unchecked shortcut,
+   requiredness weakening or independent Arrow fix.
    Preserve empty-Struct length AND parent validity when zero entry payload
    fields are selected. Unsupported declared representations decline admission during preparation
    and retain the old whole route. Do not switch schemas midstream on a bad
    batch or fabricate a contiguous list over disjoint owners.
 
-5. **Feed those views to existing algorithms.** Keep row grouping/comparators and
+5. **Feed those views to existing algorithms.** Capture ORIGINAL source_batch_id
+   and source_batch_bytes BEFORE constructing any narrow view. Keep grouping and
+   comparators and
    original conservative source-batch memory charges; perform the view before
    singleton queue concat and duplicate-run spill. Original producer batch bytes
    may overestimate retained narrow data, which is deliberately safe. Do not
