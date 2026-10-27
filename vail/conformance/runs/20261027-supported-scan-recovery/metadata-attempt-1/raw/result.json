@@ -1,0 +1,17 @@
+{
+  "error": "RuntimeError(\"ssh-readiness-0:TimeoutError('ssh-readiness-0:8s'); cleanup:PermissionError(1, 'Operation not permitted')\"); provider cleanup:RuntimeError('Provider cleanup failed: stop=RuntimeError(\"provider-stop:TimeoutError(\\'provider-stop:120s\\')\"); describe=None; status=STOPPING')",
+  "owned_vm": true,
+  "guest_complete": false,
+  "download_verified": false,
+  "provider_stopped": false,
+  "unresolved_host_groups": [
+    9620
+  ],
+  "protocol_assets": {
+    "PLAN.md": "d0a6ab0c33e74842c3777342244b969bd0ba8bf8798bd6f52f726daf8cf3d7fd",
+    "guest.py": "958b6698172478ee3fcc7f971715ba2899f3c805cd5b82b359f01bb8d8011498",
+    "host.py": "9443f3359ceb20bd113be5bbedfd224eb5d8b607076b7a46b69e7d818f1e70b2"
+  },
+  "provider_stop_error": "RuntimeError(\"provider-stop:TimeoutError('provider-stop:120s')\")",
+  "provider_final_status": "STOPPING"
+}

@@ -1,0 +1,11 @@
+{
+  "command": [
+    "ps",
+    "-p",
+    "9620",
+    "-o",
+    "pid,ppid,pgid,user,lstart,stat,comm,args"
+  ],
+  "returncode": 1,
+  "observation": "Original leader absent at later readonlyinspection; no historicstarttime recoverable, originalunverifiedcleanupFAIL remains"
+}
