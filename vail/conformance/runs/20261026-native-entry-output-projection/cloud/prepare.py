@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import sys
 import xml.etree.ElementTree as ET
 from common import EXPECTED, HERE, digest, environment, guarded, protocol_fingerprints
@@ -36,6 +37,10 @@ run('baseline-input-preflight', [EXPECTED['baseline_python'], HERE / 'preflight.
 # Same PUBLIC test source against exact original production, using the same
 # normal target/path. Restore candidate bytes in finally, never mix artifacts.
 originals = {name: (source/name).read_bytes() for name in EXPECTED['baseline_production_overlays']}
+restoration = dict(restored=False, error=None, verified_source_files=0)
+def interrupted(signum, frame):
+    raise InterruptedError(f'baseline overlay signal {signum}')
+handlers = {sig: signal.signal(sig, interrupted) for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)}
 try:
     for name, overlay in EXPECTED['baseline_production_overlays'].items():
         asset = HERE/overlay['asset']
@@ -57,10 +62,28 @@ try:
         or 'public query allocations grew with unused hidden owner' not in text
         or 'unused source owner reached temporary output:' not in text):
         raise RuntimeError('Expected independent baseline allocation/spill evidence absent')
+except BaseException as error:
+    restoration['error'] = repr(error)
+    raise
 finally:
-    for name, data in originals.items(): (source/name).write_bytes(data)
-for relative, sha256 in EXPECTED['candidate_source_files'].items():
-    if digest(source/relative) != sha256: raise RuntimeError(f'Candidate restoration differs: {relative}')
+    # Repeated handled signals cannot interrupt restoration or its proof. An
+    # uncatchable kill has no restoration guarantee and cannot enroll a gate.
+    for sig in handlers: signal.signal(sig, signal.SIG_IGN)
+    try:
+        for name, data in originals.items(): (source/name).write_bytes(data)
+        for relative, sha256 in EXPECTED['candidate_source_files'].items():
+            if digest(source/relative) != sha256:
+                raise RuntimeError(f'Candidate restoration differs: {relative}')
+        restoration['verified_source_files'] = len(EXPECTED['candidate_source_files'])
+        restoration['restored'] = True
+    except BaseException as error:
+        restoration['error'] = f"{restoration['error']}; restoration:{error!r}"
+        raise
+    finally:
+        (out/'baseline-overlay-restoration.json').write_text(json.dumps(restoration, indent=2)+'\n')
+        for sig, previous in handlers.items(): signal.signal(sig, previous)
+if not restoration['restored']:
+    raise RuntimeError('Baseline overlay restoration unverified; stop')
 
 # Fresh normal environment; no installed native is copied between environments.
 run('venv', ['uv', 'venv', '--python', python_base, candidate], 90)
