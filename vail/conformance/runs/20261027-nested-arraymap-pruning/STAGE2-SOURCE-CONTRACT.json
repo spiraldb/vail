@@ -1,0 +1,58 @@
+{
+  "status": "SOURCE proposal; no Stage2/3 production edits or runtime claims",
+  "goal": "Nested entries GetField demand reaches consumer-local materialization and ordinary native Vortex source reads without changing producer effects or shared consumers.",
+  "observability": {
+    "existing_boundary": "Iceberg CountingFileRead increments requested range length; FileReadVortexSource.read_at delegates directly to that FileRead, including footer/data/delete reads. ScanResult exposes cloneable ScanMetrics.",
+    "current_gap": "vail-storage stream_from_plan_with_projection discards ScanResult.metrics when immediately taking stream().",
+    "minimal_ownership_proposal": [
+      "A small cloneable public storage ReadMetrics wrapping one Arc<AtomicU64>; requested_bytes() reads its total. LocalRead.with_read_metrics returns an immutable reader clone with an optional execution-local handle. No global observer or per-entry callback.",
+      "stream_from_plan_with_projection retains existing Iceberg ScanMetrics for each file and adds its final requested byte count to the optional execution-local aggregate via a drop guard, including errors/cancellation. No per-file handle accumulation.",
+      "SourceExec creates an execution-local storage handle and maps it to its ordinary DataFusion ExecutionPlanMetricsSet counter bytes_requested via a stream-lifetime drop guard; each execution/partition owns its own accounting, even when LocalRead/SnapshotReadPlan/session caches are shared.",
+      "No extra atomic increment at each read: upstream counter already exists; aggregate updates once per file and once per execution. Other storage callers pass no metrics and keep normal behavior."
+    ],
+    "scope_limits": [
+      "Attempted range lengths, not successful-completion bytes, physical disk traffic, decompression, or bandwidth.",
+      "Data-file/footer/delete reader requests; snapshot/catalog metadata opened before execution is outside this counter.",
+      "Error/cancel counts retained; source metric total must not be reused across independent consumers or execution calls."
+    ]
+  },
+  "nested_entries_contract": {
+    "current_source_points": [
+      "TableIR.map_rows_bound only derives consumer output demand when all fields are ScalarIR::Column.",
+      "with_entries_output_fields narrows only top-level output fields; EntryProjection.prepare selects top-level row/entry/column indices.",
+      "VailNode.expressions is empty and rejects nonempty rewrites; standard DataFusion cannot see the hidden matrix entry-output to source-column mapping.",
+      "Existing nested_projection.map_rows_storage_paths and provider_with_nested_projection_paths already carry source paths for direct MapRows\u2192Read; reuse them rather than a second scanner or expression evaluator."
+    ],
+    "initial_admission": [
+      "Typed, ordinary Column/GetField nested Struct paths in entries projections; union all selected expressions and existing keys before schema freezes. Whole-value/opaque use preserves full corresponding value. ArrayMap element demand follows the reviewed Stage1 lexical contract when later admitted.",
+      "Retain row and column sort/key fields, partition identity, entry/list/Struct ancestor validity, predicates and upstream logical operation dependencies. Do not treat validity or shape demand as absent payload.",
+      "Consumer-local derivative only; original producer graph and shared consumers immutable. No side-effect/RNG/error computation elimination by bespoke rewrite.",
+      "Prepare positional nested descriptors once, preserve metadata and zero-field Struct length, before concat/spill/take. Original source IDs and full batch byte retention/spill charging unchanged."
+    ],
+    "source_bridge_direction": [
+      "Translate eligible extension output leaf demand to normal source-domain GetField/ArrayMap expressions through the known row/cell/column mapping before input child compilation.",
+      "Let DataFusion simplify visible GetField/named-Struct/alias projections and apply ordinary projection pushdown; reuse existing provider nested paths once the demand reaches a Read.",
+      "Do not mutate a frozen ConsumerScopeExec or physical shared cache. If a mapping is opaque, retain the whole affected value and report the open unsupported path explicitly.",
+      "Only add extension expression/rewrite exposure when its exact input/output contract is represented; do not pretend an empty opaque extension is optimized by DataFusion."
+    ]
+  },
+  "public_proof": {
+    "baseline_first": [
+      "Native persisted matrix with nested leaf, deep unused payload (including Call/Dict/Set siblings), duplicate row keys for MatrixEntriesByKeyRuns and unique-key control.",
+      "Public entries().select(nested.leaf) full keyed outputs, ancestor-null/element-null/empty cases, aliases, filters/sorts, whole consumer and shared leaf+whole consumers.",
+      "Use existing physical plan public collect path and DataFusion metrics to record actual bytes_requested after stream destruction; warm/uncached buffers do not change request counting; no local timing.",
+      "Keep fixture creation, table metadata open, source compilation and allocation accounting distinct from scan requests."
+    ],
+    "acceptance": [
+      "Identical full outputs and key order before/after.",
+      "Unused nested payload growth does not grow materialization allocations in eligible paths; source requested bytes are separately measured and reduced where the scanner truly omits payload.",
+      "Full-value/shared/opaque/key/predicate controls retain needed bytes and values. Negative/unsupported paths explicit rather than claimed optimized.",
+      "Metric-only change leaves baseline query semantics/read counts unchanged; positive control reads omitted payload when explicitly selected."
+    ]
+  },
+  "followups_open": [
+    "LargeList physical public input rejected by existing Type::from_arrow/lower before specialization; separate API support stage, no latent fix in Stage1.",
+    "Safe Arrow constructor validation scans interior referenced envelopes; no live-element CPU bound claimed."
+  ],
+  "resources": "Local correctness and requested-byte tests allowed nice10/jobs2; no local benchmark/profile and no cloud VM without separate root authorization."
+}
