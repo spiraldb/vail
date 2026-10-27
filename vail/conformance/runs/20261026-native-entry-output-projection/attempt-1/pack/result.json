@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+    "compute",
+    "ssh",
+    "vail-bench-20261021",
+    "--project=pyspiral-dev",
+    "--zone=us-east1-b",
+    "--command",
+    "/home/danielking/h089-matched-20261026/run-4/gate/candidate-env/bin/python /home/danielking/h051-profile-20261026/protocol/pack.py /home/danielking/h051-profile-20261026/run-1"
+  ],
+  "elapsed_seconds": 1.4513168329140171,
+  "returncode": 0,
+  "error": null,
+  "owned_groups_clean": true,
+  "monitor_maxrss_bytes": 0,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}
