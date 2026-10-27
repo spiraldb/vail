@@ -1335,14 +1335,12 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                     arrow_schema::DataType::Struct(fields) => fields,
                     other => return Err(TableError::Invalid(format!("matrix column value must be a struct, found {other:?}"))),
                 };
-                let config = crate::matrix_entries::Config {
+                let mut config = crate::matrix_entries::Config {
                     row_struct: child.schema().index_of(row_field)?,
                     cells: child.schema().index_of(cells_field)?,
                     key_indices,
                     columns_global: columns_global.clone(),
                     column_struct: col_struct_field.clone(),
-                    row_field_names: row_type.iter().filter(|field| table.schema().index_of(field.name()).is_ok()).map(|field| field.name().clone()).collect(),
-                    col_field_names: column_type.iter().filter(|field| table.schema().index_of(field.name()).is_ok()).map(|field| field.name().clone()).collect(),
                     value_field: value_field.clone(),
                     output_schema: table.schema().clone(),
                     output_partition_tag: schema
@@ -1353,7 +1351,9 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                         .clone(),
                     output_key_fields: table.keys().to_vec(),
                     global_schema: table.globals().schema().clone(),
+                    projection: None,
                 };
+                config.projection = crate::matrix_entries::EntryProjection::prepare(input.schema.clone(), &config)?.map(Arc::new);
                 let _ = value_fields;
                 let columns = Arc::new(crate::matrix_entries::SharedColumnsExec::new(
                     globals,

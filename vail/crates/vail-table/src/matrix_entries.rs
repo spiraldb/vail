@@ -155,30 +155,36 @@ pub(crate) struct Config {
     pub key_indices: Vec<usize>,
     pub columns_global: String,
     pub column_struct: String,
-    pub row_field_names: Vec<String>,
-    pub col_field_names: Vec<String>,
     pub value_field: String,
     pub output_schema: SchemaRef,
     pub output_partition_tag: String,
     pub output_key_fields: Vec<String>,
     pub global_schema: SchemaRef,
+    pub projection: Option<Arc<EntryProjection>>,
 }
 
 /// A consumer's nested field selection, prepared before stream execution.
 /// Indices bind declared schemas; each safe Arrow projection still validates
 /// the actual batch lengths/null masks and retains original offset owners.
 #[derive(Clone, Debug)]
-struct EntryProjection {
+pub(crate) struct EntryProjection {
     input_schema: SchemaRef,
     row_indices: Vec<usize>,
     value_index: usize,
     entry_indices: Vec<usize>,
     column_index: usize,
     column_indices: Vec<usize>,
+    row_fields: arrow_schema::Fields,
+    entry_fields: arrow_schema::Fields,
+    cell_fields: arrow_schema::Fields,
+    cell_item: Arc<Field>,
+    batch_schema: SchemaRef,
+    column_fields: arrow_schema::Fields,
+    column_record_fields: arrow_schema::Fields,
 }
 
 impl EntryProjection {
-    fn prepare(input_schema: SchemaRef, config: &Config) -> datafusion_common::Result<Option<Self>> {
+    pub(crate) fn prepare(input_schema: SchemaRef, config: &Config) -> datafusion_common::Result<Option<Self>> {
         fn fields(dtype: &DataType) -> datafusion_common::Result<&arrow_schema::Fields> {
             match dtype {
                 DataType::Struct(fields) => Ok(fields),
@@ -201,8 +207,9 @@ impl EntryProjection {
         let column_index = columns.iter().position(|field| field.name() == &config.column_struct)
             .ok_or_else(|| DataFusionError::Plan("matrix projection column field absent".into()))?;
         let column_fields = fields(columns[column_index].data_type())?;
+        let wanted = config.output_schema.fields().iter().map(|field| field.name().as_str()).collect::<HashSet<_>>();
         let selected = |source: &arrow_schema::Fields| source.iter().enumerate()
-            .filter(|(_, field)| config.output_schema.index_of(field.name()).is_ok())
+            .filter(|(_, field)| wanted.contains(field.name().as_str()))
             .map(|(index, _)| index).collect::<Vec<_>>();
         let row_indices = selected(row);
         let entry_indices = selected(entries);
@@ -211,13 +218,37 @@ impl EntryProjection {
             && column_indices.len() == column_fields.len() {
             return Ok(None);
         }
+        let select_fields = |fields: &arrow_schema::Fields, indices: &[usize]| -> arrow_schema::Fields indices.iter()
+            .map(|&index| fields[index].clone()).collect::<Vec<_>>().into();
+        let row_fields = select_fields(row, &row_indices);
+        let entry_fields = select_fields(entries, &entry_indices);
+        let column_fields = select_fields(column_fields, &column_indices);
+        let cell_fields: arrow_schema::Fields = vec![Arc::new(cells[value_index].as_ref().clone()
+            .with_data_type(DataType::Struct(entry_fields.clone())))].into();
+        let cell_item = match input_schema.field(config.cells).data_type() {
+            DataType::List(field) | DataType::LargeList(field) => Arc::new(field.as_ref().clone()
+                .with_data_type(DataType::Struct(cell_fields.clone()))),
+            _ => unreachable!(),
+        };
+        let mut batch_fields = input_schema.fields().to_vec();
+        batch_fields[config.row_struct] = Arc::new(batch_fields[config.row_struct].as_ref().clone()
+            .with_data_type(DataType::Struct(row_fields.clone())));
+        let cells_type = match input_schema.field(config.cells).data_type() {
+            DataType::List(_) => DataType::List(cell_item.clone()),
+            _ => DataType::LargeList(cell_item.clone()),
+        };
+        batch_fields[config.cells] = Arc::new(batch_fields[config.cells].as_ref().clone().with_data_type(cells_type));
+        let batch_schema = Arc::new(Schema::new_with_metadata(batch_fields, input_schema.metadata().clone()));
+        let column_record_fields = vec![Arc::new(columns[column_index].as_ref().clone()
+            .with_data_type(DataType::Struct(column_fields.clone())))].into();
         Ok(Some(Self { input_schema, row_indices, value_index, entry_indices,
-                       column_index, column_indices }))
+                       column_index, column_indices, row_fields, entry_fields, cell_fields,
+                       cell_item, batch_schema, column_fields, column_record_fields }))
     }
 
-    fn select_struct(array: &StructArray, indices: &[usize]) -> datafusion_common::Result<StructArray> {
+    fn select_struct(array: &StructArray, indices: &[usize], fields: &arrow_schema::Fields) -> datafusion_common::Result<StructArray> {
         Ok(StructArray::try_new_with_length(
-            indices.iter().map(|&index| array.fields()[index].clone()).collect::<Vec<_>>().into(),
+            fields.clone(),
             indices.iter().map(|&index| array.column(index).clone()).collect(),
             array.nulls().cloned(), array.len(),
         )?)
@@ -231,43 +262,35 @@ impl EntryProjection {
         let cells = batch.column(config.cells);
         let values = downcast_struct(list_child_values(cells)?, "matrix cells")?;
         let entries = downcast_struct(values.column(self.value_index).clone(), "matrix entry values")?;
-        let entries = Arc::new(Self::select_struct(&entries, &self.entry_indices)?) as ArrayRef;
+        let entries = Arc::new(Self::select_struct(&entries, &self.entry_indices, &self.entry_fields)?) as ArrayRef;
         // Only the entry-value Struct is needed by expansion. Preserve the
         // cell ancestor validity even when the selected Struct has no fields.
-        let field = values.fields()[self.value_index].as_ref().clone()
-            .with_data_type(entries.data_type().clone());
         let values = Arc::new(StructArray::try_new_with_length(
-            vec![Arc::new(field)].into(), vec![entries], values.nulls().cloned(), values.len(),
+            self.cell_fields.clone(), vec![entries], values.nulls().cloned(), values.len(),
         )?) as ArrayRef;
         let cells: ArrayRef = if let Some(list) = cells.as_any().downcast_ref::<ListArray>() {
-            let field = match list.data_type() { DataType::List(field) => field, _ => unreachable!() };
-            Arc::new(ListArray::try_new(Arc::new(field.as_ref().clone().with_data_type(values.data_type().clone())),
+            Arc::new(ListArray::try_new(self.cell_item.clone(),
                                       list.offsets().clone(), values, list.nulls().cloned())?)
         } else if let Some(list) = cells.as_any().downcast_ref::<LargeListArray>() {
-            let field = match list.data_type() { DataType::LargeList(field) => field, _ => unreachable!() };
-            Arc::new(LargeListArray::try_new(Arc::new(field.as_ref().clone().with_data_type(values.data_type().clone())),
+            Arc::new(LargeListArray::try_new(self.cell_item.clone(),
                                            list.offsets().clone(), values, list.nulls().cloned())?)
         } else {
             return Err(DataFusionError::Execution("matrix projection cell representation changed".into()));
         };
         let mut arrays = batch.columns().to_vec();
-        arrays[config.row_struct] = Arc::new(Self::select_struct(&row, &self.row_indices)?);
+        arrays[config.row_struct] = Arc::new(Self::select_struct(&row, &self.row_indices, &self.row_fields)?);
         arrays[config.cells] = cells;
-        let fields = batch.schema().fields().iter().zip(&arrays).map(|(field, array)|
-            Arc::new(field.as_ref().clone().with_data_type(array.data_type().clone()))).collect::<Vec<_>>();
         Ok(RecordBatch::try_new_with_options(
-            Arc::new(Schema::new_with_metadata(fields, batch.schema().metadata().clone())), arrays,
+            self.batch_schema.clone(), arrays,
             &RecordBatchOptions::new().with_row_count(Some(batch.num_rows())),
         )?)
     }
 
     fn columns(&self, columns: Arc<StructArray>) -> datafusion_common::Result<Arc<StructArray>> {
         let original = downcast_struct(columns.column(self.column_index).clone(), "matrix columns")?;
-        let selected = Arc::new(Self::select_struct(&original, &self.column_indices)?) as ArrayRef;
-        let field = columns.fields()[self.column_index].as_ref().clone()
-            .with_data_type(selected.data_type().clone());
+        let selected = Arc::new(Self::select_struct(&original, &self.column_indices, &self.column_fields)?) as ArrayRef;
         Ok(Arc::new(StructArray::try_new_with_length(
-            vec![Arc::new(field)].into(), vec![selected], columns.nulls().cloned(), columns.len(),
+            self.column_record_fields.clone(), vec![selected], columns.nulls().cloned(), columns.len(),
         )?))
     }
 }
@@ -384,7 +407,7 @@ pub(crate) struct MatrixEntriesExec {
     rows: PhysicalPlan,
     columns: PhysicalPlan,
     config: Config,
-    projection: Option<EntryProjection>,
+    projection: Option<Arc<EntryProjection>>,
     count_only: bool,
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
@@ -408,7 +431,7 @@ impl MatrixEntriesExec {
         columns: PhysicalPlan,
         config: Config,
     ) -> datafusion_common::Result<Self> {
-        let projection = EntryProjection::prepare(rows.schema(), &config)?;
+        let projection = config.projection.clone();
         let mut fields = config.output_schema.fields().to_vec();
         let tag_name = config.output_partition_tag.clone();
         fields.push(Arc::new(Field::new(tag_name, DataType::UInt64, false)));
@@ -833,31 +856,16 @@ fn emit_prepared_run_chunk(
     let entry_take = UInt64Array::from(entry_indices);
     let column_take = UInt64Array::from_value(col as u64, output_len);
     let mut arrays = Vec::<ArrayRef>::with_capacity(output_schema.fields().len());
-    for name in &config.row_field_names {
-        let index = chunk
-            .row
-            .fields()
-            .iter()
-            .position(|field| field.name() == name)
-            .ok_or_else(|| {
-                DataFusionError::Execution(format!("matrix row field {name:?} is absent"))
-            })?;
+    for column in chunk.row.columns() {
         arrays.push(arrow_select::take::take(
-            chunk.row.column(index),
+            column,
             &row_take,
             None,
         )?);
     }
-    for name in &config.col_field_names {
-        let index = col_struct
-            .fields()
-            .iter()
-            .position(|field| field.name() == name)
-            .ok_or_else(|| {
-                DataFusionError::Execution(format!("matrix column field {name:?} is absent"))
-            })?;
+    for column in col_struct.columns() {
         arrays.push(arrow_select::take::take(
-            col_struct.column(index),
+            column,
             &column_take,
             None,
         )?);
@@ -986,26 +994,12 @@ fn build_output_batch(
     entry_take: &UInt64Array,
 ) -> datafusion_common::Result<RecordBatch> {
     let mut arrays = Vec::<ArrayRef>::with_capacity(output_schema.fields().len());
-    for name in &config.row_field_names {
-        let index = row
-            .fields()
-            .iter()
-            .position(|field| field.name() == name)
-            .ok_or_else(|| {
-                DataFusionError::Execution(format!("matrix row field {name:?} is absent"))
-            })?;
-        arrays.push(arrow_select::take::take(row.column(index), row_take, None)?);
+    for column in row.columns() {
+        arrays.push(arrow_select::take::take(column, row_take, None)?);
     }
-    for name in &config.col_field_names {
-        let index = col_struct
-            .fields()
-            .iter()
-            .position(|field| field.name() == name)
-            .ok_or_else(|| {
-                DataFusionError::Execution(format!("matrix column field {name:?} is absent"))
-            })?;
+    for column in col_struct.columns() {
         arrays.push(arrow_select::take::take(
-            col_struct.column(index),
+            column,
             column_take,
             None,
         )?);
