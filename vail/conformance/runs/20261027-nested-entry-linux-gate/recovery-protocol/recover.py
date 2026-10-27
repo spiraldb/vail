@@ -13,7 +13,7 @@ def sha(path,cap=2*1024**2):
  before=path.stat();h=hashlib.sha256();read=0
  with path.open('rb') as f:
   while True:
-   limit();chunk=f.read(1024**2)
+   limit();chunk=f.read(min(1024**2,cap-read+1,512*1024**2-hashed+1))
    if not chunk:break
    read+=len(chunk);hashed+=len(chunk)
    if read>cap or hashed>512*1024**2:raise RuntimeError('Per-file/512MiB in-place hash cap')
@@ -36,11 +36,14 @@ paths=['result.json']+[label+'/'+name for label in ('tool-cargo','tool-rustc','t
 for name in paths:
  limit();source=RUN/'receipt'/name
  if not source.is_file():record['missing'].append(name);continue
- size=source.stat().st_size
- if size>2*1024**2 or copied+size>4*1024**2:raise RuntimeError('2MiB file/4MiB total copied-metadata cap')
- digest=sha(source);data=source.read_bytes()
- if hashlib.sha256(data).hexdigest()!=digest:raise RuntimeError('Receipt changed between hash/copy')
- target=OUT/'original'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data);copied+=size;record['files'][name]={'bytes':size,'sha256':digest}
+ before=source.stat();quota=min(2*1024**2,4*1024**2-copied)
+ if before.st_size>quota:raise RuntimeError('2MiB file/4MiB total copied-metadata cap')
+ with source.open('rb') as stream:data=stream.read(quota+1)
+ after=source.stat();identity=lambda s:(s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns)
+ if len(data)>quota:raise RuntimeError('2MiB file/4MiB total copied-metadata cap')
+ if identity(before)!=identity(after) or len(data)!=after.st_size:raise RuntimeError('Receipt identity changed while reading')
+ digest=hashlib.sha256(data).hexdigest();copied+=len(data)
+ target=OUT/'original'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data);record['files'][name]={'bytes':len(data),'sha256':digest}
 if 'result.json' not in record['files']:raise RuntimeError('Required original result missing')
 # Fixed manifest union only. Hash code bytes in place, do not copy code/binaries.
 source=Path(E['stable_source']);names=set(E['candidate_source_files'])|set(E['baseline_source_files'])|set(E['previous_owned_source']['files'])
@@ -51,7 +54,7 @@ for name in sorted(names):
  limit();path=source/name
  try:path.resolve().relative_to(source)
  except ValueError:raise RuntimeError('Source escaped fixed root')
- record['hashes'][name]=sha(path) if path.is_file() else None
+ record['hashes'][name]=sha(path,min(2*1024**2,64*1024**2-(hashed-source_hash_start))) if path.is_file() else None
 record['source_matches']={}
 for label,expected in [('candidate',E['candidate_source_files']),('baseline',E['baseline_source_files']),('previous517',E['previous_owned_source']['files'])]:
  mismatches=[name for name,expected_hash in expected.items() if record['hashes'].get(name)!=expected_hash]
