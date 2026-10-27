@@ -1,0 +1,142 @@
+{
+  "original": 4,
+  "write_attempted": true,
+  "restored": true,
+  "error": null,
+  "pending_command_groups": [],
+  "owned_groups_clean": true,
+  "confirmation_cleanup_verified": true,
+  "event": "cpu-clock:u",
+  "frequency": 99,
+  "requested_sample_seconds": 3,
+  "protocol_assets": {
+    "common.py": "7907b494fd0a893b766a03acc588c0b334a5c601d9c244a3dbbcdf11370177cf",
+    "expected.json": "ac6b5b07d41e5a9d25a4565be8fd91ab97b5fbc34d6de69a28abfc8436e5abf0",
+    "host.py": "3de2f0e65a67dae3aa54eb963166ad7e9e50b2023e9e66c9751ce3a008d74729",
+    "monitor.py": "7181062b94c815234e2d0fd869c328e204680321add02c1c232253937a4b85b4",
+    "pack.py": "abc67889e795f194aeb967d9e5bb636a953fd930598a76cfe2ee2d5307587171",
+    "preflight.py": "b6408439f9637601d64fb7b346db8e946a53ab8f8ef91efb98b70ec166300caf",
+    "run.py": "b515175b5567b528acb6fa1fb5ba685cc1d05632784adda46ae924554d5da9fd",
+    "setup.py": "19a9cfb7975f92014d065e6b77ae0f4bac55dff0a4225bac5bc23adb85affc15",
+    "worker.py": "1b4747b65a90fd9a64c805c429791d1941ca4c21861853e823db5f0e714d9695"
+  },
+  "setup_cleanup_verified": true,
+  "commands": [
+    {
+      "args": [
+        "/usr/bin/perf",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "perf version 6.8.12\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/sbin/sysctl",
+        "-n",
+        "kernel.perf_event_paranoid"
+      ],
+      "returncode": 0,
+      "stdout": "4\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/bin/sudo",
+        "-n",
+        "true"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/sbin/sysctl",
+        "-w",
+        "kernel.perf_event_paranoid=2"
+      ],
+      "returncode": 0,
+      "stdout": "kernel.perf_event_paranoid = 2\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/sbin/sysctl",
+        "-n",
+        "kernel.perf_event_paranoid"
+      ],
+      "returncode": 0,
+      "stdout": "2\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/sbin/sysctl",
+        "-w",
+        "kernel.perf_event_paranoid=4"
+      ],
+      "returncode": 0,
+      "stdout": "kernel.perf_event_paranoid = 4\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/sbin/sysctl",
+        "-n",
+        "kernel.perf_event_paranoid"
+      ],
+      "returncode": 0,
+      "stdout": "4\n",
+      "stderr": ""
+    }
+  ],
+  "reference_origin": "complete independent duplicate-coordinate formula for4096x4outputs, finalsourceindex r+4096*c+15*16384",
+  "sample_cleanup_verified": true,
+  "sample_decision": {
+    "error": null,
+    "owned_groups_clean": true,
+    "gates": {
+      "sampler_success_in_window": true,
+      "complete_action_stream": true
+    },
+    "completed_actions": 10,
+    "monitor_maxrss_bytes": 620572672,
+    "t0": 55.708761489,
+    "sampler_command": [
+      "/usr/bin/perf",
+      "record",
+      "-e",
+      "cpu-clock:u",
+      "-F",
+      "99",
+      "--call-graph",
+      "dwarf",
+      "-p",
+      "1635",
+      "-o",
+      "/home/danielking/h091-profile-20261027/attempt-1/perf.data",
+      "--",
+      "/usr/bin/sleep",
+      "3"
+    ],
+    "sampler_popen_before_observed": 55.742743139,
+    "sampler_decision_status": 0,
+    "sampler_exit_poll_observed": 58.990521348,
+    "launch_closed": 58.990523108,
+    "query_decision_status": 0,
+    "decision_time": 59.390183663,
+    "stdout_bytes_at_decision": 18259429,
+    "query_final_status": 0,
+    "sampler_final_status": 0
+  },
+  "gates": {
+    "perf_file_nonempty": true
+  },
+  "restored_value": 4
+}
