@@ -25,19 +25,30 @@ def environment():
     return result
 
 def stop_owned(process):
-    if process is None or process.poll() is not None:
+    if process is None:
         return
-    for signum in (signal.SIGTERM, signal.SIGKILL):
+    group = process.pid  # Popen(start_new_session=True), retained after exit.
+    def complete():
+        leader_exited = process.poll() is not None  # Also reap the leader.
         try:
-            os.killpg(process.pid, signum)
+            os.killpg(group, 0)
+        except ProcessLookupError:
+            return leader_exited
+        return False
+    for signum in (signal.SIGTERM, signal.SIGKILL):
+        if complete():
+            return
+        try:
+            os.killpg(group, signum)
         except ProcessLookupError:
             pass
-        try:
-            process.wait(timeout=3)
-            return
-        except subprocess.TimeoutExpired:
-            pass
-    raise RuntimeError(f'Owned process group {process.pid} not reaped')
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if complete():
+                return
+            time.sleep(.05)
+    if not complete():
+        raise RuntimeError(f'Owned process group {group} unresolved after SIGKILL; leader={process.returncode}')
 
 def guarded(command, output, cwd, env, seconds, *, query=False):
     """One attempt; always retain status and reap the owned process group."""
