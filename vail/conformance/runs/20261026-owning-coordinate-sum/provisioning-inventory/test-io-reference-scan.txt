@@ -1,0 +1,127 @@
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_segmented_boolean_reducers.py:48:def test_segmented_boolean_native_sparse_matrix_entries(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_segmented_boolean_reducers.py:54:    path = str(tmp_path / 'boolean-entries.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_segmented_boolean_reducers.py:62:    for source in [matrix, hl.read_matrix_table(path)]:
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:7:def test_native_list_length_null_elements_aliases_and_consumers(tmp_path, width):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:14:    path = str(tmp_path / "shapes.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:16:    source = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:33:def test_native_list_length_variable_nested_and_missing_values(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:38:    path = str(tmp_path / "variable.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:40:    source = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:46:def test_native_list_length_can_drop_other_computed_columns(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:49:        value=hl.int32(table.idx - c), payload=hl.str(c))))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:50:    path = str(tmp_path / "siblings.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:52:    source = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:61:def test_native_list_lengths_across_many_files_and_independent_reads(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:65:    path = str(tmp_path / "many.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_array_length_projection.py:69:        source = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:7:def test_native_wide_entry_schema_sum_and_empty_axes(tmp_path, rows, cols):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:11:        payload=hl.or_missing(m.col_idx % 7 != 0, hl.struct(
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:18:    path = str(tmp_path / "wide.mt")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:20:    r = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:23:    assert r.aggregate_entries(hl.agg.sum(r.payload.depth)) == expected
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:26:    got = r.aggregate_entries(hl.struct(total=hl.agg.sum(r.payload.depth),
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:27:                                       again=hl.agg.sum(r.payload.depth),
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:33:def test_native_computed_projection_pruning_keeps_row_counts(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:42:    path = str(tmp_path / "arrays.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:44:    t = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:53:def test_native_dense_projection_aliases_keys_globals_and_order(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:58:    path = str(tmp_path / "dense.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:60:    r = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:78:def test_native_stored_constant_integer_list_leaf(tmp_path, missing):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:82:    path = str(tmp_path / "constant.ht")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_encoded_projection.py:84:    r = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:7:def test_projected_entry_consumers(tmp_path, select_axis):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:12:        payload=hl.range(m.col_idx + 1),
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:22:    path = str(tmp_path / 'source.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:24:    m = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:26:    wide = wide_entries.select('text', 'payload', 'nested').collect()
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:29:    assert sorted((x.r, x.c, x.text, x.payload, x.nested.x, x.nested.y) for x in wide) == expected_wide
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:55:def test_changed_keys_keep_sorted_entry_semantics(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:58:    path = str(tmp_path / 'rekey.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_entry_projection.py:60:    m = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:5:def test_native_matrix_totals_keep_parent_validity_with_missing_selected_children(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:13:    path = str(tmp_path / 'matrix.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:15:    m = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:23:def _native_table(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:27:    path = str(tmp_path / 'table.ht')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:29:    return hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:32:def test_native_grouped_nested_inputs_keep_group_keys(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:33:    t = _native_table(tmp_path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:39:def test_independent_aggregate_consumers_do_not_share_pruned_scan_cache(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:40:    t = _native_table(tmp_path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:49:def test_nested_array_shape_and_filtered_inputs_keep_semantics(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:50:    t = _native_table(tmp_path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:56:def test_wide_native_aggregate_projection_keeps_all_selected_results(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:60:    path = str(tmp_path / 'wide.ht')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aggregate_nested_projection.py:62:    t = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_batched_list_sets.py:101:def test_list_set_logical_type_survives_native_write_read(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_batched_list_sets.py:105:    path = str(tmp_path / 'sets.ht')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_batched_list_sets.py:107:    restored = hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aligned_runend_experiment.py:90:def test_row_only_map_ignores_wide_nested_column_payload_and_keeps_slots():
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aligned_runend_experiment.py:92:    m = m.annotate_cols(payload=hl.struct(
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aligned_runend_experiment.py:111:    assert [col.payload.nested.marker for col in cols] == [4, 1, 4, 0, 3]
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aligned_runend_experiment.py:112:    assert all(col.payload.text == str(col.col_idx) + "x" * 8192 for col in cols)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aligned_runend_experiment.py:117:    m = m.annotate_cols(payload=hl.or_missing(
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_aligned_runend_experiment.py:122:    m = m.annotate_entries(value=m.row_idx + m.payload.value)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_genotype_index_call.py:32:def test_diploid_index_zero_column_matrix_vcf_export(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_genotype_index_call.py:37:    path = tmp_path / 'sorted.vcf'
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_sum_collect_integration.py:13:def test_stored_sparse_entry_collect_then_field_sum(partitions,tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_sum_collect_integration.py:18:    path=str(tmp_path/'records.ht');table.write(path);table=hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_index.py:10:def test_call_index_native_roundtrip_and_nested_arrays(tmp_path, index):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_index.py:14:    path = str(tmp_path / 'calls.ht')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_index.py:16:    for source in [table, hl.read_table(path)]:
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_index.py:47:def test_call_index_matrix_aggregates_and_sparse_entries(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_index.py:51:    path = str(tmp_path / 'calls.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_index.py:53:    for matrix in [mt, hl.read_matrix_table(path)]:
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_list_collect_identity.py:6:def test_row_collect_keeps_nested_missing_and_filtered_entries(partitions,tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_list_collect_identity.py:17:    path=str(tmp_path/'roundtrip.ht')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_list_collect_identity.py:19:    assert {r.row_idx:multiset(r['values']) for r in hl.read_table(path).collect()}=={r.row_idx:multiset(r['values']) for r in result}
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_matrix_owning_coordinate_sum.py:36:def test_global_coordinate_sum_after_native_roundtrip(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_matrix_owning_coordinate_sum.py:40:    path = str(tmp_path / "coordinates.mt")
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_matrix_owning_coordinate_sum.py:42:    stored = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_finite_integer_stddev.py:9:def test_native_stats_filtered_grouped_and_full_result(dtype,partitions,tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_finite_integer_stddev.py:12:    path=str(tmp_path/'values.ht');table.write(path);table=hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:176:def test_packed_call_accessors_after_storage_projection(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:180:    table.write(str(tmp_path / "calls"))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:181:    read = hl.read_table(str(tmp_path / "calls"))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:183:    # storage hints by forcing the whole source column to be loaded.
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:193:    mt.write(str(tmp_path / "matrix"))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:194:    stored = hl.read_matrix_table(str(tmp_path / "matrix"))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:200:def test_stored_nested_call_accessors_and_literal_accessor_field_names(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:207:    table.write(str(tmp_path / "nested"))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_call_value.py:208:    read = hl.read_table(str(tmp_path / "nested"))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_randomness.py:10:@pytest.fixture(autouse=True)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_key_projection.py:5:@pytest.fixture
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_key_projection.py:6:def keyed_native(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_key_projection.py:9:    path=str(tmp_path/'keyed.ht');table.write(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_key_projection.py:10:    return hl.read_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_native_key_projection.py:21:def test_key_predicate_remains_when_only_payload_is_selected(keyed_native):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_collection_filter_execution.py:78:def test_native_matrix_per_entry_array_summary_preserves_absence(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_collection_filter_execution.py:83:    path = str(tmp_path / 'array-entries.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_collection_filter_execution.py:93:    for matrix in [mt, hl.read_matrix_table(path)]:
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_composite_entry_totals.py:27:def test_composite_integer_precision_wrap_and_native_roundtrip(tmp_path):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_composite_entry_totals.py:30:    path = str(tmp_path / 'matrix.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_composite_entry_totals.py:32:    m = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:17:    schema = hl.tarray(hl.tstruct(payload=hl.tstruct(depth=dtype)))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:21:        records.append(None if choice == 0 else hl.Struct(payload=None) if choice == 1 else
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:22:                       hl.Struct(payload=hl.Struct(depth=None if choice == 2 else scalar())))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:26:        values = [None if x is None or x.payload is None else x.payload.depth for x in selected]
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:27:        expr = array[offset:offset + length].map(lambda x: x.payload.depth)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:33:        assert hl.eval(hl.sum(array[offset:offset + length].map(lambda x: hl.int64(x.payload.depth)))) == wrap(sum(x for x in values if x is not None), 64)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:57:def test_native_matrix_sum_after_filters_and_nested_missingness(tmp_path, missing_mod):
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:60:    m = m.annotate_entries(payload=hl.or_missing(m.col_idx % missing_mod != 0,
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:66:    assert m.aggregate_entries(hl.agg.sum(m.payload.depth)) == expected
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:67:    path = str(tmp_path / 'nested.mt')
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:69:    loaded = hl.read_matrix_table(path)
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:70:    assert loaded.aggregate_entries(hl.agg.sum(loaded.payload.depth)) == expected
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:71:    assert sum(x.total for x in loaded.annotate_rows(total=hl.agg.sum(loaded.payload.depth)).rows().collect()) == expected
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:76:        payload=hl.tstruct(other=hl.tint64, depth=hl.tint32), suffix=hl.tint32))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:77:    records = [hl.Struct(prefix='x', payload=hl.Struct(other=1 << 40, depth=3), suffix=19),
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:78:               hl.Struct(prefix='y', payload=None, suffix=23), None,
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:79:               hl.Struct(prefix='z', payload=hl.Struct(other=7, depth=None), suffix=29)]
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:81:    result = hl.eval(hl.struct(depth=hl.sum(a.map(lambda x: hl.int64(x.payload.depth))),
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:82:                              other=hl.sum(a.map(lambda x: x.payload.other)),
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:92:    payload = pa.StructArray.from_arrays([depth], names=['depth'])
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:93:    cells = pa.StructArray.from_arrays([payload], names=['payload'], mask=pa.array(values % 11 == 0))
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:99:    result = t.select(total=hl.sum(t.items.map(lambda x: hl.int64(x.payload.depth)))).collect()
+/private/tmp/vail-owning-coordinate-sum/vail/python/tests/test_nullable_integer_sum.py:104:    assert empty.select(total=hl.sum(empty.items.map(lambda x: hl.int64(x.payload.depth)))).collect() == []

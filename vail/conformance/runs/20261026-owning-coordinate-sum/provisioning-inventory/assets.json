@@ -1,0 +1,74 @@
+{
+  "production": "00a8d7d7fdefb8d2c324fc33c1ec6c58706f02ec",
+  "protocol": "91aa68d6766284dcc42dc3833088d21cb8939981",
+  "assets": {
+    "vail/conformance/runs/20261024-coordinate-current-main-integration/h050-main-gate.sh": "a24cea13758e6bfc5b4496ca960efafaef685922962419abc173f5bd3c8e5b36",
+    "vail/conformance/runs/20261026-struct-logical-presence/remote/requirements.txt": "1462bebeeb0d282242aa2403b3ecdb8a5cb1f78d88aa5eba1030d508572471e8",
+    "vail/LICENSE": "131de8fce77aa1d3e6cbdaa436eb625deeb2334c86d26a4bf97790a25f8886a1",
+    "vail/licenses/HAIL.txt": "f63913a7ad5f7268f053e3944a61d2c32170c8be4124b16e0625170be88a9cb4",
+    "vail/python/vail/reference_data/grch37.json": "64eb8c82a317214849b6744b8be803fd0c7bebd2619953fe9ca065fe9d090f82",
+    "vail/python/vail/reference_data/grch38.json": "0b9097d733d54ddd415dae377578383fe30f042b049eee4b7a327c31043613f2"
+  },
+  "project_test_files": {
+    "python/tests/test_agg_numeric.py": "9a51b5edd693bc422efdd453eebb65af4a17bf780a11859cd91cbf31243263d6",
+    "python/tests/test_aggregate_nested_projection.py": "dbbc60d3f8395c2f1bef2650600ddaed01ffaa90b284d67acac90d88eb4b8486",
+    "python/tests/test_aligned_runend_experiment.py": "b96c7db9de7959b50083f6016c56090ed8f97e60094897d8f22e257522c51287",
+    "python/tests/test_aligned_scalar_broadcast.py": "9a42defc0795469f13bb9d15786941c416a950dccff7c00d0208ec3a62920a85",
+    "python/tests/test_array_agg_coordinate_callbacks.py": "5f7a79f87882b4181eaeb124b8f0d44169a537876e2af87470d2bd035fb19fd6",
+    "python/tests/test_call_index.py": "bc4485299d9f0dfef4b4edb39e58e95e45702320a0f263d32773bf9fff845383",
+    "python/tests/test_call_value.py": "16a1668e362e5538fe2e8d8b4b4ea46cb13694de8e3062688e6d53cb490474ba",
+    "python/tests/test_collection_aggregate.py": "23348b8455c70c7fcbba7454bde770e09d8614d262cd66829906dffcf2664edb",
+    "python/tests/test_collection_filter_execution.py": "898d93bd97e99e4ac8a6265b0f365512d96289db7a5926c2cb968607a6bad0ab",
+    "python/tests/test_composite_entry_totals.py": "dfd5f559ddcec40a904440f78843eb10f2e17ae9d343e628cb5725041b166f61",
+    "python/tests/test_coordinate_stddev.py": "32249eaf296582fecc0c0489728e9529de4744aceade77a2b690f8d6963d4398",
+    "python/tests/test_encoded_projection.py": "a04941b6c8db96bee243f6bcb6c7e5179eab66161f2425adf84662a2ae1faa5d",
+    "python/tests/test_entry_projection.py": "c12ca667a8981429e6a0f7be0e59c35ff4ce3a2ab9ed7c80d3530c259e55aa6f",
+    "python/tests/test_finite_integer_stddev.py": "7e2dcccfc68b4a543a6bd1692a21bb91ab5d308af42e55be2ce1e16dd16cff36",
+    "python/tests/test_genotype_index_call.py": "f0e59f8ece1ff8175c7540e94e9a1538809c4562e0be248c16882bd6c6981ab9",
+    "python/tests/test_genotype_likelihoods.py": "56770dbd2c500c284022e9b954f82bcf3e22802c17997e58901d4f5770c22be7",
+    "python/tests/test_list_collect_identity.py": "d2da7251b3fb423d47dbd2048207ba92d91a49260561dafafbf0e7154d9ee4d9",
+    "python/tests/test_matrix_array_agg.py": "4a6022e3fa8ccb5d342dc3338c2a4d0912c15669e770505b52a071fc683c4df9",
+    "python/tests/test_matrix_entry_sum.py": "2e0bde90f4c4f49cf230862e6e460477da214f8767797e12d852a9ef8159f66f",
+    "python/tests/test_native_key_projection.py": "776b6babf0b0f51fc468579fdf28bed351d646bbcfa583fd22f920b5cfced871",
+    "python/tests/test_nullable_integer_sum.py": "50df0cd5355430cf39f67bff8d466f7f818b6d60d076cefdc0b23a9b2582b23f",
+    "python/tests/test_randomness.py": "237ec514c6a935ac09d5a9f918b4ab66e4616be4efe3a77629a89dbe33647093",
+    "python/tests/test_reduction_expression_sharing.py": "b2286f6c24e9a8a0f9017430721cc14d49f5f5a78669f3623c53568012fc15d0",
+    "python/tests/test_row_fraction_shared_contexts.py": "bf3c3726553478566629bf81495ea299f546b9321320e99521526a4a9d121642",
+    "python/tests/test_segmented_boolean_reducers.py": "f9c13d1ca416984274fc35aebc02ac0e4904c8e45726066c677e3146a9a4a446",
+    "python/tests/test_segmented_integer_reducers.py": "67fac634b683f912034d12ab98f578ac83b9245c60ea2335252b599a46a325d1",
+    "python/tests/test_shared_list_reducers.py": "153fa2d6a814f29944fad803478d388f2cfff9bc3199ee4c003c37be52ec1dff",
+    "python/tests/test_split_multi_hts.py": "6554fca8c345197d07fc865848246a3a7acba9e54f3f577908554c4bd8024b2f",
+    "python/tests/test_sum_collect_integration.py": "857efbc3dc5f7c03cc9fbd3cf013bcf5acd8ab5e15200d2f1dfe9b9741e2a436",
+    "python/tests/test_nullable_coordinate_runs.py": "7e41886d3c8cf607944b59de9e74d0db5d872eda1e35961d4519e429fb4a1756",
+    "python/tests/test_native_array_length_projection.py": "5206cea8a392e195c6dfe4a8f2d73cd14c984801c91ca8e61eceb5e0082adc3e",
+    "python/tests/test_batched_list_sets.py": "5c53f0f6d9f9da09ca3eabb8d0fe772cccdd774a21fcacc7cdbc43e2101a95bd",
+    "python/tests/test_matrix_owning_coordinate_sum.py": "8c725f78b26de06f17b57a8071f6038d0602a3ec42c81637e27c7ac41d0708ff"
+  },
+  "frozen_external_public_test": {
+    "path": "cloud/frozen_public_tests/test_transparent_struct_fields.py",
+    "sha256": "b46e8ce65f2b97e7fad69f82cb5e5e9defd982673bea72a4098f725d8ca14fe3"
+  },
+  "protocol_files": {
+    "baseline-source-equivalence.json": "4a1409b938548ae151d215f1b94d5f14404c8d0fb7a73838d09d6bec729c70eb",
+    "common.py": "87979ef73e3a4eec03746133a35c1b58766903c33662c491c6491daec5bc2439",
+    "compare.py": "d27e262262ee7d6273a4ff7e9d4511913b049bf88b5d069091a6b5be0a8d3d00",
+    "expected.json": "fa21b7338ddcc72cbf3c9bc5a8e9fbf02d2ad956cef490288cd728669a871cd5",
+    "frozen_public_tests/test_transparent_struct_fields.py": "b46e8ce65f2b97e7fad69f82cb5e5e9defd982673bea72a4098f725d8ca14fe3",
+    "host_run.py": "b9ae0ee1fc2db014b0397143c3fe9f3eb40d3c7a4fd6926e8251b1c2e3563d37",
+    "pack.py": "abc67889e795f194aeb967d9e5bb636a953fd930598a76cfe2ee2d5307587171",
+    "preflight.py": "d5d57694d08369a2df4a1b9a7b940a680edee04a5700b435ddfa3083f1e53d0c",
+    "prepare.py": "b9ac1fbbeb9855ec0b36a3d25de30e50bda677396b2c7a8b921de3b8e3289bc5",
+    "worker.py": "2e3edc462e58c757c48ac3a2e1612edd7963262b4ecb866dad3ce187345a6e84"
+  },
+  "persistent_vm_fixture": {
+    "path": "/home/danielking/cloud-scan-20261023/data/vail-from-hail/profile25_mt.mt",
+    "metadata_sha256": {
+      "_vail_matrix.json": "305e31739e9d39ba9237f63d402200f8526ab993a3f0af38376c4491d65c9f98",
+      "generation-b0517f86ea7c47d28f87612f9e84bee1/core/generations/01a16a3e-79e2-745c-b281-6d858a546211/metadata/00001-a4259cea-0731-47fb-95e8-90f56521fa83.metadata.json": "d6a804788c5dd6dc600800f60defda042c11285e32622821396d41c5a644a8d6",
+      "generation-b0517f86ea7c47d28f87612f9e84bee1/core/generations/01a16a3e-79e2-745c-b281-6d858a546211/metadata/globals.arrow": "34948cf694bede3a53c549581a3a5b9a02ff5e1d4036fa5da48e00632d65c08c"
+    },
+    "policy": "not copied/regenerated; verify originals; no substitution"
+  },
+  "test_data_dependencies": "All selected tests use inline values/range generators or tmp_path roundtrips; VCF import consumes VCF exported earlier in the same test. No stored test datasets or conftest.py referenced. Built-in reference genomes are explicitly packaged.",
+  "compiled_dependencies": "Normal Linux wheel and full Rust8 compiled/passed attempt3; unchanged Cargo source/lock covers remaining compile inputs. No new Rust8 external fixture files."
+}
