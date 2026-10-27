@@ -1,13 +1,15 @@
 //! Requested-byte counters on the normal public native source execution path.
 use std::collections::HashSet;
 use std::io::{Read, Seek, SeekFrom, Write};
+use std::fs::OpenOptions;
+use tempfile::tempdir;
 use std::sync::Arc;
 
 use arrow_array::Int32Array;
 use datafusion_execution::TaskContext;
 use datafusion_physical_plan::{ExecutionPlan, SendableRecordBatchStream};
 use datafusion_physical_plan::metrics::{Metric, MetricsSet};
-use futures::TryStreamExt;
+use futures::{TryStreamExt, join};
 use vail_table::{TableIR, partitioned};
 use vail_storage::local_table::open_local;
 
@@ -38,7 +40,7 @@ async fn values(stream: SendableRecordBatchStream) -> Vec<i32> {
 
 #[tokio::test]
 async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = tempdir().unwrap();
     let plan = fixture(dir.path().join("table").to_str().unwrap()).await;
     assert!(requested(&plan).is_empty());
     let first = values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()).await;
@@ -62,7 +64,7 @@ async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation(
     assert_eq!(second_sum, first_sum);
     assert_eq!(before, domains.iter().map(|d| d.value().as_usize()).collect::<Vec<_>>());
 
-    let (left, right) = futures::join!(
+    let (left, right) = join!(
         values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()),
         values(plan.execute(0, Arc::new(TaskContext::default())).unwrap()),
     );
@@ -76,7 +78,7 @@ async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation(
 
 #[tokio::test]
 async fn canceled_source_retains_its_observed_attempted_bytes() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = tempdir().unwrap();
     let plan = fixture(dir.path().join("table").to_str().unwrap()).await;
     let mut stream = plan.execute(0, Arc::new(TaskContext::default())).unwrap();
     assert!(stream.try_next().await.unwrap().is_some());
@@ -92,13 +94,13 @@ async fn canceled_source_retains_its_observed_attempted_bytes() {
 
 #[tokio::test]
 async fn corrupt_real_file_keeps_attempts_when_execution_fails() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = tempdir().unwrap();
     let path = dir.path().join("table");
     let path = path.to_str().unwrap();
     let plan = fixture(path).await;
     let source = open_local(path).await.unwrap();
     let file = &source.descriptor().files[0].path;
-    let mut file = std::fs::OpenOptions::new().read(true).write(true)
+    let mut file = OpenOptions::new().read(true).write(true)
         .open(file.strip_prefix("file://").unwrap_or(file)).unwrap();
     file.seek(SeekFrom::End(-1)).unwrap();
     let mut last = [0];

@@ -5,6 +5,7 @@
 //! above the scan. Filters are currently inexact at the provider boundary, so
 //! DataFusion keeps and evaluates the residual predicate.
 
+use crate::read_metrics::register as register_read_metrics;
 use crate::plan::{self, PhysicalPlan};
 use crate::{Result, TableError, TableNode, TableRef};
 use arrow_array::{RecordBatch, UInt64Array};
@@ -813,7 +814,7 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         let schema = self.schema.clone();
         let field_ids = self.field_ids.clone();
         let source = source.with_nested_projection_paths(self.nested_projection_paths.clone())
-            .with_scan_metrics(crate::read_metrics::register(&self.metrics, partition));
+            .with_scan_metrics(register_read_metrics(&self.metrics, partition));
         let mut batches =
             source.projected_interval_batches_in_rows(&queries, start..end, &field_ids);
         let concurrency = self.concurrency.clone();

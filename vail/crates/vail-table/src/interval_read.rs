@@ -1,4 +1,5 @@
 //! Independent physical sources for table interval reads.
+use crate::read_metrics::register as register_read_metrics;
 use crate::partitioned::PreparedTable;
 use crate::plan::{self, PhysicalPlan, source_partition};
 use crate::{Result, ScalarIR, TableError, TableNode, TableRef};
@@ -103,7 +104,7 @@ impl ExecutionPlan for IntervalSourceExec {
                 "interval source requires partition zero".into(),
             ));
         }
-        let source = self.source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition));
+        let source = self.source.with_scan_metrics(register_read_metrics(&self.metrics, partition));
         let mut batches = if let Some(rows) = self.rows.clone() {
             source.projected_interval_batches_in_rows(
                 std::slice::from_ref(&self.query),

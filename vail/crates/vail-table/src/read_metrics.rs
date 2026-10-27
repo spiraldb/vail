@@ -1,6 +1,6 @@
 //! Bridge the storage reader's existing live counter to DataFusion metrics.
 use std::any::Any;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -21,7 +21,7 @@ impl RequestedBytes {
     }
 }
 impl Display for RequestedBytes {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { write!(f, "{}", self.value()) }
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult { write!(f, "{}", self.value()) }
 }
 impl CustomMetricValue for RequestedBytes {
     fn new_empty(&self) -> Arc<dyn CustomMetricValue> {

@@ -1,6 +1,7 @@
 //! Leaf sources and physical implementations of semantic logical extensions.
 //! Child relations must already be planned by DataFusion; this module does not
 //! recursively compile TableIR. Internal row identity uses a private Arrow column.
+use crate::read_metrics::register as register_read_metrics;
 use crate::globals::GlobalBindings;
 use crate::{PartitionEvent, Result, TableError, TableIR, TableNode, TableRef, order_requirement};
 use arrow_array::{Int32Array, RecordBatch, UInt64Array};
@@ -241,11 +242,11 @@ impl ExecutionPlan for SourceExec {
         }
         let source = match &self.source {
             Source::ReadPartition(source, part) => Source::ReadPartition(
-                Arc::new(source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition))), *part),
+                Arc::new(source.with_scan_metrics(register_read_metrics(&self.metrics, partition))), *part),
             Source::ReadPartitionProjected(source, part, fields) => Source::ReadPartitionProjected(
-                Arc::new(source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition))), *part, fields.clone()),
+                Arc::new(source.with_scan_metrics(register_read_metrics(&self.metrics, partition))), *part, fields.clone()),
             Source::ReadPartitionNested(source, part, fields, paths) => Source::ReadPartitionNested(
-                Arc::new(source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition))), *part, fields.clone(), paths.clone()),
+                Arc::new(source.with_scan_metrics(register_read_metrics(&self.metrics, partition))), *part, fields.clone(), paths.clone()),
             source => source.clone(),
         };
         let schema = self.schema();
