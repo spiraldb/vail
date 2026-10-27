@@ -13,5 +13,15 @@
     "positive-count null sum scalar-vs-group evaluation",
     "EmitToAll transfers capacity",
     "worker-local mutable finalizer placement not yet proved"
-  ]
+  ],
+  "owner_resolution": {
+    "state": "scoped NO-CODE exit/defer",
+    "reason": "immutable ScalarUDF finisher has no existing worker state slot; IndexedInner constructed in outer prefix loop; live window state separated by Arrow snapshot boundary",
+    "public_API_proof_runtime": "not needed/not authorized because lifetime blocker unresolved",
+    "source_references": [
+      "scan_state.rs193/227/376",
+      "scan_scopes.rs605/651",
+      "DF55ScalarFunctionArgs426"
+    ]
+  }
 }
