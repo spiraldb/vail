@@ -218,8 +218,8 @@ impl EntryProjection {
             && column_indices.len() == column_fields.len() {
             return Ok(None);
         }
-        let select_fields = |fields: &arrow_schema::Fields, indices: &[usize]| -> arrow_schema::Fields indices.iter()
-            .map(|&index| fields[index].clone()).collect::<Vec<_>>().into();
+        let select_fields = |fields: &arrow_schema::Fields, indices: &[usize]| -> arrow_schema::Fields { indices.iter()
+            .map(|&index| fields[index].clone()).collect::<Vec<_>>().into() };
         let row_fields = select_fields(row, &row_indices);
         let entry_fields = select_fields(entries, &entry_indices);
         let column_fields = select_fields(column_fields, &column_indices);
