@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/danielking/h089-matched-20261026/protocol/prepare.py", line 33, in <module>
+    run('venv', ['uv', 'venv', '--python', python_base, candidate], 90)
+  File "/home/danielking/h089-matched-20261026/protocol/prepare.py", line 30, in run
+    return guarded(command, out / name, project, env, budget)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danielking/h089-matched-20261026/protocol/common.py", line 117, in guarded
+    raise RuntimeError(json.dumps(receipt))
+RuntimeError: {"command": ["uv", "venv", "--python", "/home/danielking/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/bin/python3.12", "/home/danielking/h089-matched-20261026/run-2/gate/candidate-env"], "elapsed_seconds": 0.0028619379999952343, "returncode": null, "error": "FileNotFoundError(2, 'No such file or directory')", "monitor_maxrss_bytes": 0, "rss_scope": "whole child process; includes construction and warmups", "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"}
