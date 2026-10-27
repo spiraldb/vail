@@ -96,7 +96,7 @@ async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation(
         .sum(|metric| metric.value().name() == "bytes_requested")
         .unwrap()
         .as_usize();
-    assert_eq!(first_sum, before.iter().sum());
+    assert_eq!(first_sum, before.iter().sum::<usize>());
     assert_eq!(second_sum, first_sum);
     assert_eq!(
         before,
