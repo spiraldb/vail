@@ -340,3 +340,19 @@ async fn shared_deep_prefix_preparation_tracks_unique_demand_nodes() {
     assert!(incremental[1] < incremental[0].saturating_mul(8).saturating_add(128 * 1024),
         "shared-prefix demand preparation grew with repeated complete paths: {incremental:?}");
 }
+
+#[cfg(target_os = "linux")]
+#[tokio::test]
+async fn nested_leaf_run_keeps_original_spill_charges_and_omits_unused_output() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    // Same original80MB-per-batch accounting as the full-entry control above;
+    // only the consumer's selected nested fields change.
+    let source = fixture_nested_layout(10_000_000, true, false, Some(3));
+    let selected = nested_selected(&source, 3, false);
+    let before = process_written_bytes();
+    let actual = values(&selected).await;
+    let written = process_written_bytes().saturating_sub(before);
+    assert_eq!(actual, vec![(Some(0), Some(0), Some(10)),(Some(0), Some(0), Some(30)),(Some(0), Some(0), Some(10)),(Some(0), Some(0), Some(30)),(Some(0), Some(1), Some(31)),(Some(0), Some(1), Some(31))]);
+    assert!(written > 0, "original source budget must still force observable spill writes");
+    assert!(written < 8 * 1024 * 1024, "unused nested owner reached temporary output: {written}");
+}
