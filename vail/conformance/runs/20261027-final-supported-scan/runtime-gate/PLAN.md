@@ -1,0 +1,9 @@
+# Minimal accepted-runtime gate before original scan stages
+
+SOURCE ONLY. No VM/query/build/install. Original final-scan protocol remains byte-for-byte d5f5; original enrollment remains SHA01a1d7c2137b8e2bf167e7d185feb86f86d3ea0a4359c1af08bd66584b193648. No upstream worker/action/parameters/telemetry/resource budgets change.
+
+New small wrapper in separate fresh runtime-gate directory pins accepted provision2a8 after-runtime receipt exact JSON SHA plus original accepted protocol ASSETS bytes+24entries and initial enrollment SHA. Verify every original byte BEFORE importing original enroll helper. Re-run artifacts/runtime inventory and require EXACT equality to accepted-after-runtime:current pluspsutil7.2.2only, unchangedold/Hail/frontend/native. Re-enumerate/stat-check initialinputlock using original helper. Unknown/drift stops before query with existing STOP-first semantics.
+
+Emit gate receipt/hash to host-captured stdout, then exec exact ORIGINAL stage.py with same frozen interpreter and selected stage. Wrapper has60s alarm within existing host cap+120s; originalstage resets its existing alarm. No new action/query/fixture, no warmup or source/harness mutation. Accepted runtime state is evidence-derived, not a newly invented before snapshot. Complete original raw provisioning/enrollment receipts remain unchanged.
+
+Host is the same reviewed staged controller except onlypreflight/rep1/2/3/final choices and one source-only upload into fresh runtime-gate before preflight, preserving originalprotocol/inputfiles. Sameproviderstage+15minSTOP beforeboot,90sreadiness/owned cleanup/guestguard, archiveverification/proactiveSTOP. No enroll replay/install. Source supports later stages but each still needs separate rootGO; current request is PREFLIGHT179 only after exactsourceclear. Prefix gate JSON and finalarchive JSON are both preserved in raw hostcommand stdout; the original archive remains unmodified.
