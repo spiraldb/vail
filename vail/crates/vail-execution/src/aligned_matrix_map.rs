@@ -257,6 +257,9 @@ impl StructCaptureView {
 pub(crate) struct RowCaptureView {
     bundle_index: usize,
     field_index: usize,
+    // Keep the original typed binding in equality/hash even when the frame
+    // exposes only selected fields; schema contexts must not alias in CSE.
+    source_type: DataType,
     view: StructCaptureView,
 }
 impl RowCaptureView {
@@ -266,7 +269,8 @@ impl RowCaptureView {
         let DataType::Struct(fields) = bundle[bundle_index].data_type() else { return None; };
         let field_index = fields.iter().position(|field| field.name() == name)?;
         StructCaptureView::prepare(fields[field_index].data_type(), selected)?
-            .map(|view| Self { bundle_index, field_index, view })
+            .map(|view| Self { bundle_index, field_index,
+                source_type: fields[field_index].data_type().clone(), view })
     }
     fn bind(&self, rows: &StructArray) -> Result<ArrayRef> {
         let fields = rows.columns().get(self.bundle_index).and_then(|array| array.as_any().downcast_ref::<StructArray>())
