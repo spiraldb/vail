@@ -11,7 +11,7 @@ use crate::plan::{PhysicalPlan, properties};
 use arrow_array::{
     Array, ArrayRef, LargeListArray, ListArray, RecordBatch, RecordBatchOptions, StructArray, UInt64Array,
 };
-use arrow_schema::{DataType, Field, Schema, SchemaRef, SortOptions};
+use arrow_schema::{DataType, Field, Fields, Schema, SchemaRef, SortOptions};
 use datafusion_common::{DataFusionError, tree_node::TreeNodeRecursion};
 use datafusion_execution::TaskContext;
 use datafusion_physical_expr::{
@@ -174,18 +174,18 @@ pub(crate) struct EntryProjection {
     entry_indices: Vec<usize>,
     column_index: usize,
     column_indices: Vec<usize>,
-    row_fields: arrow_schema::Fields,
-    entry_fields: arrow_schema::Fields,
-    cell_fields: arrow_schema::Fields,
+    row_fields: Fields,
+    entry_fields: Fields,
+    cell_fields: Fields,
     cell_item: Arc<Field>,
     batch_schema: SchemaRef,
-    column_fields: arrow_schema::Fields,
-    column_record_fields: arrow_schema::Fields,
+    column_fields: Fields,
+    column_record_fields: Fields,
 }
 
 impl EntryProjection {
     pub(crate) fn prepare(input_schema: SchemaRef, config: &Config) -> datafusion_common::Result<Option<Self>> {
-        fn fields(dtype: &DataType) -> datafusion_common::Result<&arrow_schema::Fields> {
+        fn fields(dtype: &DataType) -> datafusion_common::Result<&Fields> {
             match dtype {
                 DataType::Struct(fields) => Ok(fields),
                 _ => Err(DataFusionError::Plan("matrix projection requires struct fields".into())),
@@ -208,7 +208,7 @@ impl EntryProjection {
             .ok_or_else(|| DataFusionError::Plan("matrix projection column field absent".into()))?;
         let column_fields = fields(columns[column_index].data_type())?;
         let wanted = config.output_schema.fields().iter().map(|field| field.name().as_str()).collect::<HashSet<_>>();
-        let selected = |source: &arrow_schema::Fields| source.iter().enumerate()
+        let selected = |source: &Fields| source.iter().enumerate()
             .filter(|(_, field)| wanted.contains(field.name().as_str()))
             .map(|(index, _)| index).collect::<Vec<_>>();
         let row_indices = selected(row);
@@ -218,12 +218,12 @@ impl EntryProjection {
             && column_indices.len() == column_fields.len() {
             return Ok(None);
         }
-        let select_fields = |fields: &arrow_schema::Fields, indices: &[usize]| -> arrow_schema::Fields { indices.iter()
+        let select_fields = |fields: &Fields, indices: &[usize]| -> Fields { indices.iter()
             .map(|&index| fields[index].clone()).collect::<Vec<_>>().into() };
         let row_fields = select_fields(row, &row_indices);
         let entry_fields = select_fields(entries, &entry_indices);
         let column_fields = select_fields(column_fields, &column_indices);
-        let cell_fields: arrow_schema::Fields = vec![Arc::new(cells[value_index].as_ref().clone()
+        let cell_fields: Fields = vec![Arc::new(cells[value_index].as_ref().clone()
             .with_data_type(DataType::Struct(entry_fields.clone())))].into();
         let cell_item = match input_schema.field(config.cells).data_type() {
             DataType::List(field) | DataType::LargeList(field) => Arc::new(field.as_ref().clone()
@@ -246,7 +246,7 @@ impl EntryProjection {
                        cell_item, batch_schema, column_fields, column_record_fields }))
     }
 
-    fn select_struct(array: &StructArray, indices: &[usize], fields: &arrow_schema::Fields) -> datafusion_common::Result<StructArray> {
+    fn select_struct(array: &StructArray, indices: &[usize], fields: &Fields) -> datafusion_common::Result<StructArray> {
         Ok(StructArray::try_new_with_length(
             fields.clone(),
             indices.iter().map(|&index| array.column(index).clone()).collect(),
