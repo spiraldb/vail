@@ -6062,11 +6062,72 @@ fn lower_uncached(
                     }
                 }
             });
+            // This map belongs to ONE aligned-map binding/lowering context.
+            // Typed root identities are compared once, while all leaf/callback
+            // uses union demand for that same row binding.
+            struct RowDemand {
+                original: Type,
+                roots: HashSet<usize>,
+                compatible: bool,
+                demand: ColumnDemand,
+            }
+            fn row_path(expr: &Expr) -> Option<(&str, &Type, usize, Vec<String>)> {
+                match expr {
+                    Expr::AlignedMapInput { axis, name: Some(name), dtype } if axis == "row" =>
+                        Some((name, dtype, expr as *const Expr as usize, vec![])),
+                    Expr::GetField { value, name } => {
+                        let (binding, dtype, root, mut path) = row_path(value)?;
+                        path.push(name.clone()); Some((binding, dtype, root, path))
+                    }
+                    _ => None,
+                }
+            }
+            fn row_demand(expr: &Expr, demands: &mut std::collections::BTreeMap<String, RowDemand>, seen: &mut HashSet<usize>) {
+                if !seen.insert(expr as *const Expr as usize) { return; }
+                if let Some((name, dtype, root, path)) = row_path(expr) {
+                    let demand = demands.entry(name.to_owned()).or_insert_with(|| RowDemand {
+                        original: dtype.clone(), roots: HashSet::new(), compatible: true,
+                        demand: ColumnDemand::default(),
+                    });
+                    if demand.roots.insert(root) && demand.original != *dtype { demand.compatible = false; }
+                    demand.demand.insert(&path);
+                } else { expr.visit_children(&mut |child| row_demand(child, demands, seen)); }
+            }
+            fn ordinary_capture(ty: &Type) -> bool {
+                match ty {
+                    Type::Primitive(value) => *value != PrimitiveType::Call,
+                    Type::Struct { r#struct: fields } => fields.iter().all(|(_, ty)| ordinary_capture(ty)),
+                    Type::Array { array } => matches!(array.as_ref(), Type::Primitive(value) if *value != PrimitiveType::Call),
+                    _ => false,
+                }
+            }
+            let mut row_demands = std::collections::BTreeMap::new();
+            if !scalar_rows { row_demand(body, &mut row_demands, &mut HashSet::new()); }
+            let row_frame_type = rows.data_type(schema)?;
             let mut names = std::collections::BTreeMap::new();
             let mut capture_keys = Vec::new();
+            let mut row_capture_views = Vec::new();
             for (key, ty) in captures {
+                let selected = if !scalar_rows && key.0 == "row" && matches!(ty, Type::Struct { .. }) && ordinary_capture(&ty) {
+                    key.1.as_ref().and_then(|name| row_demands.get(name))
+                        .filter(|demand| demand.compatible && demand.original == ty)
+                        .map(|demand| demand.demand.projected(&ty)).unwrap_or_else(|| ty.clone())
+                } else { ty.clone() };
+                let mut selected_arrow = selected.to_arrow()?;
+                let view = if selected != ty {
+                    crate::aligned_matrix_map::RowCaptureView::prepare(
+                        &row_frame_type, key.1.as_deref().ok_or_else(|| ExprError::Invalid("row capture name absent".into()))?,
+                        &selected_arrow,
+                    )
+                } else { None };
+                // If the declared physical representation would need a leaf
+                // conversion before viewing, retain the WHOLE original frame.
+                if selected != ty && view.is_none() { selected_arrow = ty.to_arrow()?; }
+                row_capture_views.push(view);
                 let name = format!("__vail_aligned_bound_{}", body_fields.len());
-                body_fields.push(Field::new(&name, ty.to_arrow()?, true));
+                // Rewriting below replaces typed capture nodes throughout
+                // nested callbacks before their schemas compile from this frame.
+                body_fields.push(Field::new(&name, selected_arrow, true));
                 capture_keys.push(key.clone());
                 names.insert(key, name);
             }
@@ -6141,6 +6202,7 @@ fn lower_uncached(
                 all_present_body,
                 capture_keys,
                 capture_types,
+                row_capture_views,
                 column_dtype,
                 dtype.to_arrow()?,
                 body_dtype,

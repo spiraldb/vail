@@ -18,7 +18,7 @@ use arrow_array::{
 use arrow_array::{Int32Array, RunArray, UInt32Array};
 use arrow_buffer::{BooleanBuffer, NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_cast::cast;
-use arrow_schema::{DataType, FieldRef, Schema};
+use arrow_schema::{DataType, FieldRef, Fields, Schema};
 use arrow_select::{concat::concat, take::take};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::ColumnarValue;
@@ -206,6 +206,71 @@ fn prepare_row_captures(
     Ok(result)
 }
 
+/// A query-prepared ordinary-Struct view. Binding only borrows selected
+/// children and validates their actual lengths/null masks with safe Arrow APIs.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct StructCaptureView {
+    fields: Fields,
+    children: Vec<(usize, Option<Box<StructCaptureView>>)>,
+}
+impl StructCaptureView {
+    fn prepare(source: &DataType, selected: &DataType) -> Option<Option<Self>> {
+        if source == selected { return Some(None); }
+        let (DataType::Struct(source), DataType::Struct(selected)) = (source, selected) else {
+            return None;
+        };
+        let indices = source.iter().enumerate().map(|(index, field)| (field.name(), index))
+            .collect::<HashMap<_, _>>();
+        let mut fields = Vec::with_capacity(selected.len());
+        let mut children = Vec::with_capacity(selected.len());
+        for field in selected {
+            let index = *indices.get(field.name())?;
+            let child = Self::prepare(source[index].data_type(), field.data_type())?;
+            let dtype = child.as_ref().map(|view| DataType::Struct(view.fields.clone()))
+                .unwrap_or_else(|| source[index].data_type().clone());
+            fields.push(Arc::new(source[index].as_ref().clone().with_data_type(dtype)));
+            children.push((index, child.map(Box::new)));
+        }
+        Some(Some(Self { fields: fields.into(), children }))
+    }
+    fn bind(&self, source: &ArrayRef) -> Result<ArrayRef> {
+        let values = source.as_any().downcast_ref::<StructArray>().ok_or_else(||
+            DataFusionError::Execution("row capture view requires StructArray".into()))?;
+        let arrays = self.children.iter().map(|(index, child)| {
+            let array = values.columns().get(*index).ok_or_else(||
+                DataFusionError::Execution("row capture source fields changed".into()))?;
+            match child { Some(view) => view.bind(array), None => Ok(array.clone()) }
+        }).collect::<Result<Vec<_>>>()?;
+        Ok(Arc::new(StructArray::try_new_with_length(
+            self.fields.clone(), arrays, values.nulls().cloned(), values.len(),
+        )?))
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub(crate) struct RowCaptureView {
+    bundle_index: usize,
+    field_index: usize,
+    view: StructCaptureView,
+}
+impl RowCaptureView {
+    pub(crate) fn prepare(rows: &DataType, name: &str, selected: &DataType) -> Option<Self> {
+        let DataType::Struct(bundle) = rows else { return None; };
+        let bundle_index = bundle.iter().position(|field| field.name() == "__vail_aligned_row")?;
+        let DataType::Struct(fields) = bundle[bundle_index].data_type() else { return None; };
+        let field_index = fields.iter().position(|field| field.name() == name)?;
+        StructCaptureView::prepare(fields[field_index].data_type(), selected)?
+            .map(|view| Self { bundle_index, field_index, view })
+    }
+    fn bind(&self, rows: &StructArray) -> Result<ArrayRef> {
+        let fields = rows.columns().get(self.bundle_index).and_then(|array| array.as_any().downcast_ref::<StructArray>())
+            .ok_or_else(|| DataFusionError::Execution("aligned row bundle changed".into()))?;
+        let field = fields.columns().get(self.field_index).ok_or_else(||
+            DataFusionError::Execution("aligned row capture fields changed".into()))?;
+        self.view.bind(field)
+    }
+}
+
 #[derive(Debug)]
 pub(crate) struct AlignedMatrixMapExpr {
     entries: Arc<dyn PhysicalExpr>,
@@ -217,6 +282,7 @@ pub(crate) struct AlignedMatrixMapExpr {
     input_keys: HashSet<InputKey>,
     binding_order: Vec<InputKey>,
     capture_types: Vec<DataType>,
+    row_capture_views: Vec<Option<RowCaptureView>>,
     column_dtype: Option<DataType>,
     dtype: DataType,
     body_dtype: DataType,
@@ -234,6 +300,7 @@ impl AlignedMatrixMapExpr {
         all_present_body: Option<Arc<dyn PhysicalExpr>>,
         capture_keys: Vec<(String, Option<String>)>,
         capture_types: Vec<DataType>,
+        row_capture_views: Vec<Option<RowCaptureView>>,
         column_dtype: Option<DataType>,
         dtype: DataType,
         body_dtype: DataType,
@@ -255,6 +322,7 @@ impl AlignedMatrixMapExpr {
             input_keys,
             binding_order,
             capture_types,
+            row_capture_views,
             column_dtype,
             dtype,
             body_dtype,
@@ -399,17 +467,17 @@ impl AlignedMatrixMapExpr {
                     let name = key.name.as_deref().ok_or_else(|| {
                         DataFusionError::Execution("row aligned input needs a field name".into())
                     })?;
-                    let fields = rows
-                        .column_by_name("__vail_aligned_row")
-                        .and_then(|value| value.as_any().downcast_ref::<StructArray>())
-                        .ok_or_else(|| {
-                            DataFusionError::Execution("aligned row bundle is malformed".into())
-                        })?;
-                    let field = fields.column_by_name(name).ok_or_else(|| {
-                        DataFusionError::Execution(format!("row field {name:?} is absent"))
-                    })?;
+                    let field = match &self.row_capture_views[capture_index] {
+                        Some(view) => view.bind(rows)?,
+                        None => rows.column_by_name("__vail_aligned_row")
+                            .and_then(|value| value.as_any().downcast_ref::<StructArray>())
+                            .and_then(|fields| fields.column_by_name(name)).cloned()
+                            .ok_or_else(|| DataFusionError::Execution(format!("row field {name:?} is absent")))?,
+                    };
+                    // Narrow BEFORE row selection and full restoration/REE
+                    // materialization; unused payload never enters these takes.
                     let run_values = if row_indices.len() == field.len() {
-                        field.clone()
+                        field
                     } else {
                         take(field.as_ref(), &row_indices, None)?
                     };
@@ -543,6 +611,7 @@ impl PartialEq for AlignedMatrixMapExpr {
             && self.body.as_ref() == other.body.as_ref()
             && self.binding_order == other.binding_order
             && self.capture_types == other.capture_types
+            && self.row_capture_views == other.row_capture_views
             && self.column_dtype == other.column_dtype
             && self.dtype == other.dtype
             && self.body_dtype == other.body_dtype
@@ -560,6 +629,7 @@ impl Hash for AlignedMatrixMapExpr {
         self.body.hash(state);
         self.binding_order.hash(state);
         self.capture_types.hash(state);
+        self.row_capture_views.hash(state);
         self.column_dtype.hash(state);
         self.dtype.hash(state);
         self.body_dtype.hash(state);
@@ -618,6 +688,7 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             input_keys: self.input_keys.clone(),
             binding_order: self.binding_order.clone(),
             capture_types: self.capture_types.clone(),
+            row_capture_views: self.row_capture_views.clone(),
             column_dtype: self.column_dtype.clone(),
             dtype: self.dtype.clone(),
             body_dtype: self.body_dtype.clone(),
