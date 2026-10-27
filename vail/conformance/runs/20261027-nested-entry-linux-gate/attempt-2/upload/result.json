@@ -1,0 +1,58 @@
+{
+  "returncode": 0,
+  "error": null,
+  "owned_group_clean": true,
+  "elapsed_seconds": 2.1720844589872286,
+  "identity": {
+    "pid": 91467,
+    "host_uid": 501,
+    "host_euid": 501,
+    "popen_after_monotonic": 932820.011863375,
+    "retired": true,
+    "pgid": 91467,
+    "sid": 91467,
+    "spawn_members": [
+      {
+        "pid": 91467,
+        "ppid": 90934,
+        "pgid": 91467,
+        "uid": 501,
+        "sid": 91467,
+        "start": "Tue Oct 27 10:53:19 2026    "
+      }
+    ],
+    "leader": {
+      "pid": 91467,
+      "ppid": 90934,
+      "pgid": 91467,
+      "uid": 501,
+      "sid": 91467,
+      "start": "Tue Oct 27 10:53:19 2026    "
+    },
+    "popen_before_monotonic": 932820.010456958
+  },
+  "cleanup_observations": [
+    {
+      "observed_monotonic": 932822.182385041,
+      "leader_status": 0,
+      "members": []
+    }
+  ],
+  "identity_probes": [
+    {
+      "pid": 91468,
+      "reaped": true,
+      "error": null,
+      "kill_error": null,
+      "returncode": 0
+    },
+    {
+      "pid": 91490,
+      "reaped": true,
+      "error": null,
+      "kill_error": null,
+      "returncode": 0
+    }
+  ],
+  "identity_precision": "OS ps lstart seconds; read-check/signal non-atomic, not reuse proof"
+}
