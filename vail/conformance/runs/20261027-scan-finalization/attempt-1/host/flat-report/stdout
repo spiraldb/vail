@@ -1,0 +1,1128 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 279  of event 'cpu-clock:u'
+# Event count (approx.): 2818181790
+#
+# Overhead  Command          Shared Object     Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+# ........  ...............  ................  ................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+     5.73%  tokio-rt-worker  libc.so.6         [.] cfree
+            |
+            ---cfree
+               |          
+               |--1.43%--_RNvXso_NtCscHgRw1M2fX5_5alloc3vecINtB5_3VecINtNtB7_5boxed3BoxDG0_INtNtNtCsc36rpYXAlPq_4core3ops8function2FnTQL1_INtNtCsfSJhml1cgMN_10arrow_data9transform17__MutableArrayDataL0_EjjjEEp6OutputINtNtB18_6result6ResultuNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEL_EENtNtB16_4drop4Drop4dropCsdP38Dg95o5n_14vail_execution
+               |          _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution11scan_scopes22CompositionAccumulatorEBF_
+               |          _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution10scan_state16StateAccumulatorEBF_
+               |          _RNvXso_NtCscHgRw1M2fX5_5alloc3vecINtB5_3VecNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENtNtNtCsc36rpYXAlPq_4core3ops4drop4Drop4dropCsdP38Dg95o5n_14vail_execution
+               |          _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator24GroupsAccumulatorAdapterECsdP38Dg95o5n_14vail_execution
+               |          _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution11scan_scopes18IndexedAccumulatorEBF_
+               |          _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+               |          _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+               |          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               |          _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               |          _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               |          _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+               |          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+               |          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+               |          _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+               |          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               |          _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               |          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+               |          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               |          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               |          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               |          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               |          _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               |          _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               |          _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               |          _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               |          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               |          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               |          _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               |          _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               |          _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               |          _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               |          0x77953f494a82
+               |          0x77953f5268df
+               |          
+               |--1.08%--_RNvXs2_NtCsdP38Dg95o5n_14vail_execution11native_meanNtB5_7MeanUdfNtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulator
+               |          _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState11accumulator
+               |          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2O_3map3MapINtNtNtB2S_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B4n_B4l_11accumulatorEINtNtB2S_6result6ResultNtNtB2S_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4p_
+               |          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B1y_B1w_11accumulatorEINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B4G_IB4E_INtNtB2Y_3vec3VecB2T_EB5q_EINtNtNtB4_6traits7collect12FromIteratorIB4E_B2T_B5q_EE9from_iterBQ_E0B6H_EB1A_
+               |          _RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+               |          _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+               |          |          
+               |           --0.72%--_RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState20snapshot_accumulator
+               |                     _RNvMs_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB4_24GroupsAccumulatorAdapter27make_accumulators_if_needed
+               |                     _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+               |                     _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+               |          
+               |--0.72%--_RNvMsn_NtCscHgRw1M2fX5_5alloc4syncINtB5_3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_E9drop_slowBL_
+               |          
+                --0.72%--_RNvXs0_NtCs9vBjetmuy2k_30datafusion_functions_aggregate7averageNtB5_3AvgNtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulator
+                          _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11native_meanNtB5_7MeanUdfNtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulator
+                          _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState11accumulator
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2O_3map3MapINtNtNtB2S_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B4n_B4l_11accumulatorEINtNtB2S_6result6ResultNtNtB2S_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4p_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B1y_B1w_11accumulatorEINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B4G_IB4E_INtNtB2Y_3vec3VecB2T_EB5q_EINtNtNtB4_6traits7collect12FromIteratorIB4E_B2T_B5q_EE9from_iterBQ_E0B6H_EB1A_
+                          _RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+                          _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+                          _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState20snapshot_accumulator
+                          _RNvMs_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB4_24GroupsAccumulatorAdapter27make_accumulators_if_needed
+                          _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+                          _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+
+     5.38%  python           python3.12        [.] _PyEval_EvalFrameDefault
+            |
+            ---_PyEval_EvalFrameDefault
+               |          
+               |--4.30%--gen_iternext
+               |          |          
+               |          |--3.58%--builtin_all
+               |          |          _PyEval_EvalFrameDefault
+               |          |          |          
+               |          |           --3.23%--gen_iternext
+               |          |                     builtin_all
+               |          |                     _PyEval_EvalFrameDefault
+               |          |                     |          
+               |          |                     |--2.51%--gen_iternext
+               |          |                     |          builtin_all
+               |          |                     |          _PyEval_EvalFrameDefault
+               |          |                     |          PyEval_EvalCode
+               |          |                     |          run_mod
+               |          |                     |          pyrun_file
+               |          |                     |          _PyRun_SimpleFileObject
+               |          |                     |          _PyRun_AnyFileObject
+               |          |                     |          pymain_run_file_obj
+               |          |                     |          pymain_run_file
+               |          |                     |          Py_RunMain.warm
+               |          |                     |          pymain_main
+               |          |                     |          main
+               |          |                     |          0x77953f429d8f
+               |          |                     |          __libc_start_main
+               |          |                     |          _start
+               |          |                     |          
+               |          |                      --0.72%--PyEval_EvalCode
+               |          |                                run_mod
+               |          |                                pyrun_file
+               |          |                                _PyRun_SimpleFileObject
+               |          |                                _PyRun_AnyFileObject
+               |          |                                pymain_run_file_obj
+               |          |                                pymain_run_file
+               |          |                                Py_RunMain.warm
+               |          |                                pymain_main
+               |          |                                main
+               |          |                                0x77953f429d8f
+               |          |                                __libc_start_main
+               |          |                                _start
+               |          |          
+               |           --0.72%--list_extend
+               |                     list_vectorcall
+               |                     _PyEval_EvalFrameDefault
+               |                     PyEval_EvalCode
+               |                     run_mod
+               |                     pyrun_file
+               |                     _PyRun_SimpleFileObject
+               |                     _PyRun_AnyFileObject
+               |                     pymain_run_file_obj
+               |                     pymain_run_file
+               |                     Py_RunMain.warm
+               |                     pymain_main
+               |                     main
+               |                     0x77953f429d8f
+               |                     __libc_start_main
+               |                     _start
+               |          
+                --1.08%--PyEval_EvalCode
+                          run_mod
+                          pyrun_file
+                          _PyRun_SimpleFileObject
+                          _PyRun_AnyFileObject
+                          pymain_run_file_obj
+                          pymain_run_file
+                          Py_RunMain.warm
+                          pymain_main
+                          main
+                          0x77953f429d8f
+                          __libc_start_main
+                          _start
+
+     2.87%  python           python3.12        [.] _PyObject_Free
+            |
+            ---_PyObject_Free
+               |          
+               |--1.08%--set_dealloc
+               |          _PyEval_EvalFrameDefault
+               |          gen_iternext
+               |          builtin_all
+               |          _PyEval_EvalFrameDefault
+               |          gen_iternext
+               |          builtin_all
+               |          _PyEval_EvalFrameDefault
+               |          |          
+               |           --0.72%--PyEval_EvalCode
+               |                     run_mod
+               |                     pyrun_file
+               |                     _PyRun_SimpleFileObject
+               |                     _PyRun_AnyFileObject
+               |                     pymain_run_file_obj
+               |                     pymain_run_file
+               |                     Py_RunMain.warm
+               |                     pymain_main
+               |                     main
+               |                     0x77953f429d8f
+               |                     __libc_start_main
+               |                     _start
+               |          
+               |--0.72%--dict_dealloc
+               |          
+                --0.72%--meth_dealloc
+                          _PyEval_EvalFrameDefault
+                          gen_iternext
+                          builtin_all
+                          _PyEval_EvalFrameDefault
+                          gen_iternext
+                          builtin_all
+                          _PyEval_EvalFrameDefault
+                          gen_iternext
+                          builtin_all
+                          _PyEval_EvalFrameDefault
+                          PyEval_EvalCode
+                          run_mod
+                          pyrun_file
+                          _PyRun_SimpleFileObject
+                          _PyRun_AnyFileObject
+                          pymain_run_file_obj
+                          pymain_run_file
+                          Py_RunMain.warm
+                          pymain_main
+                          main
+                          0x77953f429d8f
+                          __libc_start_main
+                          _start
+
+     2.15%  tokio-rt-worker  _native.abi3.so   [.] _RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+            |
+            ---_RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+               _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState20snapshot_accumulator
+               _RNvMs_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB4_24GroupsAccumulatorAdapter27make_accumulators_if_needed
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+               |          
+                --1.79%--_RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+                          |          
+                          |--1.08%--_RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator5state
+                          |          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                          |          _RNvXs0_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB5_24PlainAggregateWindowExprNtNtB7_11window_expr19AggregateWindowExpr33get_aggregate_result_inside_range
+                          |          _RNvYNtNtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregate24PlainAggregateWindowExprNtNtB6_11window_expr19AggregateWindowExpr17get_result_columnB8_
+                          |          _RNvXs_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB4_24PlainAggregateWindowExprNtNtB6_11window_expr10WindowExpr17evaluate_stateful
+                          |          _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream18compute_aggregates
+                          |          _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+                          |          _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          |          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          |          _RNvMs4_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStream14poll_next_impl
+                          |          _RNvXs5_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          |          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          |          _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                          |          0xffffffffffffffff
+                          |          
+                           --0.72%--_RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                                     _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+                                     _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+                                     _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+                                     _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+                                     _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                                     _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+                                     _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+                                     _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+                                     _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+                                     _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                                     _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                                     _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+                                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                                     _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+                                     _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+                                     _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+                                     _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+                                     _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+                                     _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+                                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+                                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+                                     _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                     _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                     _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                     _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                     0x77953f494a82
+                                     0x77953f5268df
+
+     1.79%  python           python3.12        [.] float_fromhex
+            |
+            ---float_fromhex
+               cfunction_vectorcall_O
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               |          
+               |--1.08%--PyEval_EvalCode
+               |          run_mod
+               |          pyrun_file
+               |          _PyRun_SimpleFileObject
+               |          _PyRun_AnyFileObject
+               |          pymain_run_file_obj
+               |          pymain_run_file
+               |          Py_RunMain.warm
+               |          pymain_main
+               |          main
+               |          0x77953f429d8f
+               |          __libc_start_main
+               |          _start
+               |          
+                --0.72%--gen_iternext
+                          builtin_all
+                          _PyEval_EvalFrameDefault
+                          PyEval_EvalCode
+                          run_mod
+                          pyrun_file
+                          _PyRun_SimpleFileObject
+                          _PyRun_AnyFileObject
+                          pymain_run_file_obj
+                          pymain_run_file
+                          Py_RunMain.warm
+                          pymain_main
+                          main
+                          0x77953f429d8f
+                          __libc_start_main
+                          _start
+
+     1.79%  tokio-rt-worker  libc.so.6         [.] malloc
+            |
+            ---malloc
+
+     1.43%  python           python3.12        [.] _PyObject_Malloc
+            |
+            ---_PyObject_Malloc
+               |          
+                --0.72%--_PyEval_EvalFrameDefault
+
+     1.43%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs1_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types11Float64TypeENtB7_5Array5sliceCs9FTdQ4z8jo9_12arrow_select
+            |
+            ---_RNvXs1_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types11Float64TypeENtB7_5Array5sliceCs9FTdQ4z8jo9_12arrow_select
+               |          
+                --1.08%--_RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2J_5slice4iter4IterB13_ENCNvNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator22slice_and_maybe_filter0EE9from_iterB42_
+                          _RNvNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator22slice_and_maybe_filter
+                          _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+                          _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+                          _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator5state
+                          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                          _RNvXs0_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB5_24PlainAggregateWindowExprNtNtB7_11window_expr19AggregateWindowExpr33get_aggregate_result_inside_range
+                          _RNvYNtNtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregate24PlainAggregateWindowExprNtNtB6_11window_expr19AggregateWindowExpr17get_result_columnB8_
+                          _RNvXs_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB4_24PlainAggregateWindowExprNtNtB6_11window_expr10WindowExpr17evaluate_stateful
+                          _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream18compute_aggregates
+                          _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+                          _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNvMs4_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStream14poll_next_impl
+                          _RNvXs5_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                          0xffffffffffffffff
+
+     1.43%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+            |
+            ---_RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+               |          
+                --1.08%--_RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState20snapshot_accumulator
+                          _RNvMs_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB4_24GroupsAccumulatorAdapter27make_accumulators_if_needed
+                          _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+                          _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+                          |          
+                           --0.72%--_RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                                     _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+                                     _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+                                     _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+                                     _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+                                     _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                                     _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+                                     _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+                                     _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+                                     _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+                                     _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                                     _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                                     _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+                                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                                     _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+                                     _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+                                     _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+                                     _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+                                     _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+                                     _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+                                     _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+                                     _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+                                     _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                                     _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                                     _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                                     _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                                     0x77953f494a82
+                                     0x77953f5268df
+
+     1.08%  python           python3.12        [.] cell_dealloc
+            |
+            ---cell_dealloc
+               _PyFrame_ClearExceptCode
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               |          
+                --0.72%--PyEval_EvalCode
+                          run_mod
+                          pyrun_file
+                          _PyRun_SimpleFileObject
+                          _PyRun_AnyFileObject
+                          pymain_run_file_obj
+                          pymain_run_file
+                          Py_RunMain.warm
+                          pymain_main
+                          main
+                          0x77953f429d8f
+                          __libc_start_main
+                          _start
+
+     1.08%  python           python3.12        [.] set_issubset
+            |
+            ---set_issubset
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               |          
+                --0.72%--gen_iternext
+                          builtin_all
+                          _PyEval_EvalFrameDefault
+                          PyEval_EvalCode
+                          run_mod
+                          pyrun_file
+                          _PyRun_SimpleFileObject
+                          _PyRun_AnyFileObject
+                          pymain_run_file_obj
+                          pymain_run_file
+                          Py_RunMain.warm
+                          pymain_main
+                          main
+                          0x77953f429d8f
+                          __libc_start_main
+                          _start
+
+     1.08%  tokio-rt-worker  _native.abi3.so   [.] _RINvNtCs3BwVHKs2HCF_11arrow_arith9aggregate23aggregate_nonnull_lanesdINtB2_14SumAccumulatordEKj8_ECs9vBjetmuy2k_30datafusion_functions_aggregate
+            |
+            ---_RINvNtCs3BwVHKs2HCF_11arrow_arith9aggregate23aggregate_nonnull_lanesdINtB2_14SumAccumulatordEKj8_ECs9vBjetmuy2k_30datafusion_functions_aggregate
+               |          
+                --0.72%--_RNvXs1_NtCs9vBjetmuy2k_30datafusion_functions_aggregate7averageNtB5_14AvgAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator11merge_batch
+                          _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator11merge_batch
+                          _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+                          _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+                          _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                          _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+                          _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+                          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+                          _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+                          _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                          _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+                          _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+                          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+                          _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+                          _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+                          _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+                          _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                          _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                          _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                          _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                          0x77953f494a82
+                          0x77953f5268df
+
+     1.08%  tokio-rt-worker  _native.abi3.so   [.] _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateEBF_.llvm.18167387687107005320
+            |
+            ---_RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateEBF_.llvm.18167387687107005320
+               _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution11scan_scopes11CompositionEBF_
+               _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution11scan_scopes22CompositionAccumulatorEBF_
+               _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution10scan_state16StateAccumulatorEBF_
+               |          
+                --0.72%--_RNvXso_NtCscHgRw1M2fX5_5alloc3vecINtB5_3VecNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENtNtNtCsc36rpYXAlPq_4core3ops4drop4Drop4dropCsdP38Dg95o5n_14vail_execution
+                          _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator24GroupsAccumulatorAdapterECsdP38Dg95o5n_14vail_execution
+                          _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtCsdP38Dg95o5n_14vail_execution11scan_scopes18IndexedAccumulatorEBF_
+                          _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+                          _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+                          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+                          _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+                          _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                          _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+                          _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+                          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+                          _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+                          _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+                          _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+                          _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                          _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                          _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                          _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+                          0x77953f494a82
+                          0x77953f5268df
+
+     1.08%  tokio-rt-worker  _native.abi3.so   [.] _RNvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB4_14PrimitiveArrayNtNtB8_5types9Int32TypeE5sliceCs9FTdQ4z8jo9_12arrow_select
+            |
+            ---_RNvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB4_14PrimitiveArrayNtNtB8_5types9Int32TypeE5sliceCs9FTdQ4z8jo9_12arrow_select
+               _RNvXs1_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types9Int32TypeENtB7_5Array5sliceCs9FTdQ4z8jo9_12arrow_select
+               _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2J_5slice4iter4IterB13_ENCNvMs_NtB1p_12record_batchNtB41_11RecordBatch5slice0EE9from_iterB1p_
+               _RNvMNtNtCssQFFS8Tj5v_11arrow_array5array12struct_arrayNtB2_11StructArray5slice
+               _RNvXs2_NtNtCssQFFS8Tj5v_11arrow_array5array12struct_arrayNtB5_11StructArrayNtB7_5Array5slice
+               _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2J_5slice4iter4IterB13_ENCNvNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator22slice_and_maybe_filter0EE9from_iterB42_
+               _RNvNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator22slice_and_maybe_filter
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator12update_batch
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs0_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB5_24PlainAggregateWindowExprNtNtB7_11window_expr19AggregateWindowExpr33get_aggregate_result_inside_range
+               _RNvYNtNtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregate24PlainAggregateWindowExprNtNtB6_11window_expr19AggregateWindowExpr17get_result_columnB8_
+               _RNvXs_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB4_24PlainAggregateWindowExprNtNtB6_11window_expr10WindowExpr17evaluate_stateful
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream18compute_aggregates
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+               _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvMs4_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStream14poll_next_impl
+               _RNvXs5_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               0xffffffffffffffff
+
+     1.08%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs5_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16HailPhysicalExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+            |
+            ---_RNvXs5_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16HailPhysicalExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNvXse_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16CompiledPhysicalNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState13finish_states
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+               _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+               _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               0x77953f494a82
+               0x77953f5268df
+
+     1.08%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2C_3map3MapINtNtB6_9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B4b_NtB4b_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0EINtNtB2G_6result6ResultNtNtB2G_7convert10InfallibleNtNtB12_5error15DataFusionErrorEEE9from_iterB4f_
+            |
+            ---_RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2C_3map3MapINtNtB6_9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B4b_NtB4b_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0EINtNtB2G_6result6ResultNtNtB2G_7convert10InfallibleNtNtB12_5error15DataFusionErrorEEE9from_iterB4f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B1W_NtB1W_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0ENtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB5U_5error15DataFusionErrorENCINvXso_B6O_IB6M_INtB1b_3VecB5Q_EB7y_EINtNtNtB4_6traits7collect12FromIteratorIB6M_B5Q_B7y_EE9from_iterBQ_E0B8m_EB20_
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate
+               _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator5state
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNvXs0_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB5_24PlainAggregateWindowExprNtNtB7_11window_expr19AggregateWindowExpr33get_aggregate_result_inside_range
+               _RNvYNtNtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregate24PlainAggregateWindowExprNtNtB6_11window_expr19AggregateWindowExpr17get_result_columnB8_
+               _RNvXs_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB4_24PlainAggregateWindowExprNtNtB6_11window_expr10WindowExpr17evaluate_stateful
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream18compute_aggregates
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+               _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvMs4_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStream14poll_next_impl
+               _RNvXs5_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               0xffffffffffffffff
+
+     1.08%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a296d
+            |
+            ---0x77953f4a296d
+               |          
+                --0.72%--cfree
+
+     1.08%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a45c2
+            |
+            ---0x77953f4a45c2
+               malloc
+               |          
+                --0.72%--_RNvNtCscHgRw1M2fX5_5alloc5boxed14box_new_uninit
+                          _RNvMs3_NtCscyM5V4UuW11_17datafusion_common6scalarNtB5_11ScalarValue16to_array_of_size
+                          _RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB1Z_8adapters3map12map_try_foldBX_INtNtB21_6result6ResultINtNtBa_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_ENtNtB11_5error15DataFusionErrorEuINtNtNtB21_3ops12control_flow11ControlFlowIB5C_B42_EENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB6A_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0NCINvXB35_INtB35_12GenericShuntINtB33_3MapBI_B6s_EIB3G_NtNtB21_7convert10InfallibleB54_EEB1T_8try_folduNCINvNvB1T_12try_for_each4callB42_B6h_NcNtB6h_5Break0E0B6h_E0E0B5B_EB6C_
+                          _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2J_3map3MapINtNtB6_9into_iter8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5k_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0EINtNtB2N_6result6ResultNtNtB2N_7convert10InfallibleNtNtB4k_5error15DataFusionErrorEEE9from_iterB5m_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB2Y_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0EINtNtB1d_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB1Y_5error15DataFusionErrorENCINvXso_B6r_IB6p_INtB1b_3VecB5l_EB7b_EINtNtNtB4_6traits7collect12FromIteratorIB6p_B5l_B7b_EE9from_iterBQ_E0B7Z_EB30_
+                          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                          _RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB2N_8adapters3map12map_try_foldBX_INtNtB2P_6result6ResultNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueNtNtB4U_5error15DataFusionErrorEuINtNtNtB2P_3ops12control_flow11ControlFlowIB6j_B4Q_EENCNvXs0_BZ_NtBZ_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0NCINvXB3T_INtB3T_12GenericShuntINtB3R_3MapBI_B79_EIB4u_NtNtB2P_7convert10InfallibleB5L_EEB2H_8try_folduNCINvNvB2H_12try_for_each4callB4Q_B6Y_NcNtB6Y_5Break0E0B6Y_E0E0B6i_EB13_
+                          _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2C_3map3MapINtNtB6_9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B4b_NtB4b_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0EINtNtB2G_6result6ResultNtNtB2G_7convert10InfallibleNtNtB12_5error15DataFusionErrorEEE9from_iterB4f_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B1W_NtB1W_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0ENtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB5U_5error15DataFusionErrorENCINvXso_B6O_IB6M_INtB1b_3VecB5Q_EB7y_EINtNtNtB4_6traits7collect12FromIteratorIB6M_B5Q_B7y_EE9from_iterBQ_E0B8m_EB20_
+                          _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate
+                          _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+                          _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+                          _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+                          _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+                          _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+                          _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+                          _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+                          _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+                          _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+                          _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+                          _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+                          _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+                          _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+                          _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+                          _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+                          _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+                          _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+                          _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+                          _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+                          _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+                          _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+                          _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+                          _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+                          0xffffffffffffffff
+
+     1.08%  tokio-rt-worker  libc.so.6         [.] 0x00000000001a0c97
+            |
+            ---0x77953f5a0c97
+               _RNvCs6rREvFdRhLb_7___rustc13___rdl_realloc
+               _RNvMNtNtCs7N2wUSrbeI5_12arrow_buffer6buffer7mutableNtB2_13MutableBuffer10reallocate
+               _RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform9primitive12build_extenddE0B8_.llvm.18096730490399550574
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RNCNvNtNtCsfSJhml1cgMN_10arrow_data9transform9structure12build_extend0B7_.llvm.12336759436199750901
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt32TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt32TypeEB4_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3z_8try_folduNCINvNvB3z_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7c_5Break0E0B7c_E0IB7d_B7c_EEB2N_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB44_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B3P_IB3N_INtNtB1B_3vec3VecB1w_EB4z_EINtNtNtB4_6traits7collect12FromIteratorIB3N_B1w_B4z_EE9from_iterBQ_E0B5G_EB2W_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays
+               _RINvMs4_NtCscwegncljyBF_15datafusion_expr21higher_order_functionNtB6_14LambdaArgument8evaluateNCNvXs0_NtCsdfSapRAvmv8_27datafusion_functions_nested15array_transformNtB1C_14ArrayTransformNtB6_18HigherOrderUDFImpl16invoke_with_argss_0EB1E_
+               _RNvXs0_NtCsdfSapRAvmv8_27datafusion_functions_nested15array_transformNtB5_14ArrayTransformNtNtCscwegncljyBF_15datafusion_expr21higher_order_function18HigherOrderUDFImpl16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr21higher_order_functionNtB5_23HigherOrderFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNvXse_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16CompiledPhysicalNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNCNvNtCsdP38Dg95o5n_14vail_execution12logical_expr14logical_kernels0_0B5_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_19expression_identity8IdentityINtNtCscHgRw1M2fX5_5alloc4sync3ArcNtNtCs4rBjmHhJQrR_12arrow_schema6schema6SchemaEEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               0xffffffffffffffff
+
+     1.08%  tokio-rt-worker  libc.so.6         [.] 0x00000000001a0dc1
+            |
+            ---0x77953f5a0dc1
+               _RNvCs6rREvFdRhLb_7___rustc13___rdl_realloc
+               _RNvMNtNtCs7N2wUSrbeI5_12arrow_buffer6buffer7mutableNtB2_13MutableBuffer10reallocate
+               _RNCINvNtNtCsfSJhml1cgMN_10arrow_data9transform9primitive12build_extenddE0B8_.llvm.18096730490399550574
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RNCNvNtNtCsfSJhml1cgMN_10arrow_data9transform9structure12build_extend0B7_.llvm.12336759436199750901
+               _RNvMs0_NtCsfSJhml1cgMN_10arrow_data9transformNtB5_16MutableArrayData10try_extend
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_listNtNtCssQFFS8Tj5v_11arrow_array5types10UInt32TypeNtBN_9Int32TypeEB4_
+               _RINvNtCs9FTdQ4z8jo9_12arrow_select4take9take_implNtNtCssQFFS8Tj5v_11arrow_array5types10UInt32TypeEB4_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take4take
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB3z_8try_folduNCINvNvB3z_12try_for_each4callB1n_INtNtNtBc_3ops12control_flow11ControlFlowB1n_ENcNtB7c_5Break0E0B7c_E0IB7d_B7c_EEB2N_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_5slice4iter4IterBU_ENCNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB44_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EENCNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays0EB1w_INtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B3P_IB3N_INtNtB1B_3vec3VecB1w_EB4z_EINtNtNtB4_6traits7collect12FromIteratorIB3N_B1w_B4z_EE9from_iterBQ_E0B5G_EB2W_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select4take11take_arrays
+               _RINvMs4_NtCscwegncljyBF_15datafusion_expr21higher_order_functionNtB6_14LambdaArgument8evaluateNCNvXs0_NtCsdfSapRAvmv8_27datafusion_functions_nested15array_transformNtB1C_14ArrayTransformNtB6_18HigherOrderUDFImpl16invoke_with_argss_0EB1E_
+               _RNvXs0_NtCsdfSapRAvmv8_27datafusion_functions_nested15array_transformNtB5_14ArrayTransformNtNtCscwegncljyBF_15datafusion_expr21higher_order_function18HigherOrderUDFImpl16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr21higher_order_functionNtB5_23HigherOrderFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNvXse_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16CompiledPhysicalNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNCNvNtCsdP38Dg95o5n_14vail_execution12logical_expr14logical_kernels0_0B5_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_19expression_identity8IdentityINtNtCscHgRw1M2fX5_5alloc4sync3ArcNtNtCs4rBjmHhJQrR_12arrow_schema6schema6SchemaEEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               0xffffffffffffffff
+
+     0.72%  python           libc.so.6         [.] malloc
+            |
+            ---malloc
+
+     0.72%  python           libm.so.6         [.] scalbnf32x
+            |
+            ---scalbnf32x
+
+     0.72%  python           python3.12        [.] PyDict_SetItem
+            |
+            ---PyDict_SetItem
+
+     0.72%  python           python3.12        [.] PyType_GenericAlloc
+            |
+            ---PyType_GenericAlloc
+               make_new_set
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+
+     0.72%  python           python3.12        [.] PyUnicode_New
+            |
+            ---PyUnicode_New
+               py_encode_basestring_ascii
+
+     0.72%  python           python3.12        [.] listiter_next
+            |
+            ---listiter_next
+               zip_next
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+
+     0.72%  python           python3.12        [.] meth_dealloc
+            |
+            ---meth_dealloc
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               PyEval_EvalCode
+               run_mod
+               pyrun_file
+               _PyRun_SimpleFileObject
+               _PyRun_AnyFileObject
+               pymain_run_file_obj
+               pymain_run_file
+               Py_RunMain.warm
+               pymain_main
+               main
+               0x77953f429d8f
+               __libc_start_main
+               _start
+
+     0.72%  python           python3.12        [.] py_encode_basestring_ascii
+            |
+            ---py_encode_basestring_ascii
+               encoder_listencode_obj
+               encoder_encode_key_value
+               encoder_listencode_obj
+               encoder_listencode_obj
+               encoder_encode_key_value
+               encoder_listencode_obj
+               encoder_listencode_obj
+               encoder_encode_key_value
+               encoder_listencode_obj
+               encoder_call
+               _PyEval_EvalFrameDefault
+               PyEval_EvalCode
+               run_mod
+               pyrun_file
+               _PyRun_SimpleFileObject
+               _PyRun_AnyFileObject
+               pymain_run_file_obj
+               pymain_run_file
+               Py_RunMain.warm
+               pymain_main
+               main
+               0x77953f429d8f
+               __libc_start_main
+               _start
+
+     0.72%  python           python3.12        [.] set_dealloc
+            |
+            ---set_dealloc
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               gen_iternext
+               builtin_all
+               _PyEval_EvalFrameDefault
+               PyEval_EvalCode
+               run_mod
+               pyrun_file
+               _PyRun_SimpleFileObject
+               _PyRun_AnyFileObject
+               pymain_run_file_obj
+               pymain_run_file
+               Py_RunMain.warm
+               pymain_main
+               main
+               0x77953f429d8f
+               __libc_start_main
+               _start
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtNtCssQFFS8Tj5v_11arrow_array5array12struct_array11StructArrayECscyM5V4UuW11_17datafusion_common
+            |
+            ---_RINvNtCsc36rpYXAlPq_4core3ptr9drop_glueNtNtNtCssQFFS8Tj5v_11arrow_array5array12struct_array11StructArrayECscyM5V4UuW11_17datafusion_common
+               _RNvMsn_NtCscHgRw1M2fX5_5alloc4syncINtB5_3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_E9drop_slowBL_
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RINvNtNtCs7N2wUSrbeI5_12arrow_buffer4util8bit_util34byte_aligned_bitwise_bin_op_helperNCNvMNtNtB6_7builder7booleanNtB1r_20BooleanBufferBuilder19append_packed_range0RShEB6_.llvm.14324438054043788270
+            |
+            ---_RINvNtNtCs7N2wUSrbeI5_12arrow_buffer4util8bit_util34byte_aligned_bitwise_bin_op_helperNCNvMNtNtB6_7builder7booleanNtB1r_20BooleanBufferBuilder19append_packed_range0RShEB6_.llvm.14324438054043788270
+               _RNvMNtNtCs7N2wUSrbeI5_12arrow_buffer7builder7booleanNtB2_20BooleanBufferBuilder19append_packed_range
+               _RINvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types9Int32TypeE9unary_optINvNtCse6SLPPg0RSt_10arrow_cast4cast8num_castldENtB1k_11Float64TypeEB1V_
+               _RINvNtCse6SLPPg0RSt_10arrow_cast4cast19cast_numeric_arraysNtNtCssQFFS8Tj5v_11arrow_array5types9Int32TypeNtBW_11Float64TypeEB4_
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast17cast_with_options
+               _RNvNtCse6SLPPg0RSt_10arrow_cast4cast4cast
+               _RNvNtCsdP38Dg95o5n_14vail_execution11native_mean11cast_values
+               _RNvXNtCsdP38Dg95o5n_14vail_execution11native_meanNtB2_15MeanAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator12update_batch
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs0_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB5_24PlainAggregateWindowExprNtNtB7_11window_expr19AggregateWindowExpr33get_aggregate_result_inside_range
+               _RNvYNtNtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregate24PlainAggregateWindowExprNtNtB6_11window_expr19AggregateWindowExpr17get_result_columnB8_
+               _RNvXs_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB4_24PlainAggregateWindowExprNtNtB6_11window_expr10WindowExpr17evaluate_stateful
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream18compute_aggregates
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+               _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvMs4_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStream14poll_next_impl
+               0xffffffffffffffff
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB1Z_8adapters3map12map_try_foldBX_INtNtB21_6result6ResultINtNtBa_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_ENtNtB11_5error15DataFusionErrorEuINtNtNtB21_3ops12control_flow11ControlFlowIB5C_B42_EENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB6A_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0NCINvXB35_INtB35_12GenericShuntINtB33_3MapBI_B6s_EIB3G_NtNtB21_7convert10InfallibleB54_EEB1T_8try_folduNCINvNvB1T_12try_for_each4callB42_B6h_NcNtB6h_5Break0E0B6h_E0E0B5B_EB6C_
+            |
+            ---_RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB1Z_8adapters3map12map_try_foldBX_INtNtB21_6result6ResultINtNtBa_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_ENtNtB11_5error15DataFusionErrorEuINtNtNtB21_3ops12control_flow11ControlFlowIB5C_B42_EENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB6A_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0NCINvXB35_INtB35_12GenericShuntINtB33_3MapBI_B6s_EIB3G_NtNtB21_7convert10InfallibleB54_EEB1T_8try_folduNCINvNvB1T_12try_for_each4callB42_B6h_NcNtB6h_5Break0E0B6h_E0E0B5B_EB6C_
+               _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2J_3map3MapINtNtB6_9into_iter8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5k_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0EINtNtB2N_6result6ResultNtNtB2N_7convert10InfallibleNtNtB4k_5error15DataFusionErrorEEE9from_iterB5m_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB2Y_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0EINtNtB1d_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB1Y_5error15DataFusionErrorENCINvXso_B6r_IB6p_INtB1b_3VecB5l_EB7b_EINtNtNtB4_6traits7collect12FromIteratorIB6p_B5l_B7b_EE9from_iterBQ_E0B7Z_EB30_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB2N_8adapters3map12map_try_foldBX_INtNtB2P_6result6ResultNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueNtNtB4U_5error15DataFusionErrorEuINtNtNtB2P_3ops12control_flow11ControlFlowIB6j_B4Q_EENCNvXs0_BZ_NtBZ_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0NCINvXB3T_INtB3T_12GenericShuntINtB3R_3MapBI_B79_EIB4u_NtNtB2P_7convert10InfallibleB5L_EEB2H_8try_folduNCINvNvB2H_12try_for_each4callB4Q_B6Y_NcNtB6Y_5Break0E0B6Y_E0E0B6i_EB13_
+               _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2C_3map3MapINtNtB6_9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B4b_NtB4b_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0EINtNtB2G_6result6ResultNtNtB2G_7convert10InfallibleNtNtB12_5error15DataFusionErrorEEE9from_iterB4f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B1W_NtB1W_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0ENtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB5U_5error15DataFusionErrorENCINvXso_B6O_IB6M_INtB1b_3VecB5Q_EB7y_EINtNtNtB4_6traits7collect12FromIteratorIB6M_B5Q_B7y_EE9from_iterBQ_E0B8m_EB20_
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate
+               _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator5state
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNvXs0_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB5_24PlainAggregateWindowExprNtNtB7_11window_expr19AggregateWindowExpr33get_aggregate_result_inside_range
+               _RNvYNtNtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregate24PlainAggregateWindowExprNtNtB6_11window_expr19AggregateWindowExpr17get_result_columnB8_
+               _RNvXs_NtNtCsi0ibyfHU6WU_24datafusion_physical_expr6window9aggregateNtB4_24PlainAggregateWindowExprNtNtB6_11window_expr10WindowExpr17evaluate_stateful
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream18compute_aggregates
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+               _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvMs4_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStream14poll_next_impl
+               _RNvXs5_NtNtNtCse4MAgqXzjG2_24datafusion_physical_plan5joins9hash_join6streamNtB5_14HashJoinStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               0xffffffffffffffff
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB4_14PrimitiveArrayNtNtB8_5types10UInt64TypeE10from_valueCscyM5V4UuW11_17datafusion_common
+            |
+            ---_RNvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB4_14PrimitiveArrayNtNtB8_5types10UInt64TypeE10from_valueCscyM5V4UuW11_17datafusion_common
+               _RNvMs3_NtCscyM5V4UuW11_17datafusion_common6scalarNtB5_11ScalarValue16to_array_of_size
+               _RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB1Z_8adapters3map12map_try_foldBX_INtNtB21_6result6ResultINtNtBa_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_ENtNtB11_5error15DataFusionErrorEuINtNtNtB21_3ops12control_flow11ControlFlowIB5C_B42_EENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB6A_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0NCINvXB35_INtB35_12GenericShuntINtB33_3MapBI_B6s_EIB3G_NtNtB21_7convert10InfallibleB54_EEB1T_8try_folduNCINvNvB1T_12try_for_each4callB42_B6h_NcNtB6h_5Break0E0B6h_E0E0B5B_EB6C_
+               _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2J_3map3MapINtNtB6_9into_iter8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5k_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0EINtNtB2N_6result6ResultNtNtB2N_7convert10InfallibleNtNtB4k_5error15DataFusionErrorEEE9from_iterB5m_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueENCNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB2Y_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate0EINtNtB1d_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB1Y_5error15DataFusionErrorENCINvXso_B6r_IB6p_INtB1b_3VecB5l_EB7b_EINtNtNtB4_6traits7collect12FromIteratorIB6p_B5l_B7b_EE9from_iterBQ_E0B7Z_EB30_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RINvXs4_NtNtCscHgRw1M2fX5_5alloc3vec9into_iterINtB6_8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENtNtNtNtCsc36rpYXAlPq_4core4iter6traits8iterator8Iterator8try_folduNCINvNtNtB2N_8adapters3map12map_try_foldBX_INtNtB2P_6result6ResultNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueNtNtB4U_5error15DataFusionErrorEuINtNtNtB2P_3ops12control_flow11ControlFlowIB6j_B4Q_EENCNvXs0_BZ_NtBZ_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0NCINvXB3T_INtB3T_12GenericShuntINtB3R_3MapBI_B79_EIB4u_NtNtB2P_7convert10InfallibleB5L_EEB2H_8try_folduNCINvNvB2H_12try_for_each4callB4Q_B6Y_NcNtB6Y_5Break0E0B6Y_E0E0B6i_EB13_
+               _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec16in_place_collectINtB6_3VecNtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueEINtNtB6_14spec_from_iter12SpecFromIterBY_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2C_3map3MapINtNtB6_9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B4b_NtB4b_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0EINtNtB2G_6result6ResultNtNtB2G_7convert10InfallibleNtNtB12_5error15DataFusionErrorEEE9from_iterB4f_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtCscHgRw1M2fX5_5alloc3vec9into_iter8IntoIterNtNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator16AccumulatorStateENCNvXs0_B1W_NtB1W_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate0ENtNtCscyM5V4UuW11_17datafusion_common6scalar11ScalarValueINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtB5U_5error15DataFusionErrorENCINvXso_B6O_IB6M_INtB1b_3VecB5Q_EB7y_EINtNtNtB4_6traits7collect12FromIteratorIB6M_B5Q_B7y_EE9from_iterBQ_E0B8m_EB20_
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate
+               _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvMsn_NtCscHgRw1M2fX5_5alloc4syncINtB5_3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_E9drop_slowBL_
+            |
+            ---_RNvMsn_NtCscHgRw1M2fX5_5alloc4syncINtB5_3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_E9drop_slowBL_
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvNtCs9vBjetmuy2k_30datafusion_functions_aggregate7average8avg_udaf
+            |
+            ---_RNvNtCs9vBjetmuy2k_30datafusion_functions_aggregate7average8avg_udaf
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11native_meanNtB5_7MeanUdfNtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulator
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState11accumulator
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2O_3map3MapINtNtNtB2S_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B4n_B4l_11accumulatorEINtNtB2S_6result6ResultNtNtB2S_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4p_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B1y_B1w_11accumulatorEINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B4G_IB4E_INtNtB2Y_3vec3VecB2T_EB5q_EINtNtNtB4_6traits7collect12FromIteratorIB4E_B2T_B5q_EE9from_iterBQ_E0B6H_EB1A_
+               _RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+               _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState20snapshot_accumulator
+               _RNvMs_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB4_24GroupsAccumulatorAdapter27make_accumulators_if_needed
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvNtCsdP38Dg95o5n_14vail_execution11expressions9scalar_at
+            |
+            ---_RNvNtCsdP38Dg95o5n_14vail_execution11expressions9scalar_at
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState13finish_states
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+               _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+               _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               0x77953f494a82
+               0x77953f5268df
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator22slice_and_maybe_filter
+            |
+            ---_RNvNtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulator22slice_and_maybe_filter
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator12update_batch
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2w_3map3MapINtNtNtB2A_5slice4iter4IterINtNtB6_4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EENCNvXs5_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5Q_16HailPhysicalExprB4l_8evaluates0_0EINtNtB2A_6result6ResultNtNtB2A_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB5S_
+            |
+            ---_RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecNtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2w_3map3MapINtNtNtB2A_5slice4iter4IterINtNtB6_4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EENCNvXs5_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5Q_16HailPhysicalExprB4l_8evaluates0_0EINtNtB2A_6result6ResultNtNtB2A_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB5S_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExprEL_EENCNvXs5_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB3A_16HailPhysicalExprB25_8evaluates0_0ENtNtCsgiwOebE7iqN_22datafusion_expr_common14columnar_value13ColumnarValueINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B6d_IB6b_INtNtB1B_3vec3VecB4Z_EB6X_EINtNtNtB4_6traits7collect12FromIteratorIB6b_B4Z_B6X_EE9from_iterBQ_E0B8e_EB3C_
+               _RNvXs5_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16HailPhysicalExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNvXse_NtCsdP38Dg95o5n_14vail_execution11expressionsNtB5_16CompiledPhysicalNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState13finish_states
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+               _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+               _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               0x77953f494a82
+               0x77953f5268df
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs1_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types10Date64TypeENtB7_5Array3lenCscyM5V4UuW11_17datafusion_common
+            |
+            ---_RNvXs1_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB5_14PrimitiveArrayNtNtB9_5types10Date64TypeENtB7_5Array3lenCscyM5V4UuW11_17datafusion_common
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11native_meanNtB5_7MeanUdfNtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulator
+            |
+            ---_RNvXs2_NtCsdP38Dg95o5n_14vail_execution11native_meanNtB5_7MeanUdfNtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulator
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState11accumulator
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2O_3map3MapINtNtNtB2S_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B4n_B4l_11accumulatorEINtNtB2S_6result6ResultNtNtB2S_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4p_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_5slice4iter4IterNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENvMs1_B1y_B1w_11accumulatorEINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11AccumulatorEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B4G_IB4E_INtNtB2Y_3vec3VecB2T_EB5q_EINtNtNtB4_6traits7collect12FromIteratorIB4E_B2T_B5q_EE9from_iterBQ_E0B6H_EB1A_
+               _RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+               _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator11merge_batch
+            |
+            ---_RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator11merge_batch
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator4size
+            |
+            ---_RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator4size
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator4size
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs5_NtCs4rBjmHhJQrR_12arrow_schema8datatypeNtB5_8DataTypeNtNtCsc36rpYXAlPq_4core3cmp9PartialEq2eq
+            |
+            ---_RNvXs5_NtCs4rBjmHhJQrR_12arrow_schema8datatypeNtB5_8DataTypeNtNtCsc36rpYXAlPq_4core3cmp9PartialEq2eq
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs5_NtCs4rBjmHhJQrR_12arrow_schema8datatypeNtB5_8DataTypeNtNtCsc36rpYXAlPq_4core3cmp9PartialEq2eq.llvm.3180649141839423571
+            |
+            ---_RNvXs5_NtCs4rBjmHhJQrR_12arrow_schema8datatypeNtB5_8DataTypeNtNtCsc36rpYXAlPq_4core3cmp9PartialEq2eq.llvm.3180649141839423571
+               _RNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes5input
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator12update_batch
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2J_5slice4iter4IterB13_ENCNvXsn_NtCsdP38Dg95o5n_14vail_execution27advanced_numeric_aggregatesNtB42_16DownsampleGroupsNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batchs1_0EE9from_iterB44_
+            |
+            ---_RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2J_5slice4iter4IterB13_ENCNvXsn_NtCsdP38Dg95o5n_14vail_execution27advanced_numeric_aggregatesNtB42_16DownsampleGroupsNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batchs1_0EE9from_iterB44_
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState13finish_states
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator8evaluate
+               _RNCNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB7_9ScanState8finisher0B9_
+               _RNCINvNtCsdP38Dg95o5n_14vail_execution15kernel_identity6scalarNtNtB6_12array_length11OuterLengthE0B6_
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_6ScalarTNtNtB7_10scan_state9ScanStatebEENtNtCscwegncljyBF_15datafusion_expr3udf13ScalarUDFImpl16invoke_with_argsB7_
+               _RNvMs2_NtCscwegncljyBF_15datafusion_expr3udfNtB5_9ScalarUDF16invoke_with_args
+               _RNvXs4_NtCsi0ibyfHU6WU_24datafusion_physical_expr15scalar_functionNtB5_18ScalarFunctionExprNtNtCs8xtNWPURqa1_31datafusion_physical_expr_common13physical_expr12PhysicalExpr8evaluate
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtB8_9enumerate9EnumerateIBO_INtNtNtBc_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B1V_NtB1V_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1p_E0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEB5C_8try_folduNCINvNvB5C_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtNtBc_3ops12control_flow11ControlFlowB9l_ENcNtBaE_5Break0E0BaE_E0IBaF_BaE_EEB1X_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtB2n_9enumerate9EnumerateIB3d_INtNtNtB2r_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B4u_NtB4u_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB3W_E0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorEEE9from_iterB4w_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtB2_9enumerate9EnumerateIBR_INtNtNtB6_5slice4iter4IterNtNtCsi0ibyfHU6WU_24datafusion_physical_expr10projection14ProjectionExprENCNvMsd_B24_NtB24_9Projector13project_batch0EENCINvNtCs8xtNWPURqa1_31datafusion_physical_expr_common5utils43evaluate_expressions_to_arrays_with_metricsB1y_E0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCINvXso_B77_IB75_INtNtB5Q_3vec3VecB5L_EB7R_EINtNtNtB4_6traits7collect12FromIteratorIB75_B5L_B7R_EE9from_iterBQ_E0B98_EB26_
+               _RNvMsd_NtCsi0ibyfHU6WU_24datafusion_physical_expr10projectionNtB5_9Projector13project_batch
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6future6future3mapINtB5_3MapINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB1a_6future6future6Futurep6OutputIB1C_DNtNtB1a_3any3AnyNtNtB1a_6marker4SendEL_EB3a_EL_EENCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtB1a_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB6p_15RepartitionExec15pull_from_input0Es_0EB2b_4pollB6r_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB13_6future6future6Futurep6OutputINtNtB13_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB13_6marker4SendEL_EEINtNtB1z_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtCsc36rpYXAlPq_4core3pin3PinINtNtCscHgRw1M2fX5_5alloc5boxed3BoxDNtNtNtB19_6future6future6Futurep6OutputINtNtB19_6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENtNtB19_6marker4SendEL_EEINtNtB1F_4sync3ArcNtNtNtNtB9_9scheduler12multi_thread6handle6HandleEE4pollCse4MAgqXzjG2_24datafusion_physical_plan
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context8run_task
+               _RNvMs_NtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6workerNtB4_7Context3run
+               _RINvMNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context6scopedINtB3_6ScopedNtNtB7_9scheduler7ContextE3setNCNCNvNtNtB15_12multi_thread6worker3run00uEB9_
+               _RINvNtNtNtCs4kgkAJEDKpi_5tokio7runtime7context7runtime13enter_runtimeNCNvNtNtNtB6_9scheduler12multi_thread6worker3run0uEB8_
+               _RNvNtNtNtNtCs4kgkAJEDKpi_5tokio7runtime9scheduler12multi_thread6worker3run
+               _RNvXs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4taskINtB5_12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1g_6Launch6launch0ENtNtNtCsc36rpYXAlPq_4core6future6future6Future4pollBb_
+               _RNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task4coreINtB5_4CoreINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1F_6Launch6launch0ENtNtB13_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs0_NtNtNtCs4kgkAJEDKpi_5tokio7runtime4task7harnessINtB5_7HarnessINtNtNtB9_8blocking4task12BlockingTaskNCNvMNtNtNtB9_9scheduler12multi_thread6workerNtB1L_6Launch6launch0ENtNtB19_8schedule16BlockingScheduleE4pollBb_
+               _RNvMs5_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB5_5Inner3run
+               _RINvNtNtCs6ZjlLoI6YmX_3std3sys9backtrace28___rust_begin_short_backtraceNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1f_7Spawner12spawn_thread0uEB1l_
+               _RNSNvYNCINvNtNtCs6ZjlLoI6YmX_3std6thread9lifecycle15spawn_uncheckedNCNvMs4_NtNtNtCs4kgkAJEDKpi_5tokio7runtime8blocking4poolNtB1b_7Spawner12spawn_thread0uEs_0INtNtNtCsc36rpYXAlPq_4core3ops8function6FnOnceuE9call_once6vtableB1h_
+               _RNvNvMs0_NtNtNtCs6ZjlLoI6YmX_3std3sys6thread4unixNtB7_6Thread3new12thread_start
+               0x77953f494a82
+               0x77953f5268df
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters5chain5ChainINtNtNtB2H_7sources4once4OnceB13_EINtNtB2F_6cloned6ClonedINtNtNtB2J_5slice4iter4IterB13_EEEE9from_iterCsdP38Dg95o5n_14vail_execution
+            |
+            ---_RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecINtNtB8_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters5chain5ChainINtNtNtB2H_7sources4once4OnceB13_EINtNtB2F_6cloned6ClonedINtNtNtB2J_5slice4iter4IterB13_EEEE9from_iterCsdP38Dg95o5n_14vail_execution
+               _RNvNtCsdP38Dg95o5n_14vail_execution11native_mean11cast_values
+               _RNvXNtCsdP38Dg95o5n_14vail_execution11native_meanNtB2_15MeanAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs2_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_22CompositionAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator12update_batch
+               _RNvXsa_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_18IndexedAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs3_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_16StateAccumulatorNtNtCsgiwOebE7iqN_22datafusion_expr_common11accumulator11Accumulator12update_batch
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator12update_batch
+               _RNvMNtNtNtCse4MAgqXzjG2_24datafusion_physical_plan10aggregates20aggregate_hash_table12single_tableINtNtB4_6common18AggregateHashTableNtB1B_12SingleMarkerE15aggregate_batch
+               _RNvXs0_NtNtCse4MAgqXzjG2_24datafusion_physical_plan10aggregates13single_streamNtB5_25SingleHashAggregateStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCs4FakClkD50C_12futures_core6streamINtNtNtCscSvGpEwpIQn_12futures_util6stream4once4OnceNCNvXs3_NtNtCse4MAgqXzjG2_24datafusion_physical_plan5sorts4sortNtB1E_8SortExecNtNtB1I_14execution_plan13ExecutionPlan7executes_0ENtB5_9TryStream13try_poll_nextB1I_
+               _RNvXs0_NtNtNtCscSvGpEwpIQn_12futures_util6stream10try_stream11try_flattenINtB5_10TryFlattenINtNtB9_4once4OnceNCNvXs3_NtNtCse4MAgqXzjG2_24datafusion_physical_plan5sorts4sortNtB1R_8SortExecNtNtB1V_14execution_plan13ExecutionPlan7executes_0EENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB1V_
+               _RNvXs3_NtCse4MAgqXzjG2_24datafusion_physical_plan6streamINtB5_24RecordBatchStreamAdapterINtNtNtNtCscSvGpEwpIQn_12futures_util6stream10try_stream11try_flatten10TryFlattenINtNtB1v_4once4OnceNCNvXs3_NtNtB7_5sorts4sortNtB38_8SortExecNtNtB7_14execution_plan13ExecutionPlan7executes_0EEENtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_nextB7_
+               _RNvMs8_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStream15poll_next_inner
+               _RNvXs7_NtNtCse4MAgqXzjG2_24datafusion_physical_plan7windows23bounded_window_agg_execNtB5_22BoundedWindowAggStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNvXs2_NtCse4MAgqXzjG2_24datafusion_physical_plan10projectionNtB5_16ProjectionStreamNtNtCs4FakClkD50C_12futures_core6stream6Stream9poll_next
+               _RNCINvNtCseq12ZokCy0T_25datafusion_common_runtime11trace_utils12trace_futureINtNtCsc36rpYXAlPq_4core6result6ResultuNtNtCscyM5V4UuW11_17datafusion_common5error15DataFusionErrorENCNvMsd_NtCse4MAgqXzjG2_24datafusion_physical_plan11repartitionNtB2W_15RepartitionExec15pull_from_input0E0B2Y_.llvm.12667479792823847913
+               0xffffffffffffffff
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecRDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2s_5slice4iter4IterRNtNtB17_12struct_array11StructArrayENCNCNvNtCs9FTdQ4z8jo9_12arrow_select10interleave17interleave_struct00EE9from_iterB4h_
+            |
+            ---_RNvXs_NtNtCscHgRw1M2fX5_5alloc3vec21spec_from_iter_nestedINtB6_3VecRDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtB4_18SpecFromIterNestedB13_INtNtNtNtCsc36rpYXAlPq_4core4iter8adapters3map3MapINtNtNtB2s_5slice4iter4IterRNtNtB17_12struct_array11StructArrayENCNCNvNtCs9FTdQ4z8jo9_12arrow_select10interleave17interleave_struct00EE9from_iterB4h_
+               _RINvXs0_NtNtNtCsc36rpYXAlPq_4core4iter8adapters3mapINtB6_3MapINtNtNtBc_3ops5range5RangejENCNvNtCs9FTdQ4z8jo9_12arrow_select6concat14concat_structss0_0ENtNtNtBa_6traits8iterator8Iterator8try_folduNCINvXB8_INtB8_12GenericShuntBN_INtNtBc_6result6ResultNtNtBc_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEB2p_8try_folduNCINvNvB2p_12try_for_each4callINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB12_12control_flow11ControlFlowB5Y_ENcNtB7h_5Break0E0B7h_E0IB7i_B7h_EEB1v_
+               _RNvXNtNtCscHgRw1M2fX5_5alloc3vec14spec_from_iterINtB4_3VecINtNtB6_4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EEINtB2_12SpecFromIterBU_INtNtNtCsc36rpYXAlPq_4core4iter8adapters12GenericShuntINtNtB2n_3map3MapINtNtNtB2r_3ops5range5RangejENCNvNtCs9FTdQ4z8jo9_12arrow_select6concat14concat_structss0_0EINtNtB2r_6result6ResultNtNtB2r_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorEEE9from_iterB42_
+               _RINvNtNtCsc36rpYXAlPq_4core4iter8adapters11try_processINtNtB2_3map3MapINtNtNtB6_3ops5range5RangejENCNvNtCs9FTdQ4z8jo9_12arrow_select6concat14concat_structss0_0EINtNtCscHgRw1M2fX5_5alloc4sync3ArcDNtNtCssQFFS8Tj5v_11arrow_array5array5ArrayEL_EINtNtB6_6result6ResultNtNtB6_7convert10InfallibleNtNtCs4rBjmHhJQrR_12arrow_schema5error10ArrowErrorENCINvXso_B3U_IB3S_INtNtB2D_3vec3VecB2y_EB4E_EINtNtNtB4_6traits7collect12FromIteratorIB3S_B2y_B4E_EE9from_iterBQ_E0B5L_EB1E_
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select6concat14concat_structs
+               _RNvNtCs9FTdQ4z8jo9_12arrow_select6concat6concat
+               _RINvMs3_NtCscyM5V4UuW11_17datafusion_common6scalarNtB6_11ScalarValue13iter_to_arrayINtNtCscHgRw1M2fX5_5alloc3vec3VecBM_EECs3WKDQW6z8Xe_37datafusion_functions_aggregate_common
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator8evaluate
+               _RNvMs7_NtCsdP38Dg95o5n_14vail_execution11scan_scopesNtB5_12IndexedInner8snapshot
+
+     0.72%  tokio-rt-worker  _native.abi3.so   [.] _RNvXsa_NtCscHgRw1M2fX5_5alloc3vecINtB5_3VecNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENtNtCsc36rpYXAlPq_4core5clone5Clone5cloneBJ_
+            |
+            ---_RNvXsa_NtCscHgRw1M2fX5_5alloc3vecINtB5_3VecNtNtCsdP38Dg95o5n_14vail_execution10scan_state9ScanStateENtNtCsc36rpYXAlPq_4core5clone5Clone5cloneBJ_
+               _RNCNvNtCsdP38Dg95o5n_14vail_execution11scan_scopes8composeds1_0B5_
+               _RNvXs8_NtCsdP38Dg95o5n_14vail_execution15kernel_identityINtB5_9AggregateNtNtB7_11scan_scopes13ScopeIdentityENtNtCscwegncljyBF_15datafusion_expr4udaf16AggregateUDFImpl11accumulatorB7_
+               _RNvMs1_NtCsdP38Dg95o5n_14vail_execution10scan_stateNtB5_9ScanState20snapshot_accumulator
+               _RNvMs_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB4_24GroupsAccumulatorAdapter27make_accumulators_if_needed
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+
+     0.72%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a16e3
+            |
+            ---0x77953f4a16e3
+
+     0.72%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a2688
+            |
+            ---0x77953f4a2688
+               cfree
+               _RNvXs0_NtNtCs3WKDQW6z8Xe_37datafusion_functions_aggregate_common9aggregate18groups_accumulatorNtB5_24GroupsAccumulatorAdapterNtNtCsgiwOebE7iqN_22datafusion_expr_common18groups_accumulator17GroupsAccumulator11merge_batch
+
+     0.72%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a29dd
+            |
+            ---0x77953f4a29dd
+               cfree
+
+     0.72%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a3a86
+            |
+            ---0x77953f4a3a86
+               malloc
+
+     0.72%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a3e4a
+            |
+            ---0x77953f4a3e4a
+               malloc
+               _RNvMs_NtNtCssQFFS8Tj5v_11arrow_array5array15primitive_arrayINtB4_14PrimitiveArrayNtNtB8_5types11Float64TypeE10from_valueCscyM5V4UuW11_17datafusion_common
+               _RNvMs3_NtCscyM5V4UuW11_17datafusion_common6scalarNtB5_11ScalarValue16to_array_of_size
+
+     0.72%  tokio-rt-worker  libc.so.6         [.] 0x00000000000a3ed6
+            |
+            ---0x77953f4a3ed6
+
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#
