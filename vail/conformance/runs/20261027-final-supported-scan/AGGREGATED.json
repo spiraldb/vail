@@ -1,0 +1,48 @@
+{
+  "scope": "Original three frozen timed repetitions only; full-input SHA runtime passed, independent acceptance pending.",
+  "frozen_native_sha256": "4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c",
+  "frozen_production": "517c87538d58689e864af795015020e908de0be0",
+  "newer_main_pruning_NOT_measured": "73201cc4c",
+  "sources": {
+    "rep1-attempt-1/recovered/rep1/results.json": "1f4f147780d0d07f29c4f68b6437cc0716a62e1c82eb172ffa517ba6910f9e99",
+    "rep2-attempt-1/recovered/rep2/results.json": "4fdfb3d65c8ea14e96680dc0880548d94043b79cbb3859435492a4c3ee0b5152",
+    "rep3-attempt-1/recovered/rep3/results.json": "bd94bea289d9d6ebe5ee3fd938f9f48bce8a7a8b492942a5c8abadea0b7217b5"
+  },
+  "scheduled_observations": 1410,
+  "fresh_worker_attempts": 1408,
+  "passed_benchmark_observations_including_planning": 1407,
+  "fresh_nonpasses": 1,
+  "cached_nonpasses": 2,
+  "eligible_nonplanning_execution_measurements": 1398,
+  "planning_measurements": 9,
+  "logical_case_denominators": {
+    "native_or_format_independent": 112,
+    "legacy_storage_only": 67,
+    "native_nonplanning_old_current_pairs": 111,
+    "native_nonplanning_Hail_current_pairs": 110,
+    "legacy_nonplanning_pairs": 67
+  },
+  "excluded_both_engines_by_policy": 39,
+  "supplemental_jobs_explicitly_omitted": 85,
+  "Hail_helper_failure": {
+    "case": "benchmark_combiner::test_import_gvcf_force_count",
+    "reason": "ModuleNotFoundError: No module named test",
+    "fresh_failed_attempts": 1,
+    "cached_observations": 2,
+    "actual_performance_samples": 0,
+    "source": "rep1-attempt-1/recovered/rep1/results.json"
+  },
+  "statuses": {
+    "passed": 1407,
+    "failed": 3
+  },
+  "version_scheduled_observations": {
+    "old": 537,
+    "current": 537,
+    "hail": 336
+  },
+  "final_input_integrity_accepted": false,
+  "limits": "CPU:10Hz observed descendant lowerbound; RSS:summed sampled tree not PSS/allocation, fixture/action interval guard only; initialization RSS unguarded; oldPython3.11/current3.12 wholebundle comparison; original evidence tiers no cross-engine full-result comparisons.",
+  "final_input_integrity_runtime_passed": true,
+  "final_input_integrity_evidence": "final-attempt-1/summary.json"
+}
