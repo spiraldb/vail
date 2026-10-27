@@ -1,7 +1,6 @@
 //! Requested-byte counters on the normal public native source execution path.
 use std::collections::HashSet;
-use std::io::{Read, Seek, SeekFrom, Write};
-use std::fs::OpenOptions;
+use std::fs::remove_file;
 use tempfile::tempdir;
 use std::sync::Arc;
 
@@ -93,27 +92,20 @@ async fn canceled_source_retains_its_observed_attempted_bytes() {
 }
 
 #[tokio::test]
-async fn corrupt_real_file_keeps_attempts_when_execution_fails() {
+async fn missing_real_file_fails_without_fabricated_read_requests() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("table");
     let path = path.to_str().unwrap();
     let plan = fixture(path).await;
     let source = open_local(path).await.unwrap();
     let file = &source.descriptor().files[0].path;
-    let mut file = OpenOptions::new().read(true).write(true)
-        .open(file.strip_prefix("file://").unwrap_or(file)).unwrap();
-    file.seek(SeekFrom::End(-1)).unwrap();
-    let mut last = [0];
-    file.read_exact(&mut last).unwrap();
-    file.seek(SeekFrom::End(-1)).unwrap();
-    file.write_all(&[last[0] ^ 0xff]).unwrap();
-    drop(file);
+    remove_file(file.strip_prefix("file://").unwrap_or(file)).unwrap();
     let result = plan.execute(0, Arc::new(TaskContext::default())).unwrap()
         .try_collect::<Vec<_>>().await;
     assert!(result.is_err());
     let domains = requested(&plan);
     assert_eq!(domains.len(), 1);
-    assert!(domains[0].value().as_usize() > 0);
+    assert_eq!(domains[0].value().as_usize(), 0);
 }
 
 #[tokio::test]
