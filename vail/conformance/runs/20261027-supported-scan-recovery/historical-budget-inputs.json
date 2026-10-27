@@ -1,0 +1,23 @@
+{
+  "scope": "upstream only; format-independent Vail measured once, not in duplicate storage mode; historical medians not current ETA",
+  "modes": {
+    "hail-hail": {
+      "cases": 112,
+      "sum_case_median_query_seconds": 829.103410225993,
+      "sum_case_median_cpu_seconds": 5698.98,
+      "sum_case_median_worker_elapsed_seconds": 2135.58
+    },
+    "vail-vail": {
+      "cases": 112,
+      "sum_case_median_query_seconds": 409.4174668839876,
+      "sum_case_median_cpu_seconds": 2210.32,
+      "sum_case_median_worker_elapsed_seconds": 448.353
+    },
+    "vail-hail": {
+      "cases": 67,
+      "sum_case_median_query_seconds": 824.0584206599958,
+      "sum_case_median_cpu_seconds": 2160.12,
+      "sum_case_median_worker_elapsed_seconds": 852.066
+    }
+  }
+}

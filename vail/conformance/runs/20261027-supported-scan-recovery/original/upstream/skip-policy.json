@@ -1,0 +1,829 @@
+{
+  "schema_version": 1,
+  "created_at": 1792791567.678766,
+  "authorization": "User narrowed Hail benchmark scan to cases supported by Vail; parent task directed explicit evidence policy",
+  "scope": "Future Hail attempts only; all existing receipts preserved; Vail failures remain reported",
+  "new_status": "comparison_not_applicable",
+  "actual_sample": false,
+  "inclusion_rule": "Both Vail modes show confirmed missing API, explicit unimplemented operation, or Hail-only helper limitation; no Vail mode has passed",
+  "excluded_from_policy": "Generic TypeError, runtime panic, FileNotFoundError, timeout and other product bugs do not establish unsupported scope",
+  "cases": {
+    "benchmark_analysis::test_analyze_benchmarks": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_analysis--test_analyze_benchmarks.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_analysis--test_analyze_benchmarks.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_analysis::test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}]": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}].json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}].json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_analysis::test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}]": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}].json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}].json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_combiner::test_compile_2k_merge": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_combiner--test_compile_2k_merge.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_combiner--test_compile_2k_merge.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_combiner::test_import_and_transform_gvcf": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_combiner--test_import_and_transform_gvcf.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_combiner--test_import_and_transform_gvcf.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_combiner::test_python_only_10k_combine": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_combiner--test_python_only_10k_combine.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_combiner--test_python_only_10k_combine.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_combiner::test_python_only_10k_transform": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_combiner--test_python_only_10k_transform.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_combiner--test_python_only_10k_transform.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_combiner::test_vds_combiner_chr22": {
+      "reason": "harness_hail_only_helpers",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_combiner--test_vds_combiner_chr22.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_combiner--test_vds_combiner_chr22.json",
+          "status": "unsupported",
+          "error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ]
+    },
+    "benchmark_linalg::test_block_matrix_nested_multiply": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_block_matrix_nested_multiply.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'random'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_block_matrix_nested_multiply.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'random'"
+        }
+      ]
+    },
+    "benchmark_linalg::test_block_matrix_to_matrix_table_row_major": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_block_matrix_to_matrix_table_row_major.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_block_matrix_to_matrix_table_row_major.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'"
+        }
+      ]
+    },
+    "benchmark_linalg::test_blockmatrix_write_from_entry_expr_range_mt": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        }
+      ]
+    },
+    "benchmark_linalg::test_blockmatrix_write_from_entry_expr_range_mt_standardize": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt_standardize.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt_standardize.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        }
+      ]
+    },
+    "benchmark_linalg::test_king": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_king.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'king'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_king.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'king'"
+        }
+      ]
+    },
+    "benchmark_linalg::test_ndarray_addition": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_ndarray_addition.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_ndarray_addition.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        }
+      ]
+    },
+    "benchmark_linalg::test_ndarray_matmul_float64": {
+      "reason": "confirmed_missing_ndarray_map",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_ndarray_matmul_float64.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: map"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_ndarray_matmul_float64.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: map"
+        }
+      ]
+    },
+    "benchmark_linalg::test_ndarray_matmul_int64": {
+      "reason": "confirmed_missing_ndarray_map",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_ndarray_matmul_int64.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: map"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_ndarray_matmul_int64.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: map"
+        }
+      ]
+    },
+    "benchmark_linalg::test_sum_table_of_ndarrays": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_linalg--test_sum_table_of_ndarrays.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_linalg--test_sum_table_of_ndarrays.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        }
+      ]
+    },
+    "benchmark_matrix_table::test_export_range_matrix_table_col_p100": {
+      "reason": "explicit_unimplemented_operation",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_matrix_table--test_export_range_matrix_table_col_p100.json",
+          "status": "failed",
+          "error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_matrix_table--test_export_range_matrix_table_col_p100.json",
+          "status": "failed",
+          "error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        }
+      ]
+    },
+    "benchmark_matrix_table::test_export_range_matrix_table_row_p100": {
+      "reason": "explicit_unimplemented_operation",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_matrix_table--test_export_range_matrix_table_row_p100.json",
+          "status": "failed",
+          "error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_matrix_table--test_export_range_matrix_table_row_p100.json",
+          "status": "failed",
+          "error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        }
+      ]
+    },
+    "benchmark_matrix_table::test_matrix_multi_write_nothing": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_matrix_table--test_matrix_multi_write_nothing.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'experimental'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_matrix_table--test_matrix_multi_write_nothing.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'experimental'"
+        }
+      ]
+    },
+    "benchmark_methods::test_concordance": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_concordance.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'methods'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_concordance.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'methods'"
+        }
+      ]
+    },
+    "benchmark_methods::test_genetics_pipeline": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_genetics_pipeline.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_genetics_pipeline.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ]
+    },
+    "benchmark_methods::test_hwe_normalized_pca": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_hwe_normalized_pca.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_hwe_normalized_pca.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'"
+        }
+      ]
+    },
+    "benchmark_methods::test_hwe_normalized_pca_blanczos_small_data_0_iterations": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_0_iterations.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_0_iterations.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        }
+      ]
+    },
+    "benchmark_methods::test_hwe_normalized_pca_blanczos_small_data_10_iterations": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_10_iterations.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_10_iterations.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        }
+      ]
+    },
+    "benchmark_methods::test_ld_prune_profile_25": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_ld_prune_profile_25.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'ld_prune'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_ld_prune_profile_25.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'ld_prune'"
+        }
+      ]
+    },
+    "benchmark_methods::test_linear_regression_rows": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_linear_regression_rows.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'linear_regression_rows'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_linear_regression_rows.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'linear_regression_rows'"
+        }
+      ]
+    },
+    "benchmark_methods::test_linear_regression_rows_nd": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_linear_regression_rows_nd.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_linear_regression_rows_nd.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'"
+        }
+      ]
+    },
+    "benchmark_methods::test_logistic_regression_rows_wald": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_logistic_regression_rows_wald.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_logistic_regression_rows_wald.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'"
+        }
+      ]
+    },
+    "benchmark_methods::test_logistic_regression_rows_wald_nd": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_logistic_regression_rows_wald_nd.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_logistic_regression_rows_nd'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_logistic_regression_rows_wald_nd.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute '_logistic_regression_rows_nd'"
+        }
+      ]
+    },
+    "benchmark_methods::test_pc_relate": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_pc_relate.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_pc_relate.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        }
+      ]
+    },
+    "benchmark_methods::test_pc_relate_5k_5k": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_pc_relate_5k_5k.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_pc_relate_5k_5k.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        }
+      ]
+    },
+    "benchmark_methods::test_sample_qc": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_sample_qc.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_sample_qc.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ]
+    },
+    "benchmark_methods::test_split_multi": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_split_multi.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'split_multi'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_split_multi.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'split_multi'"
+        }
+      ]
+    },
+    "benchmark_methods::test_variant_and_sample_qc": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ]
+    },
+    "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_2": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_2.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_2.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ]
+    },
+    "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_4": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ]
+    },
+    "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_4_counts": {
+      "reason": "confirmed_missing_api",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4_counts.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4_counts.json",
+          "status": "failed",
+          "error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ]
+    },
+    "benchmark_table::test_table_aggregate_approx_cdf": {
+      "reason": "explicit_unimplemented_operation",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-hail/benchmark_table--test_table_aggregate_approx_cdf.json",
+          "status": "failed",
+          "error_or_reason": "NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "/home/danielking/cloud-scan-20261023/results/upstream/rep-01/vail-vail/benchmark_table--test_table_aggregate_approx_cdf.json",
+          "status": "failed",
+          "error_or_reason": "NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable"
+        }
+      ]
+    }
+  },
+  "saved_actual_hail_attempts": 60,
+  "estimated_saved_seconds_from_first_repetition_elapsed": 3146.0399999999995,
+  "saved_attempt_details": [
+    {
+      "case": "benchmark_analysis::test_analyze_benchmarks",
+      "remaining_attempts": 2,
+      "estimate_seconds": 44.652
+    },
+    {
+      "case": "benchmark_analysis::test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}]",
+      "remaining_attempts": 2,
+      "estimate_seconds": 51.208
+    },
+    {
+      "case": "benchmark_analysis::test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}]",
+      "remaining_attempts": 2,
+      "estimate_seconds": 47.03
+    },
+    {
+      "case": "benchmark_combiner::test_import_and_transform_gvcf",
+      "remaining_attempts": 2,
+      "estimate_seconds": 40.594
+    },
+    {
+      "case": "benchmark_combiner::test_python_only_10k_combine",
+      "remaining_attempts": 2,
+      "estimate_seconds": 217.508
+    },
+    {
+      "case": "benchmark_combiner::test_vds_combiner_chr22",
+      "remaining_attempts": 2,
+      "estimate_seconds": 154.392
+    },
+    {
+      "case": "benchmark_linalg::test_block_matrix_to_matrix_table_row_major",
+      "remaining_attempts": 2,
+      "estimate_seconds": 350.314
+    },
+    {
+      "case": "benchmark_linalg::test_blockmatrix_write_from_entry_expr_range_mt",
+      "remaining_attempts": 2,
+      "estimate_seconds": 58.138
+    },
+    {
+      "case": "benchmark_linalg::test_blockmatrix_write_from_entry_expr_range_mt_standardize",
+      "remaining_attempts": 2,
+      "estimate_seconds": 124.856
+    },
+    {
+      "case": "benchmark_linalg::test_king",
+      "remaining_attempts": 2,
+      "estimate_seconds": 505.216
+    },
+    {
+      "case": "benchmark_linalg::test_ndarray_addition",
+      "remaining_attempts": 2,
+      "estimate_seconds": 28.132
+    },
+    {
+      "case": "benchmark_linalg::test_ndarray_matmul_int64",
+      "remaining_attempts": 2,
+      "estimate_seconds": 41.724
+    },
+    {
+      "case": "benchmark_linalg::test_sum_table_of_ndarrays",
+      "remaining_attempts": 2,
+      "estimate_seconds": 120.716
+    },
+    {
+      "case": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+      "remaining_attempts": 2,
+      "estimate_seconds": 28.764
+    },
+    {
+      "case": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+      "remaining_attempts": 2,
+      "estimate_seconds": 29.148
+    },
+    {
+      "case": "benchmark_methods::test_concordance",
+      "remaining_attempts": 2,
+      "estimate_seconds": 48.894
+    },
+    {
+      "case": "benchmark_methods::test_genetics_pipeline",
+      "remaining_attempts": 2,
+      "estimate_seconds": 54.76
+    },
+    {
+      "case": "benchmark_methods::test_hwe_normalized_pca",
+      "remaining_attempts": 2,
+      "estimate_seconds": 50.634
+    },
+    {
+      "case": "benchmark_methods::test_ld_prune_profile_25",
+      "remaining_attempts": 2,
+      "estimate_seconds": 161.426
+    },
+    {
+      "case": "benchmark_methods::test_linear_regression_rows",
+      "remaining_attempts": 2,
+      "estimate_seconds": 51.254
+    },
+    {
+      "case": "benchmark_methods::test_logistic_regression_rows_wald",
+      "remaining_attempts": 2,
+      "estimate_seconds": 49.942
+    },
+    {
+      "case": "benchmark_methods::test_pc_relate",
+      "remaining_attempts": 2,
+      "estimate_seconds": 220.63
+    },
+    {
+      "case": "benchmark_methods::test_pc_relate_5k_5k",
+      "remaining_attempts": 2,
+      "estimate_seconds": 350.884
+    },
+    {
+      "case": "benchmark_methods::test_sample_qc",
+      "remaining_attempts": 2,
+      "estimate_seconds": 40.928
+    },
+    {
+      "case": "benchmark_methods::test_split_multi",
+      "remaining_attempts": 2,
+      "estimate_seconds": 35.798
+    },
+    {
+      "case": "benchmark_methods::test_variant_and_sample_qc",
+      "remaining_attempts": 2,
+      "estimate_seconds": 41.43
+    },
+    {
+      "case": "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_2",
+      "remaining_attempts": 2,
+      "estimate_seconds": 39.824
+    },
+    {
+      "case": "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_4",
+      "remaining_attempts": 2,
+      "estimate_seconds": 48.494
+    },
+    {
+      "case": "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_4_counts",
+      "remaining_attempts": 2,
+      "estimate_seconds": 65.48
+    },
+    {
+      "case": "benchmark_table::test_table_aggregate_approx_cdf",
+      "remaining_attempts": 2,
+      "estimate_seconds": 43.27
+    }
+  ]
+}

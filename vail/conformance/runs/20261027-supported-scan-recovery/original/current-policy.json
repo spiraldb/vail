@@ -1,0 +1,752 @@
+{
+  "schema_version": 1,
+  "policy_version": "2026-10-23.1",
+  "source_revision": "e79cf6ffeb624756cc27769cd6031b0f12858651",
+  "origin_run": "20261023-cloud-three-mode",
+  "default_scope": "Do not execute these comparison cases by default in either engine. Hail has no usable Vail comparison; Vail has a confirmed missing API/workflow or unresolved adapter limitation. Existing observations remain valid historical evidence.",
+  "exclusion_evidence_rule": "Both Vail storage modes supplied explicit missing-API/unimplemented-operation or harness-limitation receipts; no successful Vail observation contradicted the exclusion. Generic failures, panics, TypeErrors, missing files, and timeouts are not sufficient evidence.",
+  "probe_policy": "Only probe an exact excluded case when a functionality or adapter fix is suspected. Supply --case, --probe-excluded and a concrete --probe-reason; never blanket-probe the exclusion list.",
+  "cases": {
+    "benchmark_analysis::test_analyze_benchmarks": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_analysis--test_analyze_benchmarks.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_analysis--test_analyze_benchmarks.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_analysis::test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}]": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}].json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'laaber_mds'}].json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_analysis::test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}]": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}].json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_analysis--test_minimal_detectable_slowdown[{'__benchmark_symbol__': 'schultz_mds'}].json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_combiner::test_compile_2k_merge": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_combiner--test_compile_2k_merge.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_combiner--test_compile_2k_merge.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_combiner::test_import_and_transform_gvcf": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_combiner--test_import_and_transform_gvcf.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_combiner--test_import_and_transform_gvcf.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_combiner::test_python_only_10k_combine": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_combiner--test_python_only_10k_combine.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_combiner--test_python_only_10k_combine.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_combiner::test_python_only_10k_transform": {
+      "kind": "harness_limitation",
+      "reason": "The benchmark adapter has not remapped and verified upstream helper imports that call Hail directly. This is an adapter exclusion, not proof that every corresponding Vail operation is absent.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_combiner--test_python_only_10k_transform.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_combiner--test_python_only_10k_transform.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_combiner::test_vds_combiner_chr22": {
+      "kind": "missing_workflow",
+      "reason": "The benchmark requires restartable new_combiner(...).run(), which Vail does not expose. The adapter did not execute the Vail query; it rejected hardcoded Hail helper imports.",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_combiner--test_vds_combiner_chr22.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_combiner--test_vds_combiner_chr22.json",
+          "observed_status": "unsupported",
+          "observed_error_or_reason": "Upstream analysis/combiner helper modules hardcode Hail; no verified Vail adapter"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_block_matrix_nested_multiply": {
+      "kind": "missing_api",
+      "reason": "AttributeError: type object 'BlockMatrix' has no attribute 'random'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_block_matrix_nested_multiply.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'random'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_block_matrix_nested_multiply.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'random'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_block_matrix_to_matrix_table_row_major": {
+      "kind": "missing_api",
+      "reason": "AttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_block_matrix_to_matrix_table_row_major.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_block_matrix_to_matrix_table_row_major.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_blockmatrix_write_from_entry_expr_range_mt": {
+      "kind": "missing_api",
+      "reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_blockmatrix_write_from_entry_expr_range_mt_standardize": {
+      "kind": "missing_api",
+      "reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt_standardize.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_blockmatrix_write_from_entry_expr_range_mt_standardize.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: type object 'BlockMatrix' has no attribute 'write_from_entry_expr'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_king": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'king'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_king.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'king'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_king.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'king'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_ndarray_addition": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail.nd' has no attribute 'ones'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_ndarray_addition.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_ndarray_addition.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_ndarray_matmul_float64": {
+      "kind": "missing_api",
+      "reason": "AttributeError: map",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_ndarray_matmul_float64.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: map"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_ndarray_matmul_float64.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: map"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_ndarray_matmul_int64": {
+      "kind": "missing_api",
+      "reason": "AttributeError: map",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_ndarray_matmul_int64.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: map"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_ndarray_matmul_int64.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: map"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_linalg::test_sum_table_of_ndarrays": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail.nd' has no attribute 'ones'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_linalg--test_sum_table_of_ndarrays.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_linalg--test_sum_table_of_ndarrays.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail.nd' has no attribute 'ones'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_matrix_table::test_export_range_matrix_table_col_p100": {
+      "kind": "missing_api",
+      "reason": "NotImplementedError: expression export currently requires a matrix entry expression",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_matrix_table--test_export_range_matrix_table_col_p100.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_matrix_table--test_export_range_matrix_table_col_p100.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_matrix_table::test_export_range_matrix_table_row_p100": {
+      "kind": "missing_api",
+      "reason": "NotImplementedError: expression export currently requires a matrix entry expression",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_matrix_table--test_export_range_matrix_table_row_p100.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_matrix_table--test_export_range_matrix_table_row_p100.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "NotImplementedError: expression export currently requires a matrix entry expression"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_matrix_table::test_matrix_multi_write_nothing": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'experimental'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_matrix_table--test_matrix_multi_write_nothing.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'experimental'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_matrix_table--test_matrix_multi_write_nothing.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'experimental'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_concordance": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'methods'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_concordance.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'methods'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_concordance.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'methods'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_genetics_pipeline": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'sample_qc'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_genetics_pipeline.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_genetics_pipeline.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_hwe_normalized_pca": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_hwe_normalized_pca.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_hwe_normalized_pca.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_hwe_normalized_pca_blanczos_small_data_0_iterations": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_0_iterations.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_0_iterations.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_hwe_normalized_pca_blanczos_small_data_10_iterations": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_10_iterations.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_hwe_normalized_pca_blanczos_small_data_10_iterations.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_hwe_normalized_blanczos'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_ld_prune_profile_25": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'ld_prune'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_ld_prune_profile_25.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'ld_prune'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_ld_prune_profile_25.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'ld_prune'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_linear_regression_rows": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'linear_regression_rows'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_linear_regression_rows.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'linear_regression_rows'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_linear_regression_rows.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'linear_regression_rows'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_linear_regression_rows_nd": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_linear_regression_rows_nd.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_linear_regression_rows_nd.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_logistic_regression_rows_wald": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_logistic_regression_rows_wald.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_logistic_regression_rows_wald.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_logistic_regression_rows_wald_nd": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute '_logistic_regression_rows_nd'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_logistic_regression_rows_wald_nd.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_logistic_regression_rows_nd'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_logistic_regression_rows_wald_nd.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute '_logistic_regression_rows_nd'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_pc_relate": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'pc_relate'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_pc_relate.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_pc_relate.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_pc_relate_5k_5k": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'pc_relate'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_pc_relate_5k_5k.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_pc_relate_5k_5k.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'pc_relate'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_sample_qc": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'sample_qc'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_sample_qc.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_sample_qc.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_split_multi": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'split_multi'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_split_multi.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'split_multi'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_split_multi.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'split_multi'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_variant_and_sample_qc": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'sample_qc'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_2": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'sample_qc'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_2.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_2.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_4": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'sample_qc'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_methods::test_variant_and_sample_qc_nested_with_filters_4_counts": {
+      "kind": "missing_api",
+      "reason": "AttributeError: module 'vail' has no attribute 'sample_qc'",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4_counts.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_methods--test_variant_and_sample_qc_nested_with_filters_4_counts.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "AttributeError: module 'vail' has no attribute 'sample_qc'"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    },
+    "benchmark_table::test_table_aggregate_approx_cdf": {
+      "kind": "missing_api",
+      "reason": "NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable",
+      "evidence": [
+        {
+          "mode": "vail-hail",
+          "receipt": "upstream/rep-01/vail-hail/benchmark_table--test_table_aggregate_approx_cdf.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable"
+        },
+        {
+          "mode": "vail-vail",
+          "receipt": "upstream/rep-01/vail-vail/benchmark_table--test_table_aggregate_approx_cdf.json",
+          "observed_status": "failed",
+          "observed_error_or_reason": "NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable"
+        }
+      ],
+      "reenable_when": "A suspected fix to the named API/workflow or benchmark adapter has passed a targeted probe in each applicable Vail input format; record the fix/probe evidence before removing this entry."
+    }
+  }
+}
