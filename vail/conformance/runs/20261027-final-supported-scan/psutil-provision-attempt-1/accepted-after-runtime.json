@@ -1,0 +1,683 @@
+{
+  "current": {
+    "python": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/bin/python",
+    "frontend": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/lib/python3.12/site-packages/vail",
+    "native": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c",
+    "frontend_sha256": {
+      "__init__.py": "7cb572d66f7153a53cc0a7f3b111a0db4e07a91be57f1c7ae4a0dcd27049d601",
+      "agg.py": "77beb9551b9a0481364ed9ecbb020e77bec2aea7b69aa73cd05fbbeb4353227e",
+      "agg_collections.py": "62485f45231af00b56abf3bcfc3c9dbc1dad32daf217d3e7d6165b420623a467",
+      "agg_fold.py": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+      "agg_genomics.py": "a60d7e1e3bdd143815c120239bdbae37710fbb1d934ee3674a8b5a695435c291",
+      "agg_numeric.py": "a4db0e0435da97b2ba709d4513726726a6e369f58ca25f173af9050ca6b4d2d9",
+      "allele_functions.py": "e3e669dae8d805a1d9bfb11d44e267bc3e5fdc3d63d5afd4ce248cf9a64c1cc9",
+      "array_aggregate.py": "2642401c17ff8e3afcd8ecd02df02331b9650e6d819c18b3d46faafa03f637e6",
+      "array_methods.py": "7d1f396039e668154673954c4aee10bdc267f0dd3310aa78745e1ac07768f957",
+      "arrow.py": "2d4f440d6e9dd22765477dcd04cf1c47cd77e9705deca6729ee07e1aebca27a6",
+      "avro.py": "57ffb92be6b002deee61dcc6357b55c4086f3c2959dfdd056b30dc48f8a60ba9",
+      "backend.py": "12420b13a80077fc7c4b1bd7cd9879f225dc0723023663785b4765296031fe97",
+      "bed.py": "02b7a11cc3bc3ab714e9b985247239d86513663d68f1e78ad66bdf5afd931a2a",
+      "bgen.py": "f692a3af91a1a0468b76def1e1e683a4a02362d7ea21da9a5f0e648d22f13292",
+      "builders.py": "885cbc5c24210e61336b7bd7e6b00b063d8b9c4d9302a18dbca350760485e479",
+      "collection_functions.py": "d50d1c2d2eeb148e287b606058be6aa1ba9802539981817cce69cdeb4acfa63c",
+      "collections.py": "0a2e56abc44e2505b7d9a37e123610043868d702b31a55bb08d4f382e9b7bc50",
+      "context.py": "525d63ec5e05121f250d396536a394a9a55a8e9eb088b846de3a8dd7df8ba318",
+      "csv_import.py": "3b9a467abc4b0c63c33491c2d44942d1055947c3d6864696d7832f3bb92cdeb5",
+      "display.py": "39d6ba70228a2c1133a1d3d561014e5ef162db5c87ad947a6816bc46106f639b",
+      "expr/__init__.py": "eada032e4a01a40d8aee2f471c868b6893bfdb7db3d6d6671ad972685b027185",
+      "expr/expressions/__init__.py": "04c3fcfac72a2a5bc29f200f6c57ce13f07713ae4d038ed8db78c086901ca7ec",
+      "expr/expressions/base_expression.py": "fb19085e2f7ad02588a24a993b1fc67ce4c99844616a913a32c1423779b682dc",
+      "expr/expressions/typed_expressions.py": "a9912c772322b889306284db29290c9eac3679c875e88c5f3053adc1abd76535",
+      "expr/functions.py": "1f7fa3b88f9f69722063bc35ae0bd010817d4c5097432f9ba1107e8f7c0ab5fe",
+      "expressions.py": "5990af5787d18c7e81bab75e4338be62505f129e531a5ae8632835d74364de77",
+      "fam.py": "ba1ec663685f2f626f39ea64a3fbc2433b7b2b6932f662769f9c78c72e153089",
+      "gen.py": "3c8375db75681c664e1a5400b98c180ee44f2dcae9e3541576f699af3ffb4799",
+      "genetics/__init__.py": "942a41885950a02732e612414eaab20196e895707e34d12b9b9377be7bc27806",
+      "genotype_likelihoods.py": "4e7dd00b56dc1e058a379138d9300f4061fc799aff5d51ebc010d48a00e82b9f",
+      "gvcf_interval.py": "721d7bf5ade72e68840745fdcb05ff2ca315694a2aa059485ec5a6d1ed974bc5",
+      "import_support.py": "d862517aec6d739c67382e224fdff7fbd18b3d538182cbd7c6f8775b226cbc13",
+      "inputs.py": "df5f3efc42266b9225db08a6279445c12b8bcaf50e85ff3adc783be83dc8a530",
+      "interval_import.py": "08d611e8953e52a8431e2ca37ddeaea3e7a57b11355c33bb2fd33a1a5506301d",
+      "ir/__init__.py": "9309485b0ccc47a5e43c027e125f285a1a4dbbf5dfbc0fe1193aaa11764b72c6",
+      "ir/renderer.py": "f0f7ce02c0eedc0b7776937817b17d059d9de584ca49b7e02682c0d77dec4250",
+      "legacy.py": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+      "linalg/__init__.py": "5ecf696f3480e4d04362418bcd3239df43602f78e1b3d620a01bf35d20ba964a",
+      "linalg/utils.py": "8c1837c44dd7021a17f09ac8ac4e96867f7d3eeb757447f0d839c13cab311cf6",
+      "lookups.py": "7d8aefc39ac56e6724d5d776c3aa6938fdc83e65300a09d83d1553fa7809b8a5",
+      "matrix_import.py": "dfac4f312392c2009f6f010e8c3d3c015786576fce683bef741c91194ec21255",
+      "matrix_list_aggregates.py": "501c3efd216daaf02b6880d4200f047a3c65399da89c676dd646f91ee16ccbcb",
+      "matrixtable.py": "d453a8674a5181b776457a13bf822d8291af2f0f5eb72849e57c88e9bf1743ee",
+      "nd.py": "be50161d44debfb95dde1c1462f6357d20b123636fa447f400d61108089108ce",
+      "plink.py": "3aae933b4d74cd5dedf7bd53aa30060f4dcc73a214923726addc9029780fb761",
+      "qc.py": "109b3b2eae43bbb2c8b5be43371ab278908052ba3d862d0bd7ef588ee0f96a5b",
+      "queries.py": "37e2dacd0d9cd41a547c34ec4f15311584a2d732cac5ec40062e8d3bffe0f53b",
+      "randomness.py": "5766db03c58d5b3cff1ee5acf71a81304364a44e4275e2085279238c19d22811",
+      "reference_genome.py": "8a9f863a1e439eeb5aba7d75f3c8fe7f9d390c42ad83b6039a60aab6bff18451",
+      "scan.py": "96085d5a24fa0353f2e13c02dff9204b5e3785e108cdf67befab5950ec5f8acb",
+      "shared_expressions.py": "e7f66e602c1e6d68ff521f788f15b08bf65353ab827477ee426767fe79a284d3",
+      "simulation.py": "f31336c0db3793ae5c8099c6963636e5da10e820f7cd9237f4631a027fdab725",
+      "streams.py": "e82b1fe3fe49b0deebfaadb10aaa9234b4ad5c8776f8cc94214bf3ede32ab0fa",
+      "strings.py": "e0caf5ff2361e8e6fe953e7256c9f7c7aa3f0c4867bba47c4ae34690c5a7271d",
+      "text.py": "0120380ca5fcf289404b669e919ae04d84362724a91c084f4ae982b0320b52d9",
+      "types.py": "8d558435fcf112b8aef0f2cd6ebdf90c7749e67580abe2ce2ffffcc815f5fb62",
+      "utils/__init__.py": "3c58d0e64a9f25f3783fbe16449509016f80244f47ab0f2208ed2304a6156c75",
+      "utils/frozendict.py": "1cd23bbdaf13d36b6ff69ff414fa7b4f01f87b0cb1bda05f1e0a746c1ba0e206",
+      "utils/java.py": "46f13828ee47411f5a3108af77fbabd00f270c3cae55498a57963427dbcabdf1",
+      "utils/misc.py": "0927b75cb01d4532d0642d89bf8c254b47041cb70bdd900b6e6bd12ce3a45247",
+      "variant.py": "ae89ad463cbe0e7a8096574da215bf6e150aa3b6de5422d3c48f8ca90553de33",
+      "vcf.py": "76a0ab774e1ad3a43076ad2403281d51f6006e11ea769054b0e037bec2b50b48",
+      "vcf_export.py": "28a44cb9cd69f656d911dc2c9a0cb9b15e4d0a6441256c46407e8f877393148e",
+      "vds/__init__.py": "94722578c559b756f043353038af82fcea53fd4b8d0f5dd93591e6499d76d5e9",
+      "vds/combiner/__init__.py": "92fc1f65e5a257c6b91c9ea932822ca2e1026ace28ae95c9eed47e7c9a8935f7",
+      "vds/combiner/combine.py": "8d8164040f162e4ea7b2bd738d38a40bfe27795ad2a9b5cf9706204f8683d942",
+      "vds/functions.py": "c17a56576d6a882beaa514d0898b9f9a588d79ede9a8082a0b0a16d3b96c143c",
+      "vds/methods.py": "8be1b9ce6ce653a9d64760b8337584f754a031496b258ffe236ed9126e2f73d6",
+      "vds/variant_dataset.py": "b7e952624166742e5eb7d1cd757784693aab87ab28b56601eb0f87dab4f60cf2"
+    },
+    "compiled_source": "517c87538d58689e864af795015020e908de0be0",
+    "source_equivalence": "git diff517..frozenHEAD empty for vail/crates,vail/python/vail,Cargo.toml,Cargo.lock,vendor",
+    "runtime": {
+      "python": "3.12.15 (main, Oct 14 2026, 01:05:27) [Clang 23.1.3 ]",
+      "executable": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/bin/python",
+      "platform": "Linux-6.8.0-1070-gcp-x86_64-with-glibc2.35",
+      "packages": [
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "maturin",
+          "1.15.0"
+        ],
+        [
+          "numpy",
+          "2.5.4"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "psutil",
+          "7.2.2"
+        ],
+        [
+          "pyarrow",
+          "26.0.0"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "vail",
+          "0.1.0a1"
+        ]
+      ]
+    }
+  },
+  "old": {
+    "python": "/home/danielking/cloud-scan-20261023/vail-env/bin/python",
+    "frontend": "/home/danielking/cloud-scan-20261023/vail-env/lib/python3.11/site-packages/vail",
+    "frontend_sha256": {
+      "__init__.py": "633a045a600562fae9301144c59bdf182c3c173b42bd2ca7618192ce1a0343d4",
+      "agg.py": "2f49f1acd5ea0495ce36df656b98089b187babbaae7ae2b93402eba39224b648",
+      "agg_collections.py": "67bb5d3e0fafb6eddefec57569f8a82a09e59537e4c9d91ba382bc1624f3dd0f",
+      "agg_fold.py": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+      "agg_genomics.py": "9de66edb462457a8d2a3a9183db8a5aa88f1843b467d17cafd63757d770d9693",
+      "agg_numeric.py": "58ed13f04526f1cc5f76178d6374cabca28989b30012b4413901f81db1e612aa",
+      "allele_functions.py": "e3e669dae8d805a1d9bfb11d44e267bc3e5fdc3d63d5afd4ce248cf9a64c1cc9",
+      "array_aggregate.py": "2642401c17ff8e3afcd8ecd02df02331b9650e6d819c18b3d46faafa03f637e6",
+      "array_methods.py": "7d1f396039e668154673954c4aee10bdc267f0dd3310aa78745e1ac07768f957",
+      "arrow.py": "2d4f440d6e9dd22765477dcd04cf1c47cd77e9705deca6729ee07e1aebca27a6",
+      "avro.py": "57ffb92be6b002deee61dcc6357b55c4086f3c2959dfdd056b30dc48f8a60ba9",
+      "backend.py": "12420b13a80077fc7c4b1bd7cd9879f225dc0723023663785b4765296031fe97",
+      "bed.py": "02b7a11cc3bc3ab714e9b985247239d86513663d68f1e78ad66bdf5afd931a2a",
+      "bgen.py": "f692a3af91a1a0468b76def1e1e683a4a02362d7ea21da9a5f0e648d22f13292",
+      "builders.py": "885cbc5c24210e61336b7bd7e6b00b063d8b9c4d9302a18dbca350760485e479",
+      "collection_functions.py": "d50d1c2d2eeb148e287b606058be6aa1ba9802539981817cce69cdeb4acfa63c",
+      "collections.py": "75896fe0cb1bbc301d4587a95a946e5f7a7ccc0cef4e615c10db642db04fe683",
+      "context.py": "525d63ec5e05121f250d396536a394a9a55a8e9eb088b846de3a8dd7df8ba318",
+      "csv_import.py": "3b9a467abc4b0c63c33491c2d44942d1055947c3d6864696d7832f3bb92cdeb5",
+      "display.py": "39d6ba70228a2c1133a1d3d561014e5ef162db5c87ad947a6816bc46106f639b",
+      "expr/__init__.py": "eada032e4a01a40d8aee2f471c868b6893bfdb7db3d6d6671ad972685b027185",
+      "expr/expressions/__init__.py": "04c3fcfac72a2a5bc29f200f6c57ce13f07713ae4d038ed8db78c086901ca7ec",
+      "expr/expressions/base_expression.py": "fb19085e2f7ad02588a24a993b1fc67ce4c99844616a913a32c1423779b682dc",
+      "expr/expressions/typed_expressions.py": "a9912c772322b889306284db29290c9eac3679c875e88c5f3053adc1abd76535",
+      "expr/functions.py": "1f7fa3b88f9f69722063bc35ae0bd010817d4c5097432f9ba1107e8f7c0ab5fe",
+      "expressions.py": "250993c44b3dd8f6b97a69382e9cfb27a8b059b7233189e786e5d13d02e33fd5",
+      "fam.py": "ba1ec663685f2f626f39ea64a3fbc2433b7b2b6932f662769f9c78c72e153089",
+      "gen.py": "3c8375db75681c664e1a5400b98c180ee44f2dcae9e3541576f699af3ffb4799",
+      "genetics/__init__.py": "942a41885950a02732e612414eaab20196e895707e34d12b9b9377be7bc27806",
+      "genotype_likelihoods.py": "4e7dd00b56dc1e058a379138d9300f4061fc799aff5d51ebc010d48a00e82b9f",
+      "gvcf_interval.py": "721d7bf5ade72e68840745fdcb05ff2ca315694a2aa059485ec5a6d1ed974bc5",
+      "import_support.py": "d862517aec6d739c67382e224fdff7fbd18b3d538182cbd7c6f8775b226cbc13",
+      "inputs.py": "df5f3efc42266b9225db08a6279445c12b8bcaf50e85ff3adc783be83dc8a530",
+      "interval_import.py": "08d611e8953e52a8431e2ca37ddeaea3e7a57b11355c33bb2fd33a1a5506301d",
+      "ir/__init__.py": "9309485b0ccc47a5e43c027e125f285a1a4dbbf5dfbc0fe1193aaa11764b72c6",
+      "ir/renderer.py": "f0f7ce02c0eedc0b7776937817b17d059d9de584ca49b7e02682c0d77dec4250",
+      "legacy.py": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+      "linalg/__init__.py": "bca57d2a0be43b73369e250eaa00cc8acb9ac09e448c0c525d1eb5e1c699ab9b",
+      "lookups.py": "7d8aefc39ac56e6724d5d776c3aa6938fdc83e65300a09d83d1553fa7809b8a5",
+      "matrix_import.py": "dfac4f312392c2009f6f010e8c3d3c015786576fce683bef741c91194ec21255",
+      "matrix_list_aggregates.py": "600f51cce9c06ce773c919e75f737386e728b6bdafb3165037628f7e6abf3daa",
+      "matrixtable.py": "19942d976be5282c1a8635712a3801f565a8020ebfd397afbfb8bcb674c4dacb",
+      "nd.py": "be50161d44debfb95dde1c1462f6357d20b123636fa447f400d61108089108ce",
+      "plink.py": "3aae933b4d74cd5dedf7bd53aa30060f4dcc73a214923726addc9029780fb761",
+      "qc.py": "109b3b2eae43bbb2c8b5be43371ab278908052ba3d862d0bd7ef588ee0f96a5b",
+      "queries.py": "37e2dacd0d9cd41a547c34ec4f15311584a2d732cac5ec40062e8d3bffe0f53b",
+      "randomness.py": "5766db03c58d5b3cff1ee5acf71a81304364a44e4275e2085279238c19d22811",
+      "reference_genome.py": "8a9f863a1e439eeb5aba7d75f3c8fe7f9d390c42ad83b6039a60aab6bff18451",
+      "scan.py": "96085d5a24fa0353f2e13c02dff9204b5e3785e108cdf67befab5950ec5f8acb",
+      "shared_expressions.py": "e7f66e602c1e6d68ff521f788f15b08bf65353ab827477ee426767fe79a284d3",
+      "simulation.py": "f31336c0db3793ae5c8099c6963636e5da10e820f7cd9237f4631a027fdab725",
+      "streams.py": "e82b1fe3fe49b0deebfaadb10aaa9234b4ad5c8776f8cc94214bf3ede32ab0fa",
+      "strings.py": "e0caf5ff2361e8e6fe953e7256c9f7c7aa3f0c4867bba47c4ae34690c5a7271d",
+      "text.py": "0120380ca5fcf289404b669e919ae04d84362724a91c084f4ae982b0320b52d9",
+      "types.py": "912b2e4ba2b3c51fd4bf7c32271e77c8fa3e7bba8563e4a56dd3a28853d39157",
+      "utils/__init__.py": "b6a043cf86f6b52ccd3e2844ffd21aee5637e633e1c28f53d3b051a31a0a70c7",
+      "utils/java.py": "46f13828ee47411f5a3108af77fbabd00f270c3cae55498a57963427dbcabdf1",
+      "utils/misc.py": "0927b75cb01d4532d0642d89bf8c254b47041cb70bdd900b6e6bd12ce3a45247",
+      "variant.py": "ae89ad463cbe0e7a8096574da215bf6e150aa3b6de5422d3c48f8ca90553de33",
+      "vcf.py": "76a0ab774e1ad3a43076ad2403281d51f6006e11ea769054b0e037bec2b50b48",
+      "vcf_export.py": "28a44cb9cd69f656d911dc2c9a0cb9b15e4d0a6441256c46407e8f877393148e",
+      "vds/__init__.py": "94722578c559b756f043353038af82fcea53fd4b8d0f5dd93591e6499d76d5e9",
+      "vds/combiner/__init__.py": "92fc1f65e5a257c6b91c9ea932822ca2e1026ace28ae95c9eed47e7c9a8935f7",
+      "vds/combiner/combine.py": "8d8164040f162e4ea7b2bd738d38a40bfe27795ad2a9b5cf9706204f8683d942",
+      "vds/functions.py": "c17a56576d6a882beaa514d0898b9f9a588d79ede9a8082a0b0a16d3b96c143c",
+      "vds/methods.py": "8be1b9ce6ce653a9d64760b8337584f754a031496b258ffe236ed9126e2f73d6",
+      "vds/variant_dataset.py": "74cb193e716109739cf07f506997be2f614c9951441e98c0409330359aec5d31"
+    },
+    "native_sha256": "60306770a4e18c15cf63ad4b8bda8723de3a6e9055677b0323280802d88cc6a3",
+    "compiled_source": "e79cf6ffeb624756cc27769cd6031b0f12858651",
+    "runtime": {
+      "python": "3.11.17 (main, Oct 14 2026, 01:05:33) [Clang 23.1.3 ]",
+      "executable": "/home/danielking/cloud-scan-20261023/vail-env/bin/python",
+      "platform": "Linux-6.8.0-1070-gcp-x86_64-with-glibc2.35",
+      "packages": [
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "attrs",
+          "26.1.0"
+        ],
+        [
+          "contourpy",
+          "1.3.3"
+        ],
+        [
+          "cycler",
+          "0.12.1"
+        ],
+        [
+          "fonttools",
+          "4.67.0"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "kiwisolver",
+          "1.5.1"
+        ],
+        [
+          "matplotlib",
+          "3.11.2"
+        ],
+        [
+          "maturin",
+          "1.15.0"
+        ],
+        [
+          "numpy",
+          "2.4.6"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pandas",
+          "3.1.0"
+        ],
+        [
+          "pillow",
+          "13.0.0"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "psutil",
+          "7.2.2"
+        ],
+        [
+          "pyarrow",
+          "26.0.0"
+        ],
+        [
+          "pyparsing",
+          "3.3.3"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "pytest-subtests",
+          "0.15.0"
+        ],
+        [
+          "pytest-timeout",
+          "2.4.0"
+        ],
+        [
+          "python-dateutil",
+          "3.0.0"
+        ],
+        [
+          "scipy",
+          "1.17.1"
+        ],
+        [
+          "six",
+          "1.17.0"
+        ],
+        [
+          "tzdata",
+          "2026.5"
+        ],
+        [
+          "vail",
+          "0.1.0a1"
+        ]
+      ]
+    }
+  },
+  "hail": {
+    "python": "/home/danielking/hail-env/bin/python",
+    "version": "0.2.139-5e5eedb87ff8",
+    "jar": "/home/danielking/hail-env/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+    "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+    "runtime": {
+      "python": "3.11.17 (main, Oct 14 2026, 01:05:33) [Clang 23.1.3 ]",
+      "executable": "/home/danielking/hail-env/bin/python",
+      "platform": "Linux-6.8.0-1070-gcp-x86_64-with-glibc2.35",
+      "packages": [
+        [
+          "Deprecated",
+          "1.2.18"
+        ],
+        [
+          "Jinja2",
+          "3.1.6"
+        ],
+        [
+          "MarkupSafe",
+          "3.0.4"
+        ],
+        [
+          "PyJWT",
+          "2.15.1"
+        ],
+        [
+          "PyYAML",
+          "6.0.3"
+        ],
+        [
+          "Pygments",
+          "2.21.0"
+        ],
+        [
+          "aiodns",
+          "2.0.0"
+        ],
+        [
+          "aiohappyeyeballs",
+          "2.7.1"
+        ],
+        [
+          "aiohttp",
+          "3.14.5"
+        ],
+        [
+          "aiosignal",
+          "1.4.0"
+        ],
+        [
+          "annotated-doc",
+          "0.0.5"
+        ],
+        [
+          "attrs",
+          "26.1.0"
+        ],
+        [
+          "avro",
+          "1.11.5"
+        ],
+        [
+          "azure-common",
+          "1.1.28"
+        ],
+        [
+          "azure-core",
+          "1.41.0"
+        ],
+        [
+          "azure-identity",
+          "1.26.0"
+        ],
+        [
+          "azure-mgmt-core",
+          "1.6.0"
+        ],
+        [
+          "azure-mgmt-storage",
+          "20.1.0"
+        ],
+        [
+          "azure-storage-blob",
+          "12.31.0"
+        ],
+        [
+          "bokeh",
+          "3.9.2"
+        ],
+        [
+          "boto3",
+          "1.43.118"
+        ],
+        [
+          "botocore",
+          "1.43.118"
+        ],
+        [
+          "certifi",
+          "2026.10.19"
+        ],
+        [
+          "cffi",
+          "2.1.1"
+        ],
+        [
+          "charset-normalizer",
+          "3.5.2"
+        ],
+        [
+          "click",
+          "8.5.0"
+        ],
+        [
+          "commonmark",
+          "0.9.2"
+        ],
+        [
+          "contourpy",
+          "1.3.2"
+        ],
+        [
+          "cryptography",
+          "50.0.2"
+        ],
+        [
+          "decorator",
+          "5.3.1"
+        ],
+        [
+          "dill",
+          "0.4.1"
+        ],
+        [
+          "frozenlist",
+          "1.8.0"
+        ],
+        [
+          "google-auth",
+          "2.62.0"
+        ],
+        [
+          "google-auth-oauthlib",
+          "0.8.0"
+        ],
+        [
+          "hail",
+          "0.2.139"
+        ],
+        [
+          "humanize",
+          "4.16.0"
+        ],
+        [
+          "idna",
+          "3.20"
+        ],
+        [
+          "iniconfig",
+          "2.3.1"
+        ],
+        [
+          "isodate",
+          "0.7.2"
+        ],
+        [
+          "janus",
+          "1.0.0"
+        ],
+        [
+          "jmespath",
+          "1.1.0"
+        ],
+        [
+          "jproperties",
+          "2.1.2"
+        ],
+        [
+          "msal",
+          "1.39.0"
+        ],
+        [
+          "msal-extensions",
+          "1.3.1"
+        ],
+        [
+          "msrest",
+          "0.7.1"
+        ],
+        [
+          "multidict",
+          "7.1.0"
+        ],
+        [
+          "narwhals",
+          "2.27.1"
+        ],
+        [
+          "nest-asyncio",
+          "1.6.0"
+        ],
+        [
+          "numpy",
+          "2.4.6"
+        ],
+        [
+          "oauthlib",
+          "4.0.0"
+        ],
+        [
+          "orjson",
+          "3.13.0"
+        ],
+        [
+          "packaging",
+          "26.3"
+        ],
+        [
+          "pandas",
+          "2.3.3"
+        ],
+        [
+          "parsimonious",
+          "0.11.0"
+        ],
+        [
+          "pillow",
+          "13.0.0"
+        ],
+        [
+          "plotly",
+          "5.24.1"
+        ],
+        [
+          "pluggy",
+          "1.7.0"
+        ],
+        [
+          "propcache",
+          "0.5.4"
+        ],
+        [
+          "psutil",
+          "7.2.2"
+        ],
+        [
+          "py4j",
+          "0.10.9.9"
+        ],
+        [
+          "pyasn1",
+          "0.6.4"
+        ],
+        [
+          "pyasn1_modules",
+          "0.4.2"
+        ],
+        [
+          "pycares",
+          "5.2.1"
+        ],
+        [
+          "pycparser",
+          "3.12"
+        ],
+        [
+          "pyspark",
+          "3.5.9"
+        ],
+        [
+          "pytest",
+          "9.1.1"
+        ],
+        [
+          "python-dateutil",
+          "2.9.0.post0"
+        ],
+        [
+          "python-json-logger",
+          "2.0.7"
+        ],
+        [
+          "pytz",
+          "2026.5"
+        ],
+        [
+          "regex",
+          "2026.9.29"
+        ],
+        [
+          "requests",
+          "2.34.2"
+        ],
+        [
+          "requests-oauthlib",
+          "2.0.0"
+        ],
+        [
+          "rich",
+          "12.6.0"
+        ],
+        [
+          "s3transfer",
+          "0.19.3"
+        ],
+        [
+          "scipy",
+          "1.17.1"
+        ],
+        [
+          "setuptools",
+          "81.0.0"
+        ],
+        [
+          "shellingham",
+          "1.5.4"
+        ],
+        [
+          "six",
+          "1.17.0"
+        ],
+        [
+          "sortedcontainers",
+          "2.4.0"
+        ],
+        [
+          "tabulate",
+          "0.10.0"
+        ],
+        [
+          "tenacity",
+          "9.2.1"
+        ],
+        [
+          "tornado",
+          "6.6"
+        ],
+        [
+          "typer",
+          "0.24.2"
+        ],
+        [
+          "typing_extensions",
+          "4.16.0"
+        ],
+        [
+          "tzdata",
+          "2026.5"
+        ],
+        [
+          "urllib3",
+          "2.8.0"
+        ],
+        [
+          "uvloop",
+          "0.21.0"
+        ],
+        [
+          "wrapt",
+          "1.17.3"
+        ],
+        [
+          "xyzservices",
+          "2026.9.1"
+        ],
+        [
+          "yarl",
+          "1.25.1"
+        ]
+      ]
+    }
+  }
+}
