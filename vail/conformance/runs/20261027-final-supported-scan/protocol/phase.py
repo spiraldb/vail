@@ -1,5 +1,5 @@
 """Frozen supported schedule; public upstream bodies/asserts remain unchanged."""
-import argparse,json,os,signal,subprocess,time
+import argparse,json,os,signal,subprocess,time,math
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 THREADS={'OMP_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','MKL_NUM_THREADS':'1','NUMEXPR_NUM_THREADS':'1','RAYON_NUM_THREADS':'32','HAIL_BENCHMARK_CORES':'32','HAIL_BENCHMARK_MEMORY':'16g','VAIL_BENCHMARK_MAX_RSS_GIB':'96'}
@@ -55,7 +55,12 @@ def main():
    if proc.returncode!=0:raise RuntimeError('Case supervisor failed; stop rather than infer query status')
    report=json.loads((folder/'result.json').read_text())
    if len(report['cases'])!=1:raise RuntimeError('Expected one case receipt')
-   result={**job,**report['cases'][0],'actual_sample':True,'evidence_tier':tiers[job['case_id']],'cross_engine_result_compared':False}
+   observation=report['cases'][0];tier=tiers[job['case_id']]
+   positive=lambda value:isinstance(value,(int,float)) and not isinstance(value,bool) and math.isfinite(value) and value>0
+   complete=observation.get('status')=='passed' and positive(observation.get('benchmark_seconds')) and positive((observation.get('telemetry') or {}).get('cpu_seconds'))
+   planning=tier['evidence_tier']=='planning'
+   result={**job,**observation,'fresh_attempt':True,'actual_sample':complete and not planning,'planning_sample':complete and planning,'sample_purpose':job['phase'],'sample_eligible_for_timed_ratio':complete and not planning and job['phase']=='timed','measurement_complete_finite_positive':complete,'evidence_tier':tier,'cross_engine_result_compared':False}
+
    results.append(result);(out/'results.json').write_text(json.dumps(results,indent=2)+'\n')
   check(a.enrollment)
  except BaseException as error:failure=repr(error);raise
