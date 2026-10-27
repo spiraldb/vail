@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/danielking/supported-scan-metadata-20261027-attempt-2/protocol/guest.py", line 6, in <module>
+    if hashlib.file_digest(source,'sha256').hexdigest()!=a.expected_sha:raise RuntimeError('Guest script fingerprint differs')
+AttributeError: module 'hashlib' has no attribute 'file_digest'
