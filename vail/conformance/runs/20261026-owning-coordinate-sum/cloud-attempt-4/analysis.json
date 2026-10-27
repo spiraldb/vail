@@ -1,0 +1,84 @@
+{
+  "protocol": "91aa68d6766284dcc42dc3833088d21cb8939981",
+  "production": "00a8d7d7fdefb8d2c324fc33c1ec6c58706f02ec",
+  "raw_receipts_verified": 73,
+  "independent_processes_per_version": 4,
+  "timed_repeats_per_query_per_process": 4,
+  "queries": {
+    "coordinate": {
+      "baseline": {
+        "wall_seconds": 0.6874336700000043,
+        "core_seconds": 15.766335802750001
+      },
+      "candidate": {
+        "wall_seconds": 0.4760263894999994,
+        "core_seconds": 10.58485741275
+      },
+      "ratio_of_version_medians_baseline_over_candidate": {
+        "wall_seconds": 1.444108320805616,
+        "core_seconds": 1.4895180150238627
+      },
+      "four_adjacent_pair_ratios_baseline_over_candidate": [
+        {
+          "wall_seconds": 1.4227316601690776,
+          "core_seconds": 1.523109743935198
+        },
+        {
+          "wall_seconds": 1.5423353332860912,
+          "core_seconds": 1.4943484461630019
+        },
+        {
+          "wall_seconds": 1.4410462816187086,
+          "core_seconds": 1.4807403737062785
+        },
+        {
+          "wall_seconds": 1.4336854844999682,
+          "core_seconds": 1.486944609510998
+        }
+      ]
+    },
+    "dp": {
+      "baseline": {
+        "wall_seconds": 0.4129834207500096,
+        "core_seconds": 9.900294330750004
+      },
+      "candidate": {
+        "wall_seconds": 0.4448323019999947,
+        "core_seconds": 9.963752436250001
+      },
+      "ratio_of_version_medians_baseline_over_candidate": {
+        "wall_seconds": 0.9284024988590297,
+        "core_seconds": 0.9936311037527262
+      },
+      "four_adjacent_pair_ratios_baseline_over_candidate": [
+        {
+          "wall_seconds": 0.8632182849817761,
+          "core_seconds": 0.9916037300555915
+        },
+        {
+          "wall_seconds": 0.943036288189887,
+          "core_seconds": 1.009380282284496
+        },
+        {
+          "wall_seconds": 0.9656974907342037,
+          "core_seconds": 1.022795452645972
+        },
+        {
+          "wall_seconds": 0.883328976401707,
+          "core_seconds": 0.9628264131327892
+        }
+      ]
+    }
+  },
+  "median_process_peak_rss_bytes": {
+    "baseline": 3898535936.0,
+    "candidate": 2855649280.0
+  },
+  "memory_scope": "whole process including construction, both query warmups and both query workloads",
+  "adverse_control": "All four paired DP wall ratios favor baseline; unresolved, do not call flat/no regression.",
+  "full_output_coordinate": [
+    315761156,
+    29304213
+  ],
+  "dp_recorded_baseline_result": 345065369
+}

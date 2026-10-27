@@ -1,0 +1,20 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "-p",
+    "vail-table",
+    "-p",
+    "vail-execution",
+    "--test",
+    "owning_coordinate_sum"
+  ],
+  "elapsed_seconds": 0.5523318810000148,
+  "returncode": 0,
+  "error": null,
+  "monitor_maxrss_bytes": 0,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}
