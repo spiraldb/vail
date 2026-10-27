@@ -41,6 +41,10 @@ fn fixture(hidden: usize) -> TableRef { fixture_batches(hidden, false) }
 fn fixture_batches(hidden: usize, duplicate_batches: bool) -> TableRef { fixture_layout(hidden, duplicate_batches, false) }
 
 fn fixture_layout(hidden: usize, duplicate_batches: bool, large: bool) -> TableRef {
+    fixture_nested_layout(hidden, duplicate_batches, large, None)
+}
+
+fn fixture_nested_layout(hidden: usize, duplicate_batches: bool, large: bool, depth: Option<usize>) -> TableRef {
     let unused = Arc::new(list(Arc::new(Int32Array::from(vec![17; hidden])),
         vec![0, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32],
         Some(NullBuffer::from(vec![false, true, true, true, true, true])))) as ArrayRef;
@@ -55,6 +59,12 @@ fn fixture_layout(hidden: usize, duplicate_batches: bool, large: bool) -> TableR
     let entries = Arc::new(structure(&["value", "unused"], vec![
         Arc::new(Int32Array::from(vec![10, 11, 20, 21, 30, 31])), unused,
     ], Some(NullBuffer::from(vec![true, false, true, true, true, true])))) as ArrayRef;
+    let entries = if let Some(depth) = depth {
+        let parent_nulls = entries.nulls().cloned();
+        let mut meta = entries;
+        for _ in 0..depth { meta = Arc::new(structure(&["child"], vec![meta], None)); }
+        Arc::new(structure(&["meta"], vec![meta], parent_nulls)) as ArrayRef
+    } else { entries };
     let cells = Arc::new(structure(&["entry"], vec![entries], None)) as ArrayRef;
     let cells = Arc::new(list(cells, vec![0, 2, 4, 6],
         Some(NullBuffer::from(vec![true, false, true])))) as ArrayRef;
@@ -204,4 +214,145 @@ async fn selected_large_list_offsets_preserve_logical_missingness() {
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
     assert_eq!(values(&projected).await, vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))]);
+}
+
+fn nested_leaf(depth: usize) -> Expr {
+    let mut value = Expr::Column { name: "meta".into() };
+    for _ in 0..depth { value = Expr::GetField { value: Arc::new(value), name: "child".into() }; }
+    Expr::GetField { value: Arc::new(value), name: "value".into() }
+}
+
+fn nested_selected(source: &TableRef, depth: usize, whole: bool) -> TableRef {
+    let mut fields = ["r", "c"].into_iter().map(|name|
+        (name.into(), Expr::Column { name: name.into() })).collect::<Vec<_>>();
+    fields.push(("value".into(), nested_leaf(depth)));
+    if whole { fields.push(("meta".into(), Expr::Column { name: "meta".into() })); }
+    source.map_rows(fields).unwrap()
+}
+
+#[tokio::test]
+async fn nested_leaf_selection_preserves_keys_nulls_and_shared_whole_values() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let expected = vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))];
+    for (depth, large) in [(0, false), (3, false), (3, true)] {
+        let source = fixture_nested_layout(1024, false, large, Some(depth));
+        let selected = nested_selected(&source, depth, false);
+        assert_eq!(values(&selected).await, expected);
+        let whole = nested_selected(&source, depth, true);
+        assert_eq!(values(&whole).await, expected);
+        let mut payload_lengths = Vec::new();
+        for partition in whole.collect_partitions().await.unwrap() {
+            for batch in partition {
+                let mut meta = batch.column_by_name("meta").unwrap().as_any().downcast_ref::<StructArray>().unwrap();
+                for _ in 0..depth { meta = meta.column_by_name("child").unwrap().as_any().downcast_ref::<StructArray>().unwrap(); }
+                let unused = meta.column_by_name("unused").unwrap().as_any().downcast_ref::<StructArray>().unwrap();
+                let defined = unused.column_by_name("defined").unwrap().as_any().downcast_ref::<ListArray>().unwrap();
+                payload_lengths.extend((0..batch.num_rows()).map(|i| {
+                    assert!(!meta.is_null(i));
+                    let array = defined.value(i);
+                    let actual = array.as_any().downcast_ref::<Int32Array>().unwrap();
+                    assert!(actual.iter().all(|value| value == Some(17)));
+                    actual.len()
+                }));
+            }
+        }
+        assert_eq!(payload_lengths, vec![1024, 0, 0]);
+        assert_eq!(values(&selected).await, expected);
+    }
+}
+
+#[tokio::test]
+async fn nested_struct_leaf_projection_omits_unused_payload_before_entry_materialization() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    for (depth, large) in [(0, false), (3, false), (3, true)] {
+        let mut observations = Vec::new();
+        for hidden in [1024, 4_000_000] {
+            let source = fixture_nested_layout(hidden, false, large, Some(depth));
+            let selected = nested_selected(&source, depth, false);
+            ALLOCATED.store(0, Ordering::Relaxed);
+            MEASURING.store(true, Ordering::Relaxed);
+            let actual = values(&selected).await;
+            MEASURING.store(false, Ordering::Relaxed);
+            let allocated = ALLOCATED.load(Ordering::Relaxed);
+            assert_eq!(actual, vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))]);
+            observations.push(allocated);
+        }
+        eprintln!("nested entry leaf depth={depth} large={large} runtime allocated bytes: {observations:?}");
+        assert!(observations[1] < observations[0].saturating_add(2 * 1024 * 1024),
+            "unused nested entry payload grew allocations: {observations:?}");
+    }
+}
+
+#[tokio::test]
+async fn shared_deep_prefix_preparation_tracks_unique_demand_nodes() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut incremental = Vec::new();
+    for (depth, width) in [(16, 64), (64, 256)] {
+        let source = fixture_nested_layout(8, false, false, Some(depth));
+        // A referenced external constant retains the existing full-capture
+        // route. It controls ordinary type checking on the SAME source/DAG;
+        // the one extra scalar expression is constant-size preparation work.
+        let control_schema = Arc::new(Schema::new(vec![Field::new("token", DataType::Int32, false)]));
+        let control_type = Type::from_arrow(&DataType::Struct(control_schema.fields().clone())).unwrap();
+        let control_global = GlobalsIR::arrow_literal(RecordBatch::try_new(control_schema,
+            vec![Arc::new(Int32Array::from(vec![0]))]).unwrap()).unwrap();
+        let mut prefix = Arc::new(Expr::Column { name: "meta".into() });
+        for _ in 0..depth {
+            prefix = Arc::new(Expr::GetField { value: prefix, name: "child".into() });
+        }
+        let fields = || {
+            let mut fields = ["r", "c"].into_iter().map(|name|
+                (name.into(), Expr::Column { name: name.into() })).collect::<Vec<_>>();
+            fields.extend((0..width).map(|i| ((if i == 0 { "value".into() } else { format!("value_{i}") }),
+                Expr::GetField { value: prefix.clone(), name: "value".into() })));
+            fields
+        };
+        let measure = |fields, bindings| {
+            ALLOCATED.store(0, Ordering::Relaxed);
+            MEASURING.store(true, Ordering::Relaxed);
+            let prepared = source.map_rows_bound(fields, bindings);
+            MEASURING.store(false, Ordering::Relaxed);
+            (prepared.unwrap(), ALLOCATED.load(Ordering::Relaxed))
+        };
+        let mut control_fields = fields();
+        control_fields.push(("__prep_control".into(), Expr::GetField {
+            value: Arc::new(Expr::ExternalGlobal { reference: "prep".into(), dtype: control_type }),
+            name: "token".into(),
+        }));
+        let (_, control_bytes) = measure(control_fields, GlobalBindings::from([("prep".into(), control_global)]));
+        let (projected, entry_bytes) = measure(fields(), GlobalBindings::new());
+        let extra = entry_bytes.saturating_sub(control_bytes);
+        eprintln!("public shared-prefix logical preparation depth={depth} width={width}: control={control_bytes} entries={entry_bytes} incremental={extra}");
+        incremental.push(extra);
+        assert_eq!(values(&projected).await, vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))]);
+        for partition in projected.collect_partitions().await.unwrap() {
+            for batch in partition {
+                let expected = batch.column_by_name("value").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+                for i in 1..width {
+                    let actual = batch.column_by_name(&format!("value_{i}")).unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+                    assert_eq!(actual.iter().collect::<Vec<_>>(), expected.iter().collect::<Vec<_>>());
+                }
+            }
+        }
+    }
+    // Four times as many unique prefix/leaf nodes, with generous fixed room
+    // for ordinary metadata construction; prohibit the old per-leaf path walk.
+    assert!(incremental[1] < incremental[0].saturating_mul(8).saturating_add(128 * 1024),
+        "shared-prefix demand preparation grew with repeated complete paths: {incremental:?}");
+}
+
+#[cfg(target_os = "linux")]
+#[tokio::test]
+async fn nested_leaf_run_keeps_original_spill_charges_and_omits_unused_output() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    // Same original80MB-per-batch accounting as the full-entry control above;
+    // only the consumer's selected nested fields change.
+    let source = fixture_nested_layout(10_000_000, true, false, Some(3));
+    let selected = nested_selected(&source, 3, false);
+    let before = process_written_bytes();
+    let actual = values(&selected).await;
+    let written = process_written_bytes().saturating_sub(before);
+    assert_eq!(actual, vec![(Some(0), Some(0), Some(10)),(Some(0), Some(0), Some(30)),(Some(0), Some(0), Some(10)),(Some(0), Some(0), Some(30)),(Some(0), Some(1), Some(31)),(Some(0), Some(1), Some(31))]);
+    assert!(written > 0, "original source budget must still force observable spill writes");
+    assert!(written < 8 * 1024 * 1024, "unused nested owner reached temporary output: {written}");
 }

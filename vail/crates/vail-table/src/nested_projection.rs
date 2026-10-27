@@ -5,6 +5,8 @@
 //! opaque or whole-container use marks the source column as fully required.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::sync::Arc;
+use arrow_schema::{DataType, Field, Fields, Schema, SchemaRef};
 use vail_execution::expressions::Expr;
 
 #[derive(Clone)]
@@ -1099,4 +1101,74 @@ fn narrow_vcf_paths<'a>(
         _ => return table.clone(),
     };
     table.replacing_node(node)
+}
+
+/// Derive an ordinary Column/GetField consumer schema from its exact Arrow
+/// fields. Logical opaque accessors retain their whole storage value.
+pub(crate) fn entries_projection_schema(
+    fields: &[(String, Expr)], schema: &Schema,
+) -> Option<SchemaRef> {
+    use vail_execution::expressions::Type;
+    #[derive(Default)]
+    struct Demand { whole: bool, children: BTreeMap<String, usize>, storage: StorageFields }
+    fn bind(
+        expression: &Expr, top: &HashMap<&str, &Field>, roots: &mut BTreeMap<String, usize>,
+        nodes: &mut Vec<Demand>, memo: &mut HashMap<usize, Option<usize>>,
+    ) -> Option<usize> {
+        let identity = expression as *const Expr as usize;
+        if let Some(node) = memo.get(&identity) { return *node; }
+        let node = match expression {
+            Expr::Column { name } => {
+                if let Some(node) = roots.get(name) { Some(*node) } else {
+                    let source = top.get(name.as_str())?;
+                    let storage = Type::from_arrow(source.data_type()).ok()
+                        .map(StorageFields::from_type).unwrap_or_default();
+                    let node = nodes.len();
+                    nodes.push(Demand { storage, ..Default::default() });
+                    roots.insert(name.clone(), node);
+                    Some(node)
+                }
+            }
+            Expr::GetField { value, name } => {
+                let parent = bind(value, top, roots, nodes, memo)?;
+                if nodes[parent].whole { Some(parent) }
+                else if let Some(node) = nodes[parent].children.get(name) { Some(*node) }
+                else if let Some(storage) = nodes[parent].storage.0.remove(name) {
+                    let node = nodes.len();
+                    nodes.push(Demand { storage, ..Default::default() });
+                    nodes[parent].children.insert(name.clone(), node);
+                    Some(node)
+                } else {
+                    // A logical accessor below an opaque storage terminal
+                    // requires the whole terminal, not a fabricated field path.
+                    nodes[parent].whole = true;
+                    Some(parent)
+                }
+            }
+            _ => None,
+        };
+        memo.insert(identity, node);
+        node
+    }
+    fn project(source: &DataType, node: usize, nodes: &[Demand]) -> DataType {
+        if nodes[node].whole { return source.clone(); }
+        let DataType::Struct(source) = source else { return source.clone(); };
+        let fields: Fields = source.iter().filter_map(|field| nodes[node].children.get(field.name()).map(|&child|
+            Arc::new(field.as_ref().clone().with_data_type(project(field.data_type(), child, nodes)))
+        )).collect::<Vec<_>>().into();
+        DataType::Struct(fields)
+    }
+    let top = schema.fields().iter().map(|field| (field.name().as_str(), field.as_ref()))
+        .collect::<HashMap<_, _>>();
+    let mut roots = BTreeMap::new();
+    let mut nodes = Vec::new();
+    let mut memo = HashMap::new();
+    for (_, expression) in fields {
+        let node = bind(expression, &top, &mut roots, &mut nodes, &mut memo)?;
+        nodes[node].whole = true;
+    }
+    let selected = schema.fields().iter().filter_map(|field| roots.get(field.name()).map(|&node|
+        Arc::new(field.as_ref().clone().with_data_type(project(field.data_type(), node, &nodes)))
+    )).collect::<Vec<_>>();
+    Some(Arc::new(Schema::new_with_metadata(selected, schema.metadata().clone())))
 }

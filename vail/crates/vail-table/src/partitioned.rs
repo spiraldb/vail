@@ -1353,7 +1353,7 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                     global_schema: table.globals().schema().clone(),
                     projection: None,
                 };
-                config.projection = crate::matrix_entries::EntryProjection::prepare(input.schema.clone(), &config)?.map(Arc::new);
+                config.projection = crate::matrix_entries::EntryProjection::prepare(input.schema.clone(), globals.schema(), &config)?.map(Arc::new);
                 let _ = value_fields;
                 let columns = Arc::new(crate::matrix_entries::SharedColumnsExec::new(
                     globals,

@@ -214,3 +214,43 @@ def test_payload_free_maps_keep_empty_array_and_nullable_element_shape():
     expected = [(0, [], []), (None, None, None), (2, [True, False], [7, 7])]
     for row in rows:
         assert (row.length, row.defined, row.constant) == expected[row.row_idx]
+
+
+@pytest.mark.parametrize('kind', ['call', 'set', 'dict', 'nested_array'])
+def test_nested_entry_selection_keeps_selected_opaque_values_and_whole_consumers(kind):
+    m = hl.range_matrix_table(4, 2, 2)
+    m = m.key_rows_by(r=m.row_idx % 2)
+    opaque = {
+        'call': lambda: hl.call(m.row_idx % 2, 1),
+        'set': lambda: hl.set([m.row_idx, 9]),
+        'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+        'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+    }[kind]()
+    m = m.annotate_entries(meta=hl.or_missing(m.row_idx != 2, hl.struct(
+        value=m.row_idx + m.col_idx, opaque=opaque, unused='x' * 1024)))
+    entries = m.entries()
+    narrow = entries.select(row_idx=entries.row_idx, value=entries.meta.value,
+                            opaque=entries.meta.opaque)
+    actual = narrow.collect()
+    expected_keys = [(r, c, i) for r in range(2) for c in range(2)
+                     for i in range(4) if i % 2 == r]
+    assert [(row.r, row.col_idx, row.row_idx) for row in actual] == expected_keys
+    for row in actual:
+        expected = {
+            'call': lambda: hl.Call([row.row_idx % 2, 1]),
+            'set': lambda: {row.row_idx, 9},
+            'dict': lambda: {row.row_idx: 'payload'},
+            'nested_array': lambda: [hl.Struct(value=row.row_idx)],
+        }[kind]()
+        assert row.value == (None if row.row_idx == 2 else row.row_idx + row.col_idx)
+        assert row.opaque == (None if row.row_idx == 2 else expected)
+    whole = entries.select(row_idx=entries.row_idx, meta=entries.meta,
+                           value=entries.meta.value).collect()
+    assert [(row.r, row.col_idx, row.row_idx) for row in whole] == expected_keys
+    for row in whole:
+        if row.row_idx == 2:
+            assert row.meta is None and row.value is None
+        else:
+            assert row.meta.value == row.value
+            assert row.meta.unused == 'x' * 1024
+    assert narrow.collect() == actual

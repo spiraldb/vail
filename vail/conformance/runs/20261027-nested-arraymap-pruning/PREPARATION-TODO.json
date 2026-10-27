@@ -1,0 +1,16 @@
+{
+  "status": "OPEN independent follow-up; no implementation in nested pruning fixes",
+  "title": "Audit ordinary deep/wide projection type-checking allocation growth",
+  "evidence": "Actual public MapRows logical preparation on the same source and shared expression DAG, with one referenced external constant retaining the existing full route: depth16 width64 allocated7368949bytes; depth64 width256 allocated269964721bytes. Identical control totals before/after the demand-index fix.",
+  "scope": "Ordinary type-checking/control allocation remains expensive. New pruning analysis incremental allocation is separately37384\u2192152552bytes afterfix,165939\u21922195011 beforefix. No claim that whole preparation is cheap or linear.",
+  "possible_source_to_audit": [
+    "Owned recursive Type values and TypeMemo cloning in expressions.rs dtype_scoped/GetField/field_type.",
+    "validate_projection_with_globals scope/memo reuse across shared projection prefixes."
+  ],
+  "not_established": [
+    "Exact allocation attribution within ordinary type checking",
+    "CPU bottleneck or timing impact",
+    "A safe general-purpose fix"
+  ],
+  "priority": "Unranked follow-up for the main TODO ledger owner; do not bundle latent type-checking changes into pruning."
+}
