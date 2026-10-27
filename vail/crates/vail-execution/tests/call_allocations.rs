@@ -4,12 +4,12 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, RecordBatch, StructArray,
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, RecordBatch, StringArray, StructArray,
     UInt8Array, UInt16Array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema};
-use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
+use vail_execution::expressions::{ArrayReduction, Expr, PrimitiveType, Type, lower};
 
 thread_local! {
     static ALLOCATIONS: Cell<Option<usize>> = const { Cell::new(None) };
@@ -530,4 +530,68 @@ fn direct_call_index_allocates_only_primitive_output_not_allele_lists() {
     assert!(bytes <= 5 * batch.num_rows() + 8192,
             "direct Call index allocated {bytes} bytes for {} calls", batch.num_rows());
     eprintln!("direct Call index: {} calls, {bytes} allocated bytes", batch.num_rows());
+}
+
+
+fn nested_row_capture_input(payload_bytes: usize) -> (RecordBatch, Expr) {
+    let count = 128usize;
+    let mut present = vec![true; count * 3]; present[1] = false;
+    let entry_values: ArrayRef = Arc::new(StructArray::new_empty_fields(count * 3, Some(NullBuffer::from(present))));
+    let slots: ArrayRef = Arc::new(StructArray::from(vec![(
+        Arc::new(Field::new("value", entry_values.data_type().clone(), true)), entry_values,
+    )]));
+    let entries: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new("item", slots.data_type().clone(), true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0, count as i32, count as i32, (count*2) as i32, (count*3) as i32])),
+        slots, None,
+    ));
+    let small: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new("item", DataType::Int32, true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0,2,4,6,8])),
+        Arc::new(Int32Array::from(vec![1,2,3,4,5,6,7,8])), None,
+    ));
+    let payload = "x".repeat(payload_bytes);
+    let meta: ArrayRef = Arc::new(StructArray::new(
+        vec![Field::new("small", small.data_type().clone(), true), Field::new("unused", DataType::Utf8, true)].into(),
+        vec![small, Arc::new(StringArray::from(vec![payload.as_str();4]))],
+        Some(NullBuffer::from(vec![true,true,true,false])),
+    ));
+    let meta_type = Type::from_arrow(meta.data_type()).unwrap();
+    let fields: ArrayRef = Arc::new(StructArray::from(vec![(Arc::new(Field::new("meta", meta.data_type().clone(), true)),meta)]));
+    let rows: ArrayRef = Arc::new(StructArray::from(vec![(Arc::new(Field::new("__vail_aligned_row", fields.data_type().clone(), true)),fields)]));
+    let schema = Arc::new(Schema::new(vec![Field::new("entries",entries.data_type().clone(),true),Field::new("rows",rows.data_type().clone(),true)]));
+    let batch = RecordBatch::try_new(schema,vec![entries,rows]).unwrap();
+    let captured = Expr::AlignedMapInput { axis:"row".into(),name:Some("meta".into()),dtype:meta_type };
+    let sum = Expr::ArrayReduce { operation:ArrayReduction::Sum,filter_missing:true,
+        value:Arc::new(Expr::GetField { value:Arc::new(captured),name:"small".into() }) };
+    let body = Expr::IfElse {
+        condition:Arc::new(Expr::AlignedMapInput { axis:"entry_present".into(),name:None,dtype:Type::Primitive(PrimitiveType::Bool) }),
+        consequent:Arc::new(sum),alternate:Arc::new(Expr::Literal { dtype:Type::Primitive(PrimitiveType::Int32),value:serde_json::Value::Null }),
+    };
+    let expression = Expr::AlignedMatrixMap {
+        entries:Arc::new(Expr::Column { name:"entries".into() }),rows:Arc::new(Expr::Column { name:"rows".into() }),
+        columns:Arc::new(Expr::Literal { dtype:Type::Array { array:Box::new(Type::Primitive(PrimitiveType::Int32)) },value:serde_json::json!(vec![0;count]) }),
+        globals:Arc::new(Expr::Struct { fields:vec![] }),body:Arc::new(body),
+        dtype:Type::Array { array:Box::new(Type::Primitive(PrimitiveType::Int32)) },preserve_cell:false,
+    };
+    (batch,expression)
+}
+
+#[test]
+fn flat_nested_row_capture_drops_unused_payload_before_nonidentity_take_and_decode() {
+    let mut sizes = Vec::new();
+    for bytes in [8,64*1024] {
+        // Input construction AND query preparation are outside runtime
+        // allocation accounting; public lower/evaluate is the only boundary.
+        let (batch,expression) = nested_row_capture_input(bytes);
+        let (output,allocated) = evaluate_aligned_allocated_bytes(&batch,&expression);
+        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(lists.value_offsets(), &[0,128,128,256,384]);
+        let values = lists.values().as_any().downcast_ref::<Int32Array>().unwrap();
+        let expected = (0..384).map(|index| if index==1 || index>=256 {None} else if index<128 {Some(3)} else {Some(11)}).collect::<Vec<_>>();
+        assert_eq!(values.iter().collect::<Vec<_>>(), expected);
+        sizes.push(allocated);
+    }
+    eprintln!("public nested capture runtime allocations (small,wide): {sizes:?}");
+    assert!(sizes[1] < sizes[0].saturating_add(1_000_000), "unused row sibling grew allocations: {sizes:?}");
 }
