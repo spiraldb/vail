@@ -1,5 +1,5 @@
 //! Public entry projections preserve logical nulls and independent consumers.
-use arrow_array::{Array, ArrayRef, Int32Array, ListArray, RecordBatch, StructArray};
+use arrow_array::{Array, ArrayRef, Int32Array, LargeListArray, ListArray, RecordBatch, StructArray};
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Fields, Schema};
 use std::{alloc::{GlobalAlloc, Layout, System}, sync::{Arc, atomic::{AtomicBool, AtomicUsize, Ordering}}};
@@ -37,7 +37,9 @@ fn list(values: ArrayRef, offsets: Vec<i32>, nulls: Option<NullBuffer>) -> ListA
 
 fn fixture(hidden: usize) -> TableRef { fixture_batches(hidden, false) }
 
-fn fixture_batches(hidden: usize, duplicate_batches: bool) -> TableRef {
+fn fixture_batches(hidden: usize, duplicate_batches: bool) -> TableRef { fixture_layout(hidden, duplicate_batches, false) }
+
+fn fixture_layout(hidden: usize, duplicate_batches: bool, large: bool) -> TableRef {
     let unused = Arc::new(list(Arc::new(Int32Array::from(vec![17; hidden])),
         vec![0, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32],
         Some(NullBuffer::from(vec![false, true, true, true, true, true])))) as ArrayRef;
@@ -47,6 +49,14 @@ fn fixture_batches(hidden: usize, duplicate_batches: bool) -> TableRef {
     let cells = Arc::new(structure(&["entry"], vec![entries], None)) as ArrayRef;
     let cells = Arc::new(list(cells, vec![0, 2, 4, 6],
         Some(NullBuffer::from(vec![true, false, true])))) as ArrayRef;
+    let cells: ArrayRef = if large {
+        let original = cells.as_any().downcast_ref::<ListArray>().unwrap();
+        Arc::new(LargeListArray::try_new(
+            Arc::new(Field::new("item", original.values().data_type().clone(), true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0_i64, 2, 4, 6])),
+            original.values().clone(), original.nulls().cloned(),
+        ).unwrap())
+    } else { cells };
     let rows = Arc::new(structure(&["r"], vec![Arc::new(Int32Array::from(if duplicate_batches { vec![0, 0, 0] } else { vec![0, 0, 1] }))], None)) as ArrayRef;
     let key = Arc::new(Int32Array::from(if duplicate_batches { vec![0, 0, 0] } else { vec![0, 0, 1] })) as ArrayRef;
     let schema = Arc::new(Schema::new(vec![
@@ -115,6 +125,7 @@ async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
     }
     // The added16MB source owner belongs only to an unused null List field.
     // Allow ordinary planner/runtime variation, never a payload-sized copy.
+    eprintln!("public allocation bytes (small, growing hidden owner): {observations:?}");
     assert!(observations[1] < observations[0].saturating_add(2 * 1024 * 1024),
         "public query allocations grew with unused hidden owner: {observations:?}");
 }
@@ -141,4 +152,13 @@ async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields(
     assert_eq!(actual, vec![(0,0,10),(0,0,30),(0,0,10),(0,0,30),(0,1,31),(0,1,31)]);
     assert!(written > 0, "original input budget must still cause observable spill writes");
     assert!(written < 8 * 1024 * 1024, "unused source owner reached temporary output: {written}");
+}
+
+
+#[tokio::test]
+async fn selected_large_list_offsets_preserve_logical_missingness() {
+    let source = fixture_layout(1024, false, true);
+    let projected = source.map_rows(["r", "c", "value"].into_iter()
+        .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
+    assert_eq!(values(&projected).await, vec![(0, 0, 10), (1, 0, 30), (1, 1, 31)]);
 }
