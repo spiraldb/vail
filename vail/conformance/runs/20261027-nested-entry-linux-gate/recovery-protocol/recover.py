@@ -72,9 +72,10 @@ for label,reference in [('candidate',E['candidate_source_files']),('baseline',E[
  actual=set(build_files);record['source_matches'][label]['missing_build_files']=sorted(expected_build-actual);record['source_matches'][label]['extra_build_files']=sorted(actual-expected_build)
  record['source_matches'][label]['complete_build_identity_matches']=not record['source_matches'][label]['mismatches'] and expected_build==actual
 readonly=E['readonly_scan_artifact'];frontend=Path(readonly['frontend'])
-record['scan_native_sha256']=sha(frontend/'_native.abi3.so',512*1024**2)
+native=frontend/'_native.abi3.so'
+record['scan_native_sha256']=sha(native,512*1024**2) if native.is_file() else None
 record['scan_native_matches4761']=record['scan_native_sha256']==readonly['native_sha256']
-record['scan_frontend_mismatches']=[name for name,expected in readonly['frontend_sha256'].items() if sha(frontend/name)!=expected]
+record['scan_frontend_mismatches']=[name for name,expected in readonly['frontend_sha256'].items() if not (frontend/name).is_file() or sha(frontend/name)!=expected]
 runtime={'python':sys.version,'executable':sys.executable,'platform':platform.platform(),'packages':sorted([(d.metadata['Name'],d.version) for d in metadata.distributions()])}
 record['runtime']=runtime;record['runtime_matches']=runtime==readonly['runtime']
 record['compiler_processes_now']=[]
