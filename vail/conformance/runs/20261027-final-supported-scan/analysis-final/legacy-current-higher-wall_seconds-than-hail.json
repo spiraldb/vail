@@ -1,0 +1,92 @@
+[
+  {
+    "case_id": "benchmark_methods::test_split_multi_hts",
+    "current_over_comparator": 12.18561162314875,
+    "comparator_over_current": 0.08206399735408611,
+    "current_greater": true,
+    "old": 77.35068623199982,
+    "current": 77.56774449499994,
+    "hail": 6.365519179000103
+  },
+  {
+    "case_id": "benchmark_table::test_group_by_collect_per_row",
+    "current_over_comparator": 3.771221886658058,
+    "comparator_over_current": 0.2651660469880677,
+    "current_greater": true,
+    "old": 12.122597062000295,
+    "current": 11.929984384999898,
+    "hail": 3.1634267999997974
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+    "current_over_comparator": 3.6435858025164394,
+    "comparator_over_current": 0.2744549062929576,
+    "current_greater": true,
+    "old": 42.192960240000005,
+    "current": 18.822365939000008,
+    "hail": 5.165890680000004
+  },
+  {
+    "case_id": "benchmark_methods::test_variant_qc",
+    "current_over_comparator": 3.2062027386484107,
+    "comparator_over_current": 0.3118954356646687,
+    "current_greater": true,
+    "old": 13.61388535900005,
+    "current": 13.532352075000063,
+    "hail": 4.220678845999828
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+    "current_over_comparator": 2.4372174310636,
+    "comparator_over_current": 0.41030397503910876,
+    "current_greater": true,
+    "old": 16.864250810000044,
+    "current": 12.11217720600007,
+    "hail": 4.9696744539999145
+  },
+  {
+    "case_id": "benchmark_methods::test_export_vcf",
+    "current_over_comparator": 1.8366946007717604,
+    "comparator_over_current": 0.5444563290923871,
+    "current_greater": true,
+    "old": 50.69534769799998,
+    "current": 12.185684210999852,
+    "hail": 6.6345728930000405
+  },
+  {
+    "case_id": "benchmark_table::test_group_by_take_rekey",
+    "current_over_comparator": 1.8148158159060785,
+    "comparator_over_current": 0.5510201042086095,
+    "current_greater": true,
+    "old": 9.385674713999833,
+    "current": 9.28199768200011,
+    "hail": 5.1145673299997725
+  },
+  {
+    "case_id": "benchmark_shuffle::test_shuffle_key_rows_by_mt",
+    "current_over_comparator": 1.8022137791601816,
+    "comparator_over_current": 0.5548731296827576,
+    "current_greater": true,
+    "old": 11.102828323000267,
+    "current": 11.008377889000258,
+    "hail": 6.108253092000041
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+    "current_over_comparator": 1.3415588062631112,
+    "comparator_over_current": 0.745401539859056,
+    "current_greater": true,
+    "old": 15.237383050000005,
+    "current": 6.434229794999965,
+    "hail": 4.796084796999992
+  },
+  {
+    "case_id": "benchmark_matrix_table::test_mt_localize_and_collect",
+    "current_over_comparator": 1.2517874484727316,
+    "comparator_over_current": 0.7988576664673144,
+    "current_greater": true,
+    "old": 13.857502153000041,
+    "current": 12.419811021999976,
+    "hail": 9.921661250999932
+  }
+]

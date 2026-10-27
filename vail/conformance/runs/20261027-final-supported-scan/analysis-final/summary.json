@@ -1,0 +1,371 @@
+{
+  "status": "FINAL_ACCEPTED",
+  "integrity_acceptance": {
+    "approval": "Root reports reviewer FINALINPUT acceptance of exact5c5675749699a387d536955c6c7efaa02189cab6; final report generation authorized.",
+    "accepted_evidence_revision": "5c5675749699a387d536955c6c7efaa02189cab6",
+    "final_input_integrity_accepted": true,
+    "receipt_path": "/private/tmp/vail-owning-coordinate-sum/vail/conformance/runs/20261027-final-supported-scan/final-attempt-1/recovered/final-enrollment.json",
+    "receipt_sha256": "97139031cf208a1bbc4ff4d3320fec3ac5232e767b924df6f88b665e41b13306",
+    "stage_summary_path": "/private/tmp/vail-owning-coordinate-sum/vail/conformance/runs/20261027-final-supported-scan/final-attempt-1/summary.json",
+    "stage_summary_sha256": "d61e26947ea88519a8d67d18e3f583e2bf63b8cd4aed1e70b4a4cb8bb22aae48",
+    "frozen_native_sha256": "4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c",
+    "frozen_production": "517c87538d58689e864af795015020e908de0be0",
+    "newer_main_pruning_NOT_measured": "73201cc4c"
+  },
+  "repetitions": [
+    1,
+    2,
+    3
+  ],
+  "inputs": [
+    {
+      "repetition": 1,
+      "path": "/private/tmp/vail-owning-coordinate-sum/vail/conformance/runs/20261027-final-supported-scan/rep1-attempt-1/recovered/rep1/results.json",
+      "sha256": "1f4f147780d0d07f29c4f68b6437cc0716a62e1c82eb172ffa517ba6910f9e99",
+      "records": 470
+    },
+    {
+      "repetition": 2,
+      "path": "/private/tmp/vail-owning-coordinate-sum/vail/conformance/runs/20261027-final-supported-scan/rep2-attempt-1/recovered/rep2/results.json",
+      "sha256": "4fdfb3d65c8ea14e96680dc0880548d94043b79cbb3859435492a4c3ee0b5152",
+      "records": 470
+    },
+    {
+      "repetition": 3,
+      "path": "/private/tmp/vail-owning-coordinate-sum/vail/conformance/runs/20261027-final-supported-scan/rep3-attempt-1/recovered/rep3/results.json",
+      "sha256": "bd94bea289d9d6ebe5ee3fd938f9f48bce8a7a8b492942a5c8abadea0b7217b5",
+      "records": 470
+    }
+  ],
+  "ratio_definition": "ratio of per-version medians; NOT median of per-repetition ratios",
+  "planning_logical_cases_excluded": 1,
+  "planning_excluded": 9,
+  "excluded_records": [
+    {
+      "repetition": 1,
+      "case_id": "benchmark_combiner::test_import_gvcf_force_count",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "failed",
+      "actual_sample": false,
+      "planning_sample": false,
+      "reason": "ModuleNotFoundError: No module named 'test'"
+    },
+    {
+      "repetition": 1,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "current",
+      "mode": "vail-vail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 1,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 1,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "old",
+      "mode": "vail-vail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 2,
+      "case_id": "benchmark_combiner::test_import_gvcf_force_count",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "failed",
+      "actual_sample": false,
+      "planning_sample": null,
+      "reason": true
+    },
+    {
+      "repetition": 2,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 2,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "old",
+      "mode": "vail-vail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 2,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "current",
+      "mode": "vail-vail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 3,
+      "case_id": "benchmark_combiner::test_import_gvcf_force_count",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "failed",
+      "actual_sample": false,
+      "planning_sample": null,
+      "reason": true
+    },
+    {
+      "repetition": 3,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "old",
+      "mode": "vail-vail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 3,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "current",
+      "mode": "vail-vail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    },
+    {
+      "repetition": 3,
+      "case_id": "benchmark_table::test_table_python_construction",
+      "version": "hail",
+      "mode": "hail-hail",
+      "status": "passed",
+      "actual_sample": false,
+      "planning_sample": true,
+      "reason": null
+    }
+  ],
+  "native_execution_pairs": 111,
+  "native_hail_pairs": 110,
+  "legacy_pairs": 67,
+  "supplemental_cases_omitted": 85,
+  "statistics": {
+    "native": {
+      "old": {
+        "paired_cases": 111,
+        "wall_seconds": {
+          "speedup_distribution": {
+            "n": 111,
+            "median": 1.0874551068887097,
+            "arithmetic_mean": 1.6447093209506358,
+            "geometric_mean": 1.3564998134267146,
+            "min": 0.9408128966004825,
+            "max": 12.514629805430591
+          },
+          "current_normalized_distribution": {
+            "n": 111,
+            "median": 0.9195781910124774,
+            "arithmetic_mean": 0.8062031157027272,
+            "geometric_mean": 0.7371914025361017,
+            "min": 0.07990647870111671,
+            "max": 1.0629105995606385
+          },
+          "sum_comparator_medians": 406.630283275,
+          "sum_current_medians": 339.4782796750014,
+          "current_higher_cases": 14,
+          "ratio_summed_medians": 1.1978094258763372
+        },
+        "observed_cpu_seconds": {
+          "speedup_distribution": {
+            "n": 111,
+            "median": 1.0628415300546448,
+            "arithmetic_mean": 1.4357762043427797,
+            "geometric_mean": 1.2603190322660778,
+            "min": 0.6666666666666665,
+            "max": 8.435483870967742
+          },
+          "current_normalized_distribution": {
+            "n": 111,
+            "median": 0.9408740359897173,
+            "arithmetic_mean": 0.8500524031066501,
+            "geometric_mean": 0.7934498919705917,
+            "min": 0.118546845124283,
+            "max": 1.5000000000000004
+          },
+          "sum_comparator_medians": 1875.02,
+          "sum_current_medians": 1713.24,
+          "current_higher_cases": 26,
+          "ratio_summed_medians": 1.0944292685204642
+        }
+      },
+      "hail": {
+        "paired_cases": 110,
+        "wall_seconds": {
+          "speedup_distribution": {
+            "n": 110,
+            "median": 4.765497537605232,
+            "arithmetic_mean": 16.809035206965262,
+            "geometric_mean": 5.907441959658156,
+            "min": 0.08628784482351191,
+            "max": 264.6102022910066
+          },
+          "current_normalized_distribution": {
+            "n": 110,
+            "median": 0.2098487738623746,
+            "arithmetic_mean": 0.41351993886677346,
+            "geometric_mean": 0.16927800676316196,
+            "min": 0.0037791437795744714,
+            "max": 11.58911781891576
+          },
+          "sum_comparator_medians": 769.3124789259982,
+          "sum_current_medians": 337.95002119500134,
+          "current_higher_cases": 6,
+          "ratio_summed_medians": 2.2764090270084503
+        },
+        "observed_cpu_seconds": {
+          "speedup_distribution": {
+            "n": 110,
+            "median": 4.976931937711516,
+            "arithmetic_mean": 43.6061767907956,
+            "geometric_mean": 7.177204885559856,
+            "min": 0.4923957621326042,
+            "max": 941.2499999999998
+          },
+          "current_normalized_distribution": {
+            "n": 110,
+            "median": 0.20096220576169305,
+            "arithmetic_mean": 0.3531854012104159,
+            "geometric_mean": 0.139330006032285,
+            "min": 0.001062416998671979,
+            "max": 2.0308866909595698
+          },
+          "sum_comparator_medians": 5407.32,
+          "sum_current_medians": 1710.48,
+          "current_higher_cases": 11,
+          "ratio_summed_medians": 3.161288059492072
+        }
+      }
+    },
+    "legacy": {
+      "old": {
+        "paired_cases": 67,
+        "wall_seconds": {
+          "speedup_distribution": {
+            "n": 67,
+            "median": 1.122855550157409,
+            "arithmetic_mean": 3.9326126790265294,
+            "geometric_mean": 1.9433868391262266,
+            "min": 0.9274859783081344,
+            "max": 44.547133870104474
+          },
+          "current_normalized_distribution": {
+            "n": 67,
+            "median": 0.89058650496924,
+            "arithmetic_mean": 0.6870986372167965,
+            "geometric_mean": 0.5145655923293243,
+            "min": 0.022448133316857424,
+            "max": 1.0781834155855827
+          },
+          "sum_comparator_medians": 773.6335098389978,
+          "sum_current_medians": 271.96668123300043,
+          "current_higher_cases": 8,
+          "ratio_summed_medians": 2.8445892942900874
+        },
+        "observed_cpu_seconds": {
+          "speedup_distribution": {
+            "n": 67,
+            "median": 1.1303116147308785,
+            "arithmetic_mean": 2.238396484400917,
+            "geometric_mean": 1.6763617687986543,
+            "min": 0.8103729750094186,
+            "max": 10.170903190914006
+          },
+          "current_normalized_distribution": {
+            "n": 67,
+            "median": 0.8847117794486213,
+            "arithmetic_mean": 0.7071871146938273,
+            "geometric_mean": 0.5965299487333445,
+            "min": 0.0983196852068489,
+            "max": 1.2339996900666357
+          },
+          "sum_comparator_medians": 1937.06,
+          "sum_current_medians": 1071.64,
+          "current_higher_cases": 5,
+          "ratio_summed_medians": 1.8075659736478666
+        }
+      },
+      "hail": {
+        "paired_cases": 67,
+        "wall_seconds": {
+          "speedup_distribution": {
+            "n": 67,
+            "median": 3.2560770324754333,
+            "arithmetic_mean": 10.984927055774266,
+            "geometric_mean": 3.8428588383555136,
+            "min": 0.08206399735408611,
+            "max": 89.20360397812568
+          },
+          "current_normalized_distribution": {
+            "n": 67,
+            "median": 0.3071180411354549,
+            "arithmetic_mean": 0.7578342962732274,
+            "geometric_mean": 0.2602229335147614,
+            "min": 0.011210309397871612,
+            "max": 12.18561162314875
+          },
+          "sum_comparator_medians": 339.3147190049992,
+          "sum_current_medians": 271.96668123300043,
+          "current_higher_cases": 10,
+          "ratio_summed_medians": 1.2476334140147853
+        },
+        "observed_cpu_seconds": {
+          "speedup_distribution": {
+            "n": 67,
+            "median": 3.5027624309392267,
+            "arithmetic_mean": 17.81451120879001,
+            "geometric_mean": 5.091020990226028,
+            "min": 0.3505048047682763,
+            "max": 226.66666666666669
+          },
+          "current_normalized_distribution": {
+            "n": 67,
+            "median": 0.2854889589905363,
+            "arithmetic_mean": 0.4219531321366039,
+            "geometric_mean": 0.1964242539796723,
+            "min": 0.004411764705882353,
+            "max": 2.853027936838453
+          },
+          "sum_comparator_medians": 2392.44,
+          "sum_current_medians": 1071.64,
+          "current_higher_cases": 10,
+          "ratio_summed_medians": 2.23250345265201
+        }
+      }
+    }
+  },
+  "limits": [
+    "Old Python3.11 vs current3.12 is whole-bundle comparison, not Rust-only attribution.",
+    "Observed CPU at10Hz lower bound incl JVM and telemetry; short-lived descendants can be missed.",
+    "Summed sampled RSS is not PSS, allocated bytes, unique physical memory or process-initialization peak.",
+    "Fixed cyclic version order; uncontrolled OS cache; no causal or no-noise/no-regression claim.",
+    "All cross-engine result comparisons false; execution-only tiers preserved.",
+    "One intentional planning benchmark excluded; Hail gVCF unavailable after one actual failure and later cached status."
+  ]
+}
