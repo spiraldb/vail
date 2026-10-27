@@ -1,0 +1,33 @@
+# H012 matched resources plus ONE postcandidate sample — source only
+
+No VM/build/query is authorized until exact review/rootGO. Candidate517c8753 source/public correctness/allocation accepted at2a5ca504; normalLinuxcandidate must be freshly built/enrolled, never a copied native. Baseline exactec71f970/currentmain6a4 production-equivalent4902;69frontend and3originalprofile25metadata hashes pinned. Complete2101source files include newPythonfixture and prior externalh050list/requirements. ASSETS+bundle.py verify ALLsource/protocol/frozenbaselineoverlays before upload; no private/tmp dependencies.
+
+## Correctness and independent outputs before timing
+
+Reuse stable source `/home/danielking/vail-presence-20261026/source-8dcd426b`, cachedtarget `/home/danielking/vail-presence-20261026/target`, normaljobs8/nativeflags/incremental0/kache/locked. Existinguv/cargo/kache PATH fixed, freshPythonenv+pinnedexistingrequirements; no system installs. Preflight originalGQ Int32/locus/alleles and owned-name collisions, no substitutes.
+
+ONE baseline public row-summary action produces GQsum/definedcount/min/max/entrycount perrow, then a Pythonfold over publicLocus/allele values independently calculates all three query references. This path has NO aligned Struct row capture (only direct entry row reducers). Validate rowconstant/GQrange so adding it cannot overflowInt32; invalidpremise stops, no alternateoracle. Count/rowdimensions fixed; target result must also equal recorded1536178152/57513340 as a crosscheck. Wholepayload expectation uses Unicode `len(str(locus))+1+16` and entrycount including missingGQ; smallchecksum uses `(position%7+len(alleles))*entrycount`. Oracle fullresult/JSON/hash frozen BEFORE timings; it is independent expected-value arithmetic, not a target warmup oracle. Tiny public2×3test with missingGQ/filteredentry independently expects target/scalar37+count4, wholepayload105/small17; passes on BOTH normalbaseline andcandidate locally. Initialtinytest omitted non-key locus/alleles and failed before any cloud work; correctedexplicitselection and originalfailure receipts retained.
+
+Identical publicRustcall_allocations oracle runs on exact baseline production using ONLY2frozen source overlays. Require6PASS/1expectednewallocationFAIL/1PREEXISTINGignoredbenchmark; no benchmark executed. TERM/INT/HUP exceptions cover overlays/log checks, protected finally restorescandidatebytes+verifiesALL2101hashes and writesproof; unknownrestore stops. Normalcandidatewheel900s/install90, completeRust7PASS+1oldignore300s, Python446PASS120s before artifactenrollment. BaselineRust300s, oracle60s(queryguards), env90/dependencies180; preparation has tighterTOTAL1200s. No retry/budgetextension.
+
+## Minimal three public pipelines
+
+All use the same frozen real63Mnative fixture and fully consumed exactoutputs.
+
+- Projected: ORIGINALprofilequery, rowStruct small=[position%7,len(alleles)] plusunusedstr(locus)+':'+16padding, select_entries(score=GQ+sum(capture.small)), aggregate total/present.
+- WHOLE/FULL combinedcontrol: samecapture, select_entries(score=...,saved=ENTIREcapture); aggregate total/present plus sum(len(saved.unused)) and sum(sum(saved.small)). BOTHchildren actually consumed; barewholecapture keeps FULL originalframe. This singlecontrol covers whole-value fallback and fullpayloadmaterialization, not two duplicate pipelines.
+- Scalar-row control: precompute primitive rowconstant position%7+len(alleles), select_entries(score=GQ+scalar), same total/present. Originalscalar-row route/control, no nestedStructprojection.
+
+Eight frozenbalanced independent processes,4/version. Each has identical3warmups then4repeatedtimedactions/query; alternate case order forward/reverse eachiteration.15actions/process,60sexternal/process,10sinflightaction,6GiB live/cumulativeRSS,10GiBdiskfloor. BLAS/OMP/MKL/NUMEXPR1,Rayon/Tokio32,noPYTHONPATH; native/frontend/input/oraclehashes rechecked eachprocess. Compileridle before everyprocess. ComparisonTOTAL480s is tighter than8×60plussetup. Wall/coresec describe consumedactions; wholeprocesspeakRSS includesconstruction/ALLthreewarmups/workloads, not perquerymemory. Fourrepeats/process are NOT16independenttrials. ReportALL4pairs and adversecontrols; no reruns/noise dismissal/universalclaim.
+
+## ONE postcandidate attribution outside timing
+
+Only after ALLtimingprocesses finish, one candidate confirmation+one3snormalusercpu-clock:u99HzDWARF sample on projectedquery alone. SAMEoriginala955publicquery, independentfullreference required. Firstsampleprocess successfulACTION warmsup; then3srecording, max12actions/hard6safterfirstsuccess; same60s/10s/6GiB/disk10GiBguards. Supervisor180s. No baselineprofile rerun, extraqueries or hand-tuned payloadvariants. Compare acceptedbaselineeadfa callerchain with actual postcandidate trace: specifically unusedstring take_bytes underREEcast→evaluate_flat; otherStringtakes/selectedsmallarraycopies may remain. Absence in sampling alone is not proof ofzero work; source+publicallocation provide additional evidence. No allREE/take removalclaim.
+
+Requireexistingperf andsudo-n; captureguestparanoid4, temporary2 ONLYaftertimingphase, normaluserperf (never sudo-perf), finallyrestorecaptured4+verify. No installs/persistentconfiguration/other events. Owned command/query/samplergroups TERM3→KILL3 verifydescendants afterleader exit, positiveconfirmationcleanup receipt. Controller includes BOTHpositiveallcommandcleanup and profile scope restoration proof. Missing/unknown/unverifiedgroup/restore means providerSTOP+TERMINATED BEFORE collection/reports; rawdisk evidence retained for laterauthorizedrecovery. Clean failures may pack/downloadhash beforeSTOP.
+
+## VM and interpretation bounds
+
+Exclusiveprimary32CPUs, verifyTERMINATED andprovider<=45minSTOP BEFOREstart; guest43minshutdown guard. Controller stages1200+480+180s, hostremote2000s; reports45each/pack90/download120/STOP120/status30 bounded and no extensions. Host proactivelySTOPs and verifiesTERMINATED onallpaths; uncatchablekill has no restoration guarantee, providerbound remains. No simultaneousbuild/benchmark/profile work. Complete source/archive hash verification beforebuild prevents provisioning churn.
+
+Allocation vsprocessRSS vsCPU/latency are separate evidence. Existing safeactualbatchmask/length checks remain; producer execution/scalarroute/math unchanged. No sourceIO/decodepruning/fullownerrelease/zero-copy/SIMD claim. Existingruntimebatchframe-envelope construction and selectedsmallarraydensification remain outofscope. Candidate mainmerge needs exactartifactcorrectness, measuredtradeoffs/postsample andindependentacceptance.

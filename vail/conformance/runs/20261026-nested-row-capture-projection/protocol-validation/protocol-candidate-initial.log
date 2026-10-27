@@ -1,0 +1,35 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_queries_and_independent_row_reference_on_missing_filtered_entries ____
+
+    def test_queries_and_independent_row_reference_on_missing_filtered_entries():
+        m=h.range_matrix_table(2,3)
+        m=m.annotate_rows(locus=h.locus('20',m.row_idx+1),alleles=h.array(['A','C']))
+        m=m.annotate_entries(GQ=h.or_missing((m.row_idx!=0)|(m.col_idx!=1),m.row_idx*10+m.col_idx))
+        m=m.filter_entries((m.row_idx!=1)|(m.col_idx!=2))
+        expected={'projected':dict(total=37,present=4),'scalar':dict(total=37,present=4),
+                  'whole_full':dict(total=37,present=4,payload=105,small=17)}
+>       actual,entries,rows=independent_reference(m)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/conformance/runs/20261026-nested-row-capture-projection/cloud/test_protocol_queries.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+vail/conformance/runs/20261026-nested-row-capture-projection/cloud/oracle.py:21: in independent_reference
+    k=row.locus.position%7+len(row.alleles)
+      ^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = Struct(row_idx=0, __h012_oracle_sum=2, __h012_oracle_n=2, __h012_oracle_min=0, __h012_oracle_max=2, __h012_oracle_entries=3)
+name = 'locus'
+
+    def __getattr__(self, name):
+        try:
+            return self._fields[name]
+        except KeyError:
+>           raise AttributeError(name) from None
+E           AttributeError: locus
+
+../vail-h012-gate/final-env/lib/python3.12/site-packages/vail/types.py:373: AttributeError
+=========================== short test summary info ============================
+FAILED vail/conformance/runs/20261026-nested-row-capture-projection/cloud/test_protocol_queries.py::test_queries_and_independent_row_reference_on_missing_filtered_entries
+1 failed in 0.17s
