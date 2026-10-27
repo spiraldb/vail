@@ -20,6 +20,8 @@ for relative, sha256 in EXPECTED['candidate_source_files'].items():
     if digest(source / relative) != sha256:
         raise RuntimeError(f'Candidate source differs: {relative}')
 env = environment()
+# Noninteractive gcloud SSH does not load the user's login PATH.
+env['PATH'] = '/home/danielking/.cargo/bin:/home/danielking/.local/bin:' + env.get('PATH', '/usr/bin:/bin')
 env.update(RUSTFLAGS='-C target-cpu=native', RUSTC_WRAPPER='kache',
            CARGO_INCREMENTAL='0', CARGO_BUILD_JOBS='8',
            CARGO_TARGET_DIR='/home/danielking/vail-presence-20261026/target')
