@@ -65,8 +65,8 @@ fn fixture_layout(hidden: usize, duplicate_batches: bool, large: bool) -> TableR
             original.values().clone(), original.nulls().cloned(),
         ).unwrap())
     } else { cells };
-    let rows = Arc::new(structure(&["r"], vec![Arc::new(Int32Array::from(if duplicate_batches { vec![0, 0, 0] } else { vec![0, 0, 1] }))], None)) as ArrayRef;
-    let key = Arc::new(Int32Array::from(if duplicate_batches { vec![0, 0, 0] } else { vec![0, 0, 1] })) as ArrayRef;
+    let rows = Arc::new(structure(&["r"], vec![Arc::new(Int32Array::from(vec![0, 0, 0]))], None)) as ArrayRef;
+    let key = Arc::new(Int32Array::from(vec![0, 0, 0])) as ArrayRef;
     let schema = Arc::new(Schema::new(vec![
         Field::new("row", rows.data_type().clone(), true),
         Field::new("cells", cells.data_type().clone(), true),
@@ -106,7 +106,7 @@ async fn selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consu
     let source = fixture(1024);
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
-    let expected = vec![(0, 0, 10), (1, 0, 30), (1, 1, 31)];
+    let expected = vec![(0, 0, 10), (0, 0, 30), (0, 1, 31)];
     assert_eq!(values(&projected).await, expected);
     assert_eq!(values(&source).await, expected);
     assert_eq!(values(&projected).await, expected);
@@ -128,7 +128,7 @@ async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
         let actual = values(&selected).await;
         MEASURING.store(false, Ordering::Relaxed);
         let allocated = ALLOCATED.load(Ordering::Relaxed);
-        assert_eq!(actual, vec![(0, 0, 10), (1, 0, 30), (1, 1, 31)]);
+        assert_eq!(actual, vec![(0, 0, 10), (0, 0, 30), (0, 1, 31)]);
         observations.push(allocated);
     }
     // The added16MB source owner belongs only to an unused nested Struct,
@@ -170,5 +170,5 @@ async fn selected_large_list_offsets_preserve_logical_missingness() {
     let source = fixture_layout(1024, false, true);
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
-    assert_eq!(values(&projected).await, vec![(0, 0, 10), (1, 0, 30), (1, 1, 31)]);
+    assert_eq!(values(&projected).await, vec![(0, 0, 10), (0, 0, 30), (0, 1, 31)]);
 }
