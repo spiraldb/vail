@@ -12,7 +12,7 @@ No production implementation, build, installation, VM start or query is authoriz
 
 The worker reads the original native matrix, then computes `t = m.entries().select('GQ')` and fully consumes the three-result aggregate: sum GQ, count defined GQ, count GQ >= 20. It deliberately does not select entries/rows before entries(). The frozen full result `{total:1246497536, present:57513340, high:24865771}` is a previously observed complete baseline result, **not an independent oracle**. The earlier equivalent pure projection's output is retained in the native-entry-projection evidence. There is no DP/AD query, variant, fixture rewrite or broad benchmark scan.
 
-One confirmation process prints the physical plan as a diagnostic, not a correctness oracle. It stops if MatrixEntriesByKeyRunsExec is absent; do not alter metadata or force a private path. Any upstream vail_matrix_take is recorded separately: projection cannot undo copies that producer already performs. One full successful action is required before sampling begins in a separate process. Constructor/plan/result failure stops the experiment.
+One confirmation process prints the physical plan as a diagnostic, not a correctness oracle. It stops if the exact unbound semantic marker `MatrixEntriesByKeyRuns semantic operation; action preparation remains unbound` is absent; do not alter metadata or force a private path. Any upstream vail_matrix_take is recorded separately: projection cannot undo copies that producer already performs. One full successful action is required before sampling begins in a separate process. Constructor/plan/result failure stops the experiment.
 
 ## Fixed resource and cleanup protocol
 
@@ -27,3 +27,5 @@ Host consumes the supervisor scope record already captured locally. Only positiv
 ## Interpretation and next decision
 
 Retain full outputs, plan, process wall/core-seconds, process RSS (construction/warmups included), raw sample, flat and inclusive reports and restoration/STOP receipts. Check sample counts/loss/unwind quality before attribution. Inclusive stacks overlap and cannot be added. Distinguish producer copies from entry-operator concat/spill/take; borrowed full-owner retention from bytes copied; selected nullable payload behavior from unused sibling copying. This baseline cannot prove future allocation/spill savings, source IO savings, SIMD utilization, or general speedup. If the intended path or a valid sample is not observed, report that result and stop; implementation remains a separate root decision.
+
+Attempt1 (91d95779) stopped before action due to the incorrect bound-operator string. The only executable followup changes the expected diagnostic marker to the actual unbound API label; logical.rs1719 and partitioned.rs1296/1379 trace it to the action-bound operator. No query, limits or resource policy changed; no retry is authorized by this correction.
