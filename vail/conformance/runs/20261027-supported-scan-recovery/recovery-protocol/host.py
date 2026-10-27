@@ -57,12 +57,13 @@ try:
  if provider['status']!='TERMINATED' or provider['scheduling']['instanceTerminationAction']!='STOP' or not 0<int(provider['scheduling']['maxRunDuration']['seconds'])<=900:raise RuntimeError('Provider STOP bound not verified before boot')
  record['owned_vm']=True # Set BEFORE start: timeout may still leave a running VM.
  require('provider-start',gcloud('instances','start',VM,'--quiet'),120)
- ready=False;deadline=time.monotonic()+90
- for attempt in range(2):
+ ready=False;deadline=time.monotonic()+90;attempt=0
+ while True:
   remaining=deadline-time.monotonic()
   if remaining<=12:break
   result,_=run(f'ssh-readiness-{attempt}',gcloud('ssh',VM,'--quiet',*SSHFLAGS,'--command','true'),min(48,remaining-12),deadline=min(deadline,time.monotonic()+60))
   if result['returncode']==0:ready=True;break
+  attempt+=1
   time.sleep(min(2,max(0,deadline-time.monotonic()-12)))
  if not ready:raise RuntimeError('90s boot readiness including identity/cleanup; no metadata workload retry')
  ssh('guest-guard','sudo -n systemd-run --unit=supported-scan-metadata-attempt2-deadline --on-active=12m /usr/sbin/shutdown -h now',15)
