@@ -200,3 +200,17 @@ def test_nested_array_capture_maps_union_leaves_and_preserve_whole_consumers():
     for row in whole:
         assert row.saved == source[row.row_idx].meta['items']
         assert row['values'] == (None if row.row_idx == 1 else [[row.row_idx, None], None])
+
+
+def test_payload_free_maps_keep_empty_array_and_nullable_element_shape():
+    m = hl.range_matrix_table(3, 2, 2)
+    value = hl.struct(unused='wide' * 1024, call=hl.call(0, 1))
+    items = hl.if_else(m.row_idx == 0, hl.empty_array(value.dtype),
+                       hl.or_missing(m.row_idx != 1, hl.array([value, hl.missing(value.dtype)])))
+    m = m.annotate_rows(items=items)
+    rows = m.select_entries(length=hl.len(m['items']),
+                            defined=m['items'].map(lambda x: hl.is_defined(x)),
+                            constant=m['items'].map(lambda x: 7)).entries().collect()
+    expected = [(0, [], []), (None, None, None), (2, [True, False], [7, 7])]
+    for row in rows:
+        assert (row.length, row.defined, row.constant) == expected[row.row_idx]
