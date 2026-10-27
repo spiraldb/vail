@@ -8,7 +8,7 @@ Exact reviewed6177c16a5, normalLinuxnative4761/prod517/maina35-equivalent,69fron
 
 Source mapping has4096row groups×4columns×16duplicate rounds,64-byte payload suffix. The actual query explicitly sorts by source_index before conversion; that sorting cost is intentionally included. Every one of the4096rows and four column keys is checked, and every entry's value equals `r+4096*c+15*16384` with exact string payload. Full outputs are retained for confirmation and all ten sample-process actions, not checksums/truncated previews. The four global column keys are attached to localized rows and checked there; its evaluation/copying is part of this public workload, not duplicate-only state cost. This controlled repeated-coordinate source is not a real cohort or Hail comparison.
 
-Confirmation action0.462496s wall/0.760539core-seconds. Ten sample-process actions range approximately0.3606–0.4353seconds wall/0.5592–0.7088CPU. These repetitions in one process are descriptive, not independent trials or a speedup comparison. Action timing includes public collect plus Python validation/sort/encoding; stdout serialization follows action timing but remains in the process/profile. CPU/RSS are not isolated native-aggregate work or allocated-byte counts.
+Confirmation action0.462455s wall/0.760530core-seconds. Ten sample-process actions range approximately0.3606–0.4353seconds wall/0.5592–0.7088CPU. These repetitions in one process are descriptive, not independent trials or a speedup comparison. Action timing includes public collect plus Python validation/sort/encoding; stdout serialization follows action timing but remains in the process/profile. CPU/RSS are not isolated native-aggregate work or allocated-byte counts.
 
 ## One valid bounded-duration sample
 
