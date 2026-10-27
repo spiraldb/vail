@@ -1,0 +1,12 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "instances",
+  "set-scheduling",
+  "vail-bench-20261021",
+  "--max-run-duration=8100s",
+  "--instance-termination-action=STOP",
+  "--quiet",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b"
+]
