@@ -2,11 +2,12 @@
 use arrow_array::{Array, ArrayRef, Int32Array, LargeListArray, ListArray, RecordBatch, StructArray};
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Fields, Schema};
-use std::{alloc::{GlobalAlloc, Layout, System}, sync::{Arc, atomic::{AtomicBool, AtomicUsize, Ordering}}};
+use std::{alloc::{GlobalAlloc, Layout, System}, sync::{Arc, Mutex, atomic::{AtomicBool, AtomicUsize, Ordering}}};
 
 struct CountingAllocator;
 static MEASURING: AtomicBool = AtomicBool::new(false);
 static ALLOCATED: AtomicUsize = AtomicUsize::new(0);
+static SERIAL: Mutex<()> = Mutex::new(());
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         if MEASURING.load(Ordering::Relaxed) { ALLOCATED.fetch_add(layout.size(), Ordering::Relaxed); }
@@ -88,14 +89,18 @@ fn fixture_layout(hidden: usize, duplicate_batches: bool, large: bool) -> TableR
             vec!["key".into()], vec!["r".into()], "column".into(), vec!["c".into()], "entry".into()).unwrap()
 }
 
-async fn values(table: &TableRef) -> Vec<(i32, i32, i32)> {
+async fn values(table: &TableRef) -> Vec<(Option<i32>, Option<i32>, Option<i32>)> {
     let mut result = Vec::new();
     for partition in table.collect_partitions().await.unwrap() {
         for batch in partition {
             let r = batch.column_by_name("r").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
             let c = batch.column_by_name("c").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
             let value = batch.column_by_name("value").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
-            result.extend((0..batch.num_rows()).map(|i| (r.value(i), c.value(i), value.value(i))));
+            result.extend((0..batch.num_rows()).map(|i| (
+                (!r.is_null(i)).then(|| r.value(i)),
+                (!c.is_null(i)).then(|| c.value(i)),
+                (!value.is_null(i)).then(|| value.value(i)),
+            )));
         }
     }
     result
@@ -103,18 +108,34 @@ async fn values(table: &TableRef) -> Vec<(i32, i32, i32)> {
 
 #[tokio::test]
 async fn selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consumer() {
+    let _serial = SERIAL.lock().unwrap();
     let source = fixture(1024);
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
-    let expected = vec![(0, 0, 10), (0, 0, 30), (0, 1, 31)];
+    let expected = vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))];
     assert_eq!(values(&projected).await, expected);
     assert_eq!(values(&source).await, expected);
+    let mut wide_payload = Vec::new();
+    for partition in source.collect_partitions().await.unwrap() {
+        for batch in partition {
+            let unused = batch.column_by_name("unused").unwrap().as_any().downcast_ref::<StructArray>().unwrap();
+            let defined = unused.column_by_name("defined").unwrap().as_any().downcast_ref::<ListArray>().unwrap();
+            let hidden = unused.column_by_name("hidden").unwrap().as_any().downcast_ref::<ListArray>().unwrap();
+            for index in 0..batch.num_rows() {
+                assert!(!unused.is_null(index));
+                wide_payload.push(((!defined.is_null(index)).then(|| defined.value_length(index)),
+                                   (!hidden.is_null(index)).then(|| hidden.value_length(index))));
+            }
+        }
+    }
+    assert_eq!(wide_payload, vec![(Some(1024), None), (Some(0), Some(0)), (Some(0), Some(0))]);
     assert_eq!(values(&projected).await, expected);
 }
 
 
 #[tokio::test]
 async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
+    let _serial = SERIAL.lock().unwrap();
     // Fixture construction/allocation is deliberately outside the measurement.
     // Only the public projection+collect action is counted; returned values
     // independently force the selected payload and missing ancestors.
@@ -128,7 +149,7 @@ async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
         let actual = values(&selected).await;
         MEASURING.store(false, Ordering::Relaxed);
         let allocated = ALLOCATED.load(Ordering::Relaxed);
-        assert_eq!(actual, vec![(0, 0, 10), (0, 0, 30), (0, 1, 31)]);
+        assert_eq!(actual, vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))]);
         observations.push(allocated);
     }
     // The added16MB source owner belongs only to an unused nested Struct,
@@ -149,6 +170,7 @@ fn process_written_bytes() -> u64 {
 #[cfg(target_os = "linux")]
 #[tokio::test]
 async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields() {
+    let _serial = SERIAL.lock().unwrap();
     // Two original source batches each retain a40MB owner counted in
     // both unused nested siblings by the unchanged Arrow-size mechanism. Their
     // ORIGINAL charges exceed the unchanged64MiB budget in both artifacts.
@@ -159,7 +181,7 @@ async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields(
     let before = process_written_bytes();
     let actual = values(&selected).await;
     let written = process_written_bytes().saturating_sub(before);
-    assert_eq!(actual, vec![(0,0,10),(0,0,30),(0,0,10),(0,0,30),(0,1,31),(0,1,31)]);
+    assert_eq!(actual, vec![(Some(0), Some(0), Some(10)),(Some(0), Some(0), Some(30)),(Some(0), Some(0), Some(10)),(Some(0), Some(0), Some(30)),(Some(0), Some(1), Some(31)),(Some(0), Some(1), Some(31))]);
     assert!(written > 0, "original input budget must still cause observable spill writes");
     assert!(written < 8 * 1024 * 1024, "unused source owner reached temporary output: {written}");
 }
@@ -167,8 +189,9 @@ async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields(
 
 #[tokio::test]
 async fn selected_large_list_offsets_preserve_logical_missingness() {
+    let _serial = SERIAL.lock().unwrap();
     let source = fixture_layout(1024, false, true);
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
-    assert_eq!(values(&projected).await, vec![(0, 0, 10), (0, 0, 30), (0, 1, 31)]);
+    assert_eq!(values(&projected).await, vec![(Some(0), Some(0), Some(10)), (Some(0), Some(0), Some(30)), (Some(0), Some(1), Some(31))]);
 }
