@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use arrow_array::types::Int32Type;
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, LargeListArray, ListArray, RecordBatch, RecordBatchOptions, StructArray,
+    Array, ArrayRef, BooleanArray, GenericListArray, LargeListArray, ListArray, OffsetSizeTrait, RecordBatch, RecordBatchOptions, StructArray,
     make_array, new_empty_array,
 };
 use arrow_array::{Int32Array, RunArray, UInt32Array};
@@ -261,20 +261,35 @@ impl CaptureView {
         }).collect::<Vec<_>>().into();
         Some(Some(Self::Struct(StructCaptureView { fields, children })))
     }
+    fn bind_list<O: OffsetSizeTrait>(
+        list: &GenericListArray<O>, item: &FieldRef, child: &Self,
+    ) -> Result<ArrayRef> {
+        let offsets = list.offsets();
+        let first = offsets[0];
+        let start = first.as_usize();
+        let stop = offsets[offsets.len() - 1].as_usize();
+        // Safe Struct constructors may scan child validity. Exclude the owner
+        // outside this list's referenced envelope before building child views.
+        let values = list.values().slice(start, stop - start);
+        let offsets = if start == 0 { offsets.clone() } else {
+            OffsetBuffer::new(ScalarBuffer::from(offsets.iter().map(|offset| *offset - first).collect::<Vec<_>>()))
+        };
+        Ok(Arc::new(GenericListArray::<O>::try_new(
+            item.clone(), offsets, child.bind(&values)?, list.nulls().cloned(),
+        )?))
+    }
     fn bind(&self, source: &ArrayRef) -> Result<ArrayRef> {
         let view = match self {
             Self::Struct(view) => view,
             Self::List { item, child, large: false } => {
                 let list = source.as_any().downcast_ref::<ListArray>().ok_or_else(||
                     DataFusionError::Execution("row capture view requires ListArray".into()))?;
-                return Ok(Arc::new(ListArray::try_new(item.clone(), list.offsets().clone(),
-                    child.bind(list.values())?, list.nulls().cloned())?));
+                return Self::bind_list(list, item, child);
             }
             Self::List { item, child, large: true } => {
                 let list = source.as_any().downcast_ref::<LargeListArray>().ok_or_else(||
                     DataFusionError::Execution("row capture view requires LargeListArray".into()))?;
-                return Ok(Arc::new(LargeListArray::try_new(item.clone(), list.offsets().clone(),
-                    child.bind(list.values())?, list.nulls().cloned())?));
+                return Self::bind_list(list, item, child);
             }
         };
         let values = source.as_any().downcast_ref::<StructArray>().ok_or_else(||
