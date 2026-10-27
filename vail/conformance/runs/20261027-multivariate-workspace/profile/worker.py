@@ -59,7 +59,7 @@ m=m.annotate_rows(__h047_x=h.float64(m.locus.position)/1000000.0)
 m=m.annotate_cols(__h047_fit=h.agg.linreg(h.float64(h.or_else(m.DP,0)),[1.0,m['__h047_x']]))
 c=m.cols()
 c=c.select(fit=c['__h047_fit'])
-key_fields=tuple(c.key.dtype.fields)
+key_fields=tuple(c.key.dtype)
 if not key_fields:raise RuntimeError('Column keys required')
 fit_fields={'beta','standard_error','t_stat','p_value','multiple_standard_error','multiple_r_squared','adjusted_r_squared','f_stat','multiple_p_value','n'}
 reference=None if a.reference is None else json.loads(Path(a.reference).read_text())
