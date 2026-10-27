@@ -13,10 +13,11 @@ m = hl.read_matrix_table(FIXTURE)
 m = m.annotate_rows(__h047_x=hl.float64(m.locus.position) / 1000000.0)
 m = m.annotate_cols(__h047_fit=hl.agg.linreg(
     hl.float64(hl.or_else(m.DP, 0)), [1.0, m.__h047_x]))
-results = m.cols().select(fit=m.__h047_fit).collect()
+c = m.cols()
+results = c.select(fit=c.__h047_fit).collect()
 ```
 
-Freeze correct source-bound Python references in the executable: after `cols()` assign a separate table and select its own `fit` field; do not carry the matrix-bound field into Table.select. DP must actually be Int32 and present, locus valid and finite, exact matrix dimensions as enrolled. The producer may contain filtered entries: any such validity can legitimately choose the ordinary grouped fallback. Do not force all-validness, change filtering, or replace fields to make a desired fast path execute. Fully encode every column key and every result field into retained JSON; require exactly all2,535 unique column keys, full `n`/coefficient/statistics shape, no partial `.n` or first-fit-only consumption. Real-data fits are observations, not an independent numerical oracle. A later optimization would need independent analytic/tolerance tests before acceptance.
+DP must actually be Int32 and present, locus valid and finite, exact matrix dimensions as enrolled. The producer may contain filtered entries: any such validity can legitimately choose the ordinary grouped fallback. Do not force all-validness, change filtering, or replace fields to make a desired fast path execute. Fully encode every column key and every result field into retained JSON; require exactly all2,535 unique column keys, full `n`/coefficient/statistics shape, no partial `.n` or first-fit-only consumption. Real-data fits are observations, not an independent numerical oracle. A later optimization would need independent analytic/tolerance tests before acceptance.
 
 Bound path: public annotate_cols agg.linreg → coordinate aggregation kernel selection in array_aggregate.rs1215 → CoordinateLinreg / LinregGroupsAccumulator. Shared-predictor admission is only a hypothesis: exact runtime masks, aligned groups and shared-predictor flag govern it. A public diagnostic plan is context, not a semantic test or executed-route oracle. Actual call stacks decide whether update_shared_predictors, generic factor_linreg_flat or neither executes. Failure to reach a linreg kernel stops this package rather than choosing another query silently.
 
