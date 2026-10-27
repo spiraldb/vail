@@ -35,7 +35,9 @@ fn list(values: ArrayRef, offsets: Vec<i32>, nulls: Option<NullBuffer>) -> ListA
         OffsetBuffer::new(ScalarBuffer::from(offsets)), values, nulls).unwrap()
 }
 
-fn fixture(hidden: usize) -> TableRef {
+fn fixture(hidden: usize) -> TableRef { fixture_batches(hidden, false) }
+
+fn fixture_batches(hidden: usize, duplicate_batches: bool) -> TableRef {
     let unused = Arc::new(list(Arc::new(Int32Array::from(vec![17; hidden])),
         vec![0, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32, hidden as i32],
         Some(NullBuffer::from(vec![false, true, true, true, true, true])))) as ArrayRef;
@@ -45,14 +47,16 @@ fn fixture(hidden: usize) -> TableRef {
     let cells = Arc::new(structure(&["entry"], vec![entries], None)) as ArrayRef;
     let cells = Arc::new(list(cells, vec![0, 2, 4, 6],
         Some(NullBuffer::from(vec![true, false, true])))) as ArrayRef;
-    let rows = Arc::new(structure(&["r"], vec![Arc::new(Int32Array::from(vec![0, 0, 1]))], None)) as ArrayRef;
-    let key = Arc::new(Int32Array::from(vec![0, 0, 1])) as ArrayRef;
+    let rows = Arc::new(structure(&["r"], vec![Arc::new(Int32Array::from(if duplicate_batches { vec![0, 0, 0] } else { vec![0, 0, 1] }))], None)) as ArrayRef;
+    let key = Arc::new(Int32Array::from(if duplicate_batches { vec![0, 0, 0] } else { vec![0, 0, 1] })) as ArrayRef;
     let schema = Arc::new(Schema::new(vec![
         Field::new("row", rows.data_type().clone(), true),
         Field::new("cells", cells.data_type().clone(), true),
         Field::new("key", DataType::Int32, false),
     ]));
-    let table = TableIR::parallelize(RecordBatch::try_new(schema, vec![rows, cells, key]).unwrap(), 1).unwrap();
+    let batch = RecordBatch::try_new(schema.clone(), vec![rows, cells, key]).unwrap();
+    let batches = if duplicate_batches { vec![batch.clone(), batch] } else { vec![batch] };
+    let table = TableIR::parallelize_batches(schema, batches, 1).unwrap();
     let cols = Arc::new(structure(&["c"], vec![Arc::new(Int32Array::from(vec![0, 1]))], None)) as ArrayRef;
     let cols = Arc::new(structure(&["column"], vec![cols], None)) as ArrayRef;
     let cols = Arc::new(list(cols, vec![0, 2], None)) as ArrayRef;
@@ -113,4 +117,28 @@ async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
     // Allow ordinary planner/runtime variation, never a payload-sized copy.
     assert!(observations[1] < observations[0].saturating_add(2 * 1024 * 1024),
         "public query allocations grew with unused hidden owner: {observations:?}");
+}
+
+
+#[cfg(target_os = "linux")]
+fn process_written_bytes() -> u64 {
+    std::fs::read_to_string("/proc/self/io").unwrap().lines()
+        .find_map(|line| line.strip_prefix("write_bytes: ").map(|value| value.parse().unwrap())).unwrap()
+}
+
+#[cfg(target_os = "linux")]
+#[tokio::test]
+async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields() {
+    // Two original source batches each retain a40MB hidden owner. Their
+    // ORIGINAL charges exceed the unchanged64MiB budget in both artifacts.
+    // Producer construction is outside the observed temporary-write interval.
+    let source = fixture_batches(10_000_000, true);
+    let selected = source.map_rows(["r", "c", "value"].into_iter()
+        .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
+    let before = process_written_bytes();
+    let actual = values(&selected).await;
+    let written = process_written_bytes().saturating_sub(before);
+    assert_eq!(actual, vec![(0,0,10),(0,0,30),(0,0,10),(0,0,30),(0,1,31),(0,1,31)]);
+    assert!(written > 0, "original input budget must still cause observable spill writes");
+    assert!(written < 8 * 1024 * 1024, "unused source owner reached temporary output: {written}");
 }
