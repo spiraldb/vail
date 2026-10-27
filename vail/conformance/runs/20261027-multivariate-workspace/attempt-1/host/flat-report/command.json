@@ -1,0 +1,10 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b",
+  "--command",
+  "/usr/bin/perf report --stdio --no-children --percent-limit 0.5 -i /home/danielking/h047-profile-20261027/attempt-1/perf.data"
+]

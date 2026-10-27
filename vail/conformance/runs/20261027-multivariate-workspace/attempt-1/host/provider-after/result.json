@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+    "compute",
+    "instances",
+    "describe",
+    "vail-bench-20261021",
+    "--project=pyspiral-dev",
+    "--zone=us-east1-b",
+    "--format=json(status,scheduling)"
+  ],
+  "elapsed_seconds": 0.6000685419421643,
+  "returncode": 0,
+  "error": null,
+  "owned_groups_clean": true,
+  "monitor_maxrss_bytes": 0,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}
