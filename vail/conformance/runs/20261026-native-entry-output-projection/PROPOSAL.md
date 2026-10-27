@@ -103,8 +103,9 @@ and remaining work.”
    Struct projection/constructors and cloned validated OffsetBuffers with the
    prepared Fields. No take/concat/ArrayMap/payload copy constructs this view.
    Preserve empty-Struct length AND parent validity when zero entry payload
-   fields are selected. Scalar/encoded/unsupported physical forms retain the
-   old whole route; do not fabricate a contiguous list over disjoint owners.
+   fields are selected. Unsupported declared representations decline admission during preparation
+   and retain the old whole route. Do not switch schemas midstream on a bad
+   batch or fabricate a contiguous list over disjoint owners.
 
 5. **Feed those views to existing algorithms.** Keep row grouping/comparators and
    original conservative source-batch memory charges; perform the view before
