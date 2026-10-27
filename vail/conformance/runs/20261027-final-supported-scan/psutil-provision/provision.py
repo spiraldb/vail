@@ -3,11 +3,6 @@ import hashlib,json,os,signal,sys,tarfile
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 PROTOCOL=Path('/home/danielking/final-supported-scan-20261027/protocol')
-sys.path.insert(0,str(PROTOCOL))
-from enroll import artifacts,check
-from owned import execute
-from packaging.tags import sys_tags
-from packaging.utils import parse_wheel_filename
 OUT=HERE/'receipt';OUT.mkdir(exist_ok=False);signal.alarm(300)
 record={'success':False,'error':None,'owned_groups_clean':False};commands=[]
 def digest(path):
@@ -26,6 +21,21 @@ try:
  assets=json.loads((HERE/'ASSETS.json').read_text())
  for name,expected in assets.items():
   if digest(HERE/name)!=expected:raise RuntimeError('Provision asset mismatch:'+name)
+ accepted=json.loads((HERE/'accepted-state.json').read_text())
+ if digest(PROTOCOL/'ASSETS.json')!=accepted['original_assets_sha256']:raise RuntimeError('Original protocol manifest differs from accepted d5f5')
+ original_assets=json.loads((PROTOCOL/'ASSETS.json').read_text())
+ if original_assets!=accepted['original_assets']:raise RuntimeError('Original protocol entries differ')
+ for name,expected in original_assets.items():
+  if digest(PROTOCOL/name)!=expected:raise RuntimeError('Original protocol source differs:'+name)
+ enrollment=PROTOCOL.parent/'results/enrollment.json'
+ if digest(enrollment)!=accepted['enrollment_sha256']:raise RuntimeError('Initial enrollment differs from accepted dac4')
+ accepted_enrollment=json.loads(enrollment.read_text())
+ # No original Python module is imported before all pinned bytes are verified.
+ sys.path.insert(0,str(PROTOCOL))
+ from enroll import artifacts,check
+ from owned import execute
+ from packaging.tags import sys_tags
+ from packaging.utils import parse_wheel_filename
  lock=json.loads((HERE/'wheel-lock.json').read_text());wheel=HERE/lock['filename']
  if wheel.stat().st_size!=lock['bytes'] or digest(wheel)!=lock['sha256']:raise RuntimeError('Wheel hash/size mismatch')
  _,_,_,tags=parse_wheel_filename(wheel.name)
@@ -34,7 +44,9 @@ try:
  if Path(sys.executable).absolute()!=Path(current['python']).absolute():raise RuntimeError('Frozen current interpreter required')
  enrollment=PROTOCOL.parent/'results/enrollment.json'
  record['enrollment_sha256_before']=digest(enrollment)
- before=artifacts();record['before']=before;record['input_before']=check(enrollment)
+ before=artifacts();record['before']=before
+ if before!=accepted_enrollment['artifacts']:raise RuntimeError('Pre-install artifacts/runtime inventories differ from accepted enrollment')
+ record['input_before']=check(enrollment)
  if any(name.lower()=='psutil' for name,version in before['current']['runtime']['packages']):raise RuntimeError('Expected absent psutil; no overwrite/retry')
  candidates=[Path('/home/danielking/.local/bin/uv'),Path('/home/danielking/.cargo/bin/uv')]
  uv=next((p for p in candidates if p.is_file() and os.access(p,os.X_OK)),None)
