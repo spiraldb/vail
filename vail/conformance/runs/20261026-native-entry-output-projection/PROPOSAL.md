@@ -84,11 +84,14 @@ and remaining work.”
    plus the exact projection descriptor. Keep independent consumer/reset/replay
    contracts intact; no pointer-only global cache.
 
-3. **Bind output and internal view descriptors once.** Resolve source field
+3. **Bind a private validated output/view descriptor once.** Resolve source field
    indices, selected child Fields (including metadata/nullability/logical type),
    raw input positions, private narrow-frame positions, key aliases, partition
    tag, and output schema during query preparation. Use separate prepared row,
    column and entry index vectors; no field-name/type decisions in entry loops.
+   The descriptor binds projection/schema/key/offset provenance and exact child
+   lengths, parent masks, empty-Struct length and original offset ownership. It
+   cannot be publicly fabricated or carried across a type-changing rewrite.
    All keys and the private tag remain demanded internally. Initial key-retaining
    scope leaves the original composite ordering meaningful; rebind key columns
    against the new schema/DF projection mapping, never claim sorting by a suffix
@@ -111,7 +114,10 @@ and remaining work.”
    original conservative source-batch memory charges; perform the view before
    singleton queue concat and duplicate-run spill. Original producer batch bytes
    may overestimate retained narrow data, which is deliberately safe. Do not
-   loosen64MiB run/32MiB output budgets in this change. Shared column metadata
+   loosen the64MiB KeyRun/singleton source charge or8192 pending-singleton cap.
+   Output sizing is separate: preserve the32MiB/8192-row output policy and
+   original per-chunk estimate/limit rather than silently recalculating it from
+   smaller views. Any sizing change needs its own explicit review/control. Shared column metadata
    resolves through its existing action cache; form a consumer-local borrowed
    selected-column view afterwards, never mutate the shared batch. Existing
    Arrow slice/take kernels perform actual required expansion, only for selected
@@ -178,9 +184,12 @@ or decoded fields. It only stops materializing outputs the consumer discards.
   and duplicate-key runs so concat/spill/take are actually exercised. Only
   selected fields may be copied/serialized; no test-only export/counter. Use
   consumer allocated bytes/public results, not flat total RSS when backing input
-  grew. For spill, hold both compared inputs beyond the unchanged budget or
-  separately disclose a threshold crossing; do not confuse fewer spill triggers
-  with removal of unused bytes.
+  grew. Fixture production is outside allocation/IO accounting. Public spill proof
+  uses process/temp-write IO around the real action; both baseline and candidate
+  multi-batch duplicate-key runs exceed the UNCHANGED original-source64MiB
+  budget. Report allocation, spill IO and whole-process RSS separately. Do not
+  monkeypatch the budget, use private spill counters, or confuse threshold
+  crossings/fewer triggers with removal of unused bytes.
 - Before implementing, confirm the selected current-main public pipeline reaches
   this custom operator and profile the actual unused-copy path on an authorized
   cloud slot. A GQ-only entries projection is a possible existing-fixture probe;
