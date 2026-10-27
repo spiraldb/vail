@@ -1,0 +1,27 @@
+{
+  "plain_matrix_sum_early_return": {
+    "byte_identical_source": true,
+    "sha256": "9c83aabe1be0e805d9723530dbd9d45230d1c2ccf4460ead942533c12b4395b8",
+    "path": "vail/python/vail/matrixtable.py"
+  },
+  "reduce_list_including_direct_entry_sum": {
+    "byte_identical_source": true,
+    "sha256": "d19ca25efd21c8e1970cb5ecd7ad36ccb3188a6ac869a726acb93be682f592ac",
+    "path": "vail/python/vail/matrix_list_aggregates.py"
+  },
+  "unchanged_files": {
+    "vail/python/vail/agg.py": "77beb9551b9a0481364ed9ecbb020e77bec2aea7b69aa73cd05fbbeb4353227e",
+    "vail/python/vail/__init__.py": "7cb572d66f7153a53cc0a7f3b111a0db4e07a91be57f1c7ae4a0dcd27049d601",
+    "vail/python/vail/collections.py": "0a2e56abc44e2505b7d9a37e123610043868d702b31a55bb08d4f382e9b7bc50",
+    "vail/crates/vail-execution/src/numeric_lists.rs": "7522a7b9bd2a4da0a7d0aaaeb0502acc0025077db13ff1db9b293958f470c5c7",
+    "vail/crates/vail-execution/src/list_aggregate.rs": "26fa7fc9a44191a0e106e2126be16255a5a956f9cb6e07f4bda2f417de0e57a1",
+    "vail/crates/vail-execution/src/list_aggregate/direct.rs": "6f639695001b1a815d6f8530d4b97603e75f87bcc106f1c26ea6794941564c33",
+    "vail/crates/vail-execution/src/aggregates.rs": "1b9219ab10ad99f537b24c6010427cd8fa1458fdde9bce267f35ff97c5b3d34e",
+    "vail/crates/vail-execution/src/logical_expr.rs": "280deb026ab7a954b0549bd73f1cefa08cd91a88b1a4637417aaf74a0598b84f",
+    "vail/Cargo.lock": "d111df81ab8eda6178a7598079af40df548f70635a03cfecb3125b1dd460a973",
+    "vail/rust-toolchain.toml": "07487db9d6b45de2f308f9fb578c9c46041381c3ee44ef782eca64150a394772"
+  },
+  "existing_array_aggregate_source_unchanged_after_removing_new_items": true,
+  "existing_logical_aggregation_source_unchanged_except_new_preparation_guard": true,
+  "scope": "SOURCE byte equality only, not compiled machine-code/layout equality or causal explanation of DP wall regression"
+}
