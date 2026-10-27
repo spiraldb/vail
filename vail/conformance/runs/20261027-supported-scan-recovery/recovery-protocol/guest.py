@@ -1,12 +1,19 @@
 """Bounded read-only source metadata inventory; no import/query/build/install."""
-import argparse,hashlib,json,os,signal,tarfile,time
+import argparse,hashlib,json,os,signal,tarfile,time,sys
 from pathlib import Path
+def sha256_stream(source):
+ digest=hashlib.sha256()
+ while True:
+  chunk=source.read(1024*1024)
+  if not chunk:break
+  digest.update(chunk)
+ return digest.hexdigest()
 p=argparse.ArgumentParser();p.add_argument('--out',required=True);p.add_argument('--expected-sha',required=True);a=p.parse_args()
 with Path(__file__).open('rb') as source:
- if hashlib.file_digest(source,'sha256').hexdigest()!=a.expected_sha:raise RuntimeError('Guest script fingerprint differs')
+ if sha256_stream(source)!=a.expected_sha:raise RuntimeError('Guest script fingerprint differs')
 out=Path(a.out)
 if not out.is_absolute() or not out.is_relative_to('/home/danielking') or out.exists():raise RuntimeError('Fresh owned output required')
-out.mkdir(parents=True);signal.alarm(120);root=Path('/home/danielking/cloud-scan-20261023');record={'files':{},'stat_only':{},'missing':[]};copied=0;hashed=0
+out.mkdir(parents=True);signal.alarm(120);root=Path('/home/danielking/cloud-scan-20261023');record={'files':{},'stat_only':{},'missing':[],'python':{'version':sys.version,'version_info':list(sys.version_info),'executable':sys.executable,'hashlib_file_digest_available':hasattr(hashlib,'file_digest'),'path_is_relative_to_available':hasattr(Path,'is_relative_to'),'sha256_stream_chunk_bytes':1024*1024}};copied=0;hashed=0
 for directory in Path('/proc').iterdir():
  if directory.name.isdigit() and int(directory.name)!=os.getpid():
   try:comm=(directory/'comm').read_text().strip();cmd=(directory/'cmdline').read_bytes().replace(b'\0',b' ').decode(errors='replace')
@@ -22,7 +29,7 @@ def collect(path,*,copy=True,cap=1024**2):
  if not path.is_file() or size>cap:raise RuntimeError(f'Unexpected metadata/artifact size:{path}:{size}')
  hashed+=size
  if hashed>1024**3:raise RuntimeError('1GiB total hash-read cap')
- with path.open('rb') as f:sha=hashlib.file_digest(f,'sha256').hexdigest()
+ with path.open('rb') as f:sha=sha256_stream(f)
  entry={'resolved':str(resolved),'bytes':size,'sha256':sha,'copied':copy};record['files'][str(path)]=entry
  if copy:
   copied+=size
@@ -72,5 +79,5 @@ archive=out.with_suffix('.tar.gz')
 with tarfile.open(archive,'w:gz') as target:
  for path in sorted(out.rglob('*')):
   if path.is_file():target.add(path,arcname=str(path.relative_to(out)),recursive=False)
-with archive.open('rb') as f:sha=hashlib.file_digest(f,'sha256').hexdigest()
+with archive.open('rb') as f:sha=sha256_stream(f)
 print(json.dumps({'archive':str(archive),'sha256':sha,'bytes':archive.stat().st_size,'metadata_bytes':copied,'hash_read_bytes':hashed}),flush=True)

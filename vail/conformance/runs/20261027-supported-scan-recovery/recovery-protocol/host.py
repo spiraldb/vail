@@ -4,7 +4,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 GCLOUD='/Users/danielking/projects/google-cloud-sdk/bin/gcloud'
 VM='vail-bench-20261021';IDENTITY=['--project=pyspiral-dev','--zone=us-east1-b']
-REMOTE=Path('/home/danielking/supported-scan-metadata-20261027-attempt-2')
+REMOTE=Path('/home/danielking/supported-scan-metadata-20261027-attempt-4')
 p=argparse.ArgumentParser();p.add_argument('--out',required=True);a=p.parse_args();out=Path(a.out).resolve()
 if not out.is_relative_to('/private/tmp') or out.exists():raise RuntimeError('Fresh owned local /private/tmp output required')
 out.mkdir();record={'error':None,'owned_vm':False,'guest_complete':False,'download_verified':False,'provider_stopped':False,'unresolved_host_groups':[]}
@@ -66,7 +66,7 @@ try:
   attempt+=1
   time.sleep(min(2,max(0,deadline-time.monotonic()-12)))
  if not ready:raise RuntimeError('90s boot readiness including identity/cleanup; no metadata workload retry')
- ssh('guest-guard','sudo -n systemd-run --unit=supported-scan-metadata-attempt2-deadline --on-active=12m /usr/sbin/shutdown -h now',15)
+ ssh('guest-guard','sudo -n systemd-run --unit=supported-scan-metadata-attempt4-deadline --on-active=12m /usr/sbin/shutdown -h now',15)
  ssh('fresh-protocol',f'test ! -e {shlex.quote(str(REMOTE))} && mkdir -p {shlex.quote(str(REMOTE/"protocol"))}',10)
  require('upload',gcloud('scp',str(HERE/'guest.py'),f'{VM}:{REMOTE}/protocol/guest.py','--quiet'),30)
  text=ssh('guest-metadata',shlex.join(['python3',str(REMOTE/'protocol/guest.py'),'--out',str(REMOTE/'attempt-1'),'--expected-sha',assets['guest.py']]),150)
