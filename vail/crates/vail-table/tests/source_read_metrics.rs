@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::sync::Arc;
 
-use arrow_array::Int64Array;
+use arrow_array::Int32Array;
 use datafusion_execution::TaskContext;
 use datafusion_physical_plan::{ExecutionPlan, SendableRecordBatchStream};
 use datafusion_physical_plan::metrics::{Metric, MetricsSet};
@@ -30,9 +30,9 @@ fn requested(plan: &Arc<dyn ExecutionPlan>) -> Vec<Arc<Metric>> {
     result
 }
 
-async fn values(stream: SendableRecordBatchStream) -> Vec<i64> {
+async fn values(stream: SendableRecordBatchStream) -> Vec<i32> {
     stream.try_collect::<Vec<_>>().await.unwrap().iter().flat_map(|batch|
-        batch.column(0).as_any().downcast_ref::<Int64Array>().unwrap().values().iter().copied()
+        batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().iter().copied()
     ).collect()
 }
 
@@ -56,8 +56,8 @@ async fn normal_source_metrics_are_live_separate_and_summarize_without_mutation(
     let mut set = MetricsSet::new();
     for domain in &domains { set.push(domain.clone()); }
     let before = domains.iter().map(|d| d.value().as_usize()).collect::<Vec<_>>();
-    let first_sum = set.sum_by_name("bytes_requested").unwrap().as_usize();
-    let second_sum = set.sum_by_name("bytes_requested").unwrap().as_usize();
+    let first_sum = set.sum(|metric| metric.value().name() == "bytes_requested").unwrap().as_usize();
+    let second_sum = set.sum(|metric| metric.value().name() == "bytes_requested").unwrap().as_usize();
     assert_eq!(first_sum, before.iter().sum());
     assert_eq!(second_sum, first_sum);
     assert_eq!(before, domains.iter().map(|d| d.value().as_usize()).collect::<Vec<_>>());
