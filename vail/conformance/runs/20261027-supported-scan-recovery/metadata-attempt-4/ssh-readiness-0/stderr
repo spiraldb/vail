@@ -1,0 +1,12 @@
+ssh: connect to host 34.26.166.201 port 22: Operation timed out
+
+Recommendation: To check for possible causes of SSH connectivity issues and get
+recommendations, rerun the ssh command with the --troubleshoot option.
+
+gcloud compute ssh vail-bench-20261021 --project=pyspiral-dev --zone=us-east1-b --troubleshoot
+
+Or, to investigate an IAP tunneling issue:
+
+gcloud compute ssh vail-bench-20261021 --project=pyspiral-dev --zone=us-east1-b --troubleshoot --tunnel-through-iap
+
+ERROR: (gcloud.compute.ssh) [/usr/bin/ssh] exited with return code [255].

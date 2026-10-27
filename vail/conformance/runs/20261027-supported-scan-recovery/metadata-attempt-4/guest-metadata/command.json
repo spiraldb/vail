@@ -1,0 +1,16 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--quiet",
+  "--ssh-flag=-oConnectTimeout=10",
+  "--ssh-flag=-oConnectionAttempts=1",
+  "--ssh-flag=-oBatchMode=yes",
+  "--ssh-flag=-oControlMaster=no",
+  "--ssh-flag=-oControlPath=none",
+  "--command",
+  "python3 /home/danielking/supported-scan-metadata-20261027-attempt-4/protocol/guest.py --out /home/danielking/supported-scan-metadata-20261027-attempt-4/attempt-1 --expected-sha 300ef03c03866fb20bcf74602f32b24c6d4a94c54959942bcaaf6a928d7ea825",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b"
+]
