@@ -18,7 +18,7 @@ use arrow_array::{
 use arrow_array::{Int32Array, RunArray, UInt32Array};
 use arrow_buffer::{BooleanBuffer, NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_cast::cast;
-use arrow_schema::{DataType, FieldRef, Fields, Schema};
+use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
 use arrow_select::{concat::concat, take::take};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::ColumnarValue;
@@ -222,19 +222,22 @@ impl StructCaptureView {
         };
         let indices = source.iter().enumerate().map(|(index, field)| (field.name(), index))
             .collect::<HashMap<_, _>>();
-        let mut fields = Vec::with_capacity(selected.len());
         let mut children = Vec::with_capacity(selected.len());
         let mut changed = source.len() != selected.len();
         for (selected_index, field) in selected.iter().enumerate() {
             let index = *indices.get(field.name())?;
             let child = Self::prepare(source[index].data_type(), field.data_type())?;
             changed |= index != selected_index || child.is_some();
-            let dtype = child.as_ref().map(|view| DataType::Struct(view.fields.clone()))
-                .unwrap_or_else(|| source[index].data_type().clone());
-            fields.push(Arc::new(source[index].as_ref().clone().with_data_type(dtype)));
             children.push((index, child.map(Box::new)));
         }
-        Some(changed.then(|| Self { fields: fields.into(), children }))
+        if !changed { return Some(None); }
+        let fields = children.iter().map(|(index, child)| match child {
+            None => source[*index].clone(),
+            Some(view) => Arc::new(Field::new(source[*index].name(),
+                DataType::Struct(view.fields.clone()), source[*index].is_nullable())
+                .with_metadata(source[*index].metadata().clone())),
+        }).collect::<Vec<_>>().into();
+        Some(Some(Self { fields, children }))
     }
     fn bind(&self, source: &ArrayRef) -> Result<ArrayRef> {
         let values = source.as_any().downcast_ref::<StructArray>().ok_or_else(||
