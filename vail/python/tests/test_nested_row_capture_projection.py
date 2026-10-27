@@ -122,3 +122,29 @@ def test_unused_logical_siblings_do_not_block_nested_capture_projection(depth, o
         (r, c, None if r == 1 else r + 1)
         for r in range(4) for c in range(3) if (r + c) % 4 != 0]
     assert m.rows().collect() == source
+
+
+@pytest.mark.parametrize('kind', ['call', 'set', 'dict', 'nested_array'])
+def test_selected_logical_leaf_keeps_its_type_and_values_while_siblings_are_unused(kind):
+    m = hl.range_matrix_table(3, 2, 2)
+    special = {
+        'call': lambda: hl.call(m.row_idx % 2, 1),
+        'set': lambda: hl.set([m.row_idx, 9]),
+        'dict': lambda: hl.dict([(m.row_idx, 'payload')]),
+        'nested_array': lambda: hl.array([hl.struct(value=m.row_idx)]),
+    }[kind]()
+    m = m.annotate_rows(meta=hl.struct(child=hl.struct(
+        small=hl.array([m.row_idx, 1]), special=special,
+        unused=hl.str(m.row_idx) + 'z' * 1024), unused=special))
+    rows = m.select_entries(score=hl.sum(m.meta.child.small),
+                            saved=m.meta.child.special).entries().collect()
+    assert [(x.row_idx, x.col_idx, x.score) for x in rows] == [
+        (r, c, r + 1) for r in range(3) for c in range(2)]
+    for row in rows:
+        expected = {
+            'call': lambda: hl.Call([row.row_idx % 2, 1]),
+            'set': lambda: {row.row_idx, 9},
+            'dict': lambda: {row.row_idx: 'payload'},
+            'nested_array': lambda: [hl.Struct(value=row.row_idx)],
+        }[kind]()
+        assert row.saved == expected
