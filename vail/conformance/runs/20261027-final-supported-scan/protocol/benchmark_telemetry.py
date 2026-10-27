@@ -118,7 +118,7 @@ class Measurement:
             delta.update(instructions=None, cycles=None)
         cpu = (delta['user_time']+delta['system_time'])*self.tick_ns/1e9
         result = {'cpu_seconds':cpu,'average_cores':cpu/((end_ns-self.start_ns)/1e9),
-            'peak_rss_gib':self.peak_rss/2**30,'sampling_hz':10,'counter_deltas':delta,
+            'peak_rss_gib':self.peak_rss/2**30,'rss_guard_scope':'Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard','sampling_hz':10,'counter_deltas':delta,
             'cpu_scope':'worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples',
             'directory':str(self.directory)}
         (self.directory/'summary.json').write_text(json.dumps(result,indent=2)+'\n')

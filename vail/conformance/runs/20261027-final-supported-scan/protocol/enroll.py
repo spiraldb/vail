@@ -83,14 +83,37 @@ def roster():
  if len(json.dumps(result))>MAX_JSON:raise RuntimeError('128MiB roster cap')
  return result
 
+def canonical_files(roots,deadline):
+ files=set();total=0
+ for raw in roots:
+  root=Path(raw)
+  if not root.exists():raise RuntimeError('Enrolled root missing:'+raw)
+  paths=[root] if root.is_file() else root.rglob('*')
+  for path in paths:
+   if time.monotonic()>=deadline:raise TimeoutError('3600s input recheck cap')
+   resolved=path.resolve()
+   try:resolved.relative_to('/home/danielking')
+   except ValueError:raise RuntimeError('Input escaped owned home')
+   if not path.is_file() or str(resolved) in files:continue
+   total+=path.stat().st_size
+   if total>MAX_BYTES or len(files)>=MAX_FILES:raise RuntimeError('256GiB/250000-file input recheck cap')
+   files.add(str(resolved))
+ return files
+
 def check(roster_path,full=False):
- data=json.loads(Path(roster_path).read_text());data=data.get('inputs',data);start=time.monotonic()
+ data=json.loads(Path(roster_path).read_text());data=data.get('inputs',data);start=time.monotonic();deadline=start+SECONDS
+ expected=set(data['files'])
+ if canonical_files(data['roots'],deadline)!=expected:raise RuntimeError('Enrolled canonical input file set changed')
  for raw,entry in data['files'].items():
-  if time.monotonic()-start>SECONDS:raise TimeoutError('3600s input recheck cap')
-  p=Path(raw);s=p.stat()
-  if [s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns]!=entry['identity']:raise RuntimeError('Input stat changed:'+raw)
-  if full and sha(p,start+SECONDS,entry['identity'][2])!=entry['sha256']:raise RuntimeError('Input content changed:'+raw)
- return {'files':len(data['files']),'full_sha256':full,'seconds':time.monotonic()-start}
+  if time.monotonic()>=deadline:raise TimeoutError('3600s input recheck cap')
+  p=Path(raw);s=p.stat();before=[s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns]
+  if before!=entry['identity']:raise RuntimeError('Input stat changed:'+raw)
+  if full:
+   if sha(p,deadline,entry['identity'][2])!=entry['sha256']:raise RuntimeError('Input content changed:'+raw)
+   s=p.stat();after=[s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns]
+   if after!=before:raise RuntimeError('Input identity changed during final hash:'+raw)
+ if canonical_files(data['roots'],deadline)!=expected:raise RuntimeError('Enrolled canonical input file set changed during check')
+ return {'files':len(data['files']),'canonical_set_verified':True,'full_sha256':full,'seconds':time.monotonic()-start}
 
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--out',required=True);p.add_argument('--check');p.add_argument('--full',action='store_true');a=p.parse_args()
