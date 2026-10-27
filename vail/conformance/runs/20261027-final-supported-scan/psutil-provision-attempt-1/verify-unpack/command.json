@@ -1,0 +1,16 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--quiet",
+  "--ssh-flag=-oConnectTimeout=10",
+  "--ssh-flag=-oConnectionAttempts=1",
+  "--ssh-flag=-oBatchMode=yes",
+  "--ssh-flag=-oControlMaster=no",
+  "--ssh-flag=-oControlPath=none",
+  "--command",
+  "cd /home/danielking/final-supported-scan-psutil-20261027 && echo 'c826e61c703134ccadceef0a4dc6c25bd0cf50d8b4728b71900aa9faacfb626d  protocol.tar.gz' | sha256sum -c - && tar -xzf protocol.tar.gz",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b"
+]

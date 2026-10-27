@@ -1,0 +1,16 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--quiet",
+  "--ssh-flag=-oConnectTimeout=10",
+  "--ssh-flag=-oConnectionAttempts=1",
+  "--ssh-flag=-oBatchMode=yes",
+  "--ssh-flag=-oControlMaster=no",
+  "--ssh-flag=-oControlPath=none",
+  "--command",
+  "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/bin/python /home/danielking/final-supported-scan-psutil-20261027/protocol/provision.py",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b"
+]
