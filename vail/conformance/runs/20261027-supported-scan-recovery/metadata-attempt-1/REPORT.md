@@ -9,3 +9,7 @@ Read-only exactprocess identity inspection was performed after finalreceipt, as 
 Rawcommand/stdout/stderr/status/providerbefore/start/STOP/after logs are original and frozen. SHA256.json authenticates this failedattempt. No retry, changedtimeouts, credentialworkaround, newprivilege or metadatarecovery was attempted. Rootcontrols any controllerfix/review/nextattempt. Inputs/artifactenrollment remainsblocked; local112-case positivepool and validators are unaffected.
 
 The separately received validator audit classifies112cases and90unique functions; root accepted a narrow timing-completion plus explicit per-case validation-tier plan, not a new conformance project. That source decision does not authorize running the finalscan before controller/resources/input/artifact locks are fixed/reviewed.
+
+## Separate root provider follow-up (chronology, not erased failure)
+
+After the failed host finally described STOPPING, root separately issued a provider-only describe and independently verified **TERMINATED**, maxRun900/STOP. The ORIGINAL full provider JSON is copied unmodified as root-provider-followup.json. This establishes later VMoff, while original EPERM, STOPtimeout, provider_stopped:false and STOPPING receipt remain unchanged and failed. No new boot/retry/guestmetadata task accompanied the follow-up. Original PID9620 absence remains only a later observation, not historical owner-start proof.

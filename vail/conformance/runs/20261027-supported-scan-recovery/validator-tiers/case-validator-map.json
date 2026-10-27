@@ -1,0 +1,3442 @@
+{
+  "metadata": {
+    "source_pool_sha256": "f500e016601efd1317efb0c603876d69050a8f41e6f5de607a4f2e396408284e",
+    "upstream_revision": "e10cc355 (recovered frozen9files)",
+    "audit": "Source-only fullbody+helper reads; NOquery/build/VM",
+    "cases": 112,
+    "unique_functions": 90
+  },
+  "cases": [
+    {
+      "case_id": "benchmark_combiner::test_import_gvcf_force_count",
+      "function": "test_import_gvcf_force_count",
+      "module": "benchmark_combiner.py",
+      "source_sha256": "719953826c207d00d19e874679ef0f1025fee2c7d0d1f9afd66211e88e063e76",
+      "source_lines": [
+        45,
+        47
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 47,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [
+        "import_vcf:purehl.import_vcfGRCh38forceTrue,nochecks"
+      ],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "gVCF input record-row count from frozen GRCh38fixture manifest; validate schema/entry values separately.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_export_range_matrix_table_entry_field_p100",
+      "function": "test_export_range_matrix_table_entry_field_p100",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        253,
+        256
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt.x.export(str(tmp_path / 'result.txt'))",
+          "line": 256,
+          "action": "export",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "1Mrows\u00d710entryvalues; parsed header,rowidx,colidx and x=row_idx+col_idx; logical streamhash+counts",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+      "function": "test_gnomad_coverage_stats_optimized",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        203,
+        216
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.rows()._force_count()",
+          "line": 216,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "mean/count_array100bins/median/above thresholds; rowwise independenthistogram oracle, include x>=100 clippedbin and empty semantics.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_import_bgen_filter_count",
+      "function": "test_import_bgen_filter_count",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        247,
+        250
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 250,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Count equals exact A/Tallele filter on BGENmanifest; no lost/duplicate keys,GT/GP parsed values.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_import_bgen_force_count_all",
+      "function": "test_import_bgen_force_count_all",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        233,
+        237
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 237,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "BGEN GT/GP/dosage alltyped values/nulls and shape.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_import_bgen_force_count_just_gp",
+      "function": "test_import_bgen_force_count_just_gp",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        228,
+        230
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 230,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "BGENmanifest row/samplecount and GP arrays/nulls; count alone does not verify probabilitydecode.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_import_bgen_info_score",
+      "function": "test_import_bgen_info_score",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        241,
+        244
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt.rows().select('info_score')._force_count()",
+          "line": 244,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Info score outputvalue and n_included perrow vs Hail tolerant oracle.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+      "function": "test_kyle_sex_specific_qc",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        276,
+        313
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))",
+          "line": 279,
+          "action": "aggregate_cols",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "mt.rows()._force_count()",
+          "line": 313,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Capture generated sexassignment+num_males/females and derive male/female counts,call_rate/AC/AN perrow. Cross-engine RNGequivalence not assumed; common sexfixture or invariant oracle required.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering",
+        "Randomsexassignmentisconsumedbyintermediateaggregatebutnotasserted",
+        "Noexplicitsharedseedineachworker;captureassignmentorprovidecommonfixture"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+      "function": "test_large_range_matrix_table_sum",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        270,
+        273
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt.annotate_cols(foo=hl.agg.sum(mt.x))._force_count_cols()",
+          "line": 273,
+          "action": "_force_count_cols",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "500,000 columns; foo[col]=10,000*col+49,995,000 in int64; exact eachcolumn, total count alone insufficient.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_aggregate_entries",
+      "function": "test_matrix_table_aggregate_entries",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        159,
+        161
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.aggregate_entries(hl.agg.stats(mt.GQ))",
+          "line": 161,
+          "action": "aggregate_entries",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Complete GQstats scalar struct; exact n/min/max/missing and tolerance moments.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "function": "test_matrix_table_array_arithmetic",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        16,
+        19
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+          "line": 19,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Biallelic selectedrow count plus EVERY dosage result, missing/PL-length semantics; compare full typed streamed checksum/tolerant float aggregates to Hail.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+      "function": "test_matrix_table_call_stats_star_star",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        164,
+        166
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.annotate_rows(**hl.agg.call_stats(mt.GT, mt.alleles))._force_count_rows()",
+          "line": 166,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "AllAC/AF/AN/homozygote_count rowfields, arraylengths/allelealignment and missing calls.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_cols_show",
+      "function": "test_matrix_table_cols_show",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        47,
+        49
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.cols().show(100)",
+          "line": 49,
+          "action": "show",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_bounded_display_stdout_not_checked",
+      "validator_class": "DISPLAY",
+      "proposed_minimum_validator": "100displayed sample columns.",
+      "unresolved_gaps": [
+        "Displayonlyverifiestruncatedprefix,nottablethroughput/fullconsumption"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "function": "test_matrix_table_decode_and_count",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        6,
+        8
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 8,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "profile25 fixture row count; full logical row/entry schema+streamed value/null digest in separate validation action.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+      "function": "test_matrix_table_decode_and_count_just_gt",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        11,
+        13
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 13,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "profile25 row count; projected GTschema+calls/null digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_entries_show",
+      "function": "test_matrix_table_entries_show",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        57,
+        59
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.entries().show()",
+          "line": 59,
+          "action": "show",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_bounded_display_stdout_not_checked",
+      "validator_class": "DISPLAY",
+      "proposed_minimum_validator": "defaultdisplay prefix of entries; printed schema/values/absence.",
+      "unresolved_gaps": [
+        "Displayonlyverifiestruncatedprefix,nottablethroughput/fullconsumption"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_entries_table",
+      "function": "test_matrix_table_entries_table",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        22,
+        24
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.entries()._force_count()",
+          "line": 24,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Logical nonfiltered entry count from frozen entry-presence baseline; verify row+column key multiplicity and typed entry digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_entries_table_no_key",
+      "function": "test_matrix_table_entries_table_no_key",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        27,
+        29
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.entries()._force_count()",
+          "line": 29,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Same entry-presence count as keyed version; order-independent multiset digest incl row/column data.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_filter_entries",
+      "function": "test_matrix_table_filter_entries",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        87,
+        89
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+          "line": 89,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Rows unchanged; entries presence mask must equal defined(GQ>8 and DP>2); full surviving/null entry digest.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+      "function": "test_matrix_table_filter_entries_unfilter",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        92,
+        94
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+          "line": 94,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Rows unchanged; original rectangular entries restored with null structs for filtered entries; validate logical absence vs entryfield missing.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+      "function": "test_matrix_table_many_aggs_col_wise",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        153,
+        156
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.cols()._force_count()",
+          "line": 156,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [
+        "many_aggs:returns33HLaggregationexpressions,nochecks"
+      ],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "All33x0..x32 columnaggregate outputs; keys/shape and each typed field incl fraction missing/empty behavior.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+      "function": "test_matrix_table_many_aggs_row_wise",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        147,
+        150
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.rows()._force_count()",
+          "line": 150,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [
+        "many_aggs:returns33HLaggregationexpressions,nochecks"
+      ],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "All33x0..x32 rowaggregate outputs from many_aggs helper: call predicates,AD/PL fractions,GQ/DP fractions; validate every field, not just count.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_nested_annotate_rows_annotate_entries",
+      "function": "test_matrix_table_nested_annotate_rows_annotate_entries",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        98,
+        105
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 105,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "r0..r19=AF[0]+1..20 and e0..e19=GQ+5..24 incl missing; streamed alloutput field checks.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+      "function": "test_matrix_table_rows_force_count",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        32,
+        34
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 34,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "profile25 row count and exact row schema/digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+      "function": "test_matrix_table_rows_is_transition",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        82,
+        84
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.select(is_snp=hl.is_snp(ht.alleles[0], ht.alleles[1]))._force_count()",
+          "line": 84,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Boolean output is actually named is_snp and uses hl.is_snp (not transition); verify that exact expression perallele.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_rows_show",
+      "function": "test_matrix_table_rows_show",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        42,
+        44
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.rows().show(100)",
+          "line": 44,
+          "action": "show",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_bounded_display_stdout_not_checked",
+      "validator_class": "DISPLAY",
+      "proposed_minimum_validator": "100displayed rowrecords incl rowfields.",
+      "unresolved_gaps": [
+        "Displayonlyverifiestruncatedprefix,nottablethroughput/fullconsumption"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_scan_count_cols_2",
+      "function": "test_matrix_table_scan_count_cols_2",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        322,
+        325
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "hl.scan.count()",
+          "line": 324,
+          "action": "count",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "mt._force_count_rows()",
+          "line": 325,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "10Mcolumns; x[col]=col_idx exact,10rows. Timed terminal is FORCE_COUNT_ROWS, so separate colresult validator essential.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_scan_count_rows_2",
+      "function": "test_matrix_table_scan_count_rows_2",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        316,
+        319
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "hl.scan.count()",
+          "line": 318,
+          "action": "count",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "mt._force_count_rows()",
+          "line": 319,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "200Mrows; x[row]=row_idx exact,10columns; scan boundaries/reset checked by streamed digest.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_show",
+      "function": "test_matrix_table_show",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        37,
+        39
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.show(100)",
+          "line": 39,
+          "action": "show",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_bounded_display_stdout_not_checked",
+      "validator_class": "DISPLAY",
+      "proposed_minimum_validator": "100displayed rows with standard column truncation; compare normalized display/header/missing not whitespace or runtime stats.",
+      "unresolved_gaps": [
+        "Displayonlyverifiestruncatedprefix,nottablethroughput/fullconsumption"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_col",
+      "function": "test_matrix_table_take_col",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        67,
+        69
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.s.take(100)",
+          "line": 69,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "BOUNDED_RESULT",
+      "proposed_minimum_validator": "100sample strings exact definedprefix.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "function": "test_matrix_table_take_entry",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        52,
+        54
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.GT.take(100)",
+          "line": 54,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "BOUNDED_RESULT",
+      "proposed_minimum_validator": "100call values; rowmajor entry order iff public expression.take contract guarantees; logical null/call/phasing and exact type.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_row",
+      "function": "test_matrix_table_take_row",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        62,
+        64
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.info.AF.take(100)",
+          "line": 64,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "BOUNDED_RESULT",
+      "proposed_minimum_validator": "100AF arrays complete including missing,length,float values; roworder contract.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+      "function": "test_mt_group_by_memory_usage",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        341,
+        344
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.group_rows_by(new_idx=mt.row_idx % 3).aggregate(x=hl.agg.mean(mt.x))",
+          "line": 343,
+          "action": "aggregate",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "mt._force_count_rows()",
+          "line": 344,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "3rowgroups with new_idx0..2, percolumn means of original randomdoubles; missing/float tolerance, no orderassumption.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "function": "test_mt_localize_and_collect",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        335,
+        338
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.head(150).collect()",
+          "line": 338,
+          "action": "collect",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "BOUNDED_RESULT",
+      "proposed_minimum_validator": "150complete localized rows incl allentries/globalcolumns; boundedrows but potentially wide, compare nested typed values and entryabsence.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_per_row_stats_star_star",
+      "function": "test_per_row_stats_star_star",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        219,
+        221
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt.annotate_rows(**hl.agg.stats(mt.x))._force_count_rows()",
+          "line": 221,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Allrow stats for x incl n/sum/min/max/mean/stdev; immutable fixture with numeric tolerance.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+      "function": "test_read_decode_gnomad_coverage",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        224,
+        225
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.read_matrix_table(str(gnomad_dp_sim))._force_count_rows()",
+          "line": 225,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "250,000 rows,1,000columns; immutable convertedfixture data/null digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_write_profile_mt",
+      "function": "test_write_profile_mt",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        78,
+        79
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+          "line": 79,
+          "action": "write",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "Exact logical snapshot equality to immutable profilefixture incl globals,row/colkeys/entrypresence and payload",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_write_range_matrix_table_p100",
+      "function": "test_write_range_matrix_table_p100",
+      "module": "benchmark_matrix_table.py",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "source_lines": [
+        72,
+        75
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt.write(str(tmp_path / 'tmp.mt'))",
+          "line": 75,
+          "action": "write",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "1Mrows\u00d710cols; x=row_idx+col_idx exact; schema/keys/globals/fullstream digest",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_methods::test_export_vcf",
+      "function": "test_export_vcf",
+      "module": "benchmark_methods.py",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "source_lines": [
+        17,
+        20
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.export_vcf(mt, out)",
+          "line": 20,
+          "action": "export_vcf",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "Parse BGZF/VCF allrecords/header/samplecolumns; semantic fields vs input, no compressed-byte hash acrossengines/timestamps",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_methods::test_import_vcf_count_rows",
+      "function": "test_import_vcf_count_rows",
+      "module": "benchmark_methods.py",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "source_lines": [
+        12,
+        14
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt.count_rows()",
+          "line": 14,
+          "action": "count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Exact fixture VCF variant-row count from independently frozen input manifest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_methods::test_import_vcf_write",
+      "function": "test_import_vcf_write",
+      "module": "benchmark_methods.py",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "source_lines": [
+        6,
+        9
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt.write(out)",
+          "line": 9,
+          "action": "write",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "VCFmanifest rows/samples/schema/keys/globals plus parsedcall/entrydigest vs Hail oracle",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "function": "test_split_multi_hts",
+      "module": "benchmark_methods.py",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "source_lines": [
+        112,
+        114
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.split_multi_hts(mt)._force_count_rows()",
+          "line": 114,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Complete splitrowkeys/alleles/minrep/a_index/was_split and transformed GT/AD/PL values. Sortedness/duplicates and movedloci need full semantic stream, count alone insufficient.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_methods::test_variant_qc",
+      "function": "test_variant_qc",
+      "module": "benchmark_methods.py",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "source_lines": [
+        27,
+        28
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.variant_qc(hl.read_matrix_table(str(profile25_mt))).rows()._force_count()",
+          "line": 28,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Allvariant_qc struct fields perrow; call/count/missing exact, summarymoments/HWE tolerances and undefined values explicit.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_sentinel::test_sentinel_cpu_hash_1",
+      "function": "test_sentinel_cpu_hash_1",
+      "module": "benchmark_sentinel.py",
+      "source_sha256": "93b58ceaa907b3d8ed4041f686275182e9d72a5e880de635c46bdcbbc78810fc",
+      "source_lines": [
+        10,
+        16
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_host_loop_local_values_discarded",
+      "validator_class": "HOST_SCALAR",
+      "proposed_minimum_validator": "Capture final Pythonx; independent fixedloop expected for pinnedPython/platform integerhashsemantics. Currentlocalxdiscarded; noquery.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_sentinel::test_sentinel_read_gunzip",
+      "function": "test_sentinel_read_gunzip",
+      "module": "benchmark_sentinel.py",
+      "source_sha256": "93b58ceaa907b3d8ed4041f686275182e9d72a5e880de635c46bdcbbc78810fc",
+      "source_lines": [
+        4,
+        7
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_host_loop_local_values_discarded",
+      "validator_class": "HOST_STREAM",
+      "proposed_minimum_validator": "EOFsuccessfulgzipCRC+entiredecompressedbytecount/linecount+canonicalSHA256 against immutablefilemanifest; currentloopdrainsbutdiscardslines.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_shuffle::test_shuffle_key_by_aggregate_bad_locality",
+      "function": "test_shuffle_key_by_aggregate_bad_locality",
+      "module": "benchmark_shuffle.py",
+      "source_sha256": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+      "source_lines": [
+        31,
+        33
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.group_by(x=ht.i0 % 1000).aggregate(c=hl.agg.count(), m=hl.agg.mean(ht.i2))._force_count()",
+          "line": 33,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "ht.group_by(x=ht.i0 % 1000).aggregate(c=hl.agg.count(), m=hl.agg.mean(ht.i2))",
+          "line": 33,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "hl.agg.count()",
+          "line": 33,
+          "action": "count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Group key i0%1000; exact counts/countsum=source n, tolerant i2mean, fullgroup set.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_shuffle::test_shuffle_key_by_aggregate_good_locality",
+      "function": "test_shuffle_key_by_aggregate_good_locality",
+      "module": "benchmark_shuffle.py",
+      "source_sha256": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+      "source_lines": [
+        36,
+        39
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.group_by(x=ht.idx // divisor).aggregate(c=hl.agg.count(), m=hl.agg.mean(ht.i2))._force_count()",
+          "line": 39,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "ht.group_by(x=ht.idx // divisor).aggregate(c=hl.agg.count(), m=hl.agg.mean(ht.i2))",
+          "line": 39,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "hl.agg.count()",
+          "line": 39,
+          "action": "count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Exact floating-floor bucket key idx//(7,500,000/51), count and i2mean; mirror actual expression, do not substitute integerdivision.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_shuffle::test_shuffle_key_rows_by_4096_byte_rows",
+      "function": "test_shuffle_key_rows_by_4096_byte_rows",
+      "module": "benchmark_shuffle.py",
+      "source_sha256": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+      "source_lines": [
+        17,
+        21
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 21,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "100,000rows\u00d71024cols, entry=row_idx*col_idx; new backward key=-row_idx, sorted keys and exact valueformula.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_shuffle::test_shuffle_key_rows_by_65k_byte_rows",
+      "function": "test_shuffle_key_rows_by_65k_byte_rows",
+      "module": "benchmark_shuffle.py",
+      "source_sha256": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+      "source_lines": [
+        24,
+        28
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 28,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "10,000rows\u00d716,384cols, entry=row_idx*col_idx; backwardkey and payloadformula.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_shuffle::test_shuffle_key_rows_by_mt",
+      "function": "test_shuffle_key_rows_by_mt",
+      "module": "benchmark_shuffle.py",
+      "source_sha256": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+      "source_lines": [
+        4,
+        8
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "mt._force_count_rows()",
+          "line": 8,
+          "action": "_force_count_rows",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Fullrow+entry multiset preserved with new struct key(contig,-position), verify global keysorted order; count alone insufficient.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_shuffle::test_shuffle_order_by_10m_int",
+      "function": "test_shuffle_order_by_10m_int",
+      "module": "benchmark_shuffle.py",
+      "source_sha256": "64d68e8981c0c2b7d26d12e90c16596934ea1c18f6455fb694e606a6495f8995",
+      "source_lines": [
+        11,
+        14
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "t._force_count()",
+          "line": 14,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "10M exact; ordered idx9,999,999..0, streamed order-sensitive digest.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_group_by_collect_per_row",
+      "function": "test_group_by_collect_per_row",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        257,
+        259
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+          "line": 259,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))",
+          "line": 259,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "hl.agg.collect(ht.row_value)",
+          "line": 259,
+          "action": "collect",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "One groupper originalrowkey; complete nested row_value list including e/c globals, logical null masks and multiplicity; unordered collect order contract.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_group_by_take_rekey",
+      "function": "test_group_by_take_rekey",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        262,
+        264
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+          "line": 264,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))",
+          "line": 264,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "hl.agg.take(ht.row_value, 1)",
+          "line": 264,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "Groups k=int(row_idx/50), each returnedrow belongs to group, n=1limit, schema/payload; nondeterministic tie/selection cannot require arbitraryfirstrow equality.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering",
+        "Exactnondeterminism/ties/representativeselectioncontractunresolved"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[10,1000]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[10,100]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[10,10]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[100,1000]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[100,100]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[100,10]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[1000,1000]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[1000,100]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_join_partitions_table[1000,10]",
+      "function": "test_join_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        251,
+        254
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2)._force_count()",
+          "line": 254,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; one row per idx, key/schema and value digest; partition parameters cannot affect logical result.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_read_force_count_partitions[1000]",
+      "function": "test_read_force_count_partitions",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        222,
+        223
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.read_table(str(many_partitions_ht))._force_count()",
+          "line": 223,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; range idx coverage digest invariant independent of physical partitions.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_read_force_count_partitions[100]",
+      "function": "test_read_force_count_partitions",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        222,
+        223
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.read_table(str(many_partitions_ht))._force_count()",
+          "line": 223,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; range idx coverage digest invariant independent of physical partitions.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_read_force_count_partitions[10]",
+      "function": "test_read_force_count_partitions",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        222,
+        223
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.read_table(str(many_partitions_ht))._force_count()",
+          "line": 223,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact; range idx coverage digest invariant independent of physical partitions.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_read_with_index[1000]",
+      "function": "test_read_with_index",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        233,
+        239
+      ],
+      "arguments": {
+        "many_partitions_ht": 1000
+      },
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 239,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "10,000,000 exact:1000contiguous half-open intervals tile[0,10M); key coverage and no duplication.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_array_sum",
+      "function": "test_table_aggregate_array_sum",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        74,
+        78
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(hl.agg.array_sum(hl.range(0, m)))",
+          "line": 78,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "100-element int64 array [10,000,000*j for j0..99], exact.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_counter",
+      "function": "test_table_aggregate_counter",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        176,
+        178
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(hl.tuple([hl.agg.counter(ht[f'f{i}']) for i in range(8)]))",
+          "line": 178,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Full8counters incl missing keys/counts; canonical key encoding and total-count invariants, compare frozen Hail results.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "function": "test_table_aggregate_downsample_dense",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        186,
+        188
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(tuple([hl.agg.downsample(ht[f'i{i}'], ht['i3'], label=hl.str(ht['i4'])) for i in range(3)]))",
+          "line": 188,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Full3bounded downsample arrays; grid/cell coverage, representative validity and label checks; exact cross-engine choice unresolved if algorithm/ties differ.",
+      "unresolved_gaps": [
+        "Exactnondeterminism/ties/representativeselectioncontractunresolved"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_downsample_worst_case",
+      "function": "test_table_aggregate_downsample_worst_case",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        191,
+        193
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(hl.agg.downsample(ht.idx, -ht.idx))",
+          "line": 193,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Bounded downsample array for250M diagonal points; exact representative selection contract unresolved.",
+      "unresolved_gaps": [
+        "Exactnondeterminism/ties/representativeselectioncontractunresolved"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_int_stats",
+      "function": "test_table_aggregate_int_stats",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        145,
+        153
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(tuple([*(hl.agg.stats(ht[f'i{i}']) for i in range(5)), *(hl.agg.stats(hl.sum(ht[f'array{i}'])) for i in range(2)), *(hl.agg.explode(lambda elt: hl.agg.stats(elt), ht[f'array{i}']) for i in range(2))]))",
+          "line": 147,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Full9stats structs (5intfields,2array sums,2exploded arrays); sharedfixture Hail oracle with counts/min/max exact, mean/stdev/sum tolerance.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_linreg",
+      "function": "test_table_aggregate_linreg",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        202,
+        204
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(hl.agg.array_agg(lambda i: hl.agg.linreg(ht.i0 + i, [ht.i1, ht.i2, ht.i3, ht.i4]), hl.range(75)))",
+          "line": 204,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Full75regression structs; coefficients/stderr/statistics, rank/nonfinite/missing behavior against Hail tolerance oracle.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_aggregate_take_by_strings",
+      "function": "test_table_aggregate_take_by_strings",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        181,
+        183
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(hl.tuple([hl.agg.take(ht['f18'], 25, ordering=ht[f'f{i}']) for i in range(18)]))",
+          "line": 183,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        },
+        {
+          "call": "hl.agg.take(ht['f18'], 25, ordering=ht[f'f{i}'])",
+          "line": 183,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Full18arrays of25strings; ordering ties need explicit equivalence contract, not arbitrary exact tie order.",
+      "unresolved_gaps": [
+        "Exactnondeterminism/ties/representativeselectioncontractunresolved"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_annotate_many_flat",
+      "function": "test_table_annotate_many_flat",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        81,
+        86
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 86,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "1Mrows\u00d7100addedcolumns xi=i+idx, allfields exact.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_big_aggregate_compilation",
+      "function": "test_table_big_aggregate_compilation",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        52,
+        56
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(expr)",
+          "line": 56,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "999 fractions all1.0 (single idx0, divisors1..999); complete tuple.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_big_aggregate_compile_and_execute",
+      "function": "test_table_big_aggregate_compile_and_execute",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        59,
+        64
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.aggregate(expr)",
+          "line": 64,
+          "action": "aggregate",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "999 fractions ceil(1,000,000/i)/1,000,000, i1..999; full tuple with declared float tolerance.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_expr_take",
+      "function": "test_table_expr_take",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        217,
+        219
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "hl.tuple([ht.f1, ht.f2]).take(100)",
+          "line": 219,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "BOUNDED_RESULT",
+      "proposed_minimum_validator": "100tuples(f1,f2), type/nulls/ordering.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_foreign_key_join[1000000,1000000]",
+      "function": "test_table_foreign_key_join",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        68,
+        71
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000000
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.annotate(x=ht2[(m - 1 - ht.idx) % n])._force_count()",
+          "line": 71,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "mrows, xlookup key (m-1-idx)%n exact; struct schema/missing and indexedjoins values, not merely mcount.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_foreign_key_join[1000000,1000]",
+      "function": "test_table_foreign_key_join",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        68,
+        71
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.annotate(x=ht2[(m - 1 - ht.idx) % n])._force_count()",
+          "line": 71,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "mrows, xlookup key (m-1-idx)%n exact; struct schema/missing and indexedjoins values, not merely mcount.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_group_by_aggregate_sorted",
+      "function": "test_table_group_by_aggregate_sorted",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        14,
+        18
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.group_by(x=ht.idx // 1000).aggregate(y=hl.agg.count())",
+          "line": 17,
+          "action": "aggregate",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "hl.agg.count()",
+          "line": 17,
+          "action": "count",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "ht._force_count()",
+          "line": 18,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "10,000groups keys0..9999 each y1000, sorted keys.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_group_by_aggregate_unsorted",
+      "function": "test_table_group_by_aggregate_unsorted",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        21,
+        25
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.group_by(x=(n - ht.idx) // 1000).aggregate(y=hl.agg.count())",
+          "line": 24,
+          "action": "aggregate",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "hl.agg.count()",
+          "line": 24,
+          "action": "count",
+          "result_use": "assigned_and_used_later"
+        },
+        {
+          "call": "ht._force_count()",
+          "line": 25,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "10,001groups: x0count999,x10000count1, x1..9999count1000; preserve integerboundary semantics.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_import_ints",
+      "function": "test_table_import_ints",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        130,
+        134
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "hl.import_table(str(many_ints_tsv), types={'idx': 'int', **{f'i{i}': 'int' for i in range(5)}, **{f'array{i}': 'array<int>' for i in range(2)}})._force_count()",
+          "line": 131,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Exact immutable TSV manifest rowcount, declared int/array schemas and parsed values.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_import_ints_impute",
+      "function": "test_table_import_ints_impute",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        137,
+        138
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "hl.import_table(str(many_ints_tsv), impute=True)._force_count()",
+          "line": 138,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Rowcount plus inferred schema AND values from frozen TSV oracle (not just successful import).",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_import_strings",
+      "function": "test_table_import_strings",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        141,
+        142
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "hl.import_table(str(many_strings_tsv))._force_count()",
+          "line": 142,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Rowcount/string schema and frozen TSV oracle.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_key_by_shuffle",
+      "function": "test_table_key_by_shuffle",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        7,
+        11
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 11,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "1Mrows, key x=1M-idx sorted ascending1..1M; exact originalidx mapping.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "function": "test_table_python_construction",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        45,
+        49
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "lazy_query_construction_only",
+      "validator_class": "PLAN_ONLY",
+      "proposed_minimum_validator": "Retain final Table object and inspect publicschema100fields x0..x99=Int32 plus idx/key; optionally separate untimed100rowevaluation. DoNOTaddactiontotimedPythonconstruction.",
+      "unresolved_gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_range_force_count",
+      "function": "test_table_range_force_count",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        28,
+        29
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "hl.utils.range_table(100000000)._force_count()",
+          "line": 29,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "100,000,000 exact.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_range_join[1000000000,1000000000]",
+      "function": "test_table_range_join",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        39,
+        42
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000000000
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2, 'inner').count()",
+          "line": 42,
+          "action": "count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Exact inner count min(m,n); integer scalar, no float tolerance.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_range_join[1000000000,1000]",
+      "function": "test_table_range_join",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        39,
+        42
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht1.join(ht2, 'inner').count()",
+          "line": 42,
+          "action": "count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "SCALAR_COMPLETE",
+      "proposed_minimum_validator": "Exact inner count min(m,n); integer scalar, no float tolerance.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_range_means",
+      "function": "test_table_range_means",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        156,
+        159
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 159,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "10Mrows, m=None for idx%1111==0 else (idx%1111-1)/2; missing+Float64checked.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_read_force_count_ints",
+      "function": "test_table_read_force_count_ints",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        120,
+        122
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 122,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Exact immutable TSV/import manifest rowcount/schema/null/value digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_read_force_count_strings",
+      "function": "test_table_read_force_count_strings",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        125,
+        127
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 127,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "Exact immutable TSV/import manifest rowcount/schema/string/null digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_scan_prev_non_null",
+      "function": "test_table_scan_prev_non_null",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        273,
+        277
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 277,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "100Mrows; yNone atidx0, else y.idx=idx-1 and y.x=range((idx-1)%25), complete nested arrays.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_scan_sum_1k_partitions",
+      "function": "test_table_scan_sum_1k_partitions",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        267,
+        270
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht._force_count()",
+          "line": 270,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "STREAM_FIELDS",
+      "proposed_minimum_validator": "1Mrows; x=idx*(idx-1)/2 exclusiveprefixsum in int64, across1000partitionboundaries.",
+      "unresolved_gaps": [
+        "Integercountdoesnotvalidatecomputedpayloadorordering"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_show",
+      "function": "test_table_show",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        212,
+        214
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.show(100)",
+          "line": 214,
+          "action": "show",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_bounded_display_stdout_not_checked",
+      "validator_class": "DISPLAY",
+      "proposed_minimum_validator": "100displayed rows/selectedstringcolumns.",
+      "unresolved_gaps": [
+        "Displayonlyverifiestruncatedprefix,nottablethroughput/fullconsumption"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_table_take",
+      "function": "test_table_take",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        207,
+        209
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht.take(100)",
+          "line": 209,
+          "action": "take",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "BOUNDED_RESULT",
+      "proposed_minimum_validator": "100complete rows, schema/null values/ordercontract.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_test_head_and_tail_region_memory",
+      "function": "test_test_head_and_tail_region_memory",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        286,
+        289
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "high_mem_table._force_count()",
+          "line": 289,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "30 exact; idx0..29 and each big_array length100M/zero values outside timing.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_test_inner_join_region_memory",
+      "function": "test_test_inner_join_region_memory",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        292,
+        296
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "joined._force_count()",
+          "line": 296,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "30 exact; one matching row peridx and both50Mzero arrays shape/content.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_test_left_join_region_memory",
+      "function": "test_test_left_join_region_memory",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        299,
+        303
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "joined._force_count()",
+          "line": 303,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "30 exact; matching rightside present for everyidx and both50Mzero arrays shape/content.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_test_map_filter_region_memory",
+      "function": "test_test_map_filter_region_memory",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        280,
+        283
+      ],
+      "arguments": {},
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "high_mem_table._force_count()",
+          "line": 283,
+          "action": "_force_count",
+          "result_use": "asserted"
+        }
+      ],
+      "existing_inline_assertions": [
+        "high_mem_table._force_count() == 15"
+      ],
+      "helper_checks": [],
+      "current_consumption": "eager_count_asserted_only",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "15 exact (already asserted); retained even idx0..28 and each big_array length100M/zero content validation outside timing.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[10,1000]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[10,100]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[10,10]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[100,1000]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[100,100]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[100,10]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[1000,1000]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[1000,100]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_union_partitions_table[1000,10]",
+      "function": "test_union_partitions_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        245,
+        248
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "format_applicability": "shared-table-matrix-fixture",
+      "public_actions": [
+        {
+          "call": "ht1.union(ht2)._force_count()",
+          "line": 248,
+          "action": "_force_count",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_public_action_result_discarded",
+      "validator_class": "COUNT_AND_SCHEMA",
+      "proposed_minimum_validator": "20,000,000 exact; every idx0..9,999,999 multiplicity2; streamed multiset digest.",
+      "unresolved_gaps": [],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_write_range_table[10000000,1000]",
+      "function": "test_write_range_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        227,
+        229
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 1000
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.write(str(tmp_path / 'tmp.ht'))",
+          "line": 229,
+          "action": "write",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "nrows exact,idx0..n-1, key/schema; physical partition count separately only if public writecontract requires",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_write_range_table[10000000,100]",
+      "function": "test_write_range_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        227,
+        229
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 100
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.write(str(tmp_path / 'tmp.ht'))",
+          "line": 229,
+          "action": "write",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "nrows exact,idx0..n-1, key/schema; physical partition count separately only if public writecontract requires",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    },
+    {
+      "case_id": "benchmark_table::test_write_range_table[10000000,10]",
+      "function": "test_write_range_table",
+      "module": "benchmark_table.py",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "source_lines": [
+        227,
+        229
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 10
+      },
+      "fixture_parameters": {},
+      "format_applicability": "format-independent",
+      "public_actions": [
+        {
+          "call": "ht.write(str(tmp_path / 'tmp.ht'))",
+          "line": 229,
+          "action": "write",
+          "result_use": "discarded_return;side_effect_if_write_or_show"
+        }
+      ],
+      "existing_inline_assertions": [],
+      "helper_checks": [],
+      "current_consumption": "eager_file_side_effect_not_checked_then_removed",
+      "validator_class": "FILE_SEMANTIC",
+      "proposed_minimum_validator": "nrows exact,idx0..n-1, key/schema; physical partition count separately only if public writecontract requires",
+      "unresolved_gaps": [
+        "OutputmustvalidatebeforeTemporaryDirectorycleanup",
+        "Bytehashalonecannotvalidatecrossformatlogicalequivalence"
+      ],
+      "runtime_validated": false
+    }
+  ]
+}
