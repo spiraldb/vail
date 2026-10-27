@@ -115,3 +115,29 @@ async fn corrupt_real_file_keeps_attempts_when_execution_fails() {
     assert_eq!(domains.len(), 1);
     assert!(domains[0].value().as_usize() > 0);
 }
+
+#[tokio::test]
+async fn caller_owned_live_counter_combines_real_file_scans_only_when_shared() {
+    use vail_storage::ScanMetrics;
+    use vail_storage::local_table::{PartitionEvent, WriteOptions};
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("table");
+    let path = path.to_str().unwrap();
+    TableIR::range(97, 1).unwrap().write_with_options(path, false, WriteOptions {
+        max_buffer_bytes: 1024 * 1024, max_rows_per_file: 16,
+    }).await.unwrap();
+    let source = open_local(path).await.unwrap();
+    assert!(source.descriptor().files.len() > 1);
+    let shared = ScanMetrics::new();
+    let unrelated = ScanMetrics::new();
+    let source = source.with_scan_metrics(shared.clone());
+    assert_eq!(shared.bytes_read(), 0);
+    let events = source.batches().try_collect::<Vec<_>>().await.unwrap();
+    let rows = events.iter().filter_map(|event| match event {
+        PartitionEvent::Batch(batch) => Some(batch.num_rows()),
+        _ => None,
+    }).sum::<usize>();
+    assert_eq!(rows, 97);
+    assert!(shared.bytes_read() > 0);
+    assert_eq!(unrelated.bytes_read(), 0);
+}
