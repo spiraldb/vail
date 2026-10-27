@@ -1,0 +1,53 @@
+{
+  "source": "cda227eca9f88667c5bb2995d05f27e41921c205",
+  "benchmarked_native": "4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c",
+  "benchmarked_production": "517c87538d58689e864af795015020e908de0be0",
+  "scope_after_new_main": "Frozen PRE-pruning snapshot; subsequent main73201cc4c production NOT measured",
+  "completed": 470,
+  "total": 470,
+  "statuses": {
+    "failed": 1,
+    "passed": 469
+  },
+  "fresh_attempts": 469,
+  "fresh_failures": [],
+  "cached_nonpasses": [
+    {
+      "case_id": "benchmark_combiner::test_import_gvcf_force_count",
+      "version": "hail",
+      "mode": "hail-hail",
+      "original": "rep1-attempt-1/recovered/rep1/results.json",
+      "reason": "ModuleNotFoundError: No module named 'test'"
+    }
+  ],
+  "versions": {
+    "hail": 112,
+    "old": 179,
+    "current": 179
+  },
+  "phase_seconds": 4076.7169729069997,
+  "eligible_execution_samples": 466,
+  "planning_samples": 3,
+  "passed_incomplete_measurement": [],
+  "worker_sessions_clean": 469,
+  "host_commands_clean": 42,
+  "host_probe_children_reaped": 84,
+  "runtime_gate": {
+    "runtime_gate_receipt": {
+      "accepted_after_sha256": "10336362969668a993f301cf9739bec829af15dc2969cc58f1bb3c2138f42d18",
+      "original_enrollment_sha256": "01a1d7c2137b8e2bf167e7d185feb86f86d3ea0a4359c1af08bd66584b193648",
+      "artifacts_equal_accepted": true,
+      "input_check": {
+        "files": 17568,
+        "canonical_set_verified": true,
+        "full_sha256": false,
+        "seconds": 4.641155550000001
+      },
+      "stage": "rep3"
+    },
+    "sha256": "3cb6b1ef6bff0f074d9b611d292d54fdb7383e29373464c27c31e90cee45a48b"
+  },
+  "provider_final_status": "TERMINATED",
+  "archive_sha256": "5bf3975f5c52181a850efccf3a9a90c3d0b7be24b0b2f9a1d20efc855981a15c",
+  "scope": "Three repetition receipts complete; final full-input SHA and independent final report review STILL PENDING"
+}

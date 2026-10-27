@@ -1,0 +1,15 @@
+[
+  "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+  "compute",
+  "ssh",
+  "vail-bench-20261021",
+  "--project=pyspiral-dev",
+  "--zone=us-east1-b",
+  "--quiet",
+  "--ssh-flag=-oConnectTimeout=10",
+  "--ssh-flag=-oBatchMode=yes",
+  "--ssh-flag=-oControlMaster=no",
+  "--ssh-flag=-oControlPath=none",
+  "--command",
+  "python3 -c 'from pathlib import Path;import json,collections;p=Path('\"'\"'/home/danielking/final-supported-scan-20261027/results/rep3/results.json'\"'\"');d=json.loads(p.read_text()) if p.exists() else [];print(json.dumps({'\"'\"'completed'\"'\"':len(d),'\"'\"'total'\"'\"':470,'\"'\"'statuses'\"'\"':dict(collections.Counter(x.get('\"'\"'status'\"'\"') for x in d)),'\"'\"'versions'\"'\"':dict(collections.Counter(x.get('\"'\"'version'\"'\"') for x in d)),'\"'\"'last'\"'\"':d[-1].get('\"'\"'case_id'\"'\"') if d else None,'\"'\"'failures'\"'\"':[{'\"'\"'case'\"'\"':x.get('\"'\"'case_id'\"'\"'),'\"'\"'version'\"'\"':x.get('\"'\"'version'\"'\"'),'\"'\"'mode'\"'\"':x.get('\"'\"'mode'\"'\"'),'\"'\"'status'\"'\"':x.get('\"'\"'status'\"'\"'),'\"'\"'error'\"'\"':str(x.get('\"'\"'error'\"'\"',x.get('\"'\"'reason'\"'\"')))[:500]} for x in d if x.get('\"'\"'status'\"'\"')!='\"'\"'passed'\"'\"']}))'"
+]
