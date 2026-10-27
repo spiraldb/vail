@@ -1,0 +1,67 @@
+{
+  "status": "source-only plan, no further production change or runtime authorization inferred",
+  "stages": [
+    {
+      "scope": "ArrayMap demand and nested borrowed capture views",
+      "reuses": [
+        "existing query-local RowDemand trie and exact capture identity/type checks",
+        "Arrow ListArray/LargeListArray offsets and StructArray safe constructors",
+        "existing lower_array_lambda typed lexical binding and callback lowering"
+      ],
+      "design": [
+        "Walk ArrayMap value as a transparent ownership binder only when its path resolves to a captured row ordinary Struct/Array path; bind its parameter to that demand node in a lexical context. Body GetField demand narrows the element. Whole parameter use covers the complete element. Unrecognized binders/operations cover their affected source subtree conservatively.",
+        "Memoize by expression identity plus lexical context, retaining DAG sharing and shadowing; do not reuse name-only parameter demand or allocate cloned root-to-leaf path vectors at every depth.",
+        "Rebuild the selected logical type recursively through ordinary Struct and Array only. Logical Set/Dict/Call etc remain atomic; unused siblings around them can still be discarded.",
+        "Extend the query-prepared view descriptor to Struct/List/LargeList nodes, borrowing original child arrays, offsets and validity. Bind actual batch lengths safely; no child take/concat/materialization merely to project. Existing selected physical compatibility and whole-use fallback remain.",
+        "Rewrite typed lambda-variable descriptors in exactly the corresponding binder scope to match the projected element input, and declare callback schemas before lowering. Original type checking precedes this structural projection.",
+        "Keep row producers and their demanded computations/effects unchanged; this stage proves avoided capture copying, not source IO."
+      ],
+      "public_proof": [
+        "Nested Array<Struct<Array<Struct>>> map uses one leaf; unused Call/Set/Dict siblings and growing defined/hidden payload at several depths. Consume all logical outer/inner outputs and explicit null/empty rows.",
+        "Shared captured subtree with two different leaf consumers, nested lambda shadowing, typed lambda descriptor, whole element/whole capture return and selected logical leaves.",
+        "Runtime allocation counterfactual against unchanged first-stage candidate, fixture/query prep outside accounting. All public semantics pass old/new; allocation-growth assertion must fail old and pass new."
+      ]
+    },
+    {
+      "scope": "Nested entries output projection before materialization",
+      "reuses": [
+        "existing TableIR::with_entries_output_fields consumer-local derivative",
+        "standard DataFusion get_field logical expressions and original outer MapRows projection",
+        "existing prepared EntryProjection/index/schema preparation and immutable shared global source"
+      ],
+      "design": [
+        "Replace all-Column-only consumer demand admission with typed direct Column/GetField path demand. Keep keys fully demanded. Whole Column and multiple consumers union all required paths; unsupported expressions retain current full route until ordinary expression-demand handling proves their input paths.",
+        "Narrow output Struct field descriptors recursively preserving original metadata/nullability, then use a prepared borrowed nested view before singleton concat, duplicate-run spill and take. Keep field aliases/reorder in the ordinary DataFusion outer projection.",
+        "Preserve original source-byte/id/spill/retention charges; existing accepted output-size estimator applies to selected views. Do not retain unused arrays for sizing."
+      ],
+      "public_proof": [
+        "entries().select(x=entries.meta.a) across nested ordinary Struct paths, selected Call/Dict/Set leaves, duplicate row keys/column ordering/shared wide consumer.",
+        "Observable allocation growth and Linux spill writes on identical hidden-owner fixtures, logical-null parent/empty Struct controls, unchanged whole-output path."
+      ]
+    },
+    {
+      "scope": "Source pushdown bridge at semantic extension boundary",
+      "reuses": [
+        "DataFusion ExtractLeafExpressions/PushDownLeafProjections for visible get_field expressions",
+        "existing Vail nested_projection::map_rows_storage_paths and provider_with_nested_projection_paths",
+        "Vortex scanner nested projection paths and logical parent validity machinery"
+      ],
+      "design": [
+        "Create the consumer-specific typed demand mapping BEFORE MatrixEntries semantic schema/action freeze. Map requested output fields to child row/cells.value paths and required key/index/validity information; preserve parent lengths/validities without demanding unused children.",
+        "Do not attempt to rewrite frozen ConsumerScopeExec children or claim generic DF optimizer can inspect hidden callbacks. Expose needed field demand in logical input projections/extension contracts so existing DF passes handle relational propagation.",
+        "Start at pure source Reads and semantics-preserving projections only; extend transfer functions explicitly through filters/sorts/aliases, including all their required predicates/keys. Opaque whole-value/effectful producers retain required inputs until their public demand contract is established. Shared plans are consumer-local or union demand; never narrow a shared producer in place.",
+        "Source-type descriptors and return schema must be compatible even when storage omits siblings; use existing storage null-field restoration rather than casting or rebuilding omitted values."
+      ],
+      "public_proof": [
+        "Real persisted Vail table/matrix with incompressible wide unused nested siblings. Compare exact full values/nulls/order, original schema/shared consumer, selected opaque leaves and predicates/key demand.",
+        "Observe actual application read_at requested ranges/bytes via a real storage reader boundary; test output values alone or private plan strings do not prove IO omission. Structural versus flat layouts must be reported separately, no physical-disk/decode claim from requested bytes."
+      ]
+    }
+  ],
+  "excluded": [
+    "No benchmark-specific matching or per-row preparation",
+    "No source-input rewrite that drops observable computations without a demand/effect contract",
+    "No new optimizer framework, global caches or unsafe constructors",
+    "No claim the current frozen benchmark includes these followups"
+  ]
+}
