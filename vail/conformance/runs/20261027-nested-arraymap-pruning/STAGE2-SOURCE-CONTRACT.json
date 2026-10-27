@@ -1,0 +1,66 @@
+{
+  "status": "SOURCE proposal; no Stage2/3 production edits or runtime claims",
+  "goal": "Nested entries GetField demand reaches consumer-local materialization and ordinary native Vortex source reads without changing producer effects or shared consumers.",
+  "observability": {
+    "existing_boundary": "Iceberg CountingFileRead increments requested range length; FileReadVortexSource.read_at delegates directly to that FileRead, including footer/data/delete reads. ScanResult exposes cloneable ScanMetrics.",
+    "current_gap": "vail-storage stream_from_plan_with_projection discards ScanResult.metrics when immediately taking stream().",
+    "minimal_ownership_proposal": [
+      "Use the existing public Iceberg ScanMetrics as the sole live AtomicU64 domain. Make its new() constructor public and add ArrowReaderBuilder.with_scan_metrics(ScanMetrics); read() uses the supplied domain or creates its current fresh default. No additional counter or per-file handle list.",
+      "LocalRead.with_scan_metrics returns an immutable execution-local clone carrying an optional caller-owned ScanMetrics. Thread it to the ordinary reader builder for every native source read path. Shared SnapshotReadPlan and VortexSessionCache never carry execution metric domains.",
+      "Each SourceExec.execute creates a FRESH ScanMetrics and registers a normal DataFusion CustomMetricValue referring to that live domain, with existing partition labels. A reused/concurrently executed SourceExec gets separate domains; plan metrics may aggregate the separate execution domains by the standard DF API.",
+      "CustomMetricValue exposes instantaneous observed attempted bytes. Its new_empty() has no live source, only a fresh snapshot accumulator; aggregate() adds each source current value to the accumulator and NEVER mutates a live scan counter. Calling standard DF metric aggregation repeatedly is non-destructive.",
+      "No terminal snapshot or task-retirement race: the metric continues to observe its counter if background read producers outlive stream cancellation. Report cancellation observations as instantaneous lower bounds, never terminal completed totals without retirement proof.",
+      "Public partitioned::prepare already returns PreparedTable.parts containing the actual normal ExecutionPlan objects; tests can execute these normal plans and inspect public DataFusion metrics. No new TableIR query-execution handle or observer API is needed."
+    ],
+    "scope_limits": [
+      "Attempted range lengths, not successful-completion bytes, physical disk traffic, decompression, or bandwidth.",
+      "Data-file/footer/delete reader requests; snapshot/catalog metadata opened before execution is outside this counter.",
+      "Error/cancel counts retained; source metric total must not be reused across independent consumers or execution calls.",
+      "Successful source proof drains normal streams; read count is observed at collection time, not an assertion that every background task is retired. Do not infer absence of future requests from stream-drop alone.",
+      "One upstream AtomicU64 increment per attempted range remains; zero additional per-read increments, no global hook, no caller installed callback."
+    ],
+    "api_source_verification": {
+      "DataFusion": "Pinned datafusion-physical-expr-common55.0.0 metrics CustomMetricValue has new_empty/aggregate/as_any/as_usize/is_eq; MetricBuilder.build accepts MetricValue::Custom. Standard MetricsSet.sum creates new_empty then accumulates each metric; no source mutation required.",
+      "Iceberg": "ScanMetrics currently alreadypublic/reexported and Clone, new/private constructor holds one Arc<AtomicU64>; ArrowReader::read currently always constructs new. CountingFileRead increments range length before awaiting FileRead."
+    }
+  },
+  "nested_entries_contract": {
+    "current_source_points": [
+      "TableIR.map_rows_bound only derives consumer output demand when all fields are ScalarIR::Column.",
+      "with_entries_output_fields narrows only top-level output fields; EntryProjection.prepare selects top-level row/entry/column indices.",
+      "VailNode.expressions is empty and rejects nonempty rewrites; standard DataFusion cannot see the hidden matrix entry-output to source-column mapping.",
+      "Existing nested_projection.map_rows_storage_paths and provider_with_nested_projection_paths already carry source paths for direct MapRows\u2192Read; reuse them rather than a second scanner or expression evaluator."
+    ],
+    "initial_admission": [
+      "Typed, ordinary Column/GetField nested Struct paths in entries projections; union all selected expressions and existing keys before schema freezes. Whole-value/opaque use preserves full corresponding value. ArrayMap element demand follows the reviewed Stage1 lexical contract when later admitted.",
+      "Retain row and column sort/key fields, partition identity, entry/list/Struct ancestor validity, predicates and upstream logical operation dependencies. Do not treat validity or shape demand as absent payload.",
+      "Consumer-local derivative only; original producer graph and shared consumers immutable. No side-effect/RNG/error computation elimination by bespoke rewrite.",
+      "Prepare positional nested descriptors once, preserve metadata and zero-field Struct length, before concat/spill/take. Original source IDs and full batch byte retention/spill charging unchanged."
+    ],
+    "source_bridge_direction": [
+      "Translate eligible extension output leaf demand to normal source-domain GetField/ArrayMap expressions through the known row/cell/column mapping before input child compilation.",
+      "Let DataFusion simplify visible GetField/named-Struct/alias projections and apply ordinary projection pushdown; reuse existing provider nested paths once the demand reaches a Read.",
+      "Do not mutate a frozen ConsumerScopeExec or physical shared cache. If a mapping is opaque, retain the whole affected value and report the open unsupported path explicitly.",
+      "Only add extension expression/rewrite exposure when its exact input/output contract is represented; do not pretend an empty opaque extension is optimized by DataFusion."
+    ]
+  },
+  "public_proof": {
+    "baseline_first": [
+      "Native persisted matrix with nested leaf, deep unused payload (including Call/Dict/Set siblings), duplicate row keys for MatrixEntriesByKeyRuns and unique-key control.",
+      "Public entries().select(nested.leaf) full keyed outputs, ancestor-null/element-null/empty cases, aliases, filters/sorts, whole consumer and shared leaf+whole consumers.",
+      "Use existing physical plan public collect path and DataFusion metrics to record actual bytes_requested after stream destruction; warm/uncached buffers do not change request counting; no local timing.",
+      "Keep fixture creation, table metadata open, source compilation and allocation accounting distinct from scan requests."
+    ],
+    "acceptance": [
+      "Identical full outputs and key order before/after.",
+      "Unused nested payload growth does not grow materialization allocations in eligible paths; source requested bytes are separately measured and reduced where the scanner truly omits payload.",
+      "Full-value/shared/opaque/key/predicate controls retain needed bytes and values. Negative/unsupported paths explicit rather than claimed optimized.",
+      "Metric-only change leaves baseline query semantics/read counts unchanged; positive control reads omitted payload when explicitly selected."
+    ]
+  },
+  "followups_open": [
+    "LargeList physical public input rejected by existing Type::from_arrow/lower before specialization; separate API support stage, no latent fix in Stage1.",
+    "Safe Arrow constructor validation scans interior referenced envelopes; no live-element CPU bound claimed."
+  ],
+  "resources": "Local correctness and requested-byte tests allowed nice10/jobs2; no local benchmark/profile and no cloud VM without separate root authorization."
+}

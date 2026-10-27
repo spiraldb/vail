@@ -1,4 +1,5 @@
 //! Row-preserving encoded projections; DataFusion retains relational/global work.
+use crate::read_metrics::register as register_read_metrics;
 use crate::{Result, TableNode, TableRef};
 use arrow_array::{RecordBatch, UInt64Array};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
@@ -521,9 +522,8 @@ impl ExecutionPlan for ComputedExec {
                 "source partition out of range".into(),
             ));
         }
-        let mut input = self
-            .source
-            .computed_partition_batches(partition, &self.prepared);
+        let source = self.source.with_scan_metrics(register_read_metrics(&self.metrics, partition));
+        let mut input = source.computed_partition_batches(partition, &self.prepared);
         let schema = self.schema.clone();
         let output_schema = schema.clone();
         let indices = self.indices.clone();

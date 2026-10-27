@@ -1,0 +1,566 @@
+warning: unused import: `crate::builtins::ArrayBuiltins`
+  --> patches/vortex-array/src/aggregate_fn/fns/sum_v2/dict_grouped.rs:22:5
+   |
+22 | use crate::builtins::ArrayBuiltins;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `ListViewArrayExt`
+ --> patches/vortex-array/src/scalar_fn/fns/list_field.rs:6:31
+  |
+6 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+  |                               ^^^^^^^^^^^^^^^^
+
+warning: unused import: `ListViewArrayExt`
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:16:31
+   |
+16 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+   |                               ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:19:49
+   |
+19 | use crate::expr::proto::{ExprSerializeProtoExt, deserialize_expr_proto};
+   |                                                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+   --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:137:44
+    |
+137 |         ElementValidityPath::from_selector(deserialize_expr_proto(
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vortex-array` (lib) generated 5 warnings (run `cargo fix --lib -p vortex-array` to apply 3 suggestions)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:55:24
+   |
+55 |                 output.extend(0, first, last);
+   |                        ^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:62:16
+   |
+62 |         output.extend(0, first, last);
+   |                ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+   --> crates/vail-execution/src/array_aggregate.rs:592:24
+    |
+592 |                 output.extend(0, start, end);
+    |                        ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:61:28
+   |
+61 |                     output.extend(0, first, last);
+   |                            ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:68:20
+   |
+68 |             output.extend(0, first, last);
+   |                    ^^^^^^
+
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4313:14
+     |
+4313 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 6 warnings (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: fields `operands`, `metadata_bytes`, and `domains` are never read
+  --> crates/vail-storage/src/computed_capability.rs:65:16
+   |
+62 | pub struct ComputedProjectionCertificate {
+   |            ----------------------------- fields in this struct
+...
+65 |     pub(crate) operands: Vec<ComputedOperand>,
+   |                ^^^^^^^^
+...
+68 |     pub(crate) metadata_bytes: usize,
+   |                ^^^^^^^^^^^^^^
+69 |     pub(crate) domains: Vec<FileDomain>,
+   |                ^^^^^^^
+   |
+   = note: `ComputedProjectionCertificate` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `path`, `bytes`, `rows`, and `operands` are never read
+  --> crates/vail-storage/src/computed_capability.rs:89:5
+   |
+88 | pub(crate) struct FileDomain {
+   |                   ---------- fields in this struct
+89 |     path: String,
+   |     ^^^^
+90 |     bytes: u64,
+   |     ^^^^^
+91 |     rows: u64,
+   |     ^^^^
+92 |     operands: Vec<(ComputedOperand, Vec<OperandDomain>)>,
+   |     ^^^^^^^^
+   |
+   = note: `FileDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `start`, and `width` are never read
+  --> crates/vail-storage/src/computed_capability.rs:97:9
+   |
+96 |     ListShape {
+   |     --------- fields in this variant
+97 |         rows: u64,
+   |         ^^^^
+98 |         start: u64,
+   |         ^^^^^
+99 |         width: u64,
+   |         ^^^^^
+   |
+   = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `width`, and `elements` are never read
+   --> crates/vail-storage/src/computed_capability.rs:102:9
+    |
+101 |     DenseList {
+    |     --------- fields in this variant
+102 |         rows: u64,
+    |         ^^^^
+103 |         width: u64,
+    |         ^^^^^
+104 |         elements: u64,
+    |         ^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `codes`, `values`, and `preparation_bound` are never read
+   --> crates/vail-storage/src/computed_capability.rs:107:9
+    |
+106 |     SmallDictionary {
+    |     --------------- fields in this variant
+107 |         codes: u64,
+    |         ^^^^^
+108 |         values: u64,
+    |         ^^^^^^
+109 |         preparation_bound: usize,
+    |         ^^^^^^^^^^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `vail-storage` (lib) generated 5 warnings
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:732:20
+    |
+732 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+    = note: `#[warn(unused_parens)]` (part of `#[warn(unused)]`) on by default
+help: remove these parentheses
+    |
+732 -                 if (!shape || !tail.is_empty()) {
+732 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:761:20
+    |
+761 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+761 -                 if (!shape || !tail.is_empty()) {
+761 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: unnecessary parentheses around `if` condition
+   --> crates/vail-table/src/nested_projection.rs:771:20
+    |
+771 |                 if (!shape || !tail.is_empty()) {
+    |                    ^                          ^
+    |
+help: remove these parentheses
+    |
+771 -                 if (!shape || !tail.is_empty()) {
+771 +                 if !shape || !tail.is_empty() {
+    |
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:11:23
+   |
+11 |     coalesce_batches::CoalesceBatchesExec,
+   |                       ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/ordering_requirements.rs:65:26
+   |
+65 |             || plan.is::<CoalesceBatchesExec>()
+   |                          ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:351:32
+    |
+351 |         || input.as_ref().is::<CoalesceBatchesExec>()
+    |                                ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+   --> crates/vail-table/src/group_ranges.rs:325:27
+    |
+325 |         coalesce_batches::CoalesceBatchesExec,
+    |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:66:31
+   |
+66 |         || plan.as_ref().is::<CoalesceBatchesExec>()
+   |                               ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated struct `datafusion_physical_plan::coalesce_batches::CoalesceBatchesExec`: We now use BatchCoalescer from arrow-rs instead of a dedicated operator
+  --> crates/vail-table/src/rng_context.rs:38:27
+   |
+38 |         coalesce_batches::CoalesceBatchesExec,
+   |                           ^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:469:31
+    |
+469 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/projection_broadcast.rs:374:26
+    |
+374 |             plan.clone().with_new_children(children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+   --> crates/vail-table/src/wide_batch.rs:291:26
+    |
+291 |             plan.clone().with_new_children(rewritten_children)?
+    |                          ^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:313:9
+    |
+313 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `kind`
+   --> crates/vail-table/src/logical_scan.rs:630:26
+    |
+630 |     for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_kind`
+
+warning: unused variable: `config`
+   --> crates/vail-table/src/matrix_entries.rs:825:5
+    |
+825 |     config: &Config,
+    |     ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+
+warning: unused variable: `config`
+   --> crates/vail-table/src/matrix_entries.rs:989:5
+    |
+989 |     config: &Config,
+    |     ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+
+warning: unused variable: `row_type`
+    --> crates/vail-table/src/partitioned.rs:1306:21
+     |
+1306 |                 let row_type = match child.schema().field_with_name(row_field)?.data_type() {
+     |                     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_row_type`
+
+warning: unused variable: `column_type`
+    --> crates/vail-table/src/partitioned.rs:1334:21
+     |
+1334 |                 let column_type = match column_field_type.data_type() {
+     |                     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_column_type`
+
+warning: fields `varid` and `rsid` are never read
+  --> crates/vail-table/src/bgen_source.rs:41:5
+   |
+30 | struct BgenOptions {
+   |        ----------- fields in this struct
+...
+41 |     varid: bool,
+   |     ^^^^^
+42 |     rsid: bool,
+   |     ^^^^
+   |
+   = note: `BgenOptions` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `owners` is never read
+  --> crates/vail-table/src/conditional_globals.rs:14:5
+   |
+ 9 | pub(crate) struct ConditionalNode {
+   |                   --------------- field in this struct
+...
+14 |     owners: [GlobalsRef; 3],
+   |     ^^^^^^
+   |
+   = note: `ConditionalNode` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `evaluate` is never used
+   --> crates/vail-table/src/count_explode.rs:418:8
+    |
+400 | impl ZipProgram {
+    | --------------- method in this implementation
+...
+418 |     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+    |        ^^^^^^^^
+
+warning: `vail-table` (lib) generated 21 warnings (run `cargo fix --lib -p vail-table` to apply 9 suggestions)
+   Compiling vail-table v0.1.0 (/private/tmp/vail-encoded-current-main-integration/vail/crates/vail-table)
+warning: use of deprecated function `vortex::expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+    --> crates/vail-table/tests/support/encoded_list_sum.rs:1081:20
+     |
+1081 |     let restored = deserialize_expr_proto(&expression.serialize_proto()?, &session)?;
+     |                    ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `vortex::expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+    --> crates/vail-table/tests/support/encoded_list_sum.rs:1075:54
+     |
+1075 |     use vortex::expr::proto::{ExprSerializeProtoExt, deserialize_expr_proto};
+     |                                                      ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vail-table` (test "encoded_projection") generated 2 warnings
+    Finished `release` profile [optimized] target(s) in 1m 32s
+     Running tests/datafusion_plans.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/datafusion_plans-554e08b14df42929)
+
+running 12 tests
+test explode_lowers_to_datafusion_unnest ... ok
+test singleton_globals_and_rows_are_both_datafusion_plans ... ok
+test total_collect_preserves_source_order_across_repeated_actions ... ok
+test configured_histogram_repeated_actions_and_empty_validation_use_real_sources ... ok
+test captured_globals_share_ir_without_retaining_table_rows ... ok
+test repeated_empty_keyby_and_row_maps_preserve_results_across_partition_counts ... ok
+test nested_unkey_and_row_maps_preserve_rows_globals_and_filters ... ok
+test total_aggregation_propagates_source_errors_across_uneven_partitions_and_retries ... ok
+test total_aggregation_splits_only_underparallel_sources_and_repeats_safely ... ok
+test sort_unkey_and_bounded_rows_report_their_actual_execution_layout ... ok
+test viceberg_plan_advertises_certified_order_without_sorting ... ok
+test sort_spills_directly_from_a_generated_tableir_source ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/encoded_projection.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/encoded_projection-5989a01df6e6f29e)
+
+running 34 tests
+test encoded_list_sum::complete_list_api_rejects_different_declared_schema ... ok
+test encoded_list_sum::declared_nullable_all_valid_count_keeps_nullable_schema ... ok
+test encoded_list_sum::dictionary_all_missing_codes_or_values_yield_missing_group_sums ... ok
+test encoded_list_sum::element_validity_map_has_true_boolean_type_and_logical_ancestor_masks ... ok
+test encoded_list_sum::element_validity_shared_body_raw_sibling_and_distinct_paths_keep_real_types ... ok
+test encoded_list_sum::element_validity_serialization_retains_exact_original_schema_and_no_capture ... ok
+test encoded_list_sum::element_validity_sum_map_and_count_identity_preserve_outer_missingness ... ok
+test encoded_list_sum::grouped_sum_with_encoded_logical_mask_matches_nullable_values ... ok
+test encoded_list_sum::list_field_sum_preserves_nested_logical_nulls_and_zero_identity ... ok
+test encoded_list_sum::nullable_grouped_all_missing_and_zero_rows_have_real_null_outputs ... ok
+test encoded_list_sum::grouped_dictionary_preserves_code_value_and_list_nulls ... ok
+test encoded_list_sum::nullable_grouped_boolean_sum_checks_raw_missing_before_normalization ... ok
+test encoded_list_sum::distant_list_groups_and_large_retained_dictionary_preserve_logical_values ... ok
+test encoded_list_sum::nullable_grouped_combined_mean_preserves_count_and_sum_pairing ... ok
+test encoded_list_sum::nullable_grouped_fixed_size_slice_and_logical_ancestor_masks ... ok
+test encoded_list_sum::nullable_grouped_count_distinguishes_missing_empty_and_nan ... ok
+test encoded_list_sum::nullable_grouped_flush_pairs_multiple_batches_and_resets ... ok
+test encoded_list_sum::nullable_grouped_sum_preserves_present_null_and_outer_null ... ok
+test encoded_list_sum::nullable_dictionary_sizes_and_reuse_match_independent_sums ... ok
+test encoded_list_sum::sliced_list_field_preserves_logical_masks_and_ignores_hidden_owner_rows ... ok
+test encoded_list_sum::element_validity_file_reader_preserves_boolean_domain_and_sum ... ok
+test encoded_list_sum::element_validity_file_reader_distinct_paths_and_bounded_mask_are_correct ... ok
+test encoded_list_sum::element_validity_file_reader_shared_body_and_raw_sibling_keep_original_values ... ok
+test struct_presence_demand::struct_presence_required_empty_and_dictionary_rows_are_logical ... ok
+ELEMENT_VALIDITY_PUBLIC_IO structural=false raw=true rows=64 width=1024 file_bytes=4214260 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=4277547 total_completed=4277547 total_unique=4214252 open_seconds=0.000330417 scan_and_value_check_seconds=0.000992125 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.flat rows=64 segments=[SegmentId(0)]", "root/1:vortex.flat rows=1 segments=[SegmentId(1)]"]
+ELEMENT_VALIDITY_PUBLIC_IO structural=false raw=false rows=64 width=1024 file_bytes=4214260 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=4277547 total_completed=4277547 total_unique=4214252 open_seconds=0.000049958 scan_and_value_check_seconds=0.000573583 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.flat rows=64 segments=[SegmentId(0)]", "root/1:vortex.flat rows=1 segments=[SegmentId(1)]"]
+test struct_presence_demand::struct_presence_raw_and_unknown_consumers_keep_original_values ... ok
+test struct_presence_demand::nested_struct_presence_uses_all_logical_ancestors_and_reuses_row_domains ... ok
+GROUPED_RESOURCE {"case":"mixed_bool_sum","owner":10000,"output_groups":4,"canonical_acquired_before_timing":true,"raw_expected":[1.0,null,null,null],"windows":[{"window":0,"legacy":true,"seconds":[0.000025709,0.000024959,0.000023667,0.00002425,0.000021208,0.000025792],"rss_before_kib":43808,"rss_after_kib":48544},{"window":1,"legacy":false,"seconds":[0.000032667,0.000036083,0.000022917,0.000022667,0.00002375,0.000024333],"rss_before_kib":55936,"rss_after_kib":62560},{"window":2,"legacy":false,"seconds":[0.000025667,0.000025416,0.000023125,0.000026666,0.000021958,0.000027792],"rss_before_kib":67088,"rss_after_kib":69616},{"window":3,"legacy":true,"seconds":[0.000016917,0.000017875,0.000015083,0.000018292,0.000018167,0.000016541],"rss_before_kib":71616,"rss_after_kib":73504}],"limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"}
+test encoded_list_sum::dictionary_code_widths_masks_and_sliced_ranges_match_plain_lists ... ok
+ELEMENT_VALIDITY_PUBLIC_IO structural=true raw=true rows=64 width=1024 file_bytes=4221532 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=4277895 total_completed=4277895 total_unique=4221520 open_seconds=GROUPED_RESOURCE {"case":"all_missing_pco_sum","owner":10000,"output_groups":4,"canonical_acquired_before_timing":true,"raw_expected":[null,null,null,null],"windows":[{"window":0,"legacy":true,"seconds":[0.000030791,0.000030042,0.000032,0.000028958,0.000029625,0.00003275],"rss_before_kib":75648,"rss_after_kib":76272},{"window":1,"legacy":false,"seconds":[7.917e-6,8.875e-6,7.5e-6,8e-6,8.792e-6,8.292e-6],"rss_before_kib":76272,"rss_after_kib":76272},{"window":2,"legacy":false,"seconds":[4.167e-6,4.084e-6,4.042e-6,4.084e-6,4e-6,4.167e-6],"rss_before_kib":76272,"rss_after_kib":76272},{"window":3,"legacy":true,"seconds":[0.00002275,0.000022459,0.000022292,0.000022208,0.000022208,0.000022208],"rss_before_kib":76272,"rss_after_kib":76272}],"limitation":"post-canonical in-memory API experiment; no pre-canonical bound, IO or leak claim"}
+0.000460958 scan_and_value_check_seconds=0.000859417 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.list rows=64 segments=[]", "root/0/0:vortex.struct rows=65536 segments=[]", "root/0/0/0:vortex.flat rows=65536 segments=[SegmentId(0)]", "test encoded_list_sum::nullable_grouped_public_resource_windows ... ok
+root/0/0/1:vortex.struct rows=65536 segments=[]", "root/0/0/1/0:vortex.flat rows=65536 segments=[SegmentId(1)]", "root/0/0/1/1:vortex.zoned rows=65536 segments=[]", "root/0/0/1/1/0:vortex.flat rows=65536 segments=[SegmentId(2)]", "root/0/0/1/1/1:vortex.flat rows=8 segments=[SegmentId(12)]", "root/0/0/1/2:vortex.zoned rows=65536 segments=[]", "root/0/0/1/2/0:vortex.flat rows=65536 segments=[SegmentId(3)]", "root/0/0/1/2/1:vortex.flat rows=8 segments=[SegmentId(13)]", "root/0/0/1/3:vortex.zoned rows=65536 segments=[]", "root/0/0/1/3/0:vortex.flat rows=65536 segments=[SegmentId(4)]", "root/0/0/1/3/1:vortex.flat rows=8 segments=[SegmentId(14)]", "root/0/0/1/4:vortex.zoned rows=65536 segments=[]", "root/0/0/1/4/0:vortex.flat rows=65536 segments=[SegmentId(5)]", "root/0/0/1/4/1:vortex.flat rows=8 segments=[SegmentId(15)]", "root/0/0/2:vortex.zoned rows=65536 segments=[]", "root/0/0/2/0:vortex.flat rows=65536 segments=[SegmentId(6)]", "root/0/0/2/1:vortex.flat rows=8 segments=[SegmentId(16)]", "root/0/0/3:vortex.zoned rows=65536 segments=[]", "root/0/0/3/0:vortex.flat rows=65536 segments=[SegmentId(7)]", "root/0/0/3/1:vortex.flat rows=8 segments=[SegmentId(17)]", "root/0/0/4:vortex.zoned rows=65536 segments=[]", "root/0/0/4/0:vortex.flat rows=65536 segments=[SegmentId(8)]", "root/0/0/4/1:vortex.flat rows=8 segments=[SegmentId(18)]", "root/0/0/5:vortex.zoned rows=65536 segments=[]", "root/0/0/5/0:vortex.flat rows=65536 segments=[SegmentId(9)]", "root/0/0/5/1:vortex.flat rows=8 segments=[SegmentId(19)]", "root/0/1:vortex.zoned rows=65 segments=[]", "root/0/1/0:vortex.flat rows=65 segments=[SegmentId(10)]", "root/0/1/1:vortex.flat rows=1 segments=[SegmentId(20)]", "root/0/2:vortex.flat rows=64 segments=[SegmentId(11)]", "root/1:vortex.flat rows=1 segments=[SegmentId(21)]"]
+ELEMENT_VALIDITY_DAG_PREPARATION depth=8 seconds=0.000020458
+ELEMENT_VALIDITY_DAG_PREPARATION depth=16 seconds=0.00004125
+ELEMENT_VALIDITY_DAG_PREPARATION depth=30 seconds=0.000051583
+ELEMENT_VALIDITY_PUBLIC_IO structural=true raw=false rows=64 width=1024 file_bytes=4221532 open_observed_requested=65535 open_observed_completed=65535 open_observed_unique=65535 total_requested=82127 total_completed=82127 total_unique=82127 open_seconds=0.000112583 scan_and_value_check_seconds=0.00044825 layout_outline=["root:vortex.zoned rows=64 segments=[]", "root/0:vortex.list rows=64 segments=[]", "root/0/0:vortex.struct rows=65536 segments=[]", "root/0/0/0:vortex.flat rows=65536 segments=[SegmentId(0)]", "root/0/0/1:vortex.struct rows=65536 segments=[]", "root/0/0/1/0:vortex.flat rows=65536 segments=[SegmentId(1)]", "root/0/0/1/1:vortex.zoned rows=65536 segments=[]", "root/0/0/1/1/0:vortex.flat rows=65536 segments=[SegmentId(2)]", "root/0/0/1/1/1:vortex.flat rows=8 segments=[SegmentId(12)]", "root/0/0/1/2:vortex.zoned rows=65536 segments=[]", "root/0/0/1/2/0:vortex.flat rows=65536 segments=[SegmentId(3)]"test encoded_list_sum::element_validity_reader_preparation_accepts_shared_expression_dags ... , ok
+"root/0/0/1/2/1:vortex.flat rows=8 segments=[SegmentId(13)]", "root/0/0/1/3:vortex.zoned rows=65536 segments=[]", "root/0/0/1/3/0:vortex.flat rows=65536 segments=[SegmentId(4)]", "root/0/0/1/3/1:vortex.flat rows=8 segments=[SegmentId(14)]", "root/0/0/1/4:vortex.zoned rows=65536 segments=[]", "root/0/0/1/4/0:vortex.flat rows=65536 segments=[SegmentId(5)]", "root/0/0/1/4/1:vortex.flat rows=8 segments=[SegmentId(15)]", "root/0/0/2:vortex.zoned rows=65536 segments=[]", "root/0/0/2/0:vortex.flat rows=65536 segments=[SegmentId(6)]", "root/0/0/2/1:vortex.flat rows=8 segments=[SegmentId(16)]", "root/0/0/3:vortex.zoned rows=65536 segments=[]", "root/0/0/3/0:vortex.flat rows=65536 segments=[SegmentId(7)]", "root/0/0/3/1:vortex.flat rows=8 segments=[SegmentId(17)]", "root/0/0/4:vortex.zoned rows=65536 segments=[]", "root/0/0/4/0:vortex.flat rows=65536 segments=[SegmentId(8)]", "root/0/0/4/1:vortex.flat rows=8 segments=[SegmentId(18)]", "root/0/0/5:vortex.zoned rows=65536 segments=[]", "root/0/0/5/0:vortex.flat rows=65536 segments=[SegmentId(9)]", "root/0/0/5/1:vortex.flat rows=8 segments=[SegmentId(19)]", "root/0/1:vortex.zoned rows=65 segments=[]", "root/0/1/0:vortex.flat rows=65 segments=[SegmentId(10)]", "root/0/1/1:vortex.flat rows=1 segments=[SegmentId(20)]", "root/0/2:vortex.flat rows=64 segments=[SegmentId(11)]", "root/1:vortex.flat rows=1 segments=[SegmentId(21)]"]
+test element_validity_reader_io::element_validity_public_file_io_receipt ... ok
+test native_list_lengths_on_multithread_runtime ... ok
+test native_list_lengths_on_current_thread_runtime ... ok
+test native_nested_projection_and_global_sum_preserve_nulls_and_widening ... ok
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=0 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.000396042 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=0 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000211833 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=0 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.000217541 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=1 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.0001845 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=1 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000140333 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=1 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.000257625 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=2 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.00025175 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=2 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000138792 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=2 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.00017825 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=3 query=sum requested_bytes=10532 scan_materialize_check_seconds=0.000174625 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=3 query=length requested_bytes=10532 scan_materialize_check_seconds=0.000133125 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=false window=3 query=raw requested_bytes=10532 scan_materialize_check_seconds=0.000234167 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=0 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000167416 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=0 query=length requested_bytes=0 scan_materialize_check_seconds=0.000044417 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=0 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000077417 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=1 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000058917 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=1 query=length requested_bytes=0 scan_materialize_check_seconds=0.000041667 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=1 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000098041 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=2 query=raw requested_bytes=0 scan_materialize_check_seconds=0.00009575 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=2 query=length requested_bytes=0 scan_materialize_check_seconds=0.000041625 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=2 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000057625 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=3 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000056666 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=3 query=length requested_bytes=0 scan_materialize_check_seconds=0.000040833 checksum=6
+ELEMENT_VALIDITY_SMALL_READER files=1 reused=true window=3 query=raw requested_bytes=0 scan_materialize_check_seconds=0.000098625 checksum=4
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=0 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.003942209 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=0 query=length requested_bytes=168512 scan_materialize_check_seconds=0.002024084 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=0 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002364833 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=1 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002301584 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=1 query=length requested_bytes=168512 scan_materialize_check_seconds=0.001921042 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=1 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.00325625 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=2 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.003065375 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=2 query=length requested_bytes=168512 scan_materialize_check_seconds=0.001743125 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=2 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002138625 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=3 query=sum requested_bytes=168512 scan_materialize_check_seconds=0.002110125 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=3 query=length requested_bytes=168512 scan_materialize_check_seconds=0.001668083 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=false window=3 query=raw requested_bytes=168512 scan_materialize_check_seconds=0.00281925 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=0 query=raw requested_bytes=0 scan_materialize_check_seconds=0.002343583 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=0 query=length requested_bytes=0 scan_materialize_check_seconds=0.000588042 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=0 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000972875 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=1 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000766208 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=1 query=length requested_bytes=0 scan_materialize_check_seconds=0.000568625 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=1 query=raw requested_bytes=0 scan_materialize_check_seconds=0.001228584 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=2 query=raw requested_bytes=0 scan_materialize_check_seconds=0.001215833 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=2 query=length requested_bytes=0 scan_materialize_check_seconds=0.000565458 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=2 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000774791 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=3 query=sum requested_bytes=0 scan_materialize_check_seconds=0.000733625 checksum=64
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=3 query=length requested_bytes=0 scan_materialize_check_seconds=0.000570958 checksum=96
+ELEMENT_VALIDITY_SMALL_READER files=16 reused=true window=3 query=raw requested_bytes=0 scan_materialize_check_seconds=0.001197458 checksum=64
+test element_validity_reader_io::element_validity_tiny_many_fresh_reused_reader_receipt ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests/entry_consumer_projection.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/entry_consumer_projection-dfa73c8b94cfbadc)
+
+running 3 tests
+test selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consumer ... ok
+test selected_large_list_offsets_preserve_logical_missingness ... ok
+public allocation bytes (small, growing hidden owner): [1242785, 1242721]
+test growing_unused_hidden_owner_does_not_grow_query_allocations ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/physical_partitions.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/physical_partitions-6fd31778d0afbbef)
+
+running 7 tests
+test partitions_are_independent_datafusion_outputs_after_narrow_operations ... ok
+test actual_shuffle_output_has_disjoint_ordered_key_ranges ... ok
+test range_shuffle_and_coalesce_survive_planning_and_repeat_actions ... ok
+test pushed_key_filter_skips_unmatched_files_inside_a_source_partition ... ok
+test pushed_key_or_filter_unions_disjoint_fragment_ranges ... ok
+test pushed_key_filter_prunes_unicode_utf8_string_fragments ... ok
+test read_partition_runs_without_any_unrelated_data_files ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/reader_batches.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/reader_batches-e2627a54f8d172aa)
+
+running 2 tests
+test real_readers_bound_batches_and_preserve_order_and_partition_membership ... ok
+test stored_scan_state_survives_reader_batch_and_partition_boundaries ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/runtime_reads.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/runtime_reads-5053c2ae460eca43)
+
+running 2 tests
+test reopened_snapshot_reads_after_previous_runtimes_are_destroyed ... ok
+test cloned_snapshot_reads_on_concurrent_independent_runtimes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/source_read_metrics.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/source_read_metrics-e6ff877f9025605a)
+
+running 4 tests
+test missing_real_file_fails_without_fabricated_read_requests ... ok
+test normal_source_metrics_are_live_separate_and_summarize_without_mutation ... ok
+test canceled_source_retains_its_observed_attempted_bytes ... ok
+test caller_owned_live_counter_combines_real_file_scans_only_when_shared ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/struct_field_projection_contract.rs (/Users/danielking/.codex/worktrees/post-scan-compat-integration/vail/vail/target/release/deps/struct_field_projection_contract-5dc2f7c97feea954)
+
+running 4 tests
+nested=false mode=replace: values=[1, 2]
+test renamed_struct_projection_keeps_selected_field_values ... ok
+PUBLIC_DF_RESOURCE mode=rename phase=plan_collect_validate_end_to_end width=16 output_count=1 rows=32 iterations=1 wall_seconds=0.000748209
+test public_valid_projection_resource_control ... ok
+nested=false mode=extend: values=[1, 2]
+nested=false mode=distinct: values=[1, 2]
+test struct_leaf_values_survive_filter_sort_and_limit ... ok
+nested=false mode=same_type: values=[1, 2]
+nested=true mode=replace: values=[1, 2]
+nested=true mode=extend: values=[1, 2]
+nested=true mode=distinct: values=[1, 2]
+nested=true mode=same_type: values=[1, 2]
+test same_name_struct_schema_replacement_preserves_new_field ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

@@ -43,6 +43,7 @@ mod partition_map;
 pub mod partitioned;
 mod partitioning;
 pub mod plan;
+mod read_metrics;
 mod plink_source;
 pub mod plink_export;
 mod projection_broadcast;

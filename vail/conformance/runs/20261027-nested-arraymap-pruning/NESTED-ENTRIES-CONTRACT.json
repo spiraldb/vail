@@ -1,0 +1,45 @@
+{
+  "status": "SOURCE-ONLY next stage after metric-only exact gates; no projection implementation in this commit",
+  "first_scope": "Ordinary nested Struct Column/GetField paths selected from entries(). Row, entry and column values are eligible; logical opaque values remain whole terminals. No arbitrary ArrayFilter/Fold or logical representation API changes.",
+  "demand": [
+    "Reuse the existing nested_projection dependency walk rather than a second expression evaluator. Union Column/GetField leaf paths across output expressions, preserve all whole-value consumers and key fields. Global/external/effect/unsupported expression contexts retain their existing whole affected value/route.",
+    "Derive a consumer-local narrowed output schema before MapRows child/schema/action freezing. Root field names may be unchanged while a nested Struct field set shrinks; this is still a real projection. Each GetField retains the same declared leaf dtype.",
+    "Build/query-prepare path tries and positional descriptors once. Preserve original Field metadata/nullability, ancestor masks, explicit zero-field Struct length, row key/column order and shared producer identity. No per-entry/schema/name search."
+  ],
+  "materialization": [
+    "Reuse reviewed existing CaptureView implementation via a small public opaque prepared-array-projection wrapper re-exported by vail-execution. Keep the internal enum private; avoid duplicate Struct/List view implementations or large source moves. Existing RowCaptureView wraps the same machinery.",
+    "Extend EntryProjection with per-selected-field optional prepared nested views and selected target descriptors; bind narrow views before ALL concat/spill/take. Keep original input schema validation and source_batch_id/full source_batch_bytes spill and singleton charging unchanged.",
+    "Clip outer cell List/LargeList values to its referenced offset envelope before recursive Struct view, rebasing once only for nonzero origins. Entry route already accepts LargeList; this is not the separate unsupported row-capture logical type inference change. Preserve nested list gaps as logical spans; safe constructor work may still cover the referenced envelope.",
+    "Whole/opaque/shared consumers retain full corresponding values; omitted owners can remain retained via other views, so no owner release/zero-copy/CPU speedup claim."
+  ],
+  "public_baseline_and_controls": [
+    "Extend existing public entry_consumer_projection fixture with an entry.meta Struct containing selected value and deep unused defined/hidden payload. Existing three keys/entry/list/ancestor null cases, duplicate rows and multiple source batches retain complete keyed outputs.",
+    "On unchanged metric-enabled baseline, a final map_rows projection using GetField(meta,value) must show the actual materialization allocation growth if the gap exists. No private plan assertion or benchmark matcher.",
+    "Compare narrow leaf, multiple selected leaves, whole+leaf output, shared wide/narrow consumers, ancestor-null/empty Struct and selected logical opaque terminals. Include nonnullable selected primitive with parent mask and hidden offset owner/gap controls.",
+    "Existing full-projection and forced-spill resource controls remain; both forced-spill paths still exceed ORIGINAL source budget and preserve observable writes. Allocation fixture creation/preparation excluded as in accepted prior tests."
+  ],
+  "source_bridge_next": [
+    "After materialization-only proof, translate eligible extension output paths through Config row/cells/value/column mapping BEFORE child compilation to ordinary source paths such as [cells,entry,meta,value].",
+    "Initially support direct Read and transparent MapGlobals / Column/GetField aliases through MapRows. Preserve predicates, sorting, key dependencies and all nontransparent/effectful producer expression dependencies. Derive consumer-local Read options, never mutate frozen ConsumerScopeExec/shared producer/cache.",
+    "Use existing provider_with_nested_projection_paths / task_with_projection_and_nested_paths and scanner reader bridge; expose standard DataFusion projections/field expressions where semantics are proven equivalent. Native logical GetField currently lowers through logical_kernel; do not blindly replace it with SQL get_field and lose parent-null behavior.",
+    "Opaque transformations retain full affected source values and remain explicit open cases, rather than pretending a source read is pruned. Any broader alias/ArrayMap composition requires its own reviewed typed mapping."
+  ],
+  "source_read_acceptance": [
+    "Persist public matrix source with nested unused payload, then execute normal public PreparedTable actions and inspect live bytes_requested via standard DataFusion metrics after draining streams.",
+    "Both duplicate-key MatrixEntriesByKeyRuns and unique-key/transparent-alias paths should be measured, with whole/shared/key/filter/order controls.",
+    "Use source-read payload large and varied enough to survive compression/coalescing. Positive full-value control must read the unused payload. Buffers can be warm; request counts are not elapsed timings.",
+    "Report allocation and requested-byte observations separately; requested bytes include footer/data/delete attempts and omit pre-execution catalog/snapshot IO. No physical disk/decompression/bandwidth or future-task-retirement claim."
+  ],
+  "retained_open": [
+    "LargeList row-capture public type inference unsupported before specialization; separate API stage.",
+    "Array element demand beyond reviewed ordinary ArrayMap and opaque producer composition remains unsupported until separately implemented/proved.",
+    "Safe Arrow constructor masks can scan interior referenced envelopes."
+  ],
+  "resources": "Local correctness/allocation/requested-byte tests allowed nice10/jobs2; no local benchmark/profile or cloud work.",
+  "prepared_view_contract": {
+    "source": "Retain exact physical source DataType in a small opaque prepared descriptor. EntryProjection validates the original full input schema before binding; that existing batch guard discharges descriptor validity for all nested bind_validated calls. No redundant deep schema comparison per nested field or per entry.",
+    "output": "Prepare and retain the ACTUAL output DataType returned by reused CaptureView fields, including original Field metadata/nullability and any selected positional reorder. Consumer schema/EntryProjection uses this actual descriptor, not an assumed logical to_arrow shape.",
+    "API": "A thin public PreparedArrayProjection wrapper re-exported by vail-execution; internal CaptureView enum stays private. prepare(source,selected) returns no view if unchanged or a prepared descriptor/error if incompatible. source_type()/output_type() expose immutable descriptors; bind_validated(array) borrows projected children through the existing safe constructors under the validated-source contract.",
+    "boundaries": "Ordinary Struct child narrowing; selected opaque values remain whole. Outer supported entries List/LargeList envelope clipping uses original typed offset width, no new row-capture LargeList logical inference support. Null masks and explicit empty Struct lengths remain observable."
+  }
+}

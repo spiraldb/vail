@@ -50,13 +50,14 @@ impl<F: FileRead> FileRead for CountingFileRead<F> {
 }
 
 /// Metrics collected during an Iceberg scan.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ScanMetrics {
     bytes_read: Arc<AtomicU64>,
 }
 
 impl ScanMetrics {
-    pub(crate) fn new() -> Self {
+    /// Create an independent scan accounting domain. Clones share its live counter.
+    pub fn new() -> Self {
         Self {
             bytes_read: Arc::new(AtomicU64::new(0)),
         }

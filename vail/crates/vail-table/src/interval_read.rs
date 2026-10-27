@@ -1,4 +1,5 @@
 //! Independent physical sources for table interval reads.
+use crate::read_metrics::register as register_read_metrics;
 use crate::partitioned::PreparedTable;
 use crate::plan::{self, PhysicalPlan, source_partition};
 use crate::{Result, ScalarIR, TableError, TableNode, TableRef};
@@ -14,6 +15,7 @@ use datafusion_physical_plan::{
     execution_plan::{Boundedness, EmissionType},
     filter::FilterExec,
     stream::RecordBatchStreamAdapter,
+    metrics::{ExecutionPlanMetricsSet, MetricsSet},
 };
 use futures::TryStreamExt;
 use intervaltree::IntervalTree;
@@ -27,6 +29,7 @@ use vail_storage::{
 
 #[derive(Debug)]
 struct IntervalSourceExec {
+    metrics: ExecutionPlanMetricsSet,
     source: Arc<LocalRead>,
     query: QueryInterval,
     rows: Option<std::ops::Range<u64>>,
@@ -48,6 +51,7 @@ impl IntervalSourceExec {
             Boundedness::Bounded,
         ));
         Self {
+            metrics: ExecutionPlanMetricsSet::new(),
             source,
             query,
             rows: None,
@@ -69,6 +73,7 @@ impl ExecutionPlan for IntervalSourceExec {
     fn properties(&self) -> &Arc<PlanProperties> {
         &self.cache
     }
+    fn metrics(&self) -> Option<MetricsSet> { Some(self.metrics.clone_inner()) }
     fn children(&self) -> Vec<&PhysicalPlan> {
         vec![]
     }
@@ -99,14 +104,15 @@ impl ExecutionPlan for IntervalSourceExec {
                 "interval source requires partition zero".into(),
             ));
         }
+        let source = self.source.with_scan_metrics(register_read_metrics(&self.metrics, partition));
         let mut batches = if let Some(rows) = self.rows.clone() {
-            self.source.projected_interval_batches_in_rows(
+            source.projected_interval_batches_in_rows(
                 std::slice::from_ref(&self.query),
                 rows,
-                self.source.field_ids(),
+                source.field_ids(),
             )
         } else {
-            self.source
+            source
                 .interval_batches(std::slice::from_ref(&self.query))
         };
         let row_schema = self.row_schema.clone();

@@ -578,6 +578,7 @@ pub struct LocalRead {
     plan: std::sync::Arc<super::SnapshotReadPlan>,
     partition_offsets: std::sync::Arc<Vec<u64>>,
     nested_projection_paths: Option<Vec<Vec<String>>>,
+    scan_metrics: Option<ScanMetrics>,
     typed_partition_bounds: Arc<
         Vec<
             Option<(
@@ -596,6 +597,13 @@ pub enum PartitionEvent {
 }
 
 impl LocalRead {
+    /// Attach an execution-owned live counter without changing shared snapshot metadata.
+    pub fn with_scan_metrics(&self, metrics: ScanMetrics) -> Self {
+        let mut read = self.clone();
+        read.scan_metrics = Some(metrics);
+        read
+    }
+
     /// Return a reader clone configured with nested Vortex projection paths.
     /// Paths are full field-name paths (including the top-level field name).
     pub fn with_nested_projection_paths(&self, paths: Vec<Vec<String>>) -> Self {
@@ -838,6 +846,7 @@ impl LocalRead {
         let plan = self.plan.clone();
         let partition_offsets = self.partition_offsets.clone();
         let nested_projection_paths = self.nested_projection_paths.clone();
+        let scan_metrics = self.scan_metrics.clone();
         let field_ids = field_ids.to_vec();
         async_stream::try_stream! {
             let count = *entry.partition_rows.get(partition).ok_or_else(||
@@ -848,6 +857,7 @@ impl LocalRead {
             let (mut batches, _) = super::stream_from_plan_with_projection(
                 plan, None, false, Some(start..end), Some(field_ids),
                 nested_projection_paths,
+                scan_metrics,
                 computed,
             )?;
             yield PartitionEvent::StartPartition;
@@ -924,12 +934,14 @@ impl LocalRead {
     ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
         let plan = self.plan.clone();
         let nested_projection_paths = self.nested_projection_paths.clone();
+        let scan_metrics = self.scan_metrics.clone();
         let queries = queries.to_vec();
         let field_ids = field_ids.to_vec();
         async_stream::try_stream! {
             let (mut batches, _) = super::stream_from_plan_with_nested_projection(
                 plan, Some(queries), false, rows, Some(field_ids),
                 nested_projection_paths,
+                scan_metrics,
             )?;
             while let Some((offset, batch)) = batches.try_next().await? {
                 yield (offset, batch);
@@ -945,10 +957,12 @@ impl LocalRead {
         let plan = self.plan.clone();
         let field_ids = self.field_ids.as_ref().clone();
         let nested_projection_paths = self.nested_projection_paths.clone();
+        let scan_metrics = self.scan_metrics.clone();
         async_stream::try_stream! {
             let (mut batches, _) = super::stream_from_plan_with_nested_projection(
                 plan, None, false, None, Some(field_ids),
                 nested_projection_paths,
+                scan_metrics,
             )?;
             let mut pending: Option<RecordBatch> = None;
             for mut remaining in entry.partition_rows.iter().copied() {
@@ -1225,6 +1239,7 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
         plan,
         partition_offsets: std::sync::Arc::new(partition_offsets),
         nested_projection_paths: None,
+        scan_metrics: None,
         typed_partition_bounds: Arc::new(typed_partition_bounds),
     })
 }

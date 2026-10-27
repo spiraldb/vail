@@ -10,6 +10,7 @@ pub mod fragment_index;
 pub mod globals;
 pub mod local_table;
 
+pub use iceberg::arrow::ScanMetrics;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
@@ -1092,6 +1093,7 @@ pub(crate) fn stream_from_plan(
         row_range,
         projection,
         None,
+        None,
     )
 }
 
@@ -1102,11 +1104,12 @@ pub(crate) fn stream_from_plan_with_nested_projection(
     row_range: Option<Range<u64>>,
     projection: Option<Vec<i32>>,
     nested_paths: Option<Vec<Vec<String>>>,
+    scan_metrics: Option<ScanMetrics>,
 ) -> Result<(
     futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
     Vec<Range<u64>>,
 )> {
-    stream_from_plan_with_projection(plan, queries, residual_filter, row_range, projection, nested_paths, None)
+    stream_from_plan_with_projection(plan, queries, residual_filter, row_range, projection, nested_paths, scan_metrics, None)
 }
 
 pub(crate) fn stream_from_plan_with_projection(
@@ -1116,6 +1119,7 @@ pub(crate) fn stream_from_plan_with_projection(
     row_range: Option<Range<u64>>,
     projection: Option<Vec<i32>>,
     nested_paths: Option<Vec<Vec<String>>>,
+    scan_metrics: Option<ScanMetrics>,
     computed: Option<(vortex::expr::Expression, Arc<arrow_schema::Schema>)>,
 ) -> Result<(
     futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
@@ -1246,6 +1250,9 @@ pub(crate) fn stream_from_plan_with_projection(
             let mut reader = plan_for_stream.table.reader_builder()
                 .with_vortex_session_cache(plan_for_stream.vortex_sessions.clone())
                 .with_data_file_concurrency_limit(1);
+            if let Some(metrics) = &scan_metrics {
+                reader = reader.with_scan_metrics(metrics.clone());
+            }
             if let Some((expression, _)) = &computed {
                 reader = reader.with_computed_projection(expression.clone());
             }
