@@ -108,7 +108,7 @@ async fn values(table: &TableRef) -> Vec<(Option<i32>, Option<i32>, Option<i32>)
 
 #[tokio::test]
 async fn selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consumer() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     let source = fixture(1024);
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
@@ -135,7 +135,7 @@ async fn selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consu
 
 #[tokio::test]
 async fn growing_unused_hidden_owner_does_not_grow_query_allocations() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     // Fixture construction/allocation is deliberately outside the measurement.
     // Only the public projection+collect action is counted; returned values
     // independently force the selected payload and missing ancestors.
@@ -170,7 +170,7 @@ fn process_written_bytes() -> u64 {
 #[cfg(target_os = "linux")]
 #[tokio::test]
 async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     // Two original source batches each retain a40MB owner counted in
     // both unused nested siblings by the unchanged Arrow-size mechanism. Their
     // ORIGINAL charges exceed the unchanged64MiB budget in both artifacts.
@@ -189,7 +189,7 @@ async fn multi_batch_duplicate_run_still_spills_but_writes_only_selected_fields(
 
 #[tokio::test]
 async fn selected_large_list_offsets_preserve_logical_missingness() {
-    let _serial = SERIAL.lock().unwrap();
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     let source = fixture_layout(1024, false, true);
     let projected = source.map_rows(["r", "c", "value"].into_iter()
         .map(|name| (name.into(), Expr::Column { name: name.into() })).collect()).unwrap();
