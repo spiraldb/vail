@@ -10,5 +10,17 @@
     "vail/crates/vail-execution/src/collection_lookup.rs": "c14db212ca8c58ac911f423bacd383769aed1b3b5f7b8daa034a523cc98e6ca1",
     "vail/python/tests/test_vds_functions.py": "62512bd529add6cdda80f3d8c3b7f5cfcc51667deb5973428877531bb29163cc"
   },
-  "fixture_status": "not yet confirmed; do not substitute"
+  "fixture_status": "Real independent Hail JSON LA/LAD extraction confirmed81x5; no native throughput fixture confirmed; runtime not authorized",
+  "fixture": {
+    "path": "vail/conformance/fixtures/vds/1kg_chr22_5_samples.vds.variant_data.json.gz",
+    "sha256": "ed6ec15102f2c85f045b800762018360fa23a69ee3150203f9844b976bb917c6",
+    "bytes": 6763,
+    "rows": 81,
+    "cols": 5,
+    "entry_fields": [
+      "LA:array<int32>",
+      "LAD:array<int32>"
+    ],
+    "inspection": "saved JSON/schema/provenance only; no Vailquery/filedecode/build/VM"
+  }
 }
