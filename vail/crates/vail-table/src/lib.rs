@@ -1013,15 +1013,19 @@ impl TableIR {
     /// Derive a consumer-local entries contract before any logical schema is
     /// frozen. The executable producer and its shared globals remain unchanged.
     /// Unsupported nodes retain their original contract for whole-route fallback.
-    fn with_entries_output_schema(self: &Arc<Self>, schema: SchemaRef) -> Option<TableRef> {
-        if self.keys.iter().any(|key| schema.index_of(key).is_err()) || schema.as_ref() == self.schema.as_ref() {
-            return None;
-        }
-        let node = match &self.node {
-            TableNode::MatrixEntriesByKeyRuns { .. } => self.node.clone(),
-            TableNode::MapGlobals { child } if self.keys == child.keys => TableNode::MapGlobals {
-                child: child.with_entries_output_schema(schema.clone())?,
-            },
+    fn with_entries_projection(self: &Arc<Self>, fields: &[(String, ScalarIR)]) -> Option<TableRef> {
+        let (schema, node) = match &self.node {
+            TableNode::MatrixEntriesByKeyRuns { .. } => {
+                let schema = nested_projection::entries_projection_schema(fields, self.schema())?;
+                if self.keys.iter().any(|key| schema.index_of(key).is_err()) || schema.as_ref() == self.schema.as_ref() {
+                    return None;
+                }
+                (schema, self.node.clone())
+            }
+            TableNode::MapGlobals { child } if self.keys == child.keys => {
+                let child = child.with_entries_projection(fields)?;
+                (child.schema.clone(), TableNode::MapGlobals { child })
+            }
             _ => return None,
         };
         Some(Self::new(schema, self.keys.clone(), self.globals.clone(), node))
@@ -1056,8 +1060,7 @@ impl TableIR {
             }
         }
         let projected_child = if bindings.is_empty() {
-            nested_projection::entries_projection_schema(&fields, self.schema())
-                .and_then(|schema| self.with_entries_output_schema(schema))
+            self.with_entries_projection(&fields)
         } else { None };
         Ok(Self::new(
             schema,
