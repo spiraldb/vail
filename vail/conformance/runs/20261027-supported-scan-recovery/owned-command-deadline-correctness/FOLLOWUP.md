@@ -1,0 +1,1 @@
+After the four runs, capture received an additional deadline check immediately before each of its two OS identity calls; no behavior, workload, or limit expansion. Syntax validation covers this final source.

@@ -1,0 +1,57 @@
+{
+  "returncode": -15,
+  "error": "TimeoutError('Command/readiness deadline')",
+  "owned_group_clean": true,
+  "elapsed_seconds": 0.39296829199884087,
+  "identity": {
+    "pid": 12813,
+    "host_uid": 501,
+    "host_euid": 501,
+    "popen_after_monotonic": 905162.059171416,
+    "retired": true,
+    "pgid": 12813,
+    "sid": 12813,
+    "spawn_members": [
+      {
+        "pid": 12813,
+        "ppid": 12798,
+        "pgid": 12813,
+        "uid": 501,
+        "sid": 12813,
+        "start": "Tue Oct 27 03:12:21 2026    "
+      }
+    ],
+    "leader": {
+      "pid": 12813,
+      "ppid": 12798,
+      "pgid": 12813,
+      "uid": 501,
+      "sid": 12813,
+      "start": "Tue Oct 27 03:12:21 2026    "
+    },
+    "popen_before_monotonic": 905162.058099625
+  },
+  "cleanup_observations": [
+    {
+      "observed_monotonic": 905162.304049916,
+      "leader_status": null,
+      "members": [
+        {
+          "pid": 12813,
+          "ppid": 12798,
+          "pgid": 12813,
+          "uid": 501,
+          "sid": 12813,
+          "start": "Tue Oct 27 03:12:21 2026    "
+        }
+      ],
+      "signal_attempted": 15
+    },
+    {
+      "observed_monotonic": 905162.45092075,
+      "leader_status": -15,
+      "members": []
+    }
+  ],
+  "identity_precision": "OS ps lstart seconds; read-check/signal non-atomic, not reuse proof"
+}
