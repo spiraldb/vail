@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/home/danielking/h051-matched-20261026/run-2/gate/candidate-env/bin/python",
+    "-c",
+    "import hashlib,json,pathlib,vail,vail._native\np=pathlib.Path(vail._native.__file__)\nprint(json.dumps(dict(frontend=str(pathlib.Path(vail.__file__).parent.resolve()),native=str(p.resolve()),native_sha256=hashlib.sha256(p.read_bytes()).hexdigest())))"
+  ],
+  "elapsed_seconds": 0.45190193699998815,
+  "returncode": 0,
+  "error": null,
+  "owned_groups_clean": true,
+  "monitor_maxrss_bytes": 0,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}

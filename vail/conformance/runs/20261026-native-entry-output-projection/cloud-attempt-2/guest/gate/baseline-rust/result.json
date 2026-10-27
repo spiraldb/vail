@@ -1,0 +1,24 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "-p",
+    "vail-table",
+    "-p",
+    "vail-execution",
+    "--test",
+    "entry_consumer_projection",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "elapsed_seconds": 10.588819342999997,
+  "returncode": 101,
+  "error": "RuntimeError('child exited 101')",
+  "owned_groups_clean": true,
+  "monitor_maxrss_bytes": 0,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}

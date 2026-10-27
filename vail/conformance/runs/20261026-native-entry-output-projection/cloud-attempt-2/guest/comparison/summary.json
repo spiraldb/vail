@@ -1,0 +1,206 @@
+{
+  "independent_processes_per_version": 4,
+  "repeated_timed_observations_per_process_per_query": 4,
+  "process_order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline",
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "records": [
+    {
+      "process": 0,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.9279442905000082,
+          "core_seconds": 19.199062916000006
+        },
+        "full": {
+          "wall_seconds": 0.9414103054999927,
+          "core_seconds": 19.465069544499993
+        }
+      },
+      "process_peak_rss_bytes": 3446841344
+    },
+    {
+      "process": 1,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5915171135000037,
+          "core_seconds": 10.751007245999997
+        },
+        "full": {
+          "wall_seconds": 0.9412577860000013,
+          "core_seconds": 19.742487855999997
+        }
+      },
+      "process_peak_rss_bytes": 3261472768
+    },
+    {
+      "process": 2,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5911981339999954,
+          "core_seconds": 10.950829549999995
+        },
+        "full": {
+          "wall_seconds": 0.9606112689999975,
+          "core_seconds": 20.173184285
+        }
+      },
+      "process_peak_rss_bytes": 3228606464
+    },
+    {
+      "process": 3,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.9501309855000102,
+          "core_seconds": 19.470713850000003
+        },
+        "full": {
+          "wall_seconds": 0.9305007534999845,
+          "core_seconds": 19.675733019500008
+        }
+      },
+      "process_peak_rss_bytes": 3322691584
+    },
+    {
+      "process": 4,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.9415862964999917,
+          "core_seconds": 19.157372475000003
+        },
+        "full": {
+          "wall_seconds": 0.9490750244999901,
+          "core_seconds": 19.126666989999997
+        }
+      },
+      "process_peak_rss_bytes": 3282817024
+    },
+    {
+      "process": 5,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5973318764999931,
+          "core_seconds": 10.849420713500002
+        },
+        "full": {
+          "wall_seconds": 0.9623166589999954,
+          "core_seconds": 19.806411015
+        }
+      },
+      "process_peak_rss_bytes": 3258458112
+    },
+    {
+      "process": 6,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5967207654999953,
+          "core_seconds": 10.737068137999994
+        },
+        "full": {
+          "wall_seconds": 0.9635278304999986,
+          "core_seconds": 19.843070629499994
+        }
+      },
+      "process_peak_rss_bytes": 3297083392
+    },
+    {
+      "process": 7,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.9872073310000076,
+          "core_seconds": 20.260318352999995
+        },
+        "full": {
+          "wall_seconds": 0.9884169924999924,
+          "core_seconds": 20.416728101999993
+        }
+      },
+      "process_peak_rss_bytes": 3412832256
+    }
+  ],
+  "adjacent_balanced_pairs": [
+    {
+      "process_indices": [
+        0,
+        1
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.5687530746310392,
+          "core_seconds": 1.7857920171287374
+        },
+        "full": {
+          "wall_seconds": 1.0001620379690452,
+          "core_seconds": 0.9859481584325406
+        }
+      }
+    },
+    {
+      "process_indices": [
+        2,
+        3
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.6071278491214207,
+          "core_seconds": 1.7780126848929003
+        },
+        "full": {
+          "wall_seconds": 0.9686548383599973,
+          "core_seconds": 0.9753409645957639
+        }
+      }
+    },
+    {
+      "process_indices": [
+        4,
+        5
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.576320189066626,
+          "core_seconds": 1.765750723553596
+        },
+        "full": {
+          "wall_seconds": 0.9862398365692168,
+          "core_seconds": 0.9656806059166797
+        }
+      }
+    },
+    {
+      "process_indices": [
+        6,
+        7
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.6543874255370041,
+          "core_seconds": 1.8869507106223793
+        },
+        "full": {
+          "wall_seconds": 1.0258312850051028,
+          "core_seconds": 1.0289097127763664
+        }
+      }
+    }
+  ],
+  "gq_expected_origin": "previous complete baseline result, not an independent oracle",
+  "memory_scope": "whole process including construction, both query warmups and both query workloads",
+  "latency_scope": "consumed action only; construction/warmup excluded; watchdog overhead not subtracted",
+  "interpretation": "four independent processes/version; no claim of16 independent trials or asymptotic scaling"
+}

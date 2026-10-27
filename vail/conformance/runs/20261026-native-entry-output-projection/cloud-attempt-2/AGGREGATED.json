@@ -1,0 +1,95 @@
+{
+  "means_of_independent_process_medians": {
+    "projected": {
+      "baseline": {
+        "wall_seconds": 0.9517172258750044,
+        "core_seconds": 19.5218668985
+      },
+      "candidate": {
+        "wall_seconds": 0.5941919723749969,
+        "core_seconds": 10.822081411874997
+      }
+    },
+    "full": {
+      "baseline": {
+        "wall_seconds": 0.9523507689999899,
+        "core_seconds": 19.671049414
+      },
+      "candidate": {
+        "wall_seconds": 0.9569283861249982,
+        "core_seconds": 19.891288446374997
+      }
+    }
+  },
+  "whole_process_peak_rss_mean": {
+    "baseline": 3366295552,
+    "candidate": 3261405184
+  },
+  "pairs": [
+    {
+      "process_indices": [
+        0,
+        1
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.5687530746310392,
+          "core_seconds": 1.7857920171287374
+        },
+        "full": {
+          "wall_seconds": 1.0001620379690452,
+          "core_seconds": 0.9859481584325406
+        }
+      }
+    },
+    {
+      "process_indices": [
+        2,
+        3
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.6071278491214207,
+          "core_seconds": 1.7780126848929003
+        },
+        "full": {
+          "wall_seconds": 0.9686548383599973,
+          "core_seconds": 0.9753409645957639
+        }
+      }
+    },
+    {
+      "process_indices": [
+        4,
+        5
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.576320189066626,
+          "core_seconds": 1.765750723553596
+        },
+        "full": {
+          "wall_seconds": 0.9862398365692168,
+          "core_seconds": 0.9656806059166797
+        }
+      }
+    },
+    {
+      "process_indices": [
+        6,
+        7
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.6543874255370041,
+          "core_seconds": 1.8869507106223793
+        },
+        "full": {
+          "wall_seconds": 1.0258312850051028,
+          "core_seconds": 1.0289097127763664
+        }
+      }
+    }
+  ],
+  "interpretation": "4 independent processes/version;4 repeated actions/query/process, not16independent trials"
+}

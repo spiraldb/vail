@@ -1,0 +1,5 @@
+[
+  "/home/danielking/h089-matched-20261026/run-4/gate/candidate-env/bin/python",
+  "-c",
+  "import hashlib,json,pathlib,vail,vail._native\np=pathlib.Path(vail._native.__file__)\nprint(json.dumps(dict(frontend=str(pathlib.Path(vail.__file__).parent.resolve()),native=str(p.resolve()),native_sha256=hashlib.sha256(p.read_bytes()).hexdigest())))"
+]
