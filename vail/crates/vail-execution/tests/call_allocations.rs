@@ -669,7 +669,11 @@ fn mapped_array_capture_input(bytes: usize, start: usize, gap: usize, large: boo
                 OffsetBuffer::new(ScalarBuffer::from(list.offsets().iter().map(|x| i64::from(*x)).collect::<Vec<_>>())),
                 list.values().clone(), list.nulls().cloned()))
         } else { items };
-        let ty = Type::from_arrow(items.data_type()).unwrap();
+        let logical = match items.data_type() {
+            DataType::LargeList(item) => DataType::List(item.clone()),
+            other => other.clone(),
+        };
+        let ty = Type::from_arrow(&logical).unwrap();
         let Type::Array { array: element_type } = &ty else { unreachable!() };
         let element_type = element_type.as_ref().clone();
         let fields: ArrayRef = Arc::new(StructArray::from(vec![(
