@@ -1,0 +1,5 @@
+set -e
+/home/danielking/vail-presence-20261026/gate-8dcd426b/candidate-env/bin/python -c 'import pathlib,hashlib; p=pathlib.Path('"'"'/home/danielking/h089-matched-20261026/protocol-91aa.tar'"'"'); assert hashlib.sha256(p.read_bytes()).hexdigest()=='"'"'434003d1cfd31484bfc3936ef1f88b158520da29b4fc358987fa07c96e207b5c'"'"'; print('"'"'Reviewed 91aa archive verified'"'"')'
+mkdir /home/danielking/h089-matched-20261026/protocol-3
+tar -xf /home/danielking/h089-matched-20261026/protocol-91aa.tar -C /home/danielking/h089-matched-20261026/protocol-3 --strip-components=5
+/home/danielking/vail-presence-20261026/gate-8dcd426b/candidate-env/bin/python -c 'import pathlib,hashlib,json; expected=json.loads(pathlib.Path('"'"'/home/danielking/h089-matched-20261026/protocol-3/expected.json'"'"').read_text()); root=pathlib.Path('"'"'/home/danielking/vail-presence-20261026/source-8dcd426b'"'"'); assert all(hashlib.sha256((root/p).read_bytes()).hexdigest()==v for p,v in expected['"'"'candidate_source_files'"'"'].items()); print(json.dumps({'"'"'verified_source'"'"':expected['"'"'candidate_source'"'"'],'"'"'files'"'"':len(expected['"'"'candidate_source_files'"'"'])}))'
