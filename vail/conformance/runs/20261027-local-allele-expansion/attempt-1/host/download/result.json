@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/Users/danielking/projects/google-cloud-sdk/bin/gcloud",
+    "compute",
+    "scp",
+    "--project=pyspiral-dev",
+    "--zone=us-east1-b",
+    "vail-bench-20261021:/home/danielking/h085-profile-20261027/attempt-1.receipts.tar.gz",
+    "/private/tmp/h085-profile-attempt-1/receipts.tar.gz"
+  ],
+  "elapsed_seconds": 2.1815311670070514,
+  "returncode": 0,
+  "error": null,
+  "owned_groups_clean": true,
+  "monitor_maxrss_bytes": 0,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}
