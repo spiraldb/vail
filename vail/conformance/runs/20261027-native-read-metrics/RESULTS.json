@@ -1,0 +1,44 @@
+{
+  "scope": "Metric-only existing Iceberg live attempted-read counter injection and normal DataFusion source metrics. No projection or source pruning behavior change.",
+  "source": "b332591e3",
+  "production_source": "0276c6b65",
+  "gates": {
+    "public_real_file_metrics": 4,
+    "broader_rust": 68,
+    "normal_python": 461,
+    "failures": 0,
+    "skips": 0,
+    "linux_only_spill": "Not compiled/run on macOS; no Linux claim."
+  },
+  "semantics": [
+    "Full native keyed output oracle97 integers unchanged.",
+    "Public PreparedTable.start_action replays/concurrent actions create4independent native metric domains while the plan registry cumulatively retains them.",
+    "Repeated MetricsSet.sum(predicate) summaries leave the live source counters unchanged. sum_by_name is not used for Custom metrics.",
+    "Dropping after a first batch retains a monotone instantaneous observation. Fixture may already have read all data; no in-flight cancellation/quiescence claim.",
+    "Removing a real data file after public preparation produces the normal execution error and0attempted read_at bytes; no private format corruption fixture.",
+    "Explicit caller-owned shared live counter is positive across a real multi-file scan while an unrelated counter stays0. This does not assert independently measured per-file additive totals."
+  ],
+  "ownership": [
+    "Fresh ScanMetrics in each native SourceExec/ReadKeyFilteredExec/ComputedExec/IntervalSourceExec execute call; never placed in shared SnapshotReadPlan or VortexSessionCache.",
+    "Existing CountingFileRead increments range length before awaiting the backing read. The supplied live domain replaces the default fresh counter, adding no second per-read atomic increment.",
+    "CustomMetricValue holds that live source. new_empty returns a source-free accumulator; aggregation reads values without mutating the source counter.",
+    "Registry size and summary work are cumulative O(execute calls \u00d7 source partitions), bounded by plan lifetime rather than a fixed-size latest-execution slot."
+  ],
+  "limits": [
+    "Observed attempted request bytes, including data/footer/delete file reader requests, not successful completion or physical disk traffic/decompression/bandwidth.",
+    "Snapshot/catalog metadata read before execution is not counted.",
+    "After normal collection values are observations at collection time, not proof that no background work can issue later requests. Cancellation observations are instantaneous lower bounds.",
+    "No speedup, IO savings, source pruning or bounded-registry-growth claim."
+  ],
+  "history": [
+    {
+      "log": "stage2-metrics-test.log",
+      "failure": "Initial public test integer sum type ambiguous with serde_json PartialEq; fixed test-only explicitusize."
+    },
+    {
+      "log": "stage2-metrics-final-test.log",
+      "failure": "Repeated control attempted to replay one consumer plan directly and hit the preexisting consumer-once guard. Fixed test-only to use public PreparedTable.start_action; did not relax/bypass guard."
+    }
+  ],
+  "resources": "Normal local release build/test nice10 jobs2 kache; no cloud or local benchmark/profile operation."
+}
