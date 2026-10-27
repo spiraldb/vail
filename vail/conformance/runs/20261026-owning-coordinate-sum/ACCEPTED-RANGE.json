@@ -1,0 +1,1717 @@
+{
+  "base": "dc13b054bfa2581f3ab20f6a7983e73380f24d91",
+  "parent_head_before_this_manifest": "c0142a76b56d4f3d396b5be7198c4f64211b4b7f",
+  "production_source": "00a8d7d7fdefb8d2c324fc33c1ec6c58706f02ec",
+  "normal_linux_native": "6cb1fe232e4b352e1f41caf92530445ec58cfa364ddbdf93c58a7c667cf051ec",
+  "normal_linux_wheel": "ee0b7ca594939fa2a2cb792df4aa47fff331385c65a60faa02c8252128b9830c",
+  "source_equivalence": "No production changes after00a8; following commits are validation/provisioning/protocol/evidence only.",
+  "gate_counts": {
+    "linux_rust": 8,
+    "linux_python": 435,
+    "mac_rust": 8,
+    "mac_python": 435
+  },
+  "resource_disposition": "Root explicitly accepts narrow AD gain/whole-process memory benefit with unresolved interleaved DP wall+7.7%/+31.85ms all4pairs andCPU+.6%; no cause/noise/no-regression claim.",
+  "raw_original_receipts_git_verified": 73,
+  "vm_status": "TERMINATED verified after protocol",
+  "files": [
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/BUILD_COMMANDS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1944,
+      "sha256": "6f5d5f3be59f11f766b9262c64dc671a3e2bd2ece0cf83e8ec8f335dcd6fba45"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/CLOUD-PROPOSAL.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4249,
+      "sha256": "8ee98736a92685a3f82a7b4ebc7b4c4d43cc7a26e9d79e6823919720bca31f57"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/RESULTS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4391,
+      "sha256": "60120e0329ce4fed9308e2437d5c4647b00a73b110fc6d6e16428e5d055ec15f"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/RESULTS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2112,
+      "sha256": "ea2f22e8a2ab6eae1cd5d48b7475f63974a4a5023dd83333bc1786544a7caab3"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/boot-guard.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 548,
+      "sha256": "c6d522e609d3965b04e56c12de5330693347247ea49db7fb43a08f413219411e"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/extract-idle.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 390,
+      "sha256": "57705f00efa25904603290b8e417319df7d2c12720f1d1542455aa8b38e49bb5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host-run.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 943,
+      "sha256": "0b108e9102ee1c6e9aa305bd67f3e85597ac182480bd57c13e5db01a7c2cdcfd"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/download-verified.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 174,
+      "sha256": "a6fd0dbfd8bc85e5751ac33625ee092d3b6cc0c6755f3db2ae038be34b6a1a71"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/download/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 285,
+      "sha256": "e1f619e9570b65328a6d6b6bf747dff0f3fc4874b11d2c25702f535ea77c3d4a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/download/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 571,
+      "sha256": "0c7fcf079eb03e43bace718862cd31ed0b7d850fba4a70b0e1f07fc84b99c012"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/download/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/download/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/pack/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 359,
+      "sha256": "f5dff80e3e0bc56debe09e001cc1823af4930c804d51ce364569b7fb1d403c17"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/pack/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 648,
+      "sha256": "7cee2b9811c966460004d30a70a7f8d301915eb4a00411f35019f48084f99400"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/pack/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/pack/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 166,
+      "sha256": "6fd1927c5af23bcc154e0a8ebd6a614594f8e1b420af11aa0b22a320d3e0e119"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/prepare/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 438,
+      "sha256": "7bfd7193f87d4652f598f92cbfaae8e5967f98213c3dbf7e5fed049fa0f3e875"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/prepare/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 755,
+      "sha256": "0d75fc927d1d3051826034e72c176d4ea60d103c86fa70048c20947faef2ce54"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/prepare/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 778,
+      "sha256": "f189fb3a69270719cfa3438fb6c370e5d15d3114ac15358f2f5f7fd225120d8d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/prepare/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-after/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-after/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "2a00acb7232ee5cabd337f3c9cc7f41c2f1377823f90e0a317a37be04fc1002a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-after/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-after/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-before/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-before/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "e55e0a7d6fc3f4c7a1e0396381eebbedb53f2658404323abe355c4e3fe593b1c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-before/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/provider-before/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 291,
+      "sha256": "213526f1f417d5f04d6da4b743fc20cfadb98a298a24158fb44afc012c9f8fc1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/receipts.tar.gz",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 220,
+      "sha256": "2244cf69186eececbb57ef78be7515d206d39f67424d35abb468dafa9c85b427"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 776,
+      "sha256": "8503c9ec4e6ca5006fc1aa9e60939edd963dbdbad377595d41f1875ff6c191f7"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/stop/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 190,
+      "sha256": "233a38cb5a4d3e6ae08a0adc3813c310b8de4456589a32c2e9aaefcba9d3ca05"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/stop/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 478,
+      "sha256": "d0685503ae656bb209353ea25bc3c82fb0581f41f17d54d22c0015f6f4a0541c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/stop/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 427,
+      "sha256": "bd0265b9313f7c61d46f924f03f4a85f016829c2776250f3c488a54dee7dda65"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/host/stop/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/manifest.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4794,
+      "sha256": "941da62994594a51823e2c66ace849fd8cf7d3442ef63af9b5dc247d0c9b7fb0"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/provider-before-start.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/ready-guard.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 20,
+      "sha256": "3d57548346759301cbc67f08fa34adb835334284c2e2c20a974f4fe18943817e"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/set-scheduling.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 118,
+      "sha256": "f1fafa506453eaee06d11b400c05fdf0ad51181799af9f611a0ac30b51260dc2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/source-discovery-guard.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1768,
+      "sha256": "cddb9d34112d02ecede670cd8fbb692e7c3fb3e69218ac314b2465912c63e8aa"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/start.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 322,
+      "sha256": "a7cdfef3bbad70788cbf60d8850b52c8019c3dc5ba7740f2c00d446a24124340"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-1/uploads.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 184,
+      "sha256": "ae8bf4bc9f71b2a10a4b91dee8624f926b7d744261d2b335fd6ba901708f3472"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/RESULTS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1700,
+      "sha256": "64a7049fa84f4cbdf31eb67cf18e1278a016102700bc549f03e9f48d27c08658"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/boot-guard.log.gz",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 342,
+      "sha256": "d58ec041fc3faaaf795cf81a160526edaebe7a6688bf86c9f455e5c400b30750"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host-run.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 944,
+      "sha256": "eae108aa9f739034d1617ab56ec63ad7f8314490cb073946832a3ffc700e1498"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/download-verified.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 177,
+      "sha256": "4dd31dbbcff593b83bb336f0c42bbf791d64a9e62d30a17e4d90b9c6fffa3dcf"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/download/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 289,
+      "sha256": "fcb7d04d5b38a7f44fb4582abc11f19d334f4b9748521a921d1512784bb5acc7"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/download/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 575,
+      "sha256": "8ae1490b668316e8d37c340fc77051d633f61755f307403d9084a07fdcb18df6"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/download/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/download/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/pack/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 361,
+      "sha256": "86dee1f56cbcdc53eceb5049f57e1e22dd522c5191634cb3493647af7bc18ed1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/pack/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 650,
+      "sha256": "fa57c0df692cd2853ac078fb4237478e6037cfa672cccc621dadc2436af13166"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/pack/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/pack/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 169,
+      "sha256": "1f76184a1a88a5b1605286bf4d957883cb08a0de211b7e90736fea48f9f23294"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/prepare/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 440,
+      "sha256": "fb88a792bb15ffff019bf742ebd7bf9fb745b61535b1381468092423bf2d6649"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/prepare/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 756,
+      "sha256": "640e55ab69a14f8b9bdcdb73b5a87ac19c7cf057eeb83101c52b96a5c63ce402"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/prepare/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1043,
+      "sha256": "1aa894891c521654e2ba35d763f5dc6cc7c554da240f2280ce94487f123eb86a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/prepare/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-after/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-after/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "f6b4e55ddbc1fecdb5c165bd31afbbadbed9d16fd8e6ddd564610e02054ac6b2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-after/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-after/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-before/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-before/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "0943440ba236fabc2f9b45e87c8163ef8beb5a0496db1ba87ff4ff1a286308fa"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-before/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/provider-before/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 291,
+      "sha256": "213526f1f417d5f04d6da4b743fc20cfadb98a298a24158fb44afc012c9f8fc1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/receipts.tar.gz",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1459,
+      "sha256": "777ac46dbfcec4e94b107422cd69fca524c19b870ad94835a6a9d7b23de9a61d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 777,
+      "sha256": "d19e2ccaf9edd4810705d5cfcc39f24a291b439644c7022fc21ba95f16d732b2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/stop/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 190,
+      "sha256": "233a38cb5a4d3e6ae08a0adc3813c310b8de4456589a32c2e9aaefcba9d3ca05"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/stop/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 479,
+      "sha256": "94a2576953610e516806b4fd7c548424f0b0cfe5797235eb69bf518d43f4c76c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/stop/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 420,
+      "sha256": "0220c02658c47b02b10561124bc33d842702f87e8df18a4803aad0dea97a969d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/host/stop/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/manifest.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4925,
+      "sha256": "8181fb763ba89660b61d73214f959c242bc4eb62310d6c8b6d2e8fe22b3a2d20"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/provider-before-start.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/provider-starting.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 291,
+      "sha256": "ac8eba17d8f97b5972b1fc07f581d324ad373e02743dceafebaf703419e71f70"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/provision-command.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2467,
+      "sha256": "0ef40d31284006203faf48ff0e611a72f7bdf03c52ba5e4b7e3d83e4a4cc7cac"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/provision-verified.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 135,
+      "sha256": "9f8969c34ab329af5b02022f1449b420eae9b0bc31a4d04c641ec8f178da52f9"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/ready-guard.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 308,
+      "sha256": "4da89530e6f642f3c719436ce8b142443d5023f69192d26ded822489f68f5b73"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/start.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1049,
+      "sha256": "343db7c77257f37eba71aef5588f88054598eff4eb1be7213e03c4f8831c71ef"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/upload.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 185,
+      "sha256": "e99cf53a0a678e1b1b3bde9e74fa853100c865f1d3d5b7941f777c7d3e418087"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-2/upload.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/RESULTS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1836,
+      "sha256": "44cb5d494f4f41f132569aa922938f4a96cfba105da255004b007f8a6d2164af"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/boot-guard.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 308,
+      "sha256": "c2db0acdbf26f01ad576f61503b52e96c9e33f045ad85c49300b4567e866a0fc"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/build-progress.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 789,
+      "sha256": "9896ad016bfd50be7e1f362ccb2d12deafe8939b50f4211760ec731323c366b3"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/completed-gates.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3301,
+      "sha256": "97e2f70a620dd57d1c5d0f875a9a3dfb40e3ca3412c9f1b2fbdf9c4f988c753e"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/gate-progress.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 229,
+      "sha256": "b8ba61f945b00ee22191820d72ed7500f902247e70521b8321bd2df0788a3b4e"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host-run.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 947,
+      "sha256": "67a0dd67a95a41964035cc2c1547f08f0c10c6e5e9adb6c852332e42b64918db"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/download-verified.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 177,
+      "sha256": "ff6e9eb835a4a71b87966672aded0d5e2c0327b29a244f586db0203d08894283"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/download/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 289,
+      "sha256": "e52fef5844b321bd1b80f1d20d978198d4f5935bf418cf105c143e6a1bdf5cae"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/download/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 576,
+      "sha256": "0d06a466f6362eca112f2485abaf7204ed49b158b97cf303147e5d0bda4e1c5c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/download/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/download/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/pack/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 363,
+      "sha256": "932d7df8941967808882459970431b48b26058eb50861d42e2905a2634129903"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/pack/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 651,
+      "sha256": "d481602b3343c7e360981d0b492032ac0caf80beb81ed64ad7e798009d250364"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/pack/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/pack/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 169,
+      "sha256": "e9e1fd0c8d409a1a3cf1ce690f5c52cf8ee03fb3f719b737321bfa1b19071635"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/prepare/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 442,
+      "sha256": "b4159432a92b0d0cb48ce3ef0fa1bed480f8da9ff5b57b4ec95297819a3f4fc0"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/prepare/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 759,
+      "sha256": "0d66ebbe8b6db660f0a347b0f825a00b6fa1dfd36f56ee9a99c4f4301079829a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/prepare/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1078,
+      "sha256": "60c45c53b9c74e335a9c017cbee246403d03342897e3e723c439f5216f4474a9"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/prepare/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-after/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-after/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "082dbcfb2567a02caf33462928c2733efcb08d6c130ca7423230d5981c58e6a0"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-after/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-after/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-before/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-before/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "4936000824a7608a66556bad21e040a6cf91caf9d484e6e31edc501484f0b1fa"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-before/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/provider-before/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 291,
+      "sha256": "213526f1f417d5f04d6da4b743fc20cfadb98a298a24158fb44afc012c9f8fc1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/receipts.tar.gz",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 7963,
+      "sha256": "fd37912120ed07e7b79b14e394254155c53fb5149fa13804ed7cf6873f1557a4"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 780,
+      "sha256": "1722a2d5936dcdddd65428a45dc47e2b1673d517290f79661b282487e6948e33"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/stop/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 190,
+      "sha256": "233a38cb5a4d3e6ae08a0adc3813c310b8de4456589a32c2e9aaefcba9d3ca05"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/stop/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 479,
+      "sha256": "ec2b1d851006362c22f05408ef758f96f4d2857f17810a2a5abff6826db41278"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/stop/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 429,
+      "sha256": "942ed31c93c40eb7849fb65f62a43e60eb17e31faf898593c943f3c9c2958cd8"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/host/stop/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/manifest.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 5186,
+      "sha256": "e3daf81eeafb7c1791c85edf034ea3b14a103bd714a253fdb878a6446e0130da"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/provider-before-start.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/provision-command.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1166,
+      "sha256": "ad224b376302ba1ac7639b1985a29cc55e474ace508127d2d7a8b199d92bf27a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/provision-verified.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 110,
+      "sha256": "c1ef6c8433dcd259cc24c6b523b6781c52ff1ab9e87718dc6e623b35e9287526"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/rust-public-output.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 723,
+      "sha256": "ff5904e2f923921599b78992c9632b6a8c3aa90e0d5a270a580031d1a7adfe17"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/start.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 282,
+      "sha256": "7fa6920aebecb83e6a00c29fd121f69a5715fbf4516f1e6d013ac98e4c07a9ac"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/upload.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 148,
+      "sha256": "483eb59dc92e561e0e646cad6c9aa1d01f76c17cfba3162cc3a4c6075298e712"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-3/upload.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/DP-SOURCE-ASSESSMENT.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3237,
+      "sha256": "396b6c3d653450850c86e9328aa4533c01c3075b021690585279b7cf878b937d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/RESULTS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3950,
+      "sha256": "89e549f9c5644fc73f5cdd15133beadc37827db44b0e32390d42f6ff89cad9d1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/actions.csv",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 8623,
+      "sha256": "9a1237696b572976d0210b700bbeafbbb836668e7ed6773f44107f5d860b9d4c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/analysis.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2527,
+      "sha256": "5f4a2c7f1882d95dd69be1856ffcbd60f4ca67ef3fa279019b468862a554ae24"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/boot-guard.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 308,
+      "sha256": "fe9d7aeaf9c47a92a421b4c2e94ba42c0f4e0f5744a8b5b59b2cff562d3e305e"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/descriptive-control-order.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1264,
+      "sha256": "469aafb20a351ddccb5a032472ca13f5358182eb50fae99fa3df73fcbe269869"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/dp-source-proof.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1872,
+      "sha256": "ce5cf67d8c760b0d38ed804afee940dfd120e7e39f0a39d5a0d1de752f1a4df2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host-run.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/compare/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 440,
+      "sha256": "80fd1a4667db022353d8f367cfda7be01ff78d830a9a424501a3541a369f01c0"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/compare/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 727,
+      "sha256": "f8ebffad3c629c75c0557a55062fef304f867b4bf58c210c985e4306193d646b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/compare/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/compare/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 5231,
+      "sha256": "d0d3f080529bfe0070c214f59b38b965a2c48619f635ed3102461fce918743e1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/download-verified.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 178,
+      "sha256": "497402f4abd58db26bb7e08b93ebf5540f9fba76545f24e991645e0e3e85a164"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/download/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 289,
+      "sha256": "5aa99ce273f0e14bdca4ebece05444c705f208273dc4e60e1420bb221d77cb85"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/download/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 576,
+      "sha256": "58c6de99410a7d4d35dc8798870825b4a27235f45ab7d94c66c6b84d35d312c5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/download/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/download/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/pack/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 363,
+      "sha256": "417e4e7d179bf9223ba2680dde98c9fe366e7a27a7f2f582cdac143012e44c81"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/pack/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 652,
+      "sha256": "ce2f4b99d857b656945ec46ee432ba970672b588c006d789645a18cd65d3b95f"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/pack/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/pack/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 170,
+      "sha256": "e00f32c95467df22b2178917b0c9833d7f7501e48842a7095b463ee56a28defa"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/prepare/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 442,
+      "sha256": "6113d68ec05458cde8f33dd348ac6cadf2c5e68ec0493751b7fc46b948312bcf"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/prepare/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 730,
+      "sha256": "5eb9e1fcc02a6878996968c7aede5808e958f8aaea71e6de665cdc0ec88e73e6"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/prepare/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/prepare/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2251,
+      "sha256": "f4a3f362b89f1a3ef7e246270cfba7b17a704f865f03d3d86c74c173e5f1e465"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-after/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-after/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "330bace94351b766c7d1e09448f751d1ebb22f91ab841e1132b42a8bc440ad08"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-after/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-after/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-before/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 219,
+      "sha256": "ef00f49e98cdc3b1a7955499ceb750d74fdd6d28382e0e1d374a0465591b0e41"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-before/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 508,
+      "sha256": "772e8e2b4734e048e080d877ebd7dc71c9bb1f4429c0c39a2df187e15fa862c8"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-before/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/provider-before/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 291,
+      "sha256": "213526f1f417d5f04d6da4b743fc20cfadb98a298a24158fb44afc012c9f8fc1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/receipts.tar.gz",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 26010,
+      "sha256": "6b72176c67cf3fcae16fde2b9b54468d015d03d9051f67163391275c999bcae4"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 20,
+      "sha256": "7caeefe05c039f6c30bd0593d321171609c89cb15ac218f9e059154b1c8a035a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/stop/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 190,
+      "sha256": "233a38cb5a4d3e6ae08a0adc3813c310b8de4456589a32c2e9aaefcba9d3ca05"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/stop/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 478,
+      "sha256": "29cfdf9085260f4be6200e923259117324b4072c22e0029b018c6cda75cda3f7"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/stop/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 420,
+      "sha256": "0220c02658c47b02b10561124bc33d842702f87e8df18a4803aad0dea97a969d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/host/stop/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/manifest.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 16512,
+      "sha256": "17d2cc08d2d7570c10f3e72f2e8f748dbcc8165533f5db549a40658ea2106005"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/provider-before-start.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 294,
+      "sha256": "c9981bae0caae83e538681bdb578fabc5b0354b22c224d2431fce4a5fcc63f95"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/provision-command.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3544,
+      "sha256": "6dde0710a3906fda3f6ce92ad8e27efdd1970f50c5b91a6a5b75416bdfc53d8c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/provision-verified.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 224,
+      "sha256": "f27e165e4fdb207efab1e00f03a4b70594caddfe6b97ab03ea738646f2097c1a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/00-baseline/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 252,
+      "sha256": "9af71cb3aad9b99e44bec47d5879ca78daa5ab5fe130a4eee16c132871fa297d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/00-baseline/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 543,
+      "sha256": "5c0cadf1269aa05fb68d4ac003165a5fe11503980ed7972a22a7843e397c523a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/00-baseline/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/00-baseline/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3628,
+      "sha256": "9e3030dbc7f80f0bb0452f361e7e13403665b84385ebfde5eb972b103535f37b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/01-candidate/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 362,
+      "sha256": "12edba4905594a9a34d464f0dd5a24fbf37e125780c7076065062c8362720d74"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/01-candidate/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 657,
+      "sha256": "d2aedb1ca2f22b9648ef455c06c3ac29dc461af61e77d85ad132c1d2ce1c2030"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/01-candidate/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/01-candidate/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3636,
+      "sha256": "748729a068aa02907a998139e70ca5ede547bc1823562655b2ff69bccfb44276"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/02-candidate/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 362,
+      "sha256": "12edba4905594a9a34d464f0dd5a24fbf37e125780c7076065062c8362720d74"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/02-candidate/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 657,
+      "sha256": "6fdbef63554c6bd72df80942e1dc4572c178abfe5b18c6be9dde21605e6fdc5b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/02-candidate/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/02-candidate/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3638,
+      "sha256": "9e3b4b45562c215411f4e43d712c7795d079725d1cf56d17d0c410215d98bc84"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/03-baseline/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 365,
+      "sha256": "ebee61772b6c282c81b339527d146a4d5110f6b74ee304ffaca71183305b5178"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/03-baseline/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 660,
+      "sha256": "fe54a92f990caa631fc824273148ddeb5ae9bf74c62fb91847e25a129abef5dd"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/03-baseline/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/03-baseline/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3621,
+      "sha256": "2b0b00d2b4915e213ee63cbfb6d789b884ae8cc96457557e78da0f4d298fa113"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/04-baseline/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 365,
+      "sha256": "ebee61772b6c282c81b339527d146a4d5110f6b74ee304ffaca71183305b5178"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/04-baseline/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 660,
+      "sha256": "3e950784b66e5d64805e5ff3165eb31a3dd5dfb5eb394fa51dd32ad0ff281a9b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/04-baseline/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/04-baseline/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3630,
+      "sha256": "3fafac4f304083a3c763f7e5c82ea7940a47923c7c36bdfa713e3e3aa9ef4976"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/05-candidate/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 362,
+      "sha256": "12edba4905594a9a34d464f0dd5a24fbf37e125780c7076065062c8362720d74"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/05-candidate/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 657,
+      "sha256": "c7b1070b1ae369864db1dfd63e8706f0b8ef33ef7fad8d4e67b3eb9f2936b8f6"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/05-candidate/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/05-candidate/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3630,
+      "sha256": "99355f472a9f199e616b67556af59c4ce8c594dc45d33484e6d3f25848599fd8"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/06-candidate/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 362,
+      "sha256": "12edba4905594a9a34d464f0dd5a24fbf37e125780c7076065062c8362720d74"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/06-candidate/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 657,
+      "sha256": "c0743d4ab54e51f0be511c930eeffae43dda83b80529b0241e7fd9fa68c7390a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/06-candidate/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/06-candidate/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3630,
+      "sha256": "a9cb98d8fe0520840e97da7dbe8e7b0edbfd518448f315684b5a071fc1f65f5a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/07-baseline/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 365,
+      "sha256": "ebee61772b6c282c81b339527d146a4d5110f6b74ee304ffaca71183305b5178"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/07-baseline/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 660,
+      "sha256": "0c55aa80a98a25aef5d58f08ee7a52c46b025700f037230c8f374ca772a738b7"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/07-baseline/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/07-baseline/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3637,
+      "sha256": "2eaba32f6253a89a8d13857d171d2de616b64cb854f73819ae76f3213eb07a98"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/completed-processes.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2742,
+      "sha256": "329eef84ca113f7bdb6fed0ec152cc4b3d321cf8999f1259ac8cbd6fca5ca9e8"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/dp-recorded-baseline-result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 10,
+      "sha256": "4564a8698705ce73eb580b4d86ede38f45511ef565f757c7508c5b702ce16f62"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/comparison/summary.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 5231,
+      "sha256": "d0d3f080529bfe0070c214f59b38b965a2c48619f635ed3102461fce918743e1"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/artifact-lock.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2251,
+      "sha256": "f4a3f362b89f1a3ef7e246270cfba7b17a704f865f03d3d86c74c173e5f1e465"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/baseline-input-preflight/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 155,
+      "sha256": "41f8a56b25d48e4f65dd1cfe9e58d97a7a7ab9ccaaa0fc69931dc3bdde8175d3"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/baseline-input-preflight/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 431,
+      "sha256": "c442f60e42ce1b3bc0f1ce62eff1d30d155937d827f988526a84d44a99404523"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/baseline-input-preflight/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/baseline-input-preflight/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 253,
+      "sha256": "b8a23556dcd07bf64a7c8ad1adb9229d63abd7d4ff6bea53094255fe45729e3c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/dependencies/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 275,
+      "sha256": "bec62962b3f962fb42d741cda3d12a24221acc4d987a6dcaf93528ee5ebd8aa4"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/dependencies/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 562,
+      "sha256": "8d96faae3fe9c110855fccadb97643206036d4e0647f772cc79bf6841a238c59"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/dependencies/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 306,
+      "sha256": "6c511baebe39ffa577ea0c44f0a8403a41b8fd9676bb51362fc73198924d791a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/dependencies/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/install/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 239,
+      "sha256": "514481fe60fc8ecf7af09f18fc1b321788911909240fd1f9f680a590995bb76d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/install/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 524,
+      "sha256": "0bfb031c4bcea9b4294061a087aa1e64c10cc1af334118d89b3939dd5d364410"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/install/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 322,
+      "sha256": "74636c6e4601dba1f2477a97cadcfb4940d56492e8e22ae2f408b024d9f1ad90"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/install/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-baseline/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 351,
+      "sha256": "c4150fc31eeaddb6f9fbda859626e8376a2d0ff4ca3167ac4360bd80038be1cc"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-baseline/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 630,
+      "sha256": "2ffb7221e83182de4f37afcbde3ae920fc39c911b91cc044005f5f069b975e48"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-baseline/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-baseline/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 334,
+      "sha256": "42879a4ae06a87d824c0adbddbea1b5ca0b3872362498ffce6d889e9de3988cf"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-candidate/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 347,
+      "sha256": "4a6f13027be6fd126e335294d7d1468bc826bced2b1c68e14ab41dcab825c000"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-candidate/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 626,
+      "sha256": "82b219cb1c2451acc1027aa2555144de7a3abb26b72e6b97f854db4e82baa8b9"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-candidate/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/probe-candidate/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 326,
+      "sha256": "a8a77e74615128c861f83be6e8d0446ccf050379786a238245915f288737e68b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/public.xml",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 61567,
+      "sha256": "99b63a6b69722ce45671ec58ce82e034662ffa87229928eb475b6a0c12cd43f2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/public/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1879,
+      "sha256": "4ce0c2da3a9e6259a85d6ac2c5f932c88cf0707348052e16319c017bd73b8490"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/public/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2231,
+      "sha256": "2def20b0155cc349b4422a6eff917ded06280ba7ebc09220c6298782e376b6b3"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/public/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/public/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 581,
+      "sha256": "60a305b5585bcc15132102da83a281ce9e4a50e9a3c88b06f2525b1f1d1292c0"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/rust/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 144,
+      "sha256": "272a9cb4248c4f65411e1c5034c7e390c21cbe651d2b076bb3e8e07d8bdebb02"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/rust/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 437,
+      "sha256": "49f1ef0abaa7b7303e535da4378391240debdf35c000e06ac392571d7616042f"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/rust/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2345,
+      "sha256": "e62cb74b3b02eb4c3d416fc43f459a5da33e142292b915385649315c7746d869"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/rust/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 723,
+      "sha256": "836c61ae6309dcc79c602b9041ffd9e49cd9242eb897b43091bc38632c0212cb"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/venv/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 194,
+      "sha256": "97ec40b36121a654d32a0d68bbb738fe052cfc3bfc9776c8061124b562f4622f"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/venv/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 477,
+      "sha256": "db167220e1196ebac3eee88bd3db8e5a74db1f200fb6ffaebb2789cf4f732175"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/venv/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 319,
+      "sha256": "9a6dd20e18ba819f67dfcf74049bae958257a1ba6c1b73d58661a8f076296af2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/venv/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/wheel/command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 296,
+      "sha256": "7627bcbce9fdfdfadaf6b40a4e217941cf56c19e949110296b577c8f4f422398"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/wheel/result.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 584,
+      "sha256": "4d1681670a8944bdda9fa58e28df7528fbb0af9083ea3538eabad5c5fad32a7b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/wheel/stderr",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 15107,
+      "sha256": "97546f00efa304ef82911b592cebfbdd622560a0cc0f6bd6dc969b0c1a637d18"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/gate/wheel/stdout",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/raw/receipt-manifest.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 10230,
+      "sha256": "54ed7155519c8bf84d6c78cd14ba42f6b1861483cc0565411e2a084f13a61fc6"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/start.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 456,
+      "sha256": "e10cb491b88869680a4561e6870c6f314f9fc1dd92be105f7a2c80246e7c23df"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud-attempt-4/upload.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/PROTOCOL.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 6385,
+      "sha256": "f11d71f6b4ead6253357c0b98b04caa446779aae6b602aaccf91ec5db922f26c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/baseline-source-equivalence.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 207,
+      "sha256": "4a1409b938548ae151d215f1b94d5f14404c8d0fb7a73838d09d6bec729c70eb"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/common.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 5102,
+      "sha256": "87979ef73e3a4eec03746133a35c1b58766903c33662c491c6491daec5bc2439"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/compare.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4677,
+      "sha256": "d27e262262ee7d6273a4ff7e9d4511913b049bf88b5d069091a6b5be0a8d3d00"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/expected.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 289282,
+      "sha256": "fa21b7338ddcc72cbf3c9bc5a8e9fbf02d2ad956cef490288cd728669a871cd5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/frozen_public_tests/test_transparent_struct_fields.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3261,
+      "sha256": "b46e8ce65f2b97e7fad69f82cb5e5e9defd982673bea72a4098f725d8ca14fe3"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/host_run.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4056,
+      "sha256": "b9ae0ee1fc2db014b0397143c3fe9f3eb40d3c7a4fd6926e8251b1c2e3563d37"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/pack.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1059,
+      "sha256": "abc67889e795f194aeb967d9e5bb636a953fd930598a76cfe2ee2d5307587171"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/preflight.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1516,
+      "sha256": "d5d57694d08369a2df4a1b9a7b940a680edee04a5700b435ddfa3083f1e53d0c"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/prepare.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 5437,
+      "sha256": "b9ac1fbbeb9855ec0b36a3d25de30e50bda677396b2c7a8b921de3b8e3289bc5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/cloud/worker.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3859,
+      "sha256": "2e3edc462e58c757c48ac3a2e1612edd7963262b4ecb866dad3ce187345a6e84"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/provisioning-inventory/RESULTS.md",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1829,
+      "sha256": "805f0059765887eaa2bc58103c1b348de3ee6a0fa156248834309a363fc9176f"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/provisioning-inventory/assets.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 7162,
+      "sha256": "a2400f2b03225ee4ff5f5340bf7129a8af6343d69f05dc84de9fdf6399bba8a7"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/provisioning-inventory/external-input-reference-scan.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 169,
+      "sha256": "4c557c149c4ae68c190b18786a4adc3b8e03dc5cd32d337531d09e76e8af16b2"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/provisioning-inventory/test-io-reference-scan.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 19137,
+      "sha256": "bd1f9e8f814c6e5acc4fc3f5821bce985292bb5fe4f1df38f3b007bbe7260bbd"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/provisioning-inventory/upload.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 210,
+      "sha256": "cc6a2694ae542f208f5c920466fe8ee12e57fadef80c28f91eb2916b898c6b93"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/bitmap-wheel.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 6822,
+      "sha256": "2cd656d7d90de4e2fa536ea196c140e12b544a391d42d248c11f8f50816b5474"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/initial-candidate-plan.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4408,
+      "sha256": "cefbe960ed51b0249a4d9d9297338824d11a52b82de7457e2f3775f302717a35"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/manifest.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2668,
+      "sha256": "f6ac1d1747aefd4bea6df7334133f792614d01e7a27b0679b10b1ce9390b810b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/provenance.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 7833,
+      "sha256": "f4e78cdc101265afca9c45e9a11b1010ba3b323d36775d96745f691ca95e18e5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/python-baseline-final.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 98,
+      "sha256": "581a45187c8dcdb9efada67726a61c9d65b51cea9c2988a07cdde593a553d8a5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/python-baseline.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 98,
+      "sha256": "786b493e290582ff456045dc5a4eaa819162ba5164f9a2306d01c86f4d15f3fc"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/python-candidate.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 98,
+      "sha256": "ba53b99a1b3e9af9b131c2cb09a65214aa51a7967f6029e4b89832726bc84a33"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/run-public-gate.py",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1116,
+      "sha256": "c53aca819604f020c9ae55c437f1942bbfd15af31d0fa6f7c907448fb760c500"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/rust-bitmap.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3160,
+      "sha256": "f57acf51fcceac89b61b41cb598eb90801d32d9d722e0588bbe78211ca1d0ede"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/rust-followup.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3005,
+      "sha256": "9711f149ef5a9c5a4228b3a388f6088bba1024690f962fc48b72e82523bf7012"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/rust-whole-bitmap.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3230,
+      "sha256": "3b3de5a1a3d3f80c31c96b65e5911ada2eac93016db6c887c8c5baa8d517cebc"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/rust.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4092,
+      "sha256": "645cee0a4a966416db222d5cf1bfc2ce6aa5914351e515107d822a30180f0a1a"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/short-span-counterexample.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 3240,
+      "sha256": "3f1ec55494322d1b4687cd4b38d2a6598786d8ef97773c4582c3f14587678e7d"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/wheel.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 16006,
+      "sha256": "c38dabfc07287e94959eadd017b75f75877ac02fa7f8b05fab897fa69587682b"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-install.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 446,
+      "sha256": "e1895adf66520f5041f40a926527494f8c4666c8c6d3d339a3627279ca038497"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-plan.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 4459,
+      "sha256": "f50fb9c55057adb78c09e9a5a222e20f4fcd33905b1db78de13635faacd6a99f"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-public-command.json",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 1863,
+      "sha256": "edad1550461333bc7d503017c46f75764242875398d88f84bc344513e6f5d632"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-public-exit.txt",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-public.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 581,
+      "sha256": "9023e475887387bab62ad48057f0e3d65fa87ccbd8cabd63c047f531a98d5da5"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-public.xml.gz",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 7157,
+      "sha256": "c2f659df006c9d4c732249a9a99d259a241d94714388b649644a89828327ffc3"
+    },
+    {
+      "path": "vail/conformance/runs/20261026-owning-coordinate-sum/receipts/whole-bitmap-wheel.log",
+      "role": "evidence_protocol_or_documentation",
+      "bytes": 15696,
+      "sha256": "3628917214415e7a0782819ceedbe57d6c77d8a262391cf1f3df542c1cf687be"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate.rs",
+      "role": "production",
+      "bytes": 70278,
+      "sha256": "7767467dccdff920bb7365c5f273d0f2c2eab872274dbcd3e4e64e6f2e9c4539"
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/owning_coordinate_sum.rs",
+      "role": "public_test",
+      "bytes": 14027,
+      "sha256": "c271ec480b56f0ed5498167ea15c5345c77844f0cb26d490318db3fe43ab5df4"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregation.rs",
+      "role": "production",
+      "bytes": 61320,
+      "sha256": "8e1d87de03a8ace1e6a3c986e866a82d009011be1801f60684b71f4e36f051be"
+    },
+    {
+      "path": "vail/python/tests/test_matrix_owning_coordinate_sum.py",
+      "role": "public_test",
+      "bytes": 2401,
+      "sha256": "8c725f78b26de06f17b57a8071f6038d0602a3ec42c81637e27c7ac41d0708ff"
+    },
+    {
+      "path": "vail/python/vail/matrix_list_aggregates.py",
+      "role": "production",
+      "bytes": 42173,
+      "sha256": "501c3efd216daaf02b6880d4200f047a3c65399da89c676dd646f91ee16ccbcb"
+    },
+    {
+      "path": "vail/python/vail/matrixtable.py",
+      "role": "production",
+      "bytes": 139275,
+      "sha256": "d453a8674a5181b776457a13bf822d8291af2f0f5eb72849e57c88e9bf1743ee"
+    }
+  ]
+}
