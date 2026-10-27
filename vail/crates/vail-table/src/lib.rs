@@ -1009,6 +1009,32 @@ impl TableIR {
         ))
     }
 
+    /// Derive a consumer-local entries contract before any logical schema is
+    /// frozen. The executable producer and its shared globals remain unchanged.
+    /// Unsupported nodes retain their original contract for whole-route fallback.
+    fn with_entries_output_fields(self: &Arc<Self>, names: &std::collections::HashSet<String>) -> Option<TableRef> {
+        if self.keys.iter().any(|key| !names.contains(key)) {
+            return None;
+        }
+        let node = match &self.node {
+            TableNode::MatrixEntriesByKeyRuns { .. } => self.node.clone(),
+            TableNode::MapGlobals { child } if self.keys == child.keys => TableNode::MapGlobals {
+                child: child.with_entries_output_fields(names)?,
+            },
+            _ => return None,
+        };
+        let fields = self.schema.fields().iter()
+            .filter(|field| names.contains(field.name()))
+            .cloned().collect::<Vec<_>>();
+        if fields.len() == self.schema.fields().len() {
+            return None;
+        }
+        Some(Self::new(
+            Arc::new(Schema::new_with_metadata(fields, self.schema.metadata().clone())),
+            self.keys.clone(), self.globals.clone(), node,
+        ))
+    }
+
     pub fn map_rows(self: &Arc<Self>, fields: Vec<(String, ScalarIR)>) -> Result<TableRef> {
         self.map_rows_bound(fields, GlobalBindings::new())
     }

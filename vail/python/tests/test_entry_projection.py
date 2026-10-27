@@ -64,3 +64,30 @@ def test_changed_keys_keep_sorted_entry_semantics(tmp_path):
     assert [(x.reversed, x.col_idx, x.value) for x in actual] == [
         (-r, c, r * 10 + c) for r in reversed(range(9)) for c in range(3)
     ]
+
+
+def test_entry_projection_aliases_do_not_mutate_shared_consumer(tmp_path):
+    m = hl.range_matrix_table(7, 4, 3)
+    m = m.annotate_rows(label=hl.str(m.row_idx))
+    m = m.annotate_entries(value=m.row_idx * 10 + m.col_idx,
+                           unused=hl.struct(payload=hl.range(m.col_idx + 2)))
+    m = m.key_rows_by(r=m.row_idx // 2)
+    m = m.key_cols_by(c=m.col_idx // 2)
+    m = m.filter_entries((m.row_idx + m.col_idx) % 3 != 0)
+    path = str(tmp_path / 'shared.mt')
+    m.write(path)
+    source = hl.read_matrix_table(path).entries()
+    narrow = source.select(alias=source.value)
+    wide_before = source.collect()
+    assert sorted((x.r, x.c, x.alias) for x in narrow.collect()) == sorted(
+        (r // 2, c // 2, r * 10 + c)
+        for r in range(7) for c in range(4) if (r + c) % 3 != 0)
+    wide_after = source.collect()
+    assert wide_before == wide_after
+    assert all(x.unused.payload == list(range(x.value % 10 + 2)) for x in wide_after)
+    # A computed consumer is outside the simple-column admission and must
+    # preserve its existing semantics independently of the shared projection.
+    computed = source.select(value=source.value + 1)
+    assert sorted((x.r, x.c, x.value) for x in computed.collect()) == sorted(
+        (r // 2, c // 2, r * 10 + c + 1)
+        for r in range(7) for c in range(4) if (r + c) % 3 != 0)
