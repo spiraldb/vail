@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use arrow_array::types::Int32Type;
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, GenericListArray, LargeListArray, ListArray, OffsetSizeTrait, RecordBatch, RecordBatchOptions, StructArray,
+    Array, ArrayRef, BooleanArray, ListArray, RecordBatch, RecordBatchOptions, StructArray,
     make_array, new_empty_array,
 };
 use arrow_array::{Int32Array, RunArray, UInt32Array};
@@ -216,26 +216,22 @@ struct StructCaptureView {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum CaptureView {
     Struct(StructCaptureView),
-    List { item: FieldRef, child: Box<CaptureView>, large: bool },
+    List { item: FieldRef, child: Box<CaptureView> },
 }
 impl CaptureView {
     fn dtype(&self) -> DataType {
         match self {
             Self::Struct(view) => DataType::Struct(view.fields.clone()),
-            Self::List { item, large: false, .. } => DataType::List(item.clone()),
-            Self::List { item, large: true, .. } => DataType::LargeList(item.clone()),
+            Self::List { item, .. } => DataType::List(item.clone()),
         }
     }
     fn prepare(source: &DataType, selected: &DataType) -> Option<Option<Self>> {
-        let large = matches!(source, DataType::LargeList(_));
-        if let (DataType::List(source), DataType::List(selected))
-            | (DataType::LargeList(source), DataType::LargeList(selected))
-            | (DataType::LargeList(source), DataType::List(selected)) = (source, selected)
+        if let (DataType::List(source), DataType::List(selected)) = (source, selected)
         {
             let child = Self::prepare(source.data_type(), selected.data_type())?;
             return Some(child.map(|child| Self::List {
                 item: Arc::new(source.as_ref().clone().with_data_type(child.dtype())),
-                child: Box::new(child), large,
+                child: Box::new(child),
             }));
         }
         let (DataType::Struct(source), DataType::Struct(selected)) = (source, selected) else {
@@ -262,36 +258,32 @@ impl CaptureView {
         }).collect::<Vec<_>>().into();
         Some(Some(Self::Struct(StructCaptureView { fields, children })))
     }
-    fn bind_list<O: OffsetSizeTrait>(
-        list: &GenericListArray<O>, item: &FieldRef, child: &Self,
+    fn bind_list(
+        list: &ListArray, item: &FieldRef, child: &Self,
     ) -> Result<ArrayRef> {
         let offsets = list.offsets();
         let first = offsets[0];
-        let start = first.as_usize();
-        let stop = offsets[offsets.len() - 1].as_usize();
+        let start = first as usize;
+        let stop = offsets[offsets.len() - 1] as usize;
         // Safe Struct constructors may scan child validity. Exclude the owner
         // outside this list's referenced envelope before building child views.
         let values = list.values().slice(start, stop - start);
         let offsets = if start == 0 { offsets.clone() } else {
             OffsetBuffer::new(ScalarBuffer::from(offsets.iter().map(|offset| *offset - first).collect::<Vec<_>>()))
         };
-        Ok(Arc::new(GenericListArray::<O>::try_new(
+        Ok(Arc::new(ListArray::try_new(
             item.clone(), offsets, child.bind(&values)?, list.nulls().cloned(),
         )?))
     }
     fn bind(&self, source: &ArrayRef) -> Result<ArrayRef> {
         let view = match self {
             Self::Struct(view) => view,
-            Self::List { item, child, large: false } => {
+            Self::List { item, child } => {
                 let list = source.as_any().downcast_ref::<ListArray>().ok_or_else(||
                     DataFusionError::Execution("row capture view requires ListArray".into()))?;
                 return Self::bind_list(list, item, child);
             }
-            Self::List { item, child, large: true } => {
-                let list = source.as_any().downcast_ref::<LargeListArray>().ok_or_else(||
-                    DataFusionError::Execution("row capture view requires LargeListArray".into()))?;
-                return Self::bind_list(list, item, child);
-            }
+
         };
         let values = source.as_any().downcast_ref::<StructArray>().ok_or_else(||
             DataFusionError::Execution("row capture view requires StructArray".into()))?;

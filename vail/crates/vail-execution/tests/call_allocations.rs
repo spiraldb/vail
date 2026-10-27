@@ -4,7 +4,7 @@ use std::cell::Cell;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, LargeListArray, Int32Array, Int64Array, ListArray, RecordBatch, StringArray, StructArray,
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, RecordBatch, StringArray, StructArray,
     UInt8Array, UInt16Array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
@@ -643,7 +643,7 @@ fn unused_call_siblings_at_any_struct_depth_do_not_grow_capture_allocations() {
     }
 }
 
-fn mapped_array_capture_input(bytes: usize, start: usize, gap: usize, large: bool) -> (RecordBatch, Expr) {
+fn mapped_array_capture_input(bytes: usize, start: usize, gap: usize) -> (RecordBatch, Expr) {
     let count = start * 2 + gap + 8;
     let mut numbers = vec![0; count];
     numbers[start..start+4].copy_from_slice(&[1, 2, 3, 4]);
@@ -663,17 +663,7 @@ fn mapped_array_capture_input(bytes: usize, start: usize, gap: usize, large: boo
             OffsetBuffer::new(ScalarBuffer::from(vec![start as i32, (start+2) as i32, (start+4+gap) as i32, (start+6+gap) as i32, (start+8+gap) as i32])), values,
             Some(NullBuffer::from(vec![true, true, true, false])),
         ));
-        let items: ArrayRef = if large {
-            let list = items.as_any().downcast_ref::<ListArray>().unwrap();
-            Arc::new(LargeListArray::new(Arc::new(Field::new("item", list.value_type(), true)),
-                OffsetBuffer::new(ScalarBuffer::from(list.offsets().iter().map(|x| i64::from(*x)).collect::<Vec<_>>())),
-                list.values().clone(), list.nulls().cloned()))
-        } else { items };
-        let logical = match items.data_type() {
-            DataType::LargeList(item) => DataType::List(item.clone()),
-            other => other.clone(),
-        };
-        let ty = Type::from_arrow(&logical).unwrap();
+        let ty = Type::from_arrow(items.data_type()).unwrap();
         let Type::Array { array: element_type } = &ty else { unreachable!() };
         let element_type = element_type.as_ref().clone();
         let fields: ArrayRef = Arc::new(StructArray::from(vec![(
@@ -705,7 +695,7 @@ fn mapped_array_capture_input(bytes: usize, start: usize, gap: usize, large: boo
 fn mapped_array_struct_capture_drops_unused_element_payload() {
     let mut sizes = Vec::new();
     for bytes in [8, 64 * 1024] {
-        let (batch, expression) = mapped_array_capture_input(bytes, 0, 0, false);
+        let (batch, expression) = mapped_array_capture_input(bytes, 0, 0);
         let (output, allocated) = evaluate_aligned_allocated_bytes(&batch, &expression);
         let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
         let actual = lists.iter().map(|row| row.map(|array|
@@ -723,8 +713,8 @@ fn mapped_array_struct_capture_drops_unused_element_payload() {
 fn mapped_sliced_lists_preserve_nullable_elements_and_hidden_gap_values() {
     // The second row has no entries; its list span is hidden from evaluation.
     // A sliced owner and an interior gap exercise distinct constructor domains.
-    for (owner, gap, large) in [(0, 0, false), (65_536, 0, false), (0, 65_536, false), (65_536, 0, true)] {
-        let (batch, expression) = mapped_array_capture_input(8, owner, gap, large);
+    for (owner, gap) in [(0, 0), (65_536, 0), (0, 65_536)] {
+        let (batch, expression) = mapped_array_capture_input(8, owner, gap);
         let (output, _) = evaluate_aligned_allocated_bytes(&batch, &expression);
         let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
         let actual = lists.iter().map(|row| row.map(|array|
