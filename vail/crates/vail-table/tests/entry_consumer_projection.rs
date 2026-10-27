@@ -123,6 +123,16 @@ async fn selected_values_ignore_missing_ancestors_and_preserve_shared_wide_consu
             let hidden = unused.column_by_name("hidden").unwrap().as_any().downcast_ref::<ListArray>().unwrap();
             for index in 0..batch.num_rows() {
                 assert!(!unused.is_null(index));
+                if !defined.is_null(index) {
+                    let payload = defined.value(index);
+                    let payload = payload.as_any().downcast_ref::<Int32Array>().unwrap();
+                    assert_eq!(payload.iter().collect::<Vec<_>>(),
+                        vec![Some(17); if wide_payload.is_empty() { 1024 } else { 0 }]);
+                }
+                // A null hidden sibling has no observable payload to assert.
+                if !hidden.is_null(index) {
+                    assert_eq!(hidden.value(index).len(), 0);
+                }
                 wide_payload.push(((!defined.is_null(index)).then(|| defined.value_length(index)),
                                    (!hidden.is_null(index)).then(|| hidden.value_length(index))));
             }
