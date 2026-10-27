@@ -1,0 +1,51 @@
+{
+  "base_main": "c3f3155ee90f6ff6735bdcc731a71bf9f0181879",
+  "scope": "SOURCE/DOC ONLY",
+  "selected": "H051 output/materialization projection",
+  "items": [
+    {
+      "id": "H051",
+      "source": "crates/vail-table/src/matrix_entries.rs",
+      "sha256": "b364fe2182714f6a997c0ff2c93646c9ac05fad9080758c1da2c30e623751636",
+      "disposition": "propose consumer-local output projection before concat/spill/take",
+      "state": "source_inspected_only; no current runtime attribution",
+      "implemented": false
+    },
+    {
+      "id": "H028",
+      "source": "crates/vail-execution/src/matrix_transpose.rs",
+      "sha256": "662e2b489fd67f4ddd1516e1308ae6c746ac1f883f9bd13adf1ca7bd831b5ba7",
+      "disposition": "defer; historical10.16% needs current-path confirmation",
+      "state": "source_inspected_only; no current runtime attribution",
+      "implemented": false
+    },
+    {
+      "id": "H012",
+      "source": "crates/vail-execution/src/aligned_matrix_map.rs",
+      "sha256": "3a2d2b86c8a246d35b4e0797427a2ea6be663bc44d8df77c2fd45093b9f88b85",
+      "disposition": "defer; distinguish scalar_rows fallback from existing flat path",
+      "state": "source_inspected_only; no current runtime attribution",
+      "implemented": false
+    },
+    {
+      "id": "H008",
+      "source": "crates/vail-execution/src/matrix_arrays.rs",
+      "sha256": "22a04941737b43312e9dacff14985fa6086dabf47c0ecd689352fd8abe34f96c",
+      "disposition": "defer with alignment package; no isolated scalar-flag microfix",
+      "state": "source_inspected_only; no current runtime attribution",
+      "implemented": false
+    },
+    {
+      "id": "H052",
+      "source": "crates/vail-execution/src/matrix_arrays.rs",
+      "sha256": "22a04941737b43312e9dacff14985fa6086dabf47c0ecd689352fd8abe34f96c",
+      "disposition": "defer; action-local shared descriptor reuse needs actual profile",
+      "state": "source_inspected_only; no current runtime attribution",
+      "implemented": false
+    }
+  ],
+  "historical_parallelism_fix_57935256_already_merged": true,
+  "prior_failed_hook_not_repeated": "EmbeddedProjection blocked by frozen ConsumerScope; no wrapper weakening",
+  "runtime_status": "No build/query/profile/VM; historical profile is not current proof",
+  "h089": "completed narrow scope on main; no expansion/DP rerun"
+}
