@@ -1,0 +1,11 @@
+{"literal_R_duplicate": {"value": [10, 20, 7]}}
+{"literal_A_slot0_nonzero_duplicate": {"value": [20, 7]}}
+{"R_present_null_vs_absent": {"value": [10, 7, null, 7]}}
+{"A_present_null_vs_absent": {"value": [null, 7, 7]}}
+{"R_missing_fill": {"value": [10, null, 20, null]}}
+{"dynamic_R_duplicate": {"value": [[10, 20, 7], [10, 20, 7]]}}
+{"dynamic_A_slot0_nonzero_duplicate": {"value": [[20, 7], [20, 7]]}}
+{"error_fill_all_present_observation": {"value": [10, 20]}}
+{"error_fill_gap_observation": {"error_type": "FatalError", "error": "Execution error: DataFusion expression failed: Execution error: H085 fill observation"}}
+{"seeded_rng_fill_observation": {"value": [10.0, 0.4217471874839185, 0.5242805301763891, 0.1248615597520851]}}
+{"status": "literal_and_dynamic_oracles_PASS", "effect_observations_not_general_contract": true}
