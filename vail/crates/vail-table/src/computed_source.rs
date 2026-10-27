@@ -521,9 +521,8 @@ impl ExecutionPlan for ComputedExec {
                 "source partition out of range".into(),
             ));
         }
-        let mut input = self
-            .source
-            .computed_partition_batches(partition, &self.prepared);
+        let source = self.source.with_scan_metrics(crate::read_metrics::register(&self.metrics, partition));
+        let mut input = source.computed_partition_batches(partition, &self.prepared);
         let schema = self.schema.clone();
         let output_schema = schema.clone();
         let indices = self.indices.clone();
