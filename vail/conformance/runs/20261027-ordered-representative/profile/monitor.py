@@ -1,11 +1,11 @@
 """Bounded duration-driven one-sample monitor, with decision and cleanup receipts."""
 import argparse,json,os,shutil,signal,subprocess,time
 from pathlib import Path
-from common import stop_owned
+from common import stop_owned,JsonEvents
 
 def observe(query_command,sample_command,out,env,*,sample_limit=5,hard_limit=16,process_limit=60,action_limit=10,output_limit=64*1024**2):
     out=Path(out);out.mkdir(parents=True,exist_ok=False)
-    query=sampler=None;record={'error':None,'owned_groups_clean':False,'gates':{},'completed_actions':0};cursor=0;partial=b'';active={};t0=None;sample_started=None;sample_finished=None;closed=None
+    query=sampler=None;record={'error':None,'owned_groups_clean':False,'gates':{},'completed_actions':0};events=JsonEvents();active={};t0=None;sample_started=None;sample_finished=None;closed=None
     log=err=None;start=time.monotonic()
     def fail(reason):record['gates'][reason]=False;raise RuntimeError(reason)
     try:
@@ -21,12 +21,7 @@ def observe(query_command,sample_command,out,env,*,sample_limit=5,hard_limit=16,
             rss=next((int(s.split()[1])*1024 for s in status.splitlines() if s.startswith('VmRSS:')),0)
             record['monitor_maxrss_bytes']=max(record.get('monitor_maxrss_bytes',0),rss)
             if rss>6*1024**3:fail('rss_cap')
-            with (out/'stdout').open('rb') as source:
-                source.seek(cursor);chunk=source.read(output_limit+1-cursor);cursor+=len(chunk)
-            partial+=chunk
-            lines=partial.split(b'\n');partial=lines.pop()
-            for line in lines:
-                event=json.loads(line)
+            for event in events.read(out/'stdout',output_limit):
                 if event['phase']=='action_start':
                     if t0 is not None and event['monotonic']>t0+sample_limit:fail('launch_after_close_deadline')
                     active[event['id']]=event['monotonic']
@@ -38,11 +33,11 @@ def observe(query_command,sample_command,out,env,*,sample_limit=5,hard_limit=16,
             if t0 is not None:
                 if sampler is None:
                     command=[str(arg).replace('{pid}',str(query.pid)).replace('{out}',str(out)) for arg in sample_command]
-                    record['sampler_command']=command;sample_started=time.monotonic();record['sampler_launch']=sample_started
+                    record['sampler_command']=command;sample_started=time.monotonic();record['sampler_popen_before_observed']=sample_started
                     sampler=subprocess.Popen(command,cwd=out,env=env,stdout=err,stderr=err,start_new_session=True)
                 sampler_status=sampler.poll()
                 if sampler_status is not None and sample_finished is None:
-                    sample_finished=time.monotonic();record['sampler_decision_status']=sampler_status;record['sampler_finished']=sample_finished
+                    sample_finished=time.monotonic();record['sampler_decision_status']=sampler_status;record['sampler_exit_poll_observed']=sample_finished
                     if sampler_status!=0:fail('sampler_exit')
                     if sample_finished>t0+sample_limit:fail('sample_completion_deadline')
                     closed=time.monotonic();(out/'stop-launch').touch();record['launch_closed']=closed;record['gates']['sampler_success_in_window']=True
@@ -54,10 +49,10 @@ def observe(query_command,sample_command,out,env,*,sample_limit=5,hard_limit=16,
             if query_status is not None:
                 record['query_decision_status']=query_status;record['decision_time']=time.monotonic();record['stdout_bytes_at_decision']=size
                 if (out/'stdout').stat().st_size>output_limit:fail('full_output_cap')
-                if (out/'stdout').stat().st_size>cursor:continue
+                if (out/'stdout').stat().st_size>events.offset:continue
                 if query_status!=0:fail('query_exit')
                 if sample_finished is None:fail('query_ended_before_sample')
-                if active or partial:fail('incomplete_action_or_line')
+                if active or events.buffer:fail('incomplete_action_or_line')
                 record['gates']['complete_action_stream']=True
                 break
             time.sleep(.02)

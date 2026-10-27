@@ -50,6 +50,27 @@ def stop_owned(process):
     if not complete():
         raise RuntimeError(f'Owned process group {group} unresolved after SIGKILL; leader={process.returncode}')
 
+class JsonEvents:
+    """Incremental JSON lines; only the uncompleted line survives each read."""
+    def __init__(self):
+        self.offset=0;self.buffer=bytearray();self.scan=0
+    def read(self,path,limit):
+        path=Path(path)
+        if path.stat().st_size>limit:raise RuntimeError('full_output_cap')
+        with path.open('rb') as source:
+            source.seek(self.offset);chunk=source.read(limit+1-self.offset)
+        self.offset+=len(chunk)
+        if self.offset>limit:raise RuntimeError('full_output_cap')
+        if not chunk:return
+        self.buffer.extend(chunk);consumed=0
+        while True:
+            end=self.buffer.find(b'\n',self.scan)
+            if end<0:self.scan=len(self.buffer);break
+            line=bytes(self.buffer[consumed:end]);consumed=end+1;self.scan=consumed
+            yield json.loads(line)
+        if consumed:
+            del self.buffer[:consumed];self.scan-=consumed
+
 def guarded(command, output, cwd, env, seconds, *, query=False, action_seconds=10, storage=None):
     """One attempt; always retain status and reap the owned process group."""
     output = Path(output)
@@ -61,7 +82,7 @@ def guarded(command, output, cwd, env, seconds, *, query=False, action_seconds=1
     started = time.monotonic()
     maxrss = 0
     previous = {}
-    cursor=0;partial=b''
+    events=JsonEvents()
     def interrupted(signum, _frame):
         raise InterruptedError(f'signal {signum}')
     handlers = {sig: signal.signal(sig, interrupted) for sig in (signal.SIGINT, signal.SIGTERM)}
@@ -90,11 +111,7 @@ def guarded(command, output, cwd, env, seconds, *, query=False, action_seconds=1
                         raise MemoryError('6GiB whole-process live RSS')
                     if (output/'stdout').stat().st_size>64*1024**2:
                         raise RuntimeError('64MiB full stdout cap; fail not truncate')
-                    with (output/'stdout').open('rb') as source:
-                        source.seek(cursor);chunk=source.read(64*1024**2+1-cursor);cursor+=len(chunk)
-                    partial+=chunk;lines=partial.split(b'\n');partial=lines.pop()
-                    for line in lines:
-                        event=json.loads(line)
+                    for event in events.read(output/'stdout',64*1024**2):
                         if event['phase']=='action_start':previous[event['id']]=event['monotonic']
                         elif event['phase']=='action':previous.pop(event['id'],None)
                     if previous and now-min(previous.values()) > action_seconds:
