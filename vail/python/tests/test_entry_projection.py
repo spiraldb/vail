@@ -91,3 +91,23 @@ def test_entry_projection_aliases_do_not_mutate_shared_consumer(tmp_path):
     assert sorted((x.r, x.c, x.value) for x in computed.collect()) == sorted(
         (r // 2, c // 2, r * 10 + c + 1)
         for r in range(7) for c in range(4) if (r + c) % 3 != 0)
+
+
+@pytest.mark.parametrize('rows', [129, 4097])
+def test_projected_entry_values_match_full_nullable_skewed_output(rows):
+    m = hl.range_matrix_table(rows, 3, 3)
+    m = m.annotate_entries(
+        value=hl.or_missing((m.row_idx + m.col_idx) % 5 != 0, m.row_idx * 10 + m.col_idx),
+        payload=hl.or_missing(m.row_idx % 7 != 0,
+                              hl.if_else(m.row_idx == 1, 'x' * 32768, 'y')),
+    )
+    m = m.key_rows_by(r=m.row_idx // 2)
+    m = m.filter_entries((m.row_idx + m.col_idx) % 11 != 0)
+    source = m.entries()
+    full = source.collect()
+    projected = source.select('value').collect()
+    assert [(x.r, x.col_idx, x.value) for x in projected] == [
+        (x.r, x.col_idx, x.value) for x in full]
+    assert sorted((x.r, x.col_idx, x.value) for x in projected if x.value is not None) == sorted(
+        (r // 2, c, r * 10 + c) for r in range(rows) for c in range(3)
+        if (r + c) % 11 != 0 and (r + c) % 5 != 0)
