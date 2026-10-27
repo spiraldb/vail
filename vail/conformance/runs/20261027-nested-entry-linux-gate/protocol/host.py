@@ -4,7 +4,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 GCLOUD='/Users/danielking/projects/google-cloud-sdk/bin/gcloud'
 VM='vail-bench-20261021';IDENTITY=['--project=pyspiral-dev','--zone=us-east1-b']
-REMOTE=Path('/home/danielking/nested-entry-linux-tests-20261027')
+REMOTE=Path('/home/danielking/nested-entry-linux-tests-20261027-attempt-2')
 p=argparse.ArgumentParser();p.add_argument('--out',required=True);p.add_argument('--stage',choices=['rust-tests'],required=True);a=p.parse_args();out=Path(a.out).resolve()
 if not out.is_relative_to('/private/tmp') or out.exists():raise RuntimeError('Fresh owned local /private/tmp output required')
 out.mkdir();record={'error':None,'owned_vm':False,'guest_complete':False,'stage':a.stage,'download_verified':False,'provider_stopped':False,'unresolved_host_groups':[]}

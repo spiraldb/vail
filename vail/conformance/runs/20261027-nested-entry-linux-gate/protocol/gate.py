@@ -62,7 +62,7 @@ def scan_identity():
  for name,sha in frozen['frontend_sha256'].items():
   if digest(root/name)!=sha:raise RuntimeError('Read-only scan frontend changed:'+name)
  if digest(root/'_native.abi3.so')!=frozen['native_sha256']:raise RuntimeError('Read-only scan native changed')
- runtime={'python':sys.version,'executable':sys.executable,'platform':platform.platform(),'packages':sorted([(d.metadata['Name'],d.version) for d in metadata.distributions()])}
+ runtime={'python':sys.version,'executable':sys.executable,'platform':platform.platform(),'packages':sorted([[d.metadata['Name'],d.version] for d in metadata.distributions()])}
  if runtime!=frozen['runtime']:raise RuntimeError('Read-only Python runtime/package inventory drift')
  return {'native_sha256':frozen['native_sha256'],'frontend_files':len(frozen['frontend_sha256']),'runtime':runtime}
 def interrupted(signum,frame):raise InterruptedError('signal'+str(signum))
@@ -80,7 +80,10 @@ try:
  native=Path(E['python']).parent.parent/'lib/python3.12/site-packages/vail/_native.abi3.so'
  record['scan_native_before']=digest(native)
  if record['scan_native_before']!='4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c':raise RuntimeError('Installed scan artifact changed')
- verify(E['previous_owned_source']['files']);record['previous_source_files_verified']=len(E['previous_owned_source']['files'])
+ verify(E['previous_owned_source']['files'])
+ previous_build={n for n in E['previous_owned_source']['files'] if Path(n).suffix in {'.rs','.toml','.lock'} and not n.startswith(('vail/conformance/','vail/python/','vail/benchmarks/'))}
+ if len(previous_build)!=E['previous_owned_source']['build_file_count'] or build_file_set()!=previous_build:raise RuntimeError('Previous complete Rust/Cargo source file SET differs')
+ record['previous_source_files_verified']=len(E['previous_owned_source']['files'])
  source_archive=HERE/'source.tar.gz'
  if source_archive.stat().st_size!=E['source_archive_bytes'] or digest(source_archive)!=E['source_archive_sha256']:raise RuntimeError('Candidate source archive mismatch')
  prepared_data={}
