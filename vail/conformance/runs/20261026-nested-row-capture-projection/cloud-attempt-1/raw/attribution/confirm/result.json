@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/bin/python",
+    "/home/danielking/h012-matched-20261027/protocol/worker.py",
+    "candidate",
+    "--lock",
+    "/home/danielking/h012-matched-20261027/run-1/gate/artifact-lock.json",
+    "--reference",
+    "/home/danielking/h012-matched-20261027/run-1/gate/independent-reference.json",
+    "--profile-mode",
+    "confirm",
+    "--stop-launch",
+    "/home/danielking/h012-matched-20261027/run-1/attribution/stop-launch"
+  ],
+  "elapsed_seconds": 1.5651715729999864,
+  "returncode": 0,
+  "error": null,
+  "owned_groups_clean": true,
+  "monitor_maxrss_bytes": 866656256,
+  "rss_scope": "whole child process; includes construction and warmups",
+  "monitoring": "50ms /proc RSS/action watchdog; overhead not subtracted"
+}

@@ -1,0 +1,13 @@
+
+running 8 tests
+test accessor_allocations_do_not_scale_with_number_of_calls ... ok
+test aligned_map_column_metadata_allocations_do_not_scale_with_payload_bytes ... ok
+test call_execution_trusts_stored_fields_and_parent_validity ... ok
+test constructor_borrows_sliced_alleles_without_per_call_wrappers ... ok
+test direct_call_index_allocates_only_primitive_output_not_allele_lists ... ok
+test flat_nested_row_capture_drops_unused_payload_before_nonidentity_take_and_decode ... ok
+test packed_predicate_throughput ... ignored, manual packed Call throughput measurement
+test public_direct_properties_cover_uint16_alleles ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

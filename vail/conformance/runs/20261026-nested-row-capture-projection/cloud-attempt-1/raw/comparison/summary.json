@@ -1,0 +1,254 @@
+{
+  "independent_processes_per_version": 4,
+  "repeated_timed_observations_per_process_per_query": 4,
+  "process_order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline",
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "records": [
+    {
+      "process": 0,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5372943030000101,
+          "core_seconds": 13.192364587000004
+        },
+        "whole_full": {
+          "wall_seconds": 0.8344769305000028,
+          "core_seconds": 21.522477699499998
+        },
+        "scalar": {
+          "wall_seconds": 0.2843036175000151,
+          "core_seconds": 7.166482258499997
+        }
+      },
+      "process_peak_rss_bytes": 1153671168
+    },
+    {
+      "process": 1,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5093760519999933,
+          "core_seconds": 12.437872273
+        },
+        "whole_full": {
+          "wall_seconds": 0.8619073619999966,
+          "core_seconds": 21.4931182295
+        },
+        "scalar": {
+          "wall_seconds": 0.285629761999985,
+          "core_seconds": 7.191148164000005
+        }
+      },
+      "process_peak_rss_bytes": 1162555392
+    },
+    {
+      "process": 2,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5033874019999871,
+          "core_seconds": 12.416881609499995
+        },
+        "whole_full": {
+          "wall_seconds": 0.853915065999999,
+          "core_seconds": 21.390184893499992
+        },
+        "scalar": {
+          "wall_seconds": 0.27976520699999696,
+          "core_seconds": 7.188869360999995
+        }
+      },
+      "process_peak_rss_bytes": 1181159424
+    },
+    {
+      "process": 3,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5243323170000025,
+          "core_seconds": 13.213923026999986
+        },
+        "whole_full": {
+          "wall_seconds": 0.8361084400000038,
+          "core_seconds": 21.127860857499996
+        },
+        "scalar": {
+          "wall_seconds": 0.2795839139999998,
+          "core_seconds": 7.001328339999986
+        }
+      },
+      "process_peak_rss_bytes": 1174175744
+    },
+    {
+      "process": 4,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5424166010000135,
+          "core_seconds": 13.389712585999995
+        },
+        "whole_full": {
+          "wall_seconds": 0.8408770200000077,
+          "core_seconds": 21.465469570000007
+        },
+        "scalar": {
+          "wall_seconds": 0.29697201099999404,
+          "core_seconds": 7.631262721499986
+        }
+      },
+      "process_peak_rss_bytes": 1173344256
+    },
+    {
+      "process": 5,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5008385720000064,
+          "core_seconds": 12.369574744000012
+        },
+        "whole_full": {
+          "wall_seconds": 0.840147021000007,
+          "core_seconds": 21.447722934
+        },
+        "scalar": {
+          "wall_seconds": 0.27255508750000956,
+          "core_seconds": 6.958848375500004
+        }
+      },
+      "process_peak_rss_bytes": 1167548416
+    },
+    {
+      "process": 6,
+      "version": "candidate",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5100647040000013,
+          "core_seconds": 12.493138554999994
+        },
+        "whole_full": {
+          "wall_seconds": 0.8700308700000079,
+          "core_seconds": 21.627004173500005
+        },
+        "scalar": {
+          "wall_seconds": 0.2869423045000019,
+          "core_seconds": 7.324953567999998
+        }
+      },
+      "process_peak_rss_bytes": 1141805056
+    },
+    {
+      "process": 7,
+      "version": "baseline",
+      "medians": {
+        "projected": {
+          "wall_seconds": 0.5322568249999904,
+          "core_seconds": 13.100900587499996
+        },
+        "whole_full": {
+          "wall_seconds": 0.8293111860000124,
+          "core_seconds": 21.406340906500002
+        },
+        "scalar": {
+          "wall_seconds": 0.2852894255000109,
+          "core_seconds": 7.011611211499996
+        }
+      },
+      "process_peak_rss_bytes": 1157779456
+    }
+  ],
+  "adjacent_balanced_pairs": [
+    {
+      "process_indices": [
+        0,
+        1
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.0548087231239078,
+          "core_seconds": 1.0606608829420003
+        },
+        "whole_full": {
+          "wall_seconds": 0.9681747334930016,
+          "core_seconds": 1.001365993974746
+        },
+        "scalar": {
+          "wall_seconds": 0.9953571207332029,
+          "core_seconds": 0.9965699628296508
+        }
+      }
+    },
+    {
+      "process_indices": [
+        2,
+        3
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.0416079443323374,
+          "core_seconds": 1.0641901439158592
+        },
+        "whole_full": {
+          "wall_seconds": 0.9791470759692684,
+          "core_seconds": 0.9877362427063587
+        },
+        "scalar": {
+          "wall_seconds": 0.9993519816065007,
+          "core_seconds": 0.9739123064306289
+        }
+      }
+    },
+    {
+      "process_indices": [
+        4,
+        5
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.0830168268270013,
+          "core_seconds": 1.0824715370667704
+        },
+        "whole_full": {
+          "wall_seconds": 1.0008688943503385,
+          "core_seconds": 1.0008274368358179
+        },
+        "scalar": {
+          "wall_seconds": 1.0895852787924336,
+          "core_seconds": 1.096627244871055
+        }
+      }
+    },
+    {
+      "process_indices": [
+        6,
+        7
+      ],
+      "baseline_over_candidate": {
+        "projected": {
+          "wall_seconds": 1.043508442803345,
+          "core_seconds": 1.0486476660628057
+        },
+        "whole_full": {
+          "wall_seconds": 0.9531974262016759,
+          "core_seconds": 0.9897968639008086
+        },
+        "scalar": {
+          "wall_seconds": 0.9942396817267111,
+          "core_seconds": 0.9572226153256619
+        }
+      }
+    }
+  ],
+  "expected_origin": "independent baseline row reducers plus Python key arithmetic/Unicode length fold; fingerprints frozen before timing",
+  "memory_scope": "whole process including construction, all three query warmups and all three query workloads",
+  "latency_scope": "consumed action only; construction/warmup excluded; watchdog overhead not subtracted",
+  "interpretation": "four independent processes/version; no claim of16 independent trials or asymptotic scaling"
+}

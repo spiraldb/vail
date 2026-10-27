@@ -1,0 +1,41 @@
+{
+  "baseline": {
+    "frontend": "/home/danielking/h051-matched-20261026/run-2/gate/candidate-env/lib/python3.12/site-packages/vail",
+    "native": "/home/danielking/h051-matched-20261026/run-2/gate/candidate-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "ec71f970260859c2510490dc8d48d48538d45bad1b364887a60f60f1479e2b63",
+    "python": "/home/danielking/h051-matched-20261026/run-2/gate/candidate-env/bin/python",
+    "source": "6a4ea2b44a3ecd50cae85f80116b9e7a04a5a9dc"
+  },
+  "candidate": {
+    "frontend": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/lib/python3.12/site-packages/vail",
+    "native": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c",
+    "python": "/home/danielking/h012-matched-20261027/run-1/gate/candidate-env/bin/python",
+    "source": "517c87538d58689e864af795015020e908de0be0"
+  },
+  "oracle_sha256": "8464e2ba6924e70b518eddb5d58d78898c116c6ac0614a8e955736a0fe8f3437",
+  "wheel_sha256": "0cfbb10d3ef971a1f36bf1f911dedeb2187f96c2d171c550216ca1c903637816",
+  "rust_cases": 7,
+  "rust_ignored": 1,
+  "public_cases": 446,
+  "candidate_source_files_verified": 2101,
+  "expected_protocol_sha256": "6309cfe1d8f012e87128417891cd4368c74d10bea40a847c0e82988e7cf8d70c",
+  "protocol_files": {
+    "ASSETS.json": "bfc99edbd03f966a4fecb29a4e187c505049282538f82d4d0ac959dea28fbf87",
+    "attribution.py": "6cd106d582adb985b61261f3539b725c3f91fe79f1459f1edf01b3adf0483874",
+    "bundle.py": "0281be83b407bc2464f0ac657f5b285d06acd90c93588f046b16e5c90969702b",
+    "common.py": "f1ee089fa83606d83d82e10a5403bf0ad235762e29b71ba7611eec7be400cc25",
+    "compare.py": "bb2bbed745f5b1a85ad827bbdf257d045527e99737aa57ca1a2b59ac7ba488e7",
+    "controller.py": "89c348460474d14d0a82555dbc020ab784ba2beb5cc21a891f5ff254f6bb74bd",
+    "expected.json": "6309cfe1d8f012e87128417891cd4368c74d10bea40a847c0e82988e7cf8d70c",
+    "frozen_public_tests/test_transparent_struct_fields.py": "b46e8ce65f2b97e7fad69f82cb5e5e9defd982673bea72a4098f725d8ca14fe3",
+    "host_run.py": "1da11528e2aec13856558b12b664900289c95b3e7fdfdf481d5136564fd09dca",
+    "oracle.py": "325757ecab5a86ef2aef5289d80a251db058c08c4c76558e52af3d4dd030758d",
+    "pack.py": "abc67889e795f194aeb967d9e5bb636a953fd930598a76cfe2ee2d5307587171",
+    "preflight.py": "f56b93d6b04c9046e5c0e336b64027ece3632e9c20a90f51660e82cf7bfff0f3",
+    "prepare.py": "eaefe3b984fd50429013e8466881d7e8d7eb1917dd7ff3bbbb265d85f0c97105",
+    "queries.py": "5e10c78f29b193bef3d8ea77e8a0982bfe9b378ca58e52a8a4cfe15d6065301c",
+    "test_protocol_queries.py": "e56102aec9a8707002a9d24096228752cc9b02ef5f8fab1fef51e9cb5c48e532",
+    "worker.py": "965e500b681a9f8dfd27f7884a38bcd9e62ee66e9dc18b9eb8bb4e0617181fed"
+  }
+}
