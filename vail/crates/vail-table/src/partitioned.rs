@@ -1460,6 +1460,13 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
             TableNode::KeyBy {child,keys} if keys.is_empty()=>Ok(prepared_input(child)?),
             TableNode::KeyBy { .. } => global(&table).await,
             TableNode::OrderBy {child,keys} if keys.is_empty()=>Ok(prepared_input(child)?),
+            TableNode::OrderedUnion { children } => {
+                let inputs = children.iter().map(|child| Ok(prepared_input(child)?.parts))
+                    .collect::<Result<Vec<_>>>()?;
+                let merged = crate::ordered_merge::merge(inputs, table.keys(), schema.clone())?;
+                Ok(PreparedTable { parts: vec![merged], counts: vec![None], schema })
+            }
+
             TableNode::Union {children} if table.keys().is_empty()=> {
                 let mut parts = Vec::new();
                 let mut counts = Vec::new();

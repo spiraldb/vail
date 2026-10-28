@@ -38,6 +38,7 @@ mod matrix_entries;
 mod nested_projection;
 mod computed_source;
 mod nested_scan;
+mod ordered_merge;
 mod partition_grouping;
 mod partition_map;
 pub mod partitioned;
@@ -317,6 +318,9 @@ pub enum TableNode {
         n: usize,
     },
     Union {
+        children: Vec<TableRef>,
+    },
+    OrderedUnion {
         children: Vec<TableRef>,
     },
     Distinct {
@@ -1605,6 +1609,26 @@ impl TableIR {
         ))
     }
 
+    /// Preserve the ordered left input; sort an optional right input per partition,
+    /// then stream-merge their keys. The left ordering is checked during execution.
+    pub fn ordered_union(tables: Vec<TableRef>, keys: Vec<String>) -> Result<TableRef> {
+        let first = tables.first().ok_or_else(|| {
+            TableError::Invalid("ordered union needs an input".into())
+        })?;
+        if keys.is_empty() || tables.len() > 2 || tables.iter().any(|t| t.schema != first.schema) {
+            return Err(TableError::Invalid(
+                "ordered union needs keys and identical schemas".into(),
+            ));
+        }
+        first.with_keys(keys.clone())?;
+        Ok(Self::new(
+            first.schema.clone(),
+            keys,
+            first.globals.clone(),
+            TableNode::OrderedUnion { children: tables },
+        ))
+    }
+
     pub fn distinct(self: &Arc<Self>) -> Result<TableRef> {
         if self.keys.is_empty() {
             return Err(TableError::Invalid(
@@ -1821,6 +1845,9 @@ impl TableIR {
             TableNode::Tail { child, n } => {
                 json!({"node":"TableTail", "child":child.explain(), "n":n})
             }
+            TableNode::OrderedUnion { children } => {
+                json!({"node":"TableOrderedUnion", "keys":self.keys, "children":children.iter().map(|c| c.explain()).collect::<Vec<_>>() })
+            }
             TableNode::Union { children } => {
                 json!({"node":"TableUnion", "children":children.iter().map(|c| c.explain()).collect::<Vec<_>>() })
             }
@@ -1926,7 +1953,7 @@ impl TableIR {
                 )
             }
             TableNode::Aggregate { .. } => None,
-            TableNode::Union { .. } | TableNode::Distinct { .. } => None,
+            TableNode::Union { .. } | TableNode::OrderedUnion { .. } | TableNode::Distinct { .. } => None,
             TableNode::OrderBy { child, keys } => {
                 if keys.is_empty() {
                     child.partition_rows()
@@ -1977,7 +2004,7 @@ impl TableIR {
                 Some(self.partition_rows()?.iter().sum())
             }
             TableNode::Aggregate { .. } => None,
-            TableNode::Union { children } => Some(
+            TableNode::Union { children } | TableNode::OrderedUnion { children } => Some(
                 children
                     .iter()
                     .map(|c| c.known_count())
@@ -2063,7 +2090,7 @@ impl TableIR {
                     Some(1)
                 }
             }
-            TableNode::Distinct { .. } => Some(1),
+            TableNode::Distinct { .. } | TableNode::OrderedUnion { .. } => Some(1),
             TableNode::OrderBy { child, keys } => {
                 if keys.is_empty() {
                     child.known_n_partitions()

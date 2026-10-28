@@ -945,6 +945,17 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
+    #[pyo3(signature = (keys, other=None))]
+    fn ordered_union(&self, keys: Vec<String>, other: Option<&NativeTable>) -> PyResult<Self> {
+        let mut inputs = vec![self.ir.clone()];
+        if let Some(other) = other {
+            inputs.push(other.ir.clone());
+        }
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: TableIR::ordered_union(inputs, keys).map_err(table_error)?,
+        })
+    }
     fn distinct(&self) -> PyResult<Self> {
         Ok(Self {
             runtime: self.runtime.clone(),

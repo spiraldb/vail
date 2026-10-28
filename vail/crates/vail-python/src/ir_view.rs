@@ -185,7 +185,7 @@ pub fn table<'py>(py: Python<'py>, t: &TableIR) -> PyResult<Bound<'py, PyDict>> 
             d.set_item("data_field_name", data_field_name)?;
             "TableMultiWayZipJoin"
         }
-        TableNode::Union { children } => {
+        TableNode::Union { children } | TableNode::OrderedUnion { children } => {
             d.set_item(
                 "children",
                 PyList::new(
@@ -196,7 +196,11 @@ pub fn table<'py>(py: Python<'py>, t: &TableIR) -> PyResult<Bound<'py, PyDict>> 
                         .collect::<PyResult<Vec<_>>>()?,
                 )?,
             )?;
-            "TableUnion"
+            if matches!(t.node(), TableNode::OrderedUnion { .. }) {
+                "TableOrderedUnion"
+            } else {
+                "TableUnion"
+            }
         }
         TableNode::Distinct { child } => {
             d.set_item("child", table(py, child)?)?;

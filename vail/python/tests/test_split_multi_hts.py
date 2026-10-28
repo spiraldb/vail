@@ -141,3 +141,58 @@ def test_columns_globals_and_entry_annotations_are_preserved():
     assert [r.DP for r in result.entries().collect()] == [1, 3] * 4
     assert [r.label for r in result.cols().collect()] == ['sample'] * 3
     assert hl.eval(result.study) == 'example'
+
+
+@pytest.mark.parametrize('permit_shuffle', [False, True])
+def test_moved_and_unchanged_loci_interleave_with_entries(permit_shuffle):
+    mt = hl.range_matrix_table(3, 2, n_partitions=3)
+    mt = mt.annotate_rows(
+        locus=hl.locus('1', mt.row_idx + 100),
+        alleles=hl.if_else(mt.row_idx == 0, ['CAA', 'CGA', 'TAA'], ['A', 'T', 'C']))
+    mt = mt.key_rows_by('locus', 'alleles').annotate_globals(study='split')
+    mt = mt.annotate_entries(GT=hl.call(1, 2), DP=mt.row_idx * 10 + mt.col_idx)
+    mt = mt.filter_entries(mt.col_idx == 1)
+    result = hl.split_multi_hts(mt, permit_shuffle=permit_shuffle)
+    rows = result.entries().collect()
+    assert [(r.locus.position, r.alleles, r.a_index, r.DP) for r in rows] == [
+        (100, ['C', 'T'], 2, 1),
+        (101, ['A', 'C'], 2, 11),
+        (101, ['A', 'G'], 1, 1),
+        (101, ['A', 'T'], 1, 11),
+        (102, ['A', 'C'], 2, 21),
+        (102, ['A', 'T'], 1, 21),
+    ]
+    assert all(r.GT.alleles == [0, 1] for r in rows)
+    assert hl.eval(result.study) == 'split'
+    assert result.count_cols() == 2
+
+
+def test_duplicate_locus_requires_shuffle_when_split_keys_are_out_of_order():
+    mt = hl.range_matrix_table(2, 1)
+    mt = mt.annotate_rows(locus=hl.locus('1', 100),
+                          alleles=hl.if_else(mt.row_idx == 0, ['A', 'C', 'T'], ['A', 'G']))
+    mt = mt.key_rows_by('locus', 'alleles')
+    with pytest.raises(RuntimeError, match='out-of-order.*permit_shuffle'):
+        hl.split_multi_hts(mt).rows().collect()
+    assert [r.alleles for r in hl.split_multi_hts(mt, permit_shuffle=True).rows().collect()] == [
+        ['A', 'C'], ['A', 'G'], ['A', 'T']]
+
+
+def test_left_aligned_sorts_each_rows_alternates_without_moving_loci():
+    result = hl.split_multi_hts(matrix(('A', 'T', 'C')), left_aligned=True)
+    assert [(r.alleles, r.a_index) for r in result.rows().collect()] == [
+        (['A', 'C'], 2), (['A', 'T'], 1)]
+
+
+@pytest.mark.parametrize('left_aligned', [False, True])
+def test_split_keeps_parallel_source_lanes(left_aligned):
+    mt = hl.range_matrix_table(6, 2, n_partitions=3)
+    mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 100), alleles=['A', 'T', 'C'])
+    # This generated input already has increasing variant keys; avoid a fixture sort.
+    mt = mt._copy(row_key=('locus', 'alleles'))
+    result = hl.split_multi_hts(mt, left_aligned=left_aligned)
+    plan = result._mir.core._native.physical_plan()
+    assert plan.count('CheckKeyOrderExec') == 3, plan
+    assert plan.count('SortExec:') == (0 if left_aligned else 3), plan
+    assert 'CoalescePartitionsExec' not in plan, plan
+    assert result.count_rows() == 12

@@ -1,6 +1,6 @@
 """Biallelic HTS splitting used by VCF import workflows.
 
-This MatrixTable implementation always sorts the resulting public variant key.
+Unchanged loci retain their input ordering unless a shuffle is requested.
 Table input and VEP consequence splitting are not yet supported.
 """
 from uuid import uuid4
@@ -43,13 +43,14 @@ def _min_rep(locus, reference, alternate):
 
 
 def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep', *, permit_shuffle=False):
-    """Split variant rows, sorting by the resulting variant key.
+    """Split variant rows, preserving order for unchanged loci by default.
 
     Alleles must be defined, nonempty strings and calls haploid/diploid with
     indices in range. Defined AD/PL must match allele count and GT ploidy.
     Missing GT yields missing PL; absent GT assumes diploidy. Missing PL
     elements are ignored when reducing buckets. Filtered entries stay filtered.
-    ``permit_shuffle`` is accepted for compatibility; output is always sorted.
+    With ``permit_shuffle=False``, unchanged loci must remain ordered; only
+    moved loci are sorted. Set it to True to sort all split rows instead.
     """
     import vail as hl
     from .types import tlocus
@@ -77,7 +78,21 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
         'split_multi_hts requires a defined locus and defined nonempty alleles')
     if not keep_star:
         indices = indices.filter(lambda i: dataset.alleles[i] != '*')
-    dataset = dataset.annotate_rows(**{name: indices})
+    def normalized(i):
+        variant = _min_rep(dataset.locus, dataset.alleles[0], dataset.alleles[i])
+        def result(v):
+            value = hl.struct(locus=v.locus, alleles=v.alleles, a_index=i)
+            if left_aligned:
+                value = hl.case().when(v.locus == dataset.locus, value).or_error(
+                    'Found non-left-aligned variant in split_multi_hts')
+            return value
+        return hl.bind(result, variant)
+
+    variants = indices.map(normalized)
+    if not permit_shuffle:
+        from .collections import _native_sort
+        variants = _native_sort(variants)
+    dataset = dataset.annotate_rows(**{name: variants})
     fields = dataset.entry.dtype
     ints = hl.tarray(hl.tint32)
     gt = dataset.GT.alleles if 'GT' in fields else hl.literal([0, 0])
@@ -89,13 +104,9 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
     split = dataset.annotate_entries(**{prepared: entry})
     split = split.drop(*[f for f in ('AD', 'PL') if f in fields])
     split = split.key_rows_by().explode_rows(name)
-    split = split.annotate_rows(a_index=split[name], was_split=hl.len(split.alleles) > 2,
-                                old_locus=split.locus, old_alleles=split.alleles)
-    variant = _min_rep(split.locus, split.alleles[0], split.alleles[split.a_index])
-    if left_aligned:
-        variant = hl.bind(lambda v: hl.case().when(v.locus == split.locus, v).or_error(
-            'Found non-left-aligned variant in split_multi_hts'), variant)
-    split = split.annotate_rows(locus=variant.locus, alleles=variant.alleles).drop(name)
+    split = split.annotate_rows(a_index=split[name].a_index, was_split=hl.len(split.alleles) > 2,
+                                old_locus=split.locus, old_alleles=split.alleles,
+                                locus=split[name].locus, alleles=split[name].alleles).drop(name)
     updates = {}
     for field in ('GT', 'PGT'):
         if field in fields:
@@ -112,8 +123,22 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
     # AD and PL were temporarily replaced by the prepared reductions. Restore
     # the original entry field order when exposing the split entries.
     split = split.select_entries(**{field: split[field] for field in fields})
-    return (split.drop('old_locus', 'old_alleles')
-            .key_rows_by('locus', 'alleles'))
+    if permit_shuffle:
+        return split.drop('old_locus', 'old_alleles').key_rows_by('locus', 'alleles')
+
+    left = split if left_aligned else split.filter_rows(split.locus == split.old_locus)
+    left = left.drop('old_locus', 'old_alleles')
+    right = None if left_aligned else split.filter_rows(split.locus != split.old_locus).drop(
+        'old_locus', 'old_alleles')
+    # Both branches retain the exact same column identities and globals.
+    def expose_keys(mt):
+        rows = mt._mir.core
+        return rows.annotate(locus=rows[mt._ROW_NAME].locus, alleles=rows[mt._ROW_NAME].alleles)
+    rows = expose_keys(left)
+    other = None if right is None else expose_keys(right)._native
+    native = rows._native.ordered_union(['locus', 'alleles'], other)
+    return left._copy(rows=hl.Table(native, rows.row.dtype, ('locus', 'alleles')),
+                      row_key=('locus', 'alleles'))
 
 
 def parse_variant(value, reference_genome='default'):
