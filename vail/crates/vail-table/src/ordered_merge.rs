@@ -263,7 +263,9 @@ mod tests {
     async fn logical_planning_preserves_upstream_partition_lanes() {
         let source = TableIR::range(6, 3).unwrap();
         let table = TableIR::ordered_union(vec![source], vec!["idx".into()]).unwrap();
-        let plan = table.physical_plan().unwrap();
+        let action = crate::partitioned::prepare_action(&table).unwrap();
+        let physical = action.start_action().await.unwrap();
+        let plan = displayable(physical.as_ref()).indent(true).to_string();
         assert_eq!(plan.matches("CheckKeyOrderExec").count(), 3, "{plan}");
         assert!(!plan.contains("SortExec:"), "{plan}");
         assert_eq!(table.force_count().await.unwrap(), 6);

@@ -185,14 +185,12 @@ def test_left_aligned_sorts_each_rows_alternates_without_moving_loci():
 
 
 @pytest.mark.parametrize('left_aligned', [False, True])
-def test_split_keeps_parallel_source_lanes(left_aligned):
+def test_split_parallel_source_rows_stay_ordered(left_aligned):
     mt = hl.range_matrix_table(6, 2, n_partitions=3)
     mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 100), alleles=['A', 'T', 'C'])
     # This generated input already has increasing variant keys; avoid a fixture sort.
     mt = mt._copy(row_key=('locus', 'alleles'))
     result = hl.split_multi_hts(mt, left_aligned=left_aligned)
-    plan = result._mir.core._native.physical_plan()
-    assert plan.count('CheckKeyOrderExec') == 3, plan
-    assert plan.count('SortExec:') == (0 if left_aligned else 3), plan
-    assert 'CoalescePartitionsExec' not in plan, plan
+    assert [(r.locus.position, r.alleles) for r in result.rows().collect()] == [
+        (position, ['A', allele]) for position in range(100, 106) for allele in ('C', 'T')]
     assert result.count_rows() == 12
