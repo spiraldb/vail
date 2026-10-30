@@ -1,0 +1,1853 @@
+{
+  "baseline_revision": "55ebbecbf81dc811d5a5a9241b3af0da334bb7ab",
+  "candidate_revision": "bf9d8aed5",
+  "scope": "Local diagnostic investigation, not a fresh full benchmark or Hail comparison",
+  "fixtures": {
+    "generated": "1000 rows x64 columns, all triallelic",
+    "profile": "first200 variant records of public profile.vcf.bgz x2535 samples;197biallelic,2triallelic,1tetraallelic"
+  },
+  "kernel_counts": {
+    "generated-baseline-default": {
+      "totals": {
+        "variant_min_rep": 4000,
+        "variant_entry": 128000
+      },
+      "batches": {
+        "variant_min_rep": 8,
+        "variant_entry": 8
+      },
+      "output": "2000"
+    },
+    "generated-baseline-shuffle": {
+      "totals": {
+        "variant_min_rep": 2000,
+        "variant_entry": 64000
+      },
+      "batches": {
+        "variant_min_rep": 4,
+        "variant_entry": 4
+      },
+      "output": "2000"
+    },
+    "generated-early-default": {
+      "totals": {
+        "variant_min_rep": 4000,
+        "variant_entry": 64000
+      },
+      "batches": {
+        "variant_min_rep": 8,
+        "variant_entry": 4
+      },
+      "output": "2000"
+    },
+    "profile-baseline-default": {
+      "totals": {
+        "variant_min_rep": 408,
+        "variant_entry": 1014000
+      },
+      "batches": {
+        "variant_min_rep": 16,
+        "variant_entry": 16
+      },
+      "output": "204"
+    },
+    "profile-baseline-shuffle": {
+      "totals": {
+        "variant_min_rep": 204,
+        "variant_entry": 507000
+      },
+      "batches": {
+        "variant_min_rep": 8,
+        "variant_entry": 8
+      },
+      "output": "204"
+    },
+    "profile-early-default": {
+      "totals": {
+        "variant_min_rep": 408,
+        "variant_entry": 507000
+      },
+      "batches": {
+        "variant_min_rep": 16,
+        "variant_entry": 4
+      },
+      "output": "204"
+    }
+  },
+  "timing_method": "Within each independent process, median of3 actions per mode; then median of2 process medians/version. B,C,C,B process order,4Rayon threads, nice10, fixed default/aligned/shuffle order. Includes Python construction and native action; fixture setup excluded.",
+  "iterations": {
+    "downcode/generated/default": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.13286875002086163,
+              "cpu": 0.21927999999999992,
+              "build_wall": 0.032019666163250804,
+              "build_cpu": 0.03208,
+              "action_wall": 0.10083445790223777,
+              "action_cpu": 0.18718599999999996
+            },
+            {
+              "wall": 0.1339458751026541,
+              "cpu": 0.21823000000000004,
+              "build_wall": 0.03213425003923476,
+              "build_cpu": 0.03220600000000007,
+              "action_wall": 0.1017961660400033,
+              "action_cpu": 0.18601
+            }
+          ],
+          "median": {
+            "wall": 0.13340731256175786,
+            "cpu": 0.21875499999999998,
+            "build_wall": 0.03207695810124278,
+            "build_cpu": 0.03214300000000003,
+            "action_wall": 0.10131531197112054,
+            "action_cpu": 0.18659799999999999
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.1364780419971794,
+              "cpu": 0.22703300000000004,
+              "build_wall": 0.03259183303453028,
+              "build_cpu": 0.032658999999999994,
+              "action_wall": 0.10400787484832108,
+              "action_cpu": 0.194361
+            },
+            {
+              "wall": 0.14013454201631248,
+              "cpu": 0.22048100000000004,
+              "build_wall": 0.03576245787553489,
+              "build_cpu": 0.03580099999999997,
+              "action_wall": 0.10414970899000764,
+              "action_cpu": 0.184427
+            }
+          ],
+          "median": {
+            "wall": 0.13830629200674593,
+            "cpu": 0.22375700000000004,
+            "build_wall": 0.03417714545503259,
+            "build_cpu": 0.03422999999999998,
+            "action_wall": 0.10407879191916436,
+            "action_cpu": 0.189394
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.0367219708643798,
+        "cpu": 1.022865763068273,
+        "build_wall": 1.0654733951754745,
+        "build_cpu": 1.0649286003173304,
+        "action_wall": 1.027276034532979,
+        "action_cpu": 1.0149840834306907
+      }
+    },
+    "downcode/generated/aligned": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.08964070794172585,
+              "cpu": 0.13973400000000002,
+              "build_wall": 0.028940208023414016,
+              "build_cpu": 0.028981000000000146,
+              "action_wall": 0.06068633287213743,
+              "action_cpu": 0.11054900000000001
+            },
+            {
+              "wall": 0.08879729197360575,
+              "cpu": 0.138341,
+              "build_wall": 0.029150916961953044,
+              "build_cpu": 0.02918799999999999,
+              "action_wall": 0.05960283288732171,
+              "action_cpu": 0.10909999999999997
+            }
+          ],
+          "median": {
+            "wall": 0.0892189999576658,
+            "cpu": 0.1390375,
+            "build_wall": 0.02904556249268353,
+            "build_cpu": 0.02908450000000007,
+            "action_wall": 0.06014458287972957,
+            "action_cpu": 0.10982449999999999
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.09013674990274012,
+              "cpu": 0.138613,
+              "build_wall": 0.030055665876716375,
+              "build_cpu": 0.030089000000000032,
+              "action_wall": 0.060062167001888156,
+              "action_cpu": 0.10850699999999991
+            },
+            {
+              "wall": 0.09316341718658805,
+              "cpu": 0.140955,
+              "build_wall": 0.031177292112261057,
+              "build_cpu": 0.031188999999999967,
+              "action_wall": 0.06197029096074402,
+              "action_cpu": 0.10975400000000002
+            }
+          ],
+          "median": {
+            "wall": 0.09165008354466408,
+            "cpu": 0.139784,
+            "build_wall": 0.030616478994488716,
+            "build_cpu": 0.030639,
+            "action_wall": 0.06101622898131609,
+            "action_cpu": 0.10913049999999996
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.0272484962637087,
+        "cpu": 1.005369055111031,
+        "build_wall": 1.054084561185582,
+        "build_cpu": 1.0534477126992015,
+        "action_wall": 1.0144925122072845,
+        "action_cpu": 0.9936808271378424
+      }
+    },
+    "downcode/generated/shuffle": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.09531116695143282,
+              "cpu": 0.14514299999999997,
+              "build_wall": 0.03101237490773201,
+              "build_cpu": 0.03108099999999997,
+              "action_wall": 0.06387916719540954,
+              "action_cpu": 0.1139699999999999
+            },
+            {
+              "wall": 0.09534558304585516,
+              "cpu": 0.14621399999999996,
+              "build_wall": 0.03091595903970301,
+              "build_cpu": 0.03098400000000001,
+              "action_wall": 0.06418537511490285,
+              "action_cpu": 0.11555000000000004
+            }
+          ],
+          "median": {
+            "wall": 0.095328374998644,
+            "cpu": 0.14567849999999996,
+            "build_wall": 0.03096416697371751,
+            "build_cpu": 0.03103249999999999,
+            "action_wall": 0.0640322711551562,
+            "action_cpu": 0.11475999999999997
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.09747412498109043,
+              "cpu": 0.14692899999999987,
+              "build_wall": 0.031645625131204724,
+              "build_cpu": 0.03169299999999997,
+              "action_wall": 0.06581354211084545,
+              "action_cpu": 0.11522199999999994
+            },
+            {
+              "wall": 0.09862654190510511,
+              "cpu": 0.1487980000000001,
+              "build_wall": 0.032969958847388625,
+              "build_cpu": 0.032968,
+              "action_wall": 0.06551258405670524,
+              "action_cpu": 0.11566999999999994
+            }
+          ],
+          "median": {
+            "wall": 0.09805033344309777,
+            "cpu": 0.14786349999999998,
+            "build_wall": 0.032307791989296675,
+            "build_cpu": 0.032330499999999984,
+            "action_wall": 0.06566306308377534,
+            "action_cpu": 0.11544599999999994
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.0285534967368581,
+        "cpu": 1.0149987815635115,
+        "build_wall": 1.0433929004684557,
+        "build_cpu": 1.0418271167324578,
+        "action_wall": 1.0254682818397551,
+        "action_cpu": 1.0059776925758102
+      }
+    },
+    "downcode/profile/default": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.2965187500230968,
+              "cpu": 0.7376159999999999,
+              "build_wall": 0.03774179215542972,
+              "build_cpu": 0.037819999999999965,
+              "action_wall": 0.2581578749231994,
+              "action_cpu": 0.6991550000000001
+            },
+            {
+              "wall": 0.2942522920202464,
+              "cpu": 0.7073909999999999,
+              "build_wall": 0.03854424995370209,
+              "build_cpu": 0.03863,
+              "action_wall": 0.254401084035635,
+              "action_cpu": 0.668898
+            }
+          ],
+          "median": {
+            "wall": 0.2953855210216716,
+            "cpu": 0.7225035,
+            "build_wall": 0.038143021054565907,
+            "build_cpu": 0.03822499999999998,
+            "action_wall": 0.2562794794794172,
+            "action_cpu": 0.6840265000000001
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.29383229091763496,
+              "cpu": 0.7186340000000002,
+              "build_wall": 0.03843795810826123,
+              "build_cpu": 0.03852800000000034,
+              "action_wall": 0.255379332927987,
+              "action_cpu": 0.6800929999999998
+            },
+            {
+              "wall": 0.2894757909234613,
+              "cpu": 0.6784859999999999,
+              "build_wall": 0.0395797910168767,
+              "build_cpu": 0.039628,
+              "action_wall": 0.2498844158835709,
+              "action_cpu": 0.6391850000000001
+            }
+          ],
+          "median": {
+            "wall": 0.29165404092054814,
+            "cpu": 0.6985600000000001,
+            "build_wall": 0.03900887456256896,
+            "build_cpu": 0.03907800000000017,
+            "action_wall": 0.25263187440577894,
+            "action_cpu": 0.659639
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9873674238052796,
+        "cpu": 0.9668603681504658,
+        "build_wall": 1.022700181686301,
+        "build_cpu": 1.0223152387181214,
+        "action_wall": 0.9857670809967006,
+        "action_cpu": 0.9643471415215636
+      }
+    },
+    "downcode/profile/shuffle": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.2106538750231266,
+              "cpu": 0.4885579999999998,
+              "build_wall": 0.03603270789608359,
+              "build_cpu": 0.03611500000000001,
+              "action_wall": 0.17499062488786876,
+              "action_cpu": 0.45281400000000005
+            },
+            {
+              "wall": 0.2121880839113146,
+              "cpu": 0.4785769999999998,
+              "build_wall": 0.03660629200749099,
+              "build_cpu": 0.03675399999999995,
+              "action_wall": 0.1752167500089854,
+              "action_cpu": 0.4418090000000001
+            }
+          ],
+          "median": {
+            "wall": 0.2114209794672206,
+            "cpu": 0.4835674999999998,
+            "build_wall": 0.03631949995178729,
+            "build_cpu": 0.03643449999999998,
+            "action_wall": 0.17510368744842708,
+            "action_cpu": 0.4473115000000001
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.2084579998627305,
+              "cpu": 0.46009199999999995,
+              "build_wall": 0.03659095801413059,
+              "build_cpu": 0.03666899999999984,
+              "action_wall": 0.17069604201242328,
+              "action_cpu": 0.42222800000000005
+            },
+            {
+              "wall": 0.2026536671910435,
+              "cpu": 0.44991100000000006,
+              "build_wall": 0.03782604215666652,
+              "build_cpu": 0.03787600000000002,
+              "action_wall": 0.16480066603980958,
+              "action_cpu": 0.4120130000000001
+            }
+          ],
+          "median": {
+            "wall": 0.205555833526887,
+            "cpu": 0.4550015,
+            "build_wall": 0.037208500085398555,
+            "build_cpu": 0.03727249999999993,
+            "action_wall": 0.16774835402611643,
+            "action_cpu": 0.41712050000000006
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9722584487352498,
+        "cpu": 0.9409265511019664,
+        "build_wall": 1.0244772129239492,
+        "build_cpu": 1.023000178402337,
+        "action_wall": 0.9579944115998299,
+        "action_cpu": 0.9325056476303426
+      }
+    },
+    "entry/generated/default": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.14161512511782348,
+              "cpu": 0.23145400000000005,
+              "build_wall": 0.03380129183642566,
+              "build_cpu": 0.033870999999999984,
+              "action_wall": 0.10747245792299509,
+              "action_cpu": 0.19605899999999998
+            },
+            {
+              "wall": 0.13987329206429422,
+              "cpu": 0.22330399999999995,
+              "build_wall": 0.03520924993790686,
+              "build_cpu": 0.03533699999999995,
+              "action_wall": 0.10464649996720254,
+              "action_cpu": 0.188774
+            }
+          ],
+          "median": {
+            "wall": 0.14074420859105885,
+            "cpu": 0.227379,
+            "build_wall": 0.03450527088716626,
+            "build_cpu": 0.03460399999999997,
+            "action_wall": 0.10605947894509882,
+            "action_cpu": 0.1924165
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.14334216597490013,
+              "cpu": 0.21302500000000002,
+              "build_wall": 0.03485270799137652,
+              "build_cpu": 0.03500600000000009,
+              "action_wall": 0.11053854203782976,
+              "action_cpu": 0.176798
+            },
+            {
+              "wall": 0.13669245783239603,
+              "cpu": 0.19737800000000005,
+              "build_wall": 0.033963500056415796,
+              "build_cpu": 0.034098,
+              "action_wall": 0.10217612492851913,
+              "action_cpu": 0.162972
+            }
+          ],
+          "median": {
+            "wall": 0.14001731190364808,
+            "cpu": 0.20520150000000004,
+            "build_wall": 0.03440810402389616,
+            "build_cpu": 0.03455200000000005,
+            "action_wall": 0.10635733348317444,
+            "action_cpu": 0.169885
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9948353350046337,
+        "cpu": 0.90246460754951,
+        "build_wall": 0.9971839994072835,
+        "build_cpu": 0.9984972835510368,
+        "action_wall": 1.0028083726323962,
+        "action_cpu": 0.8829024537916448
+      }
+    },
+    "entry/generated/aligned": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.09538837498985231,
+              "cpu": 0.15033600000000003,
+              "build_wall": 0.03131937491707504,
+              "build_cpu": 0.03136399999999995,
+              "action_wall": 0.0640512912068516,
+              "action_cpu": 0.11895500000000003
+            },
+            {
+              "wall": 0.09673124994151294,
+              "cpu": 0.14783799999999997,
+              "build_wall": 0.03162820893339813,
+              "build_cpu": 0.03166800000000003,
+              "action_wall": 0.06307974993251264,
+              "action_cpu": 0.11402499999999993
+            }
+          ],
+          "median": {
+            "wall": 0.09605981246568263,
+            "cpu": 0.149087,
+            "build_wall": 0.03147379192523658,
+            "build_cpu": 0.03151599999999999,
+            "action_wall": 0.06356552056968212,
+            "action_cpu": 0.11648999999999998
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.09723937511444092,
+              "cpu": 0.14009299999999997,
+              "build_wall": 0.03307845909148455,
+              "build_cpu": 0.03314,
+              "action_wall": 0.06414120900444686,
+              "action_cpu": 0.10693599999999998
+            },
+            {
+              "wall": 0.08904854208230972,
+              "cpu": 0.130641,
+              "build_wall": 0.03017845912836492,
+              "build_cpu": 0.03027000000000002,
+              "action_wall": 0.0588579170871526,
+              "action_cpu": 0.10071199999999991
+            }
+          ],
+          "median": {
+            "wall": 0.09314395859837532,
+            "cpu": 0.135367,
+            "build_wall": 0.031628459109924734,
+            "build_cpu": 0.03170500000000001,
+            "action_wall": 0.06149956304579973,
+            "action_cpu": 0.10382399999999994
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9696454345218611,
+        "cpu": 0.9079731968582102,
+        "build_wall": 1.0049141579462542,
+        "build_cpu": 1.0059969539281641,
+        "action_wall": 0.9674987712620455,
+        "action_cpu": 0.8912696368787016
+      }
+    },
+    "entry/generated/shuffle": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.10085391695611179,
+              "cpu": 0.1534500000000001,
+              "build_wall": 0.03443912509828806,
+              "build_cpu": 0.034442000000000084,
+              "action_wall": 0.06734329182654619,
+              "action_cpu": 0.11898700000000018
+            },
+            {
+              "wall": 0.10126591706648469,
+              "cpu": 0.152196,
+              "build_wall": 0.033516166964545846,
+              "build_cpu": 0.0335850000000002,
+              "action_wall": 0.0677252090536058,
+              "action_cpu": 0.11859400000000009
+            }
+          ],
+          "median": {
+            "wall": 0.10105991701129824,
+            "cpu": 0.15282300000000004,
+            "build_wall": 0.03397764603141695,
+            "build_cpu": 0.03401350000000014,
+            "action_wall": 0.067534250440076,
+            "action_cpu": 0.11879050000000013
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.10346833290532231,
+              "cpu": 0.14418300000000017,
+              "build_wall": 0.03637241595424712,
+              "build_cpu": 0.03487400000000007,
+              "action_wall": 0.06680887495167553,
+              "action_cpu": 0.11056700000000008
+            },
+            {
+              "wall": 0.09680879092775285,
+              "cpu": 0.13981099999999996,
+              "build_wall": 0.03287566592916846,
+              "build_cpu": 0.032912,
+              "action_wall": 0.06391754210926592,
+              "action_cpu": 0.10688600000000004
+            }
+          ],
+          "median": {
+            "wall": 0.10013856191653758,
+            "cpu": 0.14199700000000007,
+            "build_wall": 0.03462404094170779,
+            "build_cpu": 0.033893000000000034,
+            "action_wall": 0.06536320853047073,
+            "action_cpu": 0.10872650000000006
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.990883080829587,
+        "cpu": 0.9291598777670902,
+        "build_wall": 1.0190241227921781,
+        "build_cpu": 0.9964572890175928,
+        "action_wall": 0.9678527281274609,
+        "action_cpu": 0.9152794204923789
+      }
+    },
+    "entry/profile/default": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.297386750113219,
+              "cpu": 0.70737,
+              "build_wall": 0.040836957981809974,
+              "build_cpu": 0.0409670000000002,
+              "action_wall": 0.25653208303265274,
+              "action_cpu": 0.6663880000000004
+            },
+            {
+              "wall": 0.3051000419072807,
+              "cpu": 0.7191050000000001,
+              "build_wall": 0.04049241682514548,
+              "build_cpu": 0.040558000000000094,
+              "action_wall": 0.26458833389915526,
+              "action_cpu": 0.6785300000000001
+            }
+          ],
+          "median": {
+            "wall": 0.30124339601024985,
+            "cpu": 0.7132375000000001,
+            "build_wall": 0.04066468740347773,
+            "build_cpu": 0.040762500000000146,
+            "action_wall": 0.260560208465904,
+            "action_cpu": 0.6724590000000003
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.2789215410593897,
+              "cpu": 0.553007,
+              "build_wall": 0.03908749995753169,
+              "build_cpu": 0.039164999999999894,
+              "action_wall": 0.239816167159006,
+              "action_cpu": 0.513827
+            },
+            {
+              "wall": 0.2735086667817086,
+              "cpu": 0.5458960000000002,
+              "build_wall": 0.03779562492854893,
+              "build_cpu": 0.037895,
+              "action_wall": 0.2327090830076486,
+              "action_cpu": 0.5057210000000001
+            }
+          ],
+          "median": {
+            "wall": 0.27621510392054915,
+            "cpu": 0.5494515000000001,
+            "build_wall": 0.03844156244304031,
+            "build_cpu": 0.038529999999999946,
+            "action_wall": 0.2362626250833273,
+            "action_cpu": 0.5097740000000001
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9169167111339792,
+        "cpu": 0.7703626071259574,
+        "build_wall": 0.9453303319811751,
+        "build_cpu": 0.9452315240723658,
+        "action_wall": 0.9067486799859688,
+        "action_cpu": 0.7580744699676856
+      }
+    },
+    "entry/profile/shuffle": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.21137970895506442,
+              "cpu": 0.4746429999999999,
+              "build_wall": 0.036411792039871216,
+              "build_cpu": 0.036466999999999916,
+              "action_wall": 0.1749522089958191,
+              "action_cpu": 0.4368690000000002
+            },
+            {
+              "wall": 0.21551633393391967,
+              "cpu": 0.4768840000000001,
+              "build_wall": 0.03748800000175834,
+              "build_cpu": 0.037584000000000284,
+              "action_wall": 0.1780204160604626,
+              "action_cpu": 0.439292
+            }
+          ],
+          "median": {
+            "wall": 0.21344802144449204,
+            "cpu": 0.4757635,
+            "build_wall": 0.036949896020814776,
+            "build_cpu": 0.0370255000000001,
+            "action_wall": 0.17648631252814084,
+            "action_cpu": 0.4380805000000001
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.19126016716472805,
+              "cpu": 0.3987050000000003,
+              "build_wall": 0.03617933392524719,
+              "build_cpu": 0.03626499999999999,
+              "action_wall": 0.15497470903210342,
+              "action_cpu": 0.362185
+            },
+            {
+              "wall": 0.19482391700148582,
+              "cpu": 0.403165,
+              "build_wall": 0.03715016692876816,
+              "build_cpu": 0.037158000000000246,
+              "action_wall": 0.15765862492844462,
+              "action_cpu": 0.36599400000000015
+            }
+          ],
+          "median": {
+            "wall": 0.19304204208310694,
+            "cpu": 0.40093500000000015,
+            "build_wall": 0.036664750427007675,
+            "build_cpu": 0.03671150000000012,
+            "action_wall": 0.15631666698027402,
+            "action_cpu": 0.36408950000000007
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9043983672310977,
+        "cpu": 0.842719124102627,
+        "build_wall": 0.9922829121455045,
+        "build_cpu": 0.9915193582801047,
+        "action_wall": 0.8857155251365414,
+        "action_cpu": 0.831101818044857
+      }
+    },
+    "phase/generated/default": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.13874912494793534,
+              "cpu": 0.1997279999999999,
+              "build_wall": 0.03378562489524484,
+              "build_cpu": 0.033824999999999994,
+              "action_wall": 0.1036237080115825,
+              "action_cpu": 0.16588800000000004
+            },
+            {
+              "wall": 0.13198062521405518,
+              "cpu": 0.19272299999999998,
+              "build_wall": 0.033067625015974045,
+              "build_cpu": 0.03314400000000006,
+              "action_wall": 0.09803329105488956,
+              "action_cpu": 0.158725
+            }
+          ],
+          "median": {
+            "wall": 0.13536487508099526,
+            "cpu": 0.19622549999999994,
+            "build_wall": 0.03342662495560944,
+            "build_cpu": 0.03348450000000003,
+            "action_wall": 0.10082849953323603,
+            "action_cpu": 0.16230650000000002
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.2313660839572549,
+              "cpu": 0.3013840000000001,
+              "build_wall": 0.0889188339933753,
+              "build_cpu": 0.08940100000000006,
+              "action_wall": 0.1424232090357691,
+              "action_cpu": 0.21196199999999998
+            },
+            {
+              "wall": 0.21670441702008247,
+              "cpu": 0.28052199999999994,
+              "build_wall": 0.07853904203511775,
+              "build_cpu": 0.07900800000000008,
+              "action_wall": 0.13814579090103507,
+              "action_cpu": 0.20149800000000007
+            }
+          ],
+          "median": {
+            "wall": 0.22403525048866868,
+            "cpu": 0.290953,
+            "build_wall": 0.08372893801424652,
+            "build_cpu": 0.08420450000000007,
+            "action_wall": 0.1402844999684021,
+            "action_cpu": 0.20673000000000002
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.655047148343451,
+        "cpu": 1.482748164739038,
+        "build_wall": 2.5048576733498686,
+        "build_cpu": 2.514730696292314,
+        "action_wall": 1.3913179370695703,
+        "action_cpu": 1.2737012997014907
+      }
+    },
+    "phase/generated/aligned": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.08912150003015995,
+              "cpu": 0.13159500000000002,
+              "build_wall": 0.030861082952469587,
+              "build_cpu": 0.031000000000000028,
+              "action_wall": 0.05823941598646343,
+              "action_cpu": 0.100576
+            },
+            {
+              "wall": 0.08807445783168077,
+              "cpu": 0.131098,
+              "build_wall": 0.029640667140483856,
+              "build_cpu": 0.02970499999999998,
+              "action_wall": 0.058754957979545,
+              "action_cpu": 0.101377
+            }
+          ],
+          "median": {
+            "wall": 0.08859797893092036,
+            "cpu": 0.1313465,
+            "build_wall": 0.030250875046476722,
+            "build_cpu": 0.030352500000000004,
+            "action_wall": 0.05849718698300421,
+            "action_cpu": 0.1009765
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.13558579212985933,
+              "cpu": 0.20104500000000014,
+              "build_wall": 0.04402004205621779,
+              "build_cpu": 0.04412499999999997,
+              "action_wall": 0.08940474991686642,
+              "action_cpu": 0.154416
+            },
+            {
+              "wall": 0.10905975010246038,
+              "cpu": 0.15808500000000003,
+              "build_wall": 0.03895658301189542,
+              "build_cpu": 0.03903499999999993,
+              "action_wall": 0.07008354202844203,
+              "action_cpu": 0.11903299999999994
+            }
+          ],
+          "median": {
+            "wall": 0.12232277111615986,
+            "cpu": 0.17956500000000009,
+            "build_wall": 0.041488312534056604,
+            "build_cpu": 0.04157999999999995,
+            "action_wall": 0.07974414597265422,
+            "action_cpu": 0.13672449999999997
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.3806496783807523,
+        "cpu": 1.3671091349978879,
+        "build_wall": 1.3714747910701741,
+        "build_cpu": 1.3699036323202354,
+        "action_wall": 1.363213345554943,
+        "action_cpu": 1.354022965739553
+      }
+    },
+    "phase/generated/shuffle": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.10062254196964204,
+              "cpu": 0.14498900000000003,
+              "build_wall": 0.035794541938230395,
+              "build_cpu": 0.03577599999999992,
+              "action_wall": 0.06480675004422665,
+              "action_cpu": 0.10919500000000015
+            },
+            {
+              "wall": 0.09460920793935657,
+              "cpu": 0.13714499999999996,
+              "build_wall": 0.032530833035707474,
+              "build_cpu": 0.03257599999999994,
+              "action_wall": 0.06251274980604649,
+              "action_cpu": 0.10535099999999997
+            }
+          ],
+          "median": {
+            "wall": 0.0976158749544993,
+            "cpu": 0.141067,
+            "build_wall": 0.034162687486968935,
+            "build_cpu": 0.03417599999999993,
+            "action_wall": 0.06365974992513657,
+            "action_cpu": 0.10727300000000006
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.14716254104860127,
+              "cpu": 0.21096500000000007,
+              "build_wall": 0.050483500119298697,
+              "build_cpu": 0.05067200000000005,
+              "action_wall": 0.09659420815296471,
+              "action_cpu": 0.16014700000000004
+            },
+            {
+              "wall": 0.10442791692912579,
+              "cpu": 0.1478299999999999,
+              "build_wall": 0.03823016700334847,
+              "build_cpu": 0.03830800000000001,
+              "action_wall": 0.06617487501353025,
+              "action_cpu": 0.10950599999999988
+            }
+          ],
+          "median": {
+            "wall": 0.12579522898886353,
+            "cpu": 0.1793975,
+            "build_wall": 0.04435683356132358,
+            "build_cpu": 0.04449000000000003,
+            "action_wall": 0.08138454158324748,
+            "action_cpu": 0.13482649999999996
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.2886759356252164,
+        "cpu": 1.2717184033119013,
+        "build_wall": 1.2984000037538943,
+        "build_cpu": 1.3017907303370821,
+        "action_wall": 1.2784301176010768,
+        "action_cpu": 1.2568540079982837
+      }
+    },
+    "phase/profile/default": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.28251608298160136,
+              "cpu": 0.573751,
+              "build_wall": 0.03885366697795689,
+              "build_cpu": 0.038993,
+              "action_wall": 0.24364458303898573,
+              "action_cpu": 0.534742
+            },
+            {
+              "wall": 0.5035604999866337,
+              "cpu": 0.9188369999999999,
+              "build_wall": 0.06638983287848532,
+              "build_cpu": 0.06593199999999988,
+              "action_wall": 0.43714733282104135,
+              "action_cpu": 0.8528850000000001
+            }
+          ],
+          "median": {
+            "wall": 0.3930382914841175,
+            "cpu": 0.746294,
+            "build_wall": 0.052621749928221107,
+            "build_cpu": 0.05246249999999994,
+            "action_wall": 0.34039595793001354,
+            "action_cpu": 0.6938135000000001
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.5297314159106463,
+              "cpu": 0.8632559999999998,
+              "build_wall": 0.1356798328924924,
+              "build_cpu": 0.13491799999999987,
+              "action_wall": 0.39402908319607377,
+              "action_cpu": 0.7330379999999999
+            },
+            {
+              "wall": 0.5280057911295444,
+              "cpu": 0.9106570000000003,
+              "build_wall": 0.1268848329782486,
+              "build_cpu": 0.11907000000000001,
+              "action_wall": 0.40110008302144706,
+              "action_cpu": 0.7915770000000002
+            }
+          ],
+          "median": {
+            "wall": 0.5288686035200953,
+            "cpu": 0.8869565,
+            "build_wall": 0.1312823329353705,
+            "build_cpu": 0.12699399999999994,
+            "action_wall": 0.3975645831087604,
+            "action_cpu": 0.7623075
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.3455905314545331,
+        "cpu": 1.188481349173382,
+        "build_wall": 2.4948302387215677,
+        "build_cpu": 2.42066237788897,
+        "action_wall": 1.1679474266568728,
+        "action_cpu": 1.098721054000823
+      }
+    },
+    "phase/profile/shuffle": {
+      "versions": {
+        "baseline": {
+          "process_medians": [
+            {
+              "wall": 0.20165474992245436,
+              "cpu": 0.4072969999999999,
+              "build_wall": 0.03899854212068021,
+              "build_cpu": 0.039019000000000026,
+              "action_wall": 0.16487012500874698,
+              "action_cpu": 0.3696290000000002
+            },
+            {
+              "wall": 0.3911066669970751,
+              "cpu": 0.6731120000000002,
+              "build_wall": 0.07722970796748996,
+              "build_cpu": 0.0722769999999997,
+              "action_wall": 0.31385533278808,
+              "action_cpu": 0.6021730000000001
+            }
+          ],
+          "median": {
+            "wall": 0.2963807084597647,
+            "cpu": 0.5402045,
+            "build_wall": 0.058114125044085085,
+            "build_cpu": 0.055647999999999864,
+            "action_wall": 0.23936272889841348,
+            "action_cpu": 0.48590100000000014
+          }
+        },
+        "candidate": {
+          "process_medians": [
+            {
+              "wall": 0.38918687496334314,
+              "cpu": 0.7264110000000001,
+              "build_wall": 0.07198120816610754,
+              "build_cpu": 0.06900499999999998,
+              "action_wall": 0.3171838338021189,
+              "action_cpu": 0.6573869999999999
+            },
+            {
+              "wall": 0.3847323339432478,
+              "cpu": 0.716955,
+              "build_wall": 0.08509166701696813,
+              "build_cpu": 0.08081899999999997,
+              "action_wall": 0.29961695801466703,
+              "action_cpu": 0.6361179999999997
+            }
+          ],
+          "median": {
+            "wall": 0.38695960445329547,
+            "cpu": 0.7216830000000001,
+            "build_wall": 0.07853643759153783,
+            "build_cpu": 0.07491199999999998,
+            "action_wall": 0.30840039590839297,
+            "action_cpu": 0.6467524999999998
+          }
+        }
+      },
+      "ratio": {
+        "wall": 1.305616706513229,
+        "cpu": 1.3359440730316021,
+        "build_wall": 1.3514173625080044,
+        "build_cpu": 1.3461759631972428,
+        "action_wall": 1.2884227938397184,
+        "action_cpu": 1.33103759819387
+      }
+    }
+  },
+  "limitations": [
+    "Shared local host; unrelated Rust/Xcode builds were observed later in the run. No significance/noise claims.",
+    "Two processes/version; fixed within-process mode order. Process CPU, not CPU of all descendants.",
+    "Temporary-file polling is not proof of no IPC/no retained memory.",
+    "Entry-only comparison retains old downcode expression in both normally built binaries; unused downcode kernel exists in intermediate wheels but not final candidate.",
+    "No changes to default branch sharing have been admitted.",
+    "Final exact-artifact local recheck is provisional: real first candidate process wall median exceeds faster baseline process for both modes; all raw observations retained. No significance/Hail comparison claim."
+  ],
+  "rejected": [
+    "late physical Arc sharing: zero new producer wrappers, no gain",
+    "direct Call downcode: small real-data gain, generated regressions; removed from final candidate",
+    "early branch filtering:24 public error-domain regressions; adverse/noisy timings; rejected",
+    "eager cache: unbounded/eager diagnostic only; never production fix"
+  ],
+  "error_counterfactual": {
+    "cases_per_version": 40,
+    "passed_error_status_differences": 24,
+    "actions": [
+      "entries().collect()",
+      "_force_count_rows()"
+    ]
+  },
+  "next_structural_fix": "Explicit action-scoped evaluated producer at exact common original TableRef ancestor before separate OrderedUnion branch lowering, preserving input/error/UID/domain and bounding/reviewing replay lifecycle, spill and consumer lag. Not implemented.",
+  "final_entry_only_local_recheck": {
+    "generated/default": {
+      "versions": {
+        "baseline": {
+          "processes": [
+            {
+              "file": "final-entry-generated-0-baseline.jsonl",
+              "medians": {
+                "wall": 0.1467699590139091,
+                "cpu": 0.23249600000000004,
+                "action_wall": 0.10922833299264312,
+                "action_cpu": 0.19527800000000006,
+                "build_wall": 0.0372512920293957,
+                "build_cpu": 0.036758999999999986
+              }
+            },
+            {
+              "file": "final-entry-generated-3-baseline.jsonl",
+              "medians": {
+                "wall": 0.1439494169317186,
+                "cpu": 0.231877,
+                "action_wall": 0.10722429095767438,
+                "action_cpu": 0.19518199999999997,
+                "build_wall": 0.036705875070765615,
+                "build_cpu": 0.03667700000000007
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.14535968797281384,
+            "cpu": 0.23218650000000002,
+            "action_wall": 0.10822631197515875,
+            "action_cpu": 0.19523000000000001,
+            "build_wall": 0.03697858355008066,
+            "build_cpu": 0.03671800000000003
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "file": "final-entry-generated-1-candidate.jsonl",
+              "medians": {
+                "wall": 0.13990412512794137,
+                "cpu": 0.202781,
+                "action_wall": 0.10431787488050759,
+                "action_cpu": 0.167103,
+                "build_wall": 0.035572250140830874,
+                "build_cpu": 0.03566399999999992
+              }
+            },
+            {
+              "file": "final-entry-generated-2-candidate.jsonl",
+              "medians": {
+                "wall": 0.1357554169371724,
+                "cpu": 0.19862100000000005,
+                "action_wall": 0.10134300007484853,
+                "action_cpu": 0.16413500000000003,
+                "build_wall": 0.03439441695809364,
+                "build_cpu": 0.03447
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.1378297710325569,
+            "cpu": 0.20070100000000002,
+            "action_wall": 0.10283043747767806,
+            "action_cpu": 0.16561900000000002,
+            "build_wall": 0.03498333354946226,
+            "build_cpu": 0.03506699999999996
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9481980386359576,
+        "cpu": 0.8643956474644305,
+        "action_wall": 0.9501426741888866,
+        "action_cpu": 0.8483276135839779,
+        "build_wall": 0.9460430928102965,
+        "build_cpu": 0.9550356773244711
+      }
+    },
+    "generated/aligned": {
+      "versions": {
+        "baseline": {
+          "processes": [
+            {
+              "file": "final-entry-generated-0-baseline.jsonl",
+              "medians": {
+                "wall": 0.09642125014215708,
+                "cpu": 0.147389,
+                "action_wall": 0.06413141591474414,
+                "action_cpu": 0.11507400000000001,
+                "build_wall": 0.03226266708225012,
+                "build_cpu": 0.03229099999999996
+              }
+            },
+            {
+              "file": "final-entry-generated-3-baseline.jsonl",
+              "medians": {
+                "wall": 0.09618591703474522,
+                "cpu": 0.14653900000000009,
+                "action_wall": 0.0634403747972101,
+                "action_cpu": 0.11378800000000011,
+                "build_wall": 0.032884125132113695,
+                "build_cpu": 0.03292499999999998
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.09630358358845115,
+            "cpu": 0.14696400000000004,
+            "action_wall": 0.06378589535597712,
+            "action_cpu": 0.11443100000000006,
+            "build_wall": 0.03257339610718191,
+            "build_cpu": 0.03260799999999997
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "file": "final-entry-generated-1-candidate.jsonl",
+              "medians": {
+                "wall": 0.09286333294585347,
+                "cpu": 0.136247,
+                "action_wall": 0.06117533287033439,
+                "action_cpu": 0.10452000000000006,
+                "build_wall": 0.031665208050981164,
+                "build_cpu": 0.03170600000000001
+              }
+            },
+            {
+              "file": "final-entry-generated-2-candidate.jsonl",
+              "medians": {
+                "wall": 0.08987799985334277,
+                "cpu": 0.13310700000000003,
+                "action_wall": 0.05899104196578264,
+                "action_cpu": 0.10220099999999999,
+                "build_wall": 0.030873416922986507,
+                "build_cpu": 0.030903000000000014
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.09137066639959812,
+            "cpu": 0.13467700000000002,
+            "action_wall": 0.060083187418058515,
+            "action_cpu": 0.10336050000000002,
+            "build_wall": 0.031269312486983836,
+            "build_cpu": 0.03130450000000001
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9487774285748948,
+        "cpu": 0.916394491167905,
+        "action_wall": 0.9419509921863684,
+        "action_cpu": 0.9032561106693113,
+        "build_wall": 0.9599647633944273,
+        "build_cpu": 0.9600251472031416
+      }
+    },
+    "generated/shuffle": {
+      "versions": {
+        "baseline": {
+          "processes": [
+            {
+              "file": "final-entry-generated-0-baseline.jsonl",
+              "medians": {
+                "wall": 0.10140587482601404,
+                "cpu": 0.1555439999999999,
+                "action_wall": 0.06708995788358152,
+                "action_cpu": 0.12140600000000012,
+                "build_wall": 0.03429912496358156,
+                "build_cpu": 0.034127999999999936
+              }
+            },
+            {
+              "file": "final-entry-generated-3-baseline.jsonl",
+              "medians": {
+                "wall": 0.09981379192322493,
+                "cpu": 0.150943,
+                "action_wall": 0.0671292501501739,
+                "action_cpu": 0.11821000000000004,
+                "build_wall": 0.03266504197381437,
+                "build_cpu": 0.032713999999999965
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.10060983337461948,
+            "cpu": 0.15324349999999995,
+            "action_wall": 0.06710960401687771,
+            "action_cpu": 0.11980800000000008,
+            "build_wall": 0.033482083468697965,
+            "build_cpu": 0.03342099999999995
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "file": "final-entry-generated-1-candidate.jsonl",
+              "medians": {
+                "wall": 0.09860583301633596,
+                "cpu": 0.14247900000000002,
+                "action_wall": 0.06549170799553394,
+                "action_cpu": 0.10931999999999986,
+                "build_wall": 0.03369887499138713,
+                "build_cpu": 0.03374899999999981
+              }
+            },
+            {
+              "file": "final-entry-generated-2-candidate.jsonl",
+              "medians": {
+                "wall": 0.09805766702629626,
+                "cpu": 0.14234800000000003,
+                "action_wall": 0.0650733751244843,
+                "action_cpu": 0.109315,
+                "build_wall": 0.03296633413992822,
+                "build_cpu": 0.03301599999999999
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.09833175002131611,
+            "cpu": 0.14241350000000003,
+            "action_wall": 0.06528254156000912,
+            "action_cpu": 0.10931749999999993,
+            "build_wall": 0.033332604565657675,
+            "build_cpu": 0.0333824999999999
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.9773572495163474,
+        "cpu": 0.92932816073765,
+        "action_wall": 0.9727749480326379,
+        "action_cpu": 0.9124390691773492,
+        "build_wall": 0.9955355555104557,
+        "build_cpu": 0.998848029681935
+      }
+    },
+    "profile/default": {
+      "versions": {
+        "baseline": {
+          "processes": [
+            {
+              "file": "final-entry-profile-0-baseline.jsonl",
+              "medians": {
+                "wall": 0.2986865830607712,
+                "cpu": 0.7315240000000001,
+                "action_wall": 0.2616353330668062,
+                "action_cpu": 0.6903389999999999,
+                "build_wall": 0.03703900007531047,
+                "build_cpu": 0.03713799999999967
+              }
+            },
+            {
+              "file": "final-entry-profile-3-baseline.jsonl",
+              "medians": {
+                "wall": 0.3271044578868896,
+                "cpu": 0.8386079999999998,
+                "action_wall": 0.2795827919617295,
+                "action_cpu": 0.7909660000000001,
+                "build_wall": 0.04750433284789324,
+                "build_cpu": 0.047628000000000004
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.3128955204738304,
+            "cpu": 0.7850659999999999,
+            "action_wall": 0.27060906251426786,
+            "action_cpu": 0.7406524999999999,
+            "build_wall": 0.04227166646160185,
+            "build_cpu": 0.04238299999999984
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "file": "final-entry-profile-1-candidate.jsonl",
+              "medians": {
+                "wall": 0.29946554102934897,
+                "cpu": 0.6078579999999998,
+                "action_wall": 0.25505362497642636,
+                "action_cpu": 0.5572430000000002,
+                "build_wall": 0.045612042071297765,
+                "build_cpu": 0.04579699999999999
+              }
+            },
+            {
+              "file": "final-entry-profile-2-candidate.jsonl",
+              "medians": {
+                "wall": 0.2696322079282254,
+                "cpu": 0.545588,
+                "action_wall": 0.22831212496384978,
+                "action_cpu": 0.5041410000000002,
+                "build_wall": 0.03883091686293483,
+                "build_cpu": 0.038931999999999994
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.2845488744787872,
+            "cpu": 0.5767229999999999,
+            "action_wall": 0.24168287497013807,
+            "action_cpu": 0.5306920000000002,
+            "build_wall": 0.042221479467116296,
+            "build_cpu": 0.04236449999999999
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.909405395283011,
+        "cpu": 0.7346172168964137,
+        "action_wall": 0.8931070996833129,
+        "action_cpu": 0.7165195553920364,
+        "build_wall": 0.9988127509822414,
+        "build_cpu": 0.9995635042351922
+      }
+    },
+    "profile/shuffle": {
+      "versions": {
+        "baseline": {
+          "processes": [
+            {
+              "file": "final-entry-profile-0-baseline.jsonl",
+              "medians": {
+                "wall": 0.2110366669949144,
+                "cpu": 0.47718800000000017,
+                "action_wall": 0.17474283301271498,
+                "action_cpu": 0.440804,
+                "build_wall": 0.03628208301961422,
+                "build_cpu": 0.03637400000000013
+              }
+            },
+            {
+              "file": "final-entry-profile-3-baseline.jsonl",
+              "medians": {
+                "wall": 0.21975350007414818,
+                "cpu": 0.4931479999999999,
+                "action_wall": 0.18186345812864602,
+                "action_cpu": 0.455213,
+                "build_wall": 0.03919012495316565,
+                "build_cpu": 0.03929999999999989
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.2153950835345313,
+            "cpu": 0.48516800000000004,
+            "action_wall": 0.1783031455706805,
+            "action_cpu": 0.4480085,
+            "build_wall": 0.037736103986389935,
+            "build_cpu": 0.03783700000000001
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "file": "final-entry-profile-1-candidate.jsonl",
+              "medians": {
+                "wall": 0.21358491596765816,
+                "cpu": 0.44589900000000005,
+                "action_wall": 0.17187570803798735,
+                "action_cpu": 0.40408600000000006,
+                "build_wall": 0.04168416582979262,
+                "build_cpu": 0.04179100000000002
+              }
+            },
+            {
+              "file": "final-entry-profile-2-candidate.jsonl",
+              "medians": {
+                "wall": 0.19431137503124774,
+                "cpu": 0.41088299999999967,
+                "action_wall": 0.1590919999871403,
+                "action_cpu": 0.3755790000000001,
+                "build_wall": 0.035200166050344706,
+                "build_cpu": 0.035287999999999986
+              }
+            }
+          ],
+          "median": {
+            "wall": 0.20394814549945295,
+            "cpu": 0.42839099999999986,
+            "action_wall": 0.16548385401256382,
+            "action_cpu": 0.3898325000000001,
+            "build_wall": 0.03844216594006866,
+            "build_cpu": 0.038539500000000004
+          }
+        }
+      },
+      "ratio": {
+        "wall": 0.946856084887178,
+        "cpu": 0.8829745572667608,
+        "action_wall": 0.9281039517441658,
+        "action_cpu": 0.8701453209035098,
+        "build_wall": 1.0187105153709928,
+        "build_cpu": 1.0185664825435419
+      }
+    }
+  },
+  "mixed_row_counts": {
+    "baseline": {
+      "totals": {
+        "variant_min_rep": 4,
+        "variant_entry": 8
+      },
+      "rows": [
+        {
+          "position": 100,
+          "alleles": [
+            "C",
+            "G"
+          ],
+          "a_index": 1,
+          "entries": [
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            }
+          ]
+        },
+        {
+          "position": 101,
+          "alleles": [
+            "A",
+            "T"
+          ],
+          "a_index": 2,
+          "entries": [
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            }
+          ]
+        }
+      ]
+    },
+    "early": {
+      "totals": {
+        "variant_min_rep": 4,
+        "variant_entry": 8
+      },
+      "rows": [
+        {
+          "position": 100,
+          "alleles": [
+            "C",
+            "G"
+          ],
+          "a_index": 1,
+          "entries": [
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                16,
+                7
+              ],
+              "pl": [
+                10,
+                0,
+                20
+              ],
+              "gq": 10
+            }
+          ]
+        },
+        {
+          "position": 101,
+          "alleles": [
+            "A",
+            "T"
+          ],
+          "a_index": 2,
+          "entries": [
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            },
+            {
+              "gt": [
+                0,
+                1
+              ],
+              "ad": [
+                12,
+                11
+              ],
+              "pl": [
+                20,
+                0,
+                50
+              ],
+              "gq": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "final_gates": {
+    "revision": "bf9d8aed5782b434c2ef6192fbdf608d0a17e62e",
+    "rust_tests": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "public_split_python_tests": {
+      "passed": 30
+    },
+    "complete_result_oracle_sha256": "5b0b24d3e636fe2e2fc82106f5544b645c51a7d3ca7726ff2912e755449b5fee",
+    "independent_reviewer": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+    "source_correctness": "CLEAR"
+  }
+}
