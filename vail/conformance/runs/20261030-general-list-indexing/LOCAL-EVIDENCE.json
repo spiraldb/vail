@@ -1,0 +1,35 @@
+{
+  "candidate": "29b77243a31516dc4924e48f4458d96b09ae8cb1",
+  "baseline": "233fdc6a3be65eb236c86f6a70da2c08176b8030",
+  "scope": "Generic row-wise list indexing; direct Arrow index construction, unchanged gather and ownership",
+  "rows": 32768,
+  "candidate_allocated_bytes": 262784,
+  "baseline_allocated_bytes": 524832,
+  "throughput_measured": false,
+  "main_merged": false,
+  "logs": {
+    "/private/tmp/vail-list-index-candidate-tests.log": "daecef9b370f40f8202a53ad723b56712927dba085d6ede4c78fbb6a00835f1b",
+    "/private/tmp/vail-list-index-candidate-allocation.log": "02d4aaeac28eaf4ab79bcf9aac54247437c5f0e96a531340df1b93098fcc4c79",
+    "/private/tmp/vail-list-index-baseline-tests.log": "a492df4eae288cd5886295b5fbb7424b33e589f7fd58f5db2e873d8a6f817875",
+    "/private/tmp/vail-list-index-baseline-status.json": "1f3c765e2a676d8403e9fd023e3620cd4afcc8eeba4b6188828e0879841d623e",
+    "/private/tmp/vail-list-index-broad-tests.log": "74fa7432ed77b29f8dfc057c77286e0b5d046130ef95f60305c7ad247cc5c59b"
+  },
+  "broad_gate_results": [
+    "test result: ok. 68 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+    "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+    "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+  ],
+  "reviewer": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "build": {
+    "profile": "release",
+    "kache": true,
+    "jobs": 2,
+    "nice": 10,
+    "RUSTFLAGS": "-C link-arg=-undefined -C link-arg=dynamic_lookup"
+  }
+}
