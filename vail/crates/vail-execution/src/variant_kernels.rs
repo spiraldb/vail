@@ -208,32 +208,68 @@ fn min_rep(values: &[ColumnarValue], rows: usize, dtype: &DataType) -> Result<Ar
     )?))
 }
 
-fn list_row(input: &Input, row: usize) -> Result<Option<Int32Array>> {
-    let list = input.down::<ListArray>()?;
-    let row = input.row(row);
-    if list.is_null(row) {
-        return Ok(None);
-    }
-    let value = list.value(row);
-    Ok(Some(
-        value
+// Resolve the Arrow children once per batch. Entry spans borrow primitive
+// buffers and offsets rather than constructing an Array for every list slot.
+struct Int32Lists<'a> {
+    list: &'a ListArray,
+    values: &'a Int32Array,
+    scalar: bool,
+}
+impl<'a> Int32Lists<'a> {
+    fn new(input: &'a Input) -> Result<Self> {
+        let list = input.down::<ListArray>()?;
+        let values = list
+            .values()
             .as_any()
             .downcast_ref::<Int32Array>()
             .ok_or_else(|| {
                 datafusion_common::DataFusionError::Execution(
                     "variant kernel requires int32 array elements".into(),
                 )
-            })?
-            .clone(),
-    ))
+            })?;
+        Ok(Self {
+            list,
+            values,
+            scalar: input.scalar,
+        })
+    }
+    fn get(&self, row: usize) -> Option<Int32Span<'a>> {
+        let row = if self.scalar { 0 } else { row };
+        if self.list.is_null(row) {
+            return None;
+        }
+        let offsets = self.list.value_offsets();
+        Some(Int32Span {
+            values: self.values,
+            start: offsets[row] as usize,
+            len: (offsets[row + 1] - offsets[row]) as usize,
+        })
+    }
 }
+#[derive(Clone, Copy)]
+// The range lies within logical child values, established by ListArray offsets.
+struct Int32Span<'a> {
+    values: &'a Int32Array,
+    start: usize,
+    len: usize,
+}
+impl Int32Span<'_> {
+    fn len(&self) -> usize {
+        self.len
+    }
+    fn iter(&self) -> impl Iterator<Item = Option<i32>> + '_ {
+        (0..self.len).map(|i| value(self, i))
+    }
+}
+
 fn update(slot: &mut Option<i32>, value: Option<i32>) {
     if let Some(value) = value {
         *slot = Some(slot.map_or(value, |old| old.min(value)));
     }
 }
-fn value(a: &Int32Array, i: usize) -> Option<i32> {
-    (!a.is_null(i)).then(|| a.value(i))
+fn value(a: &Int32Span<'_>, i: usize) -> Option<i32> {
+    let i = a.start + i;
+    (!a.values.is_null(i)).then(|| a.values.value(i))
 }
 fn append(out: &mut ListBuilder<ListBuilder<Int32Builder>>, values: Option<&[Option<i32>]>) {
     if let Some(values) = values {
@@ -249,33 +285,37 @@ fn entries(values: &[Input], rows: usize, dtype: &DataType) -> Result<ArrayRef> 
     let counts = values[0].down::<Int32Array>()?;
     let mut ads = ListBuilder::new(ListBuilder::new(Int32Builder::new()));
     let mut pls = ListBuilder::new(ListBuilder::new(Int32Builder::new()));
+    let gt = Int32Lists::new(&values[1])?;
+    let pgt = Int32Lists::new(&values[2])?;
+    let ad = Int32Lists::new(&values[3])?;
+    let pl = Int32Lists::new(&values[4])?;
+    let mut result = Vec::new();
     for row in 0..rows {
         let cr = values[0].row(row);
         if counts.is_null(cr) || counts.value(cr) < 1 {
             return exec_err!("split_multi_hts requires at least one allele");
         }
         let n = counts.value(cr) as usize;
-        let gt = list_row(&values[1], row)?;
-        let pgt = list_row(&values[2], row)?;
+        let gt = gt.get(row);
+        let pgt = pgt.get(row);
         for call in [&gt, &pgt].into_iter().flatten() {
             if !(1..=2).contains(&call.len())
-                || call.null_count() != 0
-                || call.values().iter().any(|&a| a < 0 || a as usize >= n)
+                || call.iter().any(|a| a.is_none_or(|a| a < 0 || a as usize >= n))
             {
                 return exec_err!(
                     "split_multi_hts requires haploid or diploid GT/PGT with allele indices in range"
                 );
             }
         }
-        let ad = list_row(&values[3], row)?;
+        let ad = ad.get(row);
         if ad.as_ref().is_some_and(|a| a.len() != n) {
             return exec_err!("split_multi_hts AD length must equal allele count");
         }
         let total = ad
             .as_ref()
             .map(|a| a.iter().flatten().map(i64::from).sum::<i64>());
-        let pl = list_row(&values[4], row)?;
-        let ploidy = gt.as_ref().map(Array::len);
+        let pl = pl.get(row);
+        let ploidy = gt.as_ref().map(Int32Span::len);
         let diploid_len = n.checked_mul(n + 1).and_then(|x| x.checked_div(2));
         if let Some(pl) = &pl {
             let valid = match ploidy {
@@ -289,7 +329,8 @@ fn entries(values: &[Input], rows: usize, dtype: &DataType) -> Result<ArrayRef> 
                 );
             }
         }
-        let mut result = vec![[None; 3]; n];
+        result.clear();
+        result.resize(n, [None; 3]);
         if let (Some(pl), Some(ploidy)) = (&pl, ploidy) {
             // The global minimum edge supplies bucket zero for every vertex
             // except its (at most two) endpoints. Re-scan only those endpoints.
