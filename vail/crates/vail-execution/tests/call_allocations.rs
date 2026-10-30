@@ -724,3 +724,25 @@ fn mapped_sliced_lists_preserve_nullable_elements_and_hidden_gap_values() {
         assert_eq!(actual, vec![Some(first), Some(vec![]), Some(vec![Some(11); 128]), Some(vec![None; 128])]);
     }
 }
+
+#[test]
+fn indexing_uses_compact_indices_without_a_temporary_optional_vector() {
+    let rows = 32768;
+    let values: ArrayRef = Arc::new(ListArray::new(
+        Arc::new(Field::new("item", DataType::Int32, true)),
+        OffsetBuffer::new(ScalarBuffer::from((0..=rows).collect::<Vec<i32>>())),
+        Arc::new(Int32Array::from((0..rows).collect::<Vec<i32>>())), None));
+    let indices: ArrayRef = Arc::new(Int32Array::from(vec![0; rows as usize]));
+    let batch = RecordBatch::try_from_iter([("values",values),("index",indices)]).unwrap();
+    let expression = Expr::ArrayIndex {
+        value: Arc::new(Expr::Column { name: "values".into() }),
+        index: Arc::new(Expr::Column { name: "index".into() }),
+    };
+    let (output, bytes) = evaluate_aligned_allocated_bytes(&batch, &expression);
+    assert_eq!(output.as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from((0..rows).collect::<Vec<i32>>()));
+    // Four-byte gather indices and four-byte results, plus validity and
+    // bounded expression bookkeeping, should fit below ten bytes per row.
+    assert!(bytes <= 10 * rows as usize + 8192, "indexing allocated {bytes} bytes");
+    eprintln!("generic indexing: {rows} rows, {bytes} allocated bytes");
+}

@@ -10,6 +10,7 @@ use std::hash::Hash;
 use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::reference::{PreparedReference, ReferenceDefinition};
+use arrow_array::builder::UInt32Builder;
 use arrow_array::types::{Float32Type, Float64Type, Int32Type, Int64Type};
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
@@ -3330,11 +3331,11 @@ fn array_index_rows(
         .as_any()
         .downcast_ref::<Int32Array>()
         .ok_or_else(|| ExprError::Invalid("array index requires int32".into()))?;
-    let mut take_indices = Vec::with_capacity(ix.len());
+    let mut take_indices = UInt32Builder::with_capacity(ix.len());
     for row in 0..ix.len() {
         let source_row = if scalar_source { 0 } else { row };
         if lists.is_null(source_row) || ix.is_null(row) {
-            take_indices.push(None);
+            take_indices.append_null();
             continue;
         }
         let len = lists.value_length(source_row) as i64;
@@ -3350,11 +3351,11 @@ fn array_index_rows(
                 ix.value(row)
             )));
         }
-        take_indices.push(Some(
+        take_indices.append_value(
             (lists.value_offsets()[source_row] as i64 + normalized) as u32,
-        ));
+        );
     }
-    let index_array = UInt32Array::from(take_indices);
+    let index_array = take_indices.finish();
     let child = take(lists.values().as_ref(), &index_array, None)?;
     if child.data_type() != dtype {
         return Err(ExprError::Invalid(
