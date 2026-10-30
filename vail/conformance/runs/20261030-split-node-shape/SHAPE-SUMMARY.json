@@ -1,0 +1,253 @@
+{
+  "force-default": {
+    "plan": "executed-count-part-0-1.txt",
+    "distinct_plan_nodes": {
+      "TablePartitionViewExec": 9,
+      "VailConsumerScopeExec": 3,
+      "VailActionContextExec": 1,
+      "ScalarSubqueryExec": 1,
+      "TablePartitionsExec": 1,
+      "SortPreservingMergeExec": 1,
+      "UnionExec": 1,
+      "CheckKeyOrderExec": 4,
+      "ProjectionExec": 39,
+      "FilterExec": 2,
+      "UnnestExec": 2,
+      "VailSourcePartitions": 2,
+      "VicebergScanExec": 8,
+      "SortExec": 4,
+      "OrdinalExec": 4,
+      "CooperativeExec": 1,
+      "GlobalsScanExec": 1
+    },
+    "observed_semantic_programs": 59,
+    "result": {
+      "rows": 204,
+      "action": "force",
+      "mode": "default",
+      "fixture": "/private/tmp/vail-split-fundamental-20261030/profile-first-200.mt",
+      "source": "5ac7ae023+diagnostic-only-hooks",
+      "threads": 4,
+      "peak_rss_bytes": 313147392
+    },
+    "important_programs": [
+      {
+        "file": "kernel-6-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "NestedFunction",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 1
+      },
+      {
+        "file": "kernel-7-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "AlignedMatrixMap",
+        "aligned_matrix_map": 1,
+        "variant_entry": 1,
+        "array_transform": 0,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-8-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-47-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "AlignedMatrixMap",
+        "aligned_matrix_map": 1,
+        "variant_entry": 0,
+        "array_transform": 2,
+        "array_filter": 3
+      },
+      {
+        "file": "kernel-48-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      }
+    ]
+  },
+  "force-shuffle": {
+    "plan": "executed-count-part-0-1.txt",
+    "distinct_plan_nodes": {
+      "TablePartitionViewExec": 6,
+      "VailConsumerScopeExec": 3,
+      "VailActionContextExec": 1,
+      "ScalarSubqueryExec": 1,
+      "ProjectionExec": 12,
+      "OrderedConcatExec": 2,
+      "SortExec": 1,
+      "BoundedWindowAggExec": 1,
+      "UnnestExec": 1,
+      "VailSourcePartitions": 1,
+      "CooperativeExec": 5,
+      "VicebergScanExec": 4,
+      "GlobalsScanExec": 1
+    },
+    "observed_semantic_programs": 65,
+    "result": {
+      "rows": 204,
+      "action": "force",
+      "mode": "shuffle",
+      "fixture": "/private/tmp/vail-split-fundamental-20261030/profile-first-200.mt",
+      "source": "5ac7ae023+diagnostic-only-hooks",
+      "threads": 4,
+      "peak_rss_bytes": 229867520
+    },
+    "important_programs": [
+      {
+        "file": "kernel-6-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 1
+      },
+      {
+        "file": "kernel-7-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "AlignedMatrixMap",
+        "aligned_matrix_map": 1,
+        "variant_entry": 1,
+        "array_transform": 0,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-8-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-43-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "AlignedMatrixMap",
+        "aligned_matrix_map": 1,
+        "variant_entry": 0,
+        "array_transform": 2,
+        "array_filter": 3
+      },
+      {
+        "file": "kernel-44-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      }
+    ]
+  },
+  "collect-default": {
+    "plan": "ordered-prepare-0.txt",
+    "distinct_plan_nodes": {
+      "VailActionContextExec": 1,
+      "ScalarSubqueryExec": 1,
+      "ProjectionExec": 40,
+      "TablePartitionsExec": 1,
+      "SortPreservingMergeExec": 1,
+      "UnionExec": 1,
+      "CheckKeyOrderExec": 4,
+      "TablePartitionViewExec": 8,
+      "VailConsumerScopeExec": 2,
+      "FilterExec": 2,
+      "UnnestExec": 2,
+      "VailSourcePartitions": 2,
+      "VicebergScanExec": 8,
+      "SortExec": 4,
+      "OrdinalExec": 4,
+      "CooperativeExec": 1,
+      "GlobalsScanExec": 1
+    },
+    "observed_semantic_programs": 66,
+    "result": {
+      "rows": 204,
+      "entry_slots": 517140,
+      "defined_entries": 517140,
+      "first_row": {
+        "position": 16050036,
+        "alleles": [
+          "A",
+          "C"
+        ]
+      },
+      "action": "collect",
+      "mode": "default",
+      "fixture": "/private/tmp/vail-split-fundamental-20261030/profile-first-200.mt",
+      "source": "5ac7ae023+diagnostic-only-hooks",
+      "threads": 4,
+      "peak_rss_bytes": 1000243200
+    },
+    "important_programs": [
+      {
+        "file": "kernel-6-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "NestedFunction",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 1
+      },
+      {
+        "file": "kernel-7-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "AlignedMatrixMap",
+        "aligned_matrix_map": 1,
+        "variant_entry": 1,
+        "array_transform": 0,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-8-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-47-vail_semantic_kernel_hail_operation.txt",
+        "representation": "Debug fallback",
+        "top_ir": "AlignedMatrixMap",
+        "aligned_matrix_map": 1,
+        "variant_entry": 0,
+        "array_transform": 2,
+        "array_filter": 3
+      },
+      {
+        "file": "kernel-48-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      },
+      {
+        "file": "kernel-65-vail_semantic_kernel_array_transform.txt",
+        "representation": "Debug fallback",
+        "top_ir": "ArrayMap",
+        "aligned_matrix_map": 0,
+        "variant_entry": 0,
+        "array_transform": 1,
+        "array_filter": 0
+      }
+    ]
+  }
+}
