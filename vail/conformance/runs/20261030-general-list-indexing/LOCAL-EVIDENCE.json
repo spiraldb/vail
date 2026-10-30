@@ -31,5 +31,20 @@
     "jobs": 2,
     "nice": 10,
     "RUSTFLAGS": "-C link-arg=-undefined -C link-arg=dynamic_lookup"
+  },
+  "test_executable_sha256": {
+    "/private/tmp/vail-split-sort-target/release/deps/vail_execution-eda2972ff5a96a77": "57e55b4e0e96968694eab71efe3185e3ffd11b21649523156914f51b21be31ac",
+    "/private/tmp/vail-split-sort-target/release/deps/array_methods-6bf2a715e4ee2373": "8f638dd15219ea72ecfa65bd199c3a9ce87bb4279302c2fed7bec99c6592c235",
+    "/private/tmp/vail-split-sort-target/release/deps/call_allocations-d41167beb8726f47": "0b9f73dbb0fa8f2c8aeb6425d4392dc461c992c5704c7d2829f1fa35a4cd4a8f",
+    "/private/tmp/vail-split-sort-target/release/deps/closed_physical_constants-cce5b14bfa84f0f7": "173382d2e3588c6b9cf1e2ae89b1296f199a0fefa0ec513dea580332baed2589",
+    "/private/tmp/vail-split-sort-target/release/deps/collection_functions-74270ccff081ecbe": "54887fb937dfe33b694e5e2cd5457960b81638d46a102ba6472271bd7f5bef6d",
+    "/private/tmp/vail-split-sort-target/release/deps/list_indexing-a0df673ddf7bb503": "0891c453b47be96b0653b8a6459dac5d0538f719afdb00d6544cbe7b2f99d834",
+    "/private/tmp/vail-split-sort-target/release/deps/type_contracts-b792cb9daebf7549": "079c2ae9675fee9bb53873e8514b0b5e172316e5b1b4d97e9c9fccbf1edf2b91",
+    "/private/tmp/vail-split-sort-target/release/deps/variant_operations-85fe113998359a3c": "c552c57508fb065cf6a5a956b4adcda70dcc11ae8528edf401233dde055e685a"
+  },
+  "source_and_test_sha256": {
+    "vail/crates/vail-execution/src/expressions.rs": "a14283a817b16ba32b3e3aeccbbda430182a8f9aadefdbc44b6fffdf376cf72a",
+    "vail/crates/vail-execution/tests/list_indexing.rs": "8e60a7b7d9e796475cf7ee94058f16e29505e2712e24889b1da8ba36ab7c1be5",
+    "vail/crates/vail-execution/tests/call_allocations.rs": "ad4e8a552f87751b5534781073b68ae8147b64bdd290a5c4c3df9a2330958bce"
   }
 }
