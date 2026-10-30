@@ -1,0 +1,316 @@
+{
+  "cases": [
+    "benchmark_methods::test_split_multi_hts",
+    "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+    "benchmark_matrix_table::test_matrix_table_take_entry",
+    "benchmark_matrix_table::test_matrix_table_decode_and_count"
+  ],
+  "jobs": [
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "hail",
+      "mode": "hail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 1
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "hail",
+      "mode": "hail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 2
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_methods::test_split_multi_hts",
+      "version": "hail",
+      "mode": "hail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "candidate",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "baseline",
+      "mode": "vail-hail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "baseline",
+      "mode": "vail-vail",
+      "repetition": 3
+    },
+    {
+      "case_id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "version": "candidate",
+      "mode": "vail-vail",
+      "repetition": 3
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+   Compiling vail-execution v0.1.0 (/private/tmp/vail-targeted-benchmark-20261028/vail/crates/vail-execution)
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:55:24
+   |
+55 |                 output.extend(0, first, last);
+   |                        ^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:62:16
+   |
+62 |         output.extend(0, first, last);
+   |                ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+   --> crates/vail-execution/src/array_aggregate.rs:592:24
+    |
+592 |                 output.extend(0, start, end);
+    |                        ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:61:28
+   |
+61 |                     output.extend(0, first, last);
+   |                            ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:68:20
+   |
+68 |             output.extend(0, first, last);
+   |                    ^^^^^^
+
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4313:14
+     |
+4313 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-execution` (lib) generated 6 warnings (run `cargo fix --lib -p vail-execution` to apply 1 suggestion)
+warning: `vail-execution` (lib test) generated 6 warnings (6 duplicates)
+    Finished `release` profile [optimized] target(s) in 47.92s
+     Running unittests src/lib.rs (/private/tmp/vail-split-sort-target/release/deps/vail_execution-eda2972ff5a96a77)
+
+running 68 tests
+test expressions::integer_list_sum::tests::int64_sum_wraps_at_public_expression_boundary ... ok
+test expressions::integer_list_sum::tests::nested_map_cast_sum_returns_wide_values ... ok
+test expressions::integer_list_sum::tests::captured_public_entry_sum_without_cast_uses_int32_row_semantics ... ok
+test expressions::integer_list_sum::tests::public_sums_preserve_null_outer_lists_slices_and_nullable_leaves ... ok
+test expressions::tests::arrow_array_sum_keeps_wrapping_identity_and_missing_semantics ... ok
+test aligned_matrix_map::runend_experiment_tests::decode_once_supports_nested_structs_and_null_values ... ok
+test aligned_matrix_map::runend_experiment_tests::native_numeric_kernel_does_not_accept_runend_input ... ok
+test array_aggregate::tests::bundle_identity_uses_semantic_reducer_and_selector ... ok
+test expressions::integer_list_sum::tests::null_entries_empty_all_null_and_slices_preserve_sum_semantics ... ok
+test array_aggregate::tests::nullable_packed_struct_masks_every_reducer ... ok
+test expressions::tests::direct_call_index_missing_index_suppresses_out_of_bounds ... ok
+test expressions::tests::float_nan_wire_preserves_bits_and_rejects_malformed_tags ... ok
+test aligned_matrix_map::runend_experiment_tests::flattened_map_preserves_sliced_offsets_short_empty_lists_and_null_slots ... ok
+test expressions::tests::direct_call_index_matches_expected_alleles_for_slices_nulls_and_bounds ... ok
+test array_aggregate::tests::public_coordinate_mean_merge_preserves_full_uint64_count_domain ... ok
+test expressions::tests::hail_string_formats_nested_json_missing_and_float_scalars ... ok
+test expressions::tests::locus_coordinates_classification_boundaries_and_global_positions ... ok
+test expressions::tests::interval_types_literals_construction_and_field_projection ... ok
+test expressions::tests::ndarray_string_rejects_invalid_shape_without_indexing_past_data ... ok
+test expressions::tests::prepared_reference_cache_does_not_change_physical_expression_identity ... ok
+test aligned_matrix_map::runend_experiment_tests::public_aligned_maps_keep_same_schema_generated_bodies_distinct ... ok
+test expressions::tests::array_ir_rejects_bad_types_and_handles_zero_rows ... ok
+test expressions::tests::array_grouped_emits_short_final_group ... ok
+test expressions::tests::json_lowering_chained_numeric_and_kleene ... ok
+test expressions::tests::lazy_if_else_and_missing_condition ... ok
+test aligned_matrix_map::runend_experiment_tests::public_aligned_map_normalizes_nested_row_capture_descriptors ... ok
+test expressions::tests::flatten_skips_hidden_values_under_null_inner_lists ... ok
+test expressions::tests::locus_literal_uses_frontend_physical_value_and_checks_ordinal ... ok
+test expressions::tests::singleton_bind_uses_a_lexical_frame_with_arrow_literal_index ... ok
+test expressions::tests::public_grouped_arrays_keep_independent_generated_expressions ... ok
+test expressions::tests::public_struct_lowering_normalizes_view_and_large_string_storage ... ok
+test expressions::tests::source_validation_and_float_special_values ... ok
+test expressions::tests::public_physical_metadata_queries_follow_actual_input_schema ... ok
+test expressions::tests::struct_parent_nulls_array_literals_and_zero_fields ... ok
+test expressions::tests::aligned_presence_fast_body_preserves_promoted_result_type ... ok
+test expressions::tests::memo_keeps_the_same_native_node_distinct_under_different_lexical_bindings ... ok
+test expressions::tests::public_lambda_projection_rebinds_heterogeneous_source_columns ... ok
+test expressions::tests::stream_range_uses_exclusive_stop_and_reports_zero_step ... ok
+test logical_expr::tests::array_map_fallback_is_named_for_the_semantic_operation ... ok
+test expressions::integer_list_sum::tests::computed_map_bodies_preserve_narrowing_and_division_errors ... ok
+test expressions::tests::interval_contains_and_overlaps_respect_bounds_and_missingness ... ok
+test expressions::tests::set_literals_use_typed_arrow_equality_without_order_encoding ... ok
+test logical_expr::tests::ordinary_binary_expression_stays_visible_to_optimizer ... ok
+test logical_expr::tests::equality_remains_a_native_binary_expression ... ok
+test logical_expr::tests::set_equality_reports_missing_logical_collection_support ... ok
+test logical_expr::tests::integer_negation_wraps_identically_for_scalar_array_and_null ... ok
+test logical_expr::tests::independent_annotations_execute_with_distinct_values ... ok
+test matrix_transpose::tests::rejects_ragged_arrays_with_existing_error_shape ... ok
+test logical_expr::tests::integer_division_and_wrapping_keep_vail_semantics ... ok
+test matrix_transpose::tests::skips_missing_arrays_and_supports_empty_context_structs ... ok
+test matrix_transpose::tests::transposed_schema_retains_context_and_item_field_metadata ... ok
+test matrix_transpose::tests::transposes_values_and_contexts_once_per_position_with_sliced_offsets ... ok
+test logical_expr::tests::if_else_keeps_null_condition_branch_explicit ... ok
+test logical_expr::tests::missing_if_condition_produces_missing_and_dead_die_branch_is_not_evaluated ... ok
+test logical_expr::tests::scalar_capture_udf_reuses_semantics_after_binding_changes_and_parallel_batches ... ok
+test expressions::tests::public_mapped_dictionary_lookup_preserves_colliding_outer_binding ... ok
+test expressions::tests::public_compilation_accepts_deep_shared_native_graphs ... ok
+test list_aggregate::compact::tests::public_set_lowering_preserves_nested_nulls_slice_empty_and_scalar ... ok
+test logical_expr::tests::type_restoration_constant_folds_without_erasing_nested_metadata ... ok
+test logical_expr::tests::invalid_locus_coordinate_is_deferred_until_selected ... ok
+test list_aggregate::compact::tests::public_set_lowering_preserves_fixed_visible_values_with_growing_hidden_payload ... ok
+test expressions::tests::parse_csv_line_runs_as_a_physical_dataframe_expression ... ok
+test tests::invalid_inputs_fail_before_execution ... ok
+test tests::interleaved_partitions_merge_in_global_order ... ok
+test tests::empty_and_duplicate_keys_are_handled ... ok
+test tests::descending_nulls_last_and_limit_apply_after_merge ... ok
+test tests::compound_mixed_directions_ignore_input_partition_layout ... ok
+test tests::caller_memory_limit_spills_local_sort ... ok
+
+test result: ok. 68 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/array_methods.rs (/private/tmp/vail-split-sort-target/release/deps/array_methods-6bf2a715e4ee2373)
+
+running 5 tests
+test list_any_uses_native_reducer_empty_and_missing_identity ... ok
+test ndarray_constructor_checks_numeric_input_and_declared_rank ... ok
+test any_array_aggregate_scan_is_exclusive_for_empty_and_missing_lists ... ok
+test list_scan_builds_primitive_and_collection_prefixes_with_masks ... ok
+test fold_and_scan_accept_alternate_string_storage ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/call_allocations.rs (/private/tmp/vail-split-sort-target/release/deps/call_allocations-d41167beb8726f47)
+
+running 12 tests
+test packed_predicate_throughput ... ignored, manual packed Call throughput measurement
+test call_execution_trusts_stored_fields_and_parent_validity ... ok
+test direct_call_index_allocates_only_primitive_output_not_allele_lists ... ok
+test constructor_borrows_sliced_alleles_without_per_call_wrappers ... ok
+test indexing_uses_compact_indices_without_a_temporary_optional_vector ... ok
+test accessor_allocations_do_not_scale_with_number_of_calls ... ok
+test flat_nested_row_capture_drops_unused_payload_before_nonidentity_take_and_decode ... ok
+test mapped_array_struct_capture_drops_unused_element_payload ... ok
+test unused_call_siblings_at_any_struct_depth_do_not_grow_capture_allocations ... ok
+test aligned_map_column_metadata_allocations_do_not_scale_with_payload_bytes ... ok
+test mapped_sliced_lists_preserve_nullable_elements_and_hidden_gap_values ... ok
+test public_direct_properties_cover_uint16_alleles ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/closed_physical_constants.rs (/private/tmp/vail-split-sort-target/release/deps/closed_physical_constants-cce5b14bfa84f0f7)
+
+running 5 tests
+test row_dependent_nested_values_are_evaluated_for_each_batch ... ok
+test closed_expression_errors_are_not_cached_and_empty_batches_are_lazy ... ok
+test empty_selection_does_not_evaluate_a_closed_expression ... ok
+test errors_in_unselected_expression_branches_remain_unobserved ... ok
+test closed_nested_value_is_lazy_and_reused_across_batches ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/collection_functions.rs (/private/tmp/vail-split-sort-target/release/deps/collection_functions-74270ccff081ecbe)
+
+running 4 tests
+test collection_tag_cast_cannot_change_element_storage ... ok
+test malformed_collection_calls_are_planning_errors ... ok
+test distinct_float_values_preserve_values_and_missingness ... ok
+test set_constructor_deduplicates_values_and_missingness ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/list_indexing.rs (/private/tmp/vail-split-sort-target/release/deps/list_indexing-a0df673ddf7bb503)
+
+running 4 tests
+test missing_parent_hides_nonempty_child_span ... ok
+test sliced_strings_preserve_offsets_and_child_nulls ... ok
+test missing_values_negative_indices_and_bounds ... ok
+test scalar_list_supports_reordered_and_repeated_indices ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/type_contracts.rs (/private/tmp/vail-split-sort-target/release/deps/type_contracts-b792cb9daebf7549)
+
+running 10 tests
+test unsupported_cdf_is_rejected_at_public_signature_boundary ... ok
+test packed_numeric_arguments_match_executor_positions_and_scalar_regression_form ... ok
+test arrow_struct_import_rejects_duplicate_nested_names ... ok
+test required_initializers_and_ordered_take_layout_are_checked ... ok
+test scan_annotations_cannot_hide_invalid_inputs_functions_or_results ... ok
+test fold_state_and_lexical_scopes_are_checked ... ok
+test shared_callback_nodes_are_checked_in_each_lexical_type_context ... ok
+test shared_row_reference_cannot_escape_into_closed_scan_initializer ... ok
+test casts_check_semantic_compatibility_before_promising_a_type ... ok
+test shared_scan_bodies_remain_valid_through_each_collection_wrapper ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/variant_operations.rs (/private/tmp/vail-split-sort-target/release/deps/variant_operations-85fe113998359a3c)
+
+running 2 tests
+test normalization_accepts_shared_scalars_and_arrow_string_storage ... ok
+test entry_preparation_reuses_scalar_likelihoods_for_batch_rows ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
