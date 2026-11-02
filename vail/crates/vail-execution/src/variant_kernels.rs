@@ -26,6 +26,8 @@ pub(crate) fn function(
                 r#struct: vec![("shift".into(), i.clone()), ("alleles".into(), array(s))],
             },
         )
+    } else if name == "gq_from_pl" {
+        (vec![array(i.clone())], i)
     } else {
         (
             vec![
@@ -66,6 +68,8 @@ pub(crate) fn function(
                 diploid_index_call(&values[0], rows, &out_type)?
             } else if kernel == "variant_min_rep" {
                 min_rep(values, rows, &out_type)?
+            } else if kernel == "gq_from_pl" {
+                gq_from_pl(&Input::new(&values[0])?)?
             } else {
                 let arrays = values.iter().map(Input::new).collect::<Result<Vec<_>>>()?;
                 entries(&arrays, rows, &out_type)?
@@ -433,4 +437,35 @@ fn entries(values: &[Input], rows: usize, dtype: &DataType) -> Result<ArrayRef> 
         vec![Arc::new(ads.finish()), Arc::new(pls.finish())],
         None,
     )?))
+}
+
+fn gq_from_pl(input: &Input) -> Result<ArrayRef> {
+    let lists = input.down::<ListArray>()?;
+    let Some(values) = lists.values().as_any().downcast_ref::<Int32Array>() else {
+        return exec_err!("gq_from_pl requires int32 likelihoods");
+    };
+    let offsets = lists.value_offsets();
+    let mut output = Int32Builder::with_capacity(lists.len());
+    for row in 0..lists.len() {
+        if lists.is_null(row) {
+            output.append_null();
+            continue;
+        }
+        // Hail caps both minima at 99, including empty and singleton lists.
+        let (mut minimum, mut second) = (99i32, 99i32);
+        for index in offsets[row] as usize..offsets[row + 1] as usize {
+            if values.is_null(index) {
+                continue;
+            }
+            let value = values.value(index);
+            if value < minimum {
+                second = minimum;
+                minimum = value;
+            } else if value < second {
+                second = value;
+            }
+        }
+        output.append_value(second.wrapping_sub(minimum));
+    }
+    Ok(Arc::new(output.finish()))
 }
