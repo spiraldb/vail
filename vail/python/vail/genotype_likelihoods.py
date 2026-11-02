@@ -6,12 +6,11 @@ from .types import tarray, tint32, tfloat64
 
 def gq_from_pl(pl):
     """Difference between the two least defined PLs, seeded with 99 twice."""
-    from . import sorted as sort_values
+    from .variant import _kernel
     pl = as_expr(pl)
     if pl.dtype != tarray(tint32):
         raise TypeError('gq_from_pl requires an array of int32 likelihoods')
-    ordered = sort_values(pl.filter(lambda value: ~is_missing(value)).extend([99, 99]))
-    return if_else(is_missing(pl), missing(tint32), ordered[1] - ordered[0])
+    return _kernel('gq_from_pl', tint32, pl)
 
 
 def unphased_diploid_gt_index_call(gt_index):

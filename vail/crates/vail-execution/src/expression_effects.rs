@@ -26,7 +26,7 @@ fn string_effects(function: &str) -> Effects {
     match function {
         "lower" | "upper" | "reverse" | "btrim" | "concat" | "contains" | "starts_with"
         | "ends_with" | "character_length" | "hamming" | "entropy" | "strpos" | "translate"
-        | "replace" | "string_to_array" | "array_to_string" => Effects::Pure,
+        | "replace" | "string_to_array" | "array_to_string" | "gq_from_pl" => Effects::Pure,
         _ => Effects::MayError,
     }
 }

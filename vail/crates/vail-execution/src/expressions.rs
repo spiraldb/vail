@@ -4974,7 +4974,7 @@ pub(crate) fn string_function(
     let strings = Type::Array {
         array: Box::new(text.clone()),
     };
-    if matches!(name, "variant_min_rep" | "variant_entry" | "unphased_diploid_gt_index_call") {
+    if matches!(name, "variant_min_rep" | "variant_entry" | "gq_from_pl" | "unphased_diploid_gt_index_call") {
         return crate::variant_kernels::function(name);
     }
     Ok(match name {
