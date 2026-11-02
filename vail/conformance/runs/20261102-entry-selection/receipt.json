@@ -1,0 +1,47 @@
+{
+  "base": "5dcf0b4452b33498c89ad6e77b949ac0edcbdbb1",
+  "source_patch_sha256": "025a130c70aeaa88288579921cfef77f6442442877d2402521ca4c5c0ddab286",
+  "wheel_sha256": "64ec1b2567c240c46e3517adab14691dd854607ad756118523d3d3f2d9436227",
+  "native_sha256": "c516a865f1048eb9aab4c07d050027c8cb5972266ff102d1c0b3a739994e63fb",
+  "oracle_sha256": {
+    "0": "1d5ae1c7645991a877f5a790267b89fbc0f1cb1f19fe999c57683c85ca19a620",
+    "1": "1d5ae1c7645991a877f5a790267b89fbc0f1cb1f19fe999c57683c85ca19a620"
+  },
+  "mode": "same native and Python files; diagnostic flag off/on",
+  "order": [
+    0,
+    1,
+    1,
+    0
+  ],
+  "warmup_seconds": 1,
+  "samples_per_process": 7,
+  "cases": [
+    "split-real",
+    "split-many",
+    "empty",
+    "one",
+    "short",
+    "wide"
+  ],
+  "limits": {
+    "threads": 4,
+    "process_timeout_seconds": 120
+  },
+  "decision": "REJECT per-list scalar-capture architecture; no optimizer caller or source-copy removal implemented",
+  "scope": "Private diagnostic prototype. Final full-value oracle off/on equal. Timings compare execution modes, NOT a copy-eliminating candidate. Source preparation, Unnest copies, and GQ formula unchanged between modes. No production admission.",
+  "failed_gates": [
+    {
+      "build": 1,
+      "failure": "prepared aligned map hidden by compiler/metadata wrappers; before timings"
+    },
+    {
+      "internal_test": 1,
+      "failure": "private direct downcast ignored CompiledPhysical wrapper; corrected diagnostic"
+    }
+  ],
+  "unrun_builds": [
+    2,
+    3
+  ]
+}
