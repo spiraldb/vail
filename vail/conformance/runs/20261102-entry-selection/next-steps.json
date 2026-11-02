@@ -1,0 +1,27 @@
+{
+  "status": "copy-elimination not implemented; 2x target not achieved",
+  "accepted_separate_change": {
+    "source": "a38dfd48c",
+    "evidence": "fa5dba599",
+    "description": "one-pass GQ kernel; reviewer accepted exact source and evidence"
+  },
+  "rejected": "per-output-list scalar-capture evaluation; full outputs matched, throughput controls regressed",
+  "next_design": {
+    "execution": "retain one flat aligned-body evaluation per batch",
+    "input": "borrow original entry owners; carry source-entry/output-row/column indices and presence in narrow batch",
+    "access": "query-prepared ordinary leaf paths; current CASE/filter-selected index lanes govern all reads",
+    "list_index": "fuse indexed source list and direct element selection; gather selected child lists once, not all alternate lists",
+    "reuse": "verify/extend existing lexical sharing within strict demand regions; shared physical Arc alone is not evaluated-result reuse",
+    "fallback": "static for whole/opaque entry use, storage mismatch, unsupported effects; no partial execution and replay",
+    "bounds": "checked offset/output capacity and bounded lane scratch/source ownership",
+    "not_solved": "two branch executions and final single-partition merge are independent"
+  },
+  "required_gates": [
+    "public full outputs, null ancestors/hidden spans/empty/all-filtered, error demand, row/global/column captures",
+    "negative/scalar/missing/out-of-bounds list indices with original semantics",
+    "shared/concurrent consumers and per-batch immutable source binding",
+    "counterfactual allocation/copy diagnostics",
+    "matched real split and small-list/scalar throughput/core-second controls"
+  ],
+  "reviewer": "01a14128-21b8-7a53-b399-4ad8f9b31f4f; source design direction reviewed, no code or performance admission"
+}
