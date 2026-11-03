@@ -1,0 +1,1245 @@
+diff --git a/vail/crates/vail-execution/src/aligned_matrix_map.rs b/vail/crates/vail-execution/src/aligned_matrix_map.rs
+index 6e6e7ed2b..b9ad4e6c6 100644
+--- a/vail/crates/vail-execution/src/aligned_matrix_map.rs
++++ b/vail/crates/vail-execution/src/aligned_matrix_map.rs
+@@ -16,7 +16,7 @@ use arrow_array::{
+     make_array, new_empty_array,
+ };
+ use arrow_array::{Int32Array, RunArray, UInt32Array};
+-use arrow_buffer::{BooleanBuffer, NullBuffer, OffsetBuffer, ScalarBuffer};
++use arrow_buffer::{BooleanBuffer, NullBuffer, NullBufferBuilder, OffsetBuffer, ScalarBuffer};
+ use arrow_cast::cast;
+ use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
+ use arrow_select::{concat::concat, take::take};
+@@ -377,6 +377,7 @@ pub(crate) struct AlignedMatrixMapExpr {
+     body_dtype: DataType,
+     preserve_cell: bool,
+     scalar_rows: bool,
++    indexed: Option<(Vec<crate::indexed_batch::Input>, Arc<Schema>)>,
+ }
+ 
+ impl AlignedMatrixMapExpr {
+@@ -417,8 +418,25 @@ impl AlignedMatrixMapExpr {
+             body_dtype,
+             preserve_cell,
+             scalar_rows,
++            indexed: None,
+         }
+     }
++
++    pub(crate) fn new_indexed(
++        children: [Arc<dyn PhysicalExpr>; 4], body: Arc<dyn PhysicalExpr>,
++        all_present_body: Option<Arc<dyn PhysicalExpr>>, inputs: Vec<crate::indexed_batch::Input>,
++        dtype: DataType, body_dtype: DataType, preserve_cell: bool,
++    ) -> Self {
++        let mut result = Self::new(children[0].clone(), children[1].clone(), children[2].clone(), children[3].clone(),
++            body, all_present_body, vec![], vec![], vec![], None, dtype, body_dtype, preserve_cell, false);
++        let schema = Arc::new(Schema::new(vec![
++            Field::new(crate::indexed_batch::ENTRY_INDEX, DataType::Int32, false),
++            Field::new(crate::indexed_batch::COLUMN_INDEX, DataType::Int32, false),
++            Field::new(crate::indexed_batch::ROW_INDEX, DataType::Int32, false),
++            Field::new(crate::indexed_batch::PRESENCE, DataType::Boolean, false),
++        ]));
++        result.indexed = Some((inputs, schema)); result
++    }
+ }
+ 
+ impl AlignedMatrixMapExpr {
+@@ -691,6 +709,127 @@ impl AlignedMatrixMapExpr {
+     }
+ }
+ 
++impl AlignedMatrixMapExpr {
++    fn evaluate_indexed(&self, batch: &RecordBatch, inputs: &[crate::indexed_batch::Input], schema: &Arc<Schema>) -> Result<ColumnarValue> {
++        let entries = row_array_value(self.entries.evaluate(batch)?, batch.num_rows(), "entry lists")?;
++        let entries = entries.as_any().downcast_ref::<ListArray>().ok_or_else(||
++            DataFusionError::Execution("indexed entries must be ListArray".into()))?;
++        self.evaluate_indexed_owner(batch, entries, None, inputs, schema)
++    }
++
++    pub(crate) fn is_indexed(&self) -> bool { self.indexed.is_some() }
++    pub(crate) fn evaluate_selected_captures(&self, selection: &crate::logical_expr::AlignedSelection, captures: [ColumnarValue; 3]) -> Result<ColumnarValue> {
++        let (inputs, schema) = self.indexed.as_ref().ok_or_else(|| DataFusionError::Internal("selected kernel is not indexed".into()))?;
++        let owner = selection.entries.as_any().downcast_ref::<ListArray>().ok_or_else(|| DataFusionError::Execution("selected entries must be ListArray".into()))?;
++        for parent in &selection.parents {
++            if parent.is_none_or(|parent| parent < 0 || parent as usize >= owner.len()) {
++                return Err(DataFusionError::Execution("selected parent outside original batch".into()));
++            }
++        }
++        self.evaluate_indexed_values(selection.parents.len(), owner, Some(&selection.parents), inputs, schema, captures)
++    }
++
++    fn evaluate_indexed_owner(&self, batch: &RecordBatch, entries: &ListArray, parents: Option<&Int32Array>,
++        inputs: &[crate::indexed_batch::Input], schema: &Arc<Schema>) -> Result<ColumnarValue> {
++        let rows = self.rows.evaluate(batch)?;
++        let globals = if batch.num_rows() == 0 { ColumnarValue::Scalar(ScalarValue::Null) } else { self.globals.evaluate(batch)? };
++        let columns = self.columns.evaluate(batch)?;
++        self.evaluate_indexed_values(batch.num_rows(), entries, parents, inputs, schema, [columns, rows, globals])
++    }
++    fn evaluate_indexed_values(&self, output_rows: usize, entries: &ListArray, parents: Option<&Int32Array>,
++        inputs: &[crate::indexed_batch::Input], schema: &Arc<Schema>, captures: [ColumnarValue; 3]) -> Result<ColumnarValue> {
++        let [columns, rows, globals] = captures;
++        let rows = row_array_value(rows, output_rows, "row records")?;
++        let parent = |row: usize| parents.map_or(row, |indices| indices.value(row) as usize);
++        let globals = (output_rows > 0).then_some(globals);
++        let columns = shared_list_values(columns)?;
++        let cells = entries.values();
++        let values = entry_values(cells.as_ref())?;
++        let offsets = entries.value_offsets();
++        let mut output_offsets = Vec::with_capacity(output_rows + 1);
++        output_offsets.push(0i32);
++        for row in 0..output_rows {
++            let source = parent(row);
++            let count = if parents.is_some() && entries.is_null(source) { 0 } else { offsets[source + 1] - offsets[source] };
++            if count as usize > columns.len() { return Err(DataFusionError::Execution("aligned entry list exceeds column metadata length".into())); }
++            output_offsets.push(output_offsets.last().unwrap().checked_add(count).ok_or_else(||
++                DataFusionError::Execution("indexed output exceeds List offset capacity".into()))?);
++        }
++        let total = *output_offsets.last().unwrap() as usize;
++        let needed = |axis: &str| inputs.iter().any(|input| input.axis == axis);
++        let mut entry_indices = needed("entry").then(|| Vec::with_capacity(total));
++        let mut column_indices = needed("col").then(|| Vec::with_capacity(total));
++        let mut row_indices = needed("row").then(|| Vec::with_capacity(total));
++        let mut entry_validity = NullBufferBuilder::new(total);
++        let mut cell_validity = NullBufferBuilder::new(total);
++        for row in 0..output_rows {
++            let count = (output_offsets[row + 1] - output_offsets[row]) as usize;
++            if count == 0 { continue; }
++            let start = offsets[parent(row)] as usize;
++            let row_index = i32::try_from(row).map_err(|_| DataFusionError::Execution("indexed row exceeds int32".into()))?;
++            if let Some(indices) = &mut entry_indices { indices.extend((start..start + count).map(|index| index as i32)); }
++            if let Some(indices) = &mut column_indices { indices.extend((0..count).map(|index| index as i32)); }
++            if let Some(indices) = &mut row_indices { indices.extend(std::iter::repeat_n(row_index, count)); }
++            match values.nulls() {
++                Some(nulls) => entry_validity.append_buffer(&nulls.slice(start, count)),
++                None => entry_validity.append_n_non_nulls(count),
++            }
++            match cells.nulls() {
++                Some(nulls) => cell_validity.append_buffer(&nulls.slice(start, count)),
++                None => cell_validity.append_n_non_nulls(count),
++            }
++        }
++        let entry_validity = entry_validity.finish();
++        let cell_validity = cell_validity.finish();
++        // Match the existing aligned-map guard: presence is the value child's
++        // validity. Cell-parent masks still apply to every indexed field read
++        // and to the output wrapper; they do not change demanded computations.
++        let presence = entry_validity.clone();
++        let body = if presence.as_ref().is_none_or(|nulls| nulls.null_count() == 0) {
++            self.all_present_body.as_ref().unwrap_or(&self.body)
++        } else { &self.body };
++        let mapped = if total == 0 { new_empty_array(&self.body_dtype) } else {
++            let globals = if inputs.iter().any(|input| input.axis == "global") {
++                Some(match globals.as_ref().ok_or_else(|| DataFusionError::Execution("missing indexed globals".into()))? {
++                    ColumnarValue::Scalar(value) => value.to_array()?,
++                    ColumnarValue::Array(value) => value.clone(),
++                })
++            } else { None };
++            let num_cols = Arc::new(Int32Array::from(vec![i32::try_from(columns.len()).map_err(|_|
++                DataFusionError::Execution("indexed columns exceed int32".into()))?])) as ArrayRef;
++            let sources = inputs.iter().map(|input| {
++                let (owner, scalar) = match input.axis.as_str() {
++                    "entry" => (cells.clone(), false), "col" => (columns.clone(), false),
++                    "row" => (rows.clone(), false), "global" => (globals.as_ref().unwrap().clone(), true),
++                    "num_cols" => (num_cols.clone(), true), _ => unreachable!(),
++                };
++                crate::indexed_batch::Source::bind(owner, input, scalar)
++            }).collect::<Result<Vec<_>>>()?;
++            let body = crate::indexed_batch::bind(body, &sources, &mut HashMap::new())?;
++            let presence = presence.as_ref().map(|nulls| nulls.inner().clone()).unwrap_or_else(|| BooleanBuffer::new_set(total));
++            let lanes = [entry_indices, column_indices, row_indices].map(|indices|
++                indices.map(|indices| Arc::new(Int32Array::from(indices)) as ArrayRef));
++            let unused = lanes.iter().flatten().next().cloned()
++                .unwrap_or_else(|| Arc::new(Int32Array::from_value(0, total)) as ArrayRef);
++            let mut arrays = lanes.into_iter().map(|lane| lane.unwrap_or_else(|| unused.clone())).collect::<Vec<_>>();
++            arrays.push(Arc::new(BooleanArray::new(presence, None)));
++            let frame = RecordBatch::try_new(schema.clone(), arrays)?;
++            body.evaluate(&frame)?.into_array(total)?
++        };
++        let nulls = NullBuffer::union(mapped.nulls(), entry_validity.as_ref());
++        let mapped = make_array(mapped.to_data().into_builder().nulls(nulls).build()?);
++        let DataType::List(item) = &self.dtype else { unreachable!() };
++        let mapped = if self.preserve_cell {
++            let DataType::Struct(fields) = item.data_type() else { unreachable!() };
++            Arc::new(StructArray::try_new(fields.clone(), vec![mapped], cell_validity)?) as ArrayRef
++        } else { mapped };
++        Ok(ColumnarValue::Array(Arc::new(ListArray::try_new(item.clone(),
++            OffsetBuffer::new(ScalarBuffer::from(output_offsets)), mapped,
++            if parents.is_some() { entries.nulls().map(|_| NullBuffer::from((0..output_rows).map(|row| entries.is_valid(parent(row))).collect::<Vec<_>>())) }
++            else { entries.nulls().cloned() })?)))
++    }
++}
++
+ impl PartialEq for AlignedMatrixMapExpr {
+     fn eq(&self, other: &Self) -> bool {
+         self.entries.as_ref() == other.entries.as_ref()
+@@ -706,6 +845,7 @@ impl PartialEq for AlignedMatrixMapExpr {
+             && self.body_dtype == other.body_dtype
+             && self.preserve_cell == other.preserve_cell
+             && self.scalar_rows == other.scalar_rows
++            && self.indexed == other.indexed
+     }
+ }
+ impl Eq for AlignedMatrixMapExpr {}
+@@ -724,6 +864,7 @@ impl Hash for AlignedMatrixMapExpr {
+         self.body_dtype.hash(state);
+         self.preserve_cell.hash(state);
+         self.scalar_rows.hash(state);
++        self.indexed.hash(state);
+     }
+ }
+ impl Display for AlignedMatrixMapExpr {
+@@ -783,10 +924,14 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
+             body_dtype: self.body_dtype.clone(),
+             preserve_cell: self.preserve_cell,
+             scalar_rows: self.scalar_rows && children[4].as_ref() == self.body.as_ref(),
++            indexed: self.indexed.clone(),
+         }))
+     }
+ 
+     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
++        if let Some((inputs, schema)) = &self.indexed {
++            return self.evaluate_indexed(batch, inputs, schema);
++        }
+         if !self.scalar_rows {
+             return self.evaluate_flat(batch);
+         }
+diff --git a/vail/crates/vail-execution/src/array_length.rs b/vail/crates/vail-execution/src/array_length.rs
+index e61ec725f..ed4ac2f78 100644
+--- a/vail/crates/vail-execution/src/array_length.rs
++++ b/vail/crates/vail-execution/src/array_length.rs
+@@ -9,6 +9,10 @@ use std::sync::{Arc, OnceLock};
+ #[derive(Debug, PartialEq, Eq, Hash)]
+ struct OuterLength;
+ 
++pub fn is_outer_length(function: &ScalarUDF) -> bool {
++    function.inner().is::<crate::kernel_identity::Scalar<OuterLength>>()
++}
++
+ pub fn udf() -> Arc<ScalarUDF> {
+     static UDF: OnceLock<Arc<ScalarUDF>> = OnceLock::new();
+     UDF.get_or_init(|| {
+diff --git a/vail/crates/vail-execution/src/expression_effects.rs b/vail/crates/vail-execution/src/expression_effects.rs
+index 9b0ee1253..0ba697028 100644
+--- a/vail/crates/vail-execution/src/expression_effects.rs
++++ b/vail/crates/vail-execution/src/expression_effects.rs
+@@ -63,82 +63,92 @@ fn nested_effects(function: &str) -> Effects {
+         _ => Effects::MayError,
+     }
+ }
++fn own_effect(node: &Expr) -> Effects {
++    match node {
++        Expr::NestedFunction { function, .. } => nested_effects(function),
++        Expr::StringFunction { function, .. } => string_effects(function),
++        // This virtual Call field rejects non-diploid values. A plain
++        // struct field using the reserved name is conservatively covered.
++        Expr::GetField { name, .. } if name == "__vail_call_unphased_diploid_gt_index" => {
++            Effects::MayError
++        }
++        Expr::RuntimeLiteral { .. }
++        | Expr::Literal { .. }
++        | Expr::Column { .. }
++        | Expr::Global { .. }
++        | Expr::ExternalGlobal { .. }
++        | Expr::LambdaVariable { .. }
++        | Expr::MatrixField { .. }
++        | Expr::MatrixScope { .. }
++        | Expr::MatrixNumCols { .. }
++        | Expr::MatrixColumnPosition { .. }
++        | Expr::Struct { .. }
++        | Expr::Tuple { .. }
++        | Expr::GetField { .. }
++        | Expr::Array { .. }
++        | Expr::ArrayMap { .. }
++        | Expr::AlignedMatrixMap { .. }
++        | Expr::AlignedMapInput { .. }
++        | Expr::ArrayFilter { .. }
++        | Expr::ArrayPredicate { .. }
++        | Expr::ArrayFold { .. }
++        | Expr::ArrayLength { .. }
++        | Expr::ArrayFlatten { .. }
++        | Expr::CollectionCast { .. }
++        | Expr::Unary { .. }
++        | Expr::IsMissing { .. }
++        | Expr::Switch { .. }
++        | Expr::IfElse { .. }
++        | Expr::ToString { .. }
++        | Expr::Interval { .. }
++        | Expr::IntervalContains { .. }
++        | Expr::IntervalOverlaps { .. }
++        | Expr::LocusValid { .. } => Effects::Pure,
++        Expr::LocusOp { .. } => Effects::MayError,
++        Expr::Binary { operator, .. } | Expr::IntegerBinary { operator, .. } => match operator {
++            BinaryOperator::Div
++            | BinaryOperator::Floordiv
++            | BinaryOperator::Mod
++            | BinaryOperator::Pow => Effects::MayError,
++            _ => Effects::Pure,
++        },
++        // These kernels validate runtime values (bounds, shapes, parsing,
++        // reducer options). Conservatively retain the error-order barrier.
++        Expr::Die { .. }
++        | Expr::Cast { .. }
++        | Expr::ArrayIndex { .. }
++        | Expr::ArraySlice { .. }
++        | Expr::ArrayReduce { .. }
++        | Expr::ArrayGrouped { .. }
++        | Expr::StreamRange { .. }
++        | Expr::Locus { .. }
++        | Expr::LocusFromGlobalPosition { .. }
++        | Expr::ParseLocus { .. }
++        | Expr::ParseCsvLine { .. }
++        | Expr::ArrayAggregateScan { .. }
++        | Expr::Aggregate { .. }
++        | Expr::AggregateFold { .. }
++        | Expr::AggGroupBy { .. }
++        | Expr::AggArray { .. }
++        | Expr::AggFilter { .. }
++        | Expr::AggExplode { .. }
++        | Expr::TableLookup { .. } => Effects::MayError,
++    }
++}
++
+ pub(crate) fn effects(expr: &Expr) -> Effects {
+     let mut effect = Effects::Pure;
++    expr.visit_unique(&mut |node| effect = effect.max(own_effect(node)));
++    effect
++}
++
++// Value-validation errors may be skipped on rows eliminated by a filter.
++// Explicit errors, randomness and unknown functions retain their barrier.
++pub(crate) fn can_defer_filtered_values(expr: &Expr) -> bool {
++    let mut allowed = true;
+     expr.visit_unique(&mut |node| {
+-        let own = match node {
+-            Expr::NestedFunction { function, .. } => nested_effects(function),
+-            Expr::StringFunction { function, .. } => string_effects(function),
+-            // This virtual Call field rejects non-diploid values. A plain
+-            // struct field using the reserved name is conservatively covered.
+-            Expr::GetField { name, .. } if name == "__vail_call_unphased_diploid_gt_index" => {
+-                Effects::MayError
+-            }
+-            Expr::RuntimeLiteral { .. }
+-            | Expr::Literal { .. }
+-            | Expr::Column { .. }
+-            | Expr::Global { .. }
+-            | Expr::ExternalGlobal { .. }
+-            | Expr::LambdaVariable { .. }
+-            | Expr::MatrixField { .. }
+-            | Expr::MatrixScope { .. }
+-            | Expr::MatrixNumCols { .. }
+-            | Expr::MatrixColumnPosition { .. }
+-            | Expr::Struct { .. }
+-            | Expr::Tuple { .. }
+-            | Expr::GetField { .. }
+-            | Expr::Array { .. }
+-            | Expr::ArrayMap { .. }
+-            | Expr::AlignedMatrixMap { .. }
+-            | Expr::AlignedMapInput { .. }
+-            | Expr::ArrayFilter { .. }
+-            | Expr::ArrayPredicate { .. }
+-            | Expr::ArrayFold { .. }
+-            | Expr::ArrayLength { .. }
+-            | Expr::ArrayFlatten { .. }
+-            | Expr::CollectionCast { .. }
+-            | Expr::Unary { .. }
+-            | Expr::IsMissing { .. }
+-            | Expr::Switch { .. }
+-            | Expr::IfElse { .. }
+-            | Expr::ToString { .. }
+-            | Expr::Interval { .. }
+-            | Expr::IntervalContains { .. }
+-            | Expr::IntervalOverlaps { .. }
+-            | Expr::LocusValid { .. } => Effects::Pure,
+-            Expr::LocusOp { .. } => Effects::MayError,
+-            Expr::Binary { operator, .. } | Expr::IntegerBinary { operator, .. } => {
+-                match operator {
+-                    BinaryOperator::Div
+-                    | BinaryOperator::Floordiv
+-                    | BinaryOperator::Mod
+-                    | BinaryOperator::Pow => Effects::MayError,
+-                    _ => Effects::Pure,
+-                }
+-            }
+-            // These kernels validate runtime values (bounds, shapes, parsing,
+-            // reducer options). Conservatively retain the error-order barrier.
+-            Expr::Die { .. }
+-            | Expr::Cast { .. }
+-            | Expr::ArrayIndex { .. }
+-            | Expr::ArraySlice { .. }
+-            | Expr::ArrayReduce { .. }
+-            | Expr::ArrayGrouped { .. }
+-            | Expr::StreamRange { .. }
+-            | Expr::Locus { .. }
+-            | Expr::LocusFromGlobalPosition { .. }
+-            | Expr::ParseLocus { .. }
+-            | Expr::ParseCsvLine { .. }
+-            | Expr::ArrayAggregateScan { .. }
+-            | Expr::Aggregate { .. }
+-            | Expr::AggregateFold { .. }
+-            | Expr::AggGroupBy { .. }
+-            | Expr::AggArray { .. }
+-            | Expr::AggFilter { .. }
+-            | Expr::AggExplode { .. }
+-            | Expr::TableLookup { .. } => Effects::MayError,
+-        };
+-        effect = effect.max(own);
++        allowed &= own_effect(node) == Effects::Pure
++            || matches!(node, Expr::StringFunction { function, .. } if function == "variant_entry");
+     });
+-    effect
++    allowed
+ }
+diff --git a/vail/crates/vail-execution/src/expressions.rs b/vail/crates/vail-execution/src/expressions.rs
+index 888a8b16e..40d09ff7b 100644
+--- a/vail/crates/vail-execution/src/expressions.rs
++++ b/vail/crates/vail-execution/src/expressions.rs
+@@ -801,6 +801,7 @@ struct CompilationMemo {
+     generated: Vec<Arc<Expr>>,
+     scans: HashMap<*const Expr, bool>,
+     root_expression: usize,
++    indexed_selection: bool,
+     suppress_local_cse: bool,
+     local_cse_regions: HashMap<usize, HashSet<usize>>,
+     local_cse_names: HashSet<String>,
+@@ -1745,6 +1746,10 @@ impl Expr {
+                 }
+             }
+             Self::StringFunction { function, args } => {
++                if function == "experiment_direct_hts" {
++                    let types = args.iter().map(|arg| arg.dtype_scoped(schema, globals, scope, memo, context)).collect::<Result<Vec<_>, _>>()?;
++                    return Ok(crate::direct_hts::function(&types)?.2);
++                }
+                 let (_, expected, output) = string_function(function)?;
+                 if args.len() != expected.len() {
+                     return Err(ExprError::Invalid(format!(
+@@ -1804,6 +1809,12 @@ impl Expr {
+                 args,
+                 dtype,
+             } => {
++                if matches!(function.as_str(), crate::indexed_batch::INPUT | crate::indexed_batch::IS_NULL) {
++                    if args.len() != 3 { return Err(ExprError::Invalid("indexed input requires three typed arguments".into())); }
++                    let index = args[0].dtype_scoped(schema, globals, scope, memo, context)?;
++                    if index != Type::Primitive(PrimitiveType::Int32) { return Err(ExprError::Invalid("indexed lanes require int32".into())); }
++                    return Ok(dtype.clone());
++                }
+                 if matches!(
+                     function.as_str(),
+                     "__vail_parse_json" | "__vail_parse_import_integer"
+@@ -4886,12 +4897,16 @@ fn lower_cast(
+ /// Lower the complete typed IR to a DataFusion physical-expression tree.
+ /// The source schema is fixed at this compilation boundary.
+ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
++    lower_mode(expr, schema, false)
++}
++
++pub(crate) fn lower_mode(expr: &Expr, schema: &Schema, indexed_selection: bool) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+     let globals = RecordBatch::try_new_with_options(
+         Arc::new(Schema::empty()),
+         vec![],
+         &RecordBatchOptions::new().with_row_count(Some(1)),
+     )?;
+-    lower_with_globals(expr, schema, &globals)
++    lower_bound_mode(expr, schema, GlobalBinding::Values(&globals), indexed_selection)
+ }
+ 
+ /// Bind global references to columns of a singleton relation joined to the rows.
+@@ -4944,7 +4959,11 @@ fn lower_bound(
+     schema: &Schema,
+     globals: GlobalBinding<'_>,
+ ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
++    lower_bound_mode(expr, schema, globals, false)
++}
++fn lower_bound_mode(expr: &Expr, schema: &Schema, globals: GlobalBinding<'_>, indexed_selection: bool) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+     let mut memo = CompilationMemo {
++        indexed_selection,
+         root_expression: expr as *const Expr as usize,
+         ..CompilationMemo::default()
+     };
+@@ -5168,6 +5187,25 @@ fn lower_scoped(
+     let context = memo.context(schema, globals.schema(), scope);
+     lower_cached(expr, schema, globals, scope, memo, context)
+ }
++pub(crate) fn indexed_aligned_map(mut expression: &Arc<dyn PhysicalExpr>) -> Option<&crate::aligned_matrix_map::AlignedMatrixMapExpr> {
++    loop {
++        if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() { expression = &compiled.inner; }
++        else if let Some(hail) = expression.downcast_ref::<HailPhysicalExpr>()
++            && matches!(hail.kind, HailKind::RestoreArrowType) && hail.args.len() == 1 { expression = &hail.args[0]; }
++        else { return expression.downcast_ref::<crate::aligned_matrix_map::AlignedMatrixMapExpr>().filter(|map| map.is_indexed()); }
++    }
++}
++
++pub(crate) fn bind_indexed_wrapper(
++    expression: &Arc<dyn PhysicalExpr>, sources: &[crate::indexed_batch::Source],
++    memo: &mut HashMap<usize, Arc<dyn PhysicalExpr>>,
++) -> datafusion_common::Result<Option<Arc<dyn PhysicalExpr>>> {
++    let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() else { return Ok(None); };
++    let inner = crate::indexed_batch::bind(&compiled.inner, sources, memo)?;
++    if Arc::ptr_eq(&inner, &compiled.inner) { return Ok(Some(expression.clone())); }
++    Ok(Some(CompiledPhysical::with_fields(inner, compiled.primary.get().cloned(), false)))
++}
++
+ // Bind physical metadata once at each native compilation node. DataFusion
+ // recursively asks children for metadata; on a DAG that otherwise revisits
+ // shared subgraphs once per incoming path.
+@@ -5914,6 +5952,96 @@ fn boolean_case(
+     )?))
+ }
+ 
++fn scalar_aligned_body(body: &Expr) -> bool {
++    let mut scalar_rows = true;
++            body.visit_unique(&mut |node| {
++                scalar_rows &= matches!(node,
++                    Expr::AlignedMapInput { .. } | Expr::RuntimeLiteral { .. }
++                    | Expr::Literal { .. } | Expr::Column { .. }
++                    | Expr::Binary { .. } | Expr::IntegerBinary { .. }
++                    | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
++                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. })
++                    // This native Unicode kernel is fully prepared at lowering
++                    // and borrows its input. Keep wide shared column strings
++                    // on the row path rather than taking their bytes per entry.
++                    || matches!(node, Expr::StringFunction { function, .. }
++                        if function == "character_length");
++            });
++    scalar_rows
++}
++
++fn indexed_input(
++    args: &[Expr], dtype: DataType, selector: Option<Arc<dyn PhysicalExpr>>, validity: bool,
++    schema: &Schema, globals: GlobalBinding<'_>, scope: &[(String, Type, usize)],
++    memo: &mut CompilationMemo, context: usize,
++) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
++    let [indices, Expr::Literal { value: slot, .. }, Expr::Literal { value: key, .. }] = args else {
++        return Err(ExprError::Invalid("invalid prepared indexed input".into()));
++    };
++    let slot = slot.as_u64().and_then(|slot| usize::try_from(slot).ok())
++        .ok_or_else(|| ExprError::Invalid("invalid indexed slot".into()))?;
++    let key = key.as_str().ok_or_else(|| ExprError::Invalid("invalid indexed key".into()))?.to_owned();
++    Ok(Arc::new(crate::indexed_batch::IndexedInput::new(slot, key, dtype,
++        lower_cached(indices, schema, globals, scope, memo, context)?, selector, validity)))
++}
++
++fn lower_indexed_map(
++    expression: &Expr, children: [Arc<dyn PhysicalExpr>; 4], schema: &Schema,
++    globals: GlobalBinding<'_>, scope: &[(String, Type, usize)], memo: &mut CompilationMemo, context: usize,
++) -> Result<Option<Arc<dyn PhysicalExpr>>, ExprError> {
++    if !memo.indexed_selection && std::env::var_os("VAIL_EXPERIMENT_INDEXED_BATCH").is_none() { return Ok(None); }
++    let Expr::AlignedMatrixMap { body, dtype, preserve_cell, .. } = expression else { return Ok(None); };
++    if crate::expression_effects::effects(body) == crate::expression_effects::Effects::RandomContext { return Ok(None); }
++    if scalar_aligned_body(body) { return Ok(None); }
++    let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
++    let Some((body, mut inputs)) = crate::indexed_batch::rewrite(body) else { return Ok(None); };
++    if inputs.is_empty() { return Ok(None); }
++    let types = children.iter().map(|child| child.data_type(schema)).collect::<datafusion_common::Result<Vec<_>>>()?;
++    for input in &mut inputs {
++        let root = match input.axis.as_str() {
++            "entry" | "col" => {
++                let DataType::List(field) = &types[usize::from(input.axis == "col")] else { return Ok(None); };
++                field.data_type().clone()
++            }
++            "row" | "global" => {
++                let root = if input.axis == "row" { &types[2] } else { &types[3] };
++                let DataType::Struct(fields) = root else { return Ok(None); };
++                let mut prefix = vec![];
++                let fields = if input.axis == "row" {
++                    let Some(index) = fields.iter().position(|f| f.name() == "__vail_aligned_row") else { return Ok(None); };
++                    prefix.push((index, "__vail_aligned_row".into()));
++                    let DataType::Struct(fields) = fields[index].data_type() else { return Ok(None); }; fields
++                } else { fields };
++                let Some(name) = &input.name else { return Ok(None); };
++                let Some(index) = fields.iter().position(|f| f.name() == name) else { return Ok(None); };
++                prefix.push((index, name.clone())); prefix.extend(std::mem::take(&mut input.path)); input.path = prefix;
++                root.clone()
++            }
++            "num_cols" => DataType::Int32,
++            _ => return Ok(None),
++        };
++        if !input.prepare(&root) { return Ok(None); }
++    }
++    let frame = Schema::new(vec![
++        Field::new(crate::indexed_batch::ENTRY_INDEX, DataType::Int32, false),
++        Field::new(crate::indexed_batch::COLUMN_INDEX, DataType::Int32, false),
++        Field::new(crate::indexed_batch::ROW_INDEX, DataType::Int32, false),
++        Field::new(crate::indexed_batch::PRESENCE, DataType::Boolean, false),
++    ]);
++    let all_present = match &body {
++        Expr::IfElse { condition, consequent, .. }
++            if matches!(condition.as_ref(), Expr::Column { name } if name == crate::indexed_batch::PRESENCE) => Some(consequent.as_ref().clone()),
++        _ => None,
++    };
++    let frame_context = memo.context(&frame, globals.schema(), scope);
++    let body = lower_synthetic(body, &frame, globals, scope, memo, frame_context)?;
++    let all_present = all_present.map(|value| lower_synthetic(Expr::Cast { dtype: body_type.clone(), value: Arc::new(value) },
++        &frame, globals, scope, memo, frame_context)).transpose()?;
++    Ok(Some(Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new_indexed(
++        children, body, all_present, inputs, dtype.to_arrow()?, body_type.to_arrow()?, *preserve_cell,
++    ))))
++}
++
+ fn lower_uncached(
+     expr: &Expr,
+     schema: &Schema,
+@@ -5976,6 +6104,11 @@ fn lower_uncached(
+                     "aligned column expression must be an array".into(),
+                 ));
+             };
++            if let Some(indexed) = lower_indexed_map(expr,
++                [entries.clone(), columns.clone(), rows.clone(), global_inputs.clone()],
++                schema, globals, scope, memo, context)? {
++                indexed
++            } else {
+             #[derive(Default)]
+             struct ColumnDemand {
+                 all: bool,
+@@ -6037,20 +6170,7 @@ fn lower_uncached(
+             ];
+             // Only kernels audited to prepare outside evaluate may run once per
+             // matrix row. Collection/grouping callbacks keep the batch route.
+-            let mut scalar_rows = true;
+-            body.visit_unique(&mut |node| {
+-                scalar_rows &= matches!(node,
+-                    Expr::AlignedMapInput { .. } | Expr::RuntimeLiteral { .. }
+-                    | Expr::Literal { .. } | Expr::Column { .. }
+-                    | Expr::Binary { .. } | Expr::IntegerBinary { .. }
+-                    | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
+-                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. })
+-                    // This native Unicode kernel is fully prepared at lowering
+-                    // and borrows its input. Keep wide shared column strings
+-                    // on the row path rather than taking their bytes per entry.
+-                    || matches!(node, Expr::StringFunction { function, .. }
+-                        if function == "character_length");
+-            });
++            let scalar_rows = scalar_aligned_body(body);
+             let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+             let body_dtype = body_type.to_arrow()?;
+             // Declare batch captures before lowering so nested fold/lambda/
+@@ -6300,6 +6420,7 @@ fn lower_uncached(
+                 *preserve_cell,
+                 scalar_rows,
+             ))
++            }
+         }
+         Expr::MatrixScope { .. }
+         | Expr::TableLookup { .. }
+@@ -6364,6 +6485,11 @@ fn lower_uncached(
+             )?);
+             cast(distinct, schema, dtype.clone())?
+         }
++        Expr::NestedFunction { function, args, .. }
++            if matches!(function.as_str(), crate::indexed_batch::INPUT | crate::indexed_batch::IS_NULL) => {
++            indexed_input(args, dtype.clone(), None, function == crate::indexed_batch::IS_NULL,
++                schema, globals, scope, memo, context)?
++        }
+         Expr::NestedFunction { function, args, .. } if function == "__vail_list_reduce_collect" => {
+             // Preserve the list's values, offsets and logical validity. Typing
+             // already validated the reducer's arity and output element type.
+@@ -6466,7 +6592,10 @@ fn lower_uncached(
+             )?
+         }
+         Expr::StringFunction { function, args } => {
+-            let (udf, _, _) = string_function(function)?;
++            let (udf, _, _) = if function == "experiment_direct_hts" {
++                let types = args.iter().map(|arg| arg.dtype_scoped(schema, globals.schema(), scope, memo, context)).collect::<Result<Vec<_>, _>>()?;
++                crate::direct_hts::function(&types)?
++            } else { string_function(function)? };
+             let args = args
+                 .iter()
+                 .map(|arg| lower_cached(arg, schema, globals, scope, memo, context))
+@@ -6767,6 +6896,12 @@ fn lower_uncached(
+                 Arc::new(ConfigOptions::default()),
+             )?)
+         }
++        Expr::ArrayIndex { value, index }
++            if matches!(value.as_ref(), Expr::NestedFunction { function, .. } if function == crate::indexed_batch::INPUT) => {
++            let Expr::NestedFunction { args, .. } = value.as_ref() else { unreachable!() };
++            let selector = lower_cached(index, schema, globals, scope, memo, context)?;
++            indexed_input(args, dtype.clone(), Some(selector), false, schema, globals, scope, memo, context)?
++        }
+         Expr::ArrayIndex { value, index }
+             if matches!(value.as_ref(), Expr::GetField { value: call, name }
+                 if name == "__vail_call_alleles" && call.dtype_in_scope(schema, globals.schema(), scope, memo)?
+diff --git a/vail/crates/vail-execution/src/lib.rs b/vail/crates/vail-execution/src/lib.rs
+index 746b73e56..99dfe0b94 100644
+--- a/vail/crates/vail-execution/src/lib.rs
++++ b/vail/crates/vail-execution/src/lib.rs
+@@ -27,6 +27,7 @@ pub mod aggregate_contract;
+ mod aggregate_identity;
+ pub mod aggregates;
+ mod aligned_matrix_map;
++mod indexed_batch;
+ pub use aligned_matrix_map::PreparedArrayProjection;
+ pub mod array_aggregate_scan;
+ mod array_fold;
+@@ -580,3 +581,4 @@ pub fn supports_list_reducer(function: &str) -> bool {
+     function != "call_stats" && list_aggregate::arity(function).is_some()
+ }
+ mod variant_kernels;
++mod direct_hts;
+diff --git a/vail/crates/vail-execution/src/logical_expr.rs b/vail/crates/vail-execution/src/logical_expr.rs
+index d29978563..16aad3f28 100644
+--- a/vail/crates/vail-execution/src/logical_expr.rs
++++ b/vail/crates/vail-execution/src/logical_expr.rs
+@@ -8,9 +8,13 @@
+ use std::collections::{BTreeMap, HashSet};
+ use std::sync::Arc;
+ 
+-use arrow_schema::Schema;
+-use datafusion_common::{DFSchema, ScalarValue};
+-use datafusion_expr::{Expr as LogicalExpr, ExprSchemable, Operator, Signature, Volatility, lit};
++use arrow_array::{Array, ArrayRef, Int32Array, ListArray, RecordBatch, RecordBatchOptions, StructArray, make_array, new_empty_array};
++use arrow_buffer::NullBuffer;
++use arrow_schema::{DataType, Schema};
++use datafusion_physical_expr::PhysicalExpr;
++use std::fmt::{Debug, Formatter, Result as FmtResult};
++use datafusion_common::{DFSchema, DataFusionError, ScalarValue, Result as DfResult};
++use datafusion_expr::{ColumnarValue, Expr as LogicalExpr, ExprSchemable, Operator, Signature, Volatility, lit};
+ 
+ use crate::expressions::{BinaryOperator, Expr, ExprError, PrimitiveType, Type, UnaryOperator};
+ 
+@@ -81,6 +85,410 @@ pub fn semantic_kernel_can_split(function: &datafusion_expr::ScalarUDF) -> bool
+     })
+ }
+ 
++/// An aligned producer preserves every row's entry-list shape. Only pure
++/// computations and known input-validation errors can move after filtering.
++pub fn deferrable_aligned_entry_argument(function: &datafusion_expr::ScalarUDF) -> Option<usize> {
++    let (expression, schema) = semantic_kernel(function)?;
++    let Expr::AlignedMatrixMap { entries, preserve_cell: true, .. } = expression else { return None; };
++    if !crate::expression_effects::can_defer_filtered_values(expression) { return None; }
++    let Expr::Column { name } = entries.as_ref() else { return None; };
++    schema.index_of(name).ok()
++}
++
++/// Invocation-local owners and parent lanes for a prepared aligned kernel.
++/// These values are never stored in the scalar-specialization cache.
++#[derive(Debug, Clone)]
++pub struct AlignedSelection {
++    pub entries: ArrayRef,
++    pub parents: Int32Array,
++}
++/// A capture root uses at most one existing argument owner. DataFusion evaluates
++/// scalars against one row and arrays against their own row domain.
++#[derive(Clone, Debug)]
++struct PreparedCapture {
++    argument: Option<usize>,
++    schema: Arc<Schema>,
++    program: Arc<dyn PhysicalExpr>,
++}
++impl PreparedCapture {
++    fn prepare(root: &Expr, schema: &Schema) -> Option<Self> {
++        if !root.is_pure() {
++            return None;
++        }
++        let mut names = HashSet::new();
++        let mut supported = true;
++        root.visit_unique(&mut |node| match node {
++            Expr::Column { name } => {
++                names.insert(name.clone());
++            }
++            Expr::Struct { .. }
++            | Expr::GetField { .. }
++            | Expr::Literal { .. }
++            | Expr::RuntimeLiteral { .. } => {}
++            _ => supported = false,
++        });
++        if !supported || names.len() > 1 {
++            return None;
++        }
++        let argument = names
++            .iter()
++            .next()
++            .map(|name| schema.index_of(name))
++            .transpose()
++            .ok()?;
++        let fields = argument
++            .map(|index| vec![schema.fields()[index].clone()])
++            .unwrap_or_default();
++        let schema = Arc::new(Schema::new(fields));
++        let program = crate::expressions::lower(root, &schema).ok()?;
++        if std::env::var_os("VAIL_TRACE_FUSED_UNNEST").is_some() {
++            eprintln!("VAIL_FUSED_UNNEST_CAPTURE_PREP argument={argument:?}");
++        }
++        Some(Self {
++            argument,
++            schema,
++            program,
++        })
++    }
++    fn evaluate(&self, arguments: &[ColumnarValue]) -> DfResult<ColumnarValue> {
++        let (columns, rows, scalar) = match self.argument {
++            Some(index) => match arguments.get(index).ok_or_else(|| {
++                DataFusionError::Internal("selected capture argument absent".into())
++            })? {
++                ColumnarValue::Scalar(value) => (
++                    vec![restore_arrow_array_type(
++                        &value.to_array()?,
++                        self.schema.field(0).data_type(),
++                    )?],
++                    1,
++                    true,
++                ),
++                ColumnarValue::Array(value) => (
++                    vec![restore_arrow_array_type(
++                        value,
++                        self.schema.field(0).data_type(),
++                    )?],
++                    value.len(),
++                    false,
++                ),
++            },
++            None => (vec![], 1, true),
++        };
++        let batch = RecordBatch::try_new_with_options(
++            self.schema.clone(),
++            columns,
++            &RecordBatchOptions::new().with_row_count(Some(rows)),
++        )?;
++        let value = self.program.evaluate(&batch)?;
++        if scalar {
++            let array = value.into_array(1)?;
++            Ok(ColumnarValue::Scalar(
++                crate::expressions::scalar_at(&array, 0)
++                    .map_err(|e| DataFusionError::Execution(e.to_string()))?,
++            ))
++        } else {
++            Ok(value)
++        }
++    }
++}
++
++/// A selected-capable aligned kernel followed by a pure field-selection view.
++/// Capture roots and the indexed body are prepared once for the query.
++#[derive(Clone)]
++pub struct SelectedAlignedProgram {
++    pub entry_argument: usize,
++    entry_type: DataType,
++    program: Arc<dyn PhysicalExpr>,
++    captures: [PreparedCapture; 3],
++    projection: Option<crate::PreparedArrayProjection>,
++    final_type: DataType,
++}
++impl Debug for SelectedAlignedProgram {
++    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
++        f.debug_struct("SelectedAlignedProgram")
++            .field("entry_argument", &self.entry_argument)
++            .finish()
++    }
++}
++impl SelectedAlignedProgram {
++    pub fn entry_type(&self) -> &DataType {
++        &self.entry_type
++    }
++    pub fn output_type(&self) -> &DataType {
++        &self.final_type
++    }
++    pub fn invoke(
++        &self,
++        arguments: &[ColumnarValue],
++        selection: AlignedSelection,
++    ) -> DfResult<ColumnarValue> {
++        if selection.entries.data_type() != self.entry_type() {
++            return Err(DataFusionError::Execution(
++                "selected entry owner schema differs".into(),
++            ));
++        }
++        let rows = selection.parents.len();
++        if rows == 0 {
++            return Ok(ColumnarValue::Array(new_empty_array(&self.final_type)));
++        }
++        let row_values = self.captures[1].evaluate(arguments)?;
++        let globals = self.captures[2].evaluate(arguments)?;
++        let columns = self.captures[0].evaluate(arguments)?;
++        let map = crate::expressions::indexed_aligned_map(&self.program)
++            .ok_or_else(|| DataFusionError::Internal("selected indexed program absent".into()))?;
++        let output = map
++            .evaluate_selected_captures(&selection, [columns, row_values, globals])?
++            .into_array(rows)?;
++        let lists = output.as_any().downcast_ref::<ListArray>().ok_or_else(|| {
++            DataFusionError::Execution("selected aligned output is not a list".into())
++        })?;
++        let cells = lists
++            .values()
++            .as_any()
++            .downcast_ref::<StructArray>()
++            .ok_or_else(|| {
++                DataFusionError::Execution("selected aligned output is not cells".into())
++            })?;
++        let values = cells.column(0).clone();
++        let nulls = NullBuffer::union(values.nulls(), cells.nulls());
++        let values = make_array(values.to_data().into_builder().nulls(nulls).build()?);
++        let selected = match &self.projection {
++            Some(view) => view.bind_validated(&values)?,
++            None => values,
++        };
++        let DataType::List(item) = &self.final_type else {
++            unreachable!()
++        };
++        let DataType::Struct(fields) = item.data_type() else {
++            unreachable!()
++        };
++        let cells =
++            Arc::new(StructArray::try_new(fields.clone(), vec![selected], None)?) as ArrayRef;
++        Ok(ColumnarValue::Array(Arc::new(ListArray::try_new(
++            item.clone(),
++            lists.offsets().clone(),
++            cells,
++            lists.nulls().cloned(),
++        )?)))
++    }
++}
++
++/// Recognize only the typed cell-wrapper field-selection produced by ordinary
++/// select_entries. All original computations remain in their original order;
++/// dropped expressions must be total ordinary entry-field reads.
++pub fn selected_entry_projection(
++    inner: &datafusion_expr::ScalarUDF,
++    outer: &datafusion_expr::ScalarUDF,
++) -> Option<SelectedAlignedProgram> {
++    fn value_parameter(expr: &Expr, parameter: &str) -> bool {
++        matches!(expr, Expr::GetField { value, name } if name == "value"
++            && matches!(value.as_ref(), Expr::LambdaVariable { name, .. } if name == parameter))
++    }
++    fn null(expr: &Expr) -> bool {
++        matches!(expr, Expr::Literal { value, .. } if value.is_null())
++            || matches!(expr, Expr::RuntimeLiteral { value } if value.is_null())
++    }
++    let (selection, outer_schema) = semantic_kernel(outer)?;
++    let Expr::ArrayMap {
++        value,
++        parameter,
++        body,
++    } = selection
++    else {
++        return None;
++    };
++    let Expr::Column { name } = value.as_ref() else {
++        return None;
++    };
++    if outer_schema.fields().len() != 1 || outer_schema.index_of(name).ok()? != 0 {
++        return None;
++    }
++    let Expr::Struct { fields } = body.as_ref() else {
++        return None;
++    };
++    let [(value_name, body)] = fields.as_slice() else {
++        return None;
++    };
++    if value_name != "value" {
++        return None;
++    }
++    let Expr::IfElse {
++        condition,
++        consequent,
++        alternate,
++    } = body
++    else {
++        return None;
++    };
++    let Expr::Unary {
++        operator: UnaryOperator::Not,
++        value: missing,
++    } = condition.as_ref()
++    else {
++        return None;
++    };
++    let Expr::IsMissing { value } = missing.as_ref() else {
++        return None;
++    };
++    if !value_parameter(value, parameter) || !null(alternate) {
++        return None;
++    }
++    let Expr::Struct { fields: projected } = consequent.as_ref() else {
++        return None;
++    };
++    let names = projected
++        .iter()
++        .map(|(name, value)| {
++            let Expr::GetField {
++                value,
++                name: source,
++            } = value
++            else {
++                return None;
++            };
++            (name == source && value_parameter(value, parameter)).then_some(name.clone())
++        })
++        .collect::<Option<HashSet<_>>>()?;
++    if names.len() != projected.len() {
++        return None;
++    }
++    let (original, schema) = semantic_kernel(inner)?;
++    let Expr::AlignedMatrixMap {
++        entries,
++        columns,
++        rows,
++        globals,
++        body,
++        preserve_cell: true,
++        ..
++    } = original
++    else {
++        return None;
++    };
++    let Expr::Column { name: entry_name } = entries.as_ref() else {
++        return None;
++    };
++    let entry_argument = schema.index_of(entry_name).ok()?;
++    for child in [columns.as_ref(), rows.as_ref(), globals.as_ref()] {
++        let mut uses_entry = false;
++        child.visit_unique(&mut |node| {
++            uses_entry |= matches!(node, Expr::Column { name } if name == entry_name);
++        });
++        if uses_entry {
++            return None;
++        }
++    }
++    let Expr::IfElse {
++        condition,
++        consequent,
++        alternate,
++    } = body.as_ref()
++    else {
++        return None;
++    };
++    if !matches!(condition.as_ref(), Expr::AlignedMapInput { axis, .. } if axis == "entry_present")
++        || !null(alternate)
++    {
++        return None;
++    }
++    let Expr::Struct { fields } = consequent.as_ref() else {
++        return None;
++    };
++    if !crate::indexed_batch::ordinary_entry_reads(
++        fields
++            .iter()
++            .filter(|(name, _)| !names.contains(name))
++            .map(|(_, value)| value),
++    ) {
++        return None;
++    }
++    let available = fields
++        .iter()
++        .map(|(name, _)| name.clone())
++        .collect::<HashSet<_>>();
++    if !names.is_subset(&available) {
++        return None;
++    }
++    let retained = fields
++        .iter()
++        .filter(|(name, _)| names.contains(name))
++        .cloned()
++        .collect::<Vec<_>>();
++    let selected_body = Expr::Struct { fields: retained };
++    // Type against the original aligned body context, before changing its output.
++    let Type::Array { array: cell } = original.dtype(schema).ok()? else {
++        return None;
++    };
++    let Type::Struct { r#struct: cell } = cell.as_ref() else {
++        return None;
++    };
++    let original_entry = cell.iter().find(|(name, _)| name == "value")?.1.clone();
++    let Type::Struct {
++        r#struct: entry_fields,
++    } = original_entry
++    else {
++        return None;
++    };
++    let entry_type = Type::Struct {
++        r#struct: entry_fields
++            .into_iter()
++            .filter(|(name, _)| names.contains(name))
++            .collect(),
++    };
++    let mut rewritten = original.clone();
++    let Expr::AlignedMatrixMap { body, dtype, .. } = &mut rewritten else {
++        unreachable!()
++    };
++    *body = Arc::new(Expr::IfElse {
++        condition: condition.clone(),
++        consequent: Arc::new(selected_body),
++        alternate: Arc::new(Expr::Literal {
++            dtype: entry_type.clone(),
++            value: serde_json::Value::Null,
++        }),
++    });
++    *dtype = Type::Array {
++        array: Box::new(Type::Struct {
++            r#struct: vec![("value".into(), entry_type.clone())],
++        }),
++    };
++    let program = crate::expressions::lower_mode(&rewritten, schema, true).ok()?;
++    crate::expressions::indexed_aligned_map(&program)?;
++    let captures = [
++        PreparedCapture::prepare(columns, schema)?,
++        PreparedCapture::prepare(rows, schema)?,
++        PreparedCapture::prepare(globals, schema)?,
++    ];
++    let outer_types = outer_schema
++        .fields()
++        .iter()
++        .map(|field| field.data_type().clone())
++        .collect::<Vec<_>>();
++    let final_type = outer.return_type(&outer_types).ok()?;
++    let DataType::List(item) = &final_type else {
++        return None;
++    };
++    let DataType::Struct(cell) = item.data_type() else {
++        return None;
++    };
++    let [value_field] = cell.as_ref() else {
++        return None;
++    };
++    let projection = crate::PreparedArrayProjection::prepare(
++        &entry_type.to_arrow().ok()?,
++        value_field.data_type(),
++    )
++    .ok()?;
++    Some(SelectedAlignedProgram {
++        entry_argument,
++        entry_type: schema.field(entry_argument).data_type().clone(),
++        program,
++        captures,
++        projection,
++        final_type,
++    })
++}
++
+ /// One branch of a deterministic semantic zip, evaluated against bindings
+ /// already captured once by its caller. Scalar owners remain scalar captures.
+ #[derive(Debug, Clone)]
+diff --git a/vail/crates/vail-execution/src/variant_kernels.rs b/vail/crates/vail-execution/src/variant_kernels.rs
+index 648b7a44e..0bbf54dce 100644
+--- a/vail/crates/vail-execution/src/variant_kernels.rs
++++ b/vail/crates/vail-execution/src/variant_kernels.rs
+@@ -46,6 +46,7 @@ pub(crate) fn function(
+         )
+     };
+     let kernel = name.to_owned();
++    let trace_entry_reductions = std::env::var_os("VAIL_TRACE_VARIANT_ENTRY").is_some();
+     let dtype = output.to_arrow()?;
+     let out_type = dtype.clone();
+     let udf = create_udf(
+@@ -72,6 +73,7 @@ pub(crate) fn function(
+                 gq_from_pl(&Input::new(&values[0])?)?
+             } else {
+                 let arrays = values.iter().map(Input::new).collect::<Result<Vec<_>>>()?;
++                if trace_entry_reductions { eprintln!("VAIL_VARIANT_ENTRY_REDUCE rows={rows}"); }
+                 entries(&arrays, rows, &out_type)?
+             };
+             if values.iter().all(|v| matches!(v, ColumnarValue::Scalar(_))) {
+diff --git a/vail/crates/vail-execution/tests/call_allocations.rs b/vail/crates/vail-execution/tests/call_allocations.rs
+index 45e7c5897..a3dccaa07 100644
+--- a/vail/crates/vail-execution/tests/call_allocations.rs
++++ b/vail/crates/vail-execution/tests/call_allocations.rs
+@@ -746,3 +746,38 @@ fn indexing_uses_compact_indices_without_a_temporary_optional_vector() {
+     assert!(bytes <= 10 * rows as usize + 8192, "indexing allocated {bytes} bytes");
+     eprintln!("generic indexing: {rows} rows, {bytes} allocated bytes");
+ }
++
++#[path = "common/indexed_batch.rs"]
++mod indexed_fixture;
++
++#[test]
++fn batch_conditionals_do_not_copy_unused_entry_payload() {
++    let mut costs = Vec::new();
++    for bytes in [8, 1024 * 1024] {
++        let (batch, expression) = indexed_fixture::fixture([1, -1], true, bytes);
++        let (output, allocated) = evaluate_aligned_allocated_bytes(&batch, &expression);
++        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
++        let values = lists.values().as_any().downcast_ref::<StructArray>().unwrap();
++        assert_eq!(values.column(1).as_any().downcast_ref::<Int32Array>().unwrap(),
++            &Int32Array::from(vec![Some(1), None, None, Some(93)]));
++        costs.push(allocated);
++    }
++    eprintln!("indexed batch runtime allocation small/large unused field: {costs:?}");
++    assert!(costs[1] <= costs[0] + 64 * 1024, "unused entry payload was copied: {costs:?}");
++}
++
++#[test]
++fn selected_lists_do_not_reserve_hidden_owner_payload() {
++    let mut costs = Vec::new();
++    for hidden in [0, 1024 * 1024] {
++        let (batch, expression) = indexed_fixture::fixture_with_hidden([1, -1], true, 8, hidden);
++        let (output, allocated) = evaluate_aligned_allocated_bytes(&batch, &expression);
++        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
++        let values = lists.values().as_any().downcast_ref::<StructArray>().unwrap();
++        assert_eq!(values.column(1).as_any().downcast_ref::<Int32Array>().unwrap(),
++            &Int32Array::from(vec![Some(1), None, None, Some(93)]));
++        costs.push(allocated);
++    }
++    eprintln!("selected list allocation small/hidden owner: {costs:?}");
++    assert!(costs[1] <= costs[0] + 64 * 1024, "hidden list owner grew allocation: {costs:?}");
++}
+diff --git a/vail/crates/vail-table/src/lib.rs b/vail/crates/vail-table/src/lib.rs
+index 91ca7a38a..8c5d003a0 100644
+--- a/vail/crates/vail-table/src/lib.rs
++++ b/vail/crates/vail-table/src/lib.rs
+@@ -14,6 +14,7 @@ pub mod comparison;
+ mod compressed_text;
+ mod conditional_globals;
+ mod count_explode;
++mod indexed_unnest;
+ mod ordering_requirements;
+ mod aggregate_singleton;
+ pub mod globals;
+diff --git a/vail/crates/vail-table/src/logical.rs b/vail/crates/vail-table/src/logical.rs
+index 0f361e9ca..218e76f73 100644
+--- a/vail/crates/vail-table/src/logical.rs
++++ b/vail/crates/vail-table/src/logical.rs
+@@ -1448,6 +1448,7 @@ async fn compile_mode(
+     }
+     let plan = planner.create_physical_plan(&optimized, &state).await?;
+     let plan = crate::projection_broadcast::cache_nested_projection_broadcasts(plan)?;
++    let plan = crate::indexed_unnest::optimize(plan)?;
+     Ok(crate::rng_context::bind_consumers(plan)?)
+ }
+ 
+diff --git a/vail/python/vail/variant.py b/vail/python/vail/variant.py
+index ea5ae43ab..8a100180c 100644
+--- a/vail/python/vail/variant.py
++++ b/vail/python/vail/variant.py
+@@ -93,6 +93,9 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
+         from .collections import _native_sort
+         variants = _native_sort(variants)
+     dataset = dataset.annotate_rows(**{name: variants})
++    import os
++    if os.environ.get('VAIL_EXPERIMENT_DIRECT_HTS'):
++        return _direct_split(dataset, name, permit_shuffle, left_aligned)
+     fields = dataset.entry.dtype
+     ints = hl.tarray(hl.tint32)
+     gt = dataset.GT.alleles if 'GT' in fields else hl.literal([0, 0])
+@@ -158,3 +161,34 @@ def parse_variant(value, reference_genome='default'):
+         ))
+ 
+     return hl.bind(parse, value)
++
++
++def _direct_split(dataset, name, permit_shuffle, left_aligned):
++    """Experimental native throughput target; not an optimizer admission rule."""
++    import vail as hl
++    from .matrixtable import _ROW, _CELLS
++    original = dataset._mir.core.key_by()
++    def branch(moved):
++        variants = original[_ROW][name]
++        if moved is not None:
++            variants = variants.filter(lambda v: (v.locus != original[_ROW].locus) if moved else (v.locus == original[_ROW].locus))
++        output_type = hl.tarray(hl.tstruct(variant=variants.dtype.element_type, cells=original[_CELLS].dtype))
++        outputs = _kernel('experiment_direct_hts', output_type, original[_CELLS], hl.len(original[_ROW].alleles), variants)
++        rows = original.select(**{_ROW: original[_ROW], '__direct': outputs}).explode('__direct')
++        variant = rows.__direct.variant
++        old = rows[_ROW]
++        fields = {f: old[f] for f in dataset.row.dtype if f != name}
++        fields.update(a_index=variant.a_index, was_split=hl.len(old.alleles) > 2,
++                      old_locus=old.locus, old_alleles=old.alleles, locus=variant.locus, alleles=variant.alleles)
++        rows = rows.select(**{_ROW: hl.struct(**fields), _CELLS: rows.__direct.cells})
++        return dataset._copy(rows=rows, row_key=())
++    if permit_shuffle:
++        return branch(None).drop('old_locus', 'old_alleles').key_rows_by('locus', 'alleles')
++    left = branch(None if left_aligned else False).drop('old_locus', 'old_alleles')
++    right = None if left_aligned else branch(True).drop('old_locus', 'old_alleles')
++    def keys(mt):
++        rows=mt._mir.core
++        return rows.annotate(locus=rows[_ROW].locus, alleles=rows[_ROW].alleles)
++    rows=keys(left)
++    native=rows._native.ordered_union(['locus','alleles'], None if right is None else keys(right)._native)
++    return left._copy(rows=hl.Table(native, rows.row.dtype, ('locus','alleles')), row_key=('locus','alleles'))

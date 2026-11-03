@@ -1745,6 +1745,10 @@ impl Expr {
                 }
             }
             Self::StringFunction { function, args } => {
+                if function == "experiment_direct_hts" {
+                    let types = args.iter().map(|arg| arg.dtype_scoped(schema, globals, scope, memo, context)).collect::<Result<Vec<_>, _>>()?;
+                    return Ok(crate::direct_hts::function(&types)?.2);
+                }
                 let (_, expected, output) = string_function(function)?;
                 if args.len() != expected.len() {
                     return Err(ExprError::Invalid(format!(
@@ -6466,7 +6470,10 @@ fn lower_uncached(
             )?
         }
         Expr::StringFunction { function, args } => {
-            let (udf, _, _) = string_function(function)?;
+            let (udf, _, _) = if function == "experiment_direct_hts" {
+                let types = args.iter().map(|arg| arg.dtype_scoped(schema, globals.schema(), scope, memo, context)).collect::<Result<Vec<_>, _>>()?;
+                crate::direct_hts::function(&types)?
+            } else { string_function(function)? };
             let args = args
                 .iter()
                 .map(|arg| lower_cached(arg, schema, globals, scope, memo, context))

@@ -1,0 +1,18 @@
+{
+  "reviewer": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "disposition": "accepted experimental evidence only",
+  "reviewed_report_sha256": "f42fd325339aae33c2ba084f0069476672601b1a0851e8e728c3e4f427511f18",
+  "verified_manifest_entries": 159,
+  "public_wall_speedup": 2.3592199037904646,
+  "public_cpu_speedup": 2.3942990188739204,
+  "not_admitted": [
+    "production/default-on",
+    "generic optimizer",
+    "universal zero-copy",
+    "bounded memory"
+  ],
+  "future_constraints": [
+    "Contiguous-Unnest bypass must prove backing-owner retention acceptable as well as range/null equivalence.",
+    "12/21 oracle fixture construction uses private _copy(row_key=...); output actions are public, but promote using public keyed fixture APIs before production blackbox tests."
+  ]
+}

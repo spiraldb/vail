@@ -580,3 +580,4 @@ pub fn supports_list_reducer(function: &str) -> bool {
     function != "call_stats" && list_aggregate::arity(function).is_some()
 }
 mod variant_kernels;
+mod direct_hts;

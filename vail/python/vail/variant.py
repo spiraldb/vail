@@ -93,6 +93,9 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
         from .collections import _native_sort
         variants = _native_sort(variants)
     dataset = dataset.annotate_rows(**{name: variants})
+    import os
+    if os.environ.get('VAIL_EXPERIMENT_DIRECT_HTS'):
+        return _direct_split(dataset, name, permit_shuffle, left_aligned)
     fields = dataset.entry.dtype
     ints = hl.tarray(hl.tint32)
     gt = dataset.GT.alleles if 'GT' in fields else hl.literal([0, 0])
@@ -158,3 +161,34 @@ def parse_variant(value, reference_genome='default'):
         ))
 
     return hl.bind(parse, value)
+
+
+def _direct_split(dataset, name, permit_shuffle, left_aligned):
+    """Experimental native throughput target; not an optimizer admission rule."""
+    import vail as hl
+    from .matrixtable import _ROW, _CELLS
+    original = dataset._mir.core.key_by()
+    def branch(moved):
+        variants = original[_ROW][name]
+        if moved is not None:
+            variants = variants.filter(lambda v: (v.locus != original[_ROW].locus) if moved else (v.locus == original[_ROW].locus))
+        output_type = hl.tarray(hl.tstruct(variant=variants.dtype.element_type, cells=original[_CELLS].dtype))
+        outputs = _kernel('experiment_direct_hts', output_type, original[_CELLS], hl.len(original[_ROW].alleles), variants)
+        rows = original.select(**{_ROW: original[_ROW], '__direct': outputs}).explode('__direct')
+        variant = rows.__direct.variant
+        old = rows[_ROW]
+        fields = {f: old[f] for f in dataset.row.dtype if f != name}
+        fields.update(a_index=variant.a_index, was_split=hl.len(old.alleles) > 2,
+                      old_locus=old.locus, old_alleles=old.alleles, locus=variant.locus, alleles=variant.alleles)
+        rows = rows.select(**{_ROW: hl.struct(**fields), _CELLS: rows.__direct.cells})
+        return dataset._copy(rows=rows, row_key=())
+    if permit_shuffle:
+        return branch(None).drop('old_locus', 'old_alleles').key_rows_by('locus', 'alleles')
+    left = branch(None if left_aligned else False).drop('old_locus', 'old_alleles')
+    right = None if left_aligned else branch(True).drop('old_locus', 'old_alleles')
+    def keys(mt):
+        rows=mt._mir.core
+        return rows.annotate(locus=rows[_ROW].locus, alleles=rows[_ROW].alleles)
+    rows=keys(left)
+    native=rows._native.ordered_union(['locus','alleles'], None if right is None else keys(right)._native)
+    return left._copy(rows=hl.Table(native, rows.row.dtype, ('locus','alleles')), row_key=('locus','alleles'))

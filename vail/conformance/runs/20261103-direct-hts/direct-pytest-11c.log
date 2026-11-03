@@ -1,0 +1,61 @@
+..........FFF.................                                           [100%]
+=================================== FAILURES ===================================
+_______________ test_entry_contract[kwargs0-haploid or diploid] ________________
+
+kwargs = {'GT': Call(alleles=[], phased=False)}, message = 'haploid or diploid'
+
+    @pytest.mark.parametrize('kwargs,message', [
+        ({'GT': hl.Call([])}, 'haploid or diploid'),
+        ({'GT': hl.Call([3])}, 'indices in range'),
+        ({'PGT': hl.Call([4])}, 'indices in range'),
+        ({'AD': [1, 2]}, 'AD length'),
+        ({'PL': [1, 2]}, 'PL length'),
+        ({'GT': hl.Call([1]), 'PL': [1, 2, 3, 4, 5, 6]}, 'PL length'),
+    ])
+    def test_entry_contract(kwargs, message):
+>       with pytest.raises(RuntimeError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+vail/python/tests/test_split_multi_hts.py:94: Failed
+________________ test_entry_contract[kwargs1-indices in range] _________________
+
+kwargs = {'GT': Call(alleles=[3], phased=False)}, message = 'indices in range'
+
+    @pytest.mark.parametrize('kwargs,message', [
+        ({'GT': hl.Call([])}, 'haploid or diploid'),
+        ({'GT': hl.Call([3])}, 'indices in range'),
+        ({'PGT': hl.Call([4])}, 'indices in range'),
+        ({'AD': [1, 2]}, 'AD length'),
+        ({'PL': [1, 2]}, 'PL length'),
+        ({'GT': hl.Call([1]), 'PL': [1, 2, 3, 4, 5, 6]}, 'PL length'),
+    ])
+    def test_entry_contract(kwargs, message):
+>       with pytest.raises(RuntimeError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+vail/python/tests/test_split_multi_hts.py:94: Failed
+________________ test_entry_contract[kwargs2-indices in range] _________________
+
+kwargs = {'PGT': Call(alleles=[4], phased=False)}, message = 'indices in range'
+
+    @pytest.mark.parametrize('kwargs,message', [
+        ({'GT': hl.Call([])}, 'haploid or diploid'),
+        ({'GT': hl.Call([3])}, 'indices in range'),
+        ({'PGT': hl.Call([4])}, 'indices in range'),
+        ({'AD': [1, 2]}, 'AD length'),
+        ({'PL': [1, 2]}, 'PL length'),
+        ({'GT': hl.Call([1]), 'PL': [1, 2, 3, 4, 5, 6]}, 'PL length'),
+    ])
+    def test_entry_contract(kwargs, message):
+>       with pytest.raises(RuntimeError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+vail/python/tests/test_split_multi_hts.py:94: Failed
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_split_multi_hts.py::test_entry_contract[kwargs0-haploid or diploid]
+FAILED vail/python/tests/test_split_multi_hts.py::test_entry_contract[kwargs1-indices in range]
+FAILED vail/python/tests/test_split_multi_hts.py::test_entry_contract[kwargs2-indices in range]
+3 failed, 27 passed in 4.60s

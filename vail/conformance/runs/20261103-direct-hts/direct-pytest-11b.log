@@ -1,0 +1,351 @@
+...FFFFFF.FFF.............FFFF                                           [100%]
+=================================== FAILURES ===================================
+_____________________ test_min_rep[CAA-CGA-101-expected0] ______________________
+
+reference = 'CAA', alternate = 'CGA', position = 101, expected = ['A', 'G']
+
+    @pytest.mark.parametrize('reference,alternate,position,expected', [
+        ('CAA', 'CGA', 101, ['A', 'G']),
+        ('é😀A', 'é😀T', 102, ['A', 'T']),
+        ('AAA', 'AA', 100, ['AA', 'A']),
+        ('AA', '<DEL>', 100, ['AA', '<DEL>']),
+        ('AA', 'A[2:3[', 100, ['AA', 'A[2:3[']),
+    ])
+    def test_min_rep(reference, alternate, position, expected):
+>       row = hl.split_multi_hts(matrix((reference, alternate))).rows().collect()[0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/python/tests/test_split_multi_hts.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cc03c50>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+_________ test_min_rep[\xe9\U0001f600A-\xe9\U0001f600T-102-expected1] __________
+
+reference = 'é😀A', alternate = 'é😀T', position = 102, expected = ['A', 'T']
+
+    @pytest.mark.parametrize('reference,alternate,position,expected', [
+        ('CAA', 'CGA', 101, ['A', 'G']),
+        ('é😀A', 'é😀T', 102, ['A', 'T']),
+        ('AAA', 'AA', 100, ['AA', 'A']),
+        ('AA', '<DEL>', 100, ['AA', '<DEL>']),
+        ('AA', 'A[2:3[', 100, ['AA', 'A[2:3[']),
+    ])
+    def test_min_rep(reference, alternate, position, expected):
+>       row = hl.split_multi_hts(matrix((reference, alternate))).rows().collect()[0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/python/tests/test_split_multi_hts.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cbbce90>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+______________________ test_min_rep[AAA-AA-100-expected2] ______________________
+
+reference = 'AAA', alternate = 'AA', position = 100, expected = ['AA', 'A']
+
+    @pytest.mark.parametrize('reference,alternate,position,expected', [
+        ('CAA', 'CGA', 101, ['A', 'G']),
+        ('é😀A', 'é😀T', 102, ['A', 'T']),
+        ('AAA', 'AA', 100, ['AA', 'A']),
+        ('AA', '<DEL>', 100, ['AA', '<DEL>']),
+        ('AA', 'A[2:3[', 100, ['AA', 'A[2:3[']),
+    ])
+    def test_min_rep(reference, alternate, position, expected):
+>       row = hl.split_multi_hts(matrix((reference, alternate))).rows().collect()[0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/python/tests/test_split_multi_hts.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cc22f60>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+_____________________ test_min_rep[AA-<DEL>-100-expected3] _____________________
+
+reference = 'AA', alternate = '<DEL>', position = 100
+expected = ['AA', '<DEL>']
+
+    @pytest.mark.parametrize('reference,alternate,position,expected', [
+        ('CAA', 'CGA', 101, ['A', 'G']),
+        ('é😀A', 'é😀T', 102, ['A', 'T']),
+        ('AAA', 'AA', 100, ['AA', 'A']),
+        ('AA', '<DEL>', 100, ['AA', '<DEL>']),
+        ('AA', 'A[2:3[', 100, ['AA', 'A[2:3[']),
+    ])
+    def test_min_rep(reference, alternate, position, expected):
+>       row = hl.split_multi_hts(matrix((reference, alternate))).rows().collect()[0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/python/tests/test_split_multi_hts.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cbf08c0>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+____________________ test_min_rep[AA-A[2:3[-100-expected4] _____________________
+
+reference = 'AA', alternate = 'A[2:3[', position = 100
+expected = ['AA', 'A[2:3[']
+
+    @pytest.mark.parametrize('reference,alternate,position,expected', [
+        ('CAA', 'CGA', 101, ['A', 'G']),
+        ('é😀A', 'é😀T', 102, ['A', 'T']),
+        ('AAA', 'AA', 100, ['AA', 'A']),
+        ('AA', '<DEL>', 100, ['AA', '<DEL>']),
+        ('AA', 'A[2:3[', 100, ['AA', 'A[2:3[']),
+    ])
+    def test_min_rep(reference, alternate, position, expected):
+>       row = hl.split_multi_hts(matrix((reference, alternate))).rows().collect()[0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/python/tests/test_split_multi_hts.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cc02c90>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+_________________ test_star_duplicates_order_and_left_aligned __________________
+
+    def test_star_duplicates_order_and_left_aligned():
+        mt = matrix(('CAA', 'CGA', '*', 'CGA'))
+>       rows = hl.split_multi_hts(mt).rows().collect()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+vail/python/tests/test_split_multi_hts.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cc7b800>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+_______________ test_entry_contract[kwargs0-haploid or diploid] ________________
+
+kwargs = {'GT': Call(alleles=[], phased=False)}, message = 'haploid or diploid'
+
+    @pytest.mark.parametrize('kwargs,message', [
+        ({'GT': hl.Call([])}, 'haploid or diploid'),
+        ({'GT': hl.Call([3])}, 'indices in range'),
+        ({'PGT': hl.Call([4])}, 'indices in range'),
+        ({'AD': [1, 2]}, 'AD length'),
+        ({'PL': [1, 2]}, 'PL length'),
+        ({'GT': hl.Call([1]), 'PL': [1, 2, 3, 4, 5, 6]}, 'PL length'),
+    ])
+    def test_entry_contract(kwargs, message):
+>       with pytest.raises(RuntimeError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+vail/python/tests/test_split_multi_hts.py:94: Failed
+________________ test_entry_contract[kwargs1-indices in range] _________________
+
+kwargs = {'GT': Call(alleles=[3], phased=False)}, message = 'indices in range'
+
+    @pytest.mark.parametrize('kwargs,message', [
+        ({'GT': hl.Call([])}, 'haploid or diploid'),
+        ({'GT': hl.Call([3])}, 'indices in range'),
+        ({'PGT': hl.Call([4])}, 'indices in range'),
+        ({'AD': [1, 2]}, 'AD length'),
+        ({'PL': [1, 2]}, 'PL length'),
+        ({'GT': hl.Call([1]), 'PL': [1, 2, 3, 4, 5, 6]}, 'PL length'),
+    ])
+    def test_entry_contract(kwargs, message):
+>       with pytest.raises(RuntimeError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+vail/python/tests/test_split_multi_hts.py:94: Failed
+________________ test_entry_contract[kwargs2-indices in range] _________________
+
+kwargs = {'PGT': Call(alleles=[4], phased=False)}, message = 'indices in range'
+
+    @pytest.mark.parametrize('kwargs,message', [
+        ({'GT': hl.Call([])}, 'haploid or diploid'),
+        ({'GT': hl.Call([3])}, 'indices in range'),
+        ({'PGT': hl.Call([4])}, 'indices in range'),
+        ({'AD': [1, 2]}, 'AD length'),
+        ({'PL': [1, 2]}, 'PL length'),
+        ({'GT': hl.Call([1]), 'PL': [1, 2, 3, 4, 5, 6]}, 'PL length'),
+    ])
+    def test_entry_contract(kwargs, message):
+>       with pytest.raises(RuntimeError, match=message):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+vail/python/tests/test_split_multi_hts.py:94: Failed
+____ test_duplicate_locus_requires_shuffle_when_split_keys_are_out_of_order ____
+
+    def test_duplicate_locus_requires_shuffle_when_split_keys_are_out_of_order():
+        mt = hl.range_matrix_table(2, 1)
+        mt = mt.annotate_rows(locus=hl.locus('1', 100),
+                              alleles=hl.if_else(mt.row_idx == 0, ['A', 'C', 'T'], ['A', 'G']))
+        mt = mt.key_rows_by('locus', 'alleles')
+>       with pytest.raises(RuntimeError, match='out-of-order.*permit_shuffle'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'out-of-order.*permit_shuffle'
+E         Actual message: 'Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly'
+
+vail/python/tests/test_split_multi_hts.py:175: AssertionError
+_______ test_left_aligned_sorts_each_rows_alternates_without_moving_loci _______
+
+    def test_left_aligned_sorts_each_rows_alternates_without_moving_loci():
+        result = hl.split_multi_hts(matrix(('A', 'T', 'C')), left_aligned=True)
+>       assert [(r.alleles, r.a_index) for r in result.rows().collect()] == [
+                                                ^^^^^^^^^^^^^^^^^^^^^^^
+            (['A', 'C'], 2), (['A', 'T'], 1)]
+
+vail/python/tests/test_split_multi_hts.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10bc78260>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+_____________ test_split_parallel_source_rows_stay_ordered[False] ______________
+
+left_aligned = False
+
+    @pytest.mark.parametrize('left_aligned', [False, True])
+    def test_split_parallel_source_rows_stay_ordered(left_aligned):
+        mt = hl.range_matrix_table(6, 2, n_partitions=3)
+        mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 100), alleles=['A', 'T', 'C'])
+        # This generated input already has increasing variant keys; avoid a fixture sort.
+        mt = mt._copy(row_key=('locus', 'alleles'))
+        result = hl.split_multi_hts(mt, left_aligned=left_aligned)
+>       assert [(r.locus.position, r.alleles) for r in result.rows().collect()] == [
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^
+            (position, ['A', allele]) for position in range(100, 106) for allele in ('C', 'T')]
+
+vail/python/tests/test_split_multi_hts.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cc61250>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+______________ test_split_parallel_source_rows_stay_ordered[True] ______________
+
+left_aligned = True
+
+    @pytest.mark.parametrize('left_aligned', [False, True])
+    def test_split_parallel_source_rows_stay_ordered(left_aligned):
+        mt = hl.range_matrix_table(6, 2, n_partitions=3)
+        mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 100), alleles=['A', 'T', 'C'])
+        # This generated input already has increasing variant keys; avoid a fixture sort.
+        mt = mt._copy(row_key=('locus', 'alleles'))
+        result = hl.split_multi_hts(mt, left_aligned=left_aligned)
+>       assert [(r.locus.position, r.alleles) for r in result.rows().collect()] == [
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^
+            (position, ['A', allele]) for position in range(100, 106) for allele in ('C', 'T')]
+
+vail/python/tests/test_split_multi_hts.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x10cc60230>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: Arrow error: Invalid argument error: use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly
+
+/private/tmp/vail-indexed-batch-20261103/direct-package-11b/vail/__init__.py:1176: FatalError
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_split_multi_hts.py::test_min_rep[CAA-CGA-101-expected0]
+FAILED vail/python/tests/test_split_multi_hts.py::test_min_rep[\xe9\U0001f600A-\xe9\U0001f600T-102-expected1]
+FAILED vail/python/tests/test_split_multi_hts.py::test_min_rep[AAA-AA-100-expected2]
+FAILED vail/python/tests/test_split_multi_hts.py::test_min_rep[AA-<DEL>-100-expected3]
+FAILED vail/python/tests/test_split_multi_hts.py::test_min_rep[AA-A[2:3[-100-expected4]
+FAILED vail/python/tests/test_split_multi_hts.py::test_star_duplicates_order_and_left_aligned
+FAILED vail/python/tests/test_split_multi_hts.py::test_entry_contract[kwargs0-haploid or diploid]
+FAILED vail/python/tests/test_split_multi_hts.py::test_entry_contract[kwargs1-indices in range]
+FAILED vail/python/tests/test_split_multi_hts.py::test_entry_contract[kwargs2-indices in range]
+FAILED vail/python/tests/test_split_multi_hts.py::test_duplicate_locus_requires_shuffle_when_split_keys_are_out_of_order
+FAILED vail/python/tests/test_split_multi_hts.py::test_left_aligned_sorts_each_rows_alternates_without_moving_loci
+FAILED vail/python/tests/test_split_multi_hts.py::test_split_parallel_source_rows_stay_ordered[False]
+FAILED vail/python/tests/test_split_multi_hts.py::test_split_parallel_source_rows_stay_ordered[True]
+13 failed, 17 passed in 2.97s
