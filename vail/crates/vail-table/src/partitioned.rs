@@ -25,6 +25,7 @@ use datafusion_physical_plan::{
     limit::GlobalLimitExec,
     projection::ProjectionExec,
     repartition::RepartitionExec,
+    scalar_subquery::ScalarSubqueryExec,
     sorts::sort::SortExec,
     sorts::sort_preserving_merge::SortPreservingMergeExec,
     stream::{RecordBatchReceiverStreamBuilder, RecordBatchStreamAdapter},
@@ -419,7 +420,12 @@ impl ExecutionPlan for ExpressionSourceExec {
 /// its output into views preserves the independent partition execution API.
 pub fn prepare(table: TableRef) -> BoxFuture<'static, Result<PreparedTable>> {
     async move {
+        let preparation_started = std::env::var_os("VAIL_TRACE_ACTION_PREPARATION")
+            .is_some().then(std::time::Instant::now);
         let physical = crate::logical::physical(&table).await?;
+        if let Some(started) = preparation_started {
+            eprintln!("VAIL_ACTION_PREPARATION micros={}", started.elapsed().as_micros());
+        }
         let n = if table.known_n_partitions() == Some(0) {
             0
         } else {
@@ -1261,7 +1267,7 @@ pub(crate) fn prepared_ordered(table: &TableRef) -> Result<TablePlan> {
 
 /// Plan one semantic extension over physical children already produced by
 /// DataFusion's single logical tree. This function does not recurse on TableIR.
-pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<PreparedTable>> {
+pub(crate) fn prepare_operation(table: TableRef, prefetch: bool) -> BoxFuture<'static, Result<PreparedTable>> {
     async move {
         let schema=plan::physical_schema(&table);
         for child in crate::logical::children(&table) { prepared_input(&child)?; }
@@ -1463,7 +1469,7 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
             TableNode::OrderedUnion { children } => {
                 let inputs = children.iter().map(|child| Ok(prepared_input(child)?.parts))
                     .collect::<Result<Vec<_>>>()?;
-                let merged = crate::ordered_merge::merge(inputs, table.keys(), schema.clone())?;
+                let merged = crate::ordered_merge::merge(inputs, table.keys(), schema.clone(), prefetch)?;
                 Ok(PreparedTable { parts: vec![merged], counts: vec![None], schema })
             }
 
@@ -1717,18 +1723,25 @@ pub async fn count(table: TableRef) -> Result<usize> {
 /// soon as they have been counted. Unlike ordered row execution, no consumer
 /// waits for an earlier partition before it can drain a later one.
 pub async fn force_count(table: TableRef) -> Result<usize> {
+    let scalar_subqueries=std::env::var_os("VAIL_DISABLE_COUNT_SUBQUERY_MERGE").is_none();
+    let trace=std::env::var_os("VAIL_TRACE_FORCE_COUNT_PLAN").is_some();
     if let Some(plan) = crate::count_explode::matrix_plan(&table).await? {
+        if trace {eprintln!("VAIL_FORCE_COUNT_PLAN before route=matrix\n{}",datafusion_physical_plan::displayable(plan.as_ref()).indent(true));}
         let count = plan.output_partitioning().partition_count();
-        return count_parts(partition_views(plan, count), Arc::new(TaskContext::default())).await;
+        let parts=partition_views(plan,count);
+        if trace {for (index,part) in parts.iter().enumerate(){eprintln!("VAIL_FORCE_COUNT_PLAN after part={index} route=matrix\n{}",datafusion_physical_plan::displayable(part.as_ref()).indent(true));}}
+        return count_parts(parts, Arc::new(TaskContext::default())).await;
     }
-    let physical = crate::logical::physical(&table).await?;
-    let physical = crate::ordering_requirements::unordered(physical)?;
+    let physical = crate::logical::physical_for_force_count(&table).await?;
+    let scalar_subqueries=scalar_subqueries && crate::ordering_requirements::can_rewrite_scalar_subqueries(&physical);
+    if trace {eprintln!("VAIL_FORCE_COUNT_PLAN before scalar_subqueries={scalar_subqueries}\n{}",datafusion_physical_plan::displayable(physical.as_ref()).indent(true));}
+    let physical = crate::ordering_requirements::unordered_with_subqueries(physical,scalar_subqueries)?;
     let physical = crate::count_explode::optimize(physical.clone())?.unwrap_or(physical);
-    let physical = crate::ordering_requirements::unordered(physical)?;
+    let physical = crate::ordering_requirements::unordered_with_subqueries(physical,scalar_subqueries)?;
     let parts = if table.known_n_partitions() == Some(0) {
         vec![]
     } else {
-        count_terminal_merge_partitions(physical.clone())?.unwrap_or_else(|| {
+        count_terminal_merge_partitions(physical.clone(),scalar_subqueries)?.unwrap_or_else(|| {
             let count = physical
                 .properties()
                 .output_partitioning()
@@ -1736,6 +1749,7 @@ pub async fn force_count(table: TableRef) -> Result<usize> {
             partition_views(physical, count)
         })
     };
+    if trace {for (index,part) in parts.iter().enumerate(){eprintln!("VAIL_FORCE_COUNT_PLAN after part={index}\n{}",datafusion_physical_plan::displayable(part.as_ref()).indent(true));}}
     count_parts(parts, Arc::new(TaskContext::default())).await
 }
 
@@ -1745,10 +1759,18 @@ pub async fn force_count(table: TableRef) -> Result<usize> {
 /// executes every projection and every child operator, including per-partition
 /// sorts, while avoiding comparisons and copies of wide rows in the terminal
 /// merge. Any non-projection operator blocks this optimization.
-fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<PhysicalPlan>>> {
+fn count_terminal_merge_partitions(plan: PhysicalPlan, scalar_subqueries: bool) -> Result<Option<Vec<PhysicalPlan>>> {
     let mut node = plan;
     let mut wrappers = Vec::new();
+    let mut crossed_subquery=false;
     loop {
+        if scalar_subqueries && let Some(subquery)=node.downcast_ref::<ScalarSubqueryExec>() {
+            let input=subquery.input().clone();
+            wrappers.push(node.clone());
+            node=input;
+            crossed_subquery=true;
+            continue;
+        }
         let singleton_view = node
             .as_ref()
             .downcast_ref::<PartitionViewExec>()
@@ -1794,7 +1816,7 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
         let Some(merge) = node.as_ref().downcast_ref::<SortPreservingMergeExec>() else {
             return Ok(None);
         };
-        if merge.fetch().is_some() {
+        if merge.fetch().is_some() || (crossed_subquery && !merge.expr().iter().all(|sort|sort.expr.is::<datafusion_physical_expr::expressions::Column>())) {
             return Ok(None);
         }
         let input = merge.input().clone();
@@ -1817,8 +1839,13 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
                         projection.schema().as_ref(),
                     )?);
                 } else {
+                    let children=if wrapper.is::<ScalarSubqueryExec>() {
+                        let mut children=wrapper.children().into_iter().cloned().collect::<Vec<_>>();
+                        children[0]=part.clone();
+                        children
+                    } else {vec![part.clone()]};
                     *part = wrapper.clone().replace_children(
-                        vec![part.clone()],
+                        children,
                         datafusion_physical_plan::ReplaceChildrenOptions::new(
                             datafusion_physical_plan::ChildrenPropertiesMode::Keep,
                         ),

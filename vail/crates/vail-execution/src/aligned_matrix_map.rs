@@ -16,7 +16,7 @@ use arrow_array::{
     make_array, new_empty_array,
 };
 use arrow_array::{Int32Array, RunArray, UInt32Array};
-use arrow_buffer::{BooleanBuffer, NullBuffer, OffsetBuffer, ScalarBuffer};
+use arrow_buffer::{BooleanBuffer, NullBuffer, NullBufferBuilder, OffsetBuffer, ScalarBuffer};
 use arrow_cast::cast;
 use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
 use arrow_select::{concat::concat, take::take};
@@ -377,6 +377,8 @@ pub(crate) struct AlignedMatrixMapExpr {
     body_dtype: DataType,
     preserve_cell: bool,
     scalar_rows: bool,
+    indexed: Option<(Vec<crate::indexed_batch::Input>, Arc<Schema>)>,
+    borrow_inputs:bool,
 }
 
 impl AlignedMatrixMapExpr {
@@ -417,7 +419,28 @@ impl AlignedMatrixMapExpr {
             body_dtype,
             preserve_cell,
             scalar_rows,
+            indexed: None,
+            borrow_inputs:false,
         }
+    }
+
+    pub(crate) fn new_indexed(
+        children: [Arc<dyn PhysicalExpr>; 4], body: Arc<dyn PhysicalExpr>,
+        all_present_body: Option<Arc<dyn PhysicalExpr>>, inputs: Vec<crate::indexed_batch::Input>,
+        dtype: DataType, body_dtype: DataType, preserve_cell: bool, borrow_inputs: bool,
+    ) -> Self {
+        let mut result = Self::new(children[0].clone(), children[1].clone(), children[2].clone(), children[3].clone(),
+            body, all_present_body, vec![], vec![], vec![], None, dtype, body_dtype, preserve_cell, false);
+        let mut fields = vec![
+            Field::new(crate::indexed_batch::ENTRY_INDEX, DataType::Int32, false),
+            Field::new(crate::indexed_batch::COLUMN_INDEX, DataType::Int32, false),
+            Field::new(crate::indexed_batch::ROW_INDEX, DataType::Int32, false),
+            Field::new(crate::indexed_batch::PRESENCE, DataType::Boolean, false),
+        ];
+        if inputs.iter().any(|input| input.axis == "selected_entry") { fields.push(Field::new(crate::indexed_batch::SELECTED_INDEX, DataType::Int32, false)); }
+        let schema = Arc::new(Schema::new(fields));
+        result.indexed = Some((inputs, schema));
+        result.borrow_inputs=borrow_inputs;result
     }
 }
 
@@ -691,6 +714,153 @@ impl AlignedMatrixMapExpr {
     }
 }
 
+impl AlignedMatrixMapExpr {
+    fn evaluate_indexed(&self, batch: &RecordBatch, inputs: &[crate::indexed_batch::Input], schema: &Arc<Schema>) -> Result<ColumnarValue> {
+        let entries = row_array_value(self.entries.evaluate(batch)?, batch.num_rows(), "entry lists")?;
+        let entries = entries.as_any().downcast_ref::<ListArray>().ok_or_else(||
+            DataFusionError::Execution("indexed entries must be ListArray".into()))?;
+        self.evaluate_indexed_owner(batch, entries, None, inputs, schema)
+    }
+
+    pub(crate) fn is_indexed(&self) -> bool { self.indexed.is_some() }
+    pub(crate) fn evaluate_selected_captures(&self, selection: &crate::logical_expr::AlignedSelection, captures: [ColumnarValue; 3]) -> Result<ColumnarValue> {
+        self.evaluate_selected_captures_with_bundle(selection, captures, None)
+    }
+    pub(crate) fn evaluate_selected_captures_with_bundle(&self, selection: &crate::logical_expr::AlignedSelection, captures: [ColumnarValue; 3], bundle: Option<&ArrayRef>) -> Result<ColumnarValue> {
+        let (inputs, schema) = self.indexed.as_ref().ok_or_else(|| DataFusionError::Internal("selected kernel is not indexed".into()))?;
+        let owner = selection.entries.as_any().downcast_ref::<ListArray>().ok_or_else(|| DataFusionError::Execution("selected entries must be ListArray".into()))?;
+        for parent in &selection.parents {
+            if parent.is_none_or(|parent| parent < 0 || parent as usize >= owner.len()) {
+                return Err(DataFusionError::Execution("selected parent outside original batch".into()));
+            }
+        }
+        let [columns,rows,globals]=captures;
+        let demanded=selection.parents.iter().any(|parent| {let parent=parent.unwrap() as usize;owner.is_valid(parent)&&owner.value_offsets()[parent+1]>owner.value_offsets()[parent]});
+        let rows=crate::aligned_invariants::selected_rows(&self.rows,rows,selection.parents.len(),demanded)?;
+        self.evaluate_indexed_values(selection.parents.len(), owner, Some(&selection.parents), inputs, schema, [columns,rows,globals], bundle)
+    }
+
+    fn evaluate_indexed_owner(&self, batch: &RecordBatch, entries: &ListArray, parents: Option<&Int32Array>,
+        inputs: &[crate::indexed_batch::Input], schema: &Arc<Schema>) -> Result<ColumnarValue> {
+        let demanded=entries.value_offsets()[entries.len()]>entries.value_offsets()[0];
+        let rows = crate::aligned_invariants::evaluate_rows(&self.rows,batch,demanded)?;
+        let globals = if batch.num_rows() == 0 { ColumnarValue::Scalar(ScalarValue::Null) } else { self.globals.evaluate(batch)? };
+        let columns = self.columns.evaluate(batch)?;
+        self.evaluate_indexed_values(batch.num_rows(), entries, parents, inputs, schema, [columns, rows, globals], None)
+    }
+    fn evaluate_indexed_values(&self, output_rows: usize, entries: &ListArray, parents: Option<&Int32Array>,
+        inputs: &[crate::indexed_batch::Input], schema: &Arc<Schema>, captures: [ColumnarValue; 3], bundle: Option<&ArrayRef>) -> Result<ColumnarValue> {
+        let [columns, rows, globals] = captures;
+        let rows = row_array_value(rows, output_rows, "row records")?;
+        let parent = |row: usize| parents.map_or(row, |indices| indices.value(row) as usize);
+        let globals = (output_rows > 0).then_some(globals);
+        let columns = shared_list_values(columns)?;
+        let cells = entries.values();
+        let values = entry_values(cells.as_ref())?;
+        let offsets = entries.value_offsets();
+        let mut output_offsets = Vec::with_capacity(output_rows + 1);
+        output_offsets.push(0i32);
+        for row in 0..output_rows {
+            let source = parent(row);
+            let count = if parents.is_some() && entries.is_null(source) { 0 } else { offsets[source + 1] - offsets[source] };
+            if count as usize > columns.len() { return Err(DataFusionError::Execution("aligned entry list exceeds column metadata length".into())); }
+            output_offsets.push(output_offsets.last().unwrap().checked_add(count).ok_or_else(||
+                DataFusionError::Execution("indexed output exceeds List offset capacity".into()))?);
+        }
+        let total = *output_offsets.last().unwrap() as usize;
+        if inputs.iter().any(|input| input.axis == "selected_entry") && bundle.is_none_or(|bundle| bundle.len() != total) {
+            return Err(DataFusionError::Execution("selected bundle lane cardinality differs".into()));
+        }
+        let needed = |axis: &str| inputs.iter().any(|input| input.axis == axis);
+        let mut entry_indices = needed("entry").then(|| Vec::with_capacity(total));
+        let mut column_indices = needed("col").then(|| Vec::with_capacity(total));
+        let mut row_indices = (needed("row")||needed("row_invariant")).then(|| Vec::with_capacity(total));
+        let mut contiguous_start=None;
+        let mut contiguous_end=0;
+        let mut contiguous=self.borrow_inputs;
+        let mut entry_validity = NullBufferBuilder::new(total);
+        let mut cell_validity = NullBufferBuilder::new(total);
+        for row in 0..output_rows {
+            let count = (output_offsets[row + 1] - output_offsets[row]) as usize;
+            if count == 0 { continue; }
+            let start = offsets[parent(row)] as usize;
+            if contiguous {
+                if contiguous_start.is_none(){contiguous_start=Some(start);}
+                else if start!=contiguous_end {contiguous=false;}
+                contiguous_end=start+count;
+            }
+            let row_index = i32::try_from(row).map_err(|_| DataFusionError::Execution("indexed row exceeds int32".into()))?;
+            if let Some(indices) = &mut entry_indices { indices.extend((start..start + count).map(|index| index as i32)); }
+            if let Some(indices) = &mut column_indices { indices.extend((0..count).map(|index| index as i32)); }
+            if let Some(indices) = &mut row_indices { indices.extend(std::iter::repeat_n(row_index, count)); }
+            match values.nulls() {
+                Some(nulls) => entry_validity.append_buffer(&nulls.slice(start, count)),
+                None => entry_validity.append_n_non_nulls(count),
+            }
+            match cells.nulls() {
+                Some(nulls) => cell_validity.append_buffer(&nulls.slice(start, count)),
+                None => cell_validity.append_n_non_nulls(count),
+            }
+        }
+        let entry_validity = entry_validity.finish();
+        let cell_validity = cell_validity.finish();
+        // Match the existing aligned-map guard: presence is the value child's
+        // validity. Cell-parent masks still apply to every indexed field read
+        // and to the output wrapper; they do not change demanded computations.
+        let presence = entry_validity.clone();
+        let body = if presence.as_ref().is_none_or(|nulls| nulls.null_count() == 0) {
+            self.all_present_body.as_ref().unwrap_or(&self.body)
+        } else { &self.body };
+        let mapped = if total == 0 { new_empty_array(&self.body_dtype) } else {
+            let globals = if inputs.iter().any(|input| input.axis == "global") {
+                Some(match globals.as_ref().ok_or_else(|| DataFusionError::Execution("missing indexed globals".into()))? {
+                    ColumnarValue::Scalar(value) => value.to_array()?,
+                    ColumnarValue::Array(value) => value.clone(),
+                })
+            } else { None };
+            let num_cols = Arc::new(Int32Array::from(vec![i32::try_from(columns.len()).map_err(|_|
+                DataFusionError::Execution("indexed columns exceed int32".into()))?])) as ArrayRef;
+            let lanes = [entry_indices, column_indices, row_indices].map(|indices|
+                indices.map(|indices| Arc::new(Int32Array::from(indices)) as ArrayRef));
+            let domain=if contiguous {lanes[0].as_ref().map(|indices|Arc::new(crate::indexed_batch::ContiguousDomain {indices:indices.clone(),start:contiguous_start.unwrap_or(0)}))}else{None};
+            let selected_indices = needed("selected_entry").then(|| Arc::new(Int32Array::from_iter_values(0..total as i32)) as ArrayRef);
+            let selected_domain = selected_indices.as_ref().map(|indices| Arc::new(crate::indexed_batch::ContiguousDomain { indices: indices.clone(), start: 0 }));
+            let sources = inputs.iter().map(|input| {
+                let (owner, scalar) = match input.axis.as_str() {
+                    "entry" => (cells.clone(), false), "selected_entry" => (bundle.unwrap().clone(), false), "col" => (columns.clone(), false),
+                    "row" | "row_invariant" => (rows.clone(), false), "global" => (globals.as_ref().unwrap().clone(), true),
+                    "num_cols" => (num_cols.clone(), true), _ => unreachable!(),
+                };
+                let mut source=crate::indexed_batch::Source::bind(owner, input, scalar)?;
+                if input.axis=="entry"{source.contiguous=domain.clone();}
+                if input.axis=="selected_entry"{source.contiguous=selected_domain.clone();}
+                Ok(source)
+            }).collect::<Result<Vec<_>>>()?;
+            let body = crate::indexed_batch::bind(body, &sources, &mut HashMap::new())?;
+            let presence = presence.as_ref().map(|nulls| nulls.inner().clone()).unwrap_or_else(|| BooleanBuffer::new_set(total));
+
+            let unused = lanes.iter().flatten().next().cloned()
+                .unwrap_or_else(|| Arc::new(Int32Array::from_value(0, total)) as ArrayRef);
+            let mut arrays = lanes.into_iter().map(|lane| lane.unwrap_or_else(|| unused.clone())).collect::<Vec<_>>();
+            arrays.push(Arc::new(BooleanArray::new(presence, None)));
+            if let Some(indices) = selected_indices { arrays.push(indices); }
+            let frame = RecordBatch::try_new(schema.clone(), arrays)?;
+            body.evaluate(&frame)?.into_array(total)?
+        };
+        let nulls = NullBuffer::union(mapped.nulls(), entry_validity.as_ref());
+        let mapped = make_array(mapped.to_data().into_builder().nulls(nulls).build()?);
+        let DataType::List(item) = &self.dtype else { unreachable!() };
+        let mapped = if self.preserve_cell {
+            let DataType::Struct(fields) = item.data_type() else { unreachable!() };
+            Arc::new(StructArray::try_new(fields.clone(), vec![mapped], cell_validity)?) as ArrayRef
+        } else { mapped };
+        Ok(ColumnarValue::Array(Arc::new(ListArray::try_new(item.clone(),
+            OffsetBuffer::new(ScalarBuffer::from(output_offsets)), mapped,
+            if parents.is_some() { entries.nulls().map(|_| NullBuffer::from((0..output_rows).map(|row| entries.is_valid(parent(row))).collect::<Vec<_>>())) }
+            else { entries.nulls().cloned() })?)))
+    }
+}
+
 impl PartialEq for AlignedMatrixMapExpr {
     fn eq(&self, other: &Self) -> bool {
         self.entries.as_ref() == other.entries.as_ref()
@@ -706,6 +876,8 @@ impl PartialEq for AlignedMatrixMapExpr {
             && self.body_dtype == other.body_dtype
             && self.preserve_cell == other.preserve_cell
             && self.scalar_rows == other.scalar_rows
+            && self.indexed == other.indexed
+            && self.borrow_inputs == other.borrow_inputs
     }
 }
 impl Eq for AlignedMatrixMapExpr {}
@@ -724,6 +896,8 @@ impl Hash for AlignedMatrixMapExpr {
         self.body_dtype.hash(state);
         self.preserve_cell.hash(state);
         self.scalar_rows.hash(state);
+        self.indexed.hash(state);
+        self.borrow_inputs.hash(state);
     }
 }
 impl Display for AlignedMatrixMapExpr {
@@ -783,10 +957,15 @@ impl PhysicalExpr for AlignedMatrixMapExpr {
             body_dtype: self.body_dtype.clone(),
             preserve_cell: self.preserve_cell,
             scalar_rows: self.scalar_rows && children[4].as_ref() == self.body.as_ref(),
+            indexed: self.indexed.clone(),
+            borrow_inputs:self.borrow_inputs,
         }))
     }
 
     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+        if let Some((inputs, schema)) = &self.indexed {
+            return self.evaluate_indexed(batch, inputs, schema);
+        }
         if !self.scalar_rows {
             return self.evaluate_flat(batch);
         }

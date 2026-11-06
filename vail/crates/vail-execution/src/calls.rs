@@ -6,8 +6,10 @@ use arrow_array::{
     Array, ArrayRef, BooleanArray, Int32Array, ListArray, StructArray, UInt8Array, UInt16Array,
 };
 use arrow_buffer::{BooleanBuffer, NullBuffer};
+use datafusion_common::{DataFusionError, ScalarValue};
+use datafusion_expr::{ColumnarValue, ScalarUDF, Volatility, expr_fn::create_udf};
 use arrow_schema::{DataType, Field};
-use std::sync::Arc;
+use std::{mem::swap, sync::Arc};
 pub use vail_ordering::call::Call;
 
 pub const FIRST: &str = "__vail_call_allele0";
@@ -404,4 +406,126 @@ pub(crate) fn construct(value: &ArrayRef, dtype: &DataType) -> Result<ArrayRef, 
         phased,
         Some(NullBuffer::from(valid)),
     )
+}
+
+/// Downcode any canonical Call directly into its final Arrow leaf columns.
+/// Scalar arguments are represented once and broadcast by the row index.
+pub(crate) fn downcode_udf() -> Result<Arc<ScalarUDF>, ExprError> {
+    let call_type = Type::Primitive(PrimitiveType::Call).to_arrow()?;
+    let output_type = call_type.clone();
+    Ok(Arc::new(create_udf(
+        "downcode",
+        vec![call_type, DataType::Int32],
+        output_type.clone(),
+        Volatility::Immutable,
+        Arc::new(move |args| {
+            let error = |error: ExprError| DataFusionError::Execution(error.to_string());
+            let [value, allele] = args else {
+                return Err(DataFusionError::Execution(
+                    "downcode requires two arguments".into(),
+                ));
+            };
+            let scalar_call = matches!(value, ColumnarValue::Scalar(_));
+            let scalar_allele = matches!(allele, ColumnarValue::Scalar(_));
+            let rows = args
+                .iter()
+                .find_map(|value| match value {
+                    ColumnarValue::Array(array) => Some(array.len()),
+                    ColumnarValue::Scalar(_) => None,
+                })
+                .unwrap_or(1);
+            let as_array = |value: &ColumnarValue| match value {
+                ColumnarValue::Array(array) => Ok(Arc::clone(array)),
+                ColumnarValue::Scalar(value) => value.to_array(),
+            };
+            let calls = as_array(value)?;
+            let alleles = as_array(allele)?;
+            if (!scalar_call && calls.len() != rows) || (!scalar_allele && alleles.len() != rows) {
+                return Err(DataFusionError::Execution(
+                    "downcode argument lengths differ".into(),
+                ));
+            }
+            let calls = CallRows::new(&calls).map_err(error)?;
+            let alleles = down::<Int32Array>(alleles.as_ref()).map_err(error)?;
+            let call_nulls = if scalar_call {
+                calls.parent.is_null(0).then(|| NullBuffer::new_null(rows))
+            } else {
+                calls.parent.nulls().cloned()
+            };
+            let allele_nulls = if scalar_allele {
+                alleles.is_null(0).then(|| NullBuffer::new_null(rows))
+            } else {
+                alleles.nulls().cloned()
+            };
+            let nulls = NullBuffer::union(call_nulls.as_ref(), allele_nulls.as_ref());
+            let (ploidy, phased): (ArrayRef, ArrayRef) = if scalar_call {
+                let (n, p) = if calls.parent.is_null(0) {
+                    (0, false)
+                } else {
+                    (calls.ploidy.value(0), calls.phased.value(0))
+                };
+                let phase_bits = if p {
+                    BooleanBuffer::new_set(rows)
+                } else {
+                    BooleanBuffer::new_unset(rows)
+                };
+                (
+                    Arc::new(UInt8Array::from(vec![n; rows])),
+                    Arc::new(BooleanArray::new(phase_bits, None)),
+                )
+            } else {
+                // These leaves are unchanged; their slices and backing owners stay shared.
+                (
+                    Arc::clone(calls.parent.column_by_name(PLOIDY).unwrap()),
+                    Arc::clone(calls.parent.column_by_name(PHASED).unwrap()),
+                )
+            };
+            let mut first = Vec::with_capacity(rows);
+            let mut second = Vec::with_capacity(rows);
+            for row in 0..rows {
+                let ci = if scalar_call { 0 } else { row };
+                let ai = if scalar_allele { 0 } else { row };
+                if nulls.as_ref().is_some_and(|nulls| nulls.is_null(row)) {
+                    first.push(0);
+                    second.push(0);
+                    continue;
+                }
+                let n = calls.ploidy.value(ci);
+                if n > 2 {
+                    return Err(DataFusionError::Execution(
+                        "downcode supports Calls with at most two alleles".into(),
+                    ));
+                }
+                let target = alleles.value(ai);
+                let p = calls.phased.value(ci);
+                let mut a = (n > 0 && i32::from(calls.first.value(ci)) == target) as u16;
+                let mut b = (n == 2 && i32::from(calls.second.value(ci)) == target) as u16;
+                if n == 2 && !p && a > b {
+                    swap(&mut a, &mut b);
+                }
+                first.push(a);
+                second.push(b);
+            }
+            let DataType::Struct(fields) = &output_type else {
+                unreachable!()
+            };
+            let result = Arc::new(StructArray::try_new(
+                fields.clone(),
+                vec![
+                    Arc::new(UInt16Array::from(first)) as ArrayRef,
+                    Arc::new(UInt16Array::from(second)),
+                    ploidy,
+                    phased,
+                ],
+                nulls,
+            )?) as ArrayRef;
+            if scalar_call && scalar_allele {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            }
+        }),
+    )))
 }

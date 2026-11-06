@@ -9,6 +9,10 @@ use std::sync::{Arc, OnceLock};
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct OuterLength;
 
+pub fn is_outer_length(function: &ScalarUDF) -> bool {
+    function.inner().is::<crate::kernel_identity::Scalar<OuterLength>>()
+}
+
 pub fn udf() -> Arc<ScalarUDF> {
     static UDF: OnceLock<Arc<ScalarUDF>> = OnceLock::new();
     UDF.get_or_init(|| {

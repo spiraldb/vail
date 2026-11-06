@@ -7,7 +7,7 @@ use arrow_schema::{DataType, Field, FieldRef};
 use datafusion_common::Result;
 use datafusion_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, ColumnarValue,
-    GroupsAccumulator, ScalarFunctionArgs, ScalarFunctionImplementation, ScalarUDF, ScalarUDFImpl,
+    GroupsAccumulator, ReturnFieldArgs, ScalarFunctionArgs, ScalarFunctionImplementation, ScalarUDF, ScalarUDFImpl,
     Signature, Volatility,
     function::{AccumulatorArgs, StateFieldsArgs},
 };
@@ -29,10 +29,12 @@ pub(crate) fn name(key: &impl Hash, label: &str) -> String {
 
 pub(crate) struct Scalar<K> {
     key: K,
+    preparation_options: Option<crate::expressions::PreparationOptions>,
     fingerprint: u64,
     name: String,
     signature: Signature,
     output: DataType,
+    cached_output_field: Option<FieldRef>,
     function: Arc<dyn Fn(ScalarFunctionArgs) -> Result<ColumnarValue> + Send + Sync>,
 }
 impl<K: fmt::Debug> fmt::Debug for Scalar<K> {
@@ -46,10 +48,14 @@ impl<K> Scalar<K> {
     pub(crate) fn key(&self) -> &K {
         &self.key
     }
+    pub(crate) fn preparation_options(&self) -> Option<&crate::expressions::PreparationOptions> {
+        self.preparation_options.as_ref()
+    }
 }
 impl<K: PartialEq> PartialEq for Scalar<K> {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
+            && self.preparation_options == other.preparation_options
             && self.key == other.key
             && self.signature == other.signature
             && self.output == other.output
@@ -70,6 +76,11 @@ impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> ScalarUDFImpl for Scalar
     }
     fn return_type(&self, _: &[DataType]) -> Result<DataType> {
         Ok(self.output.clone())
+    }
+    fn return_field_from_args(&self, args: ReturnFieldArgs) -> Result<FieldRef> {
+        if let Some(field) = &self.cached_output_field { return Ok(field.clone()); }
+        let types = args.arg_fields.iter().map(|field| field.data_type().clone()).collect::<Vec<_>>();
+        Ok(Arc::new(Field::new(self.name(), self.return_type(&types)?, true)))
     }
     fn invoke_with_args(&self, args: ScalarFunctionArgs) -> Result<ColumnarValue> {
         (self.function)(args)
@@ -98,14 +109,25 @@ pub(crate) fn scalar_with_args<K: fmt::Debug + Eq + Hash + Send + Sync + 'static
     output: DataType,
     function: Arc<dyn Fn(ScalarFunctionArgs) -> Result<ColumnarValue> + Send + Sync>,
 ) -> ScalarUDF {
+    scalar_with_options(label, key, signature, output, function, None)
+}
+pub(crate) fn scalar_with_options<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>(
+    label: &str, key: K, signature: Signature, output: DataType,
+    function: Arc<dyn Fn(ScalarFunctionArgs) -> Result<ColumnarValue> + Send + Sync>,
+    preparation_options: Option<crate::expressions::PreparationOptions>,
+) -> ScalarUDF {
     let name = name(&(&key, &signature, &output), label);
-    let fingerprint = fingerprint(&(&name, &key, &signature, &output));
+    let fingerprint = fingerprint(&(&name, &key, &signature, &output, &preparation_options));
+    let cached_output_field = preparation_options.as_ref().filter(|options| options.cache_return_field)
+        .map(|_| Arc::new(Field::new(&name, output.clone(), true)));
     ScalarUDF::from(Scalar {
         fingerprint,
         key,
+        preparation_options,
         name,
         signature,
         output,
+        cached_output_field,
         function,
     })
 }

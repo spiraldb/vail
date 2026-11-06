@@ -54,6 +54,7 @@ from .expressions import (
     str_ as str,
     struct,
     call,
+    downcode,
     interval,
 )
 from .types import (

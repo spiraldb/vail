@@ -1,13 +1,44 @@
 //! Linear Unicode normalization and shared per-original-entry HTS reductions.
 use crate::expressions::{ExprError, PrimitiveType, Type};
+use crate::selected_list_producer::{Argument, Request, SelectedListProducer, SourceDomain};
 use arrow_array::builder::{Int32Builder, ListBuilder, StringBuilder};
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Int32Array, ListArray, StructArray, UInt8Array, UInt16Array,
 };
 use arrow_schema::DataType;
 use datafusion_common::{Result, ScalarValue, exec_err};
-use datafusion_expr::{ColumnarValue, ScalarUDF, Volatility, expr_fn::create_udf};
+use datafusion_expr::{
+    ColumnarValue, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, Volatility,
+    expr_fn::create_udf,
+};
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
+
+/// Deterministic, context-independent evaluation with no effects. Failures
+/// validate input values; this does not claim the kernel can never fail.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct EvaluationProperties {
+    validation_only: bool,
+}
+const VALIDATION_ONLY: EvaluationProperties = EvaluationProperties {
+    validation_only: true,
+};
+
+/// Query preparation inspects exact registered implementations. An unrelated
+/// UDF with the same display name, volatility, or endpoint gains no permission.
+pub(crate) fn validation_only(function: &ScalarUDF) -> bool {
+    function
+        .inner()
+        .downcast_ref::<EntryReductions>()
+        .map(|kernel| kernel.properties)
+        .or_else(|| {
+            function
+                .inner()
+                .downcast_ref::<MinRepresentation>()
+                .map(|kernel| kernel.properties)
+        })
+        .is_some_and(|properties| properties.validation_only)
+}
 
 fn array(t: Type) -> Type {
     Type::Array { array: Box::new(t) }
@@ -46,7 +77,45 @@ pub(crate) fn function(
         )
     };
     let kernel = name.to_owned();
+    let trace_quality = std::env::var_os("VAIL_TRACE_COALESCE_ONCE").is_some();
+    let trace_entry_reductions = std::env::var_os("VAIL_TRACE_VARIANT_ENTRY").is_some();
     let dtype = output.to_arrow()?;
+    if name == "variant_min_rep" {
+        let signature = Signature::exact(
+            args.iter()
+                .map(Type::to_arrow)
+                .collect::<std::result::Result<Vec<_>, _>>()?,
+            Volatility::Immutable,
+        );
+        return Ok((
+            Arc::new(ScalarUDF::from(MinRepresentation {
+                signature,
+                output: dtype,
+                properties: VALIDATION_ONLY,
+            })),
+            args,
+            output,
+        ));
+    }
+    if name == "variant_entry" {
+        let signature = Signature::exact(
+            args.iter()
+                .map(Type::to_arrow)
+                .collect::<std::result::Result<Vec<_>, _>>()?,
+            Volatility::Immutable,
+        );
+        return Ok((
+            Arc::new(ScalarUDF::from(EntryReductions {
+                signature,
+                output: dtype,
+                trace: trace_entry_reductions,
+                trace_selected: std::env::var_os("VAIL_TRACE_SELECTED_LIST_PRODUCER").is_some(),
+                properties: VALIDATION_ONLY,
+            })),
+            args,
+            output,
+        ));
+    }
     let out_type = dtype.clone();
     let udf = create_udf(
         name,
@@ -66,12 +135,16 @@ pub(crate) fn function(
                 .unwrap_or(1);
             let result = if kernel == "unphased_diploid_gt_index_call" {
                 diploid_index_call(&values[0], rows, &out_type)?
-            } else if kernel == "variant_min_rep" {
-                min_rep(values, rows, &out_type)?
             } else if kernel == "gq_from_pl" {
+                if trace_quality {
+                    eprintln!("VAIL_QUALITY_EVAL rows={rows}");
+                }
                 gq_from_pl(&Input::new(&values[0])?)?
             } else {
                 let arrays = values.iter().map(Input::new).collect::<Result<Vec<_>>>()?;
+                if trace_entry_reductions {
+                    eprintln!("VAIL_VARIANT_ENTRY_REDUCE rows={rows}");
+                }
                 entries(&arrays, rows, &out_type)?
             };
             if values.iter().all(|v| matches!(v, ColumnarValue::Scalar(_))) {
@@ -285,6 +358,118 @@ fn append(out: &mut ListBuilder<ListBuilder<Int32Builder>>, values: Option<&[Opt
         out.values().append(false);
     }
 }
+#[derive(Clone, Copy)]
+struct Reduction {
+    total: Option<i64>,
+    ploidy: Option<usize>,
+}
+fn reduce_entry(
+    n: usize,
+    gt: Option<Int32Span<'_>>,
+    pgt: Option<Int32Span<'_>>,
+    ad: Option<Int32Span<'_>>,
+    pl: Option<Int32Span<'_>>,
+    result: &mut Vec<[Option<i32>; 3]>,
+) -> Result<Reduction> {
+    for call in [&gt, &pgt].into_iter().flatten() {
+        if !(1..=2).contains(&call.len())
+            || call
+                .iter()
+                .any(|a| a.is_none_or(|a| a < 0 || a as usize >= n))
+        {
+            return exec_err!(
+                "split_multi_hts requires haploid or diploid GT/PGT with allele indices in range"
+            );
+        }
+    }
+    if ad.as_ref().is_some_and(|a| a.len() != n) {
+        return exec_err!("split_multi_hts AD length must equal allele count");
+    }
+    let total = ad
+        .as_ref()
+        .map(|a| a.iter().flatten().map(i64::from).sum::<i64>());
+    let ploidy = gt.as_ref().map(Int32Span::len);
+    let diploid_len = n.checked_mul(n + 1).and_then(|x| x.checked_div(2));
+    if let Some(pl) = &pl {
+        let valid = match ploidy {
+            Some(1) => pl.len() == n,
+            Some(2) => Some(pl.len()) == diploid_len,
+            _ => pl.len() == n || Some(pl.len()) == diploid_len,
+        };
+        if !valid {
+            return exec_err!("split_multi_hts PL length must match GT ploidy and allele count");
+        }
+    }
+    result.clear();
+    result.resize(n, [None; 3]);
+    if let (Some(pl), Some(ploidy)) = (&pl, ploidy) {
+        // The global minimum edge supplies bucket zero for every vertex
+        // except its (at most two) endpoints. Re-scan only those endpoints.
+        let mut best: Option<(i32, usize, usize)> = None;
+        if ploidy == 2 {
+            let mut idx = 0;
+            for b in 0..n {
+                for a in 0..=b {
+                    let v = value(pl, idx);
+                    idx += 1;
+                    if let Some(v) = v {
+                        if best.is_none_or(|x| v < x.0) {
+                            best = Some((v, a, b));
+                        }
+                    }
+                    if a == b {
+                        result[a][2] = v;
+                    } else {
+                        update(&mut result[a][1], v);
+                        update(&mut result[b][1], v);
+                    }
+                }
+            }
+            if let Some((v, a, b)) = best {
+                for bucket in result.iter_mut() {
+                    bucket[0] = Some(v);
+                }
+                for excluded in [Some(a), (b != a).then_some(b)].into_iter().flatten() {
+                    let mut minimum = None;
+                    let mut idx = 0;
+                    for y in 0..n {
+                        for x in 0..=y {
+                            if x != excluded && y != excluded {
+                                update(&mut minimum, value(pl, idx));
+                            }
+                            idx += 1;
+                        }
+                    }
+                    result[excluded][0] = minimum;
+                }
+            }
+        } else {
+            for a in 0..n {
+                let v = value(pl, a);
+                result[a][1] = v;
+                if let Some(v) = v {
+                    if best.is_none_or(|x| v < x.0) {
+                        best = Some((v, a, a));
+                    }
+                }
+            }
+            if let Some((v, a, _)) = best {
+                for bucket in result.iter_mut() {
+                    bucket[0] = Some(v);
+                }
+                let mut minimum = None;
+                for b in 0..n {
+                    if b != a {
+                        update(&mut minimum, value(pl, b));
+                    }
+                }
+                result[a][0] = minimum;
+            }
+        }
+    }
+    Ok(Reduction { total, ploidy })
+}
+
 fn entries(values: &[Input], rows: usize, dtype: &DataType) -> Result<ArrayRef> {
     let counts = values[0].down::<Int32Array>()?;
     let mut ads = ListBuilder::new(ListBuilder::new(Int32Builder::new()));
@@ -301,105 +486,11 @@ fn entries(values: &[Input], rows: usize, dtype: &DataType) -> Result<ArrayRef> 
         }
         let n = counts.value(cr) as usize;
         let gt = gt.get(row);
-        let pgt = pgt.get(row);
-        for call in [&gt, &pgt].into_iter().flatten() {
-            if !(1..=2).contains(&call.len())
-                || call.iter().any(|a| a.is_none_or(|a| a < 0 || a as usize >= n))
-            {
-                return exec_err!(
-                    "split_multi_hts requires haploid or diploid GT/PGT with allele indices in range"
-                );
-            }
-        }
         let ad = ad.get(row);
-        if ad.as_ref().is_some_and(|a| a.len() != n) {
-            return exec_err!("split_multi_hts AD length must equal allele count");
-        }
-        let total = ad
-            .as_ref()
-            .map(|a| a.iter().flatten().map(i64::from).sum::<i64>());
         let pl = pl.get(row);
-        let ploidy = gt.as_ref().map(Int32Span::len);
-        let diploid_len = n.checked_mul(n + 1).and_then(|x| x.checked_div(2));
-        if let Some(pl) = &pl {
-            let valid = match ploidy {
-                Some(1) => pl.len() == n,
-                Some(2) => Some(pl.len()) == diploid_len,
-                _ => pl.len() == n || Some(pl.len()) == diploid_len,
-            };
-            if !valid {
-                return exec_err!(
-                    "split_multi_hts PL length must match GT ploidy and allele count"
-                );
-            }
-        }
-        result.clear();
-        result.resize(n, [None; 3]);
-        if let (Some(pl), Some(ploidy)) = (&pl, ploidy) {
-            // The global minimum edge supplies bucket zero for every vertex
-            // except its (at most two) endpoints. Re-scan only those endpoints.
-            let mut best: Option<(i32, usize, usize)> = None;
-            if ploidy == 2 {
-                let mut idx = 0;
-                for b in 0..n {
-                    for a in 0..=b {
-                        let v = value(pl, idx);
-                        idx += 1;
-                        if let Some(v) = v {
-                            if best.is_none_or(|x| v < x.0) {
-                                best = Some((v, a, b));
-                            }
-                        }
-                        if a == b {
-                            result[a][2] = v;
-                        } else {
-                            update(&mut result[a][1], v);
-                            update(&mut result[b][1], v);
-                        }
-                    }
-                }
-                if let Some((v, a, b)) = best {
-                    for bucket in &mut result {
-                        bucket[0] = Some(v);
-                    }
-                    for excluded in [Some(a), (b != a).then_some(b)].into_iter().flatten() {
-                        let mut minimum = None;
-                        let mut idx = 0;
-                        for y in 0..n {
-                            for x in 0..=y {
-                                if x != excluded && y != excluded {
-                                    update(&mut minimum, value(pl, idx));
-                                }
-                                idx += 1;
-                            }
-                        }
-                        result[excluded][0] = minimum;
-                    }
-                }
-            } else {
-                for a in 0..n {
-                    let v = value(pl, a);
-                    result[a][1] = v;
-                    if let Some(v) = v {
-                        if best.is_none_or(|x| v < x.0) {
-                            best = Some((v, a, a));
-                        }
-                    }
-                }
-                if let Some((v, a, _)) = best {
-                    for bucket in &mut result {
-                        bucket[0] = Some(v);
-                    }
-                    let mut minimum = None;
-                    for b in 0..n {
-                        if b != a {
-                            update(&mut minimum, value(pl, b));
-                        }
-                    }
-                    result[a][0] = minimum;
-                }
-            }
-        }
+        let reduction = reduce_entry(n, gt, pgt.get(row), ad, pl, &mut result)?;
+        let total = reduction.total;
+        let ploidy = reduction.ploidy;
         for a in 1..n {
             if let Some(ad) = &ad {
                 let alt = value(ad, a);
@@ -468,4 +559,416 @@ fn gq_from_pl(input: &Input) -> Result<ArrayRef> {
         output.append_value(second.wrapping_sub(minimum));
     }
     Ok(Arc::new(output.finish()))
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct MinRepresentation {
+    signature: Signature,
+    output: DataType,
+    properties: EvaluationProperties,
+}
+impl ScalarUDFImpl for MinRepresentation {
+    fn name(&self) -> &str {
+        "variant_min_rep"
+    }
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+    fn return_type(&self, _: &[DataType]) -> Result<DataType> {
+        Ok(self.output.clone())
+    }
+    fn invoke_with_args(&self, invocation: ScalarFunctionArgs) -> Result<ColumnarValue> {
+        if invocation.args.len() != 2 {
+            return exec_err!("minimum representation requires two arguments");
+        }
+        let rows = invocation
+            .args
+            .iter()
+            .find_map(|value| match value {
+                ColumnarValue::Array(array) => Some(array.len()),
+                ColumnarValue::Scalar(_) => None,
+            })
+            .unwrap_or(1);
+        let output = min_rep(&invocation.args, rows, &self.output)?;
+        if invocation
+            .args
+            .iter()
+            .all(|value| matches!(value, ColumnarValue::Scalar(_)))
+        {
+            Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                &output, 0,
+            )?))
+        } else {
+            Ok(ColumnarValue::Array(output))
+        }
+    }
+}
+
+#[derive(Debug)]
+struct EntryReductions {
+    signature: Signature,
+    output: DataType,
+    trace: bool,
+    trace_selected: bool,
+    properties: EvaluationProperties,
+}
+impl PartialEq for EntryReductions {
+    fn eq(&self, other: &Self) -> bool {
+        self.signature == other.signature
+            && self.output == other.output
+            && self.properties == other.properties
+    }
+}
+impl Eq for EntryReductions {}
+impl Hash for EntryReductions {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.signature.hash(state);
+        self.output.hash(state);
+        self.properties.hash(state);
+    }
+}
+impl ScalarUDFImpl for EntryReductions {
+    fn name(&self) -> &str {
+        "variant_entry"
+    }
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+    fn return_type(&self, _: &[DataType]) -> Result<DataType> {
+        Ok(self.output.clone())
+    }
+    fn invoke_with_args(&self, invocation: ScalarFunctionArgs) -> Result<ColumnarValue> {
+        if invocation.args.len() != 5 {
+            return exec_err!("entry reductions require five arguments");
+        }
+        let rows = invocation
+            .args
+            .iter()
+            .find_map(|v| match v {
+                ColumnarValue::Array(array) => Some(array.len()),
+                _ => None,
+            })
+            .unwrap_or(1);
+        let inputs = invocation
+            .args
+            .iter()
+            .map(Input::new)
+            .collect::<Result<Vec<_>>>()?;
+        if self.trace {
+            eprintln!("VAIL_VARIANT_ENTRY_REDUCE rows={rows}");
+        }
+        let output = entries(&inputs, rows, &self.output)?;
+        if invocation
+            .args
+            .iter()
+            .all(|v| matches!(v, ColumnarValue::Scalar(_)))
+        {
+            Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                output.as_ref(),
+                0,
+            )?))
+        } else {
+            Ok(ColumnarValue::Array(output))
+        }
+    }
+}
+pub(crate) fn selected_list_producer(function: &ScalarUDF) -> Option<&dyn SelectedListProducer> {
+    function
+        .inner()
+        .downcast_ref::<EntryReductions>()
+        .map(|kernel| kernel as &dyn SelectedListProducer)
+}
+
+fn source_index(domain: SourceDomain, row: usize, entry: usize) -> usize {
+    match domain {
+        SourceDomain::Scalar => 0,
+        SourceDomain::OriginalRow => row,
+        SourceDomain::OriginalEntry => entry,
+    }
+}
+fn argument_domain_matches(argument: &Argument, rows: usize, entries: usize) -> bool {
+    match (&argument.value, argument.domain) {
+        (ColumnarValue::Scalar(_), SourceDomain::Scalar) => true,
+        (ColumnarValue::Array(array), SourceDomain::OriginalRow) => array.len() == rows,
+        (ColumnarValue::Array(array), SourceDomain::OriginalEntry) => array.len() == entries,
+        _ => false,
+    }
+}
+#[derive(Clone, Copy)]
+struct PreparedReduction {
+    n: usize,
+    buckets: usize,
+    total: Option<i64>,
+    ploidy: Option<usize>,
+    has_pl: bool,
+}
+#[derive(Clone, Copy, Default)]
+struct Scratch {
+    entries: usize,
+    buckets: usize,
+    reduction: usize,
+    output_entries: usize,
+}
+// The check reads only source coordinates/counts, before native validation,
+// reductions, or output allocation. A refusal leaves the whole old route intact.
+fn selected_scratch(request: &Request<'_>, counts: &Int32Array) -> Option<Scratch> {
+    if request.parents.len() != request.selectors.len()
+        || request.parents.null_count() != 0
+        || request
+            .entry_validity
+            .is_some_and(|mask| mask.len() != request.entries.values().len())
+    {
+        return None;
+    }
+    let mut scratch = Scratch::default();
+    let mut at = 0;
+    while at < request.parents.len() {
+        let parent = usize::try_from(request.parents.value(at)).ok()?;
+        if parent >= request.entries.len() {
+            return None;
+        }
+        let mut stop = at + 1;
+        while stop < request.parents.len() && request.parents.value(stop) == parent as i32 {
+            stop += 1;
+        }
+        if request.entries.is_valid(parent) {
+            let offsets = request.entries.value_offsets();
+            let start = offsets[parent] as usize;
+            let end = offsets[parent + 1] as usize;
+            scratch.entries = scratch.entries.max(end - start);
+            scratch.output_entries = scratch
+                .output_entries
+                .checked_add((end - start).checked_mul(stop - at)?)?;
+            let mut buckets = 0usize;
+            for entry in start..end {
+                if request
+                    .entry_validity
+                    .is_some_and(|mask| !mask.is_valid(entry))
+                {
+                    continue;
+                }
+                let index = source_index(request.arguments[0].domain, parent, entry);
+                if counts.is_null(index) || counts.value(index) < 1 {
+                    return None;
+                }
+                let n = counts.value(index) as usize;
+                buckets = buckets.checked_add(n)?;
+                scratch.reduction = scratch.reduction.max(n);
+            }
+            scratch.buckets = scratch.buckets.max(buckets);
+        }
+        at = stop;
+    }
+    let bytes = scratch
+        .entries
+        .checked_mul(std::mem::size_of::<Option<PreparedReduction>>())?
+        .checked_add(
+            scratch
+                .buckets
+                .checked_mul(std::mem::size_of::<[Option<i32>; 3]>())?,
+        )?
+        .checked_add(
+            scratch
+                .reduction
+                .checked_mul(std::mem::size_of::<[Option<i32>; 3]>())?,
+        )?
+        .checked_add(3 * std::mem::size_of::<Vec<usize>>())?;
+    if bytes > request.max_scratch_bytes || scratch.output_entries > i32::MAX as usize / 3 {
+        return None;
+    }
+    Some(scratch)
+}
+fn selected_allele(index: i32, n: usize) -> Result<usize> {
+    let length = (n - 1) as i64;
+    let index = if index < 0 {
+        length + i64::from(index)
+    } else {
+        i64::from(index)
+    };
+    if index < 0 || index >= length {
+        return exec_err!("array index out of bounds");
+    }
+    Ok(index as usize + 1)
+}
+impl SelectedListProducer for EntryReductions {
+    fn selected_type(&self, fields: u64) -> Option<DataType> {
+        if fields != 3 {
+            return None;
+        }
+        let DataType::Struct(output) = &self.output else {
+            return None;
+        };
+        let mut selected = Vec::with_capacity(output.len());
+        for field in output {
+            let DataType::List(values) = field.data_type() else {
+                return None;
+            };
+            selected.push(
+                field
+                    .as_ref()
+                    .clone()
+                    .with_data_type(values.data_type().clone()),
+            );
+        }
+        Some(DataType::Struct(selected.into()))
+    }
+    fn evaluate_selected(&self, request: &Request<'_>) -> Result<Option<ArrayRef>> {
+        let Some(DataType::Struct(fields)) = self.selected_type(request.fields) else {
+            return Ok(None);
+        };
+        if request.arguments.len() != 5
+            || request.arguments.iter().any(|argument| {
+                !argument_domain_matches(
+                    argument,
+                    request.entries.len(),
+                    request.entries.values().len(),
+                )
+            })
+        {
+            return Ok(None);
+        }
+        let inputs = request
+            .arguments
+            .iter()
+            .map(|arg| Input::new(&arg.value))
+            .collect::<Result<Vec<_>>>()?;
+        let Ok(counts) = inputs[0].down::<Int32Array>() else {
+            return Ok(None);
+        };
+        let (Ok(gt), Ok(pgt), Ok(ad), Ok(pl)) = (
+            Int32Lists::new(&inputs[1]),
+            Int32Lists::new(&inputs[2]),
+            Int32Lists::new(&inputs[3]),
+            Int32Lists::new(&inputs[4]),
+        ) else {
+            return Ok(None);
+        };
+        let Some(scratch) = selected_scratch(request, counts) else {
+            return Ok(None);
+        };
+        let mut prepared = Vec::<Option<PreparedReduction>>::with_capacity(scratch.entries);
+        let mut buckets = Vec::<[Option<i32>; 3]>::with_capacity(scratch.buckets);
+        let mut reduction = Vec::<[Option<i32>; 3]>::with_capacity(scratch.reduction);
+        let mut ads = ListBuilder::with_capacity(
+            Int32Builder::with_capacity(scratch.output_entries * 2),
+            scratch.output_entries,
+        );
+        let mut pls = ListBuilder::with_capacity(
+            Int32Builder::with_capacity(scratch.output_entries * 3),
+            scratch.output_entries,
+        );
+        let mut valid = arrow_buffer::NullBufferBuilder::new(scratch.output_entries);
+        let mut reduced_entries = 0usize;
+        let mut at = 0;
+        while at < request.parents.len() {
+            let parent = request.parents.value(at) as usize;
+            let mut stop = at + 1;
+            while stop < request.parents.len() && request.parents.value(stop) == parent as i32 {
+                stop += 1;
+            }
+            if request.entries.is_null(parent) {
+                at = stop;
+                continue;
+            }
+            let offsets = request.entries.value_offsets();
+            let start = offsets[parent] as usize;
+            let end = offsets[parent + 1] as usize;
+            prepared.clear();
+            buckets.clear();
+            for entry in start..end {
+                if request
+                    .entry_validity
+                    .is_some_and(|mask| !mask.is_valid(entry))
+                {
+                    prepared.push(None);
+                    continue;
+                }
+                let index = |argument: usize| {
+                    source_index(request.arguments[argument].domain, parent, entry)
+                };
+                let n = counts.value(index(0)) as usize;
+                let gt = gt.get(index(1));
+                let pgt = pgt.get(index(2));
+                let ad = ad.get(index(3));
+                let pl = pl.get(index(4));
+                let state = reduce_entry(n, gt, pgt, ad, pl, &mut reduction)?;
+                let bucket_start = buckets.len();
+                buckets.extend_from_slice(&reduction);
+                prepared.push(Some(PreparedReduction {
+                    n,
+                    buckets: bucket_start,
+                    total: state.total,
+                    ploidy: state.ploidy,
+                    has_pl: pl.is_some(),
+                }));
+            }
+            if self.trace_selected {
+                reduced_entries += prepared.iter().flatten().count();
+            }
+            for selected in at..stop {
+                for (entry, state) in (start..end).zip(&prepared) {
+                    valid.append(state.is_some());
+                    let Some(state) = state else {
+                        ads.append(false);
+                        pls.append(false);
+                        continue;
+                    };
+                    if request.selectors.is_null(selected) {
+                        ads.append(false);
+                        pls.append(false);
+                        continue;
+                    }
+                    let allele = selected_allele(request.selectors.value(selected), state.n)?;
+                    let ad_index = source_index(request.arguments[3].domain, parent, entry);
+                    if let Some(ad) = ad.get(ad_index) {
+                        let alt = value(&ad, allele);
+                        let other = match alt {
+                            Some(alt) => Some(
+                                i32::try_from(state.total.unwrap() - i64::from(alt)).map_err(
+                                    |_| {
+                                        datafusion_common::exec_datafusion_err!(
+                                            "split_multi_hts AD total exceeds int32"
+                                        )
+                                    },
+                                )?,
+                            ),
+                            None => None,
+                        };
+                        ads.values().append_option(other);
+                        ads.values().append_option(alt);
+                        ads.append(true);
+                    } else {
+                        ads.append(false);
+                    }
+                    if state.has_pl && state.ploidy.is_some() {
+                        let width = if state.ploidy == Some(1) { 2 } else { 3 };
+                        for value in &buckets[state.buckets + allele][..width] {
+                            pls.values().append_option(*value);
+                        }
+                        pls.append(true);
+                    } else {
+                        pls.append(false);
+                    }
+                }
+            }
+            at = stop;
+        }
+        let ad = ads.finish();
+        let pl = pls.finish();
+        if self.trace_selected {
+            eprintln!(
+                "VAIL_SELECTED_LIST_PRODUCER parents={} reduced_entries={} output_entries={} ad_values={} pl_values={}",
+                request.parents.len(),
+                reduced_entries,
+                scratch.output_entries,
+                ad.values().len(),
+                pl.values().len()
+            );
+        }
+        Ok(Some(Arc::new(StructArray::try_new(
+            fields,
+            vec![Arc::new(ad), Arc::new(pl)],
+            valid.finish(),
+        )?)))
+    }
 }

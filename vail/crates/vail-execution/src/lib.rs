@@ -27,6 +27,8 @@ pub mod aggregate_contract;
 mod aggregate_identity;
 pub mod aggregates;
 mod aligned_matrix_map;
+mod indexed_batch;
+pub mod native_frame;
 pub use aligned_matrix_map::PreparedArrayProjection;
 pub mod array_aggregate_scan;
 mod array_fold;
@@ -40,8 +42,11 @@ mod expression_identity;
 pub mod expressions;
 mod kernel_identity;
 mod local_cse;
+mod coalesce_once;
 mod packed_count;
 pub mod logical_expr;
+pub mod selected_list_producer;
+pub mod selected_aligned_producer;
 mod matrix_arrays;
 mod native_bool;
 mod native_count_where;
@@ -581,3 +586,11 @@ pub fn supports_list_reducer(function: &str) -> bool {
 }
 mod variant_kernels;
 mod direct_hts;
+
+mod list_product_map;
+
+mod list_product_prepare;
+
+mod map_captures;
+mod list_dependencies;
+mod aligned_invariants;

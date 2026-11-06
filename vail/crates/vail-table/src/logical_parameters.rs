@@ -37,6 +37,12 @@ pub(crate) fn parameterize(
 ) -> datafusion_common::Result<LogicalPlan> {
     Ok(plan
         .transform_up_with_subqueries(|plan| {
+            // This node exposes closed scalar operands and owns a private row
+            // frame. Its identity/explain omit parameter payloads; inserting a
+            // row-dependent seed would violate its scalar argument contract.
+            if crate::early_aligned_product::is_node(&plan) {
+                return Ok(Transformed::no(plan));
+            }
             if plan.inputs().len() != 1 || plan.expressions().is_empty() {
                 return Ok(Transformed::no(plan));
             }

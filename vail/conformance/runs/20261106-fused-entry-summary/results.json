@@ -1,0 +1,707 @@
+{
+  "scope": {
+    "query": "split_multi_hts, original force_count_rows",
+    "input_rows": 1000,
+    "columns": 2535,
+    "partitions": 4,
+    "output_rows": 1035,
+    "cohort": "two fresh processes per mode; three warmups; five samples",
+    "not_full_published_suite": true
+  },
+  "paired": {
+    "original_vail": {
+      "wall_s": 0.412495958,
+      "observed_cpu_s": 1.214619128
+    },
+    "normal_vail": {
+      "wall_s": 0.158624875,
+      "observed_cpu_s": 0.437298836
+    },
+    "hail": {
+      "wall_s": 0.630856167,
+      "observed_cpu_s": 2.754299928
+    }
+  },
+  "speedup": {
+    "wall_vs_original": 2.600449,
+    "observed_cpu_vs_original": 2.777549,
+    "wall_vs_hail": 3.977032,
+    "observed_cpu_vs_hail": 6.298439
+  },
+  "normal_vail_environment": "no VAIL_EXPERIMENT_, VAIL_TRACE_, or VAIL_DISABLE_ variables",
+  "validation": {
+    "native": "complete Arrow values and metadata equal the preexisting reference",
+    "hail": "all entry-field aggregate summaries equal; not full row-wise equality"
+  },
+  "functional_gates": {
+    "python_passed": 474,
+    "pytest_subtests_passed": 10,
+    "full_output_oracles_passed": 12,
+    "table_rust_unit_passed": 48,
+    "table_resource_passed": 3,
+    "execution_component_passed": 27,
+    "manual_throughput_ignored": 1,
+    "component_policy": "Three selected-region fixtures explicitly prepare that policy; other ordinary cases unchanged"
+  },
+  "limitations": [
+    "Warmed laptop subset, not the full published benchmark or steady-state guarantee",
+    "Hail process medians 0.562549 and 0.699163 seconds; preserve all samples without noise attribution",
+    "CPU covers observed stable endpoints; unseen exited descendants may be omitted",
+    "RSS is sampled whole-process memory, not operator or whole-query memory accounting",
+    "A reproduced preexisting ordinary row-parent-mask bug remains separate and unfixed by this feature",
+    "Total thread settings differ: Vail Rayon4/Tokio32 and Hail Spark local[4]"
+  ],
+  "evidence": {
+    "hail_archive_manifest_v1_sha256": "21c7143464ffe4ae78bb0b07ab1b73443e0fd039c9d6223cb3eae44109c7979d",
+    "hail_archive_manifest_v2_sha256": "f10bd3a95c2273a2124c74fc8cd569fac5ded6be86cae69ce97df5126bd68a66",
+    "native_and_general_archive": "../20261105-early-aligned-product/72",
+    "hail_archive": "../20261105-hail-comparison-72",
+    "review_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f"
+  },
+  "native_disable_bookend": {
+    "63c-original-1": {
+      "processes": [
+        {
+          "wall": 0.4130621660151519,
+          "cpu": 1.1975490000000004,
+          "action": 0.37798862502677366,
+          "construction": 0.03507354098837823,
+          "peak_rss_bytes": 1099825152
+        },
+        {
+          "wall": 0.4160448749898933,
+          "cpu": 1.2034099999999999,
+          "action": 0.3808965829666704,
+          "construction": 0.035148292023222893,
+          "peak_rss_bytes": 1146109952
+        }
+      ],
+      "median": {
+        "wall": 0.4145535205025226,
+        "cpu": 1.2004795000000001,
+        "action": 0.379442603996722,
+        "construction": 0.03511091650580056,
+        "peak_rss_bytes": 1122967552.0
+      },
+      "gain_vs_original": {
+        "wall": 1.0,
+        "cpu": 1.0
+      }
+    },
+    "67-prefetch-1": {
+      "processes": [
+        {
+          "wall": 0.20920279098208994,
+          "cpu": 0.47280600000000006,
+          "action": 0.17416295799193904,
+          "construction": 0.0350398329901509,
+          "peak_rss_bytes": 656343040
+        },
+        {
+          "wall": 0.2078593749902211,
+          "cpu": 0.47396899999999986,
+          "action": 0.17301695799687877,
+          "construction": 0.03484241699334234,
+          "peak_rss_bytes": 659652608
+        }
+      ],
+      "median": {
+        "wall": 0.20853108298615552,
+        "cpu": 0.47338749999999996,
+        "action": 0.1735899579944089,
+        "construction": 0.03494112499174662,
+        "peak_rss_bytes": 657997824.0
+      },
+      "gain_vs_original": {
+        "wall": 1.987969920676262,
+        "cpu": 2.535934092049326
+      }
+    },
+    "72-default-1": {
+      "processes": [
+        {
+          "wall": 0.1577088750200346,
+          "cpu": 0.42552499999999993,
+          "action": 0.12267366598825902,
+          "construction": 0.03574362501967698,
+          "peak_rss_bytes": 634077184
+        },
+        {
+          "wall": 0.15629950002767146,
+          "cpu": 0.4247239999999999,
+          "action": 0.12155283300671726,
+          "construction": 0.03474666702095419,
+          "peak_rss_bytes": 629522432
+        }
+      ],
+      "median": {
+        "wall": 0.15700418752385303,
+        "cpu": 0.4251244999999999,
+        "action": 0.12211324949748814,
+        "construction": 0.03524514602031559,
+        "peak_rss_bytes": 631799808.0
+      },
+      "gain_vs_original": {
+        "wall": 2.640397858429993,
+        "cpu": 2.8238304308502578
+      }
+    },
+    "72-count-disabled-1": {
+      "processes": [
+        {
+          "wall": 0.30225158302346244,
+          "cpu": 0.4605379999999999,
+          "action": 0.2678161659860052,
+          "construction": 0.03454587497981265,
+          "peak_rss_bytes": 640237568
+        },
+        {
+          "wall": 0.30350133299361914,
+          "cpu": 0.4662020000000002,
+          "action": 0.2687657499918714,
+          "construction": 0.03464183397591114,
+          "peak_rss_bytes": 670515200
+        }
+      ],
+      "median": {
+        "wall": 0.3028764580085408,
+        "cpu": 0.46337000000000006,
+        "action": 0.2682909579889383,
+        "construction": 0.034593854477861896,
+        "peak_rss_bytes": 655376384.0
+      },
+      "gain_vs_original": {
+        "wall": 1.3687215019228487,
+        "cpu": 2.5907579256317845
+      }
+    },
+    "72-fusion-disabled-1": {
+      "processes": [
+        {
+          "wall": 0.3036355419899337,
+          "cpu": 0.9664479999999998,
+          "action": 0.2689444579882547,
+          "construction": 0.03469108400167897,
+          "peak_rss_bytes": 956989440
+        },
+        {
+          "wall": 0.3042756670038216,
+          "cpu": 0.9583979999999999,
+          "action": 0.2692171250237152,
+          "construction": 0.034844124980736524,
+          "peak_rss_bytes": 945258496
+        }
+      ],
+      "median": {
+        "wall": 0.30395560449687764,
+        "cpu": 0.9624229999999998,
+        "action": 0.26908079150598496,
+        "construction": 0.03476760449120775,
+        "peak_rss_bytes": 951123968.0
+      },
+      "gain_vs_original": {
+        "wall": 1.363862071859843,
+        "cpu": 1.2473512166687624
+      }
+    },
+    "72-both-disabled-1": {
+      "processes": [
+        {
+          "wall": 0.3552309590158984,
+          "cpu": 1.0185880000000003,
+          "action": 0.3206072500324808,
+          "construction": 0.0346237089834176,
+          "peak_rss_bytes": 1088503808
+        },
+        {
+          "wall": 0.3551387920160778,
+          "cpu": 1.020855,
+          "action": 0.32038758299313486,
+          "construction": 0.03475120902294293,
+          "peak_rss_bytes": 1047707648
+        }
+      ],
+      "median": {
+        "wall": 0.3551848755159881,
+        "cpu": 1.0197215000000002,
+        "action": 0.32049741651280783,
+        "construction": 0.034687459003180265,
+        "peak_rss_bytes": 1068105728.0
+      },
+      "gain_vs_original": {
+        "wall": 1.1671485726983386,
+        "cpu": 1.1772621250017774
+      }
+    }
+  },
+  "general_controls": {
+    "entry-only": {
+      "False": {
+        "processes": [
+          {
+            "wall": 0.002447791979648173,
+            "cpu": 0.002603999999999995,
+            "whole_process_peak_rss_bytes": 150700032
+          },
+          {
+            "wall": 0.002346833993215114,
+            "cpu": 0.0024809999999999555,
+            "whole_process_peak_rss_bytes": 150372352
+          }
+        ],
+        "median": {
+          "wall": 0.0023973129864316434,
+          "cpu": 0.0025424999999999753,
+          "whole_process_peak_rss_bytes": 150536192.0
+        }
+      },
+      "True": {
+        "processes": [
+          {
+            "wall": 0.002342750027310103,
+            "cpu": 0.0024700000000000277,
+            "whole_process_peak_rss_bytes": 150454272
+          },
+          {
+            "wall": 0.0023954169591888785,
+            "cpu": 0.0025330000000000075,
+            "whole_process_peak_rss_bytes": 150798336
+          }
+        ],
+        "median": {
+          "wall": 0.002369083493249491,
+          "cpu": 0.0025015000000000176,
+          "whole_process_peak_rss_bytes": 150626304.0
+        }
+      },
+      "speedup": {
+        "wall": 1.011915786532045,
+        "cpu": 1.0163901659004426
+      }
+    },
+    "expand3": {
+      "False": {
+        "processes": [
+          {
+            "wall": 0.005724999995436519,
+            "cpu": 0.0066569999999999685,
+            "whole_process_peak_rss_bytes": 173686784
+          },
+          {
+            "wall": 0.005723042006138712,
+            "cpu": 0.006618000000000013,
+            "whole_process_peak_rss_bytes": 172392448
+          }
+        ],
+        "median": {
+          "wall": 0.005724021000787616,
+          "cpu": 0.006637499999999991,
+          "whole_process_peak_rss_bytes": 173039616.0
+        }
+      },
+      "True": {
+        "processes": [
+          {
+            "wall": 0.005108500015921891,
+            "cpu": 0.005814999999999959,
+            "whole_process_peak_rss_bytes": 171458560
+          },
+          {
+            "wall": 0.005170250020455569,
+            "cpu": 0.005867999999999984,
+            "whole_process_peak_rss_bytes": 171802624
+          }
+        ],
+        "median": {
+          "wall": 0.00513937501818873,
+          "cpu": 0.005841499999999972,
+          "whole_process_peak_rss_bytes": 171630592.0
+        }
+      },
+      "speedup": {
+        "wall": 1.1137581866530013,
+        "cpu": 1.136266369939232
+      }
+    },
+    "expand8": {
+      "False": {
+        "processes": [
+          {
+            "wall": 0.00790837500244379,
+            "cpu": 0.010888000000000009,
+            "whole_process_peak_rss_bytes": 277757952
+          },
+          {
+            "wall": 0.007829667010810226,
+            "cpu": 0.010793000000000053,
+            "whole_process_peak_rss_bytes": 276791296
+          }
+        ],
+        "median": {
+          "wall": 0.007869021006627008,
+          "cpu": 0.01084050000000003,
+          "whole_process_peak_rss_bytes": 277274624.0
+        }
+      },
+      "True": {
+        "processes": [
+          {
+            "wall": 0.006315708975307643,
+            "cpu": 0.007996000000000003,
+            "whole_process_peak_rss_bytes": 276037632
+          },
+          {
+            "wall": 0.0062358329887501895,
+            "cpu": 0.00793900000000003,
+            "whole_process_peak_rss_bytes": 272138240
+          }
+        ],
+        "median": {
+          "wall": 0.0062757709820289165,
+          "cpu": 0.007967500000000016,
+          "whole_process_peak_rss_bytes": 274087936.0
+        }
+      },
+      "speedup": {
+        "wall": 1.2538731940920833,
+        "cpu": 1.3605898964543468
+      }
+    }
+  },
+  "measured_snapshot_sha256": {
+    "vail/Cargo.lock": "d111df81ab8eda6178a7598079af40df548f70635a03cfecb3125b1dd460a973",
+    "vail/Cargo.toml": "703809e58d527752f429e79c932f11f8b7d28aaec7695431cfedea89dac41c24",
+    "vail/crates/vail-execution/Cargo.toml": "d62486c5b388aa74e841ccca6e6a29fc6f681a6bd6df91d6974ef0b5829ec9c3",
+    "vail/crates/vail-execution/examples/list_set_hidden_parent.rs": "81b788f7d6a49a565f4f5e258232e99927a88d37f86be451d9d61b89b712b15b",
+    "vail/crates/vail-execution/examples/ordered_table.rs": "0977e0cd953dbbdc7b0607000198ebfb1095d8508094d176e0499ef3a397792a",
+    "vail/crates/vail-execution/examples/reference_validation_cost.rs": "3aca8dc1d6fbca8f87229f2aa3f88d75fb544c6f8d78453c108f2912381f7c4b",
+    "vail/crates/vail-execution/src/advanced_collection_aggregates.rs": "2dc1c9587c4f8f6681c4f88749011e991d509c22c01008cf289e0f23aec41c26",
+    "vail/crates/vail-execution/src/advanced_genomic_aggregates.rs": "7864654c0671c3895241ba212efb0394484098b1f4ccfed454c8c4da8ebbe394",
+    "vail/crates/vail-execution/src/advanced_numeric_aggregates.rs": "7b6eb5b5d3b4b84f2526a3991c1190c97de844e4d41317714e4012ec2a5a508f",
+    "vail/crates/vail-execution/src/aggregate_contract.rs": "9b7a637137ef80fc5f846a7cf7cfcb8040d3c8a1671f8741789afad5a83d783c",
+    "vail/crates/vail-execution/src/aggregate_identity.rs": "77186a77ca563d6ef71743453b0ceef2851a55a26daf5e264d5973219ac3fe42",
+    "vail/crates/vail-execution/src/aggregates.rs": "1b9219ab10ad99f537b24c6010427cd8fa1458fdde9bce267f35ff97c5b3d34e",
+    "vail/crates/vail-execution/src/aligned_invariants.rs": "7c0f8c1c4a898358c49b6b86d30edbe3cfed1c425b40eea3930d14dde14a3fa4",
+    "vail/crates/vail-execution/src/aligned_matrix_map.rs": "8ee8a2c0050edea7f867e1e0bd7d70e12ec222bed530244f2205c34090c89b78",
+    "vail/crates/vail-execution/src/array_aggregate.rs": "7767467dccdff920bb7365c5f273d0f2c2eab872274dbcd3e4e64e6f2e9c4539",
+    "vail/crates/vail-execution/src/array_aggregate_scan.rs": "65f7f6f2fdeb6e6a98daf9f2a084da13302c6e1d663940f18592ee289b18ddd9",
+    "vail/crates/vail-execution/src/array_fold.rs": "a5291d602ed8058704e425c986f8e6624f5a6a5a5ed69e7694d57cbda39469ab",
+    "vail/crates/vail-execution/src/array_length.rs": "7f491f86e562949fe11bb5fa30fbcccc2efe44287ef34c75f5f467ff8e0cd353",
+    "vail/crates/vail-execution/src/array_length_aggregate.rs": "955fbe9e506780e476aa36ec13faa8225f72d13c6afd78a3ee0211dfa3db036b",
+    "vail/crates/vail-execution/src/calls.rs": "04cd4596f77e773c74203cde2e3d7105ecb9e66cbd98c6cc55282e2f390ae685",
+    "vail/crates/vail-execution/src/coalesce_once.rs": "ee3ad75a703c7c5d44511bad4171c14caf0332842deeec5bd1520f786751e1cd",
+    "vail/crates/vail-execution/src/collection_grouped.rs": "81e5e40fe9121fe0008ab913fe319f9ca159dc0ddef34928aa7a357ea1c64664",
+    "vail/crates/vail-execution/src/collection_groups.rs": "42f8ab9afa420a76e6c741d2dde72e51e0809467f46dde2d8667b883bfb6fe72",
+    "vail/crates/vail-execution/src/collection_lookup.rs": "c14db212ca8c58ac911f423bacd383769aed1b3b5f7b8daa034a523cc98e6ca1",
+    "vail/crates/vail-execution/src/conditionals.rs": "6f67be327c6438b376a2c525218067924fe86fc1ab5313cd107f8bc673c6429c",
+    "vail/crates/vail-execution/src/coordinate_collect.rs": "0d356f3887bf8f90a690bcbcdafcb6f80580e2f5f13d4e736c8d4dd58814cfab",
+    "vail/crates/vail-execution/src/coordinate_extrema.rs": "23d042de3b9e3d64bcc13231b9532100b33b48fcec84a3e9e88c90fe4742e690",
+    "vail/crates/vail-execution/src/coordinate_stddev.rs": "e967576db0cd7b10da8889dcf180f93ee1c95a04e99042cc81c625de859324ba",
+    "vail/crates/vail-execution/src/coordinate_take.rs": "fabdf4e346b5bc555cb26e38774b8089c8f71d44fdf6d0288193e99db7b35046",
+    "vail/crates/vail-execution/src/csv_line.rs": "62701c6b1908c4e61be9b0691c3e5496efbaf44cd6f4ae895c14e66870a9ce52",
+    "vail/crates/vail-execution/src/direct_hts.rs": "eda35a7ed595c99998e8ced775c0d0f78715ad637813312408f6f4e7ec6b78a9",
+    "vail/crates/vail-execution/src/expression_effects.rs": "d24f9e017c533cf351dbff4cc1b8d0848383e891d484e2c6bfe8f713f5dd539a",
+    "vail/crates/vail-execution/src/expression_identity.rs": "72174d1317f070d6b83906c56ea488dfff20093ef87a328ed96a1eed27fce21e",
+    "vail/crates/vail-execution/src/expressions.rs": "f48a226b49eed05ec839c36153bb3a6e59d518e4ab960f1681fb31a7c319d4ec",
+    "vail/crates/vail-execution/src/fold_aggregate.rs": "d56ca07499a0697ad9c92ef4c107199f5401940f12d36c2d5a348cfab221d09b",
+    "vail/crates/vail-execution/src/fraction.rs": "7fde309320ff2c1e8738c46ea0594b1694abd3c452cba06192b7ef3163e89df2",
+    "vail/crates/vail-execution/src/hwe_counts.rs": "52a916d6f4417918dda7f8591b51fbb27d4a67a4b93a9e86c0a0554023319618",
+    "vail/crates/vail-execution/src/indexed_batch.rs": "2ef03696c8822f881f8f6bd84e23b3788d96148c8b95e31eb47ca91bf350158d",
+    "vail/crates/vail-execution/src/integer_import.rs": "df899c26dfa250eb4da59625b7ebf85843c923a724f81e7b420a1ad567d49723",
+    "vail/crates/vail-execution/src/integer_list_sum.rs": "5c5a51cf337b20e331a518c6ecdb8efc8b289fe4edc9ce75459da9aaed13becc",
+    "vail/crates/vail-execution/src/json_io.rs": "31bb1579b9100146a6267bee33a159b3dd4c127253248f7729251cc031d03c92",
+    "vail/crates/vail-execution/src/kernel_identity.rs": "3c174788a356f2d8b34aab7155c81667b54a7e98a208890cf1a1691a6a90f2f6",
+    "vail/crates/vail-execution/src/lib.rs": "efc24cf114a9f5e614ebe2be13bb6950949eca7eab0ed61e7bb838da11af9ed9",
+    "vail/crates/vail-execution/src/list_aggregate.rs": "26fa7fc9a44191a0e106e2126be16255a5a956f9cb6e07f4bda2f417de0e57a1",
+    "vail/crates/vail-execution/src/list_aggregate/compact.rs": "731a1b2122678f4694d5ee44d7c772ad8fea133a64160748ddadb92ab085b650",
+    "vail/crates/vail-execution/src/list_aggregate/direct.rs": "6f639695001b1a815d6f8530d4b97603e75f87bcc106f1c26ea6794941564c33",
+    "vail/crates/vail-execution/src/list_dependencies.rs": "3932adec389a44b3ebc2c1006ba7d98836ae4d9247ab9d6087bd43792db55619",
+    "vail/crates/vail-execution/src/list_product_map.rs": "eaed489555e443b809608f0605f0cc77a957cd13f71109059aab3906ca9d97bf",
+    "vail/crates/vail-execution/src/list_product_prepare.rs": "e349bddf315f8553855532d179ee1eb09df17849f51c3e138441a07f478f041b",
+    "vail/crates/vail-execution/src/local_cse.rs": "39c2790abc0bae2ba3321b1e25de4b01438f70b9e167df0affa91791878d3489",
+    "vail/crates/vail-execution/src/logical_expr.rs": "8d7c927f7f083cdb0242ea77b766af611b8517936936c0fcd7eb7ee44777c5b7",
+    "vail/crates/vail-execution/src/map_captures.rs": "0a658160adab8eef2c19a727a4d9556c2b999f7a47309d9593b62d4a741f3825",
+    "vail/crates/vail-execution/src/matrix_arrays.rs": "22a04941737b43312e9dacff14985fa6086dabf47c0ecd689352fd8abe34f96c",
+    "vail/crates/vail-execution/src/matrix_transpose.rs": "662e2b489fd67f4ddd1516e1308ae6c746ac1f883f9bd13adf1ca7bd831b5ba7",
+    "vail/crates/vail-execution/src/native_bool.rs": "a08cd0c644f3986b4aba3090b5457078cb61f4dc9a2cc0c64989352c7dc64278",
+    "vail/crates/vail-execution/src/native_count_where.rs": "ecbbd22a4599ef6ea968f834e4803f2cc4f7c705bb5f05ee12867c7afabc0eb4",
+    "vail/crates/vail-execution/src/native_frame.rs": "d22b2a82acd8642d2fc25d44f8cce287e142588f096081637d88ed8ca3058523",
+    "vail/crates/vail-execution/src/native_mean.rs": "58783fade133c2d7e41fa468dc4da9334f8fbf21f26df379bec2b69142441dc9",
+    "vail/crates/vail-execution/src/native_stddev.rs": "c009f4e7690e930ccc3abbbe6d600a3cf2faba35bfd9494a078a2e7ce6cffa84",
+    "vail/crates/vail-execution/src/ndarray.rs": "7dea87b11191bf0ff081530beff0341fea5c441a9c56d40e05955eca4f45cec1",
+    "vail/crates/vail-execution/src/numeric_lists.rs": "7522a7b9bd2a4da0a7d0aaaeb0502acc0025077db13ff1db9b293958f470c5c7",
+    "vail/crates/vail-execution/src/packed_count.rs": "986d6b27c7fa7cf03a46b9c4c98d7165c4edcad78b3e843182c55b64b6ad180d",
+    "vail/crates/vail-execution/src/randomness.rs": "96706f779feb0b7a170d5a5b68995e7c95db03f02ce2b3d8aba37cc00a5b681d",
+    "vail/crates/vail-execution/src/randomness_binding.rs": "4988f6589a7a01f719241c552f6dcbb46f5b2dfd2623d927d29398dab2750a7c",
+    "vail/crates/vail-execution/src/reducer.rs": "1a2a5dd5cb9af0cfd38e6f964c51822bdddb837f75ce668f975f88cdeac97c37",
+    "vail/crates/vail-execution/src/reference.rs": "7fe724456b01eccce6874e1900f8b8852b7b902ef45d818b66dfc3044b9acb85",
+    "vail/crates/vail-execution/src/scan_scopes.rs": "ea907fad10a81924ca5635a2c1f77ffc47d37784e0ef8a9e4977ab8ad4e96dd2",
+    "vail/crates/vail-execution/src/scan_state.rs": "e83995fce2216531b4fd170a8b8954be0e46e251938660765b1325724840181d",
+    "vail/crates/vail-execution/src/selected_aligned_producer.rs": "bcd645159fa953781244aef9e4da3e41b6bf346c6427b44374071c439e1742a0",
+    "vail/crates/vail-execution/src/selected_list_producer.rs": "d562d4d473876c4373febbff926926e3cf6b4c947e01157616469d237c9ae351",
+    "vail/crates/vail-execution/src/string_kernels.rs": "44efe5469332eb14c3a9050717955227c03ba95ed4503897ff47b36b9c9b1f6b",
+    "vail/crates/vail-execution/src/variant_kernels.rs": "17f73f6139fc681c85005aa5004b6a593b4278d04a1d72ea5bc5726704c7a540",
+    "vail/crates/vail-execution/tests/aggregate_factories.rs": "8f1559c1f6d573f7fa834699b8062002b1b8dda8b18395d6436642d5b0891fd7",
+    "vail/crates/vail-execution/tests/array_methods.rs": "42071df01ed66df32ea71c27b2cdb6739a6a5958287493849343d7b443f53033",
+    "vail/crates/vail-execution/tests/call_allocations.rs": "f1daa264389eaa58d224e60548a9df1115eb9bdd3a9aa905313948640887372e",
+    "vail/crates/vail-execution/tests/closed_physical_constants.rs": "ea05aac14d61bc3432148cff93aed3f12cb2ccc740a8d5d78784f54135b66665",
+    "vail/crates/vail-execution/tests/collection_aggregates.rs": "3b7ac1ff0edf5bcad536be6bd285769b03e5c4aa744356e9dda6145d5b453a98",
+    "vail/crates/vail-execution/tests/collection_functions.rs": "38888c37c01834751d026a35105409c7798e53f0ad5148faa7808618cebcb179",
+    "vail/crates/vail-execution/tests/common/indexed_batch.rs": "61a657b337a009e24c99deb1fac265a40775c918ed10b990bfe5602eefa9f407",
+    "vail/crates/vail-execution/tests/conditionals.rs": "834d71dda6b87e52d9ee3a5ee1c33df0010bfbac0af5e6937b72a99c415aa0f9",
+    "vail/crates/vail-execution/tests/coordinate_reducer_states.rs": "dc17a678b1b0dd078c7cc73f2f7f8f8d3842b6e11ccc7797fcea4eacbdaae26c",
+    "vail/crates/vail-execution/tests/core_aggregates.rs": "bca4cf21cf3d87f84ba7f844c69b3029f18ec9621624725dbe46ce5051713333",
+    "vail/crates/vail-execution/tests/csv_line.rs": "a4752ce618748bb77e46eaedf71cf82b38288b4b2586794a15abb7bb50950e41",
+    "vail/crates/vail-execution/tests/finite_stddev.rs": "9a9d3119e6374a373ba539c8121dbde3d85113cc11978766bd5f4d3ef67a1954",
+    "vail/crates/vail-execution/tests/gq_from_pl.rs": "bf1ee6292da2714d001a08100edd1aca558a34d62efa9f3278d64138bbaa218b",
+    "vail/crates/vail-execution/tests/indexed_batch.rs": "a6daf82979df69ff8a6ebab3230e1d4c6d54b89fd138fe96308423f183990ebc",
+    "vail/crates/vail-execution/tests/list_indexing.rs": "8e60a7b7d9e796475cf7ee94058f16e29505e2712e24889b1da8ba36ab7c1be5",
+    "vail/crates/vail-execution/tests/list_reductions.rs": "ba84630c670b17a10afc0110f6f86b45e9c3db988eb1dc871a6cfb91d70d4f32",
+    "vail/crates/vail-execution/tests/local_lambda_cse.rs": "049bddff89356ddf9262d27f67bf8ec86c044e73fc47e94030b54e1c22521db6",
+    "vail/crates/vail-execution/tests/matrix_layout.rs": "f1abbb14102c9ad4d5d405e9ea0544b9aa6cc3fdbac8e1a3abaa2a32b4e54ff7",
+    "vail/crates/vail-execution/tests/numeric_aggregates.rs": "d471f0e87a76965f43d61a7ceff95cba078394dc194bc192807b4e298f074887",
+    "vail/crates/vail-execution/tests/outer_array_length.rs": "987fd9d78e7171123a0ee0459cc725448a099fc4eba97b1703e2965f88f31e07",
+    "vail/crates/vail-execution/tests/owning_coordinate_sum.rs": "c271ec480b56f0ed5498167ea15c5345c77844f0cb26d490318db3fe43ab5df4",
+    "vail/crates/vail-execution/tests/packed_coordinate_counts.rs": "cfba410883a6d9c380c0379a753199690f48fb04236c15530277c75fb7896da1",
+    "vail/crates/vail-execution/tests/reference.rs": "c5fc7f490137236e3d3ae8ac19fa9d0f87698e4a19e739146e1e91c75bfb453e",
+    "vail/crates/vail-execution/tests/scan_scopes.rs": "771da7ad33412325a6a5bb51cd56b77cff938d86dfc335868bb2b8d9b1dfb8a4",
+    "vail/crates/vail-execution/tests/semantic_preparation.rs": "777bac594846d928ce0d9b48dc01d31baa5ff6721f44b5b998869a33a0e6af64",
+    "vail/crates/vail-execution/tests/string_operations.rs": "6530ee5ff7b8bc96f9bff5125cef5055c3ddde2b83a37dec0b6c3670a1906a29",
+    "vail/crates/vail-execution/tests/tuple_operations.rs": "b09c8e273ff26430c667985e4126dd8fbbd0c4c92754c086dc4e19852a0a7851",
+    "vail/crates/vail-execution/tests/type_contracts.rs": "7bceda38da25dbd2a8d7733f5d94c2008cf7c36348c5f63c329d7a4168bc5566",
+    "vail/crates/vail-execution/tests/variant_operations.rs": "2db0a0258738ffa9d36c6af1cab4ecf7b542cf5aabd74f0d180ad63c44d952c2",
+    "vail/crates/vail-ordering/Cargo.toml": "b44de2734bb0ea041c3dced2ad04cadcc9b6bac0969a8295a885f57043d8b54a",
+    "vail/crates/vail-ordering/src/call.rs": "773bcc6fb17e9f7d83487ca12a4a0f2c2ffb7fc6b43bc7ffdab0d3dbcc64dc2e",
+    "vail/crates/vail-ordering/src/lib.rs": "4a091a769f49e6bb6f8423704b3989b1ee8c5d2602f292a58a98661ae1113801",
+    "vail/crates/vail-ordering/tests/metadata.rs": "7f194689120eec221cb911afb85c9bcf824826659c706987114b2e8b2410fdad",
+    "vail/crates/vail-python/Cargo.toml": "02febede6d1e456c5d439595ab27c3e6956082474604285c240a6d3a9ccbf038",
+    "vail/crates/vail-python/src/arrow_memory.rs": "1d5716404a9165ad0e153598eeecba585d43488feb025e245f430bf22245fdfb",
+    "vail/crates/vail-python/src/collection_aggregate.rs": "a25e120f70637ef2e8007bdf9847e8fd0f95940841d093c8aa9317c0009329ee",
+    "vail/crates/vail-python/src/input_binding.rs": "60d0b24a817bc14bbd0b529372ce81c78bc4e5736e3aa04135c04d3570a6cead",
+    "vail/crates/vail-python/src/ir_view.rs": "7202ffb5c3de46e9162a3f290e70d4559d62c2bb3fe1a6cef3a1d18ca3983a7c",
+    "vail/crates/vail-python/src/lib.rs": "07795b22c539f15d6c3da0c473c90ebd2e0fb2400cfbabfc18f0aa4cf38b2f6f",
+    "vail/crates/vail-python/src/native_ir.rs": "f447f1ad084ef68af23210ab14ecb8b2e85e5e98c1798a73e36d5a8fd33a382a",
+    "vail/crates/vail-python/src/random_binding.rs": "867aab22922fa85b4839e71a685f527ff9f5e72009dae0300a0448c1bd1bdfa3",
+    "vail/crates/vail-python/src/scan_mark.rs": "b5f868a48022f0484ac19569beb08fd02573540ce3636c26cfdbc324779f1ae6",
+    "vail/crates/vail-storage/Cargo.toml": "2a02fbe12005044ac2dcd587702974bf9157a80870e594868c6a53d6b7b4e312",
+    "vail/crates/vail-storage/examples/local_roundtrip.rs": "ad60be36535758d5d9118ff38c738031eed8e1f9f5234c6fb903046d768a9d33",
+    "vail/crates/vail-storage/examples/native_list_shape.rs": "4dca064ca20e0ec67fc2ca14dfcf109892edcdb5a39d99485cfcb7865bfe46d8",
+    "vail/crates/vail-storage/src/computed_capability.rs": "52f765837e788c8829b114edc8d8243f0519ca7616a65900165970d2eff2d45d",
+    "vail/crates/vail-storage/src/fragment_index.rs": "85e9c01b41eca520e9a4ebcea95c3a5f81f56c8bcc7d052248baddec94595144",
+    "vail/crates/vail-storage/src/globals.rs": "688715ba64b82506ad3baa73431006e032ad131d5b78ad912c234ea55b1a03fb",
+    "vail/crates/vail-storage/src/legacy/decode.rs": "d3557123fc545d51ca611fb2a86efc74a10cb4b97d9dacde9d1002b9c76d7f00",
+    "vail/crates/vail-storage/src/legacy/index.rs": "c041cce1681b6bf670a4247158fd4171fe058316f546a54874c62cc4826ea5ec",
+    "vail/crates/vail-storage/src/legacy/input.rs": "74a0bf91b0a62a84bc723172eae0d48371fb7027e7b4751584eb9a696a83aac9",
+    "vail/crates/vail-storage/src/legacy/layout.rs": "482f79ea0becff1655735d6ecb7e9f4cf9a3347350000615cbf9517fd8b65baa",
+    "vail/crates/vail-storage/src/legacy/matrix_layout.rs": "87ad5497a2ca09c9b339550cac633570b0e78bb76a3f963787d7dbc9af52ca48",
+    "vail/crates/vail-storage/src/legacy/mod.rs": "e154e126c806df5f8a60532f7d1e6ab7fd63704cb2923aa70c29b940888850ea",
+    "vail/crates/vail-storage/src/legacy/packed_call.rs": "26a13406b6aca8dda3d7b3979361a6a91ffbc8d72b532addce305ed0f8b1aaf8",
+    "vail/crates/vail-storage/src/legacy/schema.rs": "ba26eea8f432096b3f167c5ed580910ffd8103ee02546ee818e47fab91879ac5",
+    "vail/crates/vail-storage/src/lib.rs": "d26fb4f7c52a38a13851740b4e61e1f05e828d4162a23658ddbb2ae07a021231",
+    "vail/crates/vail-storage/src/local_table.rs": "fb021cf414fbb2cf153499f8ebfd46767ddfc404864dd252d10ea1481f0b71d2",
+    "vail/crates/vail-storage/tests/arrow_struct_slices.rs": "ef4a537c9fe81f47227d3f3b06ee1fa4ccdec24e9dd04d1868c4820eed35d457",
+    "vail/crates/vail-storage/tests/globals.rs": "65e0748566be0fde57c6e137c2035d1ea33c2047a9b644d6fc8fe73c51ae0465",
+    "vail/crates/vail-storage/tests/legacy_ndarray_public.rs": "f2411af9f9a022b106318dce46754fbb93b8e21678ef2bd2a947a8a2d1f9be46",
+    "vail/crates/vail-storage/tests/legacy_reader_public.rs": "5240d9b1b62ba42d3fba1e6c783072a404de904fdc17281eec00152db31430ce",
+    "vail/crates/vail-storage/tests/native_list_evolution.rs": "9fdac912ecafc9032a42232982595fae2276115709559322d50c7004660e205e",
+    "vail/crates/vail-storage/tests/roundtrip.rs": "b8e2fb5a5a7e1cbed6d14105b96e8418040ccf93287db4235961edf3610e1fec",
+    "vail/crates/vail-storage/tests/streaming_write.rs": "a7e3c60861552d9448ef3bd115fdbfe87020dd8d6dbbd9945bc6cd595db3a234",
+    "vail/crates/vail-storage/tests/struct_validity.rs": "0900a5975f1f765b1adba8ed9a1ded348c5c2165469d59152ad4c890d169cd87",
+    "vail/crates/vail-storage/tests/vortex_comparison_audit.rs": "d70ea864b2352de0baa9b16d6aa5ba209de5be798043c6f23ed10d175ecc17fd",
+    "vail/crates/vail-table/Cargo.toml": "903ffbb070bd71031a3297b466bc2bcdfb03e0d195e0ffbaf366b5ce8e18861f",
+    "vail/crates/vail-table/examples/bench_encoded_sum.rs": "088d06954cc45a86bee3b46ab1ae41cc6d440b8b2f50b0582656217f4c7515f8",
+    "vail/crates/vail-table/examples/bench_list_clip.rs": "8869c056db571c4c122451db909569a78de13c063dfd610cdc9d72734f58d4d5",
+    "vail/crates/vail-table/examples/bench_sparse_dictionary.rs": "faa633619d2ad16bd33f0ca684bc87bc92e3030d44f320b94cba25285dd5feb9",
+    "vail/crates/vail-table/examples/datafusion_order_audit.rs": "8e006c2d80941628feb7d4af4ffb7806fd527f45550a87636e72713b2e69d971",
+    "vail/crates/vail-table/examples/inspect_dense_projection.rs": "89d0c86c57e0bb328241f1f0f5ab4b56fda29f20f0d2b2092f6e3bd139bc4f45",
+    "vail/crates/vail-table/examples/inspect_encoded_list.rs": "fa8f40e85894bba91edf755a1c4a8df57f20aabb66311188a79564048e02ffa6",
+    "vail/crates/vail-table/examples/prepare_single_source.rs": "9c59680306b9ea3ef3c3ee46556748ca0e529208f824d3c01e1f7a1ad057a45c",
+    "vail/crates/vail-table/src/action_demand.rs": "313099a3a000697219a46f0271f2181b9c5e87acb42034843b4f444cedd7e5ca",
+    "vail/crates/vail-table/src/action_parameters.rs": "8dbf456a476273ddb4807f59ff62a60d1fc7b95627bf5f5300632de50f6c916c",
+    "vail/crates/vail-table/src/aggregate_singleton.rs": "03235a15adee295aefcf0bcfb54cbb54c19d44764ec49f4c905c0eae52241ef0",
+    "vail/crates/vail-table/src/aggregation.rs": "5ecc1dcf633b95ad41581a595c4be4826f05c84fe63b37c2f5814e982ffe6502",
+    "vail/crates/vail-table/src/arrow_batches.rs": "97d8d3166ea402d7aa945113fac14b446b0326698129440e482e3e6a808c9277",
+    "vail/crates/vail-table/src/avro_source.rs": "d1a25c3c63b791bd6bfca8b7fe9579136827ce5d883c7f22b4eddf025fa930c0",
+    "vail/crates/vail-table/src/bgen_export.rs": "3535f396a183e647aae136ae5f3d5ab23ce2f1707282c4751aee5c6f87ac005c",
+    "vail/crates/vail-table/src/bgen_select.rs": "4769fbd032556d2a05b5852ee74ecdc87e0bafd21e7be864c30ba0a90da256df",
+    "vail/crates/vail-table/src/bgen_source.rs": "6412cf8c80c3c7a1ab454fc26600b5c2329879b1e9da3f0ff3fec62acd25aef8",
+    "vail/crates/vail-table/src/bgzf_lines.rs": "08607df52a91f664a5828ffffcf5a142c5348bdb080a633a9ec5773c70f45c88",
+    "vail/crates/vail-table/src/bounded_prefetch.rs": "cd0ebc6226a94a809150dbafaa0e6482c99165bf1b639dc24a725ee7eef08b58",
+    "vail/crates/vail-table/src/bounded_prefetch_tests.rs": "aa28f8a03cb98c2c5eb7cc890abcc83a11c3973ae05e9e571e4070b99006ba33",
+    "vail/crates/vail-table/src/comparison.rs": "292b2d631152fe2e5f3d57713fe3bfa2234fdb7e6bb98760136108911176c474",
+    "vail/crates/vail-table/src/compressed_text.rs": "25edf65b2efb991f10535a8f28f4316b84d20e65eb98be5086c67764c8d395a4",
+    "vail/crates/vail-table/src/computed_source.rs": "8fa24ca9de562eb279a7cc4c08d758c64fdfe186601506a5116b68d0f3f41ccd",
+    "vail/crates/vail-table/src/conditional_globals.rs": "a059ba57d658789f2385b5d20e7d607b060688999ca3a83247e224aac47a1a17",
+    "vail/crates/vail-table/src/count_explode.rs": "c063a8fc7a0ddf0ddc76c35a7584f94ed05b3e92bc3e06342b7381aac44e135b",
+    "vail/crates/vail-table/src/diagnostics.rs": "d9cb8353b3ad1a472c0e27890a2ed5a74d89f91a14901090fb66153b38d0cce0",
+    "vail/crates/vail-table/src/early_aligned_product.rs": "1619521dfd1e16689207a58836b788bbcf5f928dd793ba543c1ec5464d28d66c",
+    "vail/crates/vail-table/src/early_native.rs": "1e388366ab065ef3be5ac9a2a5a3248709dcae2f2d1c00e5912ea067dbfdcbb1",
+    "vail/crates/vail-table/src/globals.rs": "892511152118ee366c2950b44a44cae664dd5c825d573f5e8fa18479cd135418",
+    "vail/crates/vail-table/src/group_ranges.rs": "1e6302dc57ddb5e69e7bb0c62f6338b5a73ce2993a7bb1b719ba4f39b2d71b41",
+    "vail/crates/vail-table/src/indexed_unnest.rs": "b6a699e84740a4a24b8d894f554c8be701f9842be5f0aa4959ee9bc77d0820ff",
+    "vail/crates/vail-table/src/interval_read.rs": "952d9acab172ce4d0cfd8577a1917be045544da70f04a5359595c55c4bf0ec26",
+    "vail/crates/vail-table/src/join_interval.rs": "548f13594624a1820975be9d8907c34ceda25445690f0632558ed83bd21231ba",
+    "vail/crates/vail-table/src/join_key.rs": "fb5ead93ea2aa499963e17867d981bcdb64954cccba2b5c3ba8c38bce2e5741a",
+    "vail/crates/vail-table/src/joins.rs": "95e416c4123781e6083d649d80c2e182dc234d47d2ebd194d00d38ac7d70f47e",
+    "vail/crates/vail-table/src/legacy.rs": "8c24eb4717e6e3e04a8adf399b1855a5004fe1397e5095064959e1917c051a73",
+    "vail/crates/vail-table/src/legacy_source.rs": "1735fd29b92dc8fd8b4551626980c74351d5ae09306d599bd91c4dc06d2681b5",
+    "vail/crates/vail-table/src/lib.rs": "9ba23aea336079edf464cf7dedc6a7d9d93ddaddff8e44d9582a93609a28e76e",
+    "vail/crates/vail-table/src/line_source.rs": "b8bff3077adc1c80ebbbf0ddb6f20655924c8181014b5abcc03323f9213635a4",
+    "vail/crates/vail-table/src/logical.rs": "75bf20d7385f9009e0cb44e43f2e91263f9991612eced6000d4018dbd94b7c50",
+    "vail/crates/vail-table/src/logical_aggregate_init.rs": "e09f16360ff66f79f31ac8f2ebad329abdcc407db4ed8c8d701aaec868425d30",
+    "vail/crates/vail-table/src/logical_aggregation.rs": "8e1d87de03a8ace1e6a3c986e866a82d009011be1801f60684b71f4e36f051be",
+    "vail/crates/vail-table/src/logical_globals.rs": "5eb0ba93173d9d398bd6d9fae88d2e07cc304f5b08cdb3a249daa39e9a89421a",
+    "vail/crates/vail-table/src/logical_nested_aggregation.rs": "42650a291c2c929b25a396b59b2e6e8da93925c9d4e9d2fcfc19c3e4d91cc3b6",
+    "vail/crates/vail-table/src/logical_parameters.rs": "ba529f6de0c56231ad5e034cab42ebb39f9c52cface38b055087999d8c09ae98",
+    "vail/crates/vail-table/src/logical_same.rs": "461365af1b2be60d23059dea1f00a91c23a62ab2c568dbd5ca37eb0d1e4eb5c8",
+    "vail/crates/vail-table/src/logical_scan.rs": "19d57b81d0831ef85f5cb4eb971da25a2f8e96ba7abee9ff4bf417e0bc63babf",
+    "vail/crates/vail-table/src/lookup.rs": "3944113abe95fe835965ea914a6f7e5b191af52280f4cd0a1ad4d68c25f5d274",
+    "vail/crates/vail-table/src/matrix_entries.rs": "17e6ad3fb37c4be4fe2ce24a964fbb9e6d27ca3bf35d546519e8d9bffce08eba",
+    "vail/crates/vail-table/src/nested_projection.rs": "3e021f83faa75ceef60aa1aec77741f5dce395e8d2f882f9bcb18e51d15fd4ca",
+    "vail/crates/vail-table/src/nested_scan.rs": "9fe819eefb8e72ce0f22b873be79a1f6d6c8869ab151dbe6ab0ec723d8059e38",
+    "vail/crates/vail-table/src/ordered_merge.rs": "5489abb1857403185872034c40325ab5276e059e67799826bf9939673c0628d1",
+    "vail/crates/vail-table/src/ordering_requirements.rs": "854ba5a23c1422eaa8fd534cf72eda8a0993fe3e1d1c71cdcefb83848fa2f795",
+    "vail/crates/vail-table/src/partition_grouping.rs": "efb8d31a22feef27f43f918c99955183a378967b64ed337834b81f976fce530f",
+    "vail/crates/vail-table/src/partition_map.rs": "ab5b23f83b696c1a34aac9c3e7ace9a096ecdcb664a6950756464d8cd3e7bfe2",
+    "vail/crates/vail-table/src/partitioned.rs": "29ca70c4dc54a6b4b28cff11eff0c2da19682ca87fb440b00cebb901b8f3aa1d",
+    "vail/crates/vail-table/src/partitioning.rs": "ab0a92f178f9ad8368e0ae377bddbca74d0851c440df340db0a4b28f5acfca8e",
+    "vail/crates/vail-table/src/plan.rs": "6df4ca198153c15a77cc99772a368ffb0e50e4d514d1f47829617f062d06afc9",
+    "vail/crates/vail-table/src/plink_export.rs": "0fa03c1ab622146887ab8567e27d27d7032368d14d7a1472417b8542799abaa5",
+    "vail/crates/vail-table/src/plink_source.rs": "a666d88857beb40a10f76f26177f25e059dc9469b2c71ba37c63e6a715b18733",
+    "vail/crates/vail-table/src/projected_aligned.rs": "ff0b4fcb4372ac016618ae7b51b8f8f77076a1945b45e9228f702b9af29cbf91",
+    "vail/crates/vail-table/src/projection_broadcast.rs": "38139aef58dc29065c20e3677ee8f1474398eee3b5c41684a9b1dcec15f04b52",
+    "vail/crates/vail-table/src/provider.rs": "86384152b460bae5bb932028fa5465675c8247f138d2318844f89c6bbcc8bfb9",
+    "vail/crates/vail-table/src/range_lookup.rs": "17adeada164b9ea35eee8553cbf3a066214328af19ea9ed92910d9db1b9934a2",
+    "vail/crates/vail-table/src/read_metrics.rs": "55cdbdecb429ba2728ebdac97bde3d659cc2bb96238142d91e154001e66e5ee7",
+    "vail/crates/vail-table/src/rng_context.rs": "457ac3c8868ece5c29c4312786f25e91f86b12eefe0c30d3e803b2551ad3047a",
+    "vail/crates/vail-table/src/scan_ordinal.rs": "2233d34508253e872fa74e5e44fa607ad6020ca2f33c98ec4cf04747ced4b538",
+    "vail/crates/vail-table/src/streaming_prev.rs": "b07a4c2cf448fd497c0d0ea6a01f2debcebda050037d78dca4e1d304c52b7dd5",
+    "vail/crates/vail-table/src/text_export.rs": "b47396aa723e445547eebafa9fe32e9f76ab797fdee4018360f6af4c683d7af4",
+    "vail/crates/vail-table/src/text_schema.rs": "332b8b5ca53aabcfc5bb9c5cd26280a779c76e53b9ad2bba0b4b069eb500e9f8",
+    "vail/crates/vail-table/src/vcf_export.rs": "f990c9a38705d48cc70f02b9956cd7d90134ec569da1c4a5b51698655b60c115",
+    "vail/crates/vail-table/src/vcf_source.rs": "36e5922bdbbaa6896dcee9088445338c5615e94ee0ae70a8f68616d04d471712",
+    "vail/crates/vail-table/src/wide_batch.rs": "4834ae65dde3c9b02bf3f00736784256f60ff7576afa8232edcc2a369249392b",
+    "vail/crates/vail-table/src/zip_dedup.rs": "74e2b39bb82ff5becef74f4ecb272681994a9bc61a72614f0944d42fc3e6d64a",
+    "vail/crates/vail-table/src/zip_join.rs": "d99d32057cee6ef02a1dc2d68a4b65b28351a6e506b38bfbb0a1d39c3ffed631",
+    "vail/crates/vail-table/src/zip_snapshot.rs": "86f4208e63bcb2b8d45e97c65db39d37d08e165c8be437583befcee85ac232fb",
+    "vail/crates/vail-table/tests/aggregate_singleton.rs": "0a3dd9cdf3867b74e775ebc0684f22474fa40ccd382865e5055c587f45e036c1",
+    "vail/crates/vail-table/tests/all_aggregate.rs": "ba715b91df4d2e1506a1796e9d8132aa40ba02e8aa80f96ee3097a7f485f0968",
+    "vail/crates/vail-table/tests/collect_groups.rs": "ef6eec961c2eda3ae1e03a68271e24ce5730f5623a91d88a95374c822967c657",
+    "vail/crates/vail-table/tests/conditional_globals.rs": "92b209560f7cd3ab26ce1c1433555b338229c8518203af4ce4ba16db53a6a2ac",
+    "vail/crates/vail-table/tests/consumer_actions.rs": "4c3bd0246aac0eb7bd15bb749e6acfe52e7af9622c022211dfed1449fb227c0c",
+    "vail/crates/vail-table/tests/datafusion_plans.rs": "92ba64b19a62db1f23e460c8a2a83231fce8c33466f4e58c557e66f10447749b",
+    "vail/crates/vail-table/tests/encoded_projection.rs": "c983ca7e5feb60ce931f61983acaf8d16a1c07150e7ff81913eb0fdfc1b8d98f",
+    "vail/crates/vail-table/tests/entry_consumer_projection.rs": "30652162c10f6b97c4b9afcdec18b29c813c49b0a48d7c3d7eff43769dc29a6c",
+    "vail/crates/vail-table/tests/expression_source.rs": "b0e47bb959e1e068137f132351126e58fbe33ba4f70876e7e120142bcf23d706",
+    "vail/crates/vail-table/tests/file_pruning.rs": "d9a2e26e2e7afbc4b7a7a9eb53dc82b95ec76979ac2a3e19cb9e36fd34a164b8",
+    "vail/crates/vail-table/tests/fold_storage.rs": "891d7cc132ba346b027a81667e9cb6790365f379bdc327d0c951602675f2b5f6",
+    "vail/crates/vail-table/tests/fraction_native.rs": "1bbe2ff4ea55ea6921ebc25bbe8480d6fc9261bc08ee92004641922f0d9979fb",
+    "vail/crates/vail-table/tests/global_lambda_execution.rs": "468754e441db67709524237bdeb860bfa166715cdcab77a012ef313f729e1be9",
+    "vail/crates/vail-table/tests/globals.rs": "5c1b3b931f8595790234368339356994586b997ac3edaa4df40e0af1b1e7d360",
+    "vail/crates/vail-table/tests/group_ranges.rs": "c7ef57fff0831e0d1bb110bd6f058aea300cb66d1eeba189f719e2c00e499af3",
+    "vail/crates/vail-table/tests/histogram_groups.rs": "08e83f4fc736ed624f348e51d2566b8528c9dd3e45f3815e42621bade0d2c94a",
+    "vail/crates/vail-table/tests/indexed_unnest.rs": "6f9fe3622a024316b0b420ba9c51b4b9c58d9e1172606773db96b2ef1bad9492",
+    "vail/crates/vail-table/tests/ir.rs": "947d0829a5fa6246500a8b5f3990742923a9b8cd4e1a179f9e58fda77319002c",
+    "vail/crates/vail-table/tests/join_storage.rs": "7d66f845aaa7261f8b577d8eaf4bfe199ee9feaea9a5bf88540e9ec0e7f30d9d",
+    "vail/crates/vail-table/tests/joins.rs": "6e04251d827499873113c761f28688ce7f24f84b349d8dd31d585307925767f9",
+    "vail/crates/vail-table/tests/large_array_parameters.rs": "4bf8f5fc66e922d0d8558cdaa9fcca24e169cc46a73478ce9d5c002f26d50a7c",
+    "vail/crates/vail-table/tests/legacy_expansion_counts.rs": "913174fa4cc74f030d2636ec5224546e7b6f7a8033aa277ad9adb742a60b885d",
+    "vail/crates/vail-table/tests/logical_order.rs": "1b1a5aba86058149918f68724181360bec83cd4146b506b7d1e1f50c2bcd8eb9",
+    "vail/crates/vail-table/tests/lookup.rs": "fdda5f3516aa031acbafa53b1cdc91d7178c3e40f010285b7216c8ff609cf44c",
+    "vail/crates/vail-table/tests/native_any.rs": "d2ba4bff35652e55c18f8d5468054b37fde172a1c5b68a078fa88437a29ca53e",
+    "vail/crates/vail-table/tests/native_sum.rs": "aefe321522abc2944476365a74dabcfc79493b1136bc76038b87710273e6ac69",
+    "vail/crates/vail-table/tests/physical_partitions.rs": "f2d7675caac24d9517179250874a31b9a4ab11c51f495241b9ff50a351dbd8aa",
+    "vail/crates/vail-table/tests/reader_batches.rs": "8e921c8594f3a7363c638ab9ed48d0be702576063134b2f0998fedffa9b31aab",
+    "vail/crates/vail-table/tests/runtime_reads.rs": "f76d12a32f2fb7e507b6b32764afec4e3ef69f6eefe34dd73fc0bb1b7086e803",
+    "vail/crates/vail-table/tests/scan_replay.rs": "4afbab0356516b43ca1021275301cd5ec8f616e08d9c8fd467d0ab0603b1c10d",
+    "vail/crates/vail-table/tests/source_read_metrics.rs": "bb3e8e242e6f83619570191998b667f7aba84dd7a208268e2770f00d5a852d35",
+    "vail/crates/vail-table/tests/streaming_prev.rs": "6c557e7227096df8b488409a403b9d49fc86ba5242e4ea700e0f98b92eb17ae3",
+    "vail/crates/vail-table/tests/struct_field_projection_contract.rs": "91afabdb2e2619f8f0a834432728dde5492d69029dc7b0aaa3ee0db6e27ffb8d",
+    "vail/crates/vail-table/tests/support/element_validity_reader_io.rs": "cdb046a7f6727c2213db32f8be8a6efceceae7b36cead61de2c6bb51d0b46e55",
+    "vail/crates/vail-table/tests/support/encoded_list_sum.rs": "7b2c5d7d01ded1589478b1a53008e08a6e27ef7c92bdb4e8243584bcf54dc907",
+    "vail/crates/vail-table/tests/support/struct_presence_demand.rs": "2c354f606384dff0451bfb3ec38fd507ab499ff85721ee14fc7e5c1ca353feca",
+    "vail/crates/vail-table/tests/text_io.rs": "d341dcf382b9809dac76808c6a4c8b64288fcb7535abf2a3587b4b489428566f",
+    "vail/crates/vail-table/tests/type_contracts.rs": "2294b2d4603eaa0e605dec832567ce8a88e9ceb4286aabd73af758ce6d0f7e68",
+    "vail/crates/vail-vcf/Cargo.toml": "ee5ebc076400e777199a88f1cb88ec788de08e5411eb2c98b8c49bb3a45a23b9",
+    "vail/crates/vail-vcf/examples/delimiter_bench.rs": "92750aa3154df91e0629414527b922cfd66c8d6b172573adfa873a11f71372d3",
+    "vail/crates/vail-vcf/examples/format_bench.rs": "834d99fdcb512b734e6742ea93be0b9a16dcef08db80b26715cf4b61050b0a71",
+    "vail/crates/vail-vcf/examples/parse_bench.rs": "5a87e2cd703c300d502a942beac5f9a98a708a8c7bbbf047415eabc8a74f6fa4",
+    "vail/crates/vail-vcf/src/lib.rs": "0e7a86efe6c732d891cae7f20f71fc14d1ee76b233bbd480347169c9fba768dc",
+    "vail/python/tests/test_downcode.py": "a7dbcfb1ae27be86b36973b07ef8e54edc4a37359c68dae0a8ad1b911453df32",
+    "vail/python/tests/test_early_aligned_product.py": "ddb8055cb6b3a7790ca908f76ef89b766a53e15340e83cee5cda5edbd4cc8ff3",
+    "vail/python/tests/test_logical_planning.py": "693299992add96b6a6e2c85fab957b20ae28d68cb48107d752cc5e5e3e0df0a2",
+    "vail/python/vail/__init__.py": "b6bba0a2f0745fa948e31978bd515626fe35cd2b467f7310d5d6350c1fa1da97",
+    "vail/python/vail/agg.py": "77beb9551b9a0481364ed9ecbb020e77bec2aea7b69aa73cd05fbbeb4353227e",
+    "vail/python/vail/agg_collections.py": "62485f45231af00b56abf3bcfc3c9dbc1dad32daf217d3e7d6165b420623a467",
+    "vail/python/vail/agg_fold.py": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+    "vail/python/vail/agg_genomics.py": "a60d7e1e3bdd143815c120239bdbae37710fbb1d934ee3674a8b5a695435c291",
+    "vail/python/vail/agg_numeric.py": "a4db0e0435da97b2ba709d4513726726a6e369f58ca25f173af9050ca6b4d2d9",
+    "vail/python/vail/allele_functions.py": "e3e669dae8d805a1d9bfb11d44e267bc3e5fdc3d63d5afd4ce248cf9a64c1cc9",
+    "vail/python/vail/array_aggregate.py": "2642401c17ff8e3afcd8ecd02df02331b9650e6d819c18b3d46faafa03f637e6",
+    "vail/python/vail/array_methods.py": "7d1f396039e668154673954c4aee10bdc267f0dd3310aa78745e1ac07768f957",
+    "vail/python/vail/arrow.py": "2d4f440d6e9dd22765477dcd04cf1c47cd77e9705deca6729ee07e1aebca27a6",
+    "vail/python/vail/avro.py": "57ffb92be6b002deee61dcc6357b55c4086f3c2959dfdd056b30dc48f8a60ba9",
+    "vail/python/vail/backend.py": "12420b13a80077fc7c4b1bd7cd9879f225dc0723023663785b4765296031fe97",
+    "vail/python/vail/bed.py": "02b7a11cc3bc3ab714e9b985247239d86513663d68f1e78ad66bdf5afd931a2a",
+    "vail/python/vail/bgen.py": "f692a3af91a1a0468b76def1e1e683a4a02362d7ea21da9a5f0e648d22f13292",
+    "vail/python/vail/builders.py": "885cbc5c24210e61336b7bd7e6b00b063d8b9c4d9302a18dbca350760485e479",
+    "vail/python/vail/collection_functions.py": "d50d1c2d2eeb148e287b606058be6aa1ba9802539981817cce69cdeb4acfa63c",
+    "vail/python/vail/collections.py": "0a2e56abc44e2505b7d9a37e123610043868d702b31a55bb08d4f382e9b7bc50",
+    "vail/python/vail/context.py": "525d63ec5e05121f250d396536a394a9a55a8e9eb088b846de3a8dd7df8ba318",
+    "vail/python/vail/csv_import.py": "3b9a467abc4b0c63c33491c2d44942d1055947c3d6864696d7832f3bb92cdeb5",
+    "vail/python/vail/display.py": "39d6ba70228a2c1133a1d3d561014e5ef162db5c87ad947a6816bc46106f639b",
+    "vail/python/vail/expr/__init__.py": "eada032e4a01a40d8aee2f471c868b6893bfdb7db3d6d6671ad972685b027185",
+    "vail/python/vail/expr/expressions/__init__.py": "04c3fcfac72a2a5bc29f200f6c57ce13f07713ae4d038ed8db78c086901ca7ec",
+    "vail/python/vail/expr/expressions/base_expression.py": "fb19085e2f7ad02588a24a993b1fc67ce4c99844616a913a32c1423779b682dc",
+    "vail/python/vail/expr/expressions/typed_expressions.py": "a9912c772322b889306284db29290c9eac3679c875e88c5f3053adc1abd76535",
+    "vail/python/vail/expr/functions.py": "1f7fa3b88f9f69722063bc35ae0bd010817d4c5097432f9ba1107e8f7c0ab5fe",
+    "vail/python/vail/expressions.py": "6be1411c5245b89ed81e8b687f63e1ff59146c14b8376c518a6e7086f4346992",
+    "vail/python/vail/fam.py": "ba1ec663685f2f626f39ea64a3fbc2433b7b2b6932f662769f9c78c72e153089",
+    "vail/python/vail/gen.py": "3c8375db75681c664e1a5400b98c180ee44f2dcae9e3541576f699af3ffb4799",
+    "vail/python/vail/genetics/__init__.py": "942a41885950a02732e612414eaab20196e895707e34d12b9b9377be7bc27806",
+    "vail/python/vail/genotype_likelihoods.py": "09b2221ddd6c05d9b2b51c961e1e930a98d2c73adde013a55a7da61a5e13fed3",
+    "vail/python/vail/gvcf_interval.py": "721d7bf5ade72e68840745fdcb05ff2ca315694a2aa059485ec5a6d1ed974bc5",
+    "vail/python/vail/import_support.py": "d862517aec6d739c67382e224fdff7fbd18b3d538182cbd7c6f8775b226cbc13",
+    "vail/python/vail/inputs.py": "df5f3efc42266b9225db08a6279445c12b8bcaf50e85ff3adc783be83dc8a530",
+    "vail/python/vail/interval_import.py": "08d611e8953e52a8431e2ca37ddeaea3e7a57b11355c33bb2fd33a1a5506301d",
+    "vail/python/vail/ir/__init__.py": "9309485b0ccc47a5e43c027e125f285a1a4dbbf5dfbc0fe1193aaa11764b72c6",
+    "vail/python/vail/ir/renderer.py": "f0f7ce02c0eedc0b7776937817b17d059d9de584ca49b7e02682c0d77dec4250",
+    "vail/python/vail/legacy.py": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "vail/python/vail/linalg/__init__.py": "5ecf696f3480e4d04362418bcd3239df43602f78e1b3d620a01bf35d20ba964a",
+    "vail/python/vail/linalg/utils.py": "8c1837c44dd7021a17f09ac8ac4e96867f7d3eeb757447f0d839c13cab311cf6",
+    "vail/python/vail/lookups.py": "7d8aefc39ac56e6724d5d776c3aa6938fdc83e65300a09d83d1553fa7809b8a5",
+    "vail/python/vail/matrix_import.py": "dfac4f312392c2009f6f010e8c3d3c015786576fce683bef741c91194ec21255",
+    "vail/python/vail/matrix_list_aggregates.py": "501c3efd216daaf02b6880d4200f047a3c65399da89c676dd646f91ee16ccbcb",
+    "vail/python/vail/matrixtable.py": "d453a8674a5181b776457a13bf822d8291af2f0f5eb72849e57c88e9bf1743ee",
+    "vail/python/vail/nd.py": "be50161d44debfb95dde1c1462f6357d20b123636fa447f400d61108089108ce",
+    "vail/python/vail/plink.py": "3aae933b4d74cd5dedf7bd53aa30060f4dcc73a214923726addc9029780fb761",
+    "vail/python/vail/qc.py": "109b3b2eae43bbb2c8b5be43371ab278908052ba3d862d0bd7ef588ee0f96a5b",
+    "vail/python/vail/queries.py": "37e2dacd0d9cd41a547c34ec4f15311584a2d732cac5ec40062e8d3bffe0f53b",
+    "vail/python/vail/randomness.py": "5766db03c58d5b3cff1ee5acf71a81304364a44e4275e2085279238c19d22811",
+    "vail/python/vail/reference_genome.py": "8a9f863a1e439eeb5aba7d75f3c8fe7f9d390c42ad83b6039a60aab6bff18451",
+    "vail/python/vail/scan.py": "96085d5a24fa0353f2e13c02dff9204b5e3785e108cdf67befab5950ec5f8acb",
+    "vail/python/vail/shared_expressions.py": "e7f66e602c1e6d68ff521f788f15b08bf65353ab827477ee426767fe79a284d3",
+    "vail/python/vail/simulation.py": "f31336c0db3793ae5c8099c6963636e5da10e820f7cd9237f4631a027fdab725",
+    "vail/python/vail/streams.py": "e82b1fe3fe49b0deebfaadb10aaa9234b4ad5c8776f8cc94214bf3ede32ab0fa",
+    "vail/python/vail/strings.py": "e0caf5ff2361e8e6fe953e7256c9f7c7aa3f0c4867bba47c4ae34690c5a7271d",
+    "vail/python/vail/text.py": "0120380ca5fcf289404b669e919ae04d84362724a91c084f4ae982b0320b52d9",
+    "vail/python/vail/types.py": "8d558435fcf112b8aef0f2cd6ebdf90c7749e67580abe2ce2ffffcc815f5fb62",
+    "vail/python/vail/utils/__init__.py": "3c58d0e64a9f25f3783fbe16449509016f80244f47ab0f2208ed2304a6156c75",
+    "vail/python/vail/utils/frozendict.py": "1cd23bbdaf13d36b6ff69ff414fa7b4f01f87b0cb1bda05f1e0a746c1ba0e206",
+    "vail/python/vail/utils/java.py": "46f13828ee47411f5a3108af77fbabd00f270c3cae55498a57963427dbcabdf1",
+    "vail/python/vail/utils/misc.py": "0927b75cb01d4532d0642d89bf8c254b47041cb70bdd900b6e6bd12ce3a45247",
+    "vail/python/vail/variant.py": "02c87d34dc699e5c5d6eb0f31735da9f495637de7d09c6a1cc22fda3ecffc891",
+    "vail/python/vail/vcf.py": "76a0ab774e1ad3a43076ad2403281d51f6006e11ea769054b0e037bec2b50b48",
+    "vail/python/vail/vcf_export.py": "28a44cb9cd69f656d911dc2c9a0cb9b15e4d0a6441256c46407e8f877393148e",
+    "vail/python/vail/vds/__init__.py": "94722578c559b756f043353038af82fcea53fd4b8d0f5dd93591e6499d76d5e9",
+    "vail/python/vail/vds/combiner/__init__.py": "92fc1f65e5a257c6b91c9ea932822ca2e1026ace28ae95c9eed47e7c9a8935f7",
+    "vail/python/vail/vds/combiner/combine.py": "8d8164040f162e4ea7b2bd738d38a40bfe27795ad2a9b5cf9706204f8683d942",
+    "vail/python/vail/vds/functions.py": "c17a56576d6a882beaa514d0898b9f9a588d79ede9a8082a0b0a16d3b96c143c",
+    "vail/python/vail/vds/methods.py": "8be1b9ce6ce653a9d64760b8337584f754a031496b258ffe236ed9126e2f73d6",
+    "vail/python/vail/vds/variant_dataset.py": "b7e952624166742e5eb7d1cd757784693aab87ab28b56601eb0f87dab4f60cf2"
+  },
+  "test_only_revision_sha256": {
+    "vail/crates/vail-execution/tests/call_allocations.rs": "0370852df51a4095228826dd80767fa1d2453aad7f7ef345018e08ecb3a5371b",
+    "vail/crates/vail-execution/tests/indexed_batch.rs": "ece27d3e54da7d390636523f8dadf536e0c5d8996d93d29e6651ff50cdccb2f6"
+  }
+}

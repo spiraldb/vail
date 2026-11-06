@@ -309,6 +309,7 @@ pub(crate) fn restore_partitions(
 #[derive(Clone, Debug)]
 struct VailNode {
     id: u64,
+    prefetch: bool,
     table: TableRef,
     inputs: Vec<LogicalPlan>,
     row_input_count: usize,
@@ -508,6 +509,7 @@ fn extension(
     Ok(LogicalPlan::Extension(Extension {
         node: Arc::new(VailNode {
             id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
+            prefetch: context.prefetch,
             table: table.clone(),
             inputs,
             row_input_count,
@@ -520,7 +522,7 @@ fn extension(
     }))
 }
 
-fn bindings_for_node(node: &TableNode) -> Option<&crate::globals::GlobalBindings> {
+pub(crate) fn bindings_for_node(node: &TableNode) -> Option<&crate::globals::GlobalBindings> {
     match node {
         TableNode::Expression { bindings, .. }
         | TableNode::MapRows { bindings, .. }
@@ -925,10 +927,42 @@ fn native_sort_keys(child: &TableRef, keys: impl Iterator<Item = String>) -> Res
 
 /// One synchronous lowering request shares completed row/global subplans.
 /// Owning roots keep native identity keys valid for the full compilation.
-#[derive(Default)]
 pub(crate) struct LoweringContext {
+    prefetch: bool,
+    early_options: Arc<std::sync::OnceLock<Option<vail_execution::expressions::PreparationOptions>>>,
+    scalar: Option<Box<LoweringContext>>,
     tables: std::collections::HashMap<usize, (TableRef, LogicalPlan)>,
     pub(crate) globals: std::collections::HashMap<usize, (crate::globals::GlobalsRef, LogicalPlan)>,
+}
+impl LoweringContext {
+    fn new(prefetch: bool) -> Self {
+        Self {
+            prefetch,
+            early_options: Arc::new(std::sync::OnceLock::new()),
+            scalar: None,
+            tables: std::collections::HashMap::new(),
+            globals: std::collections::HashMap::new(),
+        }
+    }
+    /// Singleton/subquery lowering has independent row-plan memo entries and
+    /// never inherits its caller's permission to consume a complete row stream.
+    pub(crate) fn scalar_context(&mut self) -> &mut Self {
+        if self.prefetch {
+            let early_options = &self.early_options;
+            self.scalar.get_or_insert_with(|| {
+                let mut context = Self::new(false);
+                context.early_options = early_options.clone();
+                Box::new(context)
+            }).as_mut()
+        } else {
+            self
+        }
+    }
+}
+impl Default for LoweringContext {
+    fn default() -> Self {
+        Self::new(crate::action_demand::explicit_prefetch())
+    }
 }
 
 pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
@@ -953,6 +987,7 @@ pub(crate) fn lower_for_expressions_in_context<'a>(
     expressions: impl Iterator<Item = &'a vail_execution::expressions::Expr>,
     context: &mut LoweringContext,
 ) -> Result<LogicalPlan> {
+    let context = context.scalar_context();
     let expressions = expressions.collect::<Vec<_>>();
     let table = crate::nested_projection::prepare_vcf_for(table, expressions.iter().copied());
     if matches!(table.node(), TableNode::Read { .. }) {
@@ -969,12 +1004,26 @@ pub(crate) fn lower_for_expressions_in_context<'a>(
     lower_inner(&table, context)
 }
 
-fn lower_inner(table: &TableRef, context: &mut LoweringContext) -> Result<LogicalPlan> {
+pub(crate) fn lower_inner(table: &TableRef, context: &mut LoweringContext) -> Result<LogicalPlan> {
     let key = Arc::as_ptr(table) as usize;
     if let Some((_, plan)) = context.tables.get(&key) {
         return Ok(plan.clone());
     }
-    let plan = lower_uncached(table, context)?;
+    let options = context.early_options.get_or_init(|| {
+        if std::env::var_os("VAIL_DISABLE_EARLY_ALIGNED_PRODUCT").is_some() {
+            None
+        } else {
+            Some(vail_execution::expressions::PreparationOptions::capture().for_selected_region())
+        }
+    }).clone();
+    let early = match options {
+        Some(options) => crate::early_aligned_product::try_lower(table, context, &options)?,
+        None => None,
+    };
+    let plan = match early {
+        Some(plan) => plan,
+        None => lower_uncached(table, context)?,
+    };
     context.tables.insert(key, (table.clone(), plan.clone()));
     Ok(plan)
 }
@@ -1284,10 +1333,30 @@ pub(crate) fn display(table: &TableRef) -> Result<String> {
 }
 
 pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
+    physical_with_prefetch(table, crate::action_demand::explicit_prefetch()).await
+}
+
+pub(crate) async fn physical_for_force_count(table: &TableRef) -> Result<PhysicalPlan> {
+    physical_with_prefetch(table, crate::action_demand::for_force_count(table)).await
+}
+
+async fn physical_with_prefetch(table: &TableRef, prefetch: bool) -> Result<PhysicalPlan> {
+    let trace = std::env::var_os("VAIL_TRACE_ACTION_PREPARATION").is_some();
+    let mut mark = trace.then(std::time::Instant::now);
     let state = session_state(max_partitions(table));
     let context = state.task_ctx();
     let rows = crate::wide_batch::for_table(table, context.session_config().batch_size());
-    physical_in_context(lower(table)?, state, context, rows).await
+    trace_preparation(&mut mark, "session");
+    let logical = lower_in_context(table, &mut LoweringContext::new(prefetch))?;
+    trace_preparation(&mut mark, "vail_lower");
+    physical_in_context(logical, state, context, rows).await
+}
+fn trace_preparation(mark: &mut Option<std::time::Instant>, stage: &str) {
+    if let Some(previous) = mark.as_mut() {
+        let now = std::time::Instant::now();
+        eprintln!("VAIL_PREPARATION_STAGE stage={stage} micros={}", now.duration_since(*previous).as_micros());
+        *previous = now;
+    }
 }
 
 pub(crate) fn max_partitions(table: &TableRef) -> usize {
@@ -1417,6 +1486,7 @@ async fn compile_mode(
     diagnostic: bool,
 ) -> Result<PhysicalPlan> {
     let planner = DefaultPhysicalPlanner::with_extension_planners(vec![
+        Arc::new(crate::early_aligned_product::Planner { diagnostic }),
         Arc::new(VailExtensionPlanner { diagnostic }),
         Arc::new(crate::logical_globals::GlobalsExtensionPlanner),
         Arc::new(crate::logical_same::SameExtensionPlanner),
@@ -1425,8 +1495,12 @@ async fn compile_mode(
     let mut state = state.clone();
     // Keep large immutable Arrow constants opaque to expression optimization.
     // This runs after action parameters are resolved and before optimization.
+    let mut preparation_mark = std::env::var_os("VAIL_TRACE_ACTION_PREPARATION")
+        .is_some().then(std::time::Instant::now);
     let logical = crate::logical_parameters::parameterize(logical, state.execution_props())?;
+    trace_preparation(&mut preparation_mark, "parameters");
     let optimized = state.optimize(&logical)?;
+    trace_preparation(&mut preparation_mark, "df_logical_optimize");
     // DF55 physical filter pushdown can inline volatile projection expressions
     // and evaluate a checked cast before an earlier filter. Keep logical scan
     // pushdown, but omit that physical rewrite when evaluation order matters.
@@ -1447,8 +1521,14 @@ async fn compile_mode(
             .build();
     }
     let plan = planner.create_physical_plan(&optimized, &state).await?;
+    trace_preparation(&mut preparation_mark, "df_physical");
     let plan = crate::projection_broadcast::cache_nested_projection_broadcasts(plan)?;
-    Ok(crate::rng_context::bind_consumers(plan)?)
+    trace_preparation(&mut preparation_mark, "broadcast");
+    let plan = crate::indexed_unnest::optimize(plan)?;
+    trace_preparation(&mut preparation_mark, "indexed_unnest");
+    let plan = crate::rng_context::bind_consumers(plan)?;
+    trace_preparation(&mut preparation_mark, "rng");
+    Ok(plan)
 }
 
 #[derive(Debug)]
@@ -1961,7 +2041,7 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 *n_partitions,
             )));
         }
-        let prepared = crate::partitioned::prepare_operation(table)
+        let prepared = crate::partitioned::prepare_operation(table, node.prefetch)
             .await
             .map_err(|e| DataFusionError::External(Box::new(e)))?;
         Ok(Some(prepared.physical_plan()))

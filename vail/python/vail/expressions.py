@@ -1586,6 +1586,20 @@ def call(*alleles, phased=False):
     return result
 
 
+def downcode(value, allele):
+    """Map the selected allele to one and every other allele to zero.
+
+    Preserve ploidy and phasing. A missing Call or allele index returns missing.
+    """
+    value, allele = as_expr(value), as_expr(allele)
+    if value.dtype != tcall or allele.dtype != tint32:
+        raise TypeError("downcode requires a Call and an int32 allele index")
+    return Expression(tcall, _merge_sources(value.source, allele.source), {
+        "op": "string_function", "function": "downcode",
+        "args": [value.to_ir(), allele.to_ir()],
+    })
+
+
 def locus(contig, pos, reference_genome="default"):
     """Construct a lazy, validated one-based coordinate in a reference."""
     from .reference_genome import resolve_reference

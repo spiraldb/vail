@@ -24,6 +24,7 @@ pub(crate) fn merge(
     inputs: Vec<Vec<PhysicalPlan>>,
     keys: &[String],
     schema: SchemaRef,
+    prefetch: bool,
 ) -> TableResult<PhysicalPlan> {
     let ordering = order_requirement(&keys.iter().map(|k| (k.clone(), false)).collect::<Vec<_>>())?
         .physical_ordering(&schema)?;
@@ -66,9 +67,8 @@ pub(crate) fn merge(
         return Ok(Arc::new(EmptyExec::new(schema)));
     }
     let union = UnionExec::try_new(streams)?;
-    // DataFusion spawns a buffered task per input partition; upstream work and
-    // right-side local sorts run concurrently rather than inside the merge task.
-    Ok(Arc::new(SortPreservingMergeExec::new(ordering, union)))
+    let input = crate::bounded_prefetch::maybe_wrap(union, prefetch);
+    Ok(Arc::new(SortPreservingMergeExec::new(ordering, input)))
 }
 
 #[derive(Debug)]
@@ -223,6 +223,7 @@ mod tests {
             ],
             &["key".into()],
             schema(),
+            false,
         )
         .unwrap();
         let text = displayable(plan.as_ref()).indent(true).to_string();
@@ -269,6 +270,14 @@ mod tests {
         assert_eq!(plan.matches("CheckKeyOrderExec").count(), 3, "{plan}");
         assert!(!plan.contains("SortExec:"), "{plan}");
         assert_eq!(table.force_count().await.unwrap(), 6);
+        assert_eq!(table.head(2).force_count().await.unwrap(), 2);
+        let batches = table.collect_partitions().await.unwrap();
+        let actual = batches.iter().flatten().flat_map(|batch| {
+            batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap()
+                .iter().collect::<Vec<_>>()
+        }).collect::<Vec<_>>();
+        assert_eq!(actual, (0..6).map(Some).collect::<Vec<_>>());
+        assert_eq!(table.force_count().await.unwrap(), 6);
     }
 
     #[tokio::test]
@@ -277,7 +286,7 @@ mod tests {
             vec![&[Some(2), Some(1)][..]],
             vec![&[Some(2)][..], &[Some(1)][..]],
         ] {
-            let plan = merge(vec![vec![input(&batches)]], &["key".into()], schema()).unwrap();
+            let plan = merge(vec![vec![input(&batches)]], &["key".into()], schema(), false).unwrap();
             let error = collect(plan, Arc::new(TaskContext::default()))
                 .await
                 .unwrap_err();

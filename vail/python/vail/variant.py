@@ -16,16 +16,8 @@ def _kernel(name, dtype, *args):
 
 
 def _downcode(value, allele):
-    from . import struct, int32, if_else, is_defined, missing, tcall
-    from .expressions import Expression
-    alleles = value.alleles
-    phased = value.phased
-    coded = alleles.map(lambda original: int32(original == allele))
-    from . import sorted as sort
-    coded = if_else(phased, coded, sort(coded))
-    packed = struct(__vail_call_alleles=coded, __vail_call_phased=phased)
-    result = Expression(tcall, packed.source, {'op': 'cast', 'dtype': 'call', 'value': packed.to_ir()})
-    return if_else(is_defined(value), result, missing(tcall))
+    from .expressions import downcode
+    return downcode(value, allele)
 
 
 def _min_rep(locus, reference, alternate):
@@ -94,6 +86,8 @@ def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep'
         variants = _native_sort(variants)
     dataset = dataset.annotate_rows(**{name: variants})
     import os
+    if os.environ.get('VAIL_EXPERIMENT_GENERIC_SPLIT'):
+        return _generic_split(dataset, name, permit_shuffle, left_aligned)
     if os.environ.get('VAIL_EXPERIMENT_DIRECT_HTS'):
         return _direct_split(dataset, name, permit_shuffle, left_aligned)
     fields = dataset.entry.dtype
@@ -191,4 +185,74 @@ def _direct_split(dataset, name, permit_shuffle, left_aligned):
         return rows.annotate(locus=rows[_ROW].locus, alleles=rows[_ROW].alleles)
     rows=keys(left)
     native=rows._native.ordered_union(['locus','alleles'], None if right is None else keys(right)._native)
+    return left._copy(rows=hl.Table(native, rows.row.dtype, ('locus','alleles')), row_key=('locus','alleles'))
+
+
+def _generic_split(dataset, name, permit_shuffle, left_aligned):
+    """Manual generic nested-map plan, using the ordinary expression body."""
+    import vail as hl
+    from .matrixtable import _ROW, _CELLS
+    original = dataset._mir.core.key_by()
+    fields = dataset.entry.dtype
+    prepared = '__prepared_' + uuid4().hex
+    ints = hl.tarray(hl.tint32)
+    def prepare(cell):
+        entry = cell.value
+        reduced = _kernel('variant_entry', hl.tstruct(ad=hl.tarray(ints), pl=hl.tarray(ints)),
+                          hl.len(original[_ROW].alleles),
+                          entry.GT.alleles if 'GT' in fields else hl.literal([0, 0]),
+                          entry.PGT.alleles if 'PGT' in fields else hl.missing(ints),
+                          entry.AD if 'AD' in fields else hl.missing(ints),
+                          entry.PL if 'PL' in fields else hl.missing(ints))
+        value = hl.struct(**{f: entry[f] for f in fields if f not in ('AD','PL')}, **{prepared: reduced})
+        return hl.or_missing(hl.is_defined(cell), cell.annotate(value=hl.or_missing(hl.is_defined(entry), value)))
+    cells = original[_CELLS].map(prepare)
+    def finish(cell, variant):
+        entry = cell.value
+        def result(pl, quality):
+            updates = {}
+            for field in fields:
+                if field in ('GT','PGT'):
+                    updates[field] = _downcode(entry[field], variant.a_index)
+                elif field == 'AD':
+                    updates[field] = entry[prepared].ad[variant.a_index - 1]
+                elif field == 'PL':
+                    updates[field] = pl
+                elif field == 'GQ' and 'PL' in fields:
+                    updates[field] = hl.coalesce(quality, entry.GQ)
+                else:
+                    updates[field] = entry[field]
+            return hl.struct(**updates)
+        import os
+        pl = entry[prepared].pl[variant.a_index - 1] if 'PL' in fields else None
+        if 'PL' in fields and 'GQ' in fields:
+            if os.environ.get('VAIL_EXPERIMENT_EXPLICIT_BINDINGS'):
+                value = hl.bind(lambda pl: hl.bind(lambda quality: result(pl, quality), hl.gq_from_pl(pl)), pl)
+            else:
+                value = result(pl, hl.gq_from_pl(pl))
+        else:
+            value = result(pl, None)
+        return cell.annotate(value=hl.or_missing(hl.is_defined(entry), value))
+    def branch(moved):
+        variants = original[_ROW][name]
+        if moved is not None:
+            variants = variants.filter(lambda v: (v.locus != original[_ROW].locus) if moved else (v.locus == original[_ROW].locus))
+        outputs = variants.map(lambda v: hl.struct(variant=v, cells=cells.map(lambda c: finish(c, v))))
+        rows = original.select(**{_ROW: original[_ROW], '__generic': outputs}).explode('__generic')
+        variant = rows.__generic.variant
+        old = rows[_ROW]
+        row = {f: old[f] for f in dataset.row.dtype if f != name}
+        row.update(a_index=variant.a_index, was_split=hl.len(old.alleles)>2,
+                   old_locus=old.locus, old_alleles=old.alleles, locus=variant.locus, alleles=variant.alleles)
+        rows = rows.select(**{_ROW: hl.struct(**row), _CELLS: rows.__generic.cells})
+        return dataset._copy(rows=rows, row_key=())
+    if permit_shuffle:
+        return branch(None).drop('old_locus', 'old_alleles').key_rows_by('locus','alleles')
+    left = branch(None if left_aligned else False).drop('old_locus','old_alleles')
+    right = None if left_aligned else branch(True).drop('old_locus','old_alleles')
+    def keys(mt):
+        rows = mt._mir.core
+        return rows.annotate(locus=rows[_ROW].locus, alleles=rows[_ROW].alleles)
+    rows = keys(left)
+    native = rows._native.ordered_union(['locus','alleles'], None if right is None else keys(right)._native)
     return left._copy(rows=hl.Table(native, rows.row.dtype, ('locus','alleles')), row_key=('locus','alleles'))

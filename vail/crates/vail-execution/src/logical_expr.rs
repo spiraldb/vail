@@ -8,11 +8,15 @@
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
 
-use arrow_schema::Schema;
-use datafusion_common::{DFSchema, ScalarValue};
-use datafusion_expr::{Expr as LogicalExpr, ExprSchemable, Operator, Signature, Volatility, lit};
+use arrow_array::{Array, ArrayRef, Int32Array, ListArray, RecordBatch, RecordBatchOptions, StructArray, make_array, new_empty_array};
+use arrow_buffer::NullBuffer;
+use arrow_schema::{DataType, Schema};
+use datafusion_physical_expr::PhysicalExpr;
+use std::fmt::{Debug, Formatter, Result as FmtResult};
+use datafusion_common::{DFSchema, DataFusionError, ScalarValue, Result as DfResult};
+use datafusion_expr::{ColumnarValue, Expr as LogicalExpr, ExprSchemable, Operator, Signature, Volatility, lit};
 
-use crate::expressions::{BinaryOperator, Expr, ExprError, PrimitiveType, Type, UnaryOperator};
+use crate::expressions::{BinaryOperator, Expr, ExprError, PrimitiveType, RebuiltExpr, Type, UnaryOperator};
 
 /// Prepared scalar bindings retain their Arrow owners. Pointer equality is an
 /// execution-cache shortcut only (not expression identity): immutable nested
@@ -73,12 +77,548 @@ pub fn semantic_kernel(function: &datafusion_expr::ScalarUDF) -> Option<(&Expr, 
     Some((identity.expression(), schema.as_ref()))
 }
 
+fn semantic_preparation_options(function: &datafusion_expr::ScalarUDF) -> Option<&crate::expressions::PreparationOptions> {
+    function.inner().downcast_ref::<crate::kernel_identity::Scalar<(
+        crate::expression_identity::Identity, Arc<Schema>
+    )>>()?.preparation_options()
+}
+
 /// Splitting a deterministic semantic program retains value/error semantics;
 /// random programs require their original shared evaluation context.
 pub fn semantic_kernel_can_split(function: &datafusion_expr::ScalarUDF) -> bool {
     semantic_kernel(function).is_some_and(|(expression, _)| {
         crate::expression_effects::effects(expression) != crate::expression_effects::Effects::RandomContext
     })
+}
+
+/// An aligned producer preserves every row's entry-list shape. Only pure
+/// computations and known input-validation errors can move after filtering.
+pub fn deferrable_aligned_entry_argument(function: &datafusion_expr::ScalarUDF) -> Option<usize> {
+    let (expression, schema) = semantic_kernel(function)?;
+    let Expr::AlignedMatrixMap { entries, preserve_cell: true, .. } = expression else { return None; };
+    if !crate::expression_effects::can_defer_filtered_values(expression) { return None; }
+    let Expr::Column { name } = entries.as_ref() else { return None; };
+    schema.index_of(name).ok()
+}
+
+/// Invocation-local owners and parent lanes for a prepared aligned kernel.
+/// These values are never stored in the scalar-specialization cache.
+#[derive(Debug, Clone)]
+pub struct AlignedSelection {
+    pub entries: ArrayRef,
+    pub parents: Int32Array,
+}
+/// A capture root uses at most one existing argument owner. DataFusion evaluates
+/// scalars against one row and arrays against their own row domain.
+#[derive(Clone, Debug)]
+pub(crate) struct PreparedCapture {
+    argument: Option<usize>,
+    schema: Arc<Schema>,
+    program: Arc<dyn PhysicalExpr>,
+}
+impl PreparedCapture {
+    pub(crate) fn prepare(root: &Expr, schema: &Schema, options: &crate::expressions::PreparationOptions) -> Option<Self> {
+        if !root.is_pure() {
+            return None;
+        }
+        let mut names = HashSet::new();
+        let mut supported = true;
+        root.visit_unique(&mut |node| match node {
+            Expr::Column { name } => {
+                names.insert(name.clone());
+            }
+            Expr::Struct { .. }
+            | Expr::GetField { .. }
+            | Expr::Literal { .. }
+            | Expr::RuntimeLiteral { .. } => {}
+            _ => supported = false,
+        });
+        if !supported || names.len() > 1 {
+            return None;
+        }
+        let argument = names
+            .iter()
+            .next()
+            .map(|name| schema.index_of(name))
+            .transpose()
+            .ok()?;
+        let fields = argument
+            .map(|index| vec![schema.fields()[index].clone()])
+            .unwrap_or_default();
+        let schema = Arc::new(Schema::new(fields));
+        let program = crate::expressions::lower_with_options(root, &schema, options).ok()?;
+        if std::env::var_os("VAIL_TRACE_FUSED_UNNEST").is_some() {
+            eprintln!("VAIL_FUSED_UNNEST_CAPTURE_PREP argument={argument:?}");
+        }
+        Some(Self {
+            argument,
+            schema,
+            program,
+        })
+    }
+    pub(crate) fn evaluate(&self, arguments: &[ColumnarValue]) -> DfResult<ColumnarValue> {
+        let (columns, rows, scalar) = match self.argument {
+            Some(index) => match arguments.get(index).ok_or_else(|| {
+                DataFusionError::Internal("selected capture argument absent".into())
+            })? {
+                ColumnarValue::Scalar(value) => (
+                    vec![restore_arrow_array_type(
+                        &value.to_array()?,
+                        self.schema.field(0).data_type(),
+                    )?],
+                    1,
+                    true,
+                ),
+                ColumnarValue::Array(value) => (
+                    vec![restore_arrow_array_type(
+                        value,
+                        self.schema.field(0).data_type(),
+                    )?],
+                    value.len(),
+                    false,
+                ),
+            },
+            None => (vec![], 1, true),
+        };
+        let batch = RecordBatch::try_new_with_options(
+            self.schema.clone(),
+            columns,
+            &RecordBatchOptions::new().with_row_count(Some(rows)),
+        )?;
+        let value = self.program.evaluate(&batch)?;
+        if scalar {
+            let array = value.into_array(1)?;
+            Ok(ColumnarValue::Scalar(
+                crate::expressions::scalar_at(&array, 0)
+                    .map_err(|e| DataFusionError::Execution(e.to_string()))?,
+            ))
+        } else {
+            Ok(value)
+        }
+    }
+}
+
+/// A selected-capable aligned kernel followed by a pure field-selection view.
+/// Capture roots and the indexed body are prepared once for the query.
+#[derive(Clone)]
+pub struct SelectedAlignedProgram {
+    pub entry_argument: usize,
+    entry_type: DataType,
+    program: Arc<dyn PhysicalExpr>,
+    pub(crate) captures: [PreparedCapture; 3],
+    projection: Option<crate::PreparedArrayProjection>,
+    final_type: DataType,
+}
+impl Debug for SelectedAlignedProgram {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        f.debug_struct("SelectedAlignedProgram")
+            .field("entry_argument", &self.entry_argument)
+            .finish()
+    }
+}
+impl SelectedAlignedProgram {
+    pub fn entry_type(&self) -> &DataType {
+        &self.entry_type
+    }
+    pub fn output_type(&self) -> &DataType {
+        &self.final_type
+    }
+    pub fn invoke(
+        &self,
+        arguments: &[ColumnarValue],
+        selection: AlignedSelection,
+    ) -> DfResult<ColumnarValue> {
+        if selection.entries.data_type() != self.entry_type() {
+            return Err(DataFusionError::Execution(
+                "selected entry owner schema differs".into(),
+            ));
+        }
+        let rows = selection.parents.len();
+        if rows == 0 {
+            return Ok(ColumnarValue::Array(new_empty_array(&self.final_type)));
+        }
+        let captures = self.evaluate_captures(arguments)?;
+        self.invoke_captures(selection, captures, None)
+    }
+    pub(crate) fn evaluate_captures(&self, arguments: &[ColumnarValue]) -> DfResult<[ColumnarValue; 3]> {
+        Ok([self.captures[0].evaluate(arguments)?, self.captures[1].evaluate(arguments)?, self.captures[2].evaluate(arguments)?])
+    }
+    pub(crate) fn invoke_captures(&self, selection: AlignedSelection, captures: [ColumnarValue; 3], bundle: Option<&ArrayRef>) -> DfResult<ColumnarValue> {
+        if selection.entries.data_type()!=self.entry_type() {return Err(DataFusionError::Execution("selected entry owner schema differs".into()));}
+        let rows = selection.parents.len();
+        if rows==0 {return Ok(ColumnarValue::Array(new_empty_array(&self.final_type)));}
+        let map = crate::expressions::indexed_aligned_map(&self.program)
+            .ok_or_else(|| DataFusionError::Internal("selected indexed program absent".into()))?;
+        let output = map
+            .evaluate_selected_captures_with_bundle(&selection, captures, bundle)?
+            .into_array(rows)?;
+        let lists = output.as_any().downcast_ref::<ListArray>().ok_or_else(|| {
+            DataFusionError::Execution("selected aligned output is not a list".into())
+        })?;
+        let cells = lists
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("selected aligned output is not cells".into())
+            })?;
+        let values = cells.column(0).clone();
+        let nulls = NullBuffer::union(values.nulls(), cells.nulls());
+        let values = make_array(values.to_data().into_builder().nulls(nulls).build()?);
+        let selected = match &self.projection {
+            Some(view) => view.bind_validated(&values)?,
+            None => values,
+        };
+        let DataType::List(item) = &self.final_type else {
+            unreachable!()
+        };
+        let DataType::Struct(fields) = item.data_type() else {
+            unreachable!()
+        };
+        let cells =
+            Arc::new(StructArray::try_new(fields.clone(), vec![selected], None)?) as ArrayRef;
+        Ok(ColumnarValue::Array(Arc::new(ListArray::try_new(
+            item.clone(),
+            lists.offsets().clone(),
+            cells,
+            lists.nulls().cloned(),
+        )?)))
+    }
+}
+
+/// Recognize only the typed cell-wrapper field-selection produced by ordinary
+/// select_entries. All original computations remain in their original order;
+/// dropped expressions must be total ordinary entry-field reads.
+pub fn recognize_selected_entry_projection(
+    inner: &datafusion_expr::ScalarUDF,
+    outer: &datafusion_expr::ScalarUDF,
+) -> Option<SelectedAlignedProjection> {
+    let (original, schema) = semantic_kernel(inner)?;
+    let (selection, outer_schema) = semantic_kernel(outer)?;
+    let options = semantic_preparation_options(inner)?;
+    let proof = recognize_selected_entry_projection_expr(original, schema, selection, outer_schema, options)?;
+    Some(SelectedAlignedProjection {
+        inner: inner.clone(), outer: outer.clone(),
+        entry_argument: proof.entry_argument, entry_type: proof.entry_type,
+    })
+}
+
+/// Proof-only recognition against native private argument frames. No physical
+/// program is constructed until the enclosing table region has been admitted.
+pub fn recognize_selected_entry_projection_expr<'a>(
+    original: &'a Expr,
+    schema: &'a Schema,
+    selection: &'a Expr,
+    outer_schema: &'a Schema,
+    options: &'a crate::expressions::PreparationOptions,
+) -> Option<SelectedAlignedExprProof<'a>> {
+    fn value_parameter(expr: &Expr, parameter: &str) -> bool {
+        matches!(expr, Expr::GetField { value, name } if name == "value"
+            && matches!(value.as_ref(), Expr::LambdaVariable { name, .. } if name == parameter))
+    }
+    fn null(expr: &Expr) -> bool {
+        matches!(expr, Expr::Literal { value, .. } if value.is_null())
+            || matches!(expr, Expr::RuntimeLiteral { value } if value.is_null())
+    }
+    let Expr::ArrayMap {
+        value,
+        parameter,
+        body,
+    } = selection
+    else {
+        return None;
+    };
+    let Expr::Column { name } = value.as_ref() else {
+        return None;
+    };
+    if outer_schema.fields().len() != 1 || outer_schema.index_of(name).ok()? != 0 {
+        return None;
+    }
+    let Expr::Struct { fields } = body.as_ref() else {
+        return None;
+    };
+    let [(value_name, body)] = fields.as_slice() else {
+        return None;
+    };
+    if value_name != "value" {
+        return None;
+    }
+    let Expr::IfElse {
+        condition,
+        consequent,
+        alternate,
+    } = body
+    else {
+        return None;
+    };
+    let Expr::Unary {
+        operator: UnaryOperator::Not,
+        value: missing,
+    } = condition.as_ref()
+    else {
+        return None;
+    };
+    let Expr::IsMissing { value } = missing.as_ref() else {
+        return None;
+    };
+    if !value_parameter(value, parameter) || !null(alternate) {
+        return None;
+    }
+    let Expr::Struct { fields: projected } = consequent.as_ref() else {
+        return None;
+    };
+    let names = projected
+        .iter()
+        .map(|(name, value)| {
+            let Expr::GetField {
+                value,
+                name: source,
+            } = value
+            else {
+                return None;
+            };
+            (name == source && value_parameter(value, parameter)).then_some(name.clone())
+        })
+        .collect::<Option<HashSet<_>>>()?;
+    if names.len() != projected.len() {
+        return None;
+    }
+    let Expr::AlignedMatrixMap {
+        entries,
+        columns,
+        rows,
+        globals,
+        body,
+        preserve_cell: true,
+        ..
+    } = original
+    else {
+        return None;
+    };
+    let Expr::Column { name: entry_name } = entries.as_ref() else {
+        return None;
+    };
+    let entry_argument = schema.index_of(entry_name).ok()?;
+    for child in [columns.as_ref(), rows.as_ref(), globals.as_ref()] {
+        let mut uses_entry = false;
+        child.visit_unique(&mut |node| {
+            uses_entry |= matches!(node, Expr::Column { name } if name == entry_name);
+        });
+        if uses_entry {
+            return None;
+        }
+    }
+    let Expr::IfElse {
+        condition,
+        consequent,
+        alternate,
+    } = body.as_ref()
+    else {
+        return None;
+    };
+    if !matches!(condition.as_ref(), Expr::AlignedMapInput { axis, .. } if axis == "entry_present")
+        || !null(alternate)
+    {
+        return None;
+    }
+    let Expr::Struct { fields } = consequent.as_ref() else {
+        return None;
+    };
+    if !crate::indexed_batch::ordinary_entry_reads(
+        fields
+            .iter()
+            .filter(|(name, _)| !names.contains(name))
+            .map(|(_, value)| value),
+    ) {
+        return None;
+    }
+    let available = fields
+        .iter()
+        .map(|(name, _)| name.clone())
+        .collect::<HashSet<_>>();
+    if !names.is_subset(&available) {
+        return None;
+    }
+    let final_type = selection.dtype(outer_schema).ok()?.to_arrow().ok()?;
+    Some(SelectedAlignedExprProof {
+        original, schema, options, names, entry_argument,
+        entry_type: schema.field(entry_argument).data_type().clone(), final_type,
+    })
+}
+
+/// An immutable semantic match. Physical eligibility is checked before compiling
+/// the selected body, so rejected candidates do not construct an evaluator.
+pub struct SelectedAlignedProjection {
+    inner: datafusion_expr::ScalarUDF,
+    outer: datafusion_expr::ScalarUDF,
+    entry_argument: usize,
+    entry_type: DataType,
+}
+impl SelectedAlignedProjection {
+    pub fn entry_argument(&self) -> usize { self.entry_argument }
+    pub fn entry_type(&self) -> &DataType { &self.entry_type }
+    pub fn prepare(self) -> Option<SelectedAlignedProgram> {
+        let (original, schema) = semantic_kernel(&self.inner)?;
+        let (selection, outer_schema) = semantic_kernel(&self.outer)?;
+        let options = semantic_preparation_options(&self.inner)?;
+        let mut proof = recognize_selected_entry_projection_expr(original, schema, selection, outer_schema, options)?;
+        let arguments = outer_schema.fields().iter().map(|field| field.data_type().clone()).collect::<Vec<_>>();
+        proof.final_type = self.outer.return_type(&arguments).ok()?;
+        proof.prepare()
+    }
+}
+
+/// Borrowed proof: its caller retains the exact expression and schema owners.
+/// A rebuilt child must be recognized again before preparation.
+pub struct SelectedAlignedExprProof<'a> {
+    original: &'a Expr,
+    schema: &'a Schema,
+    options: &'a crate::expressions::PreparationOptions,
+    names: HashSet<String>,
+    entry_argument: usize,
+    entry_type: DataType,
+    final_type: DataType,
+}
+impl SelectedAlignedExprProof<'_> {
+    pub fn entry_argument(&self) -> usize { self.entry_argument }
+    pub fn entry_type(&self) -> &DataType { &self.entry_type }
+    pub fn output_type(&self) -> &DataType { &self.final_type }
+    /// Selection removes ordinary passthrough fields before indexed lowering.
+    /// Testing the unselected body would incorrectly reject an unused Struct
+    /// owner which the selected program never reads or gathers.
+    pub fn supports_indexed_body(&self) -> bool {
+        let Expr::AlignedMatrixMap { body, .. } = self.original else { return false; };
+        let Expr::IfElse { consequent, .. } = body.as_ref() else { return false; };
+        let Expr::Struct { fields } = consequent.as_ref() else { return false; };
+        let selected = Expr::Struct {
+            fields: fields.iter().filter(|(name, _)| self.names.contains(name)).cloned().collect(),
+        };
+        crate::expressions::selected_aligned_body_supported(&selected)
+    }
+    pub(crate) fn original(&self) -> &Expr { self.original }
+    pub(crate) fn schema(&self) -> &Schema { self.schema }
+    pub(crate) fn options(&self) -> &crate::expressions::PreparationOptions { self.options }
+    pub(crate) fn retains(&self, name: &str) -> bool { self.names.contains(name) }
+    pub(crate) fn prepare_rewritten(&self, original: &Expr, schema: &Schema) -> Option<SelectedAlignedProgram> {
+        SelectedAlignedExprProof { original, schema, options: self.options, names: self.names.clone(), entry_argument: self.entry_argument, entry_type: schema.field(self.entry_argument).data_type().clone(), final_type: self.final_type.clone() }.prepare()
+    }
+    pub fn prepare(self) -> Option<SelectedAlignedProgram> {
+        let Self { original, schema, options, names, entry_argument, final_type, .. } = self;
+    let Expr::AlignedMatrixMap { columns, rows, globals, body, .. } = original else { unreachable!() };
+    let Expr::IfElse { condition, consequent, .. } = body.as_ref() else { unreachable!() };
+    let Expr::Struct { fields } = consequent.as_ref() else { unreachable!() };
+    let retained = fields
+        .iter()
+        .filter(|(name, _)| names.contains(name))
+        .cloned()
+        .collect::<Vec<_>>();
+    let selected_body = Expr::Struct { fields: retained };
+    // Type against the original aligned body context, before changing its output.
+    let Type::Array { array: cell } = original.dtype(schema).ok()? else {
+        return None;
+    };
+    let Type::Struct { r#struct: cell } = cell.as_ref() else {
+        return None;
+    };
+    let original_entry = cell.iter().find(|(name, _)| name == "value")?.1.clone();
+    let Type::Struct {
+        r#struct: entry_fields,
+    } = original_entry
+    else {
+        return None;
+    };
+    let entry_type = Type::Struct {
+        r#struct: entry_fields
+            .into_iter()
+            .filter(|(name, _)| names.contains(name))
+            .collect(),
+    };
+    let mut rewritten = original.clone();
+    let Expr::AlignedMatrixMap { body, dtype, .. } = &mut rewritten else {
+        unreachable!()
+    };
+    *body = Arc::new(Expr::IfElse {
+        condition: condition.clone(),
+        consequent: Arc::new(selected_body),
+        alternate: Arc::new(Expr::Literal {
+            dtype: entry_type.clone(),
+            value: serde_json::Value::Null,
+        }),
+    });
+    *dtype = Type::Array {
+        array: Box::new(Type::Struct {
+            r#struct: vec![("value".into(), entry_type.clone())],
+        }),
+    };
+    let program = crate::expressions::lower_mode_with_options(&rewritten, schema, true, options).ok()?;
+    crate::expressions::indexed_aligned_map(&program)?;
+    let captures = [
+        PreparedCapture::prepare(columns, schema, options)?,
+        PreparedCapture::prepare(rows, schema, options)?,
+        PreparedCapture::prepare(globals, schema, options)?,
+    ];
+    let DataType::List(item) = &final_type else {
+        return None;
+    };
+    let DataType::Struct(cell) = item.data_type() else {
+        return None;
+    };
+    let [value_field] = cell.as_ref() else {
+        return None;
+    };
+    let projection = crate::PreparedArrayProjection::prepare(
+        &entry_type.to_arrow().ok()?,
+        value_field.data_type(),
+    )
+    .ok()?;
+    Some(SelectedAlignedProgram {
+        entry_argument,
+        entry_type: schema.field(entry_argument).data_type().clone(),
+        program,
+        captures,
+        projection,
+        final_type,
+    })
+    }
+}
+
+/// Existing closed callback policy, exposed for native table-region proofs.
+pub fn can_block_selected_body(expression: &Expr) -> bool {
+    crate::expression_effects::can_block_list_callback(expression)
+}
+
+/// A filtered-out lane may skip input bounds/Call validation, under Vail's
+/// accepted invalid-input policy. Explicit errors, arithmetic failures,
+/// parsing, randomness and unknown functions remain evaluation barriers.
+/// This is deliberately separate from changing a callback's batch boundaries.
+pub fn can_defer_selected_body(expression: &Expr) -> bool {
+    crate::expression_effects::can_defer_selected_body(expression)
+}
+
+/// Total metadata computations may run over parent/choice coordinates. The
+/// entry-owner marker is never a metadata input, even through a nested field.
+pub fn selected_metadata_expr(expression: &Expr, marker: Option<&str>) -> bool {
+    let mut allowed = true;
+    expression.visit_unique(&mut |node| {
+        allowed &= match node {
+            Expr::Column { name } => marker != Some(name.as_str()),
+            Expr::Global { .. } | Expr::ExternalGlobal { .. }
+            | Expr::Literal { .. } | Expr::RuntimeLiteral { .. }
+            | Expr::Struct { .. } | Expr::GetField { .. }
+            | Expr::IsMissing { .. } | Expr::Unary { .. }
+            | Expr::ArrayLength { .. } => true,
+            Expr::Binary { .. } | Expr::IntegerBinary { .. } => node.is_pure(),
+            _ => false,
+        };
+    });
+    allowed
+}
+
+pub fn selected_entry_projection(
+    inner: &datafusion_expr::ScalarUDF,
+    outer: &datafusion_expr::ScalarUDF,
+) -> Option<SelectedAlignedProgram> {
+    recognize_selected_entry_projection(inner, outer)?.prepare()
 }
 
 /// One branch of a deterministic semantic zip, evaluated against bindings
@@ -119,11 +659,12 @@ pub fn semantic_zip_programs(function: &datafusion_expr::ScalarUDF) -> Option<Ve
     let (expression, schema) = semantic_kernel(function)?;
     let Expr::NestedFunction { function: name, args, .. } = expression else { return None; };
     if name != "arrays_zip" { return None; }
-    args.iter().map(|argument| compile_bound_program(argument, schema, true)).collect()
+    let options = semantic_preparation_options(function)?;
+    args.iter().map(|argument| compile_bound_program(argument, schema, true, options)).collect()
 }
-fn compile_bound_program(argument: &Expr, schema: &Schema, with_take: bool) -> Option<BoundSemanticProgram> {
+fn compile_bound_program(argument: &Expr, schema: &Schema, with_take: bool, options: &crate::expressions::PreparationOptions) -> Option<BoundSemanticProgram> {
     let df_schema = DFSchema::try_from(schema.clone()).ok()?;
-    let compiled = logical_kernel(argument, &df_schema, &Schema::empty(), &BTreeMap::new(), &[]).ok()?;
+    let compiled = logical_kernel_with_options(argument, &df_schema, &Schema::empty(), &BTreeMap::new(), &[], options).ok()?;
     let LogicalExpr::ScalarFunction(compiled) = compiled else { return None; };
     let inputs = compiled.args.iter().map(|argument| {
         let LogicalExpr::Column(column) = argument else { return None; };
@@ -134,7 +675,7 @@ fn compile_bound_program(argument: &Expr, schema: &Schema, with_take: bool) -> O
     let take = if with_take {
         if let Expr::NestedFunction { function, args, .. } = argument {
             if function == "__vail_list_take" && args.len() == 2 {
-                Some(Box::new((compile_bound_program(&args[0], schema, false)?, compile_bound_program(&args[1], schema, false)?)))
+                Some(Box::new((compile_bound_program(&args[0], schema, false, options)?, compile_bound_program(&args[1], schema, false, options)?)))
             } else { None }
         } else { None }
     } else { None };
@@ -829,7 +1370,14 @@ fn logical_kernel(
     bindings: &BTreeMap<String, usize>,
     scope: &[String],
 ) -> Result<LogicalExpr, ExprError> {
+    logical_kernel_with_options(expr, schema, globals, bindings, scope, &crate::expressions::PreparationOptions::capture())
+}
+fn logical_kernel_with_options(
+    expr: &Expr, schema: &DFSchema, globals: &Schema, bindings: &BTreeMap<String, usize>,
+    scope: &[String], options: &crate::expressions::PreparationOptions,
+) -> Result<LogicalExpr, ExprError> {
     use std::collections::BTreeMap as Map;
+    let options = options.clone();
     let arrow_schema = schema.as_arrow();
     let mut refs: Map<String, (Expr, Type, arrow_schema::DataType)> = Map::new();
     expr.visit_unique(&mut |node| {
@@ -911,19 +1459,25 @@ fn logical_kernel(
     }
     fn replace_refs(
         expr: &Expr,
+        shared: bool,
         slots: &Map<String, String>,
         schema: &DFSchema,
         globals: &Schema,
         bindings: &BTreeMap<String, usize>,
-        memo: &mut std::collections::HashMap<usize, Expr>,
-    ) -> Result<Expr, ExprError> {
+        memo: &mut std::collections::HashMap<usize, Arc<Expr>>,
+    ) -> Result<RebuiltExpr, ExprError> {
         let address = expr as *const Expr as usize;
-        if let Some(cached) = memo.get(&address) {
-            return Ok(cached.clone());
+        if shared {
+            if let Some(cached) = memo.get(&address) { return Ok(RebuiltExpr::Shared(cached.clone())); }
         }
         let result = replace_node(expr, slots, schema, globals, bindings, memo)?;
-        memo.insert(address, result.clone());
-        Ok(result)
+        if shared {
+            let result = Arc::new(result);
+            memo.insert(address, result.clone());
+            Ok(RebuiltExpr::Shared(result))
+        } else {
+            Ok(RebuiltExpr::Owned(result))
+        }
     }
     fn replace_node(
         expr: &Expr,
@@ -931,7 +1485,7 @@ fn logical_kernel(
         schema: &DFSchema,
         globals: &Schema,
         bindings: &BTreeMap<String, usize>,
-        memo: &mut std::collections::HashMap<usize, Expr>,
+        memo: &mut std::collections::HashMap<usize, Arc<Expr>>,
     ) -> Result<Expr, ExprError> {
         let key = match expr {
             Expr::Column { name } => {
@@ -976,20 +1530,8 @@ fn logical_kernel(
                 format!("external:{reference}")
             }
             _ => {
-                // Borrow original nodes for memo addresses. try_map_children
-                // clones inline Vec children before invoking its callback.
-                let mut children = Vec::new();
-                expr.for_each_child(&mut |child| children.push(child));
-                let mut children = children.into_iter();
-                return expr.try_map_children(|_| {
-                    replace_refs(
-                        children.next().expect("child visitor order"),
-                        slots,
-                        schema,
-                        globals,
-                        bindings,
-                        memo,
-                    )
+                return expr.try_map_children_rebuilt(|child, shared| {
+                    replace_refs(child, shared, slots, schema, globals, bindings, memo)
                 });
             }
         };
@@ -1001,15 +1543,16 @@ fn logical_kernel(
 
     let rewritten = replace_refs(
         expr,
+        false,
         &slots,
         schema,
         globals,
         bindings,
         &mut std::collections::HashMap::new(),
-    )?;
+    )?.into_owned();
     let kernel_schema = Schema::new(fields);
     let kernel =
-        crate::expressions::lower(&rewritten, &kernel_schema).map_err(|error| match error {
+        crate::expressions::lower_with_options(&rewritten, &kernel_schema, &options).map_err(|error| match error {
             ExprError::Invalid(message) => ExprError::Invalid(format!(
                 "{} kernel compilation: {message}",
                 kernel_label(expr)
@@ -1028,6 +1571,8 @@ fn logical_kernel(
     let volatility = crate::expression_effects::effects(expr).volatility();
     let udf_name = format!("vail_semantic_kernel_{}", kernel_label(expr));
     let expected_output_type = output_type.clone();
+    let trace_preparation=std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some();
+    let preparation_label=udf_name.clone();
     let signature = if refs.is_empty() {
         Signature::nullary(volatility)
     } else {
@@ -1041,7 +1586,8 @@ fn logical_kernel(
         Arc<dyn datafusion_physical_expr::PhysicalExpr>,
         Arc<Schema>,
     )>);
-    let udf = crate::kernel_identity::scalar_with_args(
+    let owner_options = Some(options.clone());
+    let udf = crate::kernel_identity::scalar_with_options(
         &udf_name,
         identity,
         signature,
@@ -1114,15 +1660,19 @@ fn logical_kernel(
             } else if scalars.is_empty() {
                 (kernel.clone(), kernel_schema.clone())
             } else {
+                let started=trace_preparation.then(std::time::Instant::now);
                 let rewritten =
                     bind_scalar_captures(&captured_expression, &scalars, &mut Default::default())
                         .map_err(|error| {
                         datafusion_common::DataFusionError::Execution(error.to_string())
                     })?;
                 let schema = Arc::new(Schema::new(fields));
-                let program = crate::expressions::lower(&rewritten, &schema).map_err(|error| {
+                let program = crate::expressions::lower_with_options(&rewritten, &schema, &options).map_err(|error| {
                     datafusion_common::DataFusionError::Execution(error.to_string())
                 })?;
+                if let Some(started)=started {
+                    eprintln!("VAIL_SEMANTIC_REPREP label={} rows={} slots={:?} micros={}",preparation_label,row_count,scalar_keys.iter().map(|(index,_)|*index).collect::<Vec<_>>(),started.elapsed().as_micros());
+                }
                 (program, schema)
             };
             if let Some(prepared) = prepared.as_mut() {
@@ -1149,6 +1699,7 @@ fn logical_kernel(
                 Ok(datafusion_expr::ColumnarValue::Array(output))
             }
         }),
+        owner_options,
     );
     Ok(udf.call(logical_args))
 }

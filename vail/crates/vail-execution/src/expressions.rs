@@ -788,12 +788,101 @@ fn field_type(fields: &[(String, Type)], name: &str) -> Result<Type, ExprError> 
         .map(|(_, t)| t.clone())
         .ok_or_else(|| ExprError::Invalid(format!("struct field {name:?} is absent")))
 }
+pub(crate) enum RebuiltExpr {
+    Owned(Expr),
+    Shared(Arc<Expr>),
+}
+impl RebuiltExpr {
+    pub(crate) fn into_owned(self) -> Expr {
+        match self { Self::Owned(value) => value, Self::Shared(value) => Arc::unwrap_or_clone(value) }
+    }
+    fn into_shared(self) -> Arc<Expr> {
+        match self { Self::Owned(value) => Arc::new(value), Self::Shared(value) => value }
+    }
+}
+
+/// Immutable switches captured at the expression preparation boundary.
+#[derive(Clone, Debug, Default)]
+pub struct PreparationOptions {
+    product_map: bool,
+    compose_maps: bool,
+    invariant_map: bool,
+    indexed_batch: bool,
+    aligned_invariants: bool,
+    borrow_indexed_input: bool,
+    defer_aligned_producer: bool,
+    projected_producer: bool,
+    selected_producer: bool,
+    selected_producer_scratch_bytes: usize,
+    trace_product_map: bool,
+    coalesce_once: bool,
+    borrow_list_children: bool,
+    trace_list_borrow: bool,
+    pub(crate) cache_return_field: bool,
+}
+impl PartialEq for PreparationOptions {
+    fn eq(&self, other: &Self) -> bool { self.identity() == other.identity() }
+}
+impl Eq for PreparationOptions {}
+impl Hash for PreparationOptions {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.identity().hash(state); }
+}
+impl PreparationOptions {
+    fn identity(&self) -> ([bool; 13], usize) {
+        // Sharing the derived return Field changes metadata allocation only.
+        ([self.product_map, self.compose_maps, self.invariant_map, self.indexed_batch,
+         self.aligned_invariants, self.borrow_indexed_input, self.trace_product_map,self.coalesce_once,self.borrow_list_children,self.trace_list_borrow,
+         self.defer_aligned_producer, self.projected_producer, self.selected_producer], self.selected_producer_scratch_bytes)
+    }
+    /// Enable only the measured implementation choices inside an admitted
+    /// selected region; unrelated expression preparation keeps captured policy.
+    pub fn for_selected_region(&self) -> Self {
+        let mut options=self.clone();
+        options.compose_maps=true;
+        options.invariant_map=true;
+        options.indexed_batch=true;
+        options.aligned_invariants=true;
+        options.borrow_indexed_input=true;
+        options.defer_aligned_producer=true;
+        options.projected_producer=true;
+        options.selected_producer=true;
+        options.coalesce_once=true;
+        options.cache_return_field=true;
+        options
+    }
+    pub fn defer_aligned_producer(&self) -> bool { self.defer_aligned_producer }
+    pub fn projected_producer(&self) -> bool { self.projected_producer }
+    pub fn selected_producer(&self) -> bool { self.selected_producer }
+    pub fn selected_producer_scratch_bytes(&self) -> usize { self.selected_producer_scratch_bytes }
+    pub fn capture() -> Self {
+        let enabled = |name| std::env::var_os(name).is_some();
+        Self {
+            borrow_list_children: enabled("VAIL_EXPERIMENT_BORROW_LIST_CHILDREN"),
+            trace_list_borrow: enabled("VAIL_TRACE_LIST_BORROW"),
+            coalesce_once: enabled("VAIL_EXPERIMENT_COALESCE_ONCE"),
+            product_map: enabled("VAIL_EXPERIMENT_PRODUCT_MAP"),
+            compose_maps: enabled("VAIL_EXPERIMENT_COMPOSE_MAPS"),
+            invariant_map: enabled("VAIL_EXPERIMENT_INVARIANT_MAP"),
+            indexed_batch: enabled("VAIL_EXPERIMENT_INDEXED_BATCH"),
+            aligned_invariants: enabled("VAIL_EXPERIMENT_ALIGNED_INVARIANTS"),
+            borrow_indexed_input: enabled("VAIL_EXPERIMENT_BORROW_INDEXED_INPUT"),
+            defer_aligned_producer: enabled("VAIL_EXPERIMENT_FUSED_PRODUCER"),
+            projected_producer: enabled("VAIL_EXPERIMENT_PROJECTED_PRODUCER"),
+            selected_producer: enabled("VAIL_EXPERIMENT_SELECTED_PRODUCER"),
+            selected_producer_scratch_bytes: std::env::var("VAIL_EXPERIMENT_SELECTED_PRODUCER_SCRATCH_BYTES").ok().and_then(|value| value.parse().ok()).unwrap_or(64 << 20),
+            trace_product_map: enabled("VAIL_TRACE_PRODUCT_MAP"),
+            cache_return_field: enabled("VAIL_EXPERIMENT_CACHED_RETURN_FIELD"),
+        }
+    }
+}
 /// A compilation request owns all temporary lowering IR and memo tables. Native
 /// addresses are safe keys while the caller's root and this arena remain alive.
 /// Binding contexts include actual Arrow metadata and lexical field positions;
 /// neither node identity alone nor a process-global cache can describe typing.
 #[derive(Default)]
 struct CompilationMemo {
+    options: PreparationOptions,
+    suppress_invariant_hoist: bool,
     contexts: HashMap<CompilationBindings, usize>,
     types: HashMap<(usize, usize), Type>,
     physical: HashMap<(usize, usize), Arc<dyn PhysicalExpr>>,
@@ -801,7 +890,10 @@ struct CompilationMemo {
     generated: Vec<Arc<Expr>>,
     scans: HashMap<*const Expr, bool>,
     root_expression: usize,
+    indexed_selection: bool,
     suppress_local_cse: bool,
+    coalesce_eligibility:HashMap<(usize,usize),bool>,
+    coalesce_budget:usize,
     local_cse_regions: HashMap<usize, HashSet<usize>>,
     local_cse_names: HashSet<String>,
 }
@@ -827,6 +919,17 @@ impl CompilationMemo {
         };
         let next = self.contexts.len();
         *self.contexts.entry(descriptor).or_insert(next)
+    }
+}
+
+impl Expr {
+    /// One node's closed evaluation contract. The caller owns this metadata
+    /// memo for one query; it contains no evaluated arrays or row values.
+    pub fn can_prefetch_node(&self, contracts: &mut HashMap<String,bool>) -> bool {
+        crate::expression_effects::can_prefetch_node(self,contracts)
+    }
+    pub fn can_prefetch_values(&self) -> bool {
+        crate::expression_effects::can_prefetch_values(self)
     }
 }
 
@@ -1180,12 +1283,42 @@ impl Expr {
         &self,
         mut f: impl FnMut(&Expr) -> Result<Expr, E>,
     ) -> Result<Expr, E> {
+        self.try_map_children_rebuilt(|expr, _| f(expr).map(RebuiltExpr::Owned))
+    }
+
+    /// Rebuild children while retaining shared Arc edges. The Boolean tells
+    /// the rewriter whether an edge is shared or an exclusively owned child.
+    pub fn try_map_children_shared<E>(
+        &self,
+        mut f: impl FnMut(&Expr, bool) -> Result<Arc<Expr>, E>,
+    ) -> Result<Expr, E> {
+        self.try_map_children_rebuilt(|expr, shared| f(expr, shared).map(RebuiltExpr::Shared))
+    }
+
+    pub(crate) fn try_map_children_rebuilt<E>(
+        &self,
+        mut f: impl FnMut(&Expr, bool) -> Result<RebuiltExpr, E>,
+    ) -> Result<Expr, E> {
+        // Inline children must be rebuilt directly: cloning their parent first
+        // would recursively copy a suffix that is immediately replaced.
+        let inline = match self {
+            Self::Struct {fields} => Some(Self::Struct { fields: fields.iter().map(|(name,e)| Ok((name.clone(),f(e, false)?.into_owned()))).collect::<Result<_,E>>()? }),
+            Self::Array {element_type,elements} => Some(Self::Array {element_type:element_type.clone(),elements:elements.iter().map(|e|f(e, false).map(RebuiltExpr::into_owned)).collect::<Result<_,E>>()?}),
+            Self::Tuple {elements} => Some(Self::Tuple {elements:elements.iter().map(|e|f(e, false).map(RebuiltExpr::into_owned)).collect::<Result<_,E>>()?}),
+            Self::NestedFunction {function,args,dtype} => Some(Self::NestedFunction {function:function.clone(),dtype:dtype.clone(),args:args.iter().map(|e|f(e, false).map(RebuiltExpr::into_owned)).collect::<Result<_,E>>()?}),
+            Self::StringFunction {function,args} => Some(Self::StringFunction {function:function.clone(),args:args.iter().map(|e|f(e, false).map(RebuiltExpr::into_owned)).collect::<Result<_,E>>()?}),
+            Self::TableLookup {reference,keys,all_matches,query_interval,dtype} => Some(Self::TableLookup {reference:reference.clone(),keys:keys.iter().map(|e|f(e, false).map(RebuiltExpr::into_owned)).collect::<Result<_,E>>()?,all_matches:*all_matches,query_interval:*query_interval,dtype:dtype.clone()}),
+            Self::Aggregate {function,value,options,result_type,init} => Some(Self::Aggregate {function:function.clone(),value:value.as_ref().map(|e|f(e, true).map(RebuiltExpr::into_shared)).transpose()?,options:options.clone(),result_type:result_type.clone(),init:init.iter().map(|(name,e)|Ok((name.clone(),f(e, false)?.into_owned()))).collect::<Result<_,E>>()?}),
+            Self::Switch {value,parameter,cases,default,missing} => Some(Self::Switch {value:f(value, true)?.into_shared(),parameter:parameter.clone(),cases:cases.iter().map(|(c,r)|Ok((f(c, false)?.into_owned(),f(r, false)?.into_owned()))).collect::<Result<_,E>>()?,default:f(default, true)?.into_shared(),missing:missing.as_ref().map(|e|f(e, true).map(RebuiltExpr::into_shared)).transpose()?}),
+            _=>None,
+        };
+        if let Some(result)=inline {return Ok(result);}
         let mut result = self.clone();
         match &mut result {
-            Self::MatrixScope { value, .. } => *value = Arc::new(f(value)?),
+            Self::MatrixScope { value, .. } => *value = f(value, true)?.into_shared(),
             Self::TableLookup { keys, .. } => {
                 for key in keys {
-                    *key = f(key)?;
+                    *key = f(key, false)?.into_owned();
                 }
             }
             Self::MatrixField { .. }
@@ -1200,18 +1333,18 @@ impl Expr {
                 body,
                 ..
             } => {
-                *entries = Arc::new(f(entries)?);
-                *columns = Arc::new(f(columns)?);
-                *rows = Arc::new(f(rows)?);
-                *globals_expr = Arc::new(f(globals_expr)?);
-                *body = Arc::new(f(body)?);
+                *entries = f(entries, true)?.into_shared();
+                *columns = f(columns, true)?.into_shared();
+                *rows = f(rows, true)?.into_shared();
+                *globals_expr = f(globals_expr, true)?.into_shared();
+                *body = f(body, true)?.into_shared();
             }
             Self::Aggregate { value, init, .. } => {
                 if let Some(value) = value {
-                    *value = Arc::new(f(value)?);
+                    *value = f(value, true)?.into_shared();
                 }
                 for (_, expr) in init {
-                    *expr = f(expr)?;
+                    *expr = f(expr, false)?.into_owned();
                 }
             }
             Self::AggregateFold {
@@ -1220,45 +1353,45 @@ impl Expr {
                 combine,
                 ..
             } => {
-                *initial = Arc::new(f(initial)?);
-                *seq = Arc::new(f(seq)?);
-                *combine = Arc::new(f(combine)?);
+                *initial = f(initial, true)?.into_shared();
+                *seq = f(seq, true)?.into_shared();
+                *combine = f(combine, true)?.into_shared();
             }
             Self::AggGroupBy { key, body } => {
-                *key = Arc::new(f(key)?);
-                *body = Arc::new(f(body)?);
+                *key = f(key, true)?.into_shared();
+                *body = f(body, true)?.into_shared();
             }
             Self::AggArray { value, body, .. } => {
-                *value = Arc::new(f(value)?);
-                *body = Arc::new(f(body)?);
+                *value = f(value, true)?.into_shared();
+                *body = f(body, true)?.into_shared();
             }
             Self::AggFilter { predicate, body } => {
-                *predicate = Arc::new(f(predicate)?);
-                *body = Arc::new(f(body)?);
+                *predicate = f(predicate, true)?.into_shared();
+                *body = f(body, true)?.into_shared();
             }
             Self::Tuple { elements: args }
             | Self::StringFunction { args, .. }
             | Self::NestedFunction { args, .. } => {
                 for arg in args {
-                    *arg = f(arg)?;
+                    *arg = f(arg, false)?.into_owned();
                 }
             }
             Self::AggExplode { value, body, .. } | Self::ArrayMap { value, body, .. } => {
-                *value = Arc::new(f(value)?);
-                *body = Arc::new(f(body)?);
+                *value = f(value, true)?.into_shared();
+                *body = f(body, true)?.into_shared();
             }
             Self::ArrayFold {
                 value, zero, body, ..
             } => {
-                *value = Arc::new(f(value)?);
-                *zero = Arc::new(f(zero)?);
-                *body = Arc::new(f(body)?);
+                *value = f(value, true)?.into_shared();
+                *zero = f(zero, true)?.into_shared();
+                *body = f(body, true)?.into_shared();
             }
             Self::ArrayAggregateScan {
                 value, predicate, ..
             } => {
-                *value = Arc::new(f(value)?);
-                *predicate = Arc::new(f(predicate)?);
+                *value = f(value, true)?.into_shared();
+                *predicate = f(predicate, true)?.into_shared();
             }
             Self::ArrayPredicate {
                 value, predicate, ..
@@ -1266,21 +1399,21 @@ impl Expr {
             | Self::ArrayFilter {
                 value, predicate, ..
             } => {
-                *value = Arc::new(f(value)?);
-                *predicate = Arc::new(f(predicate)?);
+                *value = f(value, true)?.into_shared();
+                *predicate = f(predicate, true)?.into_shared();
             }
             Self::StreamRange { start, stop, step } => {
-                *start = Arc::new(f(start)?);
-                *stop = Arc::new(f(stop)?);
-                *step = Arc::new(f(step)?);
+                *start = f(start, true)?.into_shared();
+                *stop = f(stop, true)?.into_shared();
+                *step = f(step, true)?.into_shared();
             }
             Self::ArrayGrouped { value, size } => {
-                *value = Arc::new(f(value)?);
-                *size = Arc::new(f(size)?);
+                *value = f(value, true)?.into_shared();
+                *size = f(size, true)?.into_shared();
             }
             Self::IntegerBinary { left, right, .. } | Self::Binary { left, right, .. } => {
-                *left = Arc::new(f(left)?);
-                *right = Arc::new(f(right)?);
+                *left = f(left, true)?.into_shared();
+                *right = f(right, true)?.into_shared();
             }
             Self::Die { message: value, .. }
             | Self::Unary { value, .. }
@@ -1291,29 +1424,29 @@ impl Expr {
             | Self::IsMissing { value }
             | Self::ArrayFlatten { value }
             | Self::ArrayLength { value }
-            | Self::ArrayReduce { value, .. } => *value = Arc::new(f(value)?),
+            | Self::ArrayReduce { value, .. } => *value = f(value, true)?.into_shared(),
             Self::Interval {
                 start,
                 end,
                 includes_start,
                 includes_end,
             } => {
-                *start = Arc::new(f(start)?);
-                *end = Arc::new(f(end)?);
-                *includes_start = Arc::new(f(includes_start)?);
-                *includes_end = Arc::new(f(includes_end)?);
+                *start = f(start, true)?.into_shared();
+                *end = f(end, true)?.into_shared();
+                *includes_start = f(includes_start, true)?.into_shared();
+                *includes_end = f(includes_end, true)?.into_shared();
             }
             Self::IntervalContains { interval, point } => {
-                *interval = Arc::new(f(interval)?);
-                *point = Arc::new(f(point)?);
+                *interval = f(interval, true)?.into_shared();
+                *point = f(point, true)?.into_shared();
             }
             Self::IntervalOverlaps { left, right } => {
-                *left = Arc::new(f(left)?);
-                *right = Arc::new(f(right)?);
+                *left = f(left, true)?.into_shared();
+                *right = f(right, true)?.into_shared();
             }
             Self::Struct { fields } => {
                 for (_, expr) in fields {
-                    *expr = f(expr)?;
+                    *expr = f(expr, false)?.into_owned();
                 }
             }
             Self::Switch {
@@ -1323,14 +1456,14 @@ impl Expr {
                 missing,
                 ..
             } => {
-                *value = Arc::new(f(value)?);
+                *value = f(value, true)?.into_shared();
                 for (condition, result) in cases {
-                    *condition = f(condition)?;
-                    *result = f(result)?;
+                    *condition = f(condition, false)?.into_owned();
+                    *result = f(result, false)?.into_owned();
                 }
-                *default = Arc::new(f(default)?);
+                *default = f(default, true)?.into_shared();
                 if let Some(missing) = missing {
-                    *missing = Arc::new(f(missing)?);
+                    *missing = f(missing, true)?.into_shared();
                 }
             }
             Self::IfElse {
@@ -1338,44 +1471,44 @@ impl Expr {
                 consequent,
                 alternate,
             } => {
-                *condition = Arc::new(f(condition)?);
-                *consequent = Arc::new(f(consequent)?);
-                *alternate = Arc::new(f(alternate)?);
+                *condition = f(condition, true)?.into_shared();
+                *consequent = f(consequent, true)?.into_shared();
+                *alternate = f(alternate, true)?.into_shared();
             }
             Self::Array { elements, .. } => {
                 for expr in elements {
-                    *expr = f(expr)?;
+                    *expr = f(expr, false)?.into_owned();
                 }
             }
             Self::ArrayIndex { value, index } => {
-                *value = Arc::new(f(value)?);
-                *index = Arc::new(f(index)?);
+                *value = f(value, true)?.into_shared();
+                *index = f(index, true)?.into_shared();
             }
             Self::Locus {
                 contig, position, ..
             } => {
-                *contig = Arc::new(f(contig)?);
-                *position = Arc::new(f(position)?);
+                *contig = f(contig, true)?.into_shared();
+                *position = f(position, true)?.into_shared();
             }
             Self::LocusOp { value, .. }
             | Self::ParseLocus { value, .. }
-            | Self::ParseCsvLine { value, .. } => *value = Arc::new(f(value)?),
+            | Self::ParseCsvLine { value, .. } => *value = f(value, true)?.into_shared(),
             Self::LocusValid {
                 contig, position, ..
             } => {
-                *contig = Arc::new(f(contig)?);
-                *position = Arc::new(f(position)?);
+                *contig = f(contig, true)?.into_shared();
+                *position = f(position, true)?.into_shared();
             }
-            Self::LocusFromGlobalPosition { position, .. } => *position = Arc::new(f(position)?),
+            Self::LocusFromGlobalPosition { position, .. } => *position = f(position, true)?.into_shared(),
             Self::ArraySlice {
                 value,
                 start,
                 stop,
                 step,
             } => {
-                *value = Arc::new(f(value)?);
+                *value = f(value, true)?.into_shared();
                 for expr in [start, stop, step].into_iter().flatten() {
-                    *expr = Arc::new(f(expr)?);
+                    *expr = f(expr, true)?.into_shared();
                 }
             }
             Self::Column { .. }
@@ -1808,6 +1941,12 @@ impl Expr {
                 args,
                 dtype,
             } => {
+                if matches!(function.as_str(), crate::indexed_batch::INPUT | crate::indexed_batch::IS_NULL) {
+                    if args.len() != 3 { return Err(ExprError::Invalid("indexed input requires three typed arguments".into())); }
+                    let index = args[0].dtype_scoped(schema, globals, scope, memo, context)?;
+                    if index != Type::Primitive(PrimitiveType::Int32) { return Err(ExprError::Invalid("indexed lanes require int32".into())); }
+                    return Ok(dtype.clone());
+                }
                 if matches!(
                     function.as_str(),
                     "__vail_parse_json" | "__vail_parse_import_integer"
@@ -4890,12 +5029,19 @@ fn lower_cast(
 /// Lower the complete typed IR to a DataFusion physical-expression tree.
 /// The source schema is fixed at this compilation boundary.
 pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_mode(expr, schema, false)
+}
+
+pub(crate) fn lower_mode(expr: &Expr, schema: &Schema, indexed_selection: bool) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_mode_with_options(expr, schema, indexed_selection, &PreparationOptions::capture())
+}
+pub(crate) fn lower_mode_with_options(expr: &Expr, schema: &Schema, indexed_selection: bool, options: &PreparationOptions) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
     let globals = RecordBatch::try_new_with_options(
         Arc::new(Schema::empty()),
         vec![],
         &RecordBatchOptions::new().with_row_count(Some(1)),
     )?;
-    lower_with_globals(expr, schema, &globals)
+    lower_bound_options(expr, schema, GlobalBinding::Values(&globals), indexed_selection, options)
 }
 
 /// Bind global references to columns of a singleton relation joined to the rows.
@@ -4948,7 +5094,21 @@ fn lower_bound(
     schema: &Schema,
     globals: GlobalBinding<'_>,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_bound_mode(expr, schema, globals, false)
+}
+fn lower_bound_mode(expr: &Expr, schema: &Schema, globals: GlobalBinding<'_>, indexed_selection: bool) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_bound_options(expr, schema, globals, indexed_selection, &PreparationOptions::capture())
+}
+pub fn lower_with_options(expr: &Expr, schema: &Schema, options: &PreparationOptions) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let globals = RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
+        &RecordBatchOptions::new().with_row_count(Some(1)))?;
+    lower_bound_options(expr, schema, GlobalBinding::Values(&globals), false, options)
+}
+fn lower_bound_options(expr: &Expr, schema: &Schema, globals: GlobalBinding<'_>, indexed_selection: bool, options: &PreparationOptions) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
     let mut memo = CompilationMemo {
+        options: options.clone(),
+        coalesce_budget:65_536,
+        indexed_selection,
         root_expression: expr as *const Expr as usize,
         ..CompilationMemo::default()
     };
@@ -4970,6 +5130,7 @@ fn lower_bound(
 pub(crate) fn string_function(
     name: &str,
 ) -> Result<(Arc<datafusion_expr::ScalarUDF>, Vec<Type>, Type), ExprError> {
+    use crate::calls::downcode_udf;
     use datafusion_functions::{regex, string, unicode};
     let text = Type::Primitive(PrimitiveType::Str);
     let int32 = Type::Primitive(PrimitiveType::Int32);
@@ -4978,6 +5139,13 @@ pub(crate) fn string_function(
     let strings = Type::Array {
         array: Box::new(text.clone()),
     };
+    if name == "downcode" {
+        return Ok((
+            downcode_udf()?,
+            vec![Type::Primitive(PrimitiveType::Call), int32],
+            Type::Primitive(PrimitiveType::Call),
+        ));
+    }
     if matches!(name, "variant_min_rep" | "variant_entry" | "gq_from_pl" | "unphased_diploid_gt_index_call") {
         return crate::variant_kernels::function(name);
     }
@@ -5172,6 +5340,25 @@ fn lower_scoped(
     let context = memo.context(schema, globals.schema(), scope);
     lower_cached(expr, schema, globals, scope, memo, context)
 }
+pub(crate) fn indexed_aligned_map(mut expression: &Arc<dyn PhysicalExpr>) -> Option<&crate::aligned_matrix_map::AlignedMatrixMapExpr> {
+    loop {
+        if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() { expression = &compiled.inner; }
+        else if let Some(hail) = expression.downcast_ref::<HailPhysicalExpr>()
+            && matches!(hail.kind, HailKind::RestoreArrowType) && hail.args.len() == 1 { expression = &hail.args[0]; }
+        else { return expression.downcast_ref::<crate::aligned_matrix_map::AlignedMatrixMapExpr>().filter(|map| map.is_indexed()); }
+    }
+}
+
+pub(crate) fn bind_indexed_wrapper(
+    expression: &Arc<dyn PhysicalExpr>, sources: &[crate::indexed_batch::Source],
+    memo: &mut HashMap<usize, Arc<dyn PhysicalExpr>>,
+) -> datafusion_common::Result<Option<Arc<dyn PhysicalExpr>>> {
+    let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() else { return Ok(None); };
+    let inner = crate::indexed_batch::bind(&compiled.inner, sources, memo)?;
+    if Arc::ptr_eq(&inner, &compiled.inner) { return Ok(Some(expression.clone())); }
+    Ok(Some(CompiledPhysical::with_fields(inner, compiled.primary.get().cloned(), false)))
+}
+
 // Bind physical metadata once at each native compilation node. DataFusion
 // recursively asks children for metadata; on a DAG that otherwise revisits
 // shared subgraphs once per incoming path.
@@ -5738,6 +5925,194 @@ fn mapped_dictionary_lookup(
     })
 }
 
+fn lower_product_map(
+    choices: &Expr, outer: &str, callback: &Expr, schema: &Schema,
+    globals: GlobalBinding<'_>, scope: &[(String, Type, usize)], memo: &mut CompilationMemo, context: usize,
+) -> Result<Option<Arc<dyn PhysicalExpr>>, ExprError> {
+    use crate::indexed_batch::{ENTRY_INDEX, COLUMN_INDEX, ROW_INDEX, PRESENCE};
+    let Expr::Struct { fields }=callback else{return Ok(None)};
+    let nested=fields.iter().enumerate().filter_map(|(i,(_,v))|if let Expr::ArrayMap{value,parameter,body}=v{Some((i,value,parameter,body))}else{None}).collect::<Vec<_>>();
+    if nested.len()!=1{return Ok(None);}
+    let (inner_field,entries,inner,body)=nested[0];
+    if !scope.is_empty() || !crate::expression_effects::can_defer_filtered_values(entries)
+        || !crate::expression_effects::can_block_list_callback(body) {return Ok(None);}
+    if body.free_parameters().iter().any(|name|name!=outer && name!=inner) {return Ok(None);}
+    let mut shadowed=false;
+    body.visit_unique(&mut |node| {let mut n=0;node.for_each_child(&mut |_|{shadowed|=node.child_binders(n).iter().any(|name|*name==outer||*name==inner);n+=1;});});
+    if shadowed{return Ok(None);}
+    let mut depends=false;entries.visit_unique(&mut |e|{if matches!(e,Expr::LambdaVariable{name,..} if name==outer){depends=true;}});
+    if depends{return Ok(None);}
+    let Type::Array{array:outer_type}=choices.dtype_scoped(schema,globals.schema(),scope,memo,context)? else{return Ok(None);};
+    let Type::Array{array:inner_type}=entries.dtype_scoped(schema,globals.schema(),scope,memo,context)? else{return Ok(None);};
+    type PathNode<'a>=(Option<usize>,usize,&'a Type);
+    fn resolve_path<'a>(e:&Expr,name:&str,ty:&'a Type,nodes:&mut Vec<PathNode<'a>>,seen:&mut HashMap<usize,Option<usize>>,indices:&mut HashMap<usize,HashMap<String,usize>>)->Option<usize>{
+        let address=e as *const Expr as usize;if let Some(id)=seen.get(&address){return *id;}
+        let found=match e{
+            Expr::LambdaVariable{name:n,..} if n==name=>{let id=nodes.len();nodes.push((None,0,ty));Some(id)},
+            Expr::GetField{value,name:field}=>{
+                let parent=resolve_path(value,name,ty,nodes,seen,indices)?;
+                let current=nodes[parent].2;let Type::Struct{r#struct:fields}=current else{return None;};
+                let slots=indices.entry(current as *const Type as usize).or_insert_with(||fields.iter().enumerate().map(|(i,(name,_))|(name.clone(),i)).collect());
+                let index=*slots.get(field)?;let id=nodes.len();nodes.push((Some(parent),index,&fields[index].1));Some(id)
+            }
+            _=>None,
+        };seen.insert(address,found);found
+    }
+    let mut outer_paths=vec![];let mut path_nodes=vec![];let mut path_seen=HashMap::new();let mut path_fields=HashMap::new();
+    for (i,(_,value)) in fields.iter().enumerate(){if i!=inner_field{
+        let Some(mut id)=resolve_path(value,outer,&outer_type,&mut path_nodes,&mut path_seen,&mut path_fields)else{return Ok(None);};
+        let mut path=vec![];while let Some(parent)=path_nodes[id].0{path.push(path_nodes[id].1);id=parent;}path.reverse();outer_paths.push(path);
+    }}
+    let mut capture_roots=HashMap::new();let mut captures=vec![];
+    body.visit_unique(&mut |node|{if let Some(key)=crate::list_product_prepare::capture_key(node){capture_roots.entry(key).or_insert_with(||{let id=captures.len();captures.push(node.clone());id});}});
+    let captures=captures.into_iter().map(Arc::new).collect::<Vec<_>>();
+    memo.generated.extend(captures.iter().cloned());
+    let capture_types=captures.iter().map(|e|e.dtype_scoped(schema,globals.schema(),scope,memo,context)).collect::<Result<Vec<_>,_>>()?;
+    let Some((rewritten,inputs))=crate::list_product_prepare::rewrite(body,outer,&outer_type,inner,&inner_type,&capture_roots,&capture_types)else{return Ok(None);};
+    let frame=Arc::new(Schema::new(vec![Field::new(ENTRY_INDEX,DataType::Int32,false),Field::new(COLUMN_INDEX,DataType::Int32,false),Field::new(ROW_INDEX,DataType::Int32,false),Field::new(PRESENCE,DataType::Boolean,false)]));
+    let program=lower_mode_with_options(&rewritten,&frame,true,&memo.options)?;
+    let element=Type::from_arrow(&program.data_type(&frame)?)?;
+    let mut types=vec![];
+    for (i,(name,_)) in fields.iter().enumerate(){
+        let ty=if i==inner_field{Type::Array{array:Box::new(element.clone())}}else{
+            let path=&outer_paths[types.len()-usize::from(i>inner_field)];let mut ty=outer_type.as_ref();
+            for index in path {let Type::Struct{r#struct:fields}=ty else{unreachable!()};ty=&fields[*index].1;}ty.clone()
+        };types.push((name.clone(),ty));
+    }
+    let dtype=Type::Array{array:Box::new(Type::Struct{r#struct:types})}.to_arrow()?;
+    let choices=cast(lower_cached(choices,schema,globals,scope,memo,context)?,schema,Type::Array{array:outer_type}.to_arrow()?)?;
+    let entries=cast(lower_cached(entries,schema,globals,scope,memo,context)?,schema,Type::Array{array:inner_type}.to_arrow()?)?;
+    let captures=captures.iter().map(|e| -> Result<Arc<dyn PhysicalExpr>,ExprError> {let ty=e.dtype_scoped(schema,globals.schema(),scope,memo,context)?.to_arrow()?;Ok(cast(lower_cached(e,schema,globals,scope,memo,context)?,schema,ty)?)}).collect::<Result<Vec<_>,_>>()?;
+    let capture_slots=inputs.iter().map(|input|if input.axis=="col"{Some(input.name.as_ref().unwrap().parse::<usize>().unwrap())}else{None}).collect();
+    if memo.options.trace_product_map{eprintln!("PRODUCT_MAP_PREP inputs={} captures={}",inputs.len(),captures.len());}
+    Ok(Some(Arc::new(crate::list_product_map::ProductMap{choices,entries,captures,inputs,capture_slots,body:program,dtype,inner_field,outer_paths,frame})))
+}
+
+fn lower_invariant_list(
+    value:&Expr,parameter:&str,callback:&Expr,operation:&str,fold:Option<(&Expr,&str)>,schema:&Schema,globals:GlobalBinding<'_>,
+    scope:&[(String,Type,usize)],memo:&mut CompilationMemo,context:usize,
+)->Result<Option<Arc<dyn PhysicalExpr>>,ExprError>{
+    if fold.is_some() {
+        // Ordinary folds share scalar list owners across lanes. Until the
+        // compact frame can carry scalars, only lower proven array operands.
+        let mut owner=value;
+        while let Expr::GetField { value, .. } = owner { owner=value; }
+        if !matches!(owner,Expr::Column { .. }|Expr::LambdaVariable { .. }) {return Ok(None);}
+    }
+    if crate::expression_effects::effects(callback)==crate::expression_effects::Effects::RandomContext {return Ok(None);}
+    let mut private_binding=false;
+    callback.visit_unique(&mut |e|{private_binding|=matches!(e,Expr::AlignedMapInput{..}|Expr::AlignedMatrixMap{..}|Expr::TableLookup{..})||matches!(e,Expr::NestedFunction{function,..} if matches!(function.as_str(),crate::indexed_batch::INPUT|crate::indexed_batch::IS_NULL));});
+    if private_binding{return Ok(None);}
+    let Some(mut dependencies) = crate::list_dependencies::Dependencies::new(
+        scope.iter().map(|(name, _, _)| name.clone()), parameter,
+    ) else { return Ok(None); };
+    if let Some((_,accumulator)) = fold {
+        if dependencies.add_parameter(accumulator).is_none() { return Ok(None); }
+    }
+    let callback_context = dependencies.callback_context();
+    if dependencies.analyze(callback, callback_context).is_none() { return Ok(None); }
+    let mut used=HashSet::new();callback.visit_unique(&mut |e|{
+        match e { Expr::LambdaVariable{name,..}|Expr::Column{name} => {used.insert(name.clone());}, _=>{} }
+        let mut position=0;
+        e.for_each_child(&mut |_| {used.extend(e.child_binders(position).into_iter().map(str::to_owned));position+=1;});
+    });used.insert(parameter.to_owned());
+    let mut prefix="__vail_invariant_".to_owned();while used.iter().any(|name|name.starts_with(&prefix)){prefix.push('_');}
+    fn rewrite(
+        e: &Expr, context: usize, shared: bool, prefix: &str,
+        dependencies: &crate::list_dependencies::Dependencies,
+        captures: &mut Vec<Expr>, slots: &mut HashMap<(usize,usize),usize>,
+        memo: &mut HashMap<(usize,usize),Arc<Expr>>,
+    ) -> Result<Arc<Expr>,ExprError> {
+        let key = (e as *const Expr as usize, context);
+        if shared { if let Some(e) = memo.get(&key) { return Ok(e.clone()); } }
+        let result = if dependencies.invariant(e, context) {
+            let slot = *slots.entry(key).or_insert_with(|| {
+                let slot = captures.len(); captures.push(e.clone()); slot
+            });
+            Expr::Column { name: format!("{prefix}{slot}") }
+        } else {
+            let mut children = vec![];
+            e.for_each_child(&mut |child| children.push(child));
+            let mut children = children.into_iter().enumerate();
+            e.try_map_children_shared(|_, shared| {
+                let (position, child) = children.next().unwrap();
+                rewrite(child, dependencies.child_context(e, context, position), shared, prefix,
+                    dependencies, captures, slots, memo)
+            })?
+        };
+        let result=Arc::new(result);
+        if shared { memo.insert(key, result.clone()); }
+        Ok(result)
+    }
+    let mut captures = vec![];
+    let rewritten = rewrite(callback, callback_context, false, &prefix, &dependencies,
+        &mut captures, &mut HashMap::new(), &mut HashMap::new())?;
+    if captures.is_empty(){return Ok(None);}
+    let captures=captures.into_iter().map(Arc::new).collect::<Vec<_>>();
+    memo.generated.extend(captures.iter().cloned());
+    let input=lower_cached(value,schema,globals,scope,memo,context)?;
+    let mut fields=vec![Field::new("__vail_list_values",input.data_type(schema)?,true)];
+    let mut programs=vec![];
+    for (i,capture) in captures.iter().enumerate(){let p=lower_cached(capture,schema,globals,scope,memo,context)?;let ty=p.data_type(schema)?;if !ty.is_primitive() && ty!=DataType::Boolean{return Ok(None);}fields.push(Field::new(format!("{prefix}{i}"),ty,true));programs.push(p);}
+    let zero = if let Some((zero,_)) = fold {
+        let zero = lower_cached(zero,schema,globals,scope,memo,context)?;
+        fields.push(Field::new("__vail_fold_zero",zero.data_type(schema)?,true));
+        Some(zero)
+    } else { None };
+    let frame=Arc::new(Schema::new(fields));
+    let mut inner_memo=CompilationMemo{options:memo.options.clone(),suppress_invariant_hoist:true,..CompilationMemo::default()};
+    let empty=Schema::empty();let bindings=std::collections::BTreeMap::new();
+    let inner_context=inner_memo.context(&frame,&empty,&[]);
+    let program = if let Some((_,accumulator)) = fold {
+        let expression=Expr::ArrayFold {
+            value:Arc::new(Expr::Column{name:"__vail_list_values".into()}),
+            zero:Arc::new(Expr::Column{name:"__vail_fold_zero".into()}),
+            accumulator:accumulator.into(),parameter:parameter.into(),body:rewritten.clone(),
+            scan:operation=="scan",
+        };
+        lower_scoped(&expression,&frame,GlobalBinding::Columns(&empty,&bindings),&[],&mut inner_memo)?
+    } else {
+        lower_array_lambda(&Expr::Column{name:"__vail_list_values".into()},parameter,rewritten.as_ref(),operation,&frame,GlobalBinding::Columns(&empty,&bindings),&[],&mut inner_memo,inner_context)?
+    };
+    let dtype=program.data_type(&frame)?;
+    if memo.options.trace_product_map{eprintln!("INVARIANT_MAP_PREP captures={}",programs.len());}
+    Ok(Some(Arc::new(crate::map_captures::MapCaptures{input,captures:programs,zero,schema:frame,program,dtype,empty_list_result:matches!(operation,"map"|"filter")})))
+}
+
+/// Compose consecutive maps with explicit lexical bindings, without exposing
+/// either callback's binder to the other callback's original free variables.
+fn compose_list_maps(value:&Expr,parameter:&str,callback:&Expr,scope:&[(String,Type,usize)],schema:&Schema)->Option<Expr> {
+    if !matches!(value,Expr::ArrayMap {..}) {return None;}
+    let mut stages=vec![(parameter,Arc::new(callback.clone()))];
+    let mut source=value;
+    while let Expr::ArrayMap {value,parameter,body}=source {
+        stages.push((parameter.as_str(),body.clone()));
+        source=value;
+    }
+    let mut names:HashSet<String>=scope.iter().map(|(name,_,_)|name.clone()).collect();
+    names.extend(schema.fields().iter().map(|field|field.name().clone()));
+    let mut pending=Vec::new();
+    for (parameter,body) in &stages {names.insert((*parameter).to_owned());pending.push(body.as_ref());}
+    let mut seen=HashSet::new();
+    while let Some(node)=pending.pop() {
+        if !seen.insert(node as *const Expr as usize) {continue;}
+        if !crate::expression_effects::can_block_list_node(node) {return None;}
+        if let Expr::LambdaVariable {name,..}|Expr::Column {name}=node {names.insert(name.clone());}
+        let mut position=0;
+        node.for_each_child(&mut |child| {
+            names.extend(node.child_binders(position).into_iter().map(str::to_owned));
+            position+=1;pending.push(child);
+        });
+    }
+    let mut fresh="__vail_map_item".to_owned();
+    while names.contains(&fresh) {fresh.push('_');}
+    let mut body=Arc::new(Expr::LambdaVariable {name:fresh.clone(),dtype:None});
+    for (parameter,stage) in stages.into_iter().rev() {
+        body=Arc::new(Expr::Switch {value:body,parameter:parameter.to_owned(),cases:vec![],default:stage,missing:None});
+    }
+    Some(Expr::ArrayMap {value:Arc::new(source.clone()),parameter:fresh,body})
+}
+
 fn lower_array_lambda(
     value: &Expr,
     parameter: &str,
@@ -5749,6 +6124,17 @@ fn lower_array_lambda(
     memo: &mut CompilationMemo,
     context: usize,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    if operation == "map" && memo.options.product_map {
+        if let Some(program)=lower_product_map(value,parameter,callback,schema,globals,scope,memo,context)? {return Ok(program);}
+    }
+    if operation=="map" && memo.options.compose_maps {
+        if let Some(composed)=compose_list_maps(value,parameter,callback,scope,schema) {
+            return lower_synthetic(composed,schema,globals,scope,memo,context);
+        }
+    }
+    if !memo.suppress_invariant_hoist && memo.options.invariant_map{
+        if let Some(program)=lower_invariant_list(value,parameter,callback,operation,None,schema,globals,scope,memo,context)?{return Ok(program);}
+    }
     if operation == "map" {
         if let Some(rewritten) = mapped_dictionary_lookup(value, parameter, callback, scope, schema) {
             return lower_synthetic(rewritten, schema, globals, scope, memo, context);
@@ -5918,6 +6304,130 @@ fn boolean_case(
     )?))
 }
 
+fn scalar_aligned_body(body: &Expr) -> bool {
+    let mut scalar_rows = true;
+            body.visit_unique(&mut |node| {
+                scalar_rows &= matches!(node,
+                    Expr::AlignedMapInput { .. } | Expr::RuntimeLiteral { .. }
+                    | Expr::Literal { .. } | Expr::Column { .. }
+                    | Expr::Binary { .. } | Expr::IntegerBinary { .. }
+                    | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
+                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. })
+                    // This native Unicode kernel is fully prepared at lowering
+                    // and borrows its input. Keep wide shared column strings
+                    // on the row path rather than taking their bytes per entry.
+                    || matches!(node, Expr::StringFunction { function, .. }
+                        if function == "character_length");
+            });
+    scalar_rows
+}
+
+/// Admission only: ordinary scalar callbacks intentionally use the row path.
+/// Indexed input discovery rewrites IR but constructs no physical evaluator.
+pub fn selected_aligned_body_supported(body: &Expr) -> bool {
+    !scalar_aligned_body(body)
+        && crate::expression_effects::effects(body) != crate::expression_effects::Effects::RandomContext
+        && crate::indexed_batch::rewrite(body).is_some_and(|(_, inputs)| !inputs.is_empty())
+}
+
+fn indexed_input(
+    args: &[Expr], dtype: DataType, selector: Option<Arc<dyn PhysicalExpr>>, validity: bool,
+    schema: &Schema, globals: GlobalBinding<'_>, scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo, context: usize,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let [indices, Expr::Literal { value: slot, .. }, Expr::Literal { value: key, .. }] = args else {
+        return Err(ExprError::Invalid("invalid prepared indexed input".into()));
+    };
+    let slot = slot.as_u64().and_then(|slot| usize::try_from(slot).ok())
+        .ok_or_else(|| ExprError::Invalid("invalid indexed slot".into()))?;
+    let key = key.as_str().ok_or_else(|| ExprError::Invalid("invalid indexed key".into()))?.to_owned();
+    let indices=lower_cached(indices,schema,globals,scope,memo,context)?;
+    Ok(Arc::new(crate::indexed_batch::IndexedInput::new(slot,key,dtype,indices,selector,validity,memo.options.borrow_list_children,memo.options.trace_list_borrow)))
+}
+
+fn lower_indexed_map(
+    expression: &Expr, children: [Arc<dyn PhysicalExpr>; 4], schema: &Schema,
+    globals: GlobalBinding<'_>, scope: &[(String, Type, usize)], memo: &mut CompilationMemo, context: usize,
+) -> Result<Option<Arc<dyn PhysicalExpr>>, ExprError> {
+    if !memo.indexed_selection && !memo.options.indexed_batch { return Ok(None); }
+    let Expr::AlignedMatrixMap { body, dtype, preserve_cell, .. } = expression else { return Ok(None); };
+    if crate::expression_effects::effects(body) == crate::expression_effects::Effects::RandomContext { return Ok(None); }
+    if scalar_aligned_body(body) { return Ok(None); }
+    let mut children=children;
+    let original_body=body;
+    let options = memo.options.clone();
+    let prepared=if options.aligned_invariants {
+        crate::aligned_invariants::prepare(body,children[2].clone(),schema,&options,&mut |node|node.dtype_scoped(schema,globals.schema(),scope,memo,context))?
+    } else {None};
+    let body=if let Some((body,rows))=&prepared {memo.generated.push(body.clone());children[2]=rows.clone();body.as_ref()}else{original_body.as_ref()};
+    let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+    let Some((body, mut inputs)) = crate::indexed_batch::rewrite(body) else { return Ok(None); };
+    if inputs.is_empty() { return Ok(None); }
+    let types = children.iter().map(|child| child.data_type(schema)).collect::<datafusion_common::Result<Vec<_>>>()?;
+    let mut roots=HashMap::new();
+    for input in &mut inputs {
+        let root = match input.axis.as_str() {
+            "entry" | "col" => {
+                let DataType::List(field) = &types[usize::from(input.axis == "col")] else { return Ok(None); };
+                field.data_type().clone()
+            }
+            "row" | "row_invariant" | "global" => {
+                let root = if input.axis == "row" || input.axis == "row_invariant" { &types[2] } else { &types[3] };
+                let DataType::Struct(fields) = root else { return Ok(None); };
+                let mut prefix = vec![];
+                let fields = if input.axis == "row" || input.axis == "row_invariant" {
+                    let fields=if input.axis=="row_invariant" {
+                        let Some(index)=fields.iter().position(|f|f.name()=="__vail_invariant_values") else {return Ok(None);};
+                        prefix.push((index,"__vail_invariant_values".into()));
+                        let DataType::Struct(fields)=fields[index].data_type() else {return Ok(None);};
+                        fields
+                    } else {
+                        let fields=if prepared.is_some() {
+                            let Some(index)=fields.iter().position(|f|f.name()=="__vail_invariant_source") else {return Ok(None);};
+                            prefix.push((index,"__vail_invariant_source".into()));
+                            let DataType::Struct(fields)=fields[index].data_type() else {return Ok(None);};fields
+                        }else{fields};
+                    let Some(index) = fields.iter().position(|f| f.name() == "__vail_aligned_row") else { return Ok(None); };
+                    prefix.push((index, "__vail_aligned_row".into()));
+                    let DataType::Struct(fields) = fields[index].data_type() else { return Ok(None); }; fields
+                    };fields
+                } else { fields };
+                let Some(name) = &input.name else { return Ok(None); };
+                let Some(index) = fields.iter().position(|f| f.name() == name) else { return Ok(None); };
+                prefix.push((index, name.clone())); prefix.extend(std::mem::take(&mut input.path)); input.path = prefix;
+                root.clone()
+            }
+            "num_cols" => DataType::Int32,
+            "selected_entry" => input.root_type.as_ref().map(|root| root.dtype().clone()).ok_or_else(|| ExprError::Invalid("selected bundle descriptor absent".into()))?,
+            _ => return Ok(None),
+        };
+        let descriptor=roots.entry(input.axis.clone()).or_insert_with(||crate::indexed_batch::RootDescriptor::new(root)).clone();
+        if !input.prepare(descriptor) { return Ok(None); }
+    }
+    let mut frame = vec![
+        Field::new(crate::indexed_batch::ENTRY_INDEX, DataType::Int32, false),
+        Field::new(crate::indexed_batch::COLUMN_INDEX, DataType::Int32, false),
+        Field::new(crate::indexed_batch::ROW_INDEX, DataType::Int32, false),
+        Field::new(crate::indexed_batch::PRESENCE, DataType::Boolean, false),
+    ];
+    if inputs.iter().any(|input| input.axis == "selected_entry") {
+        frame.push(Field::new(crate::indexed_batch::SELECTED_INDEX, DataType::Int32, false));
+    }
+    let frame = Schema::new(frame);
+    let all_present = match &body {
+        Expr::IfElse { condition, consequent, .. }
+            if matches!(condition.as_ref(), Expr::Column { name } if name == crate::indexed_batch::PRESENCE) => Some(consequent.as_ref().clone()),
+        _ => None,
+    };
+    let frame_context = memo.context(&frame, globals.schema(), scope);
+    let body = lower_synthetic(body, &frame, globals, scope, memo, frame_context)?;
+    let all_present = all_present.map(|value| lower_synthetic(Expr::Cast { dtype: body_type.clone(), value: Arc::new(value) },
+        &frame, globals, scope, memo, frame_context)).transpose()?;
+    Ok(Some(Arc::new(crate::aligned_matrix_map::AlignedMatrixMapExpr::new_indexed(
+        children, body, all_present, inputs, dtype.to_arrow()?, body_type.to_arrow()?, *preserve_cell, memo.options.borrow_indexed_input,
+    ))))
+}
+
 fn lower_uncached(
     expr: &Expr,
     schema: &Schema,
@@ -5980,6 +6490,11 @@ fn lower_uncached(
                     "aligned column expression must be an array".into(),
                 ));
             };
+            if let Some(indexed) = lower_indexed_map(expr,
+                [entries.clone(), columns.clone(), rows.clone(), global_inputs.clone()],
+                schema, globals, scope, memo, context)? {
+                indexed
+            } else {
             #[derive(Default)]
             struct ColumnDemand {
                 all: bool,
@@ -6041,20 +6556,7 @@ fn lower_uncached(
             ];
             // Only kernels audited to prepare outside evaluate may run once per
             // matrix row. Collection/grouping callbacks keep the batch route.
-            let mut scalar_rows = true;
-            body.visit_unique(&mut |node| {
-                scalar_rows &= matches!(node,
-                    Expr::AlignedMapInput { .. } | Expr::RuntimeLiteral { .. }
-                    | Expr::Literal { .. } | Expr::Column { .. }
-                    | Expr::Binary { .. } | Expr::IntegerBinary { .. }
-                    | Expr::Unary { .. } | Expr::Cast { .. } | Expr::GetField { .. }
-                    | Expr::Struct { .. } | Expr::IfElse { .. } | Expr::IsMissing { .. })
-                    // This native Unicode kernel is fully prepared at lowering
-                    // and borrows its input. Keep wide shared column strings
-                    // on the row path rather than taking their bytes per entry.
-                    || matches!(node, Expr::StringFunction { function, .. }
-                        if function == "character_length");
-            });
+            let scalar_rows = scalar_aligned_body(body);
             let body_type = body.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let body_dtype = body_type.to_arrow()?;
             // Declare batch captures before lowering so nested fold/lambda/
@@ -6304,6 +6806,7 @@ fn lower_uncached(
                 *preserve_cell,
                 scalar_rows,
             ))
+            }
         }
         Expr::MatrixScope { .. }
         | Expr::TableLookup { .. }
@@ -6367,6 +6870,11 @@ fn lower_uncached(
                 Arc::new(ConfigOptions::default()),
             )?);
             cast(distinct, schema, dtype.clone())?
+        }
+        Expr::NestedFunction { function, args, .. }
+            if matches!(function.as_str(), crate::indexed_batch::INPUT | crate::indexed_batch::IS_NULL) => {
+            indexed_input(args, dtype.clone(), None, function == crate::indexed_batch::IS_NULL,
+                schema, globals, scope, memo, context)?
         }
         Expr::NestedFunction { function, args, .. } if function == "__vail_list_reduce_collect" => {
             // Preserve the list's values, offsets and logical validity. Typing
@@ -6557,6 +7065,11 @@ fn lower_uncached(
             body,
             scan,
         } => {
+            if !memo.suppress_invariant_hoist && memo.options.invariant_map {
+                if let Some(program)=lower_invariant_list(value,parameter,body,
+                    if *scan {"scan"} else {"fold"},Some((zero,accumulator)),
+                    schema,globals,scope,memo,context)? { return Ok(program); }
+            }
             let Type::Array { array } =
                 value.dtype_scoped(schema, globals.schema(), scope, memo, context)?
             else {
@@ -6773,6 +7286,12 @@ fn lower_uncached(
                 crate::array_length::udf(), vec![child], schema,
                 Arc::new(ConfigOptions::default()),
             )?)
+        }
+        Expr::ArrayIndex { value, index }
+            if matches!(value.as_ref(), Expr::NestedFunction { function, .. } if function == crate::indexed_batch::INPUT) => {
+            let Expr::NestedFunction { args, .. } = value.as_ref() else { unreachable!() };
+            let selector = lower_cached(index, schema, globals, scope, memo, context)?;
+            indexed_input(args, dtype.clone(), Some(selector), false, schema, globals, scope, memo, context)?
         }
         Expr::ArrayIndex { value, index }
             if matches!(value.as_ref(), Expr::GetField { value: call, name }
@@ -7409,6 +7928,17 @@ fn lower_uncached(
             consequent,
             alternate,
         } => {
+            if memo.options.coalesce_once && (dtype.is_numeric() || dtype==DataType::Boolean) {
+                if let Some((first,fallback))=crate::coalesce_once::recognize(expr,context,&mut memo.coalesce_eligibility,&mut memo.coalesce_budget) {
+                    if first.dtype_scoped(schema,globals.schema(),scope,memo,context)?.to_arrow()?==dtype {
+                        let selected_fallback=switch_callback(fallback,schema,globals,scope,&dtype,memo)?;
+                        let first=lower_cached(first,schema,globals,scope,memo,context)?;
+                        let fallback=lower_cast(lower_cached(fallback,schema,globals,scope,memo,context)?,schema,&dtype)?;
+                        if std::env::var_os("VAIL_TRACE_COALESCE_ONCE").is_some(){eprintln!("VAIL_COALESCE_ONCE dtype={dtype:?}");}
+                        return Ok(Arc::new(crate::coalesce_once::CoalesceOnce::new(first,fallback,dtype,selected_fallback)));
+                    }
+                }
+            }
             let cond = lower_cached(condition, schema, globals, scope, memo, context)?;
             let yes = lower_cast(
                 lower_cached(consequent, schema, globals, scope, memo, context)?,

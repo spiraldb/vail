@@ -1,4 +1,5 @@
 """Optimizer visibility and semantics across independently executable partitions."""
+import pytest
 import vail as hl
 
 
@@ -13,6 +14,32 @@ def test_row_pipeline_is_one_logical_tree():
     assert 'VailPartitionOperation: MapRows' not in plan
     assert 'VailPartitionOperation: Filter' not in plan
     assert [r.x for r in table.collect()] == list(range(6, 13))
+
+
+def test_force_count_preserves_ordered_subqueries_and_shared_source():
+    source = hl.range_table(6, n_partitions=3)
+    merged = source.order_by(source.idx)
+    ordered = source.order_by(hl.desc(source.idx))
+    values = ordered.aggregate(hl.agg.collect(ordered.idx), _localize=False)
+    shifted = ordered.aggregate(hl.agg.collect(ordered.idx + 100), _localize=False)
+    first = merged.annotate(observed=values)
+    second = merged.annotate(observed=shifted)
+
+    for table, expected in [(first, [5, 4, 3, 2, 1, 0]),
+                            (second, [105, 104, 103, 102, 101, 100]),
+                            (first, [5, 4, 3, 2, 1, 0])]:
+        assert table._force_count() == 6
+        rows = table.collect()
+        assert [row.idx for row in rows] == list(range(6))
+        assert [row.observed for row in rows] == [expected] * 6
+
+    checked = first.annotate(value=hl.case().when(
+        first.idx < 2, first.idx).or_error('later row was demanded'))
+    assert checked.head(1).value.collect() == [0]
+    with pytest.raises(Exception, match='later row was demanded'):
+        checked._force_count()
+    assert first._force_count() == 6
+    assert first.head(1).collect()[0].observed == [5, 4, 3, 2, 1, 0]
 
 
 def test_grouping_with_globals_uses_logical_aggregate():

@@ -9,7 +9,8 @@ use arrow_array::{
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, Field, Schema};
-use vail_execution::expressions::{ArrayReduction, Expr, PrimitiveType, Type, lower};
+use datafusion_physical_expr::PhysicalExpr;
+use vail_execution::expressions::{ArrayReduction, Expr, PreparationOptions, PrimitiveType, Type, lower, lower_with_options};
 
 thread_local! {
     static ALLOCATIONS: Cell<Option<usize>> = const { Cell::new(None) };
@@ -477,6 +478,16 @@ fn aligned_column_input(payload_bytes: usize) -> (RecordBatch, Expr) {
 
 fn evaluate_aligned_allocated_bytes(batch: &RecordBatch, expression: &Expr) -> (ArrayRef, usize) {
     let compiled = lower(expression, batch.schema().as_ref()).unwrap();
+    evaluate_prepared_allocated_bytes(batch, &compiled)
+}
+
+fn evaluate_selected_allocated_bytes(batch: &RecordBatch, expression: &Expr) -> (ArrayRef, usize) {
+    let options = PreparationOptions::default().for_selected_region();
+    let compiled = lower_with_options(expression, batch.schema().as_ref(), &options).unwrap();
+    evaluate_prepared_allocated_bytes(batch, &compiled)
+}
+
+fn evaluate_prepared_allocated_bytes(batch: &RecordBatch, compiled: &Arc<dyn PhysicalExpr>) -> (ArrayRef, usize) {
     ALLOCATED_BYTES.with(|bytes| bytes.set(Some(0)));
     let output = compiled
         .evaluate(batch)
@@ -745,4 +756,401 @@ fn indexing_uses_compact_indices_without_a_temporary_optional_vector() {
     // bounded expression bookkeeping, should fit below ten bytes per row.
     assert!(bytes <= 10 * rows as usize + 8192, "indexing allocated {bytes} bytes");
     eprintln!("generic indexing: {rows} rows, {bytes} allocated bytes");
+}
+
+#[path = "common/indexed_batch.rs"]
+mod indexed_fixture;
+
+#[test]
+fn batch_conditionals_do_not_copy_unused_entry_payload() {
+    let mut costs = Vec::new();
+    for bytes in [8, 1024 * 1024] {
+        let (batch, expression) = indexed_fixture::fixture([1, -1], true, bytes);
+        let (output, allocated) = evaluate_selected_allocated_bytes(&batch, &expression);
+        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+        let values = lists.values().as_any().downcast_ref::<StructArray>().unwrap();
+        assert_eq!(values.column(1).as_any().downcast_ref::<Int32Array>().unwrap(),
+            &Int32Array::from(vec![Some(1), None, None, Some(93)]));
+        costs.push(allocated);
+    }
+    eprintln!("indexed batch runtime allocation small/large unused field: {costs:?}");
+    assert!(costs[1] <= costs[0] + 64 * 1024, "unused entry payload was copied: {costs:?}");
+}
+
+#[test]
+fn selected_lists_do_not_reserve_hidden_owner_payload() {
+    let mut costs = Vec::new();
+    for hidden in [0, 1024 * 1024] {
+        let (batch, expression) = indexed_fixture::fixture_with_hidden([1, -1], true, 8, hidden);
+        let (output, allocated) = evaluate_selected_allocated_bytes(&batch, &expression);
+        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+        let values = lists.values().as_any().downcast_ref::<StructArray>().unwrap();
+        assert_eq!(values.column(1).as_any().downcast_ref::<Int32Array>().unwrap(),
+            &Int32Array::from(vec![Some(1), None, None, Some(93)]));
+        costs.push(allocated);
+    }
+    eprintln!("selected list allocation small/hidden owner: {costs:?}");
+    assert!(costs[1] <= costs[0] + 64 * 1024, "hidden list owner grew allocation: {costs:?}");
+}
+
+#[test]
+fn readonly_aligned_payload_values_survive_input_release() {
+    use arrow_array::types::Int32Type;
+    for width in [2usize, 200_000] {
+        let (output,bytes)={
+            let payload=ListArray::from_iter_primitive::<Int32Type,_,_>(
+                (0..4).map(|_|Some((0..width).map(|i|Some(i as i32)))));
+            let values=StructArray::from(vec![(Arc::new(Field::new("payload",payload.data_type().clone(),true)),Arc::new(payload) as ArrayRef)]);
+            let cells=StructArray::from(vec![(Arc::new(Field::new("value",values.data_type().clone(),true)),Arc::new(values) as ArrayRef)]);
+            let cell_type=Type::from_arrow(cells.data_type()).unwrap();
+            let entries=ListArray::new(Arc::new(Field::new("item",cells.data_type().clone(),true)),OffsetBuffer::new(ScalarBuffer::from(vec![0,2,4])),Arc::new(cells),None);
+            let batch=RecordBatch::try_from_iter([("entries",Arc::new(entries) as ArrayRef)]).unwrap();
+            let int=Type::Primitive(PrimitiveType::Int32);
+            let array_int=Type::Array {array:Box::new(int.clone())};
+            let value=Expr::GetField {value:Arc::new(Expr::AlignedMapInput {axis:"entry".into(),name:None,dtype:cell_type}),name:"value".into()};
+            let payload=Expr::GetField {value:Arc::new(value),name:"payload".into()};
+            let output_type=Type::Struct {r#struct:vec![("payload".into(),array_int.clone()),("length".into(),int.clone())]};
+            let expression=Expr::AlignedMatrixMap {
+                entries:Arc::new(Expr::Column{name:"entries".into()}),
+                columns:Arc::new(Expr::Literal{dtype:array_int,value:serde_json::json!([0,1])}),
+                rows:Arc::new(Expr::Struct{fields:vec![]}),globals:Arc::new(Expr::Struct{fields:vec![]}),
+                body:Arc::new(Expr::Struct{fields:vec![("payload".into(),payload.clone()),("length".into(),Expr::ArrayLength{value:Arc::new(payload)})]}),
+                dtype:Type::Array{array:Box::new(output_type)},preserve_cell:false,
+            };
+            let compiled=lower(&expression,batch.schema().as_ref()).unwrap();
+            ALLOCATED_BYTES.with(|count|count.set(Some(0)));
+            let output=compiled.evaluate(&batch).unwrap().into_array(2).unwrap();
+            let bytes=ALLOCATED_BYTES.with(|count|count.replace(None).unwrap());
+            (output,bytes)
+        };
+        let outer=output.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(outer.len(),2);assert_eq!(outer.null_count(),0);
+        assert!((0..outer.len()).all(|i| outer.value_length(i)==2));
+        for row_index in 0..outer.len() {
+            assert!(outer.is_valid(row_index));
+            let row=outer.value(row_index);
+            let values=row.as_any().downcast_ref::<StructArray>().unwrap();
+            assert_eq!(values.null_count(),0);
+            let payload=values.column(0).as_any().downcast_ref::<ListArray>().unwrap();
+            let lengths=values.column(1).as_any().downcast_ref::<Int32Array>().unwrap();
+            for i in 0..values.len() {
+                assert!(payload.is_valid(i));assert!(lengths.is_valid(i));assert_eq!(lengths.value(i),width as i32);
+                let row=payload.value(i);let row=row.as_any().downcast_ref::<Int32Array>().unwrap();
+                assert_eq!(row.len(),width);assert_eq!(row.null_count(),0);
+                assert!(row.values().iter().enumerate().all(|(i,value)|*value==i as i32));
+            }
+        }
+        eprintln!("READONLY_PAYLOAD_ALLOCATION width={width} bytes={bytes}");
+    }
+}
+
+#[test]
+fn nested_struct_callback_preparation_preserves_all_values() {
+    use arrow_array::types::Int32Type;
+    use datafusion_common::DFSchema;
+    use datafusion_expr::{execution_props::ExecutionProps, physical_planning_context::PhysicalPlanningContext};
+    use datafusion_physical_expr::create_physical_expr;
+    for depth in [8, 32] {
+        let xs = Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>([
+            Some(vec![Some(7)]), Some(vec![]), None,
+        ])) as ArrayRef;
+        let batch = RecordBatch::try_from_iter([("xs", xs)]).unwrap();
+        let schema = DFSchema::try_from(batch.schema().as_ref().clone()).unwrap();
+        let mut body = Expr::LambdaVariable {name: "x".into(), dtype: None};
+        for _ in 0..depth {
+            body = Expr::Struct {fields: vec![
+                ("value".into(), body),
+                ("tag".into(), Expr::RuntimeLiteral {value: datafusion_common::ScalarValue::Int32(Some(11))}),
+            ]};
+        }
+        let expression = Expr::ArrayMap {value: Arc::new(Expr::Column {name: "xs".into()}),
+            parameter: "x".into(), body: Arc::new(body)};
+        ALLOCATED_BYTES.with(|count| count.set(Some(0)));
+        let logical = vail_execution::logical_expr::lower_logical(&expression, &schema).unwrap();
+        let bytes = ALLOCATED_BYTES.with(|count| count.replace(None).unwrap());
+        let program = create_physical_expr(&logical, &schema, &ExecutionProps::new(),
+            &PhysicalPlanningContext::default()).unwrap();
+        let output = program.evaluate(&batch).unwrap().into_array(3).unwrap();
+        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+        assert!(lists.is_valid(0)); assert!(lists.is_valid(1)); assert!(lists.is_null(2));
+        assert_eq!(lists.value_length(1), 0);
+        let mut value = lists.value(0);
+        for _ in 0..depth {
+            let record = value.as_any().downcast_ref::<StructArray>().unwrap();
+            assert!(record.is_valid(0));
+            let tag = record.column_by_name("tag").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+            assert!(tag.is_valid(0)); assert_eq!(tag.value(0), 11);
+            value = record.column_by_name("value").unwrap().clone();
+        }
+        let value = value.as_any().downcast_ref::<Int32Array>().unwrap();
+        assert!(value.is_valid(0)); assert_eq!(value.value(0), 7);
+        eprintln!("NESTED_CALLBACK_PREPARATION depth={depth} bytes={bytes}");
+    }
+}
+
+#[test]
+fn alias_field_inference_preserves_metadata_and_qualification() {
+    use datafusion_common::{Column, DFSchema, TableReference, metadata::FieldMetadata};
+    use datafusion_expr::{Expr as LogicalExpr, ExprSchemable};
+    use std::collections::HashMap;
+    for nullable in [false, true] {
+        let child = Arc::new(Field::new("child", DataType::Int32, true)
+            .with_metadata(HashMap::from([("child-tag".into(), "retained".into())])));
+        let input = Field::new("value", DataType::Struct(vec![child].into()), nullable)
+            .with_metadata(HashMap::from([
+                ("inherited".into(), "yes".into()), ("replace".into(), "source".into()),
+            ]));
+        let schema = Schema::new(vec![input.clone()]);
+        let schema = DFSchema::try_from_qualified_schema("records", &schema).unwrap();
+        for depth in [4, 8, 12] {
+            let mut expression = LogicalExpr::Column(Column::new(Some("records"), "value"));
+            for level in 0..depth {
+                expression = expression.alias_qualified_with_metadata(Some("scope"),
+                    format!("alias_{level}"), Some(FieldMetadata::from(HashMap::from([
+                        ("replace".to_owned(), level.to_string()),
+                        (format!("level_{level}"), "retained".to_owned()),
+                    ]))));
+            }
+            ALLOCATED_BYTES.with(|count| count.set(Some(0)));
+            let (relation, field) = expression.to_field(&schema).unwrap();
+            let bytes = ALLOCATED_BYTES.with(|count| count.replace(None).unwrap());
+            assert_eq!(relation, Some(TableReference::bare("scope")));
+            assert_eq!(field.name(), &format!("alias_{}", depth - 1));
+            assert_eq!(field.data_type(), input.data_type());
+            assert_eq!(field.is_nullable(), nullable);
+            assert_eq!(field.metadata().get("inherited").unwrap(), "yes");
+            assert_eq!(field.metadata().get("replace").unwrap(), &(depth - 1).to_string());
+            for level in 0..depth {
+                assert_eq!(field.metadata().get(&format!("level_{level}")).unwrap(), "retained");
+            }
+            assert_eq!(input.metadata().get("replace").unwrap(), "source");
+            eprintln!("ALIAS_FIELD_PREPARATION nullable={nullable} depth={depth} bytes={bytes}");
+        }
+    }
+}
+
+#[test]
+fn integer_row_captures_preserve_values_across_entry_widths() {
+    use arrow_array::types::Int32Type;
+    use vail_execution::expressions::BinaryOperator;
+    for (rows, width) in [(1usize, 16usize), (32, 4096)] {
+        let count = rows * width;
+        let xs = Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>(
+            (0..count).map(|i| Some(vec![Some(i as i32), Some(50), Some(100)])),
+        )) as ArrayRef;
+        let values = Arc::new(StructArray::from(vec![(
+            Arc::new(Field::new("xs", xs.data_type().clone(), true)), xs,
+        )])) as ArrayRef;
+        let cells = Arc::new(StructArray::from(vec![(
+            Arc::new(Field::new("value", values.data_type().clone(), true)), values,
+        )])) as ArrayRef;
+        let cell_type = Type::from_arrow(cells.data_type()).unwrap();
+        let entries = Arc::new(ListArray::new(
+            Arc::new(Field::new("item", cells.data_type().clone(), true)),
+            OffsetBuffer::new(ScalarBuffer::from((0..=rows).map(|i| (i * width) as i32).collect::<Vec<_>>())),
+            cells, None,
+        )) as ArrayRef;
+        let row_fields = Arc::new(StructArray::from(vec![
+            (Arc::new(Field::new("slot", DataType::Int32, true)), Arc::new(Int32Array::from_value(1, rows)) as ArrayRef),
+            (Arc::new(Field::new("constant", DataType::Int64, true)), Arc::new(Int64Array::from_value(9, rows)) as ArrayRef),
+            (Arc::new(Field::new("absent", DataType::Int64, true)), Arc::new(Int64Array::from(vec![None; rows])) as ArrayRef),
+        ])) as ArrayRef;
+        let row_records = Arc::new(StructArray::from(vec![(
+            Arc::new(Field::new("__vail_aligned_row", row_fields.data_type().clone(), true)), row_fields,
+        )])) as ArrayRef;
+        let batch = RecordBatch::try_from_iter([("entries", entries), ("rows", row_records)]).unwrap();
+        let int = Type::Primitive(PrimitiveType::Int32);
+        let long = Type::Primitive(PrimitiveType::Int64);
+        let input = |name: &str, dtype: Type| Expr::AlignedMapInput { axis: "row".into(), name: Some(name.into()), dtype };
+        let payload = Expr::GetField { value: Arc::new(Expr::GetField {
+            value: Arc::new(Expr::AlignedMapInput { axis: "entry".into(), name: None, dtype: cell_type }),
+            name: "value".into(),
+        }), name: "xs".into() };
+        let output_type = Type::Struct { r#struct: vec![
+            ("value".into(), int.clone()), ("sum".into(), long.clone()),
+            ("missing".into(), Type::Primitive(PrimitiveType::Bool)),
+        ] };
+        let expression = Expr::AlignedMatrixMap {
+            entries: Arc::new(Expr::Column { name: "entries".into() }),
+            rows: Arc::new(Expr::Column { name: "rows".into() }),
+            columns: Arc::new(Expr::Literal { dtype: Type::Array { array: Box::new(int.clone()) }, value: serde_json::json!(vec![0; width]) }),
+            globals: Arc::new(Expr::Struct { fields: vec![] }),
+            body: Arc::new(Expr::Struct { fields: vec![
+                ("value".into(), Expr::ArrayIndex { value: Arc::new(payload), index: Arc::new(input("slot", int)) }),
+                ("sum".into(), Expr::Binary { operator: BinaryOperator::Add,
+                    left: Arc::new(input("constant", long.clone())),
+                    right: Arc::new(Expr::Literal { dtype: long.clone(), value: serde_json::json!(3) }) }),
+                ("missing".into(), Expr::IsMissing { value: Arc::new(input("absent", long)) }),
+            ] }),
+            dtype: Type::Array { array: Box::new(output_type) }, preserve_cell: false,
+        };
+        let (output, allocated) = evaluate_aligned_allocated_bytes(&batch, &expression);
+        drop(batch);
+        let lists = output.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(lists.len(), rows);
+        for row in lists.iter() {
+            let row = row.unwrap(); let fields = row.as_any().downcast_ref::<StructArray>().unwrap();
+            assert_eq!(fields.len(), width);
+            assert_eq!(fields.null_count(), 0);
+            assert!(fields.column(0).as_any().downcast_ref::<Int32Array>().unwrap().iter().all(|v| v == Some(50)));
+            assert!(fields.column(1).as_any().downcast_ref::<Int64Array>().unwrap().iter().all(|v| v == Some(12)));
+            assert!(fields.column(2).as_any().downcast_ref::<BooleanArray>().unwrap().iter().all(|v| v == Some(true)));
+        }
+        eprintln!("UNIFORM_INTEGER_PUBLIC rows={rows} width={width} allocated={allocated}");
+    }
+}
+
+#[test]
+fn coalesce_quality_preserves_values_with_sparse_missing_and_unused_columns() {
+    use arrow_array::types::Int32Type;
+    use vail_execution::expressions::UnaryOperator;
+    let rows=8192usize;
+    for missing_period in [0usize,100,2,1] {
+        for unused_bytes in [8usize,1024] {
+            let likelihoods=ListArray::from_iter_primitive::<Int32Type,_,_>((0..rows).map(|i|
+                if missing_period>0&&i%missing_period==0 {None}
+                else {Some(vec![Some(0),Some((i%30+1) as i32),Some(60)])}));
+            let fallback=Int32Array::from_iter_values((0..rows).map(|i|i as i32));
+            let unused=StringArray::from(vec!["x".repeat(unused_bytes);rows]);
+            let batch=RecordBatch::try_from_iter([
+                ("pl",Arc::new(likelihoods) as ArrayRef),("fallback",Arc::new(fallback)),("unused",Arc::new(unused))]).unwrap();
+            let quality=Arc::new(Expr::StringFunction{function:"gq_from_pl".into(),args:vec![Expr::Column{name:"pl".into()}]});
+            let expression=Expr::IfElse{
+                condition:Arc::new(Expr::Unary{operator:UnaryOperator::Not,value:Arc::new(Expr::IsMissing{value:quality.clone()})}),
+                consequent:quality,alternate:Arc::new(Expr::Column{name:"fallback".into()})};
+            let (output,bytes)=evaluate_aligned_allocated_bytes(&batch,&expression);
+            drop(batch);
+            let actual=output.as_any().downcast_ref::<Int32Array>().unwrap();
+            assert_eq!(actual.len(),rows);assert_eq!(actual.null_count(),0);
+            for i in 0..rows {assert_eq!(actual.value(i),if missing_period>0&&i%missing_period==0{i as i32}else{(i%30+1) as i32});}
+            eprintln!("coalesce quality missing_period={missing_period} unused_bytes={unused_bytes} rows={rows} allocated_bytes={bytes}");
+        }
+    }
+}
+
+#[test]
+fn nested_coalesce_preparation_preserves_the_first_defined_value() {
+    use vail_execution::expressions::UnaryOperator;
+    use datafusion_common::ScalarValue;
+    for depth in [8usize,12] {
+        let batch=RecordBatch::try_from_iter((0..depth).map(|i|
+            (format!("x{i}"),Arc::new(Int32Array::from(vec![None])) as ArrayRef))).unwrap();
+        let mut expression=Expr::RuntimeLiteral{value:ScalarValue::Int32(Some(7))};
+        for i in (0..depth).rev() {
+            let value=Arc::new(Expr::Column{name:format!("x{i}")});
+            expression=Expr::IfElse{
+                condition:Arc::new(Expr::Unary{operator:UnaryOperator::Not,value:Arc::new(Expr::IsMissing{value:value.clone()})}),
+                consequent:value,alternate:Arc::new(expression)};
+        }
+        ALLOCATED_BYTES.with(|count|count.set(Some(0)));
+        let compiled=lower(&expression,batch.schema().as_ref()).unwrap();
+        let bytes=ALLOCATED_BYTES.with(|count|count.replace(None).unwrap());
+        let output=compiled.evaluate(&batch).unwrap().into_array(1).unwrap();
+        assert_eq!(output.as_any().downcast_ref::<Int32Array>().unwrap(),&Int32Array::from(vec![7]));
+        eprintln!("nested coalesce preparation depth={depth} allocated_bytes={bytes}");
+    }
+}
+
+fn list_child_gather_fixture(width:usize,hidden_values:usize,hidden_list:bool,partial:bool,bitmap_offset:usize)->(RecordBatch,Expr) {
+    use arrow_buffer::BooleanBuffer;
+    let len=4*width;
+    let values=Int32Array::from_iter_values((0..hidden_values+len).map(|i|i as i32));
+    let values=values.slice(hidden_values,len);
+    let nulls=NullBuffer::new(BooleanBuffer::from((0..bitmap_offset+len).map(|i|
+        i<bitmap_offset||(i-bitmap_offset)%7!=1).collect::<Vec<_>>())).slice(bitmap_offset,len);
+    let values=Int32Array::new(values.values().clone(),Some(nulls));
+    let lists=ListArray::new(Arc::new(Field::new("item",DataType::Int32,true)),
+        OffsetBuffer::new(ScalarBuffer::from((0..=4).map(|i|(i*width) as i32).collect::<Vec<_>>())),Arc::new(values),None);
+    let choices=ListArray::new(Arc::new(Field::new("item",lists.data_type().clone(),true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0,1,2,3,4])),Arc::new(lists),
+        hidden_list.then(||NullBuffer::from(vec![true,false,true,true])));
+    let entries=StructArray::from(vec![(Arc::new(Field::new("choices",choices.data_type().clone(),true)),Arc::new(choices) as ArrayRef)]);
+    let slots=StructArray::from(vec![(Arc::new(Field::new("value",entries.data_type().clone(),true)),Arc::new(entries) as ArrayRef)]);
+    let slot_type=Type::from_arrow(slots.data_type()).unwrap();
+    let entries=ListArray::new(Arc::new(Field::new("item",slots.data_type().clone(),true)),
+        OffsetBuffer::new(ScalarBuffer::from(vec![0,2,4])),Arc::new(slots),None);
+    let batch=RecordBatch::try_from_iter([("entries",Arc::new(entries) as ArrayRef)]).unwrap();
+    let int=Type::Primitive(PrimitiveType::Int32);let array=Type::Array{array:Box::new(int.clone())};
+    let read=Expr::ArrayIndex{value:Arc::new(Expr::GetField{
+        value:Arc::new(Expr::GetField{value:Arc::new(Expr::AlignedMapInput{axis:"entry".into(),name:None,dtype:slot_type}),name:"value".into()}),name:"choices".into()}),
+        index:Arc::new(Expr::Literal{dtype:int.clone(),value:serde_json::json!(0)})};
+    let body=if partial{Expr::IfElse{
+        condition:Arc::new(Expr::Binary{operator:vail_execution::expressions::BinaryOperator::Lt,
+            left:Arc::new(Expr::AlignedMapInput{axis:"col".into(),name:None,dtype:int}),
+            right:Arc::new(Expr::Literal{dtype:Type::Primitive(PrimitiveType::Int32),value:serde_json::json!(1)})}),
+        consequent:Arc::new(read),alternate:Arc::new(Expr::Literal{dtype:array.clone(),value:serde_json::json!([])})}}
+        else{read};
+    let expression=Expr::AlignedMatrixMap{entries:Arc::new(Expr::Column{name:"entries".into()}),
+        columns:Arc::new(Expr::Literal{dtype:array.clone(),value:serde_json::json!([0,1])}),
+        rows:Arc::new(Expr::Struct{fields:vec![]}),globals:Arc::new(Expr::Struct{fields:vec![]}),
+        body:Arc::new(body),dtype:Type::Array{array:Box::new(array)},preserve_cell:false};
+    (batch,expression)
+}
+
+#[test]
+fn selected_list_children_preserve_nulls_and_lifetime_with_hidden_backing() {
+    for (name,hidden_values,hidden_list,partial,bitmap_offset) in [
+        ("complete",0,false,false,0),("sliced",65_536,false,false,0),
+        ("hidden-null-list",0,true,false,0),("partial",0,false,true,0),
+        ("bitmap-bit-offset",0,false,false,1),("bitmap-large-backing",0,false,false,65_536)] {
+        let width=4096;
+        let (batch,expression)=list_child_gather_fixture(width,hidden_values,hidden_list,partial,bitmap_offset);
+        let (output,bytes)=evaluate_aligned_allocated_bytes(&batch,&expression);drop(batch);
+        let outer=output.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(outer.len(),2);assert_eq!(outer.null_count(),0);
+        for row in 0..2 {
+            let entries=outer.value(row);let entries=entries.as_any().downcast_ref::<ListArray>().unwrap();
+            assert_eq!(entries.len(),2);
+            for column in 0..2 {
+                let entry=row*2+column;
+                if partial&&column==1 {assert!(entries.is_valid(column));assert_eq!(entries.value_length(column),0);continue;}
+                if hidden_list&&entry==1 {assert!(entries.is_null(column));continue;}
+                assert!(entries.is_valid(column));let values=entries.value(column);let values=values.as_any().downcast_ref::<Int32Array>().unwrap();
+                assert_eq!(values.len(),width);
+                for i in 0..width {let index=entry*width+i;
+                    assert_eq!(values.is_valid(i),index%7!=1);
+                    if index%7!=1{assert_eq!(values.value(i),(hidden_values+index) as i32);}
+                }
+            }
+        }
+        eprintln!("selected list child case={name} allocated_bytes={bytes} reported_output_bytes={}",output.get_buffer_memory_size());
+    }
+}
+
+#[test]
+fn nested_list_selection_preserves_repeated_and_reordered_values() {
+    for picks in [[0,0],[1,0]] {
+        let width=2048;
+        let (batch,mut expression)=list_child_gather_fixture(2*width,0,false,false,0);
+        let original=batch.column(0).as_any().downcast_ref::<ListArray>().unwrap();
+        let slots=original.values().as_any().downcast_ref::<StructArray>().unwrap();
+        let entries=slots.column(0).as_any().downcast_ref::<StructArray>().unwrap();
+        let choices=entries.column(0).as_any().downcast_ref::<ListArray>().unwrap();
+        let lists=choices.values().as_any().downcast_ref::<ListArray>().unwrap();
+        let lists=ListArray::new(match lists.data_type(){DataType::List(field)=>field.clone(),_=>unreachable!()},
+            OffsetBuffer::new(ScalarBuffer::from((0..=8).map(|i|(i*width) as i32).collect::<Vec<_>>())),lists.values().clone(),None);
+        let choices=ListArray::new(match choices.data_type(){DataType::List(field)=>field.clone(),_=>unreachable!()},OffsetBuffer::new(ScalarBuffer::from(vec![0,2,4,6,8])),Arc::new(lists),None);
+        let entries=StructArray::new(entries.fields().clone(),vec![Arc::new(choices)],None);
+        let slots=StructArray::new(slots.fields().clone(),vec![Arc::new(entries)],None);
+        let entries=ListArray::new(match original.data_type(){DataType::List(field)=>field.clone(),_=>unreachable!()},original.offsets().clone(),Arc::new(slots),None);
+        let batch=RecordBatch::try_new(batch.schema(),vec![Arc::new(entries)]).unwrap();
+        let Expr::AlignedMatrixMap{body,dtype,..}=&mut expression else{unreachable!()};
+        let Expr::ArrayIndex{value,..}=body.as_ref() else{unreachable!()};
+        let int=Type::Primitive(PrimitiveType::Int32);
+        *body=Arc::new(Expr::ArrayMap{value:Arc::new(Expr::Literal{dtype:Type::Array{array:Box::new(int.clone())},value:serde_json::json!(picks)}),parameter:"pick".into(),
+            body:Arc::new(Expr::ArrayIndex{value:value.clone(),index:Arc::new(Expr::LambdaVariable{name:"pick".into(),dtype:Some(int.clone())})})});
+        *dtype=Type::Array{array:Box::new(Type::Array{array:Box::new(Type::Array{array:Box::new(int)})})};
+        let (output,bytes)=evaluate_aligned_allocated_bytes(&batch,&expression);drop(batch);
+        let outer=output.as_any().downcast_ref::<ListArray>().unwrap();assert_eq!(outer.len(),2);
+        for row in 0..2 {let entries=outer.value(row);let entries=entries.as_any().downcast_ref::<ListArray>().unwrap();assert_eq!(entries.len(),2);
+            for column in 0..2 {let selected=entries.value(column);let selected=selected.as_any().downcast_ref::<ListArray>().unwrap();assert_eq!(selected.len(),2);
+                for (position,pick) in picks.into_iter().enumerate(){let values=selected.value(position);let values=values.as_any().downcast_ref::<Int32Array>().unwrap();assert_eq!(values.len(),width);
+                    for i in 0..width {let index=((row*2+column)*2+pick)*width+i;
+                        assert_eq!(values.is_valid(i),index%7!=1);if index%7!=1{assert_eq!(values.value(i),index as i32);}
+                    }
+                }
+            }
+        }
+        eprintln!("nested list selection picks={picks:?} allocated_bytes={bytes}");
+    }
 }

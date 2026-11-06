@@ -36,6 +36,7 @@ pub(crate) fn lower_in_context(
     globals: &GlobalsRef,
     context: &mut crate::logical::LoweringContext,
 ) -> Result<LogicalPlan> {
+    let context = context.scalar_context();
     let key = Arc::as_ptr(globals) as usize;
     if let Some((_, plan)) = context.globals.get(&key) {
         return Ok(plan.clone());
