@@ -220,6 +220,7 @@ impl OutputBlock<'_> {
                                 arrays[leaf] =
                                     list.values().as_any().downcast_ref::<$array>().unwrap();
                             }
+                            let mut valid_bits = [false; MAX_BLOCK];
                             for (i, &(lane, leaf)) in self.entries.iter().enumerate() {
                                 if parent_valid(i) && self.workspace[valid[leaf]].true_at(lane) {
                                     let index = self.index(reads[leaf], lane);
@@ -236,7 +237,13 @@ impl OutputBlock<'_> {
                                             "flatmap child exceeds List32 capacity".into(),
                                         ));
                                     }
-                                    $copy!(out.values(), arrays[leaf], start, stop);
+                                    $copy!(
+                                        out.values(),
+                                        arrays[leaf],
+                                        start,
+                                        stop,
+                                        &mut valid_bits
+                                    );
                                     out.append(true);
                                 } else {
                                     out.append(false);
@@ -245,7 +252,7 @@ impl OutputBlock<'_> {
                         }};
                     }
                     macro_rules! numeric_span {
-                        ($out:expr,$array:expr,$start:expr,$stop:expr) => {{
+                        ($out:expr,$array:expr,$start:expr,$stop:expr,$mask:expr) => {{
                             let out = $out;
                             let array = $array;
                             if array.null_count() == 0 {
@@ -253,7 +260,7 @@ impl OutputBlock<'_> {
                             } else {
                                 // Copy final values in spans; the bounded bit scratch avoids
                                 // constructing an Arrow slice/header for each child list.
-                                let mut mask = [false; MAX_BLOCK];
+                                let mask = $mask;
                                 for first in ($start..$stop).step_by(MAX_BLOCK) {
                                     let stop = (first + MAX_BLOCK).min($stop);
                                     for (i, valid) in mask[..stop - first].iter_mut().enumerate() {
@@ -268,7 +275,8 @@ impl OutputBlock<'_> {
                         }};
                     }
                     macro_rules! boolean_span {
-                        ($out:expr,$array:expr,$start:expr,$stop:expr) => {{
+                        ($out:expr,$array:expr,$start:expr,$stop:expr,$mask:expr) => {{
+                            let _ = $mask;
                             let out = $out;
                             let array = $array;
                             for index in $start..$stop {
