@@ -1,0 +1,131 @@
+{
+  "repetitions": [
+    1,
+    2,
+    3
+  ],
+  "current_revision": "c82d0305603df7e0b9da8979a74c3cd9b210b073",
+  "baseline_revision": "517c87538d58689e864af795015020e908de0be0",
+  "baseline_native": "4761b8ec4e70325e922bb330987ef87c7a9f50bfba4f93f9a69c0c761337244c",
+  "scope": "cumulative since last full-suite baseline, not isolated flatmap",
+  "status": "FINAL_ACCEPTED",
+  "provenance": {
+    "artifact_lock_sha256": "8b9c7f265ed3a947782976737084cb3d8b2da67799128294cac8eb135b4f4460",
+    "integrity_acceptance_path": "/private/tmp/vail-full-benchmark-20261106/FINAL-INTEGRITY-ACCEPTED.json",
+    "integrity_acceptance_sha256": "426593644f1ed65910364ee155c75a3c40a7f2390faf91822a95ca8fc511be6d",
+    "preflight_sha256": "eec979a1319f0c6b7aa1e490c7685c16e382942cf99050bfbb3d77f37b9eb80a"
+  },
+  "statistics": {
+    "vail-vail": {
+      "old": {
+        "paired_cases": 111,
+        "enrolled_cases": 112,
+        "wall_s": {
+          "median_speedup": 1.0045467209730423,
+          "geomean_speedup": 1.1507728983084062,
+          "sum_old_medians": 343.7576913050001,
+          "sum_current_medians": 255.57959820199784,
+          "slower_cases": 49,
+          "at_least_10x_cases": 1
+        },
+        "cpu_s": {
+          "median_speedup": 1.0083798882681565,
+          "geomean_speedup": 1.0652472459304583,
+          "sum_old_medians": 1697.59,
+          "sum_current_medians": 1571.03,
+          "slower_cases": 40,
+          "at_least_10x_cases": 0
+        }
+      },
+      "hail": {
+        "paired_cases": 111,
+        "enrolled_cases": 112,
+        "wall_s": {
+          "median_speedup": 4.494560609408692,
+          "geomean_speedup": 6.238117574467114,
+          "sum_old_medians": 756.8874667950003,
+          "sum_current_medians": 255.57959820199784,
+          "slower_cases": 4,
+          "at_least_10x_cases": 37
+        },
+        "cpu_s": {
+          "median_speedup": 5.07873090481786,
+          "geomean_speedup": 7.4951178576855915,
+          "sum_old_medians": 5292.2,
+          "sum_current_medians": 1571.03,
+          "slower_cases": 10,
+          "at_least_10x_cases": 40
+        }
+      }
+    },
+    "vail-hail": {
+      "old": {
+        "paired_cases": 67,
+        "enrolled_cases": 67,
+        "wall_s": {
+          "median_speedup": 1.0162021670693597,
+          "geomean_speedup": 1.1406424142931018,
+          "sum_old_medians": 270.51026863000084,
+          "sum_current_medians": 186.17013342500036,
+          "slower_cases": 18,
+          "at_least_10x_cases": 1
+        },
+        "cpu_s": {
+          "median_speedup": 1.0096719932716565,
+          "geomean_speedup": 1.0943877786701248,
+          "sum_old_medians": 1065.41,
+          "sum_current_medians": 959.57,
+          "slower_cases": 18,
+          "at_least_10x_cases": 0
+        }
+      },
+      "hail": {
+        "paired_cases": 67,
+        "enrolled_cases": 67,
+        "wall_s": {
+          "median_speedup": 3.3487450311287197,
+          "geomean_speedup": 4.277774219693923,
+          "sum_old_medians": 328.9340197829995,
+          "sum_current_medians": 186.17013342500036,
+          "slower_cases": 9,
+          "at_least_10x_cases": 17
+        },
+        "cpu_s": {
+          "median_speedup": 4.085764294049008,
+          "geomean_speedup": 5.423887214274387,
+          "sum_old_medians": 2318.91,
+          "sum_current_medians": 959.57,
+          "slower_cases": 8,
+          "at_least_10x_cases": 18
+        }
+      }
+    }
+  },
+  "inputs": [
+    {
+      "rep": 1,
+      "path": "/private/tmp/vail-full-benchmark-20261106/results/rep1/results.json",
+      "sha256": "011974d511886a1b97654c67773c95b975a264476e61b5c791784ebbaf09b60d"
+    },
+    {
+      "rep": 2,
+      "path": "/private/tmp/vail-full-benchmark-20261106/results/rep2/results.json",
+      "sha256": "dd3fcb7e14539c8a63e8f3be2a3c33a22d0c181fe2217e9255af0f9802acbe80"
+    },
+    {
+      "rep": 3,
+      "path": "/private/tmp/vail-full-benchmark-20261106/results/rep3/results.json",
+      "sha256": "21fd05625d2ef3fdebc20c3b01abbe59b21826715ff19b069206724e8cd8bb8d"
+    }
+  ],
+  "enrolled_native": 112,
+  "enrolled_legacy": 67,
+  "planning_observations": 9,
+  "nonpass_observations": 0,
+  "policy_exclusions": 39,
+  "supplemental_omitted": 85,
+  "ratio": "comparator median divided by current median across three independent processes",
+  "validation": "Original upstream actions/asserts; no cross-engine result equality claim",
+  "cpu": "Observed Python+descendant10Hz lower bound; unseen short-lived children may be omitted",
+  "rss": "Summed sampled RSS, not allocation/PSS/unique RAM or initialization memory"
+}

@@ -1,0 +1,725 @@
+[
+  {
+    "phase": "timed",
+    "version": "current",
+    "mode": "vail-vail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 1,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 0.12500198000043383,
+    "telemetry": {
+      "cpu_seconds": 0.14999999999999997,
+      "average_cores": 1.1972854187158535,
+      "peak_rss_gib": 0.06880569458007812,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 0.12999999999999998,
+        "system_time": 0.020000000000000004,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep1/case-0363/telemetry/vail/benchmark_table--test_table_python_construction"
+    },
+    "fixture_seconds": 0.227,
+    "elapsed_seconds": 0.414,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "current",
+    "mode": "vail-vail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 2,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 0.12404673900027774,
+    "telemetry": {
+      "cpu_seconds": 0.14,
+      "average_cores": 1.1261607389010888,
+      "peak_rss_gib": 0.06885528564453125,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 0.13,
+        "system_time": 0.009999999999999995,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep2/case-0365/telemetry/vail/benchmark_table--test_table_python_construction"
+    },
+    "fixture_seconds": 0.228,
+    "elapsed_seconds": 0.412,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "current",
+    "mode": "vail-vail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 3,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 0.1322351570001956,
+    "telemetry": {
+      "cpu_seconds": 0.15000000000000002,
+      "average_cores": 1.1318695397811662,
+      "peak_rss_gib": 0.06884384155273438,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 0.13,
+        "system_time": 0.020000000000000004,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep3/case-0364/telemetry/vail/benchmark_table--test_table_python_construction"
+    },
+    "fixture_seconds": 0.239,
+    "elapsed_seconds": 0.436,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "hail",
+    "mode": "hail-hail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 1,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 1.165357626000059,
+    "telemetry": {
+      "cpu_seconds": 1.19,
+      "average_cores": 1.0208004335358314,
+      "peak_rss_gib": 0.6654930114746094,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 1.17,
+        "system_time": 0.020000000000000018,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 12288
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep1/case-0364/telemetry/hail/benchmark_table--test_table_python_construction"
+    },
+    "worker_cleanup_forced": true,
+    "fixture_seconds": 5.721,
+    "elapsed_seconds": 12.428,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "hail",
+    "mode": "hail-hail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 2,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 1.1280442560000665,
+    "telemetry": {
+      "cpu_seconds": 1.16,
+      "average_cores": 1.0281282086795653,
+      "peak_rss_gib": 0.6513099670410156,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 1.13,
+        "system_time": 0.02999999999999997,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep2/case-0363/telemetry/hail/benchmark_table--test_table_python_construction"
+    },
+    "worker_cleanup_forced": true,
+    "fixture_seconds": 5.663,
+    "elapsed_seconds": 12.33,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "hail",
+    "mode": "hail-hail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 3,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 1.1949996809998993,
+    "telemetry": {
+      "cpu_seconds": 1.2300000000000002,
+      "average_cores": 1.0290241438353687,
+      "peak_rss_gib": 0.6644515991210938,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 1.2000000000000002,
+        "system_time": 0.02999999999999997,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep3/case-0365/telemetry/hail/benchmark_table--test_table_python_construction"
+    },
+    "worker_cleanup_forced": true,
+    "fixture_seconds": 6.488,
+    "elapsed_seconds": 13.234,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "old",
+    "mode": "vail-vail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 1,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 0.12683457000002818,
+    "telemetry": {
+      "cpu_seconds": 0.14,
+      "average_cores": 1.1014097021449876,
+      "peak_rss_gib": 0.06841659545898438,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 0.13,
+        "system_time": 0.009999999999999995,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep1/case-0365/telemetry/vail/benchmark_table--test_table_python_construction"
+    },
+    "fixture_seconds": 0.23,
+    "elapsed_seconds": 0.421,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "old",
+    "mode": "vail-vail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 2,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 0.12663915900020584,
+    "telemetry": {
+      "cpu_seconds": 0.14999999999999997,
+      "average_cores": 1.181852717703416,
+      "peak_rss_gib": 0.068359375,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 0.13999999999999999,
+        "system_time": 0.009999999999999995,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep2/case-0364/telemetry/vail/benchmark_table--test_table_python_construction"
+    },
+    "fixture_seconds": 0.229,
+    "elapsed_seconds": 0.414,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  },
+  {
+    "phase": "timed",
+    "version": "old",
+    "mode": "vail-vail",
+    "case_id": "benchmark_table::test_table_python_construction",
+    "repetition": 3,
+    "module": "benchmark_table.py",
+    "name": "test_table_python_construction",
+    "id": "benchmark_table::test_table_python_construction",
+    "args": [],
+    "fixtures": [],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 0.1316792570000871,
+    "telemetry": {
+      "cpu_seconds": 0.15000000000000002,
+      "average_cores": 1.136804518437215,
+      "peak_rss_gib": 0.06839370727539062,
+      "rss_guard_scope": "Measurement fixture/action intervals only, after engine import/Hail.init; no process-lifetime or initialization RSS guard",
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 0.14,
+        "system_time": 0.009999999999999995,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 0,
+        "diskio_byteswritten": 4096
+      },
+      "cpu_scope": "worker and observed descendants, retaining final observed counters after exit; includes JVM and telemetry thread; lower bound for short-lived children between 10Hz samples",
+      "directory": "/home/danielking/full-benchmark-20261106-c82/results/rep3/case-0363/telemetry/vail/benchmark_table--test_table_python_construction"
+    },
+    "fixture_seconds": 0.251,
+    "elapsed_seconds": 0.45,
+    "fresh_attempt": true,
+    "actual_sample": false,
+    "planning_sample": true,
+    "sample_purpose": "timed",
+    "sample_eligible_for_timed_ratio": false,
+    "measurement_complete_finite_positive": true,
+    "evidence_tier": {
+      "case_id": "benchmark_table::test_table_python_construction",
+      "source": {
+        "module": "benchmark_table.py",
+        "function": "test_table_python_construction",
+        "lines": [
+          45,
+          49
+        ],
+        "sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d"
+      },
+      "input": {
+        "format_applicability": "format-independent",
+        "historically_positive_modes": [
+          "hail-hail",
+          "vail-hail",
+          "vail-vail"
+        ],
+        "fixtures": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "parameters": []
+      },
+      "terminal_actions": [],
+      "terminal_domain": "PLAN_ONLY",
+      "evidence_tier": "planning",
+      "observed_checks": [],
+      "included_helper_checks": [],
+      "validation_scope": "Intentional Python query construction; no execution action, finalqueryobject/schema not retained.",
+      "cross_engine_result_compared": false,
+      "new_runtime_validation_performed": false,
+      "gaps": [
+        "Noexecutionactionbydesign;workerfnreturnNoneandlocalhtdiscarded"
+      ],
+      "preservation_contract": "Noaddedactions/forcing/collect/reexecution;preserveupstreamsetup,actions,parameters,workloadanddenominators."
+    },
+    "cross_engine_result_compared": false
+  }
+]
