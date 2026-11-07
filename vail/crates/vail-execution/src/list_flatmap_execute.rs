@@ -406,13 +406,13 @@ impl ListFlatMap {
             .sum::<usize>()
             + self.coordinates * 9
             + self.leaves.len()
-                * if let Some(output) = &self.output {
+                * (1 + if let Some(output) = &self.output {
                     16 + output.depth()
                 } else if self.fold.is_some() {
                     24
                 } else {
-                    1
-                }
+                    0
+                })
             + 17;
         let capacity = reads
             .iter()
