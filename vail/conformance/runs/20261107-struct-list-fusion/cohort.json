@@ -1,0 +1,30 @@
+{
+  "source": "fcd760817e4898fe0455ffa35482022ccbec3f81",
+  "host": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "logical_cpus": 14,
+  "workload": {
+    "rows": 64,
+    "width": 1024,
+    "warmups": 3,
+    "samples_per_process": 7
+  },
+  "order": [
+    "off",
+    "on",
+    "on",
+    "off",
+    "off",
+    "on",
+    "on",
+    "off"
+  ],
+  "removed_inherited_VAIL_variables": [],
+  "thread_env": {
+    "OMP_NUM_THREADS": "2",
+    "RAYON_NUM_THREADS": "2",
+    "OPENBLAS_NUM_THREADS": "2"
+  },
+  "measure": "evaluation wall only; output validation/preparation untimed",
+  "started_utc": "2026-11-07T05:17:07.534008+00:00"
+}

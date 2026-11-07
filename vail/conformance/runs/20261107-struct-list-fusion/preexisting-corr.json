@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "mode": "baseline",
+      "returncode": 1,
+      "log": "corr-same-env-baseline.log",
+      "log_sha256": "7d0f21cfa5ebc43dc9dc743c2d99186ad28877c23edc1f46ba1d784125fd89f6",
+      "imports": {
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "module": "/private/tmp/vail-generic-list-20261104/package-72/vail/__init__.py",
+        "native": "/private/tmp/vail-generic-list-20261104/package-72/vail/_native.abi3.so",
+        "native_sha256": "b9ded416d9a71c5bb66e84864f6dc22572f4cf4b7e2dfa4c6df3ec931c181982",
+        "pytest": "9.1.1",
+        "arrow": "25.0.1"
+      }
+    },
+    {
+      "mode": "candidate",
+      "returncode": 1,
+      "log": "corr-same-env-candidate.log",
+      "log_sha256": "92c09b3f8016c1702f9997cd2bcbe6f4bbcdd3af47ba55106ba7a747dfda2d8d",
+      "imports": {
+        "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+        "module": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+        "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+        "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+        "pytest": "9.1.1",
+        "arrow": "25.0.1"
+      }
+    }
+  ],
+  "test_sha256": "f62a7174beeffd180dd3dde8be854531fddf9f5bee2df249ee677a2c2d45ea1b"
+}

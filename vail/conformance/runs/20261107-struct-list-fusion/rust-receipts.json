@@ -1,0 +1,105 @@
+[
+  {
+    "name": "rust-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--release",
+      "-p",
+      "vail-execution",
+      "--lib",
+      "--",
+      "--test-threads=2"
+    ],
+    "returncode": 0,
+    "expected_returncode": 0,
+    "elapsed_seconds": 45.05695424997248,
+    "extra_env": {},
+    "source": "fcd760817e4898fe0455ffa35482022ccbec3f81"
+  },
+  {
+    "name": "rust-public",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--release",
+      "-p",
+      "vail-execution",
+      "--test",
+      "list_flatmap",
+      "--",
+      "--test-threads=2"
+    ],
+    "returncode": 0,
+    "expected_returncode": 0,
+    "elapsed_seconds": 49.34124429197982,
+    "extra_env": {},
+    "source": "fcd760817e4898fe0455ffa35482022ccbec3f81"
+  },
+  {
+    "name": "allocation",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--release",
+      "-p",
+      "vail-execution",
+      "--test",
+      "list_flatmap",
+      "empty_output",
+      "--",
+      "--test-threads=1",
+      "--nocapture"
+    ],
+    "returncode": 0,
+    "expected_returncode": 0,
+    "elapsed_seconds": 0.21170070895459503,
+    "extra_env": {},
+    "source": "fcd760817e4898fe0455ffa35482022ccbec3f81"
+  },
+  {
+    "name": "allocation-counterfactual",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--release",
+      "-p",
+      "vail-execution",
+      "--test",
+      "list_flatmap",
+      "empty_output",
+      "--",
+      "--test-threads=1",
+      "--nocapture"
+    ],
+    "returncode": 101,
+    "expected_returncode": 101,
+    "elapsed_seconds": 0.2708912909729406,
+    "extra_env": {
+      "VAIL_DISABLE_LIST_FLATMAP": "1"
+    },
+    "source": "fcd760817e4898fe0455ffa35482022ccbec3f81"
+  },
+  {
+    "name": "example-build",
+    "command": [
+      "cargo",
+      "build",
+      "--offline",
+      "--release",
+      "-p",
+      "vail-execution",
+      "--example",
+      "struct_fusion"
+    ],
+    "returncode": 0,
+    "expected_returncode": 0,
+    "elapsed_seconds": 5.887266541016288,
+    "extra_env": {},
+    "source": "fcd760817e4898fe0455ffa35482022ccbec3f81"
+  }
+]
