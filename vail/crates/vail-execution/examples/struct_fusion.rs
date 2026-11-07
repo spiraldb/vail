@@ -201,6 +201,21 @@ fn main() {
     for _ in 0..3 {
         assert_eq!(eval().as_ref(), expected.as_ref());
     }
+    // A bounded profile runs the same prepared workload without the untimed
+    // oracle traversal in every sample. Validate its final complete output.
+    if std::env::args().nth(2).as_deref() == Some("--profile") {
+        let mut out = eval();
+        for _ in 0..2000 {
+            out = eval();
+            std::hint::black_box(&out);
+        }
+        assert_eq!(out.as_ref(), expected.as_ref());
+        println!(
+            "{}",
+            json!({"case":case,"profile_evaluations":2001,"validated":true})
+        );
+        return;
+    }
     let mut samples = vec![];
     for _ in 0..7 {
         let start = Instant::now();
