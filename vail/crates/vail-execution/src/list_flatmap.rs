@@ -914,11 +914,7 @@ pub(crate) fn prepare(
     dtype: DataType,
     lower: &mut dyn FnMut(&Expr) -> Option<(Arc<dyn PhysicalExpr>, DataType)>,
 ) -> Option<ListFlatMap> {
-    // Constructor projection and filtering can omit unused work only when it
-    // cannot raise an error or depend on the original evaluation context.
-    if !expression.is_pure() {
-        return None;
-    }
+    let original = expression;
     let (expression, output_type, fold) = if let Expr::ArrayFold {
         value,
         zero,
@@ -1006,6 +1002,11 @@ pub(crate) fn prepare(
     }
     // Existing whole-column kernels are cheaper for map/filter-only chains.
     if count < if fold.is_some() { 1 } else { 2 } || (!flatmap && fold.is_none()) {
+        return None;
+    }
+    // Certify the original DAG, including undemanded constructor fields, before
+    // projection/filtering can remove work. Ineligible shapes avoid this walk.
+    if !original.is_pure() {
         return None;
     }
     let mut compiler = Compiler {
