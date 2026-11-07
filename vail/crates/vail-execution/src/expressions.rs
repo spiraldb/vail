@@ -6450,7 +6450,7 @@ fn lower_uncached(
         .to_arrow()?;
     let output_type = dtype.clone();
     if !memo.options.disable_list_flatmap
-        && matches!(expr, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. })
+        && matches!(expr, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. } | Expr::ArrayFold { .. })
     {
         let mut source = |value: &Expr| {
             if !value.is_pure() { return None; }

@@ -1007,3 +1007,275 @@ fn mixed_row_array_and_scalar_global_captures_keep_their_domains() {
         ]
     );
 }
+
+fn field(value: Value, name: &str) -> Value {
+    json!({"op":"get_field","value":value,"name":name})
+}
+fn record(x: Value) -> Value {
+    json!({"op":"struct","fields":[["value",x.clone()],["nested",{"op":"struct","fields":[["twice",binary("mul",x,number(2))]]}]]})
+}
+fn struct_array(elements: Vec<Value>) -> Value {
+    json!({"op":"array","element_type":{"struct":[["value","int32"],["nested",{"struct":[["twice","int32"]]}]]},"elements":elements})
+}
+fn compare_ordinary(expression: Value, batch: &RecordBatch) -> ArrayRef {
+    use vail_execution::expressions::{PreparationOptions, lower_with_options};
+    let expr: Expr = serde_json::from_value(expression.clone()).unwrap();
+    let ordinary = lower_with_options(
+        &expr,
+        batch.schema_ref(),
+        &PreparationOptions::default().without_list_flatmap(),
+    )
+    .unwrap()
+    .evaluate(batch)
+    .unwrap()
+    .into_array(batch.num_rows())
+    .unwrap();
+    let actual = evaluate(expression, batch);
+    assert_eq!(actual.as_ref(), ordinary.as_ref());
+    actual
+}
+#[test]
+fn struct_flatmap_filters_constructor_fields_and_writes_nested_columns() {
+    let expanded = flatmap(
+        column(),
+        "x",
+        struct_array(vec![
+            record(variable("x")),
+            record(binary("add", variable("x"), number(10))),
+        ]),
+    );
+    let expr = filter(
+        expanded,
+        "s",
+        binary("gt", field(variable("s"), "value"), number(5)),
+    );
+    let out = compare_ordinary(expr, &input());
+    let lists = out.as_any().downcast_ref::<ListArray>().unwrap();
+    let first = lists.value(0);
+    let first = first
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    assert_eq!(
+        first.column(0).as_ref(),
+        &Int32Array::from(vec![Some(10), Some(12)])
+    );
+    let nested = first
+        .column(1)
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    assert_eq!(
+        nested.column(0).as_ref(),
+        &Int32Array::from(vec![Some(20), Some(24)])
+    );
+}
+#[test]
+fn conditional_struct_nulls_differ_from_defined_null_fields() {
+    let ty = json!({"struct":[["value","int32"],["nested",{"struct":[["twice","int32"]]}]]});
+    let expr = flatmap(
+        column(),
+        "x",
+        struct_array(vec![
+            json!({"op":"if_else",
+        "condition":binary("gt",variable("x"),number(1)),"consequent":record(variable("x")),
+        "alternate":{"op":"literal","dtype":ty,"value":null}}),
+            record(json!({"op":"literal","dtype":"int32","value":null})),
+        ]),
+    );
+    let out = compare_ordinary(expr, &input());
+    let first = out.as_any().downcast_ref::<ListArray>().unwrap().value(0);
+    let first = first
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    assert_eq!(
+        (0..first.len())
+            .map(|i| first.is_valid(i))
+            .collect::<Vec<_>>(),
+        vec![false, true, false, true, true, true]
+    );
+}
+#[test]
+fn maps_fuse_struct_constructor_projection_and_filter() {
+    let expr = map(
+        filter(
+            map(column(), "x", record(variable("x"))),
+            "s",
+            binary("gt", field(variable("s"), "value"), number(1)),
+        ),
+        "s",
+        record(field(field(variable("s"), "nested"), "twice")),
+    );
+    compare_ordinary(expr, &input());
+}
+
+fn fold(value: Value, zero: Value, operator: &str) -> Value {
+    json!({"op":"array_fold","value":value,"zero":zero,"accumulator":"acc","parameter":"v","body":binary(operator,variable("acc"),variable("v")),"scan":false})
+}
+#[test]
+fn fused_fold_keeps_typed_seed_wrapping_nulls_and_list_boundaries() {
+    for operator in ["add", "mul"] {
+        for seed in [
+            number(7),
+            number(i32::MAX),
+            json!({"op":"literal","dtype":"int32","value":null}),
+        ] {
+            let value = map(column(), "x", binary("add", variable("x"), number(1)));
+            let result = compare_ordinary(fold(value, seed, operator), &input());
+            assert!(result.as_any().is::<Int32Array>());
+        }
+    }
+    let lists = ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Int32, true)),
+        OffsetBuffer::from_lengths([0, 20001, 0, 1]),
+        Arc::new(Int32Array::from(vec![Some(1); 20002])),
+        None,
+    );
+    let batch = RecordBatch::try_new(
+        Arc::new(Schema::new(vec![Field::new(
+            "xs",
+            lists.data_type().clone(),
+            true,
+        )])),
+        vec![Arc::new(lists)],
+    )
+    .unwrap();
+    let value = flatmap(column(), "x", array(vec![variable("x"), number(2)]));
+    let actual = compare_ordinary(fold(value, number(7), "add"), &batch);
+    assert_eq!(actual.as_ref(), &Int32Array::from(vec![7, 60010, 7, 10]));
+}
+#[test]
+fn fused_fold_does_not_admit_nonassociative_or_nonliteral_seed_bodies() {
+    let value = flatmap(column(), "x", array(vec![variable("x"), number(2)]));
+    compare_ordinary(fold(value.clone(), number(7), "sub"), &input());
+    compare_ordinary(
+        fold(value, binary("add", number(1), number(2)), "add"),
+        &input(),
+    );
+}
+#[test]
+fn empty_struct_outputs_have_length_even_without_children() {
+    let empty = json!({"op":"struct","fields":[]});
+    let value = json!({"op":"array_flatten","value":map(column(),"x",json!({"op":"array","element_type":{"struct":[]},"elements":[empty.clone(),empty]}))});
+    compare_ordinary(value, &input());
+}
+
+#[test]
+fn struct_output_copies_only_selected_list_and_string_spans() {
+    use arrow_array::{StringArray, StructArray};
+    let children = ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Int32, true)),
+        OffsetBuffer::new(vec![0, 1, 4, 4, 6].into()),
+        Arc::new(Int32Array::from(vec![
+            Some(1),
+            Some(999),
+            None,
+            Some(999),
+            None,
+            Some(6),
+        ])),
+        Some(NullBuffer::from(vec![true, false, true, true])),
+    );
+    let entries = StructArray::new(
+        vec![
+            Arc::new(Field::new("list", children.data_type().clone(), true)),
+            Arc::new(Field::new("text", DataType::Utf8, true)),
+        ]
+        .into(),
+        vec![
+            Arc::new(children),
+            Arc::new(StringArray::from(vec![
+                Some("one"),
+                Some("hidden"),
+                None,
+                Some("four"),
+            ])),
+        ],
+        Some(NullBuffer::from(vec![true, false, true, true])),
+    )
+    .slice(1, 3);
+    let batch = one_list(Arc::new(entries));
+    let ty = json!({"struct":[["list",{"array":"int32"}],["text","str"]]});
+    let expression = flatmap(
+        column(),
+        "x",
+        json!({"op":"array","element_type":ty,"elements":[variable("x"),variable("x")]}),
+    );
+    let actual = compare_ordinary(expression, &batch);
+    drop(batch);
+    let list = actual
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap()
+        .value(0);
+    let entries = list.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(entries.null_count(), 2);
+    let copied = entries
+        .column(0)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(
+        copied.values().as_ref(),
+        &Int32Array::from(vec![None, Some(6), None, Some(6)])
+    );
+    let text = entries
+        .column(1)
+        .as_any()
+        .downcast_ref::<StringArray>()
+        .unwrap();
+    assert_eq!(
+        text.iter().collect::<Vec<_>>(),
+        vec![None, None, None, None, Some("four"), Some("four")]
+    );
+}
+#[test]
+fn struct_filter_empty_output_allocation_does_not_grow_with_input() {
+    fn allocated(n: usize) -> usize {
+        let batch = one_list(Arc::new(Int32Array::from(vec![1; n])));
+        let expression: Expr = serde_json::from_value(filter(
+            flatmap(
+                column(),
+                "x",
+                struct_array(vec![
+                    record(variable("x")),
+                    record(binary("add", variable("x"), number(1))),
+                ]),
+            ),
+            "s",
+            binary("lt", field(variable("s"), "value"), number(0)),
+        ))
+        .unwrap();
+        let program = lower(&expression, batch.schema_ref()).unwrap();
+        BYTES.with(|sum| sum.set(Some(0)));
+        let output = program.evaluate(&batch).unwrap().into_array(1).unwrap();
+        let bytes = BYTES.with(|sum| sum.replace(None).unwrap());
+        assert_eq!(
+            output
+                .as_any()
+                .downcast_ref::<ListArray>()
+                .unwrap()
+                .value_length(0),
+            0
+        );
+        bytes
+    }
+    let small = allocated(4096);
+    let large = allocated(1_048_576);
+    eprintln!("struct empty-output evaluation allocations: {small} -> {large}");
+    assert!(large < small + 1024 * 1024);
+}
+
+#[test]
+fn constructor_projection_does_not_drop_an_unused_error() {
+    let body = json!({"op":"struct","fields":[["value",variable("x")],["error",{"op":"die","message":{"op":"literal","dtype":"str","value":"keep this error"},"dtype":"int32"}]]});
+    let expanded = json!({"op":"array_flatten","value":map(map(column(),"x",body),"s",array(vec![field(variable("s"),"value")]))});
+    let expr: Expr = serde_json::from_value(expanded).unwrap();
+    assert!(
+        lower(&expr, input().schema_ref())
+            .unwrap()
+            .evaluate(&input())
+            .is_err()
+    );
+}

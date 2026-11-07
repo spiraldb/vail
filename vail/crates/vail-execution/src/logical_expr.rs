@@ -1291,7 +1291,7 @@ fn lower(
         Expr::ArrayFlatten { value } => {
             if matches!(value.as_ref(), Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. })
                 && matches!(expr.dtype_with_globals(schema.as_arrow(), globals).and_then(|ty| ty.to_arrow()),
-                    Ok(DataType::List(field)) if matches!(field.data_type(), DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64 | DataType::Boolean))
+                    Ok(DataType::List(field)) if matches!(field.data_type(), DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64 | DataType::Boolean | DataType::Struct(_)))
             {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }

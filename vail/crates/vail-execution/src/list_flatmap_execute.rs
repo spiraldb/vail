@@ -146,15 +146,98 @@ impl Drop for WorkspaceLease<'_> {
         }
     }
 }
+include!("list_flatmap_output.rs");
+
+enum FoldValues {
+    I32(Vec<i32>),
+    I64(Vec<i64>),
+}
+struct FoldOutput {
+    values: FoldValues,
+    valid: Vec<bool>,
+    operator: Binary,
+}
+impl FoldOutput {
+    fn new(dtype: &DataType, fold: Fold, rows: usize) -> Self {
+        let values = match dtype {
+            DataType::Int32 => FoldValues::I32(vec![fold.initial.bits as i32; rows]),
+            DataType::Int64 => FoldValues::I64(vec![fold.initial.bits as i64; rows]),
+            _ => unreachable!(),
+        };
+        Self {
+            values,
+            valid: vec![fold.initial.valid; rows],
+            operator: fold.operator,
+        }
+    }
+    fn append(
+        &mut self,
+        entries: &[(usize, usize, usize)],
+        program: &ListFlatMap,
+        workspace: &[Buffer],
+        reads: &[BoundRead],
+        count: usize,
+    ) {
+        let active = entries
+            .iter()
+            .fold(0u64, |mask, &(_, _, leaf)| mask | (1 << leaf));
+        let mut sources = [&workspace[program.leaves[0].value]; MAX_LEAVES];
+        for (leaf, descriptor) in program.leaves.iter().enumerate() {
+            sources[leaf] = &workspace[descriptor.value];
+        }
+        macro_rules! reduce {
+            ($values:expr, $getter:ident) => {{
+                let mut columns = [&[][..]; MAX_LEAVES];
+                for (leaf, source) in sources.iter().enumerate().take(program.leaves.len()) {
+                    if active & (1 << leaf) != 0 {
+                        columns[leaf] = source.$getter(reads, count);
+                    }
+                }
+                macro_rules! apply {
+                    ($op:ident) => {
+                        for &(row, lane, leaf) in entries {
+                            let source = sources[leaf];
+                            self.valid[row] &= source.valid(lane);
+                            let value = columns[leaf][if source.scalar { 0 } else { lane }];
+                            $values[row] = $values[row].$op(value);
+                        }
+                    };
+                }
+                if self.operator == Binary::Add {
+                    apply!(wrapping_add);
+                } else {
+                    apply!(wrapping_mul);
+                }
+            }};
+        }
+        match &mut self.values {
+            FoldValues::I32(values) => reduce!(values, i32),
+            FoldValues::I64(values) => reduce!(values, i64),
+        }
+    }
+    fn finish(self) -> ArrayRef {
+        let nulls = Some(NullBuffer::from(self.valid));
+        match self.values {
+            FoldValues::I32(values) => Arc::new(Int32Array::new(values.into(), nulls)),
+            FoldValues::I64(values) => Arc::new(Int64Array::new(values.into(), nulls)),
+        }
+    }
+}
+
 enum Output {
     I32(Int32Builder),
     I64(Int64Builder),
     F32(Float32Builder),
     F64(Float64Builder),
     Bool(BooleanBuilder),
+    Nested(Box<dyn ArrayBuilder>),
+    Fold(FoldOutput),
 }
 impl Output {
-    fn new(kind: Kind) -> Self {
+    fn new(dtype: &DataType) -> Self {
+        let Some(kind) = Kind::of(dtype) else {
+            return Self::Nested(make_output_builder(dtype));
+        };
         match kind {
             Kind::I32 => Self::I32(Int32Builder::with_capacity(0)),
             Kind::I64 => Self::I64(Int64Builder::with_capacity(0)),
@@ -170,6 +253,8 @@ impl Output {
             Self::F32(mut out) => Arc::new(out.finish()),
             Self::F64(mut out) => Arc::new(out.finish()),
             Self::Bool(mut out) => Arc::new(out.finish()),
+            Self::Nested(mut out) => out.finish(),
+            Self::Fold(out) => out.finish(),
         }
     }
 }
@@ -231,6 +316,9 @@ struct Execution<'a> {
     capacity: usize,
     domains: Vec<(bool, bool, usize)>,
     span: Option<SpanInput>,
+    emissions: Vec<(usize, usize)>,
+    fold_entries: Vec<(usize, usize, usize)>,
+    output_validity: Vec<u8>,
 }
 impl ListFlatMap {
     pub(super) fn execute(&self, batch: &RecordBatch) -> Result<ArrayRef> {
@@ -300,9 +388,11 @@ impl ListFlatMap {
                 return ordinary.evaluate(batch)?.into_array(batch.num_rows());
             }
         }
-        let DataType::List(field) = &self.dtype else {
-            unreachable!()
+        let field = match &self.dtype {
+            DataType::List(field) => Some(field),
+            _ => None,
         };
+        let element_type = field.map_or(&self.dtype, |field| field.data_type());
         // The bound includes every scalar register, coordinate and guard lane.
         // Constants need only one value; the estimate remains conservative.
         let bytes_per_lane = self
@@ -316,6 +406,13 @@ impl ListFlatMap {
             .sum::<usize>()
             + self.coordinates * 9
             + self.leaves.len()
+                * if let Some(output) = &self.output {
+                    16 + output.depth()
+                } else if self.fold.is_some() {
+                    24
+                } else {
+                    1
+                }
             + 17;
         let capacity = reads
             .iter()
@@ -333,15 +430,36 @@ impl ListFlatMap {
                 .collect(),
             leaves: Vec::with_capacity(capacity),
             workspace: self.workspace.lease(&self.registers, capacity),
-            output: Output::new(Kind::of(field.data_type()).unwrap()),
+            output: if let Some(fold) = self.fold {
+                Output::Fold(FoldOutput::new(element_type, fold, batch.num_rows()))
+            } else {
+                Output::new(element_type)
+            },
             output_len: 0,
-            output_counts: vec![0; batch.num_rows()],
+            output_counts: if self.fold.is_some() {
+                vec![]
+            } else {
+                vec![0; batch.num_rows()]
+            },
             guard_results: (0..self.coordinates)
                 .map(|_| vec![false; capacity])
                 .collect(),
             capacity,
             domains: vec![(false, false, 0); self.coordinates],
             span: None,
+            emissions: if self.output.is_some() {
+                Vec::with_capacity(capacity * self.leaves.len())
+            } else {
+                vec![]
+            },
+            fold_entries: if self.fold.is_some() {
+                Vec::with_capacity(capacity * self.leaves.len())
+            } else {
+                vec![]
+            },
+            output_validity: self.output.as_ref().map_or_else(Vec::new, |output| {
+                vec![0; capacity * self.leaves.len() * output.depth()]
+            }),
         };
         let mut validity = Vec::with_capacity(batch.num_rows());
         for row in 0..batch.num_rows() {
@@ -360,8 +478,14 @@ impl ListFlatMap {
             }
             execution.flush()?;
         }
+        if let Output::Fold(output) = &mut execution.output {
+            for (valid, &root) in output.valid.iter_mut().zip(&validity) {
+                *valid &= root;
+            }
+            return Ok(execution.output.finish());
+        }
         Ok(Arc::new(ListArray::try_new(
-            field.clone(),
+            field.unwrap().clone(),
             OffsetBuffer::<i32>::from_lengths(execution.output_counts),
             execution.output.finish(),
             validity
@@ -497,7 +621,7 @@ impl Execution<'_> {
         let unconditional = leaves
             .iter()
             .all(|&leaf| self.program.leaves[leaf].guards.is_empty());
-        if unconditional && guards.is_empty() {
+        if unconditional && guards.is_empty() && self.program.fold.is_none() {
             let total = validity
                 .iter()
                 .enumerate()
@@ -517,6 +641,7 @@ impl Execution<'_> {
                 Output::F32(out) => *out = Float32Builder::with_capacity(total),
                 Output::F64(out) => *out = Float64Builder::with_capacity(total),
                 Output::Bool(out) => *out = BooleanBuilder::with_capacity(total),
+                Output::Nested(_) | Output::Fold(_) => {}
             }
         }
         let mut masks = if unconditional {
@@ -591,6 +716,23 @@ impl Execution<'_> {
                             apply_predicate(&mut mask[..count], &self.workspace[guard], expected);
                         }
                     }
+                }
+                if let Output::Fold(out) = &mut self.output {
+                    let entries = &mut self.fold_entries;
+                    entries.clear();
+                    for lane in 0..count {
+                        let index = self.span.unwrap().index(&self.coordinates, lane);
+                        while offsets[output_row + 1] as usize <= index {
+                            output_row += 1;
+                        }
+                        for (column, &leaf) in leaves.iter().enumerate() {
+                            if unconditional || masks[column][lane] != 0 {
+                                entries.push((output_row, lane, leaf));
+                            }
+                        }
+                    }
+                    out.append(&entries, self.program, &self.workspace, &self.reads, count);
+                    continue;
                 }
                 let written = if unconditional {
                     count * leaves.len()
@@ -688,6 +830,29 @@ impl Execution<'_> {
                     Output::I64(out) => append!(out, i64, i64),
                     Output::F32(out) => append!(out, f32, f32),
                     Output::F64(out) => append!(out, f64, f64),
+                    Output::Fold(_) => unreachable!(),
+                    Output::Nested(out) => {
+                        let entries = &mut self.emissions;
+                        entries.clear();
+                        for lane in 0..count {
+                            for (column, &leaf) in leaves.iter().enumerate() {
+                                if unconditional || masks[column][lane] != 0 {
+                                    entries.push((lane, leaf));
+                                }
+                            }
+                        }
+                        append_nested(
+                            out.as_mut(),
+                            self.program,
+                            &self.reads,
+                            &self.workspace,
+                            &self.coordinates,
+                            self.span,
+                            count,
+                            entries,
+                            &mut self.output_validity,
+                        )?;
+                    }
                     Output::Bool(out) => {
                         for i in 0..count {
                             for (column, &leaf) in leaves.iter().enumerate() {
@@ -946,6 +1111,60 @@ impl Execution<'_> {
             Output::I64(out) => append!(out, i64, i64),
             Output::F32(out) => append!(out, f32, f32),
             Output::F64(out) => append!(out, f64, f64),
+            Output::Fold(out) => {
+                let entries = &mut self.fold_entries;
+                entries.clear();
+                for lane in 0..count {
+                    let leaf_index = self.leaves[lane];
+                    let leaf = &self.program.leaves[leaf_index];
+                    if leaf.guards.iter().all(|&(guard, expected)| {
+                        self.workspace[guard].valid(lane)
+                            && self.workspace[guard].true_at(lane) == expected
+                    }) {
+                        entries.push((self.coordinates[0][lane], lane, leaf_index));
+                    }
+                }
+                out.append(entries, self.program, &self.workspace, &self.reads, count);
+            }
+            Output::Nested(out) => {
+                let entries = &mut self.emissions;
+                entries.clear();
+                for lane in 0..count {
+                    let leaf_index = self.leaves[lane];
+                    if self.program.leaves[leaf_index]
+                        .guards
+                        .iter()
+                        .all(|&(guard, expected)| {
+                            self.workspace[guard].valid(lane)
+                                && self.workspace[guard].true_at(lane) == expected
+                        })
+                    {
+                        entries.push((lane, leaf_index));
+                    }
+                }
+                let next = self
+                    .output_len
+                    .checked_add(entries.len())
+                    .filter(|&n| n <= i32::MAX as usize)
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("flatmap output exceeds List32 capacity".into())
+                    })?;
+                append_nested(
+                    out.as_mut(),
+                    self.program,
+                    &self.reads,
+                    &self.workspace,
+                    &self.coordinates,
+                    self.span,
+                    count,
+                    entries,
+                    &mut self.output_validity,
+                )?;
+                self.output_len = next;
+                for &(lane, _) in entries.iter() {
+                    self.output_counts[self.coordinates[0][lane]] += 1;
+                }
+            }
             Output::Bool(out) => {
                 for i in 0..count {
                     let leaf = &self.program.leaves[self.leaves[i]];

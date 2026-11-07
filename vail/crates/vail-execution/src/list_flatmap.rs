@@ -95,6 +95,121 @@ struct Register {
 struct Leaf {
     value: usize,
     guards: Vec<(usize, bool)>,
+    output: Option<OutputValue>,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum OutputValue {
+    Scalar(usize),
+    Struct {
+        valid: usize,
+        fields: Vec<OutputValue>,
+    },
+    Borrowed {
+        read: usize,
+        valid: usize,
+    },
+}
+impl OutputValue {
+    fn registers(&self, out: &mut Vec<usize>) {
+        match self {
+            Self::Scalar(value) => out.push(*value),
+            Self::Struct { valid, fields } => {
+                out.push(*valid);
+                for field in fields {
+                    field.registers(out);
+                }
+            }
+            Self::Borrowed { valid, .. } => out.push(*valid),
+        }
+    }
+}
+// Transpose fanout alternatives once at preparation, so execution walks one
+// fixed writer tree rather than constructing a tree of field bindings per block.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum OutputColumn {
+    Scalar {
+        kind: Kind,
+        registers: Vec<usize>,
+    },
+    Struct {
+        valid: Vec<usize>,
+        fields: Vec<OutputColumn>,
+    },
+    Borrowed {
+        dtype: DataType,
+        reads: Vec<usize>,
+        valid: Vec<usize>,
+    },
+}
+impl OutputColumn {
+    fn new(values: &[&OutputValue], registers: &[Register], reads: &[Read]) -> Self {
+        match values[0] {
+            OutputValue::Scalar(value) => Self::Scalar {
+                kind: registers[*value].kind,
+                registers: values
+                    .iter()
+                    .map(|value| {
+                        let OutputValue::Scalar(value) = value else {
+                            unreachable!()
+                        };
+                        *value
+                    })
+                    .collect(),
+            },
+            OutputValue::Struct { fields, .. } => Self::Struct {
+                valid: values
+                    .iter()
+                    .map(|value| {
+                        let OutputValue::Struct { valid, .. } = value else {
+                            unreachable!()
+                        };
+                        *valid
+                    })
+                    .collect(),
+                fields: (0..fields.len())
+                    .map(|i| {
+                        let fields = values
+                            .iter()
+                            .map(|value| {
+                                let OutputValue::Struct { fields, .. } = value else {
+                                    unreachable!()
+                                };
+                                &fields[i]
+                            })
+                            .collect::<Vec<_>>();
+                        Self::new(&fields, registers, reads)
+                    })
+                    .collect(),
+            },
+            OutputValue::Borrowed { read, .. } => Self::Borrowed {
+                dtype: reads[*read].dtype.clone(),
+                reads: values
+                    .iter()
+                    .map(|value| {
+                        let OutputValue::Borrowed { read, .. } = value else {
+                            unreachable!()
+                        };
+                        *read
+                    })
+                    .collect(),
+                valid: values
+                    .iter()
+                    .map(|value| {
+                        let OutputValue::Borrowed { valid, .. } = value else {
+                            unreachable!()
+                        };
+                        *valid
+                    })
+                    .collect(),
+            },
+        }
+    }
+    fn depth(&self) -> usize {
+        match self {
+            Self::Struct { fields, .. } => 1 + fields.iter().map(Self::depth).max().unwrap_or(0),
+            _ => 0,
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum Node {
@@ -117,6 +232,8 @@ enum Node {
 enum Binding {
     Read(usize),
     Expression(Arc<Expr>, Option<Arc<Environment>>),
+    Select(usize, Box<Binding>, Box<Binding>),
+    Missing(DataType),
 }
 struct Environment {
     name: String,
@@ -157,6 +274,8 @@ struct Compiler<'a> {
     environments: Vec<Arc<Environment>>,
     expressions: Vec<Arc<Expr>>,
     scalar_depth: usize,
+    projections: HashMap<(usize, usize, String), Binding>,
+    output_nodes: usize,
 }
 impl Compiler<'_> {
     fn environment(&mut self, env: Env) -> Env {
@@ -180,18 +299,8 @@ impl Compiler<'_> {
             }
         }
         if let Expr::GetField { value, name } = expression {
-            let parent = self.resolve(value, env)?;
-            let Binding::Read(parent) = self.force(parent)? else {
-                return None;
-            };
-            let mut read = self.reads[parent].clone();
-            let DataType::Struct(fields) = &read.dtype else {
-                return None;
-            };
-            let index = fields.iter().position(|field| field.name() == name)?;
-            read.dtype = fields[index].data_type().clone();
-            read.path.push(Path::Field(index));
-            return Some(Binding::Read(self.read(read)));
+            let parent = self.binding(value, env);
+            return self.project(parent, name);
         }
         if !matches!(
             expression,
@@ -221,10 +330,150 @@ impl Compiler<'_> {
             dtype,
         })))
     }
+    fn binding(&self, expression: &Arc<Expr>, env: &Env) -> Binding {
+        if let Expr::LambdaVariable { name, .. } = expression.as_ref() {
+            if let Some(value) = lookup(env, name) {
+                return value;
+            }
+        }
+        Binding::Expression(expression.clone(), env.clone())
+    }
+    fn project(&mut self, value: Binding, name: &str) -> Option<Binding> {
+        match value {
+            Binding::Read(parent) => {
+                let mut read = self.reads[parent].clone();
+                let DataType::Struct(fields) = &read.dtype else {
+                    return None;
+                };
+                let index = fields.iter().position(|field| field.name() == name)?;
+                read.dtype = fields[index].data_type().clone();
+                read.path.push(Path::Field(index));
+                Some(Binding::Read(self.read(read)))
+            }
+            Binding::Expression(expression, env) => {
+                let key = (
+                    Arc::as_ptr(&expression) as usize,
+                    env.as_ref().map_or(0, |e| Arc::as_ptr(e) as usize),
+                    name.to_owned(),
+                );
+                if let Some(value) = self.projections.get(&key) {
+                    return Some(value.clone());
+                }
+                self.expressions.push(expression.clone());
+                let value = match expression.as_ref() {
+                    Expr::Struct { fields } => {
+                        let (_, field) = fields.iter().find(|(field, _)| field == name)?;
+                        Binding::Expression(Arc::new(field.clone()), env)
+                    }
+                    Expr::IfElse {
+                        condition,
+                        consequent,
+                        alternate,
+                    } => {
+                        let condition = self.scalar(condition, &env)?;
+                        let yes = self.project(self.binding(consequent, &env), name)?;
+                        let no = self.project(self.binding(alternate, &env), name)?;
+                        Binding::Select(condition, Box::new(yes), Box::new(no))
+                    }
+                    Expr::Literal { dtype, value } if value.is_null() => {
+                        return self.project(Binding::Missing(dtype.to_arrow().ok()?), name);
+                    }
+                    _ => {
+                        let resolved = self.resolve(&expression, &env)?;
+                        self.project(resolved, name)?
+                    }
+                };
+                self.projections.insert(key, value.clone());
+                Some(value)
+            }
+            Binding::Select(condition, yes, no) => Some(Binding::Select(
+                condition,
+                Box::new(self.project(*yes, name)?),
+                Box::new(self.project(*no, name)?),
+            )),
+            Binding::Missing(DataType::Struct(fields)) => Some(Binding::Missing(
+                fields
+                    .iter()
+                    .find(|field| field.name() == name)?
+                    .data_type()
+                    .clone(),
+            )),
+            Binding::Missing(_) => None,
+        }
+    }
+    fn present(&mut self, value: Binding) -> Option<usize> {
+        match value {
+            Binding::Read(read) => {
+                let missing = self.register(Op::MissingRead(read), Kind::Bool)?;
+                self.register(Op::Unary(Unary::Not, missing), Kind::Bool)
+            }
+            Binding::Missing(_) => self.register(Op::Constant(Cell::boolean(false)), Kind::Bool),
+            Binding::Select(condition, yes, no) => {
+                let yes = self.present(*yes)?;
+                let no = self.present(*no)?;
+                self.register(Op::Select(condition, yes, no), Kind::Bool)
+            }
+            Binding::Expression(expression, env) => match expression.as_ref() {
+                Expr::Struct { .. } => self.register(Op::Constant(Cell::boolean(true)), Kind::Bool),
+                Expr::IfElse {
+                    condition,
+                    consequent,
+                    alternate,
+                } => {
+                    let condition = self.scalar(condition, &env)?;
+                    let yes = self.present(self.binding(consequent, &env))?;
+                    let no = self.present(self.binding(alternate, &env))?;
+                    self.register(Op::Select(condition, yes, no), Kind::Bool)
+                }
+                Expr::Literal { value, .. } if value.is_null() => {
+                    self.register(Op::Constant(Cell::boolean(false)), Kind::Bool)
+                }
+                _ => {
+                    let value = self.resolve(&expression, &env)?;
+                    self.present(value)
+                }
+            },
+        }
+    }
+    fn output(&mut self, value: Binding, dtype: &DataType, depth: usize) -> Option<OutputValue> {
+        if depth == MAX_DEPTH || self.output_nodes == MAX_REGISTERS {
+            return None;
+        }
+        self.output_nodes += 1;
+        if let Some(kind) = Kind::of(dtype) {
+            let register = self.scalar_binding(value)?;
+            return (self.registers[register].kind == kind)
+                .then_some(OutputValue::Scalar(register));
+        }
+        match dtype {
+            DataType::Struct(fields) => {
+                let valid = self.present(value.clone())?;
+                let fields = fields
+                    .iter()
+                    .map(|field| {
+                        let child = self.project(value.clone(), field.name())?;
+                        self.output(child, field.data_type(), depth + 1)
+                    })
+                    .collect::<Option<Vec<_>>>()?;
+                Some(OutputValue::Struct { valid, fields })
+            }
+            DataType::List(_) | DataType::Utf8 => {
+                let Binding::Read(read) = self.force(value)? else {
+                    return None;
+                };
+                if self.reads[read].dtype != *dtype {
+                    return None;
+                }
+                let valid = self.present(Binding::Read(read))?;
+                Some(OutputValue::Borrowed { read, valid })
+            }
+            _ => None,
+        }
+    }
     fn force(&mut self, mut value: Binding) -> Option<Binding> {
         for _ in 0..MAX_REGISTERS {
             match value {
-                Binding::Read(_) => return Some(value),
+                Binding::Read(_) | Binding::Missing(_) | Binding::Select(..) => return Some(value),
                 Binding::Expression(ref expression, ref env) => {
                     value = self.resolve(expression, env)?;
                 }
@@ -256,6 +505,17 @@ impl Compiler<'_> {
         match value {
             Binding::Read(read) => {
                 self.register(Op::Read(read), Kind::of(&self.reads[read].dtype)?)
+            }
+            Binding::Missing(dtype) => {
+                self.register(Op::Constant(Cell::default()), Kind::of(&dtype)?)
+            }
+            Binding::Select(condition, yes, no) => {
+                let a = self.scalar_binding(*yes)?;
+                let b = self.scalar_binding(*no)?;
+                if self.registers[a].kind != self.registers[b].kind {
+                    return None;
+                }
+                self.register(Op::Select(condition, a, b), self.registers[a].kind)
             }
             Binding::Expression(expression, env) => {
                 self.expressions.push(expression.clone());
@@ -349,6 +609,8 @@ impl Compiler<'_> {
                     self.resolve(value, env).and_then(|value| self.force(value))
                 {
                     self.register(Op::MissingRead(read), Kind::Bool)?
+                } else if matches!(value.as_ref(), Expr::Struct { .. }) {
+                    self.register(Op::Constant(Cell::boolean(false)), Kind::Bool)?
                 } else {
                     let value = self.scalar(value, env)?;
                     self.register(Op::Missing(value), Kind::Bool)?
@@ -517,6 +779,12 @@ impl Compiler<'_> {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct Fold {
+    initial: Cell,
+    operator: Binary,
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct ListFlatMap {
     children: Vec<Arc<dyn PhysicalExpr>>,
@@ -526,6 +794,8 @@ pub(crate) struct ListFlatMap {
     leaves: Vec<Leaf>,
     root: Node,
     root_read: usize,
+    fold: Option<Fold>,
+    output: Option<OutputColumn>,
     coordinates: usize,
     dtype: DataType,
     workspace: Arc<execution::WorkspacePool>,
@@ -566,6 +836,8 @@ impl PartialEq for ListFlatMap {
             && self.leaves == other.leaves
             && self.root == other.root
             && self.root_read == other.root_read
+            && self.fold == other.fold
+            && self.output == other.output
             && self.coordinates == other.coordinates
             && self.dtype == other.dtype
             && self.ordinary == other.ordinary
@@ -581,6 +853,8 @@ impl Hash for ListFlatMap {
         self.leaves.hash(h);
         self.root.hash(h);
         self.root_read.hash(h);
+        self.fold.hash(h);
+        self.output.hash(h);
         self.coordinates.hash(h);
         self.dtype.hash(h);
         self.ordinary.hash(h);
@@ -588,7 +862,15 @@ impl Hash for ListFlatMap {
 }
 impl fmt::Display for ListFlatMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "ListFlatMap")
+        write!(
+            f,
+            "{}",
+            if self.fold.is_some() {
+                "ListFold"
+            } else {
+                "ListFlatMap"
+            }
+        )
     }
 }
 impl PhysicalExpr for ListFlatMap {
@@ -632,10 +914,79 @@ pub(crate) fn prepare(
     dtype: DataType,
     lower: &mut dyn FnMut(&Expr) -> Option<(Arc<dyn PhysicalExpr>, DataType)>,
 ) -> Option<ListFlatMap> {
-    let DataType::List(field) = &dtype else {
+    // Constructor projection and filtering can omit unused work only when it
+    // cannot raise an error or depend on the original evaluation context.
+    if !expression.is_pure() {
         return None;
+    }
+    let (expression, output_type, fold) = if let Expr::ArrayFold {
+        value,
+        zero,
+        accumulator,
+        parameter,
+        body,
+        scan: false,
+    } = expression
+    {
+        if accumulator == parameter || !matches!(dtype, DataType::Int32 | DataType::Int64) {
+            return None;
+        }
+        let (Expr::Binary {
+            operator,
+            left,
+            right,
+        }
+        | Expr::IntegerBinary {
+            operator,
+            left,
+            right,
+        }) = body.as_ref()
+        else {
+            return None;
+        };
+        if !matches!(operator, Binary::Add | Binary::Mul)
+            || !matches!(left.as_ref(), Expr::LambdaVariable { name, .. } if name == accumulator)
+            || !matches!(right.as_ref(), Expr::LambdaVariable { name, .. } if name == parameter)
+        {
+            return None;
+        }
+        let initial = match zero.as_ref() {
+            Expr::Literal { dtype: ty, value } if ty.to_arrow().ok()? == dtype => {
+                if value.is_null() {
+                    Cell::default()
+                } else {
+                    Cell::some(value.as_i64()? as u64)
+                }
+            }
+            Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(value),
+            } if dtype == DataType::Int32 => {
+                value.map(|v| Cell::some(v as u64)).unwrap_or_default()
+            }
+            Expr::RuntimeLiteral {
+                value: ScalarValue::Int64(value),
+            } if dtype == DataType::Int64 => {
+                value.map(|v| Cell::some(v as u64)).unwrap_or_default()
+            }
+            _ => return None,
+        };
+        (
+            value.as_ref(),
+            dtype.clone(),
+            Some(Fold {
+                initial,
+                operator: *operator,
+            }),
+        )
+    } else {
+        let DataType::List(field) = &dtype else {
+            return None;
+        };
+        (expression, field.data_type().clone(), None)
     };
-    let output_kind = Kind::of(field.data_type())?;
+    if !execution::supported(&output_type) {
+        return None;
+    }
     let mut count = 0;
     let mut flatmap = false;
     let mut base = expression;
@@ -654,7 +1005,7 @@ pub(crate) fn prepare(
         }
     }
     // Existing whole-column kernels are cheaper for map/filter-only chains.
-    if count < 2 || !flatmap {
+    if count < if fold.is_some() { 1 } else { 2 } || (!flatmap && fold.is_none()) {
         return None;
     }
     let mut compiler = Compiler {
@@ -670,6 +1021,8 @@ pub(crate) fn prepare(
         environments: vec![],
         expressions: vec![],
         scalar_depth: 0,
+        projections: HashMap::new(),
+        output_nodes: 0,
     };
     let Binding::Read(root_read) = compiler.resolve(base, &None)? else {
         return None;
@@ -678,12 +1031,20 @@ pub(crate) fn prepare(
         if c.leaves.len() == MAX_LEAVES {
             return None;
         }
-        let value = c.scalar_binding(value)?;
-        if c.registers[value].kind != output_kind {
-            return None;
-        }
+        let output = c.output(value, &output_type, 0)?;
+        let (value, output) = match output {
+            OutputValue::Scalar(value) => (value, None),
+            output => (
+                c.register(Op::Constant(Cell::boolean(true)), Kind::Bool)?,
+                Some(output),
+            ),
+        };
         let leaf = c.leaves.len();
-        c.leaves.push(Leaf { value, guards });
+        c.leaves.push(Leaf {
+            value,
+            guards,
+            output,
+        });
         Some(Node::Emit(leaf))
     };
     let root = compiler.list(expression, &None, vec![], &mut emit)?;
@@ -735,7 +1096,9 @@ pub(crate) fn prepare(
                     guards.push(predicate);
                     body = *inner;
                 }
-                if let Node::Emit(leaf) = body {
+                if let Node::Emit(leaf) = body
+                    && compiler.leaves[leaf].output.is_none()
+                {
                     compiler.leaves[leaf]
                         .guards
                         .extend(guards.into_iter().map(|guard| (guard, true)));
@@ -788,10 +1151,25 @@ pub(crate) fn prepare(
     let root = normalize(root, &mut compiler, &mut 0)?;
     for (index, leaf) in compiler.leaves.iter().enumerate() {
         mark(&mut compiler.registers, leaf.value, 1 << index, false);
+        if let Some(output) = &leaf.output {
+            let mut registers = vec![];
+            output.registers(&mut registers);
+            for value in registers {
+                mark(&mut compiler.registers, value, 1 << index, false);
+            }
+        }
         for &(guard, _) in &leaf.guards {
             mark(&mut compiler.registers, guard, 1 << index, false);
         }
     }
+    let output = compiler.leaves[0].output.as_ref().map(|_| {
+        let values = compiler
+            .leaves
+            .iter()
+            .map(|leaf| leaf.output.as_ref().unwrap())
+            .collect::<Vec<_>>();
+        OutputColumn::new(&values, &compiler.registers, &compiler.reads)
+    });
     let program = ListFlatMap {
         children: compiler.children,
         child_types: compiler.child_types,
@@ -800,6 +1178,8 @@ pub(crate) fn prepare(
         leaves: compiler.leaves,
         root,
         root_read,
+        fold,
+        output,
         coordinates: compiler.coordinates,
         dtype,
         workspace: Arc::new(execution::WorkspacePool::default()),
