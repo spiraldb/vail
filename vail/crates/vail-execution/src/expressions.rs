@@ -804,6 +804,7 @@ impl RebuiltExpr {
 /// Immutable switches captured at the expression preparation boundary.
 #[derive(Clone, Debug, Default)]
 pub struct PreparationOptions {
+    disable_list_flatmap: bool,
     product_map: bool,
     compose_maps: bool,
     invariant_map: bool,
@@ -828,9 +829,16 @@ impl Hash for PreparationOptions {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) { self.identity().hash(state); }
 }
 impl PreparationOptions {
-    fn identity(&self) -> ([bool; 13], usize) {
+    /// Prepare this expression using the existing list kernels instead of list fusion.
+    pub fn without_list_flatmap(&self) -> Self {
+        let mut options = self.clone();
+        options.disable_list_flatmap = true;
+        options
+    }
+
+    fn identity(&self) -> ([bool; 14], usize) {
         // Sharing the derived return Field changes metadata allocation only.
-        ([self.product_map, self.compose_maps, self.invariant_map, self.indexed_batch,
+        ([self.disable_list_flatmap, self.product_map, self.compose_maps, self.invariant_map, self.indexed_batch,
          self.aligned_invariants, self.borrow_indexed_input, self.trace_product_map,self.coalesce_once,self.borrow_list_children,self.trace_list_borrow,
          self.defer_aligned_producer, self.projected_producer, self.selected_producer], self.selected_producer_scratch_bytes)
     }
@@ -857,6 +865,7 @@ impl PreparationOptions {
     pub fn capture() -> Self {
         let enabled = |name| std::env::var_os(name).is_some();
         Self {
+            disable_list_flatmap: enabled("VAIL_DISABLE_LIST_FLATMAP"),
             borrow_list_children: enabled("VAIL_EXPERIMENT_BORROW_LIST_CHILDREN"),
             trace_list_borrow: enabled("VAIL_TRACE_LIST_BORROW"),
             coalesce_once: enabled("VAIL_EXPERIMENT_COALESCE_ONCE"),
@@ -6440,6 +6449,38 @@ fn lower_uncached(
         .dtype_scoped(schema, globals.schema(), scope, memo, context)?
         .to_arrow()?;
     let output_type = dtype.clone();
+    if !memo.options.disable_list_flatmap
+        && matches!(expr, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. })
+    {
+        let mut source = |value: &Expr| {
+            if !value.is_pure() { return None; }
+            let expression = lower_cached(value, schema, globals, scope, memo, context).ok()?;
+            let dtype = expression.data_type(schema).ok()?;
+            Some((expression, dtype))
+        };
+        if let Some(mut program) = crate::list_flatmap::prepare(expr, dtype.clone(), &mut source) {
+            if program.can_use_ordinary() {
+                // Options are immutable within a memo. Compile the alternative
+                // independently; it will run on the original frame/schema.
+                let mut options = memo.options.clone();
+                options.disable_list_flatmap = true;
+                let mut ordinary = CompilationMemo {
+                    options,
+                    root_expression: expr as *const Expr as usize,
+                    coalesce_budget: 65_536,
+                    indexed_selection: memo.indexed_selection,
+                    suppress_invariant_hoist: memo.suppress_invariant_hoist,
+                    suppress_local_cse: memo.suppress_local_cse,
+                    local_cse_names: memo.local_cse_names.clone(),
+                    ..CompilationMemo::default()
+                };
+                let expression = lower_scoped(expr, schema, globals, scope, &mut ordinary)?;
+                if program.prefer_ordinary() { return Ok(expression); }
+                program.set_ordinary(expression, schema);
+            }
+            return Ok(Arc::new(program));
+        }
+    }
     let result: Arc<dyn PhysicalExpr> = match expr {
         Expr::AlignedMapInput { axis, name, dtype } => {
             let column_name = match axis.as_str() {

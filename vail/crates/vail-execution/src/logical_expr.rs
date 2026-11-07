@@ -1289,6 +1289,12 @@ fn lower(
         }
         Expr::ArrayLength { value } => crate::array_length::udf().call(vec![recurse(value)?]),
         Expr::ArrayFlatten { value } => {
+            if matches!(value.as_ref(), Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. })
+                && matches!(expr.dtype_with_globals(schema.as_arrow(), globals).and_then(|ty| ty.to_arrow()),
+                    Ok(DataType::List(field)) if matches!(field.data_type(), DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64 | DataType::Boolean))
+            {
+                return logical_kernel(expr, schema, globals, bindings, scope);
+            }
             datafusion_functions_nested::flatten::flatten_udf().call(vec![recurse(value)?])
         }
         Expr::StreamRange { .. } => {
