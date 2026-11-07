@@ -1279,3 +1279,81 @@ fn constructor_projection_does_not_drop_an_unused_error() {
             .is_err()
     );
 }
+
+#[test]
+fn conditional_struct_projection_keeps_missing_parent_fields_missing() {
+    let ty = json!({"struct":[["value","int32"],["nested",{"struct":[["twice","int32"]]}]]});
+    let selected = json!({"op":"if_else","condition":binary("gt",variable("x"),number(1)),"consequent":record(variable("x")),"alternate":{"op":"literal","dtype":ty,"value":null}});
+    let result = compare_ordinary(
+        map(
+            flatmap(column(), "x", struct_array(vec![selected])),
+            "s",
+            record(binary("add", field(variable("s"), "value"), number(1))),
+        ),
+        &input(),
+    );
+    let first = result
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap()
+        .value(0);
+    let first = first
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    assert_eq!(first.null_count(), 0);
+    assert_eq!(
+        first.column(0).as_ref(),
+        &Int32Array::from(vec![None, None, Some(3)])
+    );
+}
+#[test]
+fn int64_fold_and_zero_product_preserve_strict_missingness() {
+    let batch = one_list(Arc::new(Int64Array::from(vec![
+        Some(i64::MAX),
+        Some(1),
+        None,
+    ])));
+    let expr = map(column(), "x", variable("x"));
+    let out = compare_ordinary(
+        fold(
+            expr.clone(),
+            json!({"op":"literal","dtype":"int64","value":0}),
+            "mul",
+        ),
+        &batch,
+    );
+    assert_eq!(out.as_ref(), &Int64Array::from(vec![None]));
+    let batch = one_list(Arc::new(Int64Array::from(vec![Some(i64::MAX), Some(1)])));
+    let out = compare_ordinary(
+        fold(
+            expr,
+            json!({"op":"literal","dtype":"int64","value":0}),
+            "add",
+        ),
+        &batch,
+    );
+    assert_eq!(out.as_ref(), &Int64Array::from(vec![Some(i64::MIN)]));
+}
+#[test]
+fn folded_empty_output_uses_bounded_evaluation_storage() {
+    fn allocated(n: usize) -> usize {
+        let batch = one_list(Arc::new(Int32Array::from(vec![1; n])));
+        let value = filter(
+            flatmap(column(), "x", array(vec![variable("x"), number(2)])),
+            "x",
+            binary("lt", variable("x"), number(0)),
+        );
+        let expr: Expr = serde_json::from_value(fold(value, number(7), "add")).unwrap();
+        let program = lower(&expr, batch.schema_ref()).unwrap();
+        BYTES.with(|bytes| bytes.set(Some(0)));
+        let out = program.evaluate(&batch).unwrap().into_array(1).unwrap();
+        let bytes = BYTES.with(|sum| sum.replace(None).unwrap());
+        assert_eq!(out.as_ref(), &Int32Array::from(vec![Some(7)]));
+        bytes
+    }
+    let small = allocated(4096);
+    let large = allocated(1_048_576);
+    eprintln!("fold empty-output evaluation allocations: {small} -> {large}");
+    assert!(large < small + 1024 * 1024);
+}
