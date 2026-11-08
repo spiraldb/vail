@@ -905,6 +905,8 @@ struct CompilationMemo {
     coalesce_budget:usize,
     local_cse_regions: HashMap<usize, HashSet<usize>>,
     local_cse_names: HashSet<String>,
+    mask_roots: HashMap<(usize, usize), Option<Type>>,
+    mask_fields: HashMap<usize, (arrow_schema::Fields, HashMap<String, usize>)>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct CompilationBindings {
@@ -3820,6 +3822,7 @@ fn array_reduce(
 enum HailKind {
     Random(String),
     RestoreArrowType,
+    Mask,
     Die,
     Numeric(BinaryOperator, Type),
     ToString(Type),
@@ -4751,6 +4754,12 @@ impl PhysicalExpr for HailPhysicalExpr {
                 "Hail expression child count mismatch".into(),
             ));
         }
+        if matches!(self.kind, HailKind::Mask) && !Arc::ptr_eq(&children[1], &self.args[1]) {
+            // Replacements have not been certified as infallible borrowed reads.
+            return Ok(Arc::new(CaseExpr::try_new(
+                None, vec![(children[0].clone(), children[1].clone())], None,
+            )?));
+        }
         Ok(Arc::new(Self {
             kind: self.kind.clone(),
             args: children,
@@ -4760,6 +4769,35 @@ impl PhysicalExpr for HailPhysicalExpr {
     }
     fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
         let len = batch.num_rows();
+        if matches!(self.kind, HailKind::Mask) {
+            let predicate = self.args[0].evaluate(batch)?;
+            if let ColumnarValue::Scalar(ScalarValue::Boolean(value)) = predicate {
+                return if value == Some(true) {
+                    self.args[1].evaluate(batch)
+                } else {
+                    Ok(ColumnarValue::Scalar(ScalarValue::try_from(&self.dtype)?))
+                };
+            }
+            let predicate = predicate.into_array(len)?;
+            let predicate = datafusion_common::cast::as_boolean_array(predicate.as_ref())?;
+            if !predicate.has_true() {
+                return Ok(ColumnarValue::Array(new_null_array(&self.dtype, len)));
+            }
+            match self.args[1].evaluate(batch)? {
+                ColumnarValue::Array(value) => {
+                    let keep = match predicate.nulls() {
+                        Some(nulls) => predicate.values() & nulls.inner(),
+                        None => predicate.values().clone(),
+                    };
+                    return Ok(ColumnarValue::Array(nullif(
+                        value.as_ref(), &BooleanArray::new(!&keep, None),
+                    )?));
+                }
+                ColumnarValue::Scalar(_) => {
+                    return datafusion_common::internal_err!("borrowed array read returned a scalar");
+                }
+            }
+        }
         if matches!(self.kind, HailKind::RestoreArrowType) {
             // Descriptor restoration must retain scalar lists/records. Expanding
             // a shared dictionary here defeats the lookup kernel's scalar index.
@@ -4837,6 +4875,7 @@ impl PhysicalExpr for HailPhysicalExpr {
             match &self.kind {
                 HailKind::Random(_) => unreachable!("random inputs retain scalar form above"),
                 HailKind::RestoreArrowType => Ok(args[0].clone()),
+                HailKind::Mask => unreachable!("masking preserves scalar form above"),
                 HailKind::Die => {
                     if len == 0 {
                         return Ok(arrow_array::new_empty_array(&self.dtype));
@@ -6437,6 +6476,60 @@ fn lower_indexed_map(
     ))))
 }
 
+/// Eagerly reading an existing value is safe; eagerly evaluating a computed
+/// branch could introduce an error or change its random/effect context.
+pub(crate) fn masks_borrowed_read(value: &Expr, alternate: &Expr) -> bool {
+    if !matches!(alternate, Expr::Literal { value, .. } if value.is_null()) {
+        return false;
+    }
+    let mut read = value;
+    while let Expr::GetField { value, .. } = read { read = value; }
+    matches!(read, Expr::Column { .. } | Expr::LambdaVariable { .. })
+}
+
+/// Certify canonical storage once per root binding. Field indices are shared
+/// across all reads of each retained Struct descriptor during preparation.
+fn borrowed_read_layout<'a>(
+    value: &Expr, schema: &'a Schema, scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo, context: usize,
+) -> Option<&'a DataType> {
+    let mut path = Vec::new();
+    let mut root = value;
+    while let Expr::GetField { value, name } = root {
+        path.push(name);
+        root = value;
+    }
+    let index = match root {
+        Expr::Column { name } => schema.index_of(name).ok()?,
+        Expr::LambdaVariable { name, .. } => scope.iter().rev().find(|(bound, _, _)| bound == name)?.2,
+        _ => return None,
+    };
+    let mut dtype = schema.field(index).data_type();
+    let mut logical = memo.mask_roots.entry((context, index)).or_insert_with(|| {
+        let ty = Type::from_arrow(dtype).ok()?;
+        (ty.to_arrow().ok()? == *dtype).then_some(ty)
+    }).as_ref()?;
+    for name in path.into_iter().rev() {
+        let DataType::Struct(fields) = dtype else { return None; };
+        let key = fields.as_ptr() as usize;
+        let (_, indices) = memo.mask_fields.entry(key).or_insert_with(|| {
+            let mut indices = HashMap::new();
+            for (i, field) in fields.iter().enumerate() {
+                indices.entry(field.name().clone()).or_insert(i);
+            }
+            (fields.clone(), indices)
+        });
+        let index = *indices.get(name)?;
+        logical = match logical {
+            Type::Struct { r#struct } => &r#struct[index].1,
+            Type::Tuple { tuple } => &tuple[index],
+            _ => return None,
+        };
+        dtype = fields[index].data_type();
+    }
+    Some(dtype)
+}
+
 fn lower_uncached(
     expr: &Expr,
     schema: &Schema,
@@ -7969,6 +8062,17 @@ fn lower_uncached(
             consequent,
             alternate,
         } => {
+            if masks_borrowed_read(consequent, alternate) {
+                let read = lower_cached(consequent, schema, globals, scope, memo, context)?;
+                // Materializing representation casts belong after lazy row selection.
+                if borrowed_read_layout(consequent, schema, scope, memo, context) == Some(&dtype) {
+                    return Ok(custom(
+                        HailKind::Mask,
+                        vec![lower_cached(condition, schema, globals, scope, memo, context)?, read],
+                        output_type,
+                    ));
+                }
+            }
             if memo.options.coalesce_once && (dtype.is_numeric() || dtype==DataType::Boolean) {
                 if let Some((first,fallback))=crate::coalesce_once::recognize(expr,context,&mut memo.coalesce_eligibility,&mut memo.coalesce_budget) {
                     if first.dtype_scoped(schema,globals.schema(),scope,memo,context)?.to_arrow()?==dtype {

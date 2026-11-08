@@ -1116,6 +1116,9 @@ fn lower(
             let dtype = expr
                 .dtype_with_globals(&schema.as_arrow(), globals)?
                 .to_arrow()?;
+            if crate::expressions::masks_borrowed_read(consequent, alternate) {
+                return logical_kernel(expr, schema, globals, bindings, scope);
+            }
             let condition = recurse(condition)?;
             let consequent = coerce_type(recurse(consequent)?, dtype.clone(), schema)?;
             let alternate = coerce_type(recurse(alternate)?, dtype.clone(), schema)?;
