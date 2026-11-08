@@ -46,17 +46,38 @@ unsafe impl GlobalAlloc for Allocator {
 static ALLOCATOR: Allocator = Allocator;
 fn programs(expr: &Expr, batch: &RecordBatch) -> Vec<Arc<dyn PhysicalExpr>> {
     let schema = DFSchema::try_from(batch.schema().as_ref().clone()).unwrap();
-    let logical = vail_execution::logical_expr::lower_logical(expr, &schema).unwrap();
-    vec![
-        lower(expr, batch.schema_ref()).unwrap(),
-        create_physical_expr(
-            &logical,
-            &schema,
-            &ExecutionProps::new(),
-            &PhysicalPlanningContext::default(),
-        )
-        .unwrap(),
-    ]
+    let mut expressions = vec![expr.clone()];
+    if let Expr::IfElse { alternate, .. } = expr {
+        if let Expr::Literal { dtype, value } = alternate.as_ref() {
+            if value.is_null() {
+                let mut native = expr.clone();
+                let Expr::IfElse { alternate, .. } = &mut native else {
+                    unreachable!()
+                };
+                *alternate = Arc::new(Expr::RuntimeLiteral {
+                    value: datafusion_common::ScalarValue::try_from(&dtype.to_arrow().unwrap())
+                        .unwrap(),
+                });
+                expressions.push(native);
+            }
+        }
+    }
+    expressions
+        .iter()
+        .flat_map(|expression| {
+            let logical = vail_execution::logical_expr::lower_logical(expression, &schema).unwrap();
+            [
+                lower(expression, batch.schema_ref()).unwrap(),
+                create_physical_expr(
+                    &logical,
+                    &schema,
+                    &ExecutionProps::new(),
+                    &PhysicalPlanningContext::default(),
+                )
+                .unwrap(),
+            ]
+        })
+        .collect()
 }
 fn masked(dtype: &serde_json::Value) -> Expr {
     serde_json::from_value(json!({"op":"if_else", "condition":{"op":"column","name":"keep"},
@@ -171,7 +192,7 @@ fn masking_allocation_does_not_grow_with_payload_bytes() {
         }
         sizes.push(totals);
     }
-    for i in 0..2 {
+    for i in 0..sizes[0].len() {
         assert!(
             sizes[1][i] < sizes[0][i] + 16384,
             "payload copying: {sizes:?}"

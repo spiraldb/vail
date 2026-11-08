@@ -6479,7 +6479,12 @@ fn lower_indexed_map(
 /// Eagerly reading an existing value is safe; eagerly evaluating a computed
 /// branch could introduce an error or change its random/effect context.
 pub(crate) fn masks_borrowed_read(value: &Expr, alternate: &Expr) -> bool {
-    if !matches!(alternate, Expr::Literal { value, .. } if value.is_null()) {
+    let missing = match alternate {
+        Expr::Literal { value, .. } => value.is_null(),
+        Expr::RuntimeLiteral { value } => value.is_null(),
+        _ => false,
+    };
+    if !missing {
         return false;
     }
     let mut read = value;
