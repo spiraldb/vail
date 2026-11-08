@@ -233,8 +233,9 @@ fn float_map_fold_does_not_allocate_a_mapped_list() {
         assert_eq!(output.as_ref(), &expected);
         bytes
     }
-    let small = allocated(1024);
-    let large = allocated(32768);
+    // Both inputs exceed the bounded workspace's initial block size.
+    let small = allocated(16384);
+    let large = allocated(65536);
     eprintln!("float mapped-fold evaluation allocation: {small} -> {large}");
     assert!(
         large < small + 256 * 1024,
