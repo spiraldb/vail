@@ -7963,16 +7963,6 @@ fn lower_uncached(
             default,
             missing,
         } => {
-            if cases.is_empty() && missing.is_none() {
-                if let Some(body) = crate::local_cse::inline_read_binding(
-                    value, parameter, default, |read| {
-                        matches!(read, Expr::Column { .. } | Expr::LambdaVariable { .. })
-                            && borrowed_read_layout(read, schema, scope, memo, context).is_some()
-                    },
-                )? {
-                    return lower_synthetic(body, schema, globals, scope, memo, context);
-                }
-            }
             // Capture only fields used anywhere in this switch. In particular,
             // a surrounding array's payload must not become an implicit capture
             // merely because it occurs in the enclosing lambda's input schema.
