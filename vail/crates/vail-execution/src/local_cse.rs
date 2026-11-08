@@ -13,17 +13,9 @@ fn address(node: &Expr) -> usize {
     node as *const Expr as usize
 }
 
-fn allocates_text(node: &Expr) -> bool {
-    matches!(node, Expr::StringFunction { function, args }
-        if args.len() == 1 && matches!(function.as_str(), "lower" | "upper"))
-}
-
 // Only traverse eagerly evaluated expressions. In particular a conditional,
 // switch, or nested lambda is opaque to this binding scope.
 fn strict(node: &Expr) -> bool {
-    if allocates_text(node) {
-        return true;
-    }
     match node {
         Expr::Struct { .. }
         | Expr::Tuple { .. }
@@ -55,9 +47,6 @@ fn nonzero_small_integer(node: &Expr) -> bool {
 // Positive integer literal divisors cannot introduce divide-by-zero or the
 // signed MIN/-1 overflow. Their operands must themselves be safe to move.
 fn safe_node(node: &Expr) -> bool {
-    if allocates_text(node) {
-        return true;
-    }
     match node {
         Expr::Literal { .. }
         | Expr::RuntimeLiteral { .. }
@@ -146,15 +135,14 @@ pub(crate) fn share_struct(
         .filter(|id| {
             counts[id] > 1
                 && safe[id]
-                && (allocates_text(nodes[id])
-                    || matches!(
-                        nodes[id],
-                        Expr::Binary { .. }
-                            | Expr::IntegerBinary { .. }
-                            | Expr::Unary { .. }
-                            | Expr::ArrayLength { .. }
-                            | Expr::IsMissing { .. }
-                    ))
+                && matches!(
+                    nodes[id],
+                    Expr::Binary { .. }
+                        | Expr::IntegerBinary { .. }
+                        | Expr::Unary { .. }
+                        | Expr::ArrayLength { .. }
+                        | Expr::IsMissing { .. }
+                )
         })
         .collect::<Vec<_>>();
     if candidates.is_empty() {

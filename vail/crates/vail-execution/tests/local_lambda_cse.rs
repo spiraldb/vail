@@ -2,41 +2,8 @@ use arrow_array::{Array, ArrayRef, Int32Array, ListArray, RecordBatch, StringArr
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::ScalarValue;
 use serde_json::json;
-use std::{
-    alloc::{GlobalAlloc, Layout, System},
-    cell::Cell,
-    sync::Arc,
-};
+use std::sync::Arc;
 use vail_execution::expressions::{BinaryOperator, Expr, PrimitiveType, Type, lower};
-
-thread_local! { static BYTES: Cell<Option<usize>> = const { Cell::new(None) }; }
-struct Allocator;
-fn charge(bytes: usize) {
-    let _ = BYTES.try_with(|sum| {
-        if let Some(old) = sum.get() {
-            sum.set(Some(old + bytes));
-        }
-    });
-}
-unsafe impl GlobalAlloc for Allocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        charge(layout.size());
-        unsafe { System.alloc(layout) }
-    }
-    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        charge(layout.size());
-        unsafe { System.alloc_zeroed(layout) }
-    }
-    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, bytes: usize) -> *mut u8 {
-        charge(bytes);
-        unsafe { System.realloc(ptr, layout, bytes) }
-    }
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        unsafe { System.dealloc(ptr, layout) }
-    }
-}
-#[global_allocator]
-static ALLOCATOR: Allocator = Allocator;
 
 #[test]
 fn local_binding_avoids_unused_enclosing_lambda_parameter() {
@@ -185,50 +152,6 @@ fn repeated_text_conversion_preserves_unicode_nulls_and_bindings() {
             }
         }
     }
-}
-
-#[test]
-fn repeated_text_conversion_does_not_allocate_repeated_payloads() {
-    let text = "AbC".repeat(256);
-    let expected = text.to_lowercase();
-    let batch = RecordBatch::try_from_iter([(
-        "text",
-        Arc::new(StringArray::from(vec![text.as_str(); 4096])) as ArrayRef,
-    )])
-    .unwrap();
-    let conversion = json!({"op":"string_function","function":"lower",
-        "args":[{"op":"column","name":"text"}]});
-    let fields = |value: serde_json::Value| {
-        json!({"op":"struct","fields":[
-        ["a",value.clone()],["b",value.clone()],["c",value]]})
-    };
-    let expressions = [
-        fields(conversion.clone()),
-        json!({"op":"switch","value":conversion,
-        "parameter":"v","cases":[],"missing":null,
-        "default":fields(json!({"op":"lambda_variable","name":"v"}))}),
-    ];
-    let allocations = expressions.map(|expression| {
-        let program = lower(
-            &serde_json::from_value(expression).unwrap(),
-            batch.schema_ref(),
-        )
-        .unwrap();
-        BYTES.set(Some(0));
-        let output = program.evaluate(&batch).unwrap();
-        let bytes = BYTES.replace(None).unwrap();
-        let output = output.into_array(batch.num_rows()).unwrap();
-        let fields = output.as_any().downcast_ref::<StructArray>().unwrap();
-        for field in fields.columns() {
-            let field = field.as_any().downcast_ref::<StringArray>().unwrap();
-            assert_eq!(field.len(), 4096);
-            for value in field.iter() {
-                assert_eq!(value, Some(expected.as_str()));
-            }
-        }
-        bytes
-    });
-    assert!(allocations[0] <= allocations[1] + 32_768, "{allocations:?}");
 }
 
 #[test]
