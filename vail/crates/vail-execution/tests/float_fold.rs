@@ -106,7 +106,7 @@ fn float_folds_keep_seed_bits_precision_order_and_missingness_across_blocks() {
                 (false, vec![Some($nan); 5000]),
                 (
                     true,
-                    (0..4099)
+                    (0..16387)
                         .map(|i| {
                             Some(match i % 4 {
                                 0 => 1e20,
