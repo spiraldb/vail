@@ -1,0 +1,8 @@
+FAILED test_matrix_table_array_arithmetic 0 before Traceback (most recent call last):
+  File "/private/tmp/vail-real-fusion-bench-20261107/worker.py", line 32, in <module>
+    rows=hl.read_matrix_table(fixture).rows().select('alleles').to_arrow()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py", line 669, in select
+    raise ValueError(f"cannot overwrite key field {name!r} with select")
+ValueError: cannot overwrite key field 'alleles' with select
+

@@ -1,0 +1,1730 @@
+[
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08717595803318545,
+        "cpu_seconds": 0.3498680000000003,
+        "peak_rss_bytes": 630800384
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08844362501986325,
+        "cpu_seconds": 0.3565980000000004,
+        "peak_rss_bytes": 648413184
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.087375917006284,
+        "cpu_seconds": 0.3517380000000001,
+        "peak_rss_bytes": 654458880
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08714624994900078,
+        "cpu_seconds": 0.35153800000000013,
+        "peak_rss_bytes": 656588800
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08716716704657301,
+        "cpu_seconds": 0.35063299999999975,
+        "peak_rss_bytes": 656637952
+      }
+    ],
+    "validated": true,
+    "process": 0
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08823316701455042,
+        "cpu_seconds": 0.3530939999999998,
+        "peak_rss_bytes": 657408000
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08682820800459012,
+        "cpu_seconds": 0.351156,
+        "peak_rss_bytes": 657735680
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08703108300687745,
+        "cpu_seconds": 0.3522669999999999,
+        "peak_rss_bytes": 662093824
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08634450001409277,
+        "cpu_seconds": 0.3523749999999999,
+        "peak_rss_bytes": 664141824
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.0870967090013437,
+        "cpu_seconds": 0.3515139999999999,
+        "peak_rss_bytes": 670384128
+      }
+    ],
+    "validated": true,
+    "process": 1
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08662900002673268,
+        "cpu_seconds": 0.34907,
+        "peak_rss_bytes": 630095872
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08822737500304356,
+        "cpu_seconds": 0.3510460000000002,
+        "peak_rss_bytes": 634847232
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08691520901629701,
+        "cpu_seconds": 0.349259,
+        "peak_rss_bytes": 635174912
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08694029197795317,
+        "cpu_seconds": 0.35107500000000025,
+        "peak_rss_bytes": 636108800
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08633408299647272,
+        "cpu_seconds": 0.34703799999999996,
+        "peak_rss_bytes": 636256256
+      }
+    ],
+    "validated": true,
+    "process": 2
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08766133396420628,
+        "cpu_seconds": 0.3487699999999998,
+        "peak_rss_bytes": 643514368
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08768708299612626,
+        "cpu_seconds": 0.35288799999999965,
+        "peak_rss_bytes": 647135232
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08816366601968184,
+        "cpu_seconds": 0.35274099999999997,
+        "peak_rss_bytes": 652836864
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08701462496537715,
+        "cpu_seconds": 0.35402100000000036,
+        "peak_rss_bytes": 658325504
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08712049998575822,
+        "cpu_seconds": 0.34929299999999985,
+        "peak_rss_bytes": 658472960
+      }
+    ],
+    "validated": true,
+    "process": 3
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.0876007080078125,
+        "cpu_seconds": 0.35137499999999977,
+        "peak_rss_bytes": 637239296
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08710474998224527,
+        "cpu_seconds": 0.3501510000000003,
+        "peak_rss_bytes": 639500288
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08720883296336979,
+        "cpu_seconds": 0.35438899999999984,
+        "peak_rss_bytes": 644939776
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.0860732090077363,
+        "cpu_seconds": 0.3522249999999998,
+        "peak_rss_bytes": 646234112
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08735104196239263,
+        "cpu_seconds": 0.35005299999999995,
+        "peak_rss_bytes": 646348800
+      }
+    ],
+    "validated": true,
+    "process": 4
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08632633299566805,
+        "cpu_seconds": 0.3519779999999999,
+        "peak_rss_bytes": 645087232
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08825220802100375,
+        "cpu_seconds": 0.35162400000000016,
+        "peak_rss_bytes": 661913600
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.0864953330019489,
+        "cpu_seconds": 0.34846900000000014,
+        "peak_rss_bytes": 662798336
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.0865744169568643,
+        "cpu_seconds": 0.34834299999999985,
+        "peak_rss_bytes": 665124864
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08672841702355072,
+        "cpu_seconds": 0.3495029999999999,
+        "peak_rss_bytes": 665387008
+      }
+    ],
+    "validated": true,
+    "process": 5
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08832949999487028,
+        "cpu_seconds": 0.3501850000000002,
+        "peak_rss_bytes": 639959040
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08708129200385883,
+        "cpu_seconds": 0.35187800000000014,
+        "peak_rss_bytes": 642744320
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08728112501557916,
+        "cpu_seconds": 0.34867000000000026,
+        "peak_rss_bytes": 642957312
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08770908298902214,
+        "cpu_seconds": 0.3502900000000002,
+        "peak_rss_bytes": 643104768
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08697612502146512,
+        "cpu_seconds": 0.3471329999999999,
+        "peak_rss_bytes": 643219456
+      }
+    ],
+    "validated": true,
+    "process": 6
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08756508299848065,
+        "cpu_seconds": 0.35119400000000023,
+        "peak_rss_bytes": 656392192
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08838970900978893,
+        "cpu_seconds": 0.352433,
+        "peak_rss_bytes": 658636800
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.0876269590226002,
+        "cpu_seconds": 0.3516520000000001,
+        "peak_rss_bytes": 658849792
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08689758297987282,
+        "cpu_seconds": 0.35031199999999973,
+        "peak_rss_bytes": 659128320
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08738983405055478,
+        "cpu_seconds": 0.35072599999999987,
+        "peak_rss_bytes": 662585344
+      }
+    ],
+    "validated": true,
+    "process": 7
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14370262494776398,
+        "cpu_seconds": 0.5685020000000001,
+        "peak_rss_bytes": 621150208
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14500445901649073,
+        "cpu_seconds": 0.5671140000000001,
+        "peak_rss_bytes": 632586240
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.142742374970112,
+        "cpu_seconds": 0.5618729999999998,
+        "peak_rss_bytes": 632733696
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14387891598744318,
+        "cpu_seconds": 0.5627300000000002,
+        "peak_rss_bytes": 633470976
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14367941702948883,
+        "cpu_seconds": 0.5672930000000003,
+        "peak_rss_bytes": 634208256
+      }
+    ],
+    "validated": true,
+    "process": 0
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14374637498985976,
+        "cpu_seconds": 0.56372,
+        "peak_rss_bytes": 614580224
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14346824999665841,
+        "cpu_seconds": 0.564111,
+        "peak_rss_bytes": 615972864
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1433531660004519,
+        "cpu_seconds": 0.565239,
+        "peak_rss_bytes": 635715584
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14378562499769032,
+        "cpu_seconds": 0.5621100000000001,
+        "peak_rss_bytes": 638828544
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14295362500706688,
+        "cpu_seconds": 0.56236,
+        "peak_rss_bytes": 641597440
+      }
+    ],
+    "validated": true,
+    "process": 1
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14388195803621784,
+        "cpu_seconds": 0.5598169999999998,
+        "peak_rss_bytes": 634224640
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14351233304478228,
+        "cpu_seconds": 0.5634220000000001,
+        "peak_rss_bytes": 639680512
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14238395896973088,
+        "cpu_seconds": 0.558389,
+        "peak_rss_bytes": 654573568
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.1427917499677278,
+        "cpu_seconds": 0.561985,
+        "peak_rss_bytes": 663109632
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.1430833749473095,
+        "cpu_seconds": 0.5614879999999998,
+        "peak_rss_bytes": 666353664
+      }
+    ],
+    "validated": true,
+    "process": 2
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14488579198950902,
+        "cpu_seconds": 0.5634229999999998,
+        "peak_rss_bytes": 657457152
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14340545801678672,
+        "cpu_seconds": 0.5596399999999999,
+        "peak_rss_bytes": 657735680
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1430785830016248,
+        "cpu_seconds": 0.5583209999999998,
+        "peak_rss_bytes": 657866752
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.1445813329773955,
+        "cpu_seconds": 0.5601440000000002,
+        "peak_rss_bytes": 658112512
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14339287497568876,
+        "cpu_seconds": 0.5618369999999997,
+        "peak_rss_bytes": 658964480
+      }
+    ],
+    "validated": true,
+    "process": 3
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1440904590417631,
+        "cpu_seconds": 0.5629239999999998,
+        "peak_rss_bytes": 643989504
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.145124374947045,
+        "cpu_seconds": 0.5659969999999999,
+        "peak_rss_bytes": 644169728
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14406912500271574,
+        "cpu_seconds": 0.562017,
+        "peak_rss_bytes": 644382720
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14420762500958517,
+        "cpu_seconds": 0.5626749999999996,
+        "peak_rss_bytes": 644546560
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14326491701649502,
+        "cpu_seconds": 0.5624589999999996,
+        "peak_rss_bytes": 646479872
+      }
+    ],
+    "validated": true,
+    "process": 4
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1437423749594018,
+        "cpu_seconds": 0.5647510000000002,
+        "peak_rss_bytes": 678772736
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.144322625012137,
+        "cpu_seconds": 0.5616269999999997,
+        "peak_rss_bytes": 679936000
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1428342079743743,
+        "cpu_seconds": 0.5619930000000002,
+        "peak_rss_bytes": 680017920
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14358420798089355,
+        "cpu_seconds": 0.5621239999999998,
+        "peak_rss_bytes": 685604864
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.1438948749564588,
+        "cpu_seconds": 0.5620690000000002,
+        "peak_rss_bytes": 686309376
+      }
+    ],
+    "validated": true,
+    "process": 5
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1441309170331806,
+        "cpu_seconds": 0.5618439999999998,
+        "peak_rss_bytes": 639107072
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14391370897646993,
+        "cpu_seconds": 0.5624150000000001,
+        "peak_rss_bytes": 640663552
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14430991699919105,
+        "cpu_seconds": 0.564794,
+        "peak_rss_bytes": 641056768
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14538883400382474,
+        "cpu_seconds": 0.564019,
+        "peak_rss_bytes": 675430400
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.1442347090342082,
+        "cpu_seconds": 0.5622719999999992,
+        "peak_rss_bytes": 680558592
+      }
+    ],
+    "validated": true,
+    "process": 6
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14438716700533405,
+        "cpu_seconds": 0.5629360000000001,
+        "peak_rss_bytes": 630161408
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14531762496335432,
+        "cpu_seconds": 0.5657200000000002,
+        "peak_rss_bytes": 632520704
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14536908303853124,
+        "cpu_seconds": 0.5717979999999998,
+        "peak_rss_bytes": 643858432
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14618408301612362,
+        "cpu_seconds": 0.5687169999999999,
+        "peak_rss_bytes": 645316608
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14865483302855864,
+        "cpu_seconds": 0.5758740000000007,
+        "peak_rss_bytes": 647593984
+      }
+    ],
+    "validated": true,
+    "process": 7
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05405937501927838,
+        "cpu_seconds": 0.21161699999999994,
+        "peak_rss_bytes": 870793216
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05565645801834762,
+        "cpu_seconds": 0.21336100000000013,
+        "peak_rss_bytes": 870793216
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.055436457972973585,
+        "cpu_seconds": 0.21138599999999985,
+        "peak_rss_bytes": 870793216
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05404833302600309,
+        "cpu_seconds": 0.216148,
+        "peak_rss_bytes": 870793216
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.054601125011686236,
+        "cpu_seconds": 0.21336900000000014,
+        "peak_rss_bytes": 870793216
+      }
+    ],
+    "validated": true,
+    "process": 0
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.055016291968058795,
+        "cpu_seconds": 0.215341,
+        "peak_rss_bytes": 930217984
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.054052208026405424,
+        "cpu_seconds": 0.20852899999999996,
+        "peak_rss_bytes": 930217984
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05495245801284909,
+        "cpu_seconds": 0.21464399999999983,
+        "peak_rss_bytes": 930217984
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.054542292025871575,
+        "cpu_seconds": 0.21121100000000004,
+        "peak_rss_bytes": 930217984
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.054383917013183236,
+        "cpu_seconds": 0.20947000000000005,
+        "peak_rss_bytes": 930217984
+      }
+    ],
+    "validated": true,
+    "process": 1
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05435433302773163,
+        "cpu_seconds": 0.21254299999999993,
+        "peak_rss_bytes": 923664384
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.056940084032248706,
+        "cpu_seconds": 0.217719,
+        "peak_rss_bytes": 948125696
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05553641600999981,
+        "cpu_seconds": 0.21544000000000008,
+        "peak_rss_bytes": 948125696
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.053934625000692904,
+        "cpu_seconds": 0.2138930000000001,
+        "peak_rss_bytes": 948125696
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05402716598473489,
+        "cpu_seconds": 0.2107760000000003,
+        "peak_rss_bytes": 948125696
+      }
+    ],
+    "validated": true,
+    "process": 2
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.055835000006482005,
+        "cpu_seconds": 0.2171209999999999,
+        "peak_rss_bytes": 975208448
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05442279198905453,
+        "cpu_seconds": 0.20866600000000002,
+        "peak_rss_bytes": 975208448
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.052869917009957135,
+        "cpu_seconds": 0.20705099999999987,
+        "peak_rss_bytes": 975208448
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.054739125014748424,
+        "cpu_seconds": 0.21069899999999997,
+        "peak_rss_bytes": 975208448
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05413041601423174,
+        "cpu_seconds": 0.21025300000000002,
+        "peak_rss_bytes": 975208448
+      }
+    ],
+    "validated": true,
+    "process": 3
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05461841600481421,
+        "cpu_seconds": 0.21010800000000007,
+        "peak_rss_bytes": 861339648
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.054875208996236324,
+        "cpu_seconds": 0.21373299999999995,
+        "peak_rss_bytes": 861339648
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05399462505010888,
+        "cpu_seconds": 0.21187299999999998,
+        "peak_rss_bytes": 861339648
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05438095796853304,
+        "cpu_seconds": 0.21316699999999988,
+        "peak_rss_bytes": 861339648
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.054188207956030965,
+        "cpu_seconds": 0.2101059999999999,
+        "peak_rss_bytes": 861339648
+      }
+    ],
+    "validated": true,
+    "process": 4
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05431279196636751,
+        "cpu_seconds": 0.21283700000000005,
+        "peak_rss_bytes": 873742336
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.055088041990529746,
+        "cpu_seconds": 0.21290199999999992,
+        "peak_rss_bytes": 873742336
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.054194165975786746,
+        "cpu_seconds": 0.21075299999999997,
+        "peak_rss_bytes": 873742336
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05462337500648573,
+        "cpu_seconds": 0.2133449999999999,
+        "peak_rss_bytes": 873742336
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.054591458989307284,
+        "cpu_seconds": 0.20932099999999987,
+        "peak_rss_bytes": 873742336
+      }
+    ],
+    "validated": true,
+    "process": 5
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05482837499585003,
+        "cpu_seconds": 0.2140319999999999,
+        "peak_rss_bytes": 870252544
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05553587502799928,
+        "cpu_seconds": 0.21645800000000004,
+        "peak_rss_bytes": 870252544
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.0551839160034433,
+        "cpu_seconds": 0.21328400000000003,
+        "peak_rss_bytes": 870252544
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.054228250053711236,
+        "cpu_seconds": 0.2159040000000001,
+        "peak_rss_bytes": 870252544
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05449900001985952,
+        "cpu_seconds": 0.21200400000000008,
+        "peak_rss_bytes": 870252544
+      }
+    ],
+    "validated": true,
+    "process": 6
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05482479103375226,
+        "cpu_seconds": 0.21207999999999994,
+        "peak_rss_bytes": 907362304
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.0561258330126293,
+        "cpu_seconds": 0.21220099999999986,
+        "peak_rss_bytes": 907362304
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.0541292920242995,
+        "cpu_seconds": 0.20977200000000007,
+        "peak_rss_bytes": 907362304
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05422066699247807,
+        "cpu_seconds": 0.20972499999999994,
+        "peak_rss_bytes": 907362304
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.053611209033988416,
+        "cpu_seconds": 0.2084839999999999,
+        "peak_rss_bytes": 907362304
+      }
+    ],
+    "validated": true,
+    "process": 7
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.15322804200695828,
+        "cpu_seconds": 0.42434899999999987,
+        "peak_rss_bytes": 794165248
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.15517312503652647,
+        "cpu_seconds": 0.4192929999999997,
+        "peak_rss_bytes": 794165248
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15623391704866663,
+        "cpu_seconds": 0.4207890000000001,
+        "peak_rss_bytes": 794165248
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.15485683298902586,
+        "cpu_seconds": 0.42414299999999994,
+        "peak_rss_bytes": 794165248
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15533683297690004,
+        "cpu_seconds": 0.4220959999999998,
+        "peak_rss_bytes": 794165248
+      }
+    ],
+    "validated": true,
+    "process": 0
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.15593966603046283,
+        "cpu_seconds": 0.42357100000000014,
+        "peak_rss_bytes": 854196224
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.15718637499958277,
+        "cpu_seconds": 0.42453200000000013,
+        "peak_rss_bytes": 855343104
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1598519580438733,
+        "cpu_seconds": 0.42633199999999993,
+        "peak_rss_bytes": 856047616
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16453604097478092,
+        "cpu_seconds": 0.438755,
+        "peak_rss_bytes": 856145920
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15684662497369573,
+        "cpu_seconds": 0.4231119999999997,
+        "peak_rss_bytes": 856145920
+      }
+    ],
+    "validated": true,
+    "process": 1
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.15562241699080914,
+        "cpu_seconds": 0.41839000000000004,
+        "peak_rss_bytes": 846430208
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16055670799687505,
+        "cpu_seconds": 0.41924800000000007,
+        "peak_rss_bytes": 847527936
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15546400001039729,
+        "cpu_seconds": 0.4158179999999998,
+        "peak_rss_bytes": 852099072
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16368833399610594,
+        "cpu_seconds": 0.42870500000000034,
+        "peak_rss_bytes": 852213760
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.16083274997072294,
+        "cpu_seconds": 0.42474999999999996,
+        "peak_rss_bytes": 852213760
+      }
+    ],
+    "validated": true,
+    "process": 2
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1545794159756042,
+        "cpu_seconds": 0.4206540000000001,
+        "peak_rss_bytes": 848101376
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16217462497297674,
+        "cpu_seconds": 0.43411,
+        "peak_rss_bytes": 848248832
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15508291602600366,
+        "cpu_seconds": 0.42166700000000024,
+        "peak_rss_bytes": 848248832
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.15693612495670095,
+        "cpu_seconds": 0.422488,
+        "peak_rss_bytes": 848248832
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15744962502503768,
+        "cpu_seconds": 0.42059500000000005,
+        "peak_rss_bytes": 848248832
+      }
+    ],
+    "validated": true,
+    "process": 3
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.15421345800859854,
+        "cpu_seconds": 0.4180759999999999,
+        "peak_rss_bytes": 849051648
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16337820800254121,
+        "cpu_seconds": 0.43460600000000005,
+        "peak_rss_bytes": 849117184
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15564608300337568,
+        "cpu_seconds": 0.4157679999999999,
+        "peak_rss_bytes": 849117184
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.154645457980223,
+        "cpu_seconds": 0.4180440000000001,
+        "peak_rss_bytes": 849117184
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15533233399037272,
+        "cpu_seconds": 0.42131300000000005,
+        "peak_rss_bytes": 849117184
+      }
+    ],
+    "validated": true,
+    "process": 4
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1568973750108853,
+        "cpu_seconds": 0.4271029999999998,
+        "peak_rss_bytes": 823345152
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1678577499696985,
+        "cpu_seconds": 0.4426260000000002,
+        "peak_rss_bytes": 823574528
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15952758298953995,
+        "cpu_seconds": 0.4284349999999999,
+        "peak_rss_bytes": 823574528
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16119216696824878,
+        "cpu_seconds": 0.42439099999999996,
+        "peak_rss_bytes": 823574528
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15938966703834012,
+        "cpu_seconds": 0.4221050000000002,
+        "peak_rss_bytes": 823574528
+      }
+    ],
+    "validated": true,
+    "process": 5
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.15757829102221876,
+        "cpu_seconds": 0.4272410000000002,
+        "peak_rss_bytes": 852721664
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16744454199215397,
+        "cpu_seconds": 0.44693000000000005,
+        "peak_rss_bytes": 852836352
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15989345900015905,
+        "cpu_seconds": 0.42560299999999973,
+        "peak_rss_bytes": 852836352
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.15834066702518612,
+        "cpu_seconds": 0.42911199999999994,
+        "peak_rss_bytes": 852836352
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15814320900244638,
+        "cpu_seconds": 0.4247679999999998,
+        "peak_rss_bytes": 852836352
+      }
+    ],
+    "validated": true,
+    "process": 6
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1573392499703914,
+        "cpu_seconds": 0.4218540000000002,
+        "peak_rss_bytes": 827801600
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1590109160169959,
+        "cpu_seconds": 0.4213230000000001,
+        "peak_rss_bytes": 843792384
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15781825000885874,
+        "cpu_seconds": 0.42157500000000026,
+        "peak_rss_bytes": 844578816
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.15707341697998345,
+        "cpu_seconds": 0.4180010000000003,
+        "peak_rss_bytes": 845004800
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15897566702915356,
+        "cpu_seconds": 0.4202539999999999,
+        "peak_rss_bytes": 845381632
+      }
+    ],
+    "validated": true,
+    "process": 7
+  }
+]

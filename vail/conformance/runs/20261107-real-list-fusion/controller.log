@@ -1,0 +1,24 @@
+test_matrix_table_filter_entries 0 before wall 0.08717595803318545 cpu 0.35153800000000013
+test_matrix_table_filter_entries 1 after wall 0.08703108300687745 cpu 0.3522669999999999
+test_matrix_table_filter_entries 2 after wall 0.08691520901629701 cpu 0.349259
+test_matrix_table_filter_entries 3 before wall 0.08766133396420628 cpu 0.35274099999999997
+test_matrix_table_filter_entries 4 before wall 0.08720883296336979 cpu 0.35137499999999977
+test_matrix_table_filter_entries 5 after wall 0.0865744169568643 cpu 0.3495029999999999
+test_matrix_table_filter_entries 6 after wall 0.08728112501557916 cpu 0.3501850000000002
+test_matrix_table_filter_entries 7 before wall 0.08756508299848065 cpu 0.35119400000000023
+CASE COMPLETE test_matrix_table_filter_entries
+test_matrix_table_filter_entries_unfilter 0 before wall 0.14370262494776398 cpu 0.5671140000000001
+test_matrix_table_filter_entries_unfilter 1 after wall 0.14346824999665841 cpu 0.56372
+test_matrix_table_filter_entries_unfilter 2 after wall 0.1430833749473095 cpu 0.5614879999999998
+test_matrix_table_filter_entries_unfilter 3 before wall 0.14340545801678672 cpu 0.5601440000000002
+test_matrix_table_filter_entries_unfilter 4 before wall 0.1440904590417631 cpu 0.5626749999999996
+test_matrix_table_filter_entries_unfilter 5 after wall 0.1437423749594018 cpu 0.5620690000000002
+test_matrix_table_filter_entries_unfilter 6 after wall 0.1442347090342082 cpu 0.5624150000000001
+test_matrix_table_filter_entries_unfilter 7 before wall 0.14536908303853124 cpu 0.5687169999999999
+CASE COMPLETE test_matrix_table_filter_entries_unfilter
+FAILED test_matrix_table_array_arithmetic 0 before Traceback (most recent call last):
+  File "/private/tmp/vail-real-fusion-bench-20261107/worker.py", line 30, in <module>
+    assert actual.num_rows==1000 if case!='test_split_multi_hts' else actual.num_rows>0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+

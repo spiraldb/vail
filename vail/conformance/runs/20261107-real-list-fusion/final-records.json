@@ -1,0 +1,2114 @@
+[
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08744695800123736,
+        "cpu_seconds": 0.3535809999999999,
+        "peak_rss_bytes": 713195520
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08822220901492983,
+        "cpu_seconds": 0.35365100000000016,
+        "peak_rss_bytes": 713195520
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08685629197861999,
+        "cpu_seconds": 0.35294099999999995,
+        "peak_rss_bytes": 713195520
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08649800001876429,
+        "cpu_seconds": 0.3556140000000001,
+        "peak_rss_bytes": 713195520
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08722495898837224,
+        "cpu_seconds": 0.35226099999999994,
+        "peak_rss_bytes": 713195520
+      }
+    ],
+    "validated": true,
+    "process": 0,
+    "cleanup": {
+      "pid": 56562,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08759245800320059,
+        "cpu_seconds": 0.351893,
+        "peak_rss_bytes": 705871872
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08890637499280274,
+        "cpu_seconds": 0.35531999999999986,
+        "peak_rss_bytes": 705871872
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.0871510420111008,
+        "cpu_seconds": 0.35242700000000005,
+        "peak_rss_bytes": 705871872
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08792087499750778,
+        "cpu_seconds": 0.3513270000000004,
+        "peak_rss_bytes": 705871872
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08680258301319554,
+        "cpu_seconds": 0.35438499999999973,
+        "peak_rss_bytes": 705871872
+      }
+    ],
+    "validated": true,
+    "process": 1,
+    "cleanup": {
+      "pid": 56563,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08714741701260209,
+        "cpu_seconds": 0.35163599999999984,
+        "peak_rss_bytes": 710770688
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08825504203559831,
+        "cpu_seconds": 0.35232100000000033,
+        "peak_rss_bytes": 710770688
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.0867975419969298,
+        "cpu_seconds": 0.35213300000000025,
+        "peak_rss_bytes": 710770688
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.087445207987912,
+        "cpu_seconds": 0.350244,
+        "peak_rss_bytes": 710770688
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08661158301401883,
+        "cpu_seconds": 0.35092100000000004,
+        "peak_rss_bytes": 710770688
+      }
+    ],
+    "validated": true,
+    "process": 2,
+    "cleanup": {
+      "pid": 56564,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.0873231670120731,
+        "cpu_seconds": 0.35313300000000014,
+        "peak_rss_bytes": 702988288
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08745212497888133,
+        "cpu_seconds": 0.35161299999999995,
+        "peak_rss_bytes": 702988288
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08741274999920279,
+        "cpu_seconds": 0.35081700000000016,
+        "peak_rss_bytes": 702988288
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.087582666950766,
+        "cpu_seconds": 0.3534050000000004,
+        "peak_rss_bytes": 702988288
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08672483399277553,
+        "cpu_seconds": 0.3508580000000001,
+        "peak_rss_bytes": 702988288
+      }
+    ],
+    "validated": true,
+    "process": 3,
+    "cleanup": {
+      "pid": 56565,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08785683399764821,
+        "cpu_seconds": 0.3552939999999998,
+        "peak_rss_bytes": 699482112
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08935145795112476,
+        "cpu_seconds": 0.35612400000000033,
+        "peak_rss_bytes": 699482112
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08842875005211681,
+        "cpu_seconds": 0.35519100000000003,
+        "peak_rss_bytes": 699482112
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08777074998943135,
+        "cpu_seconds": 0.3531900000000001,
+        "peak_rss_bytes": 699482112
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08764800004428253,
+        "cpu_seconds": 0.3518970000000001,
+        "peak_rss_bytes": 699482112
+      }
+    ],
+    "validated": true,
+    "process": 4,
+    "cleanup": {
+      "pid": 56566,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08825212501687929,
+        "cpu_seconds": 0.3514520000000001,
+        "peak_rss_bytes": 706068480
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08914679102599621,
+        "cpu_seconds": 0.3523349999999996,
+        "peak_rss_bytes": 706068480
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08766837499570101,
+        "cpu_seconds": 0.35052700000000003,
+        "peak_rss_bytes": 706068480
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08706258400343359,
+        "cpu_seconds": 0.35002100000000036,
+        "peak_rss_bytes": 706068480
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08751962502719834,
+        "cpu_seconds": 0.3508309999999999,
+        "peak_rss_bytes": 706068480
+      }
+    ],
+    "validated": true,
+    "process": 5,
+    "cleanup": {
+      "pid": 56567,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08825637499103323,
+        "cpu_seconds": 0.35194999999999976,
+        "peak_rss_bytes": 722026496
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.08812679199036211,
+        "cpu_seconds": 0.35344700000000007,
+        "peak_rss_bytes": 722026496
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08766366698546335,
+        "cpu_seconds": 0.35170499999999993,
+        "peak_rss_bytes": 722026496
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.08641629200428724,
+        "cpu_seconds": 0.35143499999999994,
+        "peak_rss_bytes": 722026496
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08770350000122562,
+        "cpu_seconds": 0.34978200000000026,
+        "peak_rss_bytes": 722026496
+      }
+    ],
+    "validated": true,
+    "process": 6,
+    "cleanup": {
+      "pid": 56568,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2))._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "d9887c39408f21e846a7d49ec6393f299ff31582928abc7210307e4aea423899",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.08740949997445568,
+        "cpu_seconds": 0.35114299999999976,
+        "peak_rss_bytes": 695074816
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.0879280410008505,
+        "cpu_seconds": 0.34835899999999986,
+        "peak_rss_bytes": 695074816
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.08697941695572808,
+        "cpu_seconds": 0.3497379999999999,
+        "peak_rss_bytes": 695074816
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.0880312499939464,
+        "cpu_seconds": 0.35097500000000004,
+        "peak_rss_bytes": 695074816
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.08805762499105185,
+        "cpu_seconds": 0.3512759999999999,
+        "peak_rss_bytes": 695074816
+      }
+    ],
+    "validated": true,
+    "process": 7,
+    "cleanup": {
+      "pid": 56569,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14356833300553262,
+        "cpu_seconds": 0.5646360000000001,
+        "peak_rss_bytes": 695255040
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1445380410295911,
+        "cpu_seconds": 0.5646330000000002,
+        "peak_rss_bytes": 695255040
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14459233300294727,
+        "cpu_seconds": 0.5639859999999999,
+        "peak_rss_bytes": 695255040
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14665429200977087,
+        "cpu_seconds": 0.5678120000000004,
+        "peak_rss_bytes": 695255040
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14428970799781382,
+        "cpu_seconds": 0.5634120000000005,
+        "peak_rss_bytes": 695255040
+      }
+    ],
+    "validated": true,
+    "process": 0,
+    "cleanup": {
+      "pid": 56570,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14339350000955164,
+        "cpu_seconds": 0.5627009999999997,
+        "peak_rss_bytes": 706641920
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14397733402438462,
+        "cpu_seconds": 0.5610390000000001,
+        "peak_rss_bytes": 706641920
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14365545799955726,
+        "cpu_seconds": 0.5601539999999998,
+        "peak_rss_bytes": 706641920
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14214495796477422,
+        "cpu_seconds": 0.5630469999999996,
+        "peak_rss_bytes": 706641920
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14431320800213143,
+        "cpu_seconds": 0.5613190000000001,
+        "peak_rss_bytes": 706641920
+      }
+    ],
+    "validated": true,
+    "process": 1,
+    "cleanup": {
+      "pid": 56573,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1434390830108896,
+        "cpu_seconds": 0.562087,
+        "peak_rss_bytes": 709869568
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14390999998431653,
+        "cpu_seconds": 0.5591590000000002,
+        "peak_rss_bytes": 709869568
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1474489169777371,
+        "cpu_seconds": 0.574052,
+        "peak_rss_bytes": 709869568
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14194537501316518,
+        "cpu_seconds": 0.5596269999999999,
+        "peak_rss_bytes": 709869568
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14178791601443663,
+        "cpu_seconds": 0.557671,
+        "peak_rss_bytes": 709869568
+      }
+    ],
+    "validated": true,
+    "process": 2,
+    "cleanup": {
+      "pid": 56574,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14497841702541336,
+        "cpu_seconds": 0.5640589999999999,
+        "peak_rss_bytes": 718716928
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1439023750135675,
+        "cpu_seconds": 0.5669979999999999,
+        "peak_rss_bytes": 718716928
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14453495800262317,
+        "cpu_seconds": 0.5651890000000002,
+        "peak_rss_bytes": 718716928
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14416487497510388,
+        "cpu_seconds": 0.5659270000000003,
+        "peak_rss_bytes": 718716928
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14455166697734967,
+        "cpu_seconds": 0.5631020000000007,
+        "peak_rss_bytes": 718716928
+      }
+    ],
+    "validated": true,
+    "process": 3,
+    "cleanup": {
+      "pid": 56577,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14512425003340468,
+        "cpu_seconds": 0.5633300000000001,
+        "peak_rss_bytes": 711180288
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14482020802097395,
+        "cpu_seconds": 0.5667280000000003,
+        "peak_rss_bytes": 711180288
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14499674999387935,
+        "cpu_seconds": 0.5662020000000001,
+        "peak_rss_bytes": 711180288
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14399566600332037,
+        "cpu_seconds": 0.5637530000000002,
+        "peak_rss_bytes": 711180288
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14380429196171463,
+        "cpu_seconds": 0.5610980000000003,
+        "peak_rss_bytes": 711180288
+      }
+    ],
+    "validated": true,
+    "process": 4,
+    "cleanup": {
+      "pid": 56578,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14377691695699468,
+        "cpu_seconds": 0.5613240000000004,
+        "peak_rss_bytes": 707444736
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14430616702884436,
+        "cpu_seconds": 0.5619589999999999,
+        "peak_rss_bytes": 707444736
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14307816699147224,
+        "cpu_seconds": 0.560819,
+        "peak_rss_bytes": 707444736
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14452700002584606,
+        "cpu_seconds": 0.5610739999999996,
+        "peak_rss_bytes": 707444736
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14266270899679512,
+        "cpu_seconds": 0.5602320000000001,
+        "peak_rss_bytes": 707444736
+      }
+    ],
+    "validated": true,
+    "process": 5,
+    "cleanup": {
+      "pid": 56579,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14402441697893664,
+        "cpu_seconds": 0.5626259999999998,
+        "peak_rss_bytes": 708542464
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1438091670279391,
+        "cpu_seconds": 0.5602200000000002,
+        "peak_rss_bytes": 708542464
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.14293858304154128,
+        "cpu_seconds": 0.560384,
+        "peak_rss_bytes": 708542464
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.143292874970939,
+        "cpu_seconds": 0.5593230000000005,
+        "peak_rss_bytes": 708542464
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14454712497536093,
+        "cpu_seconds": 0.5659019999999995,
+        "peak_rss_bytes": 708542464
+      }
+    ],
+    "validated": true,
+    "process": 6,
+    "cleanup": {
+      "pid": 56580,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_filter_entries_unfilter",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_filter_entries_unfilter(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.filter_entries((mt.GQ > 8) & (mt.DP > 2)).unfilter_entries()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1000,
+    "validated_bytes": 81921603,
+    "reference_sha256": "eec99b06b5887c5817e7c1154145d5d204b7d800441355dd09b6ffbe344548df",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.14381608297117054,
+        "cpu_seconds": 0.562214,
+        "peak_rss_bytes": 712032256
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.14352541702101007,
+        "cpu_seconds": 0.5596589999999999,
+        "peak_rss_bytes": 712032256
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1435215410310775,
+        "cpu_seconds": 0.5643369999999996,
+        "peak_rss_bytes": 712032256
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.14466799999354407,
+        "cpu_seconds": 0.5646059999999999,
+        "peak_rss_bytes": 712032256
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.14433387498138472,
+        "cpu_seconds": 0.5651960000000003,
+        "peak_rss_bytes": 712032256
+      }
+    ],
+    "validated": true,
+    "process": 7,
+    "cleanup": {
+      "pid": 56581,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05509729200275615,
+        "cpu_seconds": 0.215349,
+        "peak_rss_bytes": 938082304
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05411816597916186,
+        "cpu_seconds": 0.21397599999999994,
+        "peak_rss_bytes": 938328064
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05504587496398017,
+        "cpu_seconds": 0.21171799999999985,
+        "peak_rss_bytes": 938409984
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.055884875007905066,
+        "cpu_seconds": 0.21248299999999998,
+        "peak_rss_bytes": 942555136
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.054609708953648806,
+        "cpu_seconds": 0.21331100000000003,
+        "peak_rss_bytes": 942555136
+      }
+    ],
+    "validated": true,
+    "process": 0,
+    "cleanup": {
+      "pid": 56603,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05462850001640618,
+        "cpu_seconds": 0.21083600000000002,
+        "peak_rss_bytes": 949420032
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05492849997244775,
+        "cpu_seconds": 0.21059800000000006,
+        "peak_rss_bytes": 949420032
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05509379203431308,
+        "cpu_seconds": 0.21040000000000014,
+        "peak_rss_bytes": 949420032
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05612745799589902,
+        "cpu_seconds": 0.21220700000000003,
+        "peak_rss_bytes": 949420032
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05454199999803677,
+        "cpu_seconds": 0.21286899999999997,
+        "peak_rss_bytes": 949420032
+      }
+    ],
+    "validated": true,
+    "process": 1,
+    "cleanup": {
+      "pid": 56604,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.0550480000092648,
+        "cpu_seconds": 0.213654,
+        "peak_rss_bytes": 923860992
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05436212499625981,
+        "cpu_seconds": 0.21309200000000006,
+        "peak_rss_bytes": 923860992
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05635233398061246,
+        "cpu_seconds": 0.21576299999999993,
+        "peak_rss_bytes": 923860992
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05343391699716449,
+        "cpu_seconds": 0.20973399999999986,
+        "peak_rss_bytes": 923860992
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.054475707991514355,
+        "cpu_seconds": 0.21046799999999988,
+        "peak_rss_bytes": 923860992
+      }
+    ],
+    "validated": true,
+    "process": 2,
+    "cleanup": {
+      "pid": 56605,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05495837499620393,
+        "cpu_seconds": 0.21201000000000003,
+        "peak_rss_bytes": 912146432
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05491158302174881,
+        "cpu_seconds": 0.20960299999999998,
+        "peak_rss_bytes": 912146432
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05506570800207555,
+        "cpu_seconds": 0.21382499999999993,
+        "peak_rss_bytes": 912146432
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05487316701328382,
+        "cpu_seconds": 0.2121630000000001,
+        "peak_rss_bytes": 912146432
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05369512498145923,
+        "cpu_seconds": 0.21367999999999987,
+        "peak_rss_bytes": 912146432
+      }
+    ],
+    "validated": true,
+    "process": 3,
+    "cleanup": {
+      "pid": 56606,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.0567583340452984,
+        "cpu_seconds": 0.2153710000000001,
+        "peak_rss_bytes": 914358272
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05527516599977389,
+        "cpu_seconds": 0.21183299999999994,
+        "peak_rss_bytes": 914358272
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.055116458039265126,
+        "cpu_seconds": 0.21009300000000009,
+        "peak_rss_bytes": 914358272
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05388341599609703,
+        "cpu_seconds": 0.20827400000000007,
+        "peak_rss_bytes": 914358272
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05381983402185142,
+        "cpu_seconds": 0.2090120000000002,
+        "peak_rss_bytes": 914358272
+      }
+    ],
+    "validated": true,
+    "process": 4,
+    "cleanup": {
+      "pid": 56607,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.0548370840260759,
+        "cpu_seconds": 0.21528499999999995,
+        "peak_rss_bytes": 896860160
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05618554097600281,
+        "cpu_seconds": 0.2160430000000002,
+        "peak_rss_bytes": 913162240
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05460283299908042,
+        "cpu_seconds": 0.21035899999999996,
+        "peak_rss_bytes": 913162240
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05574566696304828,
+        "cpu_seconds": 0.2139169999999999,
+        "peak_rss_bytes": 913162240
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05521908402442932,
+        "cpu_seconds": 0.21359700000000004,
+        "peak_rss_bytes": 913162240
+      }
+    ],
+    "validated": true,
+    "process": 5,
+    "cleanup": {
+      "pid": 56608,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.053882749984040856,
+        "cpu_seconds": 0.2151860000000001,
+        "peak_rss_bytes": 890716160
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.0552746249595657,
+        "cpu_seconds": 0.21278700000000006,
+        "peak_rss_bytes": 890716160
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.05479195900261402,
+        "cpu_seconds": 0.2116699999999998,
+        "peak_rss_bytes": 890716160
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.054724916990380734,
+        "cpu_seconds": 0.211287,
+        "peak_rss_bytes": 890716160
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.0547279579914175,
+        "cpu_seconds": 0.21007200000000004,
+        "peak_rss_bytes": 890716160
+      }
+    ],
+    "validated": true,
+    "process": 6,
+    "cleanup": {
+      "pid": 56609,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_matrix_table_array_arithmetic",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_matrix_table.py",
+    "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "original_function": "def test_matrix_table_array_arithmetic(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.filter_rows(mt.alleles.length() == 2)\n    mt.select_entries(dosage=hl.pl_dosage(mt.PL)).select_rows()._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 974,
+    "validated_bytes": 20092792,
+    "reference_sha256": "5715aeed9d1e34d39e234a644d97e4e5d293b03b53bc57ee96472b408759c2d7",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.05604933301219717,
+        "cpu_seconds": 0.21941500000000014,
+        "peak_rss_bytes": 921993216
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.05507783294888213,
+        "cpu_seconds": 0.21360099999999993,
+        "peak_rss_bytes": 921993216
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.055671999987680465,
+        "cpu_seconds": 0.2106220000000001,
+        "peak_rss_bytes": 921993216
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.05468208302045241,
+        "cpu_seconds": 0.21449600000000002,
+        "peak_rss_bytes": 921993216
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.05553695798153058,
+        "cpu_seconds": 0.21235400000000015,
+        "peak_rss_bytes": 921993216
+      }
+    ],
+    "validated": true,
+    "process": 7,
+    "cleanup": {
+      "pid": 56610,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.16663624998182058,
+        "cpu_seconds": 0.4312989999999999,
+        "peak_rss_bytes": 911261696
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16622349998215213,
+        "cpu_seconds": 0.43204699999999985,
+        "peak_rss_bytes": 911261696
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.16348987497622147,
+        "cpu_seconds": 0.4299599999999999,
+        "peak_rss_bytes": 911261696
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.15865266602486372,
+        "cpu_seconds": 0.430202,
+        "peak_rss_bytes": 911261696
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.16192954103462398,
+        "cpu_seconds": 0.42764900000000017,
+        "peak_rss_bytes": 911261696
+      }
+    ],
+    "validated": true,
+    "process": 0,
+    "cleanup": {
+      "pid": 56611,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.16491083399159834,
+        "cpu_seconds": 0.4311130000000001,
+        "peak_rss_bytes": 914587648
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1582531250314787,
+        "cpu_seconds": 0.42891699999999977,
+        "peak_rss_bytes": 914587648
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.1619495420018211,
+        "cpu_seconds": 0.42492899999999967,
+        "peak_rss_bytes": 914587648
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16638779203640297,
+        "cpu_seconds": 0.4430810000000003,
+        "peak_rss_bytes": 914587648
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.16144508303841576,
+        "cpu_seconds": 0.4297010000000001,
+        "peak_rss_bytes": 914587648
+      }
+    ],
+    "validated": true,
+    "process": 1,
+    "cleanup": {
+      "pid": 56626,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.16427229199325666,
+        "cpu_seconds": 0.4278660000000001,
+        "peak_rss_bytes": 913244160
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.1688927499926649,
+        "cpu_seconds": 0.4491310000000004,
+        "peak_rss_bytes": 913244160
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.16561979101970792,
+        "cpu_seconds": 0.4333140000000002,
+        "peak_rss_bytes": 913244160
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16027741698781028,
+        "cpu_seconds": 0.4267159999999999,
+        "peak_rss_bytes": 913244160
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15912758297054097,
+        "cpu_seconds": 0.4227020000000006,
+        "peak_rss_bytes": 913244160
+      }
+    ],
+    "validated": true,
+    "process": 2,
+    "cleanup": {
+      "pid": 56627,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.16367662500124425,
+        "cpu_seconds": 0.42908900000000005,
+        "peak_rss_bytes": 909983744
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16775287495693192,
+        "cpu_seconds": 0.43989400000000023,
+        "peak_rss_bytes": 909983744
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.16284108301624656,
+        "cpu_seconds": 0.43054400000000026,
+        "peak_rss_bytes": 909983744
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16183712502242997,
+        "cpu_seconds": 0.43262,
+        "peak_rss_bytes": 909983744
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.15937025001039729,
+        "cpu_seconds": 0.4277850000000001,
+        "peak_rss_bytes": 909983744
+      }
+    ],
+    "validated": true,
+    "process": 3,
+    "cleanup": {
+      "pid": 56630,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1587261250242591,
+        "cpu_seconds": 0.42304300000000006,
+        "peak_rss_bytes": 901251072
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16336037503788248,
+        "cpu_seconds": 0.44062899999999994,
+        "peak_rss_bytes": 901251072
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15898912498960271,
+        "cpu_seconds": 0.42374599999999996,
+        "peak_rss_bytes": 901251072
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16154412500327453,
+        "cpu_seconds": 0.4230100000000001,
+        "peak_rss_bytes": 901251072
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.16010808403370902,
+        "cpu_seconds": 0.4257110000000002,
+        "peak_rss_bytes": 901251072
+      }
+    ],
+    "validated": true,
+    "process": 4,
+    "cleanup": {
+      "pid": 56631,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.1622060839436017,
+        "cpu_seconds": 0.43071499999999996,
+        "peak_rss_bytes": 913850368
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16875200002687052,
+        "cpu_seconds": 0.44021399999999966,
+        "peak_rss_bytes": 913850368
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.16088337497785687,
+        "cpu_seconds": 0.43025,
+        "peak_rss_bytes": 913850368
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.1579924170509912,
+        "cpu_seconds": 0.42340399999999967,
+        "peak_rss_bytes": 913850368
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.1622397920000367,
+        "cpu_seconds": 0.42605499999999985,
+        "peak_rss_bytes": 913850368
+      }
+    ],
+    "validated": true,
+    "process": 5,
+    "cleanup": {
+      "pid": 56645,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "after",
+    "native": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "7c1e347f74d6a3e8cc353f468961d607541973dd84255ec3b02bbb039fbf2694",
+    "frontend": "/private/tmp/vail-flatmap-test-env-20261106/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.16460316703887656,
+        "cpu_seconds": 0.4268449999999999,
+        "peak_rss_bytes": 911065088
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.17372370802331716,
+        "cpu_seconds": 0.4362759999999999,
+        "peak_rss_bytes": 911065088
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.15757816599216312,
+        "cpu_seconds": 0.42139099999999985,
+        "peak_rss_bytes": 911065088
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.1617202910128981,
+        "cpu_seconds": 0.42437199999999997,
+        "peak_rss_bytes": 911065088
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.16037629102356732,
+        "cpu_seconds": 0.42296699999999987,
+        "peak_rss_bytes": 911065088
+      }
+    ],
+    "validated": true,
+    "process": 6,
+    "cleanup": {
+      "pid": 56648,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  },
+  {
+    "case": "test_split_multi_hts",
+    "mode": "before",
+    "native": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "415b2f35ac2244b97d60eff3f4d0463704f0f9f93189cea5162e50c09112af6e",
+    "frontend": "/private/tmp/vail-real-fusion-bench-20261107/baseline-env/lib/python3.12/site-packages/vail/__init__.py",
+    "source_file": "/private/tmp/vail-full-benchmark-20261106/protocol/upstream/benchmark_methods.py",
+    "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+    "original_function": "def test_split_multi_hts(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    hl.split_multi_hts(mt)._force_count_rows()",
+    "fixture": "/private/tmp/vail-generic-list-20261104/inputs-1000/first-1000.mt",
+    "thread_env": {
+      "RAYON_NUM_THREADS": "4",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "TOKIO_WORKER_THREADS": "4"
+    },
+    "identity_verified_before_queries": true,
+    "runtime_note": "Vail runtime compiled with32 Tokio workers;4 source partitions; env RAYON4 and BLAS1 are NOT a global4-thread limit",
+    "validated_rows": 1035,
+    "validated_bytes": 96996448,
+    "reference_sha256": "a3a9e07f1055865551a74a68a985a96ca2566369beeac36835e553e2103d4feb",
+    "result_evidence": "complete Arrow values+metadata equality against pre-change output; split also established external reference",
+    "samples": [
+      {
+        "sample": 0,
+        "wall_seconds": 0.16138695797417313,
+        "cpu_seconds": 0.4278890000000002,
+        "peak_rss_bytes": 900988928
+      },
+      {
+        "sample": 1,
+        "wall_seconds": 0.16121141699841246,
+        "cpu_seconds": 0.4266380000000001,
+        "peak_rss_bytes": 900988928
+      },
+      {
+        "sample": 2,
+        "wall_seconds": 0.165405124949757,
+        "cpu_seconds": 0.43164500000000006,
+        "peak_rss_bytes": 900988928
+      },
+      {
+        "sample": 3,
+        "wall_seconds": 0.16112579096807167,
+        "cpu_seconds": 0.4274309999999999,
+        "peak_rss_bytes": 900988928
+      },
+      {
+        "sample": 4,
+        "wall_seconds": 0.16350245900684968,
+        "cpu_seconds": 0.42364900000000016,
+        "peak_rss_bytes": 900988928
+      }
+    ],
+    "validated": true,
+    "process": 7,
+    "cleanup": {
+      "pid": 56663,
+      "returncode": 0,
+      "reaped": true,
+      "group_absent": true
+    }
+  }
+]

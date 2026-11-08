@@ -1,0 +1,8 @@
+{
+  "failure": "array-arithmetic before validation asserted1000 outputrows, but original body filters multiallelic rows; no timing ran",
+  "fix": "derive expected biallelic row count outside timing using Arrow list-length over input row alleles",
+  "preserved": "runs/test_matrix_table_array_arithmetic-0-before and controller.log; initial worker/driver retained",
+  "resume": "only remaining two cases, fresh phase2 output dirs; first16 valid observations retained",
+  "second_validation_setup_failure": "select named key field rejected by current Table API; read row table directly instead, same Arrow count predicate",
+  "preserved_phase2": "runs-phase2/ and controller-phase2.log, no timing ran"
+}
