@@ -594,5 +594,6 @@ mod list_product_map;
 mod list_product_prepare;
 
 mod map_captures;
+mod map_index;
 mod list_dependencies;
 mod aligned_invariants;

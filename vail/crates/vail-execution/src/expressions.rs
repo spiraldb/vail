@@ -7485,6 +7485,14 @@ fn lower_uncached(
                     memo,
                     context,
                 )?
+            } else if let Expr::ArrayMap {value:input,parameter,body}=value.as_ref()
+                && crate::map_index::index(index)
+                && matches!(dtype,DataType::Int32|DataType::Int64|DataType::Float32|DataType::Float64|DataType::Boolean)
+                && let Some(rewritten)=crate::map_index::rewrite(input.clone(),parameter,body,index.clone(),Type::from_arrow(&dtype)?)
+                && let Some(DataType::List(field))=borrowed_read_layout(input,schema,scope,memo,context)
+                && crate::map_index::primitive(&Type::from_arrow(field.data_type())?)
+            {
+                lower_synthetic(rewritten,schema,globals,scope,memo,context)?
             } else {
                 custom(
                     HailKind::ArrayIndex,
