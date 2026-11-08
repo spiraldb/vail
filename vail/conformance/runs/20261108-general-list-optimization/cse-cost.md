@@ -1,5 +1,10 @@
 # Binding versus recomputation
 
+**Disposition: neither production experiment is enabled.** After cost review,
+both changes were removed. Production behavior remains identical to accepted
+`64f1f0db`; existing arithmetic CSE is unchanged. The experiments below explain
+that decision. They are not performance claims about shipped changes.
+
 Candidate `28aa1bd799a666c9361dbbdc3f3f2d629766d199` refines existing local CSE;
 it introduces no bind operator. Native singleton-map/index bindings already
 lower to lexical frames. The candidate removes those frames for canonical
@@ -79,3 +84,31 @@ contains scripts, build/test logs, package/input identities, raw samples,
 preparation observations, cleanup receipts and summaries. It excludes
 compiled artifacts, environments and large Arrow reference files; their
 identities are retained. Steps 3–7 of the worklist remain separate work.
+
+## Narrowed read-only-binding trial
+
+`135af4e973585d82bd6f72f916b8a19192937423` removed text sharing and retained
+only cheap array-read inlining. Its exact normal wheel passes 124 Rust tests
+and 519 Python tests plus ten subtests, with the same sole pre-existing
+correlation exclusion. The same 72 expression processes and 32 actual workers
+were rerun, sequentially with builds/tests, and final fixture hashes match.
+
+| Workload | Wall change | Core-seconds change |
+|---|---:|---:|
+| Filter entries | +0.242% | -0.414% |
+| Filter, then unfilter entries | -0.210% | +0.016% |
+| Array arithmetic / PL dosage | +0.032% | -0.413% |
+| Split multiallelic HTS | -0.315% | -0.842% |
+
+Bound borrowed-read evaluation takes 53.6–63.0% of its old time. However,
+one-row bound preparation was 8.5% higher in the separate candidate cohort;
+unchanged direct-read evaluation was 5.5–8.8% higher, and wide arithmetic
+4.6–4.7% higher. Those observations are retained rather than assigned a noise
+explanation. Near-flat actual workload results and uncertain one-shot
+preparation costs do not justify adding the rewrite to the default runtime.
+
+`cheap-read-evidence.json` seals this second archive independently. The first
+archive continues to describe the original text-sharing experiment. No
+additional benchmark retries were used to obtain a favorable disposition.
+The public null/slice/tuple/Unicode/eager-error/scope tests and diagnostic
+example remain useful without either rewrite.
