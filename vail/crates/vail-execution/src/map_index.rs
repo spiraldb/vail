@@ -59,29 +59,24 @@ pub(crate) fn rewrite(
     if !self::index(&index) || !primitive(&output) {
         return None;
     }
-    let replacement = Arc::new(Expr::ArrayIndex {
-        value: input.clone(),
-        index,
-    });
-    fn visit(
+    fn certify(
         expr: &Expr,
         parameter: &str,
-        replacement: &Arc<Expr>,
-        memo: &mut HashMap<usize, (u8, Arc<Expr>)>,
+        memo: &mut HashMap<usize, u8>,
         remaining: &mut usize,
         depth: usize,
-    ) -> Option<(u8, Arc<Expr>)> {
+    ) -> Option<u8> {
         let key = expr as *const Expr as usize;
         if let Some(result) = memo.get(&key) {
-            return Some(result.clone());
+            return Some(*result);
         }
         if depth >= 64 || *remaining == 0 {
             return None;
         }
         *remaining -= 1;
         let result = match expr {
-            Expr::LambdaVariable { name, .. } if name == parameter => (1, replacement.clone()),
-            Expr::Literal { dtype, value } if literal(dtype, value) => (0, Arc::new(expr.clone())),
+            Expr::LambdaVariable { name, .. } if name == parameter => 1,
+            Expr::Literal { dtype, value } if literal(dtype, value) => 0,
             Expr::RuntimeLiteral { value }
                 if matches!(
                     value,
@@ -92,7 +87,7 @@ pub(crate) fn rewrite(
                         | ScalarValue::Boolean(_)
                 ) =>
             {
-                (0, Arc::new(expr.clone()))
+                0
             }
             Expr::Binary {
                 operator:
@@ -111,36 +106,70 @@ pub(crate) fn rewrite(
                 operator: UnaryOperator::Neg | UnaryOperator::Not,
                 ..
             } => {
-                let mut count = 0u8;
-                let rebuilt = expr
-                    .try_map_children_shared(|child, _| {
-                        let (uses, child) =
-                            visit(child, parameter, replacement, memo, remaining, depth + 1)
-                                .ok_or(())?;
-                        count = count.saturating_add(uses).min(2);
-                        Ok::<_, ()>(child)
-                    })
-                    .ok()?;
-                (count, Arc::new(rebuilt))
+                let mut count = Some(0u8);
+                expr.for_each_child(&mut |child| {
+                    count = count.and_then(|old| {
+                        if old == 2 {
+                            return Some(2);
+                        }
+                        Some(
+                            old.saturating_add(certify(
+                                child,
+                                parameter,
+                                memo,
+                                remaining,
+                                depth + 1,
+                            )?)
+                            .min(2),
+                        )
+                    });
+                });
+                count?
             }
             // Missingness tests, lazy branches, captures, casts, binders, errors and unknown
             // operators keep the original map, including all of its effects.
             _ => return None,
         };
-        memo.insert(key, result.clone());
+        memo.insert(key, result);
         Some(result)
     }
-    let (uses, body) = visit(
-        body,
-        parameter,
-        &replacement,
-        &mut HashMap::new(),
-        &mut 64,
-        0,
-    )?;
-    if uses != 1 {
+    let mut uses = HashMap::new();
+    if certify(body, parameter, &mut uses, &mut 64, 0)? != 1 {
         return None;
     }
+    // Declined maps have not allocated a replacement expression. A successful
+    // proof has exactly one parameter path; every other subtree keeps its Arc.
+    let replacement = Arc::new(Expr::ArrayIndex {
+        value: input,
+        index,
+    });
+    fn substitute(
+        expr: &Arc<Expr>,
+        uses: &HashMap<usize, u8>,
+        replacement: &Arc<Expr>,
+    ) -> Option<Arc<Expr>> {
+        if *uses.get(&(Arc::as_ptr(expr) as usize))? == 0 {
+            return Some(expr.clone());
+        }
+        Some(match expr.as_ref() {
+            Expr::LambdaVariable { .. } => replacement.clone(),
+            Expr::Binary {
+                operator,
+                left,
+                right,
+            } => Arc::new(Expr::Binary {
+                operator: *operator,
+                left: substitute(left, uses, replacement)?,
+                right: substitute(right, uses, replacement)?,
+            }),
+            Expr::Unary { operator, value } => Arc::new(Expr::Unary {
+                operator: *operator,
+                value: substitute(value, uses, replacement)?,
+            }),
+            _ => return None,
+        })
+    }
+    let body = substitute(body, &uses, &replacement)?;
     // Every admitted operation propagates the indexed null. Missing source
     // lists therefore need no CASE, selected-row gather or additional binding.
     Some(body.as_ref().clone())
