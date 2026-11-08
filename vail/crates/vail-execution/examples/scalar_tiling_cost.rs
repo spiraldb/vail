@@ -186,10 +186,31 @@ fn main() {
     let actual = run(&program, &batch, tiled);
     let first = start.elapsed().as_secs_f64();
     let actual = actual.as_any().downcast_ref::<Float64Array>().unwrap();
+    let other = run(&program, &batch, !tiled);
+    let other = other.as_any().downcast_ref::<Float64Array>().unwrap();
+    let mut reference_max_ulp = 0;
     for (i, value) in expected.iter().enumerate() {
         assert_eq!(actual.is_null(i), value.is_none());
+        assert_eq!(other.is_null(i), value.is_none());
         if let Some(value) = value {
-            assert_eq!(actual.value(i).to_bits(), value.to_bits(), "row {i}");
+            assert_eq!(
+                actual.value(i).to_bits(),
+                other.value(i).to_bits(),
+                "whole/tiled row {i}"
+            );
+            if case == "probability" {
+                // Constant-base pow and the runtime scalar kernel can differ
+                // by an ulp. Keep the independent math check, and require the
+                // two execution schedules themselves to be bit-identical.
+                assert!(
+                    (actual.value(i) - value).abs() <= 8.0 * f64::EPSILON * value.abs().max(1.0),
+                    "reference row {i}"
+                );
+                reference_max_ulp =
+                    reference_max_ulp.max(actual.value(i).to_bits().abs_diff(value.to_bits()));
+            } else {
+                assert_eq!(actual.value(i).to_bits(), value.to_bits(), "row {i}");
+            }
         }
     }
     for _ in 0..3 {
@@ -207,6 +228,6 @@ fn main() {
     }
     println!(
         "{}",
-        json!({"case":case,"rows":rows,"mode":mode,"tile_rows":2048,"validated":true,"prepare_seconds":prepare,"first_seconds":first,"evaluation_wall_seconds":samples,"cpu_measured":false,"scope":"same prepared program; final assembly included; fixed3element total fixtures; no default rule or actualPL admission; source owners retained; row-bound not arbitrarylistbytebound"})
+        json!({"case":case,"rows":rows,"mode":mode,"tile_rows":2048,"validated":true,"whole_tiled_bits_identical":true,"independent_reference":if case=="probability" {"8epsilon absolute/relative"}else{"bit-exact"},"reference_max_ulp":reference_max_ulp,"prepare_seconds":prepare,"first_seconds":first,"evaluation_wall_seconds":samples,"cpu_measured":false,"scope":"same prepared program; final assembly included; fixed3element total fixtures; no default rule or actualPL admission; source owners retained; row-bound not arbitrarylistbytebound"})
     );
 }
