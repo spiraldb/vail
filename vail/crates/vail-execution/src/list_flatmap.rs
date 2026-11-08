@@ -924,7 +924,12 @@ pub(crate) fn prepare(
         scan: false,
     } = expression
     {
-        if accumulator == parameter || !matches!(dtype, DataType::Int32 | DataType::Int64) {
+        if accumulator == parameter
+            || !matches!(
+                dtype,
+                DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+            )
+        {
             return None;
         }
         let (Expr::Binary {
@@ -951,7 +956,11 @@ pub(crate) fn prepare(
                 if value.is_null() {
                     Cell::default()
                 } else {
-                    Cell::some(value.as_i64()? as u64)
+                    Cell::some(match dtype {
+                        DataType::Float32 => (value.as_f64()? as f32).to_bits() as u64,
+                        DataType::Float64 => value.as_f64()?.to_bits(),
+                        _ => value.as_i64()? as u64,
+                    })
                 }
             }
             Expr::RuntimeLiteral {
@@ -963,6 +972,16 @@ pub(crate) fn prepare(
                 value: ScalarValue::Int64(value),
             } if dtype == DataType::Int64 => {
                 value.map(|v| Cell::some(v as u64)).unwrap_or_default()
+            }
+            Expr::RuntimeLiteral {
+                value: ScalarValue::Float32(value),
+            } if dtype == DataType::Float32 => value
+                .map(|v| Cell::some(v.to_bits() as u64))
+                .unwrap_or_default(),
+            Expr::RuntimeLiteral {
+                value: ScalarValue::Float64(value),
+            } if dtype == DataType::Float64 => {
+                value.map(|v| Cell::some(v.to_bits())).unwrap_or_default()
             }
             _ => return None,
         };

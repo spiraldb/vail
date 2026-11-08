@@ -151,6 +151,8 @@ include!("list_flatmap_output.rs");
 enum FoldValues {
     I32(Vec<i32>),
     I64(Vec<i64>),
+    F32(Vec<f32>),
+    F64(Vec<f64>),
 }
 struct FoldOutput {
     values: FoldValues,
@@ -162,6 +164,10 @@ impl FoldOutput {
         let values = match dtype {
             DataType::Int32 => FoldValues::I32(vec![fold.initial.bits as i32; rows]),
             DataType::Int64 => FoldValues::I64(vec![fold.initial.bits as i64; rows]),
+            DataType::Float32 => {
+                FoldValues::F32(vec![f32::from_bits(fold.initial.bits as u32); rows])
+            }
+            DataType::Float64 => FoldValues::F64(vec![f64::from_bits(fold.initial.bits); rows]),
             _ => unreachable!(),
         };
         Self {
@@ -186,7 +192,7 @@ impl FoldOutput {
             sources[leaf] = &workspace[descriptor.value];
         }
         macro_rules! reduce {
-            ($values:expr, $getter:ident) => {{
+            ($values:expr, $getter:ident, $add:expr, $mul:expr) => {{
                 let mut columns = [&[][..]; MAX_LEAVES];
                 for (leaf, source) in sources.iter().enumerate().take(program.leaves.len()) {
                     if active & (1 << leaf) != 0 {
@@ -194,25 +200,33 @@ impl FoldOutput {
                     }
                 }
                 macro_rules! apply {
-                    ($op:ident) => {
+                    ($op:expr) => {
                         for &(row, lane, leaf) in entries {
                             let source = sources[leaf];
                             self.valid[row] &= source.valid(lane);
                             let value = columns[leaf][if source.scalar { 0 } else { lane }];
-                            $values[row] = $values[row].$op(value);
+                            $values[row] = ($op)($values[row], value);
                         }
                     };
                 }
                 if self.operator == Binary::Add {
-                    apply!(wrapping_add);
+                    apply!($add);
                 } else {
-                    apply!(wrapping_mul);
+                    apply!($mul);
                 }
             }};
         }
         match &mut self.values {
-            FoldValues::I32(values) => reduce!(values, i32),
-            FoldValues::I64(values) => reduce!(values, i64),
+            FoldValues::I32(values) => reduce!(values, i32, i32::wrapping_add, i32::wrapping_mul),
+            FoldValues::I64(values) => reduce!(values, i64, i64::wrapping_add, i64::wrapping_mul),
+            // Fold in emission order, retaining the declared precision at every
+            // step. This is a sequential recurrence, not a reassociated sum.
+            FoldValues::F32(values) => {
+                reduce!(values, f32, |a: f32, b: f32| a + b, |a: f32, b: f32| a * b)
+            }
+            FoldValues::F64(values) => {
+                reduce!(values, f64, |a: f64, b: f64| a + b, |a: f64, b: f64| a * b)
+            }
         }
     }
     fn finish(self) -> ArrayRef {
@@ -220,6 +234,8 @@ impl FoldOutput {
         match self.values {
             FoldValues::I32(values) => Arc::new(Int32Array::new(values.into(), nulls)),
             FoldValues::I64(values) => Arc::new(Int64Array::new(values.into(), nulls)),
+            FoldValues::F32(values) => Arc::new(Float32Array::new(values.into(), nulls)),
+            FoldValues::F64(values) => Arc::new(Float64Array::new(values.into(), nulls)),
         }
     }
 }
