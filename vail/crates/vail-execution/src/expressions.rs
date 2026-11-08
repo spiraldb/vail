@@ -903,6 +903,7 @@ struct CompilationMemo {
     suppress_local_cse: bool,
     coalesce_eligibility:HashMap<(usize,usize),bool>,
     coalesce_budget:usize,
+    boolean_fill_purity: HashMap<usize, bool>,
     local_cse_regions: HashMap<usize, HashSet<usize>>,
     local_cse_names: HashSet<String>,
     mask_roots: HashMap<(usize, usize), Option<Type>>,
@@ -8067,6 +8068,18 @@ fn lower_uncached(
             consequent,
             alternate,
         } => {
+            if dtype == DataType::Boolean {
+                if let Some((value, fallback)) = crate::boolean_fill::candidate(expr) {
+                    if crate::boolean_fill::pure(value, &mut memo.boolean_fill_purity) {
+                        return Ok(binary(
+                            lower_cached(value, schema, globals, scope, memo, context)?,
+                            if fallback { Operator::IsDistinctFrom } else { Operator::IsNotDistinctFrom },
+                            Arc::new(Literal::new(ScalarValue::Boolean(Some(!fallback)))),
+                            schema,
+                        )?);
+                    }
+                }
+            }
             if masks_borrowed_read(consequent, alternate) {
                 let read = lower_cached(consequent, schema, globals, scope, memo, context)?;
                 // Materializing representation casts belong after lazy row selection.

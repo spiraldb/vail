@@ -3,6 +3,75 @@ use arrow_schema::Schema;
 use serde_json::{Value, json};
 use vail_execution::expressions::{Expr, project_batch};
 
+#[test]
+fn boolean_null_fallbacks_preserve_truth_values_and_slices() {
+    use std::sync::Arc;
+    use arrow_array::ArrayRef;
+    use datafusion_common::{DFSchema, ScalarValue};
+    use datafusion_expr::{execution_props::ExecutionProps, physical_planning_context::PhysicalPlanningContext};
+    use datafusion_physical_expr::create_physical_expr;
+    use vail_execution::{expressions::{PrimitiveType, Type, UnaryOperator, lower}, logical_expr::lower_logical};
+    let batch = RecordBatch::try_from_iter([("p", Arc::new(BooleanArray::from(vec![Some(true), Some(false), None, Some(true), None])) as ArrayRef)]).unwrap();
+    let predicate = Arc::new(Expr::Column { name: "p".into() });
+    for fallback in [false, true] {
+        for reversed in [false, true] {
+            for runtime in [false, true] {
+                let fallback_value = Arc::new(if runtime {
+                    Expr::RuntimeLiteral { value: ScalarValue::Boolean(Some(fallback)) }
+                } else {
+                    Expr::Literal { dtype: Type::Primitive(PrimitiveType::Bool), value: json!(fallback) }
+                });
+                let missing = Arc::new(Expr::IsMissing { value: predicate.clone() });
+                let expression = if reversed {
+                    Expr::IfElse { condition: missing, consequent: fallback_value, alternate: predicate.clone() }
+                } else {
+                    Expr::IfElse { condition: Arc::new(Expr::Unary { operator: UnaryOperator::Not, value: missing }), consequent: predicate.clone(), alternate: fallback_value }
+                };
+                let schema = DFSchema::try_from(batch.schema().as_ref().clone()).unwrap();
+                let logical = lower_logical(&expression, &schema).unwrap();
+                let programs = [lower(&expression, batch.schema_ref()).unwrap(), create_physical_expr(&logical, &schema, &ExecutionProps::new(), &PhysicalPlanningContext::default()).unwrap()];
+                let expected = BooleanArray::from(vec![true, false, fallback, true, fallback]);
+                for program in programs {
+                    for (start, len) in [(0, 5), (1, 3), (0, 0)] {
+                        let actual = program.evaluate(&batch.slice(start, len)).unwrap().into_array(len).unwrap();
+                        assert_eq!(actual.as_ref(), &expected.slice(start, len));
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn scalar_boolean_fallbacks_broadcast_over_nonempty_and_empty_batches() {
+    use std::sync::Arc;
+    use arrow_array::{ArrayRef, Int32Array};
+    use datafusion_common::{DFSchema, ScalarValue};
+    use datafusion_expr::{execution_props::ExecutionProps, physical_planning_context::PhysicalPlanningContext};
+    use datafusion_physical_expr::create_physical_expr;
+    use vail_execution::{expressions::{PrimitiveType, Type, lower}, logical_expr::lower_logical};
+    let batch = RecordBatch::try_from_iter([("unused", Arc::new(Int32Array::from(vec![1, 2, 3])) as ArrayRef)]).unwrap();
+    for value in [Some(true), Some(false), None] {
+        for fallback in [false, true] {
+            for runtime in [false, true] {
+                let scalar = Arc::new(if runtime { Expr::RuntimeLiteral { value: ScalarValue::Boolean(value) } } else {
+                    Expr::Literal { dtype: Type::Primitive(PrimitiveType::Bool), value: json!(value) }
+                });
+                let expression = Expr::IfElse { condition: Arc::new(Expr::IsMissing { value: scalar.clone() }),
+                    consequent: Arc::new(Expr::Literal { dtype: Type::Primitive(PrimitiveType::Bool), value: json!(fallback) }), alternate: scalar };
+                let schema = DFSchema::try_from(batch.schema().as_ref().clone()).unwrap();
+                let logical = lower_logical(&expression, &schema).unwrap();
+                for program in [lower(&expression, batch.schema_ref()).unwrap(), create_physical_expr(&logical, &schema, &ExecutionProps::new(), &PhysicalPlanningContext::default()).unwrap()] {
+                    for len in [0, 3] {
+                        let actual = program.evaluate(&batch.slice(0, len)).unwrap().into_array(len).unwrap();
+                        assert_eq!(actual.as_ref(), &BooleanArray::from(vec![value.unwrap_or(fallback); len]));
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn coalesce(args: Value, dtype: &str) -> Expr {
     serde_json::from_value(
         json!({"op":"nested_function","function":"coalesce","args":args,"dtype":dtype}),

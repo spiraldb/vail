@@ -1116,7 +1116,8 @@ fn lower(
             let dtype = expr
                 .dtype_with_globals(&schema.as_arrow(), globals)?
                 .to_arrow()?;
-            if crate::expressions::masks_borrowed_read(consequent, alternate) {
+            if crate::expressions::masks_borrowed_read(consequent, alternate)
+                || (dtype == DataType::Boolean && crate::boolean_fill::candidate(expr).is_some()) {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }
             let condition = recurse(condition)?;

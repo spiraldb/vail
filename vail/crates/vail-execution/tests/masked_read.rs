@@ -83,6 +83,41 @@ fn masked(dtype: &serde_json::Value) -> Expr {
     serde_json::from_value(json!({"op":"if_else", "condition":{"op":"column","name":"keep"},
         "consequent":{"op":"column","name":"record"},"alternate":{"op":"literal","dtype":dtype,"value":null}})).unwrap()
 }
+
+#[test]
+fn boolean_null_filling_does_not_gather_unused_record_payload() {
+    use vail_execution::expressions::{BinaryOperator, PrimitiveType, Type, UnaryOperator};
+    let read = Arc::new(Expr::GetField { value: Arc::new(Expr::Column { name: "record".into() }), name: "x".into() });
+    let predicate = Arc::new(Expr::Binary { operator: BinaryOperator::Gt, left: read,
+        right: Arc::new(Expr::Literal { dtype: Type::Primitive(PrimitiveType::Int32), value: json!(0) }) });
+    let expression = Expr::IfElse {
+        condition: Arc::new(Expr::Unary { operator: UnaryOperator::Not, value: Arc::new(Expr::IsMissing { value: predicate.clone() }) }),
+        consequent: predicate,
+        alternate: Arc::new(Expr::Literal { dtype: Type::Primitive(PrimitiveType::Bool), value: json!(false) }),
+    };
+    let mut costs = vec![];
+    for width in [8, 16_384] {
+        let text = "x".repeat(width);
+        let numbers: ArrayRef = Arc::new(Int32Array::from_iter((0..256).map(|i| (i % 5 != 0).then_some(i - 128))));
+        let payload: ArrayRef = Arc::new(StringArray::from(vec![text.as_str(); 256]));
+        let record: ArrayRef = Arc::new(StructArray::new(vec![Arc::new(Field::new("x", DataType::Int32, true)), Arc::new(Field::new("unused", DataType::Utf8, true))].into(), vec![numbers, payload], Some(NullBuffer::from_iter((0..256).map(|i| i % 7 != 0)))));
+        let batch = RecordBatch::try_from_iter([("record", record)]).unwrap();
+        let expected = BooleanArray::from_iter((0..256).map(|i| Some(i % 7 != 0 && i % 5 != 0 && i > 128)));
+        for program in programs(&expression, &batch) {
+            let warm = program.evaluate(&batch).unwrap().into_array(256).unwrap();
+            assert_eq!(warm.as_ref(), &expected);
+            BYTES.with(|bytes| bytes.set(Some(0)));
+            let actual = program.evaluate(&batch).unwrap().into_array(256).unwrap();
+            let allocated = BYTES.with(|bytes| bytes.replace(None).unwrap());
+            assert_eq!(actual.as_ref(), &expected);
+            costs.push(allocated);
+        }
+    }
+    eprintln!("boolean fallback allocation: {costs:?}");
+    for i in 0..2 {
+        assert!(costs[i + 2] < costs[i] + 32_768, "unused payload increased evaluation allocation: {costs:?}");
+    }
+}
 #[test]
 fn mask_combines_existing_nulls_and_preserves_sliced_nested_values() {
     let numbers: ArrayRef = Arc::new(Int32Array::from(vec![9, 10, 20, 30, 40, 50, 60]));

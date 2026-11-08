@@ -43,6 +43,7 @@ pub mod expressions;
 mod kernel_identity;
 mod local_cse;
 mod coalesce_once;
+mod boolean_fill;
 mod list_flatmap;
 mod packed_count;
 pub mod logical_expr;
