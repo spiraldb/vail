@@ -143,7 +143,8 @@ fn main() {
             } else {
                 binary(
                     Binary::Add,
-                    binary(Binary::Add(index(0), index(1)), index(2)),
+                    binary(Binary::Add, index(0), index(1)),
+                    index(2),
                 )
             }),
             missing: Some(Arc::new(Expr::RuntimeLiteral {
