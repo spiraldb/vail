@@ -1,5 +1,7 @@
 # General list optimization: borrowed-value masking
 
+Current worklist status, accepted changes, rejected experiments and remaining fusion gaps are recorded in [worklist.md](worklist.md). The report below retains the original matched masking cohort; its later-stage checklist is historical and superseded by that status report.
+
 This is the first completed implementation from the general list-optimization worklist. Conditional reads of existing canonical Arrow values now change parent validity without gathering and merging their nested payload. It applies to ordinary Column/Lambda reads and ordinary Struct/Tuple field paths; no benchmark or genotype field names are matched.
 
 ## Matched real workload results
