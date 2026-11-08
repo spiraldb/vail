@@ -1,8 +1,42 @@
-use arrow_array::{Array, Int32Array, ListArray, RecordBatch, StructArray};
+use arrow_array::{Array, ArrayRef, Int32Array, ListArray, RecordBatch, StringArray, StructArray};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::ScalarValue;
-use std::sync::Arc;
+use serde_json::json;
+use std::{
+    alloc::{GlobalAlloc, Layout, System},
+    cell::Cell,
+    sync::Arc,
+};
 use vail_execution::expressions::{BinaryOperator, Expr, PrimitiveType, Type, lower};
+
+thread_local! { static BYTES: Cell<Option<usize>> = const { Cell::new(None) }; }
+struct Allocator;
+fn charge(bytes: usize) {
+    let _ = BYTES.try_with(|sum| {
+        if let Some(old) = sum.get() {
+            sum.set(Some(old + bytes));
+        }
+    });
+}
+unsafe impl GlobalAlloc for Allocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        charge(layout.size());
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        charge(layout.size());
+        unsafe { System.alloc_zeroed(layout) }
+    }
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, bytes: usize) -> *mut u8 {
+        charge(bytes);
+        unsafe { System.realloc(ptr, layout, bytes) }
+    }
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        unsafe { System.dealloc(ptr, layout) }
+    }
+}
+#[global_allocator]
+static ALLOCATOR: Allocator = Allocator;
 
 #[test]
 fn local_binding_avoids_unused_enclosing_lambda_parameter() {
@@ -77,4 +111,164 @@ fn nested_struct_projection_retains_public_values() {
             .as_ref(),
         &[4, 9]
     );
+}
+
+#[test]
+fn borrowed_bindings_keep_sliced_null_values_and_tuple_fields() {
+    let x: ArrayRef = Arc::new(Int32Array::from(vec![Some(99), Some(4), None, Some(9)]));
+    let text: ArrayRef = Arc::new(StringArray::from(vec![
+        Some("skip"),
+        None,
+        Some("AbC"),
+        Some("Π"),
+    ]));
+    let batch = RecordBatch::try_from_iter([("x", x), ("text", text)])
+        .unwrap()
+        .slice(1, 3);
+    let expression: Expr = serde_json::from_value(json!({"op":"switch",
+        "value":{"op":"tuple","elements":[{"op":"column","name":"x"},{"op":"column","name":"text"}]},
+        "parameter":"v","cases":[],"missing":null,
+        "default":{"op":"struct","fields":[
+            ["a",{"op":"get_field","value":{"op":"lambda_variable","name":"v"},"name":"__vail_tuple_0"}],
+            ["b",{"op":"get_field","value":{"op":"lambda_variable","name":"v"},"name":"__vail_tuple_1"}],
+            ["again",{"op":"get_field","value":{"op":"lambda_variable","name":"v"},"name":"__vail_tuple_0"}]]}})).unwrap();
+    let program = lower(&expression, batch.schema_ref()).unwrap();
+    for batch in [batch.clone(), batch.slice(0, 0), batch.slice(1, 2)] {
+        let result = program
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(batch.num_rows())
+            .unwrap();
+        let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+        assert_eq!(result.column(0), batch.column(0));
+        assert_eq!(result.column(1), batch.column(1));
+        assert_eq!(result.column(2), batch.column(0));
+    }
+}
+
+#[test]
+fn repeated_text_conversion_preserves_unicode_nulls_and_bindings() {
+    let batch = RecordBatch::try_from_iter([(
+        "text",
+        Arc::new(StringArray::from(vec![
+            Some("skip"),
+            Some("AbC"),
+            None,
+            Some("Π"),
+        ])) as ArrayRef,
+    )])
+    .unwrap()
+    .slice(1, 3);
+    for function in ["lower", "upper"] {
+        let convert = json!({"op":"string_function","function":function,
+            "args":[{"op":"column","name":"text"}]});
+        let fields = |value: serde_json::Value| {
+            json!({"op":"struct","fields":[
+            ["first",value.clone()],["second",value.clone()],["third",value]]})
+        };
+        let direct: Expr = serde_json::from_value(fields(convert.clone())).unwrap();
+        let bound: Expr = serde_json::from_value(json!({"op":"switch","value":convert,
+            "parameter":"converted","cases":[],"missing":null,
+            "default":fields(json!({"op":"lambda_variable","name":"converted"}))}))
+        .unwrap();
+        let expected: ArrayRef = Arc::new(StringArray::from(if function == "lower" {
+            vec![Some("abc"), None, Some("π")]
+        } else {
+            vec![Some("ABC"), None, Some("Π")]
+        }));
+        for expression in [direct, bound] {
+            let program = lower(&expression, batch.schema_ref()).unwrap();
+            let result = program.evaluate(&batch).unwrap().into_array(3).unwrap();
+            let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+            for column in result.columns() {
+                assert_eq!(column, &expected);
+            }
+        }
+    }
+}
+
+#[test]
+fn repeated_text_conversion_does_not_allocate_repeated_payloads() {
+    let text = "AbC".repeat(256);
+    let expected = text.to_lowercase();
+    let batch = RecordBatch::try_from_iter([(
+        "text",
+        Arc::new(StringArray::from(vec![text.as_str(); 4096])) as ArrayRef,
+    )])
+    .unwrap();
+    let conversion = json!({"op":"string_function","function":"lower",
+        "args":[{"op":"column","name":"text"}]});
+    let fields = |value: serde_json::Value| {
+        json!({"op":"struct","fields":[
+        ["a",value.clone()],["b",value.clone()],["c",value]]})
+    };
+    let expressions = [
+        fields(conversion.clone()),
+        json!({"op":"switch","value":conversion,
+        "parameter":"v","cases":[],"missing":null,
+        "default":fields(json!({"op":"lambda_variable","name":"v"}))}),
+    ];
+    let allocations = expressions.map(|expression| {
+        let program = lower(
+            &serde_json::from_value(expression).unwrap(),
+            batch.schema_ref(),
+        )
+        .unwrap();
+        BYTES.set(Some(0));
+        let output = program.evaluate(&batch).unwrap();
+        let bytes = BYTES.replace(None).unwrap();
+        let output = output.into_array(batch.num_rows()).unwrap();
+        let fields = output.as_any().downcast_ref::<StructArray>().unwrap();
+        for field in fields.columns() {
+            let field = field.as_any().downcast_ref::<StringArray>().unwrap();
+            assert_eq!(field.len(), 4096);
+            for value in field.iter() {
+                assert_eq!(value, Some(expected.as_str()));
+            }
+        }
+        bytes
+    });
+    assert!(allocations[0] <= allocations[1] + 32_768, "{allocations:?}");
+}
+
+#[test]
+fn bindings_retain_eager_errors_and_lexical_scope() {
+    let batch =
+        RecordBatch::try_from_iter([("x", Arc::new(Int32Array::from(vec![4, 9])) as ArrayRef)])
+            .unwrap();
+    let eager: Expr = serde_json::from_value(json!({"op":"switch",
+        "value":{"op":"tuple","elements":[{"op":"column","name":"x"},
+            {"op":"die","dtype":"int32","message":{"op":"literal","dtype":"str","value":"unused eager argument"}}]},
+        "parameter":"v","cases":[],"missing":null,
+        "default":{"op":"get_field","value":{"op":"lambda_variable","name":"v"},"name":"__vail_tuple_0"}})).unwrap();
+    let error = lower(&eager, batch.schema_ref())
+        .unwrap()
+        .evaluate(&batch)
+        .unwrap_err();
+    assert!(
+        error.to_string().contains("unused eager argument"),
+        "{error}"
+    );
+    let nested = |inner: &str| -> Expr {
+        serde_json::from_value(json!({"op":"switch","value":{"op":"column","name":"x"},
+        "parameter":"v","cases":[],"missing":null,
+        "default":{"op":"struct","fields":[["outer",{"op":"lambda_variable","name":"v"}],
+            ["inner",{"op":"switch","value":{"op":"literal","dtype":"int32","value":42},
+                "parameter":inner,"cases":[],"missing":null,"default":{"op":"lambda_variable","name":inner}}]]}})).unwrap()
+    };
+    assert!(
+        lower(&nested("v"), batch.schema_ref())
+            .unwrap_err()
+            .to_string()
+            .contains("duplicate switch parameter identity")
+    );
+    let output = lower(&nested("inner"), batch.schema_ref())
+        .unwrap()
+        .evaluate(&batch)
+        .unwrap()
+        .into_array(2)
+        .unwrap();
+    let output = output.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(output.column(0), batch.column(0));
+    assert_eq!(output.column(1).as_ref(), &Int32Array::from(vec![42, 42]));
 }

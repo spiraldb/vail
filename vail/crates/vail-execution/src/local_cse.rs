@@ -13,9 +13,17 @@ fn address(node: &Expr) -> usize {
     node as *const Expr as usize
 }
 
+fn allocates_text(node: &Expr) -> bool {
+    matches!(node, Expr::StringFunction { function, args }
+        if args.len() == 1 && matches!(function.as_str(), "lower" | "upper"))
+}
+
 // Only traverse eagerly evaluated expressions. In particular a conditional,
 // switch, or nested lambda is opaque to this binding scope.
 fn strict(node: &Expr) -> bool {
+    if allocates_text(node) {
+        return true;
+    }
     match node {
         Expr::Struct { .. }
         | Expr::Tuple { .. }
@@ -47,6 +55,9 @@ fn nonzero_small_integer(node: &Expr) -> bool {
 // Positive integer literal divisors cannot introduce divide-by-zero or the
 // signed MIN/-1 overflow. Their operands must themselves be safe to move.
 fn safe_node(node: &Expr) -> bool {
+    if allocates_text(node) {
+        return true;
+    }
     match node {
         Expr::Literal { .. }
         | Expr::RuntimeLiteral { .. }
@@ -135,14 +146,15 @@ pub(crate) fn share_struct(
         .filter(|id| {
             counts[id] > 1
                 && safe[id]
-                && matches!(
-                    nodes[id],
-                    Expr::Binary { .. }
-                        | Expr::IntegerBinary { .. }
-                        | Expr::Unary { .. }
-                        | Expr::ArrayLength { .. }
-                        | Expr::IsMissing { .. }
-                )
+                && (allocates_text(nodes[id])
+                    || matches!(
+                        nodes[id],
+                        Expr::Binary { .. }
+                            | Expr::IntegerBinary { .. }
+                            | Expr::Unary { .. }
+                            | Expr::ArrayLength { .. }
+                            | Expr::IsMissing { .. }
+                    ))
         })
         .collect::<Vec<_>>();
     if candidates.is_empty() {
@@ -209,4 +221,114 @@ pub(crate) fn share_struct(
         };
     }
     Ok(Some(result))
+}
+
+/// Reading an already computed array is cheaper than assembling another bound
+/// frame. Inline only strict, pure bodies and retain every eager argument's
+/// demand; scalar values and computed intermediates keep their existing scope.
+pub(crate) fn inline_read_binding(
+    value: &Expr,
+    parameter: &str,
+    body: &Expr,
+    mut borrowed_array: impl FnMut(&Expr) -> bool,
+) -> Result<Option<Expr>, ExprError> {
+    let arguments: Vec<&Expr> = match value {
+        Expr::Tuple { elements } => elements.iter().collect(),
+        value => vec![value],
+    };
+    if !arguments.iter().all(|value| borrowed_array(value)) {
+        return Ok(None);
+    }
+    let mut eager = true;
+    body.visit_unique(&mut |node| {
+        eager &= strict(node)
+            || matches!(
+                node,
+                Expr::Literal { .. }
+                    | Expr::RuntimeLiteral { .. }
+                    | Expr::Column { .. }
+                    | Expr::Global { .. }
+                    | Expr::ExternalGlobal { .. }
+                    | Expr::LambdaVariable { .. }
+            );
+    });
+    if !eager || !body.is_pure() {
+        return Ok(None);
+    }
+    let tuple = matches!(value, Expr::Tuple { .. });
+    let mut used = HashSet::new();
+    let mut unsupported = false;
+    fn rewrite(
+        node: &Expr,
+        shared: bool,
+        parameter: &str,
+        arguments: &[&Expr],
+        tuple: bool,
+        used: &mut HashSet<usize>,
+        unsupported: &mut bool,
+        memo: &mut HashMap<usize, Arc<Expr>>,
+    ) -> Result<crate::expressions::RebuiltExpr, ExprError> {
+        use crate::expressions::RebuiltExpr;
+        let key = address(node);
+        if shared {
+            if let Some(value) = memo.get(&key) {
+                return Ok(RebuiltExpr::Shared(value.clone()));
+            }
+        }
+        let selected = if tuple {
+            match node {
+                Expr::GetField { value, name } if matches!(value.as_ref(), Expr::LambdaVariable { name, .. } if name == parameter) => {
+                    name.strip_prefix("__vail_tuple_")
+                        .and_then(|s| s.parse::<usize>().ok())
+                }
+                Expr::LambdaVariable { name, .. } if name == parameter => {
+                    *unsupported = true;
+                    None
+                }
+                _ => None,
+            }
+        } else {
+            matches!(node, Expr::LambdaVariable { name, .. } if name == parameter).then_some(0)
+        };
+        let value = if let Some(index) = selected {
+            let Some(argument) = arguments.get(index) else {
+                *unsupported = true;
+                return Ok(RebuiltExpr::Owned(node.clone()));
+            };
+            used.insert(index);
+            (*argument).clone()
+        } else {
+            node.try_map_children_rebuilt(|child, shared| {
+                rewrite(
+                    child,
+                    shared,
+                    parameter,
+                    arguments,
+                    tuple,
+                    used,
+                    unsupported,
+                    memo,
+                )
+            })?
+        };
+        if shared {
+            let value = Arc::new(value);
+            memo.insert(key, value.clone());
+            Ok(RebuiltExpr::Shared(value))
+        } else {
+            Ok(RebuiltExpr::Owned(value))
+        }
+    }
+    let result = rewrite(
+        body,
+        false,
+        parameter,
+        &arguments,
+        tuple,
+        &mut used,
+        &mut unsupported,
+        &mut HashMap::new(),
+    )?
+    .into_owned();
+    Ok((!unsupported && used.len() == arguments.len()).then_some(result))
 }
