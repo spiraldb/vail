@@ -1,0 +1,15 @@
+# Direct DataFusion map composition experiment
+
+Status: development prototype, PERFORMANCE HOLD; not enabled on main.
+
+This replaces the earlier native-IR roundtrip with direct, typed DataFusion map composition after relational projection optimization. Only a closed, total, context-independent scalar subset participates. Substitution moves a single-use producer into its consumer; only trivial identity/numeric-Boolean literals may be duplicated. Exact registered map implementations, source element Fields, parameter use edges and complete output Fields are checked. Captures, effects, shared aliases, filters and unsupported bodies retain their boundaries. Existing compacting flatmap/fold admission is unchanged; the rejected map/filter-only sink remains excluded.
+
+The96-process public projection experiment retained complete independent Arrow value/metadata oracles, source/executable pins and positive worker cleanup. It measured cold preparation, plus ten warmed reconstructions of the logical AND physical plan per process, then repeated evaluation. Source IR/fixture reuse is untimed; prepared plans are rebuilt. All old cold adverse results remain in the earlier report.
+
+Warmed preparation remains materially adverse: approximately +52–55% for arithmetic maps,+132–135% for filter-map,+23–31% for the single-map control. Arithmetic repeated evaluation improves only1–4%; tiny filter-map is19–26% slower, large filter-map roughly flat. Identity maps improve roughly2.6x on tiny inputs and10.7% on the large input. These mixed results do not justify default admission. CPU was not measured; these are generated controls, not Hail workloads.
+
+An example-only post-cohort diagnostic confirms the arithmetic pipeline becomes ONE physical array_transform with body `(x+1)*3`. It does not merge the separate scalar Arrow arithmetic kernels or their allocations. Its standalone timing is diagnostic only and is not part of the balanced cohort. This motivates a separately reviewed ownership-aware primitive-buffer reuse experiment; it is not a successful full-fusion claim.
+
+The focused133 Rust tests pass after tightening unsupported-type fallback, failed-spine traversal, full source element Field checks and missing-producer value handling. The initial missing-producer check compared different public native/logical item-nullability contracts: the initial failure is retained, and subsequent accepted-main `945de6999` reproduction confirms this difference predates the prototype (see the accepted contract receipts in the numeric-reuse evidence). The current new case checks complete expected Fields and values on both ordinary and composed logical paths; no native metadata fix is bundled. More shared-projection/deep-wide controls and real-workload gates remain before any admission.
+
+Evidence: `df-map-evidence.tar.gz`, SHA256`57cc42a66abd3e36c8b56ca195abbf365b903f3cc6e0e7c95fcd86417e353dc8`, 305 payloads, 159111 compressed bytes. Exact member lengths/hashes are in`df-map-evidence.json`.

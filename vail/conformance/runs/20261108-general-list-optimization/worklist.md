@@ -33,9 +33,9 @@ The accepted map-index rule also avoids a binding: a proof of exactly one strict
 
 ## Held designs and why
 
-The native-IR/DataFusion roundtrip prototype (`7d27899e4`) passes its focused correctness gates, but warmed preparation costs 30–74% more. Applying the direct sink indiscriminately makes the measured large filter-map 3.97× slower and identity map 39.77× slower. It is not enabled.
+The [native-IR/DataFusion roundtrip prototype](logical-composition.md) (`7d27899e4`) passes its focused correctness gates, but cold preparation costs 30–74% more. Applying the direct sink indiscriminately makes the measured large filter-map 3.97× slower and identity map 39.77× slower. It is not enabled.
 
-The direct typed DataFusion prototype (`4cb0bbd6a`) avoids that roundtrip and verifies a single physical transform for the composed map chain. It passes 133 Rust tests. Its 96-worker synthetic cohort still shows warmed preparation +23–135% and tiny filter-map evaluation +19–26%. One physical transform alone does not prove low allocation or better total throughput; its arithmetic still creates temporary arrays. It is not enabled.
+The [direct typed DataFusion prototype](df-map-composition.md) (`4cb0bbd6a`) avoids that roundtrip and verifies a single physical transform for the composed map chain. It passes 133 Rust tests. Its 96-worker synthetic cohort still shows warmed preparation +23–135% and tiny filter-map evaluation +19–26%. One physical transform alone does not prove low allocation or better total throughput; its arithmetic still creates temporary arrays. It is not enabled.
 
 Safe numeric temporary reuse (`58f009495`) reduces selected arithmetic allocation and repeated kernel time, but preparation/one-shot costs remain and actual filter/unfilter CPU rises 1.86%/.99%. It is held off main. See [numeric reuse](numeric-temporary-reuse.md).
 
