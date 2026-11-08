@@ -439,6 +439,37 @@ fn promotion_wrapping_and_shared_parameter_uses_preserve_values() {
         &Int32Array::from(vec![Some(-2), Some(-2)]),
     );
 }
+
+#[test]
+fn list_backed_sets_keep_their_logical_map_conversion() {
+    let dtype = Type::Set {
+        set: Box::new(Type::from_arrow(&DataType::Int32).unwrap()),
+    }
+    .to_arrow()
+    .unwrap();
+    let DataType::List(field) = dtype else {
+        panic!("set storage is a list")
+    };
+    let values: ArrayRef = Arc::new(ListArray::new(
+        field,
+        OffsetBuffer::from_lengths([3]),
+        Arc::new(Int32Array::from(vec![1, 2, 3])),
+        None,
+    ));
+    let batch = RecordBatch::try_from_iter([("xs", values)]).unwrap();
+    let body = binary(
+        Binary::Add,
+        variable("x"),
+        Expr::RuntimeLiteral {
+            value: ScalarValue::Int32(Some(1)),
+        },
+    );
+    check(
+        &indexed(Expr::Column { name: "xs".into() }, body, 0),
+        &batch,
+        &Int32Array::from(vec![Some(2)]),
+    );
+}
 #[test]
 fn indexing_does_not_allocate_a_full_unused_mapped_payload() {
     fn allocated(n: usize, mapped: bool) -> usize {

@@ -7489,6 +7489,8 @@ fn lower_uncached(
                 && crate::map_index::index(index)
                 && matches!(dtype,DataType::Int32|DataType::Int64|DataType::Float32|DataType::Float64|DataType::Boolean)
                 && let Some(rewritten)=crate::map_index::rewrite(input.clone(),parameter,body,index.clone(),Type::from_arrow(&dtype)?)
+                && let Type::Array {array:logical_item}=input.dtype_scoped(schema,globals.schema(),scope,memo,context)?
+                && crate::map_index::primitive(&logical_item)
                 && let Some(DataType::List(field))=borrowed_read_layout(input,schema,scope,memo,context)
                 && crate::map_index::primitive(&Type::from_arrow(field.data_type())?)
             {
