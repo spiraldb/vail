@@ -11,7 +11,13 @@ crate-type = ["cdylib"]
 test = false
 doctest = false
 
+[features]
+allocator-mimalloc = ["dep:mimalloc"]
+allocator-jemalloc = ["dep:tikv-jemallocator"]
+
 [dependencies]
+mimalloc = { version = "=0.1.52", optional = true }
+tikv-jemallocator = { version = "=0.7.0", optional = true }
 futures.workspace = true
 arrow-array = { workspace = true, features = ["ffi"] }
 arrow-select.workspace = true
