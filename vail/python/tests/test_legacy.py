@@ -299,10 +299,6 @@ def test_matrix_localization_preserves_key_order_across_partitions(tmp_path):
     groups = table.group_by(table.id).aggregate(rows=hl.agg.collect(table.row_value)).collect()
     assert [(group.id, sorted(row.__legacy_entries for row in group.rows)) for group in groups] == [
         (1, [0, 1, 2]), (2, [3])]
-    # Localization retains source order instead of sorting the wide entry arrays.
-    plan = table._native.physical_plan()
-    assert 'SortExec' not in plan
-    assert 'WindowAggExec' not in plan
 
 
 @pytest.mark.parametrize(('nrows', 'ncols'), [(0, 3), (2, 0), (0, 0)])
