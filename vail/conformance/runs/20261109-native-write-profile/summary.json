@@ -1,0 +1,159 @@
+{
+  "threads": 33,
+  "rounds_per_thread": 868,
+  "thread_sample_total": 28644,
+  "leaf_sample_total": 28644,
+  "parked_leaf_functions_excluded": [
+    "__psynch_cvwait",
+    "swtch_pri",
+    "kevent",
+    "__psynch_mutexwait",
+    "__ulock_wait",
+    "__semwait_signal",
+    "semaphore_wait_trap",
+    "mach_msg2_trap",
+    "__workq_kernreturn",
+    "__ulock_wait2",
+    "mach_wait_until"
+  ],
+  "nonparked_leaf_samples": 6848,
+  "top_nonparked_leaves": [
+    {
+      "function": "<vortex_compressor::stats::integer::IntegerStats>::generate_opts_fallible",
+      "samples": 1252
+    },
+    {
+      "function": "vortex_array::aggregate_fn::fns::min_max::primitive::accumulate_primitive",
+      "samples": 495
+    },
+    {
+      "function": "vortex_fastlanes::bitpacking::array::bitpack_compress::bit_width_histogram",
+      "samples": 486
+    },
+    {
+      "function": "__fcntl",
+      "samples": 387
+    },
+    {
+      "function": "<arrow_buffer::util::bit_iterator::BitSliceIterator as core::iter::traits::iterator::Iterator>::next",
+      "samples": 256
+    },
+    {
+      "function": "<deduplicated_symbol>",
+      "samples": 229
+    },
+    {
+      "function": "_platform_memmove",
+      "samples": 217
+    },
+    {
+      "function": "vortex_fastlanes::bitpacking::array::bitpack_compress::gather_patches_impl::<i32, u32>",
+      "samples": 181
+    },
+    {
+      "function": "vortex_array::aggregate_fn::fns::sum::primitive::accumulate_primitive",
+      "samples": 162
+    },
+    {
+      "function": "madvise",
+      "samples": 121
+    }
+  ],
+  "limits": "Observed stack samples, including system calls, not measured CPU-time fractions. Build overlaps sample. Categories may overlap and cannot be added. Nonparked means known park syscall names excluded, not proof every remaining sample executed on CPU.",
+  "category_stack_attribution": {
+    "integer_stats": {
+      "all_leaf_samples_below": 1710,
+      "nonparked_leaf_samples_below": 1710
+    },
+    "min_max": {
+      "all_leaf_samples_below": 1009,
+      "nonparked_leaf_samples_below": 1009
+    },
+    "bitpacking": {
+      "all_leaf_samples_below": 873,
+      "nonparked_leaf_samples_below": 873
+    },
+    "sequence_id_bookkeeping": {
+      "all_leaf_samples_below": 3992,
+      "nonparked_leaf_samples_below": 147
+    },
+    "normalization": {
+      "all_leaf_samples_below": 86,
+      "nonparked_leaf_samples_below": 86
+    },
+    "evolve_nested": {
+      "all_leaf_samples_below": 69,
+      "nonparked_leaf_samples_below": 69
+    },
+    "field_metadata": {
+      "all_leaf_samples_below": 10,
+      "nonparked_leaf_samples_below": 10
+    },
+    "key_certification": {
+      "all_leaf_samples_below": 1,
+      "nonparked_leaf_samples_below": 1
+    }
+  },
+  "source": "1abc1ed86b60b83ac6da012badf6b8e36747d6ef",
+  "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+  "allocator": "mimalloc",
+  "fixture": {
+    "path": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "rows": 1000,
+    "columns": 2535,
+    "partitions": 4
+  },
+  "profile": {
+    "requested_seconds": 3,
+    "interval_ms": 1,
+    "completed_write_actions_in_worker": 26,
+    "worker_sample_exit_status": [
+      0,
+      0
+    ],
+    "build_overlapped": true,
+    "benchmark_comparison": false,
+    "outputs_removed": true,
+    "no_host_setting_changes": true,
+    "no_production_change": true
+  },
+  "initial_attempt": {
+    "sample_exit_status": 255,
+    "worker_exit_status": 0,
+    "reason": "Sandbox prevented macOS sample from attaching; no attribution used. One fresh same-user unsandboxed attempt succeeded; no sudo or host setting changes."
+  },
+  "raw_evidence": {
+    "/private/tmp/vail-native-write-profile-20261109-evidence/profile_driver.py": {
+      "sha256": "f00615ad44d72e2ff02385b72ea53d6875414cb863e0740caa5ed06005121b51",
+      "bytes": 2072
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/profile_worker.py": {
+      "sha256": "c4f588c30cd168bbafb4c3520e3c3858bd39b7f838967eb7b1ec0e79f7d4e2e7",
+      "bytes": 1915
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/sample.stderr": {
+      "sha256": "974cc4eb4840bf67f4033d3e12c00986243ee19ac42ddb5d73257b9b7e327a00",
+      "bytes": 137
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/attempt2/sample.txt": {
+      "sha256": "a355c3b68bf77a18957ac787a90a455456e9ad93a914b89424c28bdf648356db",
+      "bytes": 16985927
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/attempt2/sample-demangled.txt": {
+      "sha256": "d1092e56a3e20b61f31d4c77a06c64c6860f87e1b9d3ca02487494a9f1c75ad2",
+      "bytes": 16519667
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/attempt2/profile-result.json": {
+      "sha256": "3fe9b59f33d5de6a77b66061ae81042831fb2bb8c61e78a42a5eb7aa3e3a7499",
+      "bytes": 3042
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/attempt2/driver-result.json": {
+      "sha256": "2e322c746a3e19c5bae8a7a4e14384535304851d0c7d96cb75523a09b33ca6b3",
+      "bytes": 215
+    },
+    "/private/tmp/vail-native-write-profile-20261109-evidence/attempt2/sample.stderr": {
+      "sha256": "da0158178d77470c998d7450e250f2eb7f3c3c26fa0fd40cfb0705bf6509d738",
+      "bytes": 250
+    }
+  }
+}
