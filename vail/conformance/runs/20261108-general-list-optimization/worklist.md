@@ -2,6 +2,8 @@
 
 This records accepted runtime changes, measured rejected alternatives and the parts still open. It is not a claim of universal list fusion, completion of the older 95-item audit, or a new full Hail-versus-Vail benchmark run.
 
+A subsequent [matched Hail/Vail laptop comparison](../20261109-hail-vail-four/README.md) measures these four targeted workloads on the 1,000-row subset, plus a separate adverse direct-PL extraction experiment. It establishes current-build comparisons, not causal speedups from any one worklist change.
+
 ## Accepted changes
 
 | Change | Purpose | Measured scope |
