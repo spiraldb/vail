@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "--offline",
+    "-p",
+    "vail-table",
+    "--test",
+    "entry_consumer_projection",
+    "--",
+    "--test-threads=1",
+    "--nocapture",
+    "--exact",
+    "unique_entry_spans_do_not_copy_growing_output_payloads"
+  ],
+  "exit_code": 0
+}

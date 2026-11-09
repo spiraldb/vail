@@ -1,0 +1,20 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "--offline",
+    "-p",
+    "vail-table",
+    "--test",
+    "entry_consumer_projection",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "exit_code": 0
+}

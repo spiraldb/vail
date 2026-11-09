@@ -1,0 +1,1298 @@
+[
+  {
+    "case": "grouped",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.17784116696566343,
+        "cpu_s": 0.30903499999999995,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17064904095605016,
+        "cpu_s": 0.2991170000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.1678386660059914,
+        "cpu_s": 0.29663400000000006,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17429120803717524,
+        "cpu_s": 0.30057200000000006,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.168490375042893,
+        "cpu_s": 0.3000710000000002,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.17064904095605016,
+    "cpu_median": 0.3000710000000002,
+    "process_peak_rss_bytes": 1314095104,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "grouped",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.08956858399324119,
+        "cpu_s": 0.265637,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08896208298392594,
+        "cpu_s": 0.2643890000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.0890209999633953,
+        "cpu_s": 0.2628560000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08764779195189476,
+        "cpu_s": 0.2610950000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08769933297298849,
+        "cpu_s": 0.261636,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.08896208298392594,
+    "cpu_median": 0.2628560000000002,
+    "process_peak_rss_bytes": 1007239168,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "grouped",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.09127370896749198,
+        "cpu_s": 0.26549599999999995,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.09107733296696097,
+        "cpu_s": 0.265532,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.0914315830450505,
+        "cpu_s": 0.26555700000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.09066258301027119,
+        "cpu_s": 0.2642659999999999,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.09105899999849498,
+        "cpu_s": 0.2641549999999999,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.09107733296696097,
+    "cpu_median": 0.26549599999999995,
+    "process_peak_rss_bytes": 1004830720,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "grouped",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.17376508296001703,
+        "cpu_s": 0.30335499999999993,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.16618800000287592,
+        "cpu_s": 0.2936859999999999,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17150883306749165,
+        "cpu_s": 0.297914,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.1739101669518277,
+        "cpu_s": 0.301223,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.174004084081389,
+        "cpu_s": 0.3078500000000002,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.17376508296001703,
+    "cpu_median": 0.301223,
+    "process_peak_rss_bytes": 1294647296,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "grouped",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.17275329097174108,
+        "cpu_s": 0.301165,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17102645803242922,
+        "cpu_s": 0.299558,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17131487501319498,
+        "cpu_s": 0.300532,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17337812494952232,
+        "cpu_s": 0.301094,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.17199712502770126,
+        "cpu_s": 0.3055650000000001,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.17199712502770126,
+    "cpu_median": 0.301094,
+    "process_peak_rss_bytes": 1337278464,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "grouped",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.09096637496259063,
+        "cpu_s": 0.269065,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08984387503005564,
+        "cpu_s": 0.265409,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08839479193557054,
+        "cpu_s": 0.2620530000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08753770811017603,
+        "cpu_s": 0.26236400000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.08944354206323624,
+        "cpu_s": 0.262232,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.08944354206323624,
+    "cpu_median": 0.26236400000000004,
+    "process_peak_rss_bytes": 964362240,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "read",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.043773791985586286,
+        "cpu_s": 0.14411299999999994,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.043794541037641466,
+        "cpu_s": 0.14434999999999998,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04340879200026393,
+        "cpu_s": 0.14267699999999994,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04348883300554007,
+        "cpu_s": 0.14263400000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04340795800089836,
+        "cpu_s": 0.14198100000000002,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.04348883300554007,
+    "cpu_median": 0.14267699999999994,
+    "process_peak_rss_bytes": 681607168,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "read",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.04685554199386388,
+        "cpu_s": 0.150688,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.045601499965414405,
+        "cpu_s": 0.146243,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.0452537500532344,
+        "cpu_s": 0.14608500000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04486137500498444,
+        "cpu_s": 0.14479399999999998,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04509837494697422,
+        "cpu_s": 0.14476,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.0452537500532344,
+    "cpu_median": 0.14608500000000002,
+    "process_peak_rss_bytes": 643612672,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "read",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.045641542063094676,
+        "cpu_s": 0.14450399999999997,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04528187506366521,
+        "cpu_s": 0.14400500000000005,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04409670794848353,
+        "cpu_s": 0.142289,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04436712502501905,
+        "cpu_s": 0.142984,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.044932540971785784,
+        "cpu_s": 0.14230199999999993,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.044932540971785784,
+    "cpu_median": 0.142984,
+    "process_peak_rss_bytes": 642121728,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "read",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.044206291902810335,
+        "cpu_s": 0.14523300000000006,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.043145917006768286,
+        "cpu_s": 0.14270100000000008,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.043769750045612454,
+        "cpu_s": 0.14191900000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.043341291951946914,
+        "cpu_s": 0.14302800000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.043190583935938776,
+        "cpu_s": 0.14214000000000004,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.043341291951946914,
+    "cpu_median": 0.14270100000000008,
+    "process_peak_rss_bytes": 647086080,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "read",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.044302791939117014,
+        "cpu_s": 0.14613300000000007,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04398341698106378,
+        "cpu_s": 0.144957,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04399825003929436,
+        "cpu_s": 0.14333399999999996,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.0429793749935925,
+        "cpu_s": 0.141691,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.0443544170120731,
+        "cpu_s": 0.14541800000000005,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.04399825003929436,
+    "cpu_median": 0.144957,
+    "process_peak_rss_bytes": 642154496,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "read",
+    "storage": "legacy",
+    "fixture": "/private/tmp/vail-hail-comparison-59/first-1000.hail.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.04420233296696097,
+        "cpu_s": 0.141756,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04368883394636214,
+        "cpu_s": 0.14200100000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.045222457963973284,
+        "cpu_s": 0.14299799999999996,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04415591701399535,
+        "cpu_s": 0.142247,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.044332209043204784,
+        "cpu_s": 0.14270000000000016,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.04420233296696097,
+    "cpu_median": 0.142247,
+    "process_peak_rss_bytes": 659259392,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "grouped",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.03876441705506295,
+        "cpu_s": 0.12874600000000003,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.03873137501068413,
+        "cpu_s": 0.13199099999999997,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.03804312495049089,
+        "cpu_s": 0.12909799999999994,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04040599998552352,
+        "cpu_s": 0.12739,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.037613000022247434,
+        "cpu_s": 0.12852300000000005,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.03873137501068413,
+    "cpu_median": 0.12874600000000003,
+    "process_peak_rss_bytes": 931971072,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "grouped",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.043730542063713074,
+        "cpu_s": 0.134191,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04045929096173495,
+        "cpu_s": 0.133888,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04093562508933246,
+        "cpu_s": 0.12866499999999992,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.03967020905110985,
+        "cpu_s": 0.1295860000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.039036709000356495,
+        "cpu_s": 0.12767499999999987,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.04045929096173495,
+    "cpu_median": 0.1295860000000001,
+    "process_peak_rss_bytes": 941342720,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "grouped",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.04335962503682822,
+        "cpu_s": 0.12829599999999997,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04040545807220042,
+        "cpu_s": 0.12796999999999997,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.03724458394572139,
+        "cpu_s": 0.1291230000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.03770216600969434,
+        "cpu_s": 0.1284550000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.038049416965804994,
+        "cpu_s": 0.125745,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.038049416965804994,
+    "cpu_median": 0.12829599999999997,
+    "process_peak_rss_bytes": 866598912,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "grouped",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.039723083027638495,
+        "cpu_s": 0.13760299999999992,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04249970801174641,
+        "cpu_s": 0.128857,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.042964625055901706,
+        "cpu_s": 0.13199300000000003,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04408812499605119,
+        "cpu_s": 0.132556,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.03989124996587634,
+        "cpu_s": 0.13682099999999986,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.04249970801174641,
+    "cpu_median": 0.132556,
+    "process_peak_rss_bytes": 908165120,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "grouped",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.040886917035095394,
+        "cpu_s": 0.13099900000000003,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04012141702696681,
+        "cpu_s": 0.132181,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.040260041947476566,
+        "cpu_s": 0.13418599999999992,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.038826083997264504,
+        "cpu_s": 0.13407100000000005,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.042056875070557,
+        "cpu_s": 0.12882799999999994,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.040260041947476566,
+    "cpu_median": 0.132181,
+    "process_peak_rss_bytes": 894107648,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "grouped",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.03983650007285178,
+        "cpu_s": 0.13246399999999997,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04123616707511246,
+        "cpu_s": 0.13457300000000005,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04038991709239781,
+        "cpu_s": 0.13408299999999995,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.039494333090260625,
+        "cpu_s": 0.13429400000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.04114600003231317,
+        "cpu_s": 0.133235,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.04038991709239781,
+    "cpu_median": 0.13408299999999995,
+    "process_peak_rss_bytes": 924827648,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "read",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.013434041058644652,
+        "cpu_s": 0.065383,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014680374995805323,
+        "cpu_s": 0.06412599999999996,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013259832980111241,
+        "cpu_s": 0.061886,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013575041899457574,
+        "cpu_s": 0.064077,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.01288687507621944,
+        "cpu_s": 0.06311699999999998,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.013434041058644652,
+    "cpu_median": 0.064077,
+    "process_peak_rss_bytes": 675430400,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "read",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.015105208032764494,
+        "cpu_s": 0.06851200000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014420625055208802,
+        "cpu_s": 0.06842400000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014070249977521598,
+        "cpu_s": 0.06584900000000005,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013374458998441696,
+        "cpu_s": 0.061545000000000016,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014285959070548415,
+        "cpu_s": 0.06986399999999998,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.014285959070548415,
+    "cpu_median": 0.06842400000000004,
+    "process_peak_rss_bytes": 730873856,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "read",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.015522125060670078,
+        "cpu_s": 0.070718,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014156999997794628,
+        "cpu_s": 0.066834,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013897750061005354,
+        "cpu_s": 0.06362600000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014351417077705264,
+        "cpu_s": 0.06478900000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.01247574994340539,
+        "cpu_s": 0.06181800000000004,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.014156999997794628,
+    "cpu_median": 0.06478900000000004,
+    "process_peak_rss_bytes": 738869248,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  },
+  {
+    "case": "read",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.014623583061620593,
+        "cpu_s": 0.066518,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014089167001657188,
+        "cpu_s": 0.06489899999999998,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013823542045429349,
+        "cpu_s": 0.06539400000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013688375009223819,
+        "cpu_s": 0.06733600000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.0134122499730438,
+        "cpu_s": 0.064365,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.013823542045429349,
+    "cpu_median": 0.06539400000000001,
+    "process_peak_rss_bytes": 744685568,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "read",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e",
+    "legacy_frontend_sha256": "0eed237960e3b4dfc5fbbe108468face0f45afbaa08ec7851deb6c34810ccd38",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.01338404102716595,
+        "cpu_s": 0.06644400000000003,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013983250013552606,
+        "cpu_s": 0.064529,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013619499979540706,
+        "cpu_s": 0.06348900000000002,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013739666901528835,
+        "cpu_s": 0.06195500000000004,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.013142792042344809,
+        "cpu_s": 0.06310100000000002,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.013619499979540706,
+    "cpu_median": 0.06348900000000002,
+    "process_peak_rss_bytes": 721125376,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "baseline"
+  },
+  {
+    "case": "read",
+    "storage": "native",
+    "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+    "fixture_scope": "existing public profile25 subset,1000rows x2535samples,4partitions; NOT full250000x1000gnomad fixture",
+    "package": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "native_sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e",
+    "legacy_frontend_sha256": "5c39748b2a54e3b4068783e312b39663421bd04f0c65091016325e18f19e2cf7",
+    "allocator": "mimalloc",
+    "environment": {
+      "RAYON_NUM_THREADS": "4",
+      "VAIL_EXECUTION_CONCURRENCY": "4",
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "PYTHONMALLOC": "default",
+      "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+    },
+    "samples": [
+      {
+        "wall_s": 0.013740250025875866,
+        "cpu_s": 0.06537000000000001,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014131666044704616,
+        "cpu_s": 0.06459999999999999,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.012913709040731192,
+        "cpu_s": 0.06275000000000003,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.014208624954335392,
+        "cpu_s": 0.062672,
+        "output_count": 1000
+      },
+      {
+        "wall_s": 0.01329841697588563,
+        "cpu_s": 0.062068999999999985,
+        "output_count": 1000
+      }
+    ],
+    "wall_median": 0.013740250025875866,
+    "cpu_median": 0.06275000000000003,
+    "process_peak_rss_bytes": 751337472,
+    "timing_scope": "read/query construction/action; import excluded;2warm5timed",
+    "output_validation": "counterfactual and compatibility tests separate; timed output counts retained",
+    "version": "candidate"
+  }
+]

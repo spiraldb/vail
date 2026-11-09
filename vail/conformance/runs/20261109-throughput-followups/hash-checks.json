@@ -1,0 +1,32 @@
+{
+  "input_root": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+  "input_files": {
+    "_vail_matrix.json": "dfa782aec005b405bd783bc03e5c001e00d44b315090b054fe64695a47ccffad",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/_vail_table.json": "0e231064a8bf13587064d7e4245bc69427dc280f9a4d3edd24625ceb9b670f98",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/data/3194497055237478575-00000000000000000003-00000000000000000000-01a1c115-1e18-72ec-8149-28f44b11f0fe.vortex": "ba4dea304176f1882a2ee4adbc2d40fe936b619252f4653a3845ab06172fff26",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/data/3194497055237478575-00000000000000000000-00000000000000000000-01a1c115-1e15-702d-a261-92f48d6dc245.vortex": "b46e3b0c106ce1f28e42b4c6cb43448b673d8995b624465a5591a5bf48f33b2f",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/data/3194497055237478575-00000000000000000002-00000000000000000000-01a1c115-1e1c-7194-9b4e-0e8b4d001f6b.vortex": "412a706dccdd5b5615a7289755de35a9947957503f1ca0e47eb141a3bb22d870",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/data/3194497055237478575-00000000000000000001-00000000000000000000-01a1c115-1e24-74b8-bc4c-4ab5ab2d9024.vortex": "de95010835496e20c27b6c3abe16fd1ef46b370311530ff20d6d648310d879c6",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/vail-3194497055237478575-01a1c115-1e61-744f-a866-6740f3b749d7.json": "291db33fe63ee2307de3bd4dbe4c9a465bc57633e3e2e83dba7a7101f2e2cf66",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/snap-3194497055237478575-0-01a1c115-1e65-7167-9e88-ad467821508b.avro": "eb71a4b65aab40b8558b495006a02be364f6f2f022d86d5e0d6280e71cbe225f",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/globals.arrow": "34948cf694bede3a53c549581a3a5b9a02ff5e1d4036fa5da48e00632d65c08c",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/01a1c115-1e65-7167-9e88-ad467821508b-m0.avro": "f7a22898424b8221c8bb6655e8f682ec3c0f13d101d40e4617eb7ca16eb18d3f",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/vail-index-3194497055237478575-01a1c115-1e5d-7118-b2e7-fa895e36cf93.json": "4f8648057e5ab5071d3e985caeb626d0e13573662e5af0c68cb997882f06b509",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/00001-87b786c3-89b2-4226-8d27-26228a690177.metadata.json": "db5ac221423cd60a7126e1e7bbb0ae6b510d664bf36b59b8549f27f4910f4878",
+    "generation-fb83fc86970c4fab985c551510b1134b/core/generations/01a1c115-1dea-731e-b3c6-65c912ef17de/metadata/00000-b48d05cf-1ec5-4afd-b086-10a6497a56d8.metadata.json": "49c5512dc1e36c9becb949620d178e984a056cd1c61698921c5f262a7023e917"
+  },
+  "natives": {
+    "baseline": {
+      "path": "/private/tmp/vail-allocators-20261109/pinned-sdk/mimalloc/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+      "sha256": "d7119f220c917bbb5fc2dc0511d89c04bdfc2947a9ad8e4e917775952112be6e"
+    },
+    "final": {
+      "path": "/private/tmp/vail-throughput-followups-20261109/fixed/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+      "sha256": "2723af5a47571de26bf525e3960aa3d27e09505b31a9d5b6e979716bf564338e"
+    },
+    "counterfactual": {
+      "path": "/private/tmp/vail-throughput-followups-20261109/without-entry-spans/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+      "sha256": "9c88772ee8d994bf63ab98bc0fe08d3a3d406e0f5a774a409a8bb30cea608162"
+    }
+  }
+}

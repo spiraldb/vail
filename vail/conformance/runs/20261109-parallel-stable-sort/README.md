@@ -34,9 +34,11 @@ all output to Arrow and checks its count/endpoints. The read control is unchange
 Three fresh processes per version/case, each with three warmups and five timed
 calls: 18 workers, 90 samples. Fixed balanced order B,C,C,B,B,C per case. Medians
 are across per-process medians; construction and actions are timed, imports
-excluded. Both versions use Rust mimalloc, four Vail execution lanes, four Rayon
-threads, BLAS threads one, Python default allocator and PyArrow mimalloc. All
-builds/tests/profiles were stopped during the exclusive timing lease. These are
+excluded. Both versions use Rust mimalloc, four Rayon threads, BLAS threads one, Python
+default allocation and PyArrow mimalloc. The existing Tokio runtime has 32
+workers; the configured VAIL_EXECUTION_CONCURRENCY=4 environment entry is ignored.
+The matrix input has four partitions and the integer input has sixteen. All
+task-owned builds/tests/profiles were stopped during the exclusive timing lease. These are
 descriptive laptop results, not a significance claim. Integer operations are
 single-digit milliseconds, so their relative overhead matters.
 
@@ -70,3 +72,5 @@ field-name collisions.
 Raw worker samples are in `records.json`; numerical summary in `summary.json`.
 `evidence-hashes.json` pins the local driver, actual plans, counterexample proof
 and raw logs at `/private/tmp/vail-parallel-sort-20261109-evidence`.
+
+Root normal-build identity receipts link the worker native paths to source `46d95c159` and native `2723af5a`. These rows record paths and allocator names, not independently verified per-worker native/frontend/input hashes. Subprocess completion is recorded; separate positive process-group absence certification is not claimed.

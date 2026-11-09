@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/private/tmp/vail-throughput-followups-20261109/fixed/env/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "--import-mode=importlib",
+    "python/tests/test_legacy.py",
+    "python/tests/test_parallel_stable_sort.py",
+    "python/tests/test_table.py",
+    "python/tests/test_table_explode.py",
+    "python/tests/test_utils_uid.py",
+    "python/tests/test_randomness.py",
+    "python/tests/test_scan.py",
+    "python/tests/test_matrix_table.py",
+    "-k",
+    "legacy or parallel_stable_sort or order_by or key_by or sort or entries_ or uid or random or scan",
+    "--deselect",
+    "python/tests/test_matrix_table.py::test_entries_orders_duplicate_multikey_runs_across_partitions"
+  ],
+  "exit_code": 0,
+  "known_baseline_exclusion": "test_entries_orders_duplicate_multikey_runs_across_partitions: ScalarSubqueryExpr evaluated before subquery executed"
+}
