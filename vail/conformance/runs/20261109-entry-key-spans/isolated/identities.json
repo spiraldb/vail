@@ -1,0 +1,23 @@
+{
+  "without_spans": {
+    "source": "dae79e5c74239122bf2b27014b5c206cc7091f5f",
+    "matrix_entries_sha256": "17e6ad3fb37c4be4fe2ce24a964fbb9e6d27ca3bf35d546519e8d9bffce08eba"
+  },
+  "final": {
+    "source": "46d95c159f356585c15f54de0f0facb47a913e90",
+    "matrix_entries_sha256": "96c30c5611f0d5fe1de372e9928969c8fbf75251d36efee7359cbb2aceea0df6"
+  },
+  "worker_sha256": "81a9b2eabd84591238c0b430834f82a0988ac84ad5171613a0d394d55ba25fa2",
+  "runner_sha256": "e53efb6bd7fbe91039364920505afafe43cf86966d7f76a7eb8e17b860ae4ed7",
+  "fixtures": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+  "runtime": {
+    "RAYON_NUM_THREADS": 4,
+    "OPENBLAS_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1,
+    "MKL_NUM_THREADS": 1,
+    "Tokio_worker_threads": 32,
+    "VAIL_EXECUTION_CONCURRENCY": "4 present in environment but ignored by runtime",
+    "allocator": "mimalloc",
+    "pyarrow_pool": "mimalloc"
+  }
+}
