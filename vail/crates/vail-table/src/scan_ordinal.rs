@@ -260,21 +260,23 @@ impl SourceOrdinalExec {
             schema.field(schema.fields().len() - 1).name(),
             schema.fields().len() - 1,
         ));
-        // Only certify the tag when the input properties prove it, including
-        // the narrowly handled CrossJoin right-side case above. The ordinal is
-        // generated here, so the resulting (tag, ordinal) order is ours.
+        // Only certify inherited constants. A sort's stream ID must remain in
+        // its local ordering: a later optimization can reconstruct the global
+        // merge from that ordering, where this ID distinguishes equal keys.
         let across_partitions = if physical_partition_ids {
-            Some(AcrossPartitions::Heterogeneous)
+            None
         } else {
             source_partition_constant(&input, partition_index)
         };
-        let partition_tag_constant_per_stream = across_partitions.is_some();
+        let partition_tag_constant_per_stream = physical_partition_ids || across_partitions.is_some();
         if let Some(across_partitions) = across_partitions {
             equivalence
                 .add_constants([datafusion_physical_expr::ConstExpr::new(
                     partition.clone(),
                     across_partitions,
                 )])?;
+        }
+        if partition_tag_constant_per_stream {
             equivalence.add_ordering(
                 LexOrdering::new(vec![
                     PhysicalSortExpr::new(partition, SortOptions::default()),
