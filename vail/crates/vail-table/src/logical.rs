@@ -855,8 +855,8 @@ fn lower_rng_uids(
     )))
 }
 
-/// Stable SQL sort for native key types. The explicit ordinal is the final
-/// key, preserving duplicate-key encounter order through optimizer rewrites.
+/// Stable SQL sort for native key types. Partition and local ordinals preserve
+/// duplicate-key encounter order without first serializing the input streams.
 fn lower_sort(
     child: &TableRef,
     keys: &[(String, bool)],
@@ -865,7 +865,12 @@ fn lower_sort(
     if keys.is_empty() {
         return lower_inner(child, context);
     }
-    let input = ordered(lower_inner(child, context)?);
+    let input = lower_inner(child, context)?;
+    let partition_name = input
+        .schema()
+        .field(input.schema().fields().len() - 1)
+        .name()
+        .clone();
     let mut ordinal_name = "__vail_sort_ordinal".to_owned();
     while input
         .schema()
@@ -873,24 +878,16 @@ fn lower_sort(
     {
         ordinal_name.push('_');
     }
-    let mut ordinal = WindowFunction::new(
-        datafusion_expr::WindowFunctionDefinition::WindowUDF(
-            datafusion_functions_window::row_number::row_number_udwf(),
-        ),
-        vec![],
-    );
-    ordinal.params.window_frame = WindowFrame::new(Some(true));
-    let numbered = LogicalPlanBuilder::from(input)
-        .window(vec![
-            Expr::WindowFunction(Box::new(ordinal)).alias(&ordinal_name),
-        ])?
-        .build()?;
+    let numbered = crate::scan_ordinal::numbered_partitions(input, &ordinal_name, &partition_name)?;
     let mut order = keys
         .iter()
         .map(|(name, descending)| {
             Expr::Column(datafusion_common::Column::new_unqualified(name)).sort(!descending, false)
         })
         .collect::<Vec<_>>();
+    order.push(
+        Expr::Column(datafusion_common::Column::new_unqualified(&partition_name)).sort(true, true),
+    );
     order.push(
         Expr::Column(datafusion_common::Column::new_unqualified(&ordinal_name)).sort(true, true),
     );
@@ -905,7 +902,7 @@ fn lower_sort(
     )));
     // Row order remains observable after projections/global binding. SQL
     // cross joins can otherwise make the optimizer discard this sort. The
-    // sort is already singleton; record its full ordering contract before
+    // result is globally sorted; record its full ordering contract before
     // projection drops the ordinal used to stabilize duplicate-key ties.
     Ok(LogicalPlanBuilder::from(ordered(sorted))
         .project(fields)?

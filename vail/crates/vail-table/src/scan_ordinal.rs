@@ -9,7 +9,8 @@ use datafusion_physical_expr::{
     AcrossPartitions, LexOrdering, PhysicalSortExpr, expressions::Column,
 };
 use datafusion_physical_plan::{
-    DisplayAs, DisplayFormatType, ExecutionPlan, PlanProperties, SendableRecordBatchStream,
+    DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
+    SendableRecordBatchStream,
     stream::RecordBatchStreamAdapter,
 };
 use futures::TryStreamExt;
@@ -41,6 +42,7 @@ pub(crate) struct SourceOrdinal {
     input: LogicalPlan,
     schema: DFSchemaRef,
     partition_name: String,
+    physical_partition_ids: bool,
 }
 impl PartialEq for SourceOrdinal {
     fn eq(&self, other: &Self) -> bool {
@@ -110,6 +112,7 @@ impl UserDefinedLogicalNodeCore for SourceOrdinal {
             input,
             schema,
             partition_name: self.partition_name.clone(),
+            physical_partition_ids: self.physical_partition_ids,
         })
     }
 }
@@ -118,14 +121,33 @@ pub(crate) fn numbered(
     name: &str,
     partition_name: &str,
 ) -> Result<LogicalPlan> {
+    numbered_input(input, name, partition_name, false)
+}
+
+/// Freeze the encounter order of independent physical streams for a stable sort.
+pub(crate) fn numbered_partitions(
+    input: LogicalPlan,
+    name: &str,
+    partition_name: &str,
+) -> Result<LogicalPlan> {
+    numbered_input(input, name, partition_name, true)
+}
+
+fn numbered_input(
+    input: LogicalPlan,
+    name: &str,
+    partition_name: &str,
+    physical_partition_ids: bool,
+) -> Result<LogicalPlan> {
     // The ordinal counter is local to each input execution stream. Callers must
     // preserve a single-stream domain for each logical partition tag (or
     // retag partitions after splitting them) so repeated rows with the same tag
     // cannot begin in independent streams. The provider's PartitionSetExec
     // stamps each source partition with its own tag; prepared union/repartition
-    // paths retag their output partitions in partitioned.rs. lower_sort and
-    // lower_uncached's grouped-aggregate branch use an ordered global result
-    // with a uniform tag. SourceOrdinalExec also forbids optimizer-inserted
+    // paths retag their output partitions in partitioned.rs. Stable sorting
+    // instead assigns each physical stream its own tag here. The grouped
+    // aggregate branch uses an ordered global result with a uniform tag.
+    // SourceOrdinalExec also forbids optimizer-inserted
     // input repartitioning and maintains input order, preserving these caller
     // domains after physical planning.
     if input
@@ -148,6 +170,7 @@ pub(crate) fn numbered(
             input,
             schema,
             partition_name: partition_name.to_owned(),
+            physical_partition_ids,
         }),
     }))
 }
@@ -173,6 +196,7 @@ impl SourceOrdinal {
                     .clone(),
             ),
             &self.partition_name,
+            self.physical_partition_ids,
         )?))
     }
 }
@@ -215,9 +239,15 @@ struct SourceOrdinalExec {
     partition_name: String,
     partition_index: usize,
     partition_tag_constant_per_stream: bool,
+    physical_partition_ids: bool,
 }
 impl SourceOrdinalExec {
-    fn new(input: PhysicalPlan, schema: Arc<Schema>, partition_name: &str) -> Result<Self> {
+    fn new(
+        input: PhysicalPlan,
+        schema: Arc<Schema>,
+        partition_name: &str,
+        physical_partition_ids: bool,
+    ) -> Result<Self> {
         let partition_index = input.schema().index_of(partition_name).map_err(|_| {
             DataFusionError::Plan("source ordinal partition field is missing".into())
         })?;
@@ -233,7 +263,11 @@ impl SourceOrdinalExec {
         // Only certify the tag when the input properties prove it, including
         // the narrowly handled CrossJoin right-side case above. The ordinal is
         // generated here, so the resulting (tag, ordinal) order is ours.
-        let across_partitions = source_partition_constant(&input, partition_index);
+        let across_partitions = if physical_partition_ids {
+            Some(AcrossPartitions::Heterogeneous)
+        } else {
+            source_partition_constant(&input, partition_index)
+        };
         let partition_tag_constant_per_stream = across_partitions.is_some();
         if let Some(across_partitions) = across_partitions {
             equivalence
@@ -251,7 +285,13 @@ impl SourceOrdinalExec {
         }
         let cache = Arc::new(PlanProperties::new(
             equivalence,
-            input.properties().output_partitioning().clone(),
+            if physical_partition_ids {
+                Partitioning::UnknownPartitioning(
+                    input.properties().output_partitioning().partition_count(),
+                )
+            } else {
+                input.properties().output_partitioning().clone()
+            },
             input.properties().emission_type,
             input.properties().boundedness,
         ));
@@ -261,6 +301,7 @@ impl SourceOrdinalExec {
             partition_name: partition_name.to_owned(),
             partition_index,
             partition_tag_constant_per_stream,
+            physical_partition_ids,
         })
     }
 }
@@ -320,7 +361,12 @@ impl ExecutionPlan for SourceOrdinalExec {
                 .expect("ordinal field")
                 .clone(),
         );
-        Ok(Arc::new(Self::new(input, schema, &self.partition_name)?))
+        Ok(Arc::new(Self::new(
+            input,
+            schema,
+            &self.partition_name,
+            self.physical_partition_ids,
+        )?))
     }
     fn execute(
         &self,
@@ -332,6 +378,7 @@ impl ExecutionPlan for SourceOrdinalExec {
         let output = schema.clone();
         let partition_index = self.partition_index;
         let partition_tag_constant_per_stream = self.partition_tag_constant_per_stream;
+        let physical_partition_ids = self.physical_partition_ids;
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema,
             async_stream::try_stream! {
@@ -373,7 +420,11 @@ impl ExecutionPlan for SourceOrdinalExec {
                         }
                         UInt64Array::from(ordinals)
                     };
-                    let mut columns=batch.columns().to_vec();columns.push(Arc::new(ordinals));
+                    let mut columns=batch.columns().to_vec();
+                    if physical_partition_ids {
+                        columns[partition_index] = Arc::new(UInt64Array::from_value(partition as u64, batch.num_rows()));
+                    }
+                    columns.push(Arc::new(ordinals));
                     yield RecordBatch::try_new(output.clone(),columns)?;
                 }
             },
