@@ -23,7 +23,7 @@ Inclusive categories overlap and must not be added. Sequence-ID bookkeeping has 
 
 `ArrayAndStats` already caches typed integer statistics once per compression-site bundle. Derived arrays correctly get new statistics, and sampled scheme estimation and full-data encoding are different inputs. No repeated computation on an identical immutable array was proven. Sequence-ID registration/locking operates per layout/chunk, not per input value. The local file close path flushes then calls `sync_all`; immutable metadata writes also sync. They must not be silently removed to improve a benchmark.
 
-The writer does reconstruct `RecordBatchTransformer` and nested schema adapters per batch, and Vail normalizes both before and inside the storage writer. Those are possible future preparation improvements, but this profile does not justify prioritizing them or claiming they explain the full-suite write slowdown. Necessary compression/statistics work is visibly larger.
+The writer does reconstruct `RecordBatchTransformer` and nested schema adapters per batch, and Vail normalizes both before and inside the storage writer. Those are possible future preparation improvements, but this profile does not justify prioritizing them or claiming they explain the full-suite write slowdown. Observed compression/statistics stacks are more frequent.
 
 **No production change is proposed from this diagnostic.** No small, evidence-backed redundant-work fix was found. Changing compression policies or broader Vortex sequence scheduling would be separate work with compression-ratio, read-throughput, and durability tradeoffs; this investigation does not alter those policies.
 
