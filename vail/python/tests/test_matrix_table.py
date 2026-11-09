@@ -1576,3 +1576,20 @@ def test_column_sum_resolves_row_lookups_in_entry_context():
     m = m.annotate_entries(x=m.row_idx + 1)
     result = m.annotate_cols(total=hl.agg.sum(m.x * target[m.row_idx].weight))
     assert [(row.col_idx, row.total) for row in result.cols().collect()] == [(3, 12), (1, 12), (3, 12)]
+
+
+def test_entries_mixes_singletons_duplicate_and_missing_keys_across_partitions():
+    keys = [0, 1, 1, 2, 3, 3, 4, None, None]
+    mt = hl.range_matrix_table(len(keys), 3, 3)
+    mt = mt.annotate_rows(source_row=mt.row_idx)
+    mt = mt.annotate_entries(value=hl.int32(mt.row_idx * 10 + mt.col_idx))
+    mt = mt.key_rows_by(k=hl.literal(keys, hl.tarray(hl.tint32))[mt.row_idx])
+    mt = mt.filter_entries((mt.source_row != 5) | (mt.col_idx != 1)).repartition(4)
+    actual = [(row.k, row.col_idx, row.source_row, row.value)
+              for row in mt.entries().collect()]
+    expected = [(key, col, row, row * 10 + col)
+                for key in [0, 1, 2, 3, 4, None]
+                for col in range(3)
+                for row, value in enumerate(keys)
+                if value == key and (row != 5 or col != 1)]
+    assert actual == expected

@@ -356,3 +356,66 @@ async fn nested_leaf_run_keeps_original_spill_charges_and_omits_unused_output() 
     assert!(written > 0, "original source budget must still force observable spill writes");
     assert!(written < 8 * 1024 * 1024, "unused nested owner reached temporary output: {written}");
 }
+
+fn unique_payload_fixture(payload_len: usize) -> TableRef {
+    let rows = 32;
+    let cells = rows * 2;
+    let payload = Arc::new(list(
+        Arc::new(Int32Array::from(vec![17; cells * payload_len])),
+        (0..=cells).map(|index| (index * payload_len) as i32).collect(), None,
+    )) as ArrayRef;
+    let entries = Arc::new(structure(&["payload"], vec![payload], None)) as ArrayRef;
+    let cell_values = Arc::new(structure(&["entry"], vec![entries], None)) as ArrayRef;
+    let cells = Arc::new(list(cell_values, (0..=rows).map(|row| (row * 2) as i32).collect(), None)) as ArrayRef;
+    let keys = Arc::new(Int32Array::from_iter_values(0..rows as i32)) as ArrayRef;
+    let row = Arc::new(structure(&["r"], vec![keys.clone()], None)) as ArrayRef;
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("row", row.data_type().clone(), true),
+        Field::new("cells", cells.data_type().clone(), true),
+        Field::new("key", DataType::Int32, false),
+    ]));
+    let source = TableIR::parallelize_batches(schema.clone(),
+        vec![RecordBatch::try_new(schema, vec![row, cells, keys]).unwrap()], 1).unwrap();
+    let cols = Arc::new(structure(&["c"], vec![Arc::new(Int32Array::from(vec![0, 1]))], None)) as ArrayRef;
+    let cols = Arc::new(structure(&["column"], vec![cols], None)) as ArrayRef;
+    let cols = Arc::new(list(cols, vec![0, 2], None)) as ArrayRef;
+    let globals_schema = Arc::new(Schema::new(vec![Field::new("columns", cols.data_type().clone(), true)]));
+    let dtype = Type::from_arrow(&DataType::Struct(globals_schema.fields().clone())).unwrap();
+    let globals = GlobalsIR::arrow_literal(RecordBatch::try_new(globals_schema, vec![cols]).unwrap()).unwrap();
+    source.map_globals_bound(vec![("columns".into(), Expr::GetField {
+        value: Arc::new(Expr::ExternalGlobal { reference: "g".into(), dtype }), name: "columns".into(),
+    })], GlobalBindings::from([("g".into(), globals)])).unwrap()
+        .matrix_entries_by_key_runs("row".into(), "cells".into(), "columns".into(),
+            vec!["key".into()], vec!["r".into()], "column".into(), vec!["c".into()], "entry".into()).unwrap()
+}
+
+#[tokio::test]
+async fn unique_entry_spans_do_not_copy_growing_output_payloads() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut allocated = Vec::new();
+    for width in [16, 16_384] {
+        let source = unique_payload_fixture(width);
+        ALLOCATED.store(0, Ordering::Relaxed);
+        MEASURING.store(true, Ordering::Relaxed);
+        let output = source.collect_partitions().await.unwrap();
+        MEASURING.store(false, Ordering::Relaxed);
+        allocated.push(ALLOCATED.load(Ordering::Relaxed));
+        let mut expected_row = 0;
+        for batch in output.iter().flatten() {
+            let keys = batch.column_by_name("r").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+            let payload = batch.column_by_name("payload").unwrap().as_any().downcast_ref::<ListArray>().unwrap();
+            for row in 0..batch.num_rows() {
+                assert_eq!(keys.value(row), expected_row / 2);
+                let values = payload.value(row);
+                let values = values.as_any().downcast_ref::<Int32Array>().unwrap();
+                assert_eq!(values.len(), width);
+                assert!(values.values().iter().all(|&value| value == 17));
+                expected_row += 1;
+            }
+        }
+        assert_eq!(expected_row, 64);
+    }
+    eprintln!("unique entry output allocations, small/large payload: {allocated:?}");
+    assert!(allocated[1] < allocated[0] + 1024 * 1024,
+        "unique output payload was copied: {allocated:?}");
+}

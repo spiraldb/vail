@@ -24,7 +24,7 @@ use datafusion_physical_plan::{
     stream::RecordBatchStreamAdapter,
 };
 use futures::TryStreamExt;
-use std::{collections::{HashMap, HashSet}, fmt, fs::File, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, fmt, fs::File, path::PathBuf, sync::Arc};
 use tempfile::TempDir;
 use tokio::sync::OnceCell;
 use vail_storage::fragment_index::make_typed_key_comparators;
@@ -33,7 +33,6 @@ use vail_execution::PreparedArrayProjection;
 const RUN_MEMORY_BUDGET: usize = 64 * 1024 * 1024;
 const OUTPUT_BATCH_MEMORY_BUDGET: usize = 32 * 1024 * 1024;
 const OUTPUT_BATCH_ROW_BUDGET: usize = 8192;
-const PENDING_SINGLETON_ROW_BUDGET: usize = 8192;
 
 /// A single equal-row-key run. Keep ordinary duplicate runs in memory, but
 /// spill oversized runs batch-by-batch so transposition never retains an
@@ -46,7 +45,6 @@ struct KeyRun {
     memory_bytes: usize,
     rows: usize,
     last_source_batch: Option<u64>,
-    first_source_batch: Option<(u64, usize)>,
 }
 
 impl KeyRun {
@@ -71,9 +69,6 @@ impl KeyRun {
                 self.spill_batch(existing).await?;
             }
             self.memory_bytes = 0;
-        }
-        if self.first_source_batch.is_none() {
-            self.first_source_batch = Some((source_batch_id, source_batch_bytes));
         }
         self.rows = new_rows;
         self.last_source_batch = Some(source_batch_id);
@@ -536,116 +531,74 @@ impl ExecutionPlan for MatrixEntriesExec {
                     None => columns,
                 };
                 let mut run = KeyRun::default();
-                let mut singleton_rows = Vec::<RecordBatch>::new();
-                let mut singleton_bytes = 0usize;
-                let mut singleton_source_batches = HashSet::<u64>::new();
-                let mut last_budget_flush_source_batch = None;
                 let mut previous_key: Option<Vec<ArrayRef>> = None;
                 let mut source_batch_id = 0u64;
                 while let Some(batch) = input.try_next().await? {
                     if batch.num_rows() == 0 { continue; }
                     let current_batch_id = source_batch_id;
                     source_batch_id = source_batch_id.wrapping_add(1);
-                    // Input-retention/spill accounting uses the ORIGINAL full
-                    // producer batch. Projected output sizing is independent.
+                    // Retention/spill accounting uses the original producer batch.
                     let source_batch_bytes = batch_memory_size(&batch);
                     let batch = match &projection {
                         Some(projection) => projection.rows(batch, &config)?,
                         None => batch,
                     };
                     let key_columns = config.key_indices.iter().map(|&i| batch.column(i).clone()).collect::<Vec<_>>();
-                    let options = vec![SortOptions { descending: false, nulls_first: false }; key_columns.len()];
-                    let within = if key_columns.is_empty() { vec![] } else {
-                        make_typed_key_comparators(&key_columns, &key_columns, &options)
-                            .map_err(|e| DataFusionError::Execution(e.to_string()))?
+                    let ranges = if key_columns.is_empty() {
+                        vec![0..batch.num_rows()]
+                    } else {
+                        arrow_ord::partition::partition(&key_columns)?.ranges()
                     };
-                    let mut start = 0usize;
-                    for row in 0..batch.num_rows() {
-                        let comparison = if row > 0 && !within.is_empty() {
-                            compare(&within, row - 1, row)
-                        } else if row == 0 && !key_columns.is_empty() {
-                            if let Some(previous) = &previous_key {
-                                let boundary = make_typed_key_comparators(previous, &key_columns, &options)
-                                    .map_err(|e| DataFusionError::Execution(e.to_string()))?;
-                                compare(&boundary, 0, 0)
-                            } else { None }
-                        } else { None };
-                        // The keyed TableIR contract already guarantees input
-                        // row-key order. Compare adjacent keys only to locate
-                        // equal-key run boundaries; do not revalidate or sort
-                        // the full row stream here.
-                        if comparison == Some(std::cmp::Ordering::Less) {
-                            if row > start { run.push(batch.slice(start, row - start), current_batch_id, source_batch_bytes).await?; }
-                            let finished = std::mem::take(&mut run);
-                            if finished.rows == 1 {
-                                if finished.spill_dir.is_some() {
-                                    let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
-                                    while let Some(output) = pending.try_next().await? { yield output; }
-                                    singleton_bytes = 0;
-                                    singleton_source_batches.clear();
-                                    let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
-                                    while let Some(output) = expanded.try_next().await? { yield output; }
-                                } else {
-                                    let (id, bytes) = finished.first_source_batch.expect("singleton has an input batch");
-                                    let added_source = singleton_source_batches.insert(id);
-                                    if added_source {
-                                        singleton_bytes = singleton_bytes.saturating_add(bytes);
-                                    }
-                                    let hit_byte_limit = singleton_bytes >= RUN_MEMORY_BUDGET;
-                                    let hit_row_limit = singleton_rows.len() >= PENDING_SINGLETON_ROW_BUDGET;
-                                    singleton_rows.extend(finished.batches);
-                                    if hit_row_limit
-                                        || (added_source
-                                            && hit_byte_limit
-                                            && last_budget_flush_source_batch != Some(id))
-                                    {
-                                        let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
-                                        while let Some(output) = pending.try_next().await? { yield output; }
-                                        singleton_bytes = 0;
-                                        singleton_source_batches.clear();
-                                        if hit_byte_limit {
-                                            last_budget_flush_source_batch = Some(id);
-                                        }
-                                    }
-                                }
-                            } else if finished.rows > 1 {
-                                let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
-                                while let Some(output) = pending.try_next().await? { yield output; }
-                                singleton_bytes = 0;
-                                singleton_source_batches.clear();
-                                let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
-                                while let Some(output) = expanded.try_next().await? {
-                                    yield output;
-                                }
-                            }
-                            start = row;
+                    let continues = if let Some(previous) = &previous_key {
+                        let options = vec![SortOptions { descending: false, nulls_first: false }; key_columns.len()];
+                        let boundary = make_typed_key_comparators(previous, &key_columns, &options)
+                            .map_err(|e| DataFusionError::Execution(e.to_string()))?;
+                        compare(&boundary, 0, 0) == Some(std::cmp::Ordering::Equal)
+                    } else { false };
+                    let mut index = 0;
+                    if run.rows > 0 {
+                        if continues {
+                            let range = &ranges[0];
+                            run.push(batch.slice(range.start, range.len()), current_batch_id, source_batch_bytes).await?;
+                            index = 1;
+                        }
+                        if !continues || ranges.len() > 1 {
+                            let mut output = emit_completed_run(std::mem::take(&mut run), columns.clone(), config.clone(), schema.clone())?;
+                            while let Some(batch) = output.try_next().await? { yield batch; }
                         }
                     }
-                    if start < batch.num_rows() { run.push(batch.slice(start, batch.num_rows() - start), current_batch_id, source_batch_bytes).await?; }
-                    if !key_columns.is_empty() {
-                        previous_key = Some(key_columns.iter().map(|column| column.slice(batch.num_rows() - 1, 1)).collect());
+                    while index < ranges.len() {
+                        let range = &ranges[index];
+                        if index + 1 == ranges.len() {
+                            // Only the final equal-key run can continue in the next batch.
+                            run.push(batch.slice(range.start, range.len()), current_batch_id, source_batch_bytes).await?;
+                            break;
+                        }
+                        if range.len() == 1 {
+                            let start = range.start;
+                            index += 1;
+                            while index + 1 < ranges.len() && ranges[index].len() == 1 {
+                                index += 1;
+                            }
+                            // Keep a whole unique-key span as a borrowed slice. Splitting
+                            // it into single-row batches and concatenating copies entries.
+                            let end = ranges[index - 1].end;
+                            let mut output = emit_unique_span(batch.slice(start, end - start), columns.clone(), config.clone(), schema.clone())?;
+                            while let Some(batch) = output.try_next().await? { yield batch; }
+                        } else {
+                            let mut completed = KeyRun::default();
+                            completed.push(batch.slice(range.start, range.len()), current_batch_id, source_batch_bytes).await?;
+                            let mut output = emit_run(completed, columns.clone(), config.clone(), schema.clone());
+                            while let Some(batch) = output.try_next().await? { yield batch; }
+                            index += 1;
+                        }
                     }
+                    previous_key = Some(key_columns.iter().map(|column| column.slice(batch.num_rows() - 1, 1)).collect());
                 }
-                let finished = std::mem::take(&mut run);
-                if finished.rows == 1 {
-                    if finished.spill_dir.is_some() {
-                        let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
-                        while let Some(output) = pending.try_next().await? { yield output; }
-                        let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
-                        while let Some(output) = expanded.try_next().await? { yield output; }
-                    } else {
-                        singleton_rows.extend(finished.batches);
-                    }
-                } else if finished.rows > 1 {
-                    let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
-                    while let Some(output) = pending.try_next().await? { yield output; }
-                    let mut expanded = emit_run(finished, columns.clone(), config.clone(), schema.clone());
-                    while let Some(output) = expanded.try_next().await? {
-                        yield output;
-                    }
+                if run.rows > 0 {
+                    let mut output = emit_completed_run(run, columns, config, schema.clone())?;
+                    while let Some(batch) = output.try_next().await? { yield batch; }
                 }
-                let mut pending = emit_singletons(&mut singleton_rows, columns.clone(), config.clone(), schema.clone())?;
-                while let Some(output) = pending.try_next().await? { yield output; }
             },
         )))
     }
@@ -655,6 +608,19 @@ impl ExecutionPlan for MatrixEntriesExec {
         _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
     ) -> datafusion_common::Result<TreeNodeRecursion> {
         Ok(TreeNodeRecursion::Continue)
+    }
+}
+
+fn emit_completed_run(
+    mut run: KeyRun,
+    columns: Arc<StructArray>,
+    config: Config,
+    schema: SchemaRef,
+) -> DFResult<SendableRecordBatchStream> {
+    if run.rows == 1 && run.spill_dir.is_none() {
+        emit_unique_span(run.batches.pop().expect("singleton has an input batch"), columns, config, schema)
+    } else {
+        Ok(emit_run(run, columns, config, schema))
     }
 }
 
@@ -840,27 +806,15 @@ fn emit_prepared_run_chunk(
     Ok(Some(RecordBatch::try_new(output_schema.clone(), arrays)?))
 }
 
-fn emit_singletons(
-    singletons: &mut Vec<RecordBatch>,
+fn emit_unique_span(
+    batch: RecordBatch,
     columns: Arc<StructArray>,
     config: Config,
     schema: SchemaRef,
 ) -> datafusion_common::Result<SendableRecordBatchStream> {
-    if singletons.is_empty() || columns.is_empty() {
-        singletons.clear();
-        return Ok(Box::pin(RecordBatchStreamAdapter::new(
-            schema,
-            futures::stream::empty(),
-        )));
+    if columns.is_empty() {
+        return Ok(Box::pin(RecordBatchStreamAdapter::new(schema, futures::stream::empty())));
     }
-    let input_schema = singletons[0].schema();
-    let batch = if singletons.len() == 1 {
-        singletons.pop().expect("single row batch exists")
-    } else {
-        let combined = arrow_select::concat::concat_batches(&input_schema, singletons.iter())?;
-        singletons.clear();
-        combined
-    };
     let column_index = columns
         .fields()
         .iter()
