@@ -1,6 +1,7 @@
 //! One DataFusion logical tree for a table action. Ordinary expressions remain
 //! visible to DataFusion; partition-sensitive TableIR nodes are logical
 //! extensions whose children are planned before their physical implementation.
+use crate::list_child_unnest::replace as reuse_list_children;
 use crate::plan::PhysicalPlan;
 use crate::{Result, TableError, TableIR, TableNode, TableRef};
 use arrow_array::Array;
@@ -1523,6 +1524,7 @@ async fn compile_mode(
     trace_preparation(&mut preparation_mark, "broadcast");
     let plan = crate::indexed_unnest::optimize(plan)?;
     trace_preparation(&mut preparation_mark, "indexed_unnest");
+    let plan = rewrite_physical_dag(plan, &mut reuse_list_children)?;
     let plan = crate::rng_context::bind_consumers(plan)?;
     trace_preparation(&mut preparation_mark, "rng");
     Ok(plan)

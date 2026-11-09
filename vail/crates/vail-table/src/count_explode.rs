@@ -3,6 +3,7 @@
 //! The fully planned input still executes every source column and upstream
 //! expression. Only infallible field access and physical row replication are
 //! replaced; arbitrary expressions, sorts, limits and predicates block this rule.
+use crate::list_child_unnest::original as unnest_plan;
 use crate::plan::PhysicalPlan;
 use arrow_array::{
     Array, ArrayRef, FixedSizeListArray, LargeListArray, ListArray, RecordBatch,
@@ -24,7 +25,6 @@ use datafusion_physical_plan::{
     projection::ProjectionExec,
     scalar_subquery::ScalarSubqueryExec,
     stream::RecordBatchStreamAdapter,
-    unnest::UnnestExec,
 };
 use futures::TryStreamExt;
 use std::{collections::HashMap, fmt, sync::Arc};
@@ -277,7 +277,7 @@ fn optimize_node(plan: PhysicalPlan, memo: &mut CountMemo) -> Result<Option<Phys
     let Some((index, fields)) = path(valid.arg()) else {
         return Ok(None);
     };
-    let Some(unnest) = filter.input().downcast_ref::<UnnestExec>() else {
+    let Some(unnest) = unnest_plan(filter.input()) else {
         return Ok(None);
     };
     let lists = unnest.list_column_indices();
