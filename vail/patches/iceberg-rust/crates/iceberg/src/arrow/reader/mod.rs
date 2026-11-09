@@ -17,7 +17,7 @@
 
 //! Parquet file data reader
 
-use std::sync::Arc;
+use ::vortex::session::VortexSession;
 
 use crate::arrow::caching_delete_file_loader::CachingDeleteFileLoader;
 use crate::arrow::ScanMetrics;
@@ -46,7 +46,6 @@ mod projection;
 mod row_filter;
 mod row_lineage;
 pub(crate) mod vortex;
-mod vortex_session;
 pub use file_reader::ArrowFileReader;
 pub(crate) use options::ParquetReadOptions;
 use predicate_visitor::{CollectFieldIdVisitor, PredicateConverter};
@@ -54,11 +53,10 @@ use projection::{
     add_fallback_field_ids_to_arrow_schema, apply_name_mapping_to_arrow_schema,
     find_leaf_by_field_id,
 };
-pub use vortex_session::VortexSessionCache;
 
 /// Builder to create ArrowReader
 pub struct ArrowReaderBuilder {
-    vortex_sessions: Arc<VortexSessionCache>,
+    vortex_session: Option<VortexSession>,
     scan_metrics: Option<ScanMetrics>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
@@ -76,7 +74,7 @@ impl ArrowReaderBuilder {
         let num_cpus = available_parallelism().get();
 
         ArrowReaderBuilder {
-            vortex_sessions: Arc::default(),
+            vortex_session: None,
             scan_metrics: None,
             computed_projection: None,
             batch_size: None,
@@ -89,11 +87,9 @@ impl ArrowReaderBuilder {
         }
     }
 
-    /// Share lazily prepared default Vortex registries across related readers.
-    /// The cache selects a session for the actual polling runtime, so it may
-    /// safely be shared by readers planned or executed on different runtimes.
-    pub fn with_vortex_session_cache(mut self, cache: Arc<VortexSessionCache>) -> Self {
-        self.vortex_sessions = cache;
+    /// Share a prepared Vortex session. Each file task receives a cheap clone.
+    pub fn with_vortex_session(mut self, session: VortexSession) -> Self {
+        self.vortex_session = Some(session);
         self
     }
 
@@ -166,7 +162,7 @@ impl ArrowReaderBuilder {
     /// Build the ArrowReader.
     pub fn build(self) -> ArrowReader {
         ArrowReader {
-            vortex_sessions: self.vortex_sessions.clone(),
+            vortex_session: self.vortex_session,
             scan_metrics: self.scan_metrics,
             computed_projection: self.computed_projection,
             batch_size: self.batch_size,
@@ -187,7 +183,7 @@ impl ArrowReaderBuilder {
 /// Reads data from Parquet files
 #[derive(Clone)]
 pub struct ArrowReader {
-    vortex_sessions: Arc<VortexSessionCache>,
+    vortex_session: Option<VortexSession>,
     scan_metrics: Option<ScanMetrics>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,

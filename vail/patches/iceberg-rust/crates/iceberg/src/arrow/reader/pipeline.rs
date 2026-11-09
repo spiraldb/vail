@@ -31,6 +31,7 @@ use parquet::arrow::{
     PARQUET_FIELD_ID_META_KEY, ParquetRecordBatchStreamBuilder, ProjectionMask, RowNumber,
 };
 use parquet::encryption::decrypt::FileDecryptionProperties;
+use ::vortex::{VortexSessionDefault, session::VortexSession};
 
 use super::row_lineage::synthesize_row_id_column;
 use super::{
@@ -62,8 +63,8 @@ impl ArrowReader {
         let concurrency_limit_data_files = self.concurrency_limit_data_files;
         let scan_metrics = self.scan_metrics.unwrap_or_else(ScanMetrics::new);
 
-        let task_reader = FileScanTaskReader {
-            vortex_sessions: self.vortex_sessions,
+        let mut task_reader = FileScanTaskReader {
+            vortex_session: self.vortex_session,
             batch_size: self.batch_size,
             file_io: self.file_io,
             delete_file_loader: self
@@ -76,11 +77,22 @@ impl ArrowReader {
             scan_metrics: scan_metrics.clone(),
         };
 
+        // Prepare once while polling the task stream, before file futures fan out.
+        // Parquet-only and empty scans do not construct a Vortex session.
+        let tasks = tasks.map_ok(move |task| {
+            if task.data_file_format() == DataFileFormat::Vortex
+                && task_reader.vortex_session.is_none()
+            {
+                task_reader.vortex_session = Some(VortexSession::default());
+            }
+            (task_reader.clone(), task)
+        });
+
         // Fast-path for single concurrency to avoid overhead of try_flatten_unordered
         let stream: ArrowRecordBatchStream = if concurrency_limit_data_files == 1 {
             Box::pin(
                 tasks
-                    .and_then(move |task| task_reader.clone().process(task))
+                    .and_then(|(reader, task)| reader.process(task))
                     .map_err(|err| {
                         Error::new(ErrorKind::Unexpected, "file scan task generate failed")
                             .with_source(err)
@@ -90,7 +102,7 @@ impl ArrowReader {
         } else {
             Box::pin(
                 tasks
-                    .map_ok(move |task| task_reader.clone().process(task))
+                    .map_ok(|(reader, task)| reader.process(task))
                     .map_err(|err| {
                         Error::new(ErrorKind::Unexpected, "file scan task generate failed")
                             .with_source(err)
@@ -120,7 +132,7 @@ const PRUNABLE_METADATA_FIELDS: &[i32] = &[
 /// [`ArrowReader::read`] call and cloned per task.
 #[derive(Clone)]
 struct FileScanTaskReader {
-    vortex_sessions: Arc<super::VortexSessionCache>,
+    vortex_session: Option<VortexSession>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
@@ -147,7 +159,7 @@ impl FileScanTaskReader {
                     &self.delete_file_loader,
                     self.scan_metrics.bytes_read_counter().clone(),
                     self.computed_projection,
-                    &self.vortex_sessions,
+                    self.vortex_session.expect("Vortex session prepared before task fanout"),
                 )
                 .await
             }

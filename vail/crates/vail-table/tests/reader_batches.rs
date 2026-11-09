@@ -203,3 +203,33 @@ async fn stored_scan_state_survives_reader_batch_and_partition_boundaries() {
             .collect::<Vec<_>>()
     );
 }
+
+#[test]
+fn native_read_session_survives_planning_runtime_and_concurrent_readers() {
+    fn runtime() -> tokio::runtime::Runtime {
+        tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap()
+    }
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("shared-read");
+    let expected = vec![(0..86).collect::<Vec<i32>>(), (86..172).collect(), (172..257).collect()];
+    let planning = runtime();
+    let read = planning.block_on(async {
+        TableIR::range(257, 3).unwrap().write(path.to_str().unwrap(), false).await.unwrap();
+        let read = TableIR::read(path.to_str().unwrap()).await.unwrap();
+        assert_eq!(keys(&read.collect_partitions().await.unwrap()), expected);
+        read
+    });
+    drop(planning);
+    let barrier = Arc::new(std::sync::Barrier::new(2));
+    let readers: Vec<_> = (0..2).map(|_| {
+        let read = read.clone();
+        let barrier = barrier.clone();
+        std::thread::spawn(move || {
+            let runtime = runtime();
+            barrier.wait();
+            runtime.block_on(async { keys(&read.collect_partitions().await.unwrap()) })
+        })
+    }).collect();
+    for reader in readers { assert_eq!(reader.join().unwrap(), expected); }
+    assert_eq!(runtime().block_on(async { keys(&read.collect_partitions().await.unwrap()) }), expected);
+}
