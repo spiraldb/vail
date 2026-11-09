@@ -1,0 +1,35 @@
+{
+  "source": "1abc1ed86b60b83ac6da012badf6b8e36747d6ef",
+  "cases": [
+    "test_matrix_table_filter_entries",
+    "test_matrix_table_filter_entries_unfilter",
+    "test_matrix_table_array_arithmetic",
+    "test_split_multi_hts",
+    "test_shuffle_key_rows_by_mt",
+    "test_write_profile_mt"
+  ],
+  "schedule": [
+    "system",
+    "mimalloc",
+    "jemalloc",
+    "mimalloc",
+    "jemalloc",
+    "system",
+    "jemalloc",
+    "system",
+    "mimalloc"
+  ],
+  "warmups": 3,
+  "samples": 5,
+  "fresh_processes_per_allocator_per_case": 3,
+  "total_workers": 54,
+  "total_samples": 270,
+  "correctness_tests_and_validation": "none per explicit user instruction; import allocator identity and artifact/input hashes only",
+  "limits": "120sworker6GiBsampledRSS;1800sphase with20scleanupreserve;no builds/tests duringtimings",
+  "pins_sha256": "3db090d71f97cc540e87a2f5d6af3462fd97c47a52db175bd5871c84f0b9e099",
+  "scripts": {
+    "/private/tmp/vail-allocators-20261109/benchmark/fast-worker.py": "2edd32cf94967b4c08e5bf8eafe91b505cc5c6ce4a7ccaafa0e47d29351837ef",
+    "/private/tmp/vail-allocators-20261109/benchmark/fast-run.py": "6c28a23855e22c3a76c4b15145c5fad01ad1f6b2b456bfddc0ac57eb3b6cf5fa",
+    "/private/tmp/vail-allocators-20261109/pinned-sdk/owned.py": "1f14ffb766a585c6d94f1016f460cfe7f258054aedecb670f2d121ccf73f80b3"
+  }
+}
