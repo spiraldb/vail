@@ -757,7 +757,7 @@ async fn stream_snapshot_internal(
 /// It contains no row batches and performs no whole-file reads.
 #[derive(Debug)]
 pub(crate) struct SnapshotReadPlan {
-    vortex_session: VortexSession,
+    vortex_session: Option<VortexSession>,
     pub(crate) computed_proofs: computed_capability::ProofCache,
     table: Table,
     pub(crate) descriptor: SnapshotDescriptor,
@@ -1008,8 +1008,9 @@ pub(crate) async fn load_snapshot_read_plan(
         file_key_order_rank[position] = rank;
     }
     Ok(SnapshotReadPlan {
-        // The dispatcher resolves the polling Tokio runtime, not the planning runtime.
-        vortex_session: VortexSession::default().with_tokio(),
+        // Native files are Vortex-only. Empty snapshots need no session.
+        // The dispatcher resolves the polling runtime, not the planning runtime.
+        vortex_session: (!files.is_empty()).then(|| VortexSession::default().with_tokio()),
         computed_proofs: Default::default(),
         table: table.clone(),
         descriptor,
@@ -1250,8 +1251,10 @@ pub(crate) fn stream_from_plan_with_projection(
             let task = task_with_projection_and_nested_paths(&file.task, &read_ids, nested_paths.as_deref())?;
             let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
             let mut reader = plan_for_stream.table.reader_builder()
-                .with_vortex_session(plan_for_stream.vortex_session.clone())
                 .with_data_file_concurrency_limit(1);
+            if let Some(session) = &plan_for_stream.vortex_session {
+                reader = reader.with_vortex_session(session.clone());
+            }
             if let Some(metrics) = &scan_metrics {
                 reader = reader.with_scan_metrics(metrics.clone());
             }
