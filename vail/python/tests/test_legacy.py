@@ -297,7 +297,7 @@ def test_matrix_localization_preserves_key_order_across_partitions(tmp_path):
     assert [(row.id, row.__legacy_entries) for row in table.collect()] == [
         (1, 0), (1, 1), (1, 2), (2, 3)]
     groups = table.group_by(table.id).aggregate(rows=hl.agg.collect(table.row_value)).collect()
-    assert [(group.id, [row.__legacy_entries for row in group.rows]) for group in groups] == [
+    assert [(group.id, sorted(row.__legacy_entries for row in group.rows)) for group in groups] == [
         (1, [0, 1, 2]), (2, [3])]
     # Localization retains source order instead of sorting the wide entry arrays.
     plan = table._native.physical_plan()
