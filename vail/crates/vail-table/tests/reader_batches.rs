@@ -205,21 +205,22 @@ async fn stored_scan_state_survives_reader_batch_and_partition_boundaries() {
 }
 
 #[test]
-fn native_read_session_survives_planning_runtime_and_concurrent_readers() {
+fn native_read_session_supports_concurrent_polling_runtimes() {
     fn runtime() -> tokio::runtime::Runtime {
         tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap()
     }
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("shared-read");
     let expected = vec![(0..86).collect::<Vec<i32>>(), (86..172).collect(), (172..257).collect()];
-    let planning = runtime();
-    let read = planning.block_on(async {
+    // Iceberg retains this I/O runtime; Vortex work may poll on other runtimes.
+    let io_runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2).enable_all().build().unwrap();
+    let read = io_runtime.block_on(async {
         TableIR::range(257, 3).unwrap().write(path.to_str().unwrap(), false).await.unwrap();
         let read = TableIR::read(path.to_str().unwrap()).await.unwrap();
         assert_eq!(keys(&read.collect_partitions().await.unwrap()), expected);
         read
     });
-    drop(planning);
     let barrier = Arc::new(std::sync::Barrier::new(2));
     let readers: Vec<_> = (0..2).map(|_| {
         let read = read.clone();
