@@ -328,7 +328,9 @@ impl ExecutionPlan for SourceOrdinalExec {
         vec![self.input.properties().output_ordering().cloned().map(Into::into)]
     }
     fn maintains_input_order(&self) -> Vec<bool> {
-        vec![true]
+        // Sorting before encounter-order stamping changes stable tie order.
+        // Do not let DataFusion push an outer sort below this boundary.
+        vec![!self.physical_partition_ids]
     }
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
         vec![false]
