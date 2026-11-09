@@ -1,4 +1,4 @@
-mod benchmark_allocator;
+mod allocator;
 mod collection_aggregate;
 mod input_binding;
 mod ir_view;
@@ -1024,7 +1024,7 @@ fn supports_list_reducer(function: &str) -> bool {
 
 #[pymodule]
 fn _native(module: &Bound<'_, PyModule>) -> PyResult<()> {
-    module.add("_benchmark_allocator", benchmark_allocator::NAME)?;
+    module.add("_benchmark_allocator", allocator::NAME)?;
     module.add_function(wrap_pyfunction!(supports_list_reducer, module)?)?;
     module.add_class::<NativeSession>()?;
     module.add_class::<NativeArrow>()?;

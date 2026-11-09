@@ -35,6 +35,12 @@ uv run --no-sync maturin develop --locked
 uv run --no-sync python examples/table.py
 ```
 
+The Python extension uses mimalloc for Rust allocations by default. Python's
+allocator and PyArrow's memory pool are configured independently. For allocator
+comparisons, build with `maturin build --release --locked --no-default-features`
+to use the system allocator, or add `--features allocator-jemalloc` to use
+jemalloc. Select at most one allocator feature.
+
 Existing Hail 0.2 native datasets can be imported with
 `Table.read_legacy(path)` and `MatrixTable.read_legacy(path)`. These local,
 eager migration readers support file formats 1.0 through 1.8 without a JVM.

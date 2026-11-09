@@ -1,7 +1,7 @@
-//! Allocator choices for an isolated throughput experiment, without C interposition.
+//! Rust global allocator selection, without process-wide C interposition.
 
 #[cfg(all(feature = "allocator-mimalloc", feature = "allocator-jemalloc"))]
-compile_error!("select at most one allocator for the benchmark build");
+compile_error!("select at most one allocator");
 
 #[cfg(feature = "allocator-mimalloc")]
 use mimalloc::MiMalloc;

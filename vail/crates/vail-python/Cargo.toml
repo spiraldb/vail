@@ -12,6 +12,7 @@ test = false
 doctest = false
 
 [features]
+default = ["allocator-mimalloc"]
 allocator-mimalloc = ["dep:mimalloc"]
 allocator-jemalloc = ["dep:tikv-jemallocator"]
 
