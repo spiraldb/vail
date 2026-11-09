@@ -15,7 +15,9 @@ The same1000-row×2535-sample/four-partition native input is used for six upstre
 
 Throughput ratio is System median wall / variant median wall, using medians of per-process medians. CPU is whole-worker process CPU including all threads. RSS is sampled whole-worker import/warmup/action memory, not isolated operator allocation. This is a quick laptop subset comparison, not the full published fixture or a significance claim. Write uses warm filesystem caches and does not measure physical-disk/fsync throughput. The shuffle-named original force-count action does not itself establish materialized shuffle bytes. All cases and adverse observations are retained.
 
-Mimalloc improves five of six observed wall throughputs and reduces CPU in all six; jemalloc is mixed. Direct allocator defaults remain unchanged in production. The experiment-only code remains on dk/allocator-throughput-20261109.
+Mimalloc improves five of six observed wall throughputs and reduces CPU in all six; jemalloc is mixed. Production defaults were unchanged during measurement. After reviewing these results and the higher sampled whole-worker RSS, Daniel explicitly requested mimalloc as the default; commit def5d15aa makes that change for Rust allocations in the Python extension, retaining System and jemalloc build options.
+
+Both alternatives showed higher sampled whole-worker RSS in all six cases. For split multi HTS, System/Mimalloc/Jemalloc peaks were 336/1007/622 MB; for native write, 461/1239/1213 MB (decimal). These include imports and warmup and do not isolate allocator retention. This memory tradeoff was disclosed before the default-change decision.
 
 Normal release wheels were built and installed with maturin/uv using kache; no native binaries were manually copied or reused as a build cache. Binding versions: mimalloc0.1.52/libmimalloc-sys0.1.49(default native3.3.2),tikv-jemallocator0.7.0/sys0.7.1+5.3.1. Earlier wrong-toolchain/SDK setup attempts and the canceled correctness plan are excluded from these measurements.
 
