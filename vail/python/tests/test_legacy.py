@@ -268,6 +268,43 @@ def test_matrix_filtered_entries_column_order_and_name_collisions(tmp_path):
         [hl.Struct(GT=hl.Call([0, 1])), None, hl.Struct(GT=None)], [None, None, None]]
 
 
+def test_matrix_localization_preserves_key_order_across_partitions(tmp_path):
+    path = _small_matrix(tmp_path / 'ordered.mt', nrows=4)
+    rows = [struct.pack('<ii', key, i) for i, key in enumerate([1, 1, 1, 2])]
+    (path / 'rows/parts/part-0').write_bytes(b''.join(b'\x01' + row for row in rows) + b'\x00')
+    for component in ('rows', 'entries'):
+        part = path / component / 'parts/part-0'
+        data = part.read_bytes()
+        # Both components have an 18-byte prefix containing the first two rows.
+        part.write_bytes(data[:18] + b'\x00')
+        part.with_name('part-1').write_bytes(data[18:])
+        metadata = path / component / 'metadata.json.gz'
+        with gzip.open(metadata, 'rt') as stream:
+            spec = json.load(stream)
+        spec['_partFiles'] = ['part-0', 'part-1']
+        with gzip.open(metadata, 'wt') as stream:
+            json.dump(spec, stream)
+    metadata = path / 'metadata.json.gz'
+    with gzip.open(metadata, 'rt') as stream:
+        spec = json.load(stream)
+    spec['components']['partition_counts']['counts'] = [2, 2]
+    with gzip.open(metadata, 'wt') as stream:
+        json.dump(spec, stream)
+
+    table = hl.MatrixTable.read_legacy(path).localize_entries('cells', 'columns')
+    assert table.n_partitions() == 2
+    assert list(table.key) == ['id']
+    assert [(row.id, row.__legacy_entries) for row in table.collect()] == [
+        (1, 0), (1, 1), (1, 2), (2, 3)]
+    groups = table.group_by(table.id).aggregate(rows=hl.agg.collect(table.row_value)).collect()
+    assert [(group.id, [row.__legacy_entries for row in group.rows]) for group in groups] == [
+        (1, [0, 1, 2]), (2, [3])]
+    # Localization retains source order instead of sorting the wide entry arrays.
+    plan = table._native.physical_plan()
+    assert 'SortExec' not in plan
+    assert 'WindowAggExec' not in plan
+
+
 @pytest.mark.parametrize(('nrows', 'ncols'), [(0, 3), (2, 0), (0, 0)])
 def test_empty_matrix_axes(tmp_path, nrows, ncols):
     matrix = hl.MatrixTable.read_legacy(_small_matrix(tmp_path, nrows=nrows, ncols=ncols))

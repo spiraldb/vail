@@ -13,4 +13,5 @@ def read_matrix_legacy(path):
     from .matrixtable import MatrixTable, MatrixIR
     native, row_keys, col_keys, row_key_unique = _native_session().read_matrix_legacy(os.fspath(path))
     table = Table(native, _schema_from_native(native))
+    table = MatrixTable._with_ordered_row_keys(table, row_keys)
     return MatrixTable(MatrixIR(table, row_key=row_keys, col_key=col_keys, _aligned=True, _row_key_unique=row_key_unique))
