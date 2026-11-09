@@ -357,8 +357,8 @@ async fn nested_leaf_run_keeps_original_spill_charges_and_omits_unused_output() 
     assert!(written < 8 * 1024 * 1024, "unused nested owner reached temporary output: {written}");
 }
 
-fn unique_payload_fixture(payload_len: usize) -> TableRef {
-    let rows = 32;
+fn entry_payload_fixture(payload_len: usize, keys: Vec<Option<i32>>, partitions: usize) -> TableRef {
+    let rows = keys.len();
     let cells = rows * 2;
     let payload = Arc::new(list(
         Arc::new(Int32Array::from(vec![17; cells * payload_len])),
@@ -367,15 +367,19 @@ fn unique_payload_fixture(payload_len: usize) -> TableRef {
     let entries = Arc::new(structure(&["payload"], vec![payload], None)) as ArrayRef;
     let cell_values = Arc::new(structure(&["entry"], vec![entries], None)) as ArrayRef;
     let cells = Arc::new(list(cell_values, (0..=rows).map(|row| (row * 2) as i32).collect(), None)) as ArrayRef;
-    let keys = Arc::new(Int32Array::from_iter_values(0..rows as i32)) as ArrayRef;
-    let row = Arc::new(structure(&["r"], vec![keys.clone()], None)) as ArrayRef;
+    let keys = Arc::new(Int32Array::from(keys)) as ArrayRef;
+    let source_rows = Arc::new(Int32Array::from_iter_values(0..rows as i32)) as ArrayRef;
+    let row = Arc::new(structure(&["r", "source_row"], vec![keys.clone(), source_rows], None)) as ArrayRef;
     let schema = Arc::new(Schema::new(vec![
         Field::new("row", row.data_type().clone(), true),
         Field::new("cells", cells.data_type().clone(), true),
-        Field::new("key", DataType::Int32, false),
+        Field::new("key", DataType::Int32, true),
     ]));
-    let source = TableIR::parallelize_batches(schema.clone(),
-        vec![RecordBatch::try_new(schema, vec![row, cells, keys]).unwrap()], 1).unwrap();
+    let batch = RecordBatch::try_new(schema.clone(), vec![row, cells, keys]).unwrap();
+    // Explicit batch boundaries also split duplicate runs; no interior-run
+    // transposition may accidentally treat them as independent groups.
+    let batches = (0..rows).step_by(3).map(|start| batch.slice(start, (rows - start).min(3))).collect();
+    let source = TableIR::parallelize_batches(schema, batches, partitions).unwrap();
     let cols = Arc::new(structure(&["c"], vec![Arc::new(Int32Array::from(vec![0, 1]))], None)) as ArrayRef;
     let cols = Arc::new(structure(&["column"], vec![cols], None)) as ArrayRef;
     let cols = Arc::new(list(cols, vec![0, 2], None)) as ArrayRef;
@@ -394,7 +398,7 @@ async fn unique_entry_spans_do_not_copy_growing_output_payloads() {
     let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     let mut allocated = Vec::new();
     for width in [16, 16_384] {
-        let source = unique_payload_fixture(width);
+        let source = entry_payload_fixture(width, (0..32).map(Some).collect(), 1);
         ALLOCATED.store(0, Ordering::Relaxed);
         MEASURING.store(true, Ordering::Relaxed);
         let output = source.collect_partitions().await.unwrap();
@@ -418,4 +422,30 @@ async fn unique_entry_spans_do_not_copy_growing_output_payloads() {
     eprintln!("unique entry output allocations, small/large payload: {allocated:?}");
     assert!(allocated[1] < allocated[0] + 1024 * 1024,
         "unique output payload was copied: {allocated:?}");
+}
+
+#[tokio::test]
+async fn mixed_entry_runs_preserve_null_keys_across_batches_and_partitions() {
+    let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let keys = vec![Some(0), Some(1), Some(1), Some(1), Some(2), Some(3), Some(3), None, None, None];
+    for partitions in [1, 4] {
+        let source = entry_payload_fixture(3, keys.clone(), partitions);
+        let output = source.collect_partitions().await.unwrap();
+        let mut actual = Vec::new();
+        for batch in output.iter().flatten() {
+            let key = batch.column_by_name("r").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+            let col = batch.column_by_name("c").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+            let row = batch.column_by_name("source_row").unwrap().as_any().downcast_ref::<Int32Array>().unwrap();
+            actual.extend((0..batch.num_rows()).map(|i| ((!key.is_null(i)).then(|| key.value(i)), col.value(i), row.value(i))));
+        }
+        let mut expected = Vec::new();
+        for key in [Some(0), Some(1), Some(2), Some(3), None] {
+            for col in 0..2 {
+                for (row, value) in keys.iter().enumerate() {
+                    if *value == key { expected.push((key, col, row as i32)); }
+                }
+            }
+        }
+        assert_eq!(actual, expected);
+    }
 }
