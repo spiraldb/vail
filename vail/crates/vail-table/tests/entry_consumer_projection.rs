@@ -396,6 +396,8 @@ fn entry_payload_fixture(payload_len: usize, keys: Vec<Option<i32>>, partitions:
 #[tokio::test]
 async fn unique_entry_spans_do_not_copy_growing_output_payloads() {
     let _serial = SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let warm = entry_payload_fixture(16, (0..32).map(Some).collect(), 1);
+    drop(warm.collect_partitions().await.unwrap());
     let mut allocated = Vec::new();
     for width in [16, 16_384] {
         let source = entry_payload_fixture(width, (0..32).map(Some).collect(), 1);
