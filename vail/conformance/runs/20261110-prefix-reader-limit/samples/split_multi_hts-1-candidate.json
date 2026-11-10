@@ -1,0 +1,41 @@
+{
+  "mode": "candidate",
+  "case": "split_multi_hts",
+  "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+  "result_sha256": "f46733e1619957ff5bb51ea0272a2d8d73376cabd24f44461061c2caca2430aa",
+  "samples": [
+    {
+      "wall": 0.15449645894113928,
+      "cpu": 0.40015199999999995,
+      "maxrss": 931938304
+    },
+    {
+      "wall": 0.15018124994821846,
+      "cpu": 0.39571999999999985,
+      "maxrss": 1047789568
+    },
+    {
+      "wall": 0.15417754102963954,
+      "cpu": 0.38946000000000014,
+      "maxrss": 1085538304
+    },
+    {
+      "wall": 0.1508212910266593,
+      "cpu": 0.39443300000000026,
+      "maxrss": 1124401152
+    }
+  ],
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "native": "/private/tmp/vail-prefix-demand-20261109/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+  "allocator": "mimalloc",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "environment": {
+    "RAYON_NUM_THREADS": "4",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "PYTHONMALLOC": "default",
+    "ARROW_DEFAULT_MEMORY_POOL": "mimalloc"
+  },
+  "scope": "Vail native small published 1000x2535 fixture, 4 partitions, Tokio32/Rayon4, same laptop; not Hail or full-suite comparison"
+}

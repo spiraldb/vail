@@ -1,0 +1,24 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "--offline",
+    "-p",
+    "vail-table",
+    "--test",
+    "prefix_read",
+    "--test",
+    "reader_batches",
+    "--test",
+    "consumer_actions",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "exit_code": 0
+}

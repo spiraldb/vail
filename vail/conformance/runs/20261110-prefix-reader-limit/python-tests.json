@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "python/tests/test_table_show.py",
+    "python/tests/test_table_explode.py",
+    "python/tests/test_matrix_table.py",
+    "python/tests/test_randomness.py",
+    "-k",
+    "show or explode or head_tail or entries_reuses or entries_sorts or entries_column_permutation or entries_does_not_assume or entries_orders_duplicate or row_seeded_values"
+  ],
+  "source": "3fc119c73955537e5227b27875fcf125b3493484",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "exit_code": 1
+}

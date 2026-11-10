@@ -1,0 +1,35 @@
+........................................F..........                      [100%]
+=================================== FAILURES ===================================
+________ test_entries_orders_duplicate_multikey_runs_across_partitions _________
+
+    def test_entries_orders_duplicate_multikey_runs_across_partitions():
+        mt = hl.range_matrix_table(2, 3, 1)
+        mt = mt.key_rows_by(row_group=mt.row_idx // 2, row_idx=mt.row_idx)
+        mt = mt.annotate_rows(replica=hl.array([0, 1])).explode_rows("replica")
+        mt = mt.key_cols_by(col_group=mt.col_idx % 2, col_idx=mt.col_idx)
+        mt = mt.annotate_entries(value=hl.int32(mt.replica * 100 + mt.col_idx))
+        mt = mt.filter_entries(mt.col_idx != 1).repartition(3)
+    
+>       entries = mt.entries().collect()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_matrix_table.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x107bd1340>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       vail.utils.FatalError: External error: Internal error: ScalarSubqueryExpr evaluated before the subquery was executed.
+E       This issue was likely caused by a bug in DataFusion's code. Please help us to resolve this by filing a bug report in our issue tracker: https://github.com/apache/datafusion/issues
+
+../../vail-prefix-demand-20261109/env/lib/python3.12/site-packages/vail/__init__.py:1177: FatalError
+=========================== short test summary info ============================
+FAILED python/tests/test_matrix_table.py::test_entries_orders_duplicate_multikey_runs_across_partitions
+1 failed, 50 passed, 125 deselected in 1.31s
