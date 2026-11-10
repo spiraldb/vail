@@ -1,0 +1,25 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "--offline",
+    "-p",
+    "vail-table",
+    "--test",
+    "collect_groups",
+    "--test",
+    "group_ranges",
+    "--test",
+    "aggregate_singleton",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "returncode": 0,
+  "seconds": 105.06031513214111
+}

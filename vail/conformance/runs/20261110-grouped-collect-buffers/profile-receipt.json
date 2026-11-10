@@ -1,0 +1,30 @@
+{
+  "command": [
+    "/opt/homebrew/bin/samply",
+    "record",
+    "--save-only",
+    "--duration",
+    "8",
+    "--rate",
+    "1000",
+    "--unstable-presymbolicate",
+    "--profile-name",
+    "Vail grouped collect after partial-state copy removal",
+    "--output",
+    "/private/tmp/vail-collect-state-20261110/final/collect-profile.json.gz",
+    "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+    "/private/tmp/vail-collect-state-20261110/final/profile-worker.py"
+  ],
+  "leader": 58453,
+  "owned_identities": {
+    "58453": 1794349819.662488,
+    "58454": 1794349819.6693
+  },
+  "seconds": 7.390869291964918,
+  "returncode": 0,
+  "failure": null,
+  "cleanup_error": null,
+  "peak_observed_combined_rss_bytes": 4802150400,
+  "group_absent": true,
+  "live_owned": 0
+}

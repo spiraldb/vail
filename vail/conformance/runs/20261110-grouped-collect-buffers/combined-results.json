@@ -1,0 +1,1014 @@
+{
+  "summary": {
+    "collect_hail": {
+      "baseline": {
+        "wall_seconds": 0.36340285453479737,
+        "cpu_seconds": 3.7778609999999997,
+        "process_medians": [
+          {
+            "wall_seconds": 0.37308454199228436,
+            "cpu_seconds": 3.6988179999999993
+          },
+          {
+            "wall_seconds": 0.3795679579488933,
+            "cpu_seconds": 3.790308999999999
+          },
+          {
+            "wall_seconds": 0.3537211670773104,
+            "cpu_seconds": 3.861604
+          },
+          {
+            "wall_seconds": 0.3272854589158669,
+            "cpu_seconds": 3.7654130000000006
+          }
+        ],
+        "processes": 4,
+        "timed_calls": 12
+      },
+      "candidate": {
+        "wall_seconds": 0.36396962497383356,
+        "cpu_seconds": 3.3279940000000003,
+        "process_medians": [
+          {
+            "wall_seconds": 0.3689957919996232,
+            "cpu_seconds": 3.304585
+          },
+          {
+            "wall_seconds": 0.40063691698014736,
+            "cpu_seconds": 3.333509000000001
+          },
+          {
+            "wall_seconds": 0.35894345794804394,
+            "cpu_seconds": 3.3568610000000003
+          },
+          {
+            "wall_seconds": 0.3387227499624714,
+            "cpu_seconds": 3.322479
+          }
+        ],
+        "processes": 4,
+        "timed_calls": 12
+      },
+      "hail": {
+        "wall_seconds": 0.47850110445870087,
+        "cpu_seconds": 2.689131824000001,
+        "process_medians": [
+          {
+            "wall_seconds": 0.529402874992229,
+            "cpu_seconds": 3.065195560000001
+          },
+          {
+            "wall_seconds": 0.4275993339251727,
+            "cpu_seconds": 2.3130680880000005
+          }
+        ],
+        "processes": 2,
+        "timed_calls": 6
+      },
+      "wall_change_percent": 0.15596202175178764,
+      "cpu_change_percent": -11.90798179181286
+    },
+    "collect_duplicates": {
+      "baseline": {
+        "wall_seconds": 0.3873638539807871,
+        "cpu_seconds": 4.229615000000001,
+        "process_medians": [
+          {
+            "wall_seconds": 0.38225283299107105,
+            "cpu_seconds": 4.337124000000001
+          },
+          {
+            "wall_seconds": 0.39247487497050315,
+            "cpu_seconds": 4.1221060000000005
+          }
+        ],
+        "processes": 2,
+        "timed_calls": 6
+      },
+      "candidate": {
+        "wall_seconds": 0.38991900003748015,
+        "cpu_seconds": 4.1660195,
+        "process_medians": [
+          {
+            "wall_seconds": 0.38147891708649695,
+            "cpu_seconds": 4.202449
+          },
+          {
+            "wall_seconds": 0.39835908298846334,
+            "cpu_seconds": 4.12959
+          }
+        ],
+        "processes": 2,
+        "timed_calls": 6
+      },
+      "wall_change_percent": 0.6596242861678592,
+      "cpu_change_percent": -1.5035765666615242
+    },
+    "collect_native": {
+      "baseline": {
+        "wall_seconds": 0.04016662499634549,
+        "cpu_seconds": 0.1320725,
+        "process_medians": [
+          {
+            "wall_seconds": 0.04052133299410343,
+            "cpu_seconds": 0.13177499999999998
+          },
+          {
+            "wall_seconds": 0.03981191699858755,
+            "cpu_seconds": 0.13237000000000004
+          }
+        ],
+        "processes": 2,
+        "timed_calls": 6
+      },
+      "candidate": {
+        "wall_seconds": 0.04056002094876021,
+        "cpu_seconds": 0.12949349999999993,
+        "process_medians": [
+          {
+            "wall_seconds": 0.04026787495240569,
+            "cpu_seconds": 0.1287799999999999
+          },
+          {
+            "wall_seconds": 0.04085216694511473,
+            "cpu_seconds": 0.13020699999999996
+          }
+        ],
+        "processes": 2,
+        "timed_calls": 6
+      },
+      "wall_change_percent": 0.9794100262357386,
+      "cpu_change_percent": -1.9527153646671902
+    },
+    "take_rekey": {
+      "baseline": {
+        "wall_seconds": 2.395522250502836,
+        "cpu_seconds": 2.884482,
+        "process_medians": [
+          {
+            "wall_seconds": 2.418037833063863,
+            "cpu_seconds": 2.928452
+          },
+          {
+            "wall_seconds": 2.3913905420340598,
+            "cpu_seconds": 2.877411
+          },
+          {
+            "wall_seconds": 2.399653958971612,
+            "cpu_seconds": 2.891553
+          },
+          {
+            "wall_seconds": 2.346844624960795,
+            "cpu_seconds": 2.8421330000000005
+          }
+        ],
+        "processes": 4,
+        "timed_calls": 12
+      },
+      "candidate": {
+        "wall_seconds": 2.4402777504874393,
+        "cpu_seconds": 2.9562244999999985,
+        "process_medians": [
+          {
+            "wall_seconds": 2.471193209057674,
+            "cpu_seconds": 2.9838359999999984
+          },
+          {
+            "wall_seconds": 2.504323542001657,
+            "cpu_seconds": 3.0235249999999994
+          },
+          {
+            "wall_seconds": 2.409362291917205,
+            "cpu_seconds": 2.92512
+          },
+          {
+            "wall_seconds": 2.4073077080538496,
+            "cpu_seconds": 2.9286129999999986
+          }
+        ],
+        "processes": 4,
+        "timed_calls": 12
+      },
+      "wall_change_percent": 1.8682982374807366,
+      "cpu_change_percent": 2.487188340922164
+    }
+  },
+  "first_cohort": {
+    "collect_hail": {
+      "baseline": {
+        "wall_seconds": 0.37632624997058883,
+        "cpu_seconds": 3.744563499999999,
+        "process_medians": [
+          {
+            "wall_seconds": 0.37308454199228436,
+            "cpu_seconds": 3.6988179999999993
+          },
+          {
+            "wall_seconds": 0.3795679579488933,
+            "cpu_seconds": 3.790308999999999
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.38481635448988527,
+        "cpu_seconds": 3.3190470000000003,
+        "process_medians": [
+          {
+            "wall_seconds": 0.3689957919996232,
+            "cpu_seconds": 3.304585
+          },
+          {
+            "wall_seconds": 0.40063691698014736,
+            "cpu_seconds": 3.333509000000001
+          }
+        ]
+      },
+      "hail": {
+        "wall_seconds": 0.47850110445870087,
+        "cpu_seconds": 2.689131824000001,
+        "process_medians": [
+          {
+            "wall_seconds": 0.529402874992229,
+            "cpu_seconds": 3.065195560000001
+          },
+          {
+            "wall_seconds": 0.4275993339251727,
+            "cpu_seconds": 2.3130680880000005
+          }
+        ]
+      },
+      "wall_change_percent": 2.256048978767744,
+      "cpu_change_percent": -11.363580828579856
+    },
+    "collect_duplicates": {
+      "baseline": {
+        "wall_seconds": 0.3873638539807871,
+        "cpu_seconds": 4.229615000000001,
+        "process_medians": [
+          {
+            "wall_seconds": 0.38225283299107105,
+            "cpu_seconds": 4.337124000000001
+          },
+          {
+            "wall_seconds": 0.39247487497050315,
+            "cpu_seconds": 4.1221060000000005
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.38991900003748015,
+        "cpu_seconds": 4.1660195,
+        "process_medians": [
+          {
+            "wall_seconds": 0.38147891708649695,
+            "cpu_seconds": 4.202449
+          },
+          {
+            "wall_seconds": 0.39835908298846334,
+            "cpu_seconds": 4.12959
+          }
+        ]
+      },
+      "wall_change_percent": 0.6596242861678592,
+      "cpu_change_percent": -1.5035765666615242
+    },
+    "collect_native": {
+      "baseline": {
+        "wall_seconds": 0.04016662499634549,
+        "cpu_seconds": 0.1320725,
+        "process_medians": [
+          {
+            "wall_seconds": 0.04052133299410343,
+            "cpu_seconds": 0.13177499999999998
+          },
+          {
+            "wall_seconds": 0.03981191699858755,
+            "cpu_seconds": 0.13237000000000004
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.04056002094876021,
+        "cpu_seconds": 0.12949349999999993,
+        "process_medians": [
+          {
+            "wall_seconds": 0.04026787495240569,
+            "cpu_seconds": 0.1287799999999999
+          },
+          {
+            "wall_seconds": 0.04085216694511473,
+            "cpu_seconds": 0.13020699999999996
+          }
+        ]
+      },
+      "wall_change_percent": 0.9794100262357386,
+      "cpu_change_percent": -1.9527153646671902
+    },
+    "take_rekey": {
+      "baseline": {
+        "wall_seconds": 2.4047141875489615,
+        "cpu_seconds": 2.9029315,
+        "process_medians": [
+          {
+            "wall_seconds": 2.418037833063863,
+            "cpu_seconds": 2.928452
+          },
+          {
+            "wall_seconds": 2.3913905420340598,
+            "cpu_seconds": 2.877411
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 2.4877583755296655,
+        "cpu_seconds": 3.003680499999999,
+        "process_medians": [
+          {
+            "wall_seconds": 2.471193209057674,
+            "cpu_seconds": 2.9838359999999984
+          },
+          {
+            "wall_seconds": 2.504323542001657,
+            "cpu_seconds": 3.0235249999999994
+          }
+        ]
+      },
+      "wall_change_percent": 3.453391193460198,
+      "cpu_change_percent": 3.4705951552766123
+    }
+  },
+  "reverse_cohort": {
+    "collect_hail": {
+      "baseline": {
+        "wall_seconds": 0.34050331299658865,
+        "cpu_seconds": 3.8135085,
+        "process_medians": [
+          {
+            "wall_seconds": 0.3537211670773104,
+            "cpu_seconds": 3.861604
+          },
+          {
+            "wall_seconds": 0.3272854589158669,
+            "cpu_seconds": 3.7654130000000006
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.3488331039552577,
+        "cpu_seconds": 3.33967,
+        "process_medians": [
+          {
+            "wall_seconds": 0.35894345794804394,
+            "cpu_seconds": 3.3568610000000003
+          },
+          {
+            "wall_seconds": 0.3387227499624714,
+            "cpu_seconds": 3.322479
+          }
+        ]
+      },
+      "wall_change_percent": 2.446317154850264,
+      "cpu_change_percent": -12.425264031796445
+    },
+    "take_rekey": {
+      "baseline": {
+        "wall_seconds": 2.3732492919662036,
+        "cpu_seconds": 2.8668430000000003,
+        "process_medians": [
+          {
+            "wall_seconds": 2.399653958971612,
+            "cpu_seconds": 2.891553
+          },
+          {
+            "wall_seconds": 2.346844624960795,
+            "cpu_seconds": 2.8421330000000005
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 2.4083349999855272,
+        "cpu_seconds": 2.926866499999999,
+        "process_medians": [
+          {
+            "wall_seconds": 2.409362291917205,
+            "cpu_seconds": 2.92512
+          },
+          {
+            "wall_seconds": 2.4073077080538496,
+            "cpu_seconds": 2.9286129999999986
+          }
+        ]
+      },
+      "wall_change_percent": 1.47838274462333,
+      "cpu_change_percent": 2.0937142354847893
+    }
+  },
+  "scope": "First balanced18workers54calls plus focused8workers24calls reverseorder repeat of collect_hail/take_rekey due unresolvedcontrol; 4freshprocesses/version for those two, 2/version otherwise, 2Hail; median of per-process median3calls after1warmup. Both cohorts retained; no control adjustment. Exact upstream actions; execution tests, not cross-engine values. Hail CPU includes observed stable JVM endpoint lowerbound. Native is preexisting1000x2535subset; Hailinput is250000x1000.",
+  "receipts": [
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "hail",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-0-hail"
+      ],
+      "leader": 57791,
+      "owned_identities": {
+        "57791": 1794349678.68457,
+        "57809": 1794349680.516923,
+        "57819": 1794349680.556436,
+        "57820": 1794349680.557128
+      },
+      "seconds": 19.114179875003174,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1459306496,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-1-baseline"
+      ],
+      "leader": 57952,
+      "owned_identities": {
+        "57952": 1794349697.799677
+      },
+      "seconds": 2.12772562506143,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5001347072,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-2-candidate"
+      ],
+      "leader": 57953,
+      "owned_identities": {
+        "57953": 1794349699.928171
+      },
+      "seconds": 2.0622568749822676,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 3751378944,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-3-candidate"
+      ],
+      "leader": 57958,
+      "owned_identities": {
+        "57958": 1794349701.991194
+      },
+      "seconds": 2.1364564589457586,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 3702603776,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-4-baseline"
+      ],
+      "leader": 57966,
+      "owned_identities": {
+        "57966": 1794349704.128388
+      },
+      "seconds": 2.07504991593305,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 4962271232,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "hail",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-5-hail"
+      ],
+      "leader": 57982,
+      "owned_identities": {
+        "57982": 1794349706.204379,
+        "57992": 1794349707.513235,
+        "58002": 1794349707.537898,
+        "58003": 1794349707.538536
+      },
+      "seconds": 17.81669783394318,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1412382720,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-0-baseline"
+      ],
+      "leader": 58082,
+      "owned_identities": {
+        "58082": 1794349724.022007
+      },
+      "seconds": 2.213236792013049,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 8181088256,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-1-candidate"
+      ],
+      "leader": 58083,
+      "owned_identities": {
+        "58083": 1794349726.23628
+      },
+      "seconds": 2.2681975830346346,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 9180266496,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-2-candidate"
+      ],
+      "leader": 58099,
+      "owned_identities": {
+        "58099": 1794349728.505389
+      },
+      "seconds": 2.290505666984245,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 8764342272,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-3-baseline"
+      ],
+      "leader": 58100,
+      "owned_identities": {
+        "58100": 1794349730.796723
+      },
+      "seconds": 2.131578875007108,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 7371866112,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-0-baseline"
+      ],
+      "leader": 58101,
+      "owned_identities": {
+        "58101": 1794349732.929123
+      },
+      "seconds": 0.6584051670506597,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 763674624,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-1-candidate"
+      ],
+      "leader": 58102,
+      "owned_identities": {
+        "58102": 1794349733.588394
+      },
+      "seconds": 0.6271113749826327,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 761970688,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-2-candidate"
+      ],
+      "leader": 58104,
+      "owned_identities": {
+        "58104": 1794349734.216335
+      },
+      "seconds": 0.670024499995634,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 765100032,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-3-baseline"
+      ],
+      "leader": 58105,
+      "owned_identities": {
+        "58105": 1794349734.887178
+      },
+      "seconds": 0.6744084589881822,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 772194304,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-0-baseline"
+      ],
+      "leader": 58106,
+      "owned_identities": {
+        "58106": 1794349735.562619
+      },
+      "seconds": 10.129400333971716,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1660534784,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-1-candidate"
+      ],
+      "leader": 58151,
+      "owned_identities": {
+        "58151": 1794349745.692905
+      },
+      "seconds": 10.357074541971087,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1596456960,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-2-candidate"
+      ],
+      "leader": 58160,
+      "owned_identities": {
+        "58160": 1794349756.050933
+      },
+      "seconds": 10.550899417023174,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1621704704,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-3-baseline"
+      ],
+      "leader": 58284,
+      "owned_identities": {
+        "58284": 1794349766.602795
+      },
+      "seconds": 10.104314125026576,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1625620480,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/collect_hail-0-candidate"
+      ],
+      "leader": 58731,
+      "owned_identities": {
+        "58731": 1794349863.92946
+      },
+      "seconds": 2.009649708052166,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 3982376960,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/collect_hail-1-baseline"
+      ],
+      "leader": 58735,
+      "owned_identities": {
+        "58735": 1794349865.940168
+      },
+      "seconds": 1.9429145000176504,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5003280384,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/collect_hail-2-baseline"
+      ],
+      "leader": 58778,
+      "owned_identities": {
+        "58778": 1794349867.883657
+      },
+      "seconds": 1.9484214999247342,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5673648128,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/collect_hail-3-candidate"
+      ],
+      "leader": 58779,
+      "owned_identities": {
+        "58779": 1794349869.833307
+      },
+      "seconds": 1.9574150410480797,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 3657940992,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/take_rekey-0-candidate"
+      ],
+      "leader": 58782,
+      "owned_identities": {
+        "58782": 1794349871.791653
+      },
+      "seconds": 10.099882707931101,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1637122048,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/take_rekey-1-baseline"
+      ],
+      "leader": 58828,
+      "owned_identities": {
+        "58828": 1794349881.892234
+      },
+      "seconds": 10.05796304193791,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1605042176,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/take_rekey-2-baseline"
+      ],
+      "leader": 58867,
+      "owned_identities": {
+        "58867": 1794349891.951132
+      },
+      "seconds": 9.91650087502785,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1421475840,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/repeat-timings/take_rekey-3-candidate"
+      ],
+      "leader": 58960,
+      "owned_identities": {
+        "58960": 1794349901.868545
+      },
+      "seconds": 10.180377624928951,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1591640064,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  ],
+  "all_inputs_verified_before_after": true
+}

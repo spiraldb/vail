@@ -1,0 +1,1316 @@
+{
+  "summary": {
+    "collect_hail": {
+      "baseline": {
+        "wall_seconds": 0.37632624997058883,
+        "cpu_seconds": 3.744563499999999,
+        "process_medians": [
+          {
+            "wall_seconds": 0.37308454199228436,
+            "cpu_seconds": 3.6988179999999993
+          },
+          {
+            "wall_seconds": 0.3795679579488933,
+            "cpu_seconds": 3.790308999999999
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.38481635448988527,
+        "cpu_seconds": 3.3190470000000003,
+        "process_medians": [
+          {
+            "wall_seconds": 0.3689957919996232,
+            "cpu_seconds": 3.304585
+          },
+          {
+            "wall_seconds": 0.40063691698014736,
+            "cpu_seconds": 3.333509000000001
+          }
+        ]
+      },
+      "hail": {
+        "wall_seconds": 0.47850110445870087,
+        "cpu_seconds": 2.689131824000001,
+        "process_medians": [
+          {
+            "wall_seconds": 0.529402874992229,
+            "cpu_seconds": 3.065195560000001
+          },
+          {
+            "wall_seconds": 0.4275993339251727,
+            "cpu_seconds": 2.3130680880000005
+          }
+        ]
+      },
+      "wall_change_percent": 2.256048978767744,
+      "cpu_change_percent": -11.363580828579856
+    },
+    "collect_duplicates": {
+      "baseline": {
+        "wall_seconds": 0.3873638539807871,
+        "cpu_seconds": 4.229615000000001,
+        "process_medians": [
+          {
+            "wall_seconds": 0.38225283299107105,
+            "cpu_seconds": 4.337124000000001
+          },
+          {
+            "wall_seconds": 0.39247487497050315,
+            "cpu_seconds": 4.1221060000000005
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.38991900003748015,
+        "cpu_seconds": 4.1660195,
+        "process_medians": [
+          {
+            "wall_seconds": 0.38147891708649695,
+            "cpu_seconds": 4.202449
+          },
+          {
+            "wall_seconds": 0.39835908298846334,
+            "cpu_seconds": 4.12959
+          }
+        ]
+      },
+      "wall_change_percent": 0.6596242861678592,
+      "cpu_change_percent": -1.5035765666615242
+    },
+    "collect_native": {
+      "baseline": {
+        "wall_seconds": 0.04016662499634549,
+        "cpu_seconds": 0.1320725,
+        "process_medians": [
+          {
+            "wall_seconds": 0.04052133299410343,
+            "cpu_seconds": 0.13177499999999998
+          },
+          {
+            "wall_seconds": 0.03981191699858755,
+            "cpu_seconds": 0.13237000000000004
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 0.04056002094876021,
+        "cpu_seconds": 0.12949349999999993,
+        "process_medians": [
+          {
+            "wall_seconds": 0.04026787495240569,
+            "cpu_seconds": 0.1287799999999999
+          },
+          {
+            "wall_seconds": 0.04085216694511473,
+            "cpu_seconds": 0.13020699999999996
+          }
+        ]
+      },
+      "wall_change_percent": 0.9794100262357386,
+      "cpu_change_percent": -1.9527153646671902
+    },
+    "take_rekey": {
+      "baseline": {
+        "wall_seconds": 2.4047141875489615,
+        "cpu_seconds": 2.9029315,
+        "process_medians": [
+          {
+            "wall_seconds": 2.418037833063863,
+            "cpu_seconds": 2.928452
+          },
+          {
+            "wall_seconds": 2.3913905420340598,
+            "cpu_seconds": 2.877411
+          }
+        ]
+      },
+      "candidate": {
+        "wall_seconds": 2.4877583755296655,
+        "cpu_seconds": 3.003680499999999,
+        "process_medians": [
+          {
+            "wall_seconds": 2.471193209057674,
+            "cpu_seconds": 2.9838359999999984
+          },
+          {
+            "wall_seconds": 2.504323542001657,
+            "cpu_seconds": 3.0235249999999994
+          }
+        ]
+      },
+      "wall_change_percent": 3.453391193460198,
+      "cpu_change_percent": 3.4705951552766123
+    }
+  },
+  "results": [
+    {
+      "mode": "hail",
+      "case": "collect_hail",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.5506335829850286,
+          "cpu_seconds": 3.125881591999998,
+          "python_cpu_seconds": 0.0060469999999999136,
+          "observed_child_cpu_seconds": 3.1198345919999984,
+          "threads_after_query": 5,
+          "before": {
+            "57809:1794349680.516923": 11.102042208
+          },
+          "after": {
+            "57809:1794349680.516923": 14.221876799999999
+          }
+        },
+        {
+          "wall_seconds": 0.529402874992229,
+          "cpu_seconds": 3.065195560000001,
+          "python_cpu_seconds": 0.005969000000000113,
+          "observed_child_cpu_seconds": 3.059226560000001,
+          "threads_after_query": 5,
+          "before": {
+            "57809:1794349680.516923": 14.26119072
+          },
+          "after": {
+            "57809:1794349680.516923": 17.32041728
+          }
+        },
+        {
+          "wall_seconds": 0.4417942080181092,
+          "cpu_seconds": 2.3405737520000036,
+          "python_cpu_seconds": 0.005835000000000035,
+          "observed_child_cpu_seconds": 2.3347387520000034,
+          "threads_after_query": 5,
+          "before": {
+            "57809:1794349680.516923": 17.320464064
+          },
+          "after": {
+            "57809:1794349680.516923": 19.655202816000003
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "collect_hail",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.35882258403580636,
+          "cpu_seconds": 3.6936279999999995,
+          "python_cpu_seconds": 3.6936279999999995,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 142,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.37308454199228436,
+          "cpu_seconds": 3.6988179999999993,
+          "python_cpu_seconds": 3.6988179999999993,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 143,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.3898128329310566,
+          "cpu_seconds": 3.8631650000000004,
+          "python_cpu_seconds": 3.8631650000000004,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 143,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "collect_hail",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.3689957919996232,
+          "cpu_seconds": 3.304585,
+          "python_cpu_seconds": 3.304585,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 164,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.3493476250441745,
+          "cpu_seconds": 3.2674829999999995,
+          "python_cpu_seconds": 3.2674829999999995,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 164,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.401207625051029,
+          "cpu_seconds": 3.3507569999999998,
+          "python_cpu_seconds": 3.3507569999999998,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 164,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "collect_hail",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.39932745799887925,
+          "cpu_seconds": 3.327709,
+          "python_cpu_seconds": 3.327709,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 137,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.40063691698014736,
+          "cpu_seconds": 3.3501139999999996,
+          "python_cpu_seconds": 3.3501139999999996,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 137,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.41011299996171147,
+          "cpu_seconds": 3.333509000000001,
+          "python_cpu_seconds": 3.333509000000001,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 137,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "collect_hail",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.3646100000478327,
+          "cpu_seconds": 3.790308999999999,
+          "python_cpu_seconds": 3.790308999999999,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 145,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.3795679579488933,
+          "cpu_seconds": 3.7618969999999994,
+          "python_cpu_seconds": 3.7618969999999994,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 145,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.39195904205553234,
+          "cpu_seconds": 3.804734,
+          "python_cpu_seconds": 3.804734,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 164,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "hail",
+      "case": "collect_hail",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.5746681250166148,
+          "cpu_seconds": 3.2648174479999987,
+          "python_cpu_seconds": 0.005789000000000044,
+          "observed_child_cpu_seconds": 3.2590284479999987,
+          "threads_after_query": 5,
+          "before": {
+            "57992:1794349707.513235": 10.06649552
+          },
+          "after": {
+            "57992:1794349707.513235": 13.325523967999999
+          }
+        },
+        {
+          "wall_seconds": 0.4275993339251727,
+          "cpu_seconds": 2.3130680880000005,
+          "python_cpu_seconds": 0.005835000000000035,
+          "observed_child_cpu_seconds": 2.3072330880000003,
+          "threads_after_query": 5,
+          "before": {
+            "57992:1794349707.513235": 13.328443968
+          },
+          "after": {
+            "57992:1794349707.513235": 15.635677056
+          }
+        },
+        {
+          "wall_seconds": 0.416120707988739,
+          "cpu_seconds": 1.8192320719999981,
+          "python_cpu_seconds": 0.005981000000000014,
+          "observed_child_cpu_seconds": 1.8132510719999981,
+          "threads_after_query": 5,
+          "before": {
+            "57992:1794349707.513235": 15.635677056
+          },
+          "after": {
+            "57992:1794349707.513235": 17.448928128
+          }
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "collect_duplicates",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "workload": "duplicate-key collect control: original group-by-take key expression with collect payload",
+      "samples": [
+        {
+          "wall_seconds": 0.3740595409180969,
+          "cpu_seconds": 4.133218,
+          "python_cpu_seconds": 4.133218,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 126,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.38225283299107105,
+          "cpu_seconds": 4.337124000000001,
+          "python_cpu_seconds": 4.337124000000001,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 126,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.4035831249784678,
+          "cpu_seconds": 4.5270340000000004,
+          "python_cpu_seconds": 4.5270340000000004,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 160,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "collect_duplicates",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "workload": "duplicate-key collect control: original group-by-take key expression with collect payload",
+      "samples": [
+        {
+          "wall_seconds": 0.3625674999784678,
+          "cpu_seconds": 4.202449,
+          "python_cpu_seconds": 4.202449,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 121,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.38147891708649695,
+          "cpu_seconds": 4.201975000000001,
+          "python_cpu_seconds": 4.201975000000001,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 121,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.4422599580138922,
+          "cpu_seconds": 4.642906999999999,
+          "python_cpu_seconds": 4.642906999999999,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 136,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "collect_duplicates",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "workload": "duplicate-key collect control: original group-by-take key expression with collect payload",
+      "samples": [
+        {
+          "wall_seconds": 0.37232483294792473,
+          "cpu_seconds": 4.1043520000000004,
+          "python_cpu_seconds": 4.1043520000000004,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 176,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.39835908298846334,
+          "cpu_seconds": 4.12959,
+          "python_cpu_seconds": 4.12959,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 176,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.4466920829145238,
+          "cpu_seconds": 4.560483,
+          "python_cpu_seconds": 4.560483,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 176,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "collect_duplicates",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "workload": "duplicate-key collect control: original group-by-take key expression with collect payload",
+      "samples": [
+        {
+          "wall_seconds": 0.36031554103828967,
+          "cpu_seconds": 3.972271,
+          "python_cpu_seconds": 3.972271,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 146,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.39247487497050315,
+          "cpu_seconds": 4.1221060000000005,
+          "python_cpu_seconds": 4.1221060000000005,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 146,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.4062004160368815,
+          "cpu_seconds": 4.431918,
+          "python_cpu_seconds": 4.431918,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 146,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "collect_native",
+      "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.04423316603060812,
+          "cpu_seconds": 0.13198300000000002,
+          "python_cpu_seconds": 0.13198300000000002,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.04052133299410343,
+          "cpu_seconds": 0.13056299999999998,
+          "python_cpu_seconds": 0.13056299999999998,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.04019137506838888,
+          "cpu_seconds": 0.13177499999999998,
+          "python_cpu_seconds": 0.13177499999999998,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "collect_native",
+      "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.04255554196424782,
+          "cpu_seconds": 0.13322,
+          "python_cpu_seconds": 0.13322,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.04026787495240569,
+          "cpu_seconds": 0.12793900000000002,
+          "python_cpu_seconds": 0.12793900000000002,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.038898459053598344,
+          "cpu_seconds": 0.1287799999999999,
+          "python_cpu_seconds": 0.1287799999999999,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "collect_native",
+      "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.04329866694752127,
+          "cpu_seconds": 0.13349299999999997,
+          "python_cpu_seconds": 0.13349299999999997,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.0405855419812724,
+          "cpu_seconds": 0.13020699999999996,
+          "python_cpu_seconds": 0.13020699999999996,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.04085216694511473,
+          "cpu_seconds": 0.12985099999999994,
+          "python_cpu_seconds": 0.12985099999999994,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "collect_native",
+      "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_collect_per_row(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(*ht.key).aggregate(value=hl.agg.collect(ht.row_value))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 0.03915208298712969,
+          "cpu_seconds": 0.13237000000000004,
+          "python_cpu_seconds": 0.13237000000000004,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.03981191699858755,
+          "cpu_seconds": 0.13500500000000004,
+          "python_cpu_seconds": 0.13500500000000004,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 0.03993575007189065,
+          "cpu_seconds": 0.12935200000000002,
+          "python_cpu_seconds": 0.12935200000000002,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 33,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "take_rekey",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 2.431143791996874,
+          "cpu_seconds": 2.928452,
+          "python_cpu_seconds": 2.928452,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 173,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.418037833063863,
+          "cpu_seconds": 2.939369,
+          "python_cpu_seconds": 2.939369,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 173,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.37622974999249,
+          "cpu_seconds": 2.8909019999999988,
+          "python_cpu_seconds": 2.8909019999999988,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 173,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "take_rekey",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 2.4958312910748646,
+          "cpu_seconds": 2.985004,
+          "python_cpu_seconds": 2.985004,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 144,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.471193209057674,
+          "cpu_seconds": 2.942856999999999,
+          "python_cpu_seconds": 2.942856999999999,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 144,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.4604877090314403,
+          "cpu_seconds": 2.9838359999999984,
+          "python_cpu_seconds": 2.9838359999999984,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 144,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "candidate",
+      "case": "take_rekey",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 2.460872041992843,
+          "cpu_seconds": 2.940576,
+          "python_cpu_seconds": 2.940576,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 153,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.504323542001657,
+          "cpu_seconds": 3.0235249999999994,
+          "python_cpu_seconds": 3.0235249999999994,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 153,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.568688749917783,
+          "cpu_seconds": 3.0553870000000014,
+          "python_cpu_seconds": 3.0553870000000014,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 153,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "baseline",
+      "case": "take_rekey",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Python process plus stable observed child endpoint CPU; may omit unobserved short-lived children",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "allocator": "mimalloc",
+      "source": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "samples": [
+        {
+          "wall_seconds": 2.3861440420150757,
+          "cpu_seconds": 2.877411,
+          "python_cpu_seconds": 2.877411,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 153,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.4055851669982076,
+          "cpu_seconds": 2.9013530000000003,
+          "python_cpu_seconds": 2.9013530000000003,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 153,
+          "before": {},
+          "after": {}
+        },
+        {
+          "wall_seconds": 2.3913905420340598,
+          "cpu_seconds": 2.8719839999999994,
+          "python_cpu_seconds": 2.8719839999999994,
+          "observed_child_cpu_seconds": 0,
+          "threads_after_query": 153,
+          "before": {},
+          "after": {}
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "receipts": [
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "hail",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-0-hail"
+      ],
+      "leader": 57791,
+      "owned_identities": {
+        "57791": 1794349678.68457,
+        "57809": 1794349680.516923,
+        "57819": 1794349680.556436,
+        "57820": 1794349680.557128
+      },
+      "seconds": 19.114179875003174,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1459306496,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-1-baseline"
+      ],
+      "leader": 57952,
+      "owned_identities": {
+        "57952": 1794349697.799677
+      },
+      "seconds": 2.12772562506143,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5001347072,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-2-candidate"
+      ],
+      "leader": 57953,
+      "owned_identities": {
+        "57953": 1794349699.928171
+      },
+      "seconds": 2.0622568749822676,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 3751378944,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-3-candidate"
+      ],
+      "leader": 57958,
+      "owned_identities": {
+        "57958": 1794349701.991194
+      },
+      "seconds": 2.1364564589457586,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 3702603776,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-4-baseline"
+      ],
+      "leader": 57966,
+      "owned_identities": {
+        "57966": 1794349704.128388
+      },
+      "seconds": 2.07504991593305,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 4962271232,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "hail",
+        "collect_hail",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_hail-5-hail"
+      ],
+      "leader": 57982,
+      "owned_identities": {
+        "57982": 1794349706.204379,
+        "57992": 1794349707.513235,
+        "58002": 1794349707.537898,
+        "58003": 1794349707.538536
+      },
+      "seconds": 17.81669783394318,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1412382720,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-0-baseline"
+      ],
+      "leader": 58082,
+      "owned_identities": {
+        "58082": 1794349724.022007
+      },
+      "seconds": 2.213236792013049,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 8181088256,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-1-candidate"
+      ],
+      "leader": 58083,
+      "owned_identities": {
+        "58083": 1794349726.23628
+      },
+      "seconds": 2.2681975830346346,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 9180266496,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-2-candidate"
+      ],
+      "leader": 58099,
+      "owned_identities": {
+        "58099": 1794349728.505389
+      },
+      "seconds": 2.290505666984245,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 8764342272,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_duplicates",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_duplicates-3-baseline"
+      ],
+      "leader": 58100,
+      "owned_identities": {
+        "58100": 1794349730.796723
+      },
+      "seconds": 2.131578875007108,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 7371866112,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-0-baseline"
+      ],
+      "leader": 58101,
+      "owned_identities": {
+        "58101": 1794349732.929123
+      },
+      "seconds": 0.6584051670506597,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 763674624,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-1-candidate"
+      ],
+      "leader": 58102,
+      "owned_identities": {
+        "58102": 1794349733.588394
+      },
+      "seconds": 0.6271113749826327,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 761970688,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-2-candidate"
+      ],
+      "leader": 58104,
+      "owned_identities": {
+        "58104": 1794349734.216335
+      },
+      "seconds": 0.670024499995634,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 765100032,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "collect_native",
+        "/private/tmp/vail-collect-state-20261110/final/timings/collect_native-3-baseline"
+      ],
+      "leader": 58105,
+      "owned_identities": {
+        "58105": 1794349734.887178
+      },
+      "seconds": 0.6744084589881822,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 772194304,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-0-baseline"
+      ],
+      "leader": 58106,
+      "owned_identities": {
+        "58106": 1794349735.562619
+      },
+      "seconds": 10.129400333971716,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1660534784,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-1-candidate"
+      ],
+      "leader": 58151,
+      "owned_identities": {
+        "58151": 1794349745.692905
+      },
+      "seconds": 10.357074541971087,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1596456960,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "candidate",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-2-candidate"
+      ],
+      "leader": 58160,
+      "owned_identities": {
+        "58160": 1794349756.050933
+      },
+      "seconds": 10.550899417023174,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1621704704,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-collect-state-20261110/final/bench-worker.py",
+        "baseline",
+        "take_rekey",
+        "/private/tmp/vail-collect-state-20261110/final/timings/take_rekey-3-baseline"
+      ],
+      "leader": 58284,
+      "owned_identities": {
+        "58284": 1794349766.602795
+      },
+      "seconds": 10.104314125026576,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1625620480,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  ],
+  "all_inputs_verified_before_after": true,
+  "scope": "2 fresh processes/engine/case; balanced H,B,C,C,B,H primary and B,C,C,B controls; median of3 warm calls per process; original upstream force_count actions; execution-only, not cross-engine value validation"
+}

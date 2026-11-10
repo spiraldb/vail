@@ -1,0 +1,27 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "python/tests/test_grouped_collect_nested.py",
+    "python/tests/test_grouped_aggregate.py",
+    "python/tests/test_grouped_aggregate_execution.py",
+    "python/tests/test_aggregate_execution.py",
+    "python/tests/test_aggregate_initialization_lazy.py",
+    "python/tests/test_aggregate_global_initialization.py",
+    "python/tests/test_aggregate_nested_projection.py"
+  ],
+  "returncode": 0,
+  "seconds": 2.0847963329870254,
+  "source": "79744c0316884b341ed04cc2f02d77fb6bd3d7ba",
+  "native": {
+    "package": "/private/tmp/vail-collect-state-20261110/final/env/lib/python3.12/site-packages/vail/__init__.py",
+    "native": "/private/tmp/vail-collect-state-20261110/final/env/lib/python3.12/site-packages/vail/_native.abi3.so",
+    "allocator": "mimalloc",
+    "sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193"
+  }
+}
