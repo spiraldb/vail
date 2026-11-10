@@ -1107,6 +1107,8 @@ impl ExecutionPlan for PartitionSetExec {
 #[derive(Debug)]
 pub(crate) struct OrderedConcatExec {
     parts: Vec<PhysicalPlan>,
+    fetch: Option<usize>,
+    prefix: Option<crate::prefix_read::ReadPrefix>,
     cache: Arc<PlanProperties>,
     requirements: Vec<Option<OrderingRequirements>>,
     tag_index: Option<usize>,
@@ -1120,6 +1122,8 @@ impl OrderedConcatExec {
     }
     fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
         Self {
+            fetch: None,
+            prefix: None,
             tag_index,
             requirements: parts.iter().map(required_ordering).collect(),
             parts,
@@ -1164,11 +1168,21 @@ impl ExecutionPlan for OrderedConcatExec {
         self: Arc<Self>,
         children: Vec<PhysicalPlan>,
     ) -> datafusion_common::Result<PhysicalPlan> {
-        Ok(Arc::new(Self::with_tag(
-            children,
-            self.schema(),
-            self.tag_index,
-        )))
+        let mut result = Self::with_tag(children, self.schema(), self.tag_index);
+        result.fetch = self.fetch;
+        if let Some(rows) = self.fetch {
+            (result.parts, result.prefix) = crate::prefix_read::prepare(result.parts, rows)?;
+        }
+        Ok(Arc::new(result))
+    }
+    fn fetch(&self) -> Option<usize> { self.fetch }
+    fn with_fetch(&self, fetch: Option<usize>) -> Option<PhysicalPlan> {
+        let mut result = Self::with_tag(self.parts.clone(), self.schema(), self.tag_index);
+        result.fetch = fetch;
+        if let Some(rows) = fetch {
+            (result.parts, result.prefix) = crate::prefix_read::prepare(result.parts, rows).ok()?;
+        }
+        Some(Arc::new(result))
     }
     fn execute(
         &self,
@@ -1182,13 +1196,28 @@ impl ExecutionPlan for OrderedConcatExec {
         }
         let parts = self.parts.clone();
         let tag_index = self.tag_index;
+        let mut remaining = self.fetch;
+        let prefix = self.prefix.clone();
         let schema = self.schema();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
-                let mut inputs = ordered_partition_streams(parts, context);
-                while let Some((id, mut stream)) = inputs.next().await {
-                    while let Some(batch)=stream.try_next().await? {
+                if remaining == Some(0) { return; }
+                let mut inputs: futures::stream::BoxStream<'static, datafusion_common::Result<(usize, SendableRecordBatchStream)>> = if remaining.is_none() {
+                    ordered_partition_streams(parts, context).map(Ok).boxed()
+                } else {
+                    futures::stream::iter(parts.into_iter().enumerate()).map(move |(id, part)| {
+                        let context = prefix.as_ref().map_or_else(|| context.clone(), |prefix| prefix.context(&context));
+                        part.execute(0, context).map(|stream| (id, stream))
+                    }).boxed()
+                };
+                while let Some((id, mut stream)) = inputs.try_next().await? {
+                    while let Some(mut batch)=stream.try_next().await? {
+                        if let Some(rows) = &mut remaining {
+                            let count = (*rows).min(batch.num_rows());
+                            batch = batch.slice(0, count);
+                            *rows -= count;
+                        }
                         let mut columns=batch.columns().to_vec();
                         if let Some(index) = tag_index {columns[index]=Arc::new(UInt64Array::from_iter_values(std::iter::repeat_n(id as u64,batch.num_rows())));}
                         let columns = columns.iter().zip(schema.fields())
@@ -1196,6 +1225,7 @@ impl ExecutionPlan for OrderedConcatExec {
                             .collect::<std::result::Result<Vec<_>, _>>()?;
                         yield RecordBatch::try_new_with_options(schema.clone(), columns,
                             &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
+                        if remaining == Some(0) { return; }
                     }
                 }
             },

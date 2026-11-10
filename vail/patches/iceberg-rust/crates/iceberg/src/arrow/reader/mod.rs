@@ -57,6 +57,7 @@ use projection::{
 /// Builder to create ArrowReader
 pub struct ArrowReaderBuilder {
     vortex_session: Option<VortexSession>,
+    vortex_row_limit: Option<usize>,
     scan_metrics: Option<ScanMetrics>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
@@ -75,6 +76,7 @@ impl ArrowReaderBuilder {
 
         ArrowReaderBuilder {
             vortex_session: None,
+            vortex_row_limit: None,
             scan_metrics: None,
             computed_projection: None,
             batch_size: None,
@@ -102,6 +104,12 @@ impl ArrowReaderBuilder {
     /// Sets the max number of in flight data files that are being fetched
     pub fn with_data_file_concurrency_limit(mut self, val: usize) -> Self {
         self.concurrency_limit_data_files = val;
+        self
+    }
+
+    /// Limit the rows returned by each Vortex file after filtering/deletes.
+    pub fn with_vortex_row_limit(mut self, rows: usize) -> Self {
+        self.vortex_row_limit = Some(rows);
         self
     }
 
@@ -163,6 +171,7 @@ impl ArrowReaderBuilder {
     pub fn build(self) -> ArrowReader {
         ArrowReader {
             vortex_session: self.vortex_session,
+            vortex_row_limit: self.vortex_row_limit,
             scan_metrics: self.scan_metrics,
             computed_projection: self.computed_projection,
             batch_size: self.batch_size,
@@ -184,6 +193,7 @@ impl ArrowReaderBuilder {
 #[derive(Clone)]
 pub struct ArrowReader {
     vortex_session: Option<VortexSession>,
+    vortex_row_limit: Option<usize>,
     scan_metrics: Option<ScanMetrics>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,

@@ -1112,7 +1112,7 @@ pub(crate) fn stream_from_plan_with_nested_projection(
     futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
     Vec<Range<u64>>,
 )> {
-    stream_from_plan_with_projection(plan, queries, residual_filter, row_range, projection, nested_paths, scan_metrics, None)
+    stream_from_plan_with_projection(plan, queries, residual_filter, row_range, projection, nested_paths, scan_metrics, None, None, None)
 }
 
 pub(crate) fn stream_from_plan_with_projection(
@@ -1124,10 +1124,15 @@ pub(crate) fn stream_from_plan_with_projection(
     nested_paths: Option<Vec<Vec<String>>>,
     scan_metrics: Option<ScanMetrics>,
     computed: Option<(vortex::expr::Expression, Arc<arrow_schema::Schema>)>,
+    batch_size: Option<usize>,
+    row_limit: Option<usize>,
 ) -> Result<(
     futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
     Vec<Range<u64>>,
 )> {
+    if row_limit.is_some() && residual_filter {
+        return Err(StorageError::Invalid("raw row limit cannot cross a residual filter".into()));
+    }
     if computed.is_some() && residual_filter {
         return Err(StorageError::Invalid("computed source projection requires source range filtering before the projection".into()));
     }
@@ -1243,7 +1248,10 @@ pub(crate) fn stream_from_plan_with_projection(
     let output_schema_for_stream = output_schema.clone();
     let read_schema_for_stream = read_schema.clone();
     let stream = async_stream::try_stream! {
+        let mut remaining = row_limit;
         for file in selected {
+            if remaining == Some(0) { break; }
+            let file_limit = remaining;
             let path = local_path(&file.identity.path)?;
             if std::fs::metadata(&path)?.len() != file.task.file_size_in_bytes() {
                 Err(StorageError::Invalid("Vortex file size mismatch".into()))?;
@@ -1252,6 +1260,8 @@ pub(crate) fn stream_from_plan_with_projection(
             let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
             let mut reader = plan_for_stream.table.reader_builder()
                 .with_data_file_concurrency_limit(1);
+            if let Some(rows) = batch_size { reader = reader.with_batch_size(rows); }
+            if let Some(rows) = file_limit { reader = reader.with_vortex_row_limit(rows); }
             if let Some(session) = &plan_for_stream.vortex_session {
                 reader = reader.with_vortex_session(session.clone());
             }
@@ -1283,10 +1293,12 @@ pub(crate) fn stream_from_plan_with_projection(
                     };
                     let batch = RecordBatch::try_new_with_options(output_schema_for_stream.clone(), columns,
                         &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
+                    if let Some(rows) = &mut remaining { *rows = rows.saturating_sub(batch.num_rows()); }
                     yield (batch_offset, batch);
                 }
             }
-            if decoded_rows != file.identity.row_count { Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?; }
+            let expected_rows = file_limit.map_or(file.identity.row_count, |limit| file.identity.row_count.min(limit as u64));
+            if decoded_rows != expected_rows { Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?; }
         }
     }.boxed();
     Ok((stream, selected_row_ranges))

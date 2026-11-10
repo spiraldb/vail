@@ -267,6 +267,13 @@ pub(crate) fn cap_filter_batches(
     plan: crate::plan::PhysicalPlan,
     rows: usize,
 ) -> crate::Result<crate::plan::PhysicalPlan> {
+    Ok(cap_filter_batches_many(vec![plan], rows)?.remove(0))
+}
+
+pub(crate) fn cap_filter_batches_many(
+    plans: Vec<crate::plan::PhysicalPlan>,
+    rows: usize,
+) -> crate::Result<Vec<crate::plan::PhysicalPlan>> {
     use datafusion_physical_plan::filter::FilterExec;
 
     fn rewrite(
@@ -302,5 +309,6 @@ pub(crate) fn cap_filter_batches(
         Ok(rewritten)
     }
 
-    rewrite(plan, rows, &mut HashMap::new()).map_err(Into::into)
+    let mut memo = HashMap::new();
+    plans.into_iter().map(|plan| rewrite(plan, rows, &mut memo).map_err(Into::into)).collect()
 }

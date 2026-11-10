@@ -579,6 +579,8 @@ pub struct LocalRead {
     partition_offsets: std::sync::Arc<Vec<u64>>,
     nested_projection_paths: Option<Vec<Vec<String>>>,
     scan_metrics: Option<ScanMetrics>,
+    scan_batch_size: Option<usize>,
+    partition_row_limit: Option<usize>,
     typed_partition_bounds: Arc<
         Vec<
             Option<(
@@ -597,6 +599,21 @@ pub enum PartitionEvent {
 }
 
 impl LocalRead {
+    /// Bound scan batches before Arrow conversion, without truncating the scan.
+    pub fn with_scan_batch_size(&self, rows: usize) -> Self {
+        let mut read = self.clone();
+        read.scan_batch_size = Some(rows.max(1));
+        read
+    }
+
+    /// Cap rows from each file-aligned partition; callers retain residual limits.
+    pub fn with_partition_row_limit(&self, rows: Option<usize>) -> Self {
+        let mut read = self.clone();
+        read.partition_row_limit = rows;
+        read
+    }
+
+    pub fn partition_row_limit(&self) -> Option<usize> { self.partition_row_limit }
     /// Attach an execution-owned live counter without changing shared snapshot metadata.
     pub fn with_scan_metrics(&self, metrics: ScanMetrics) -> Self {
         let mut read = self.clone();
@@ -847,10 +864,13 @@ impl LocalRead {
         let partition_offsets = self.partition_offsets.clone();
         let nested_projection_paths = self.nested_projection_paths.clone();
         let scan_metrics = self.scan_metrics.clone();
+        let batch_size = self.scan_batch_size;
+        let row_limit = self.partition_row_limit;
         let field_ids = field_ids.to_vec();
         async_stream::try_stream! {
             let count = *entry.partition_rows.get(partition).ok_or_else(||
                 StorageError::Invalid(format!("partition index {partition} is out of range")))?;
+            let count = row_limit.map_or(count, |limit| count.min(limit));
             let start = partition_offsets[partition];
             let end = start.checked_add(count as u64)
                 .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
@@ -859,6 +879,8 @@ impl LocalRead {
                 nested_projection_paths,
                 scan_metrics,
                 computed,
+                batch_size,
+                row_limit,
             )?;
             yield PartitionEvent::StartPartition;
             let mut emitted = 0u64;
@@ -935,13 +957,13 @@ impl LocalRead {
         let plan = self.plan.clone();
         let nested_projection_paths = self.nested_projection_paths.clone();
         let scan_metrics = self.scan_metrics.clone();
+        let batch_size = self.scan_batch_size;
         let queries = queries.to_vec();
         let field_ids = field_ids.to_vec();
         async_stream::try_stream! {
-            let (mut batches, _) = super::stream_from_plan_with_nested_projection(
+            let (mut batches, _) = super::stream_from_plan_with_projection(
                 plan, Some(queries), false, rows, Some(field_ids),
-                nested_projection_paths,
-                scan_metrics,
+                nested_projection_paths, scan_metrics, None, batch_size, None,
             )?;
             while let Some((offset, batch)) = batches.try_next().await? {
                 yield (offset, batch);
@@ -1240,6 +1262,8 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
         partition_offsets: std::sync::Arc::new(partition_offsets),
         nested_projection_paths: None,
         scan_metrics: None,
+        scan_batch_size: None,
+        partition_row_limit: None,
         typed_partition_bounds: Arc::new(typed_partition_bounds),
     })
 }

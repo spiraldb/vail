@@ -87,8 +87,10 @@ impl TableProvider for VailSourceProvider {
         state: &dyn Session,
         projection: Option<&Vec<usize>>,
         filters: &[Expr],
-        _limit: Option<usize>, // Limits remain as DataFusion operators above the scan.
+        limit: Option<usize>,
     ) -> DFResult<Arc<dyn ExecutionPlan>> {
+        // Inexact/residual predicates must retain their unbounded source.
+        let limit = limit.filter(|_| filters.is_empty());
         if let TableNode::TextRead { format, .. } = self.table.node()
             && format != "lines"
         {
@@ -250,6 +252,7 @@ impl TableProvider for VailSourceProvider {
                                 Some(&internal),
                                 nested_paths.clone(),
                             )
+                            .map(|part| limit.and_then(|rows| part.with_fetch(Some(rows))).unwrap_or(part))
                             .map_err(to_df_error)
                         })
                         .collect::<DFResult<Vec<_>>>()?;
@@ -813,8 +816,11 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         let row_schema = self.row_schema.clone();
         let schema = self.schema.clone();
         let field_ids = self.field_ids.clone();
-        let source = source.with_nested_projection_paths(self.nested_projection_paths.clone())
+        let mut source = source.with_nested_projection_paths(self.nested_projection_paths.clone())
             .with_scan_metrics(register_read_metrics(&self.metrics, partition));
+        if let Some(prefix) = context.session_config().get_extension::<crate::prefix_read::ReadPrefix>() {
+            source = source.with_scan_batch_size(prefix.batch_rows);
+        }
         let mut batches =
             source.projected_interval_batches_in_rows(&queries, start..end, &field_ids);
         let concurrency = self.concurrency.clone();
@@ -1512,4 +1518,11 @@ mod projected_provider_tests {
             .collect::<Vec<_>>();
         assert_eq!(genotypes, vec![10, 11, 20]);
     }
+}
+
+/// Interval predicates drop rows, so only batch advice crosses that source.
+pub(crate) fn prefix_node(plan: &Arc<dyn ExecutionPlan>) -> Option<bool> {
+    if plan.is::<PartitionSetExec>() { Some(true) }
+    else if plan.is::<ReadKeyFilteredExec>() { Some(false) }
+    else { None }
 }

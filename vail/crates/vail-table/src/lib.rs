@@ -16,6 +16,7 @@ mod conditional_globals;
 mod count_explode;
 mod indexed_unnest;
 mod list_child_unnest;
+mod prefix_read;
 mod early_aligned_product;
 mod early_native;
 mod projected_aligned;

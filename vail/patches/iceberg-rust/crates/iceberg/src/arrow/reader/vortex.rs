@@ -78,6 +78,7 @@ pub(super) async fn read_vortex_task(
     task: FileScanTask,
     file_io: &FileIO,
     batch_size: Option<usize>,
+    row_limit: Option<usize>,
     delete_file_loader: &CachingDeleteFileLoader,
     bytes_read_counter: Arc<AtomicU64>,
     computed_projection: Option<Expression>,
@@ -261,6 +262,7 @@ pub(super) async fn read_vortex_task(
         )
         .with_some_filter(filter)
         .with_row_range(row_range);
+    if let Some(limit) = row_limit { scan_builder = scan_builder.with_limit(limit as u64); }
     if let Some(batch_size) = batch_size {
         scan_builder = scan_builder.with_split_by(SplitBy::RowCount(batch_size));
     }

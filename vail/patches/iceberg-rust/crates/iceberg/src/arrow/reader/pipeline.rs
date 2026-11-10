@@ -65,6 +65,7 @@ impl ArrowReader {
 
         let mut task_reader = FileScanTaskReader {
             vortex_session: self.vortex_session,
+            vortex_row_limit: self.vortex_row_limit,
             batch_size: self.batch_size,
             file_io: self.file_io,
             delete_file_loader: self
@@ -133,6 +134,7 @@ const PRUNABLE_METADATA_FIELDS: &[i32] = &[
 #[derive(Clone)]
 struct FileScanTaskReader {
     vortex_session: Option<VortexSession>,
+    vortex_row_limit: Option<usize>,
     computed_projection: Option<::vortex::expr::Expression>,
     batch_size: Option<usize>,
     file_io: FileIO,
@@ -156,6 +158,7 @@ impl FileScanTaskReader {
                     task,
                     &self.file_io,
                     self.batch_size,
+                    self.vortex_row_limit,
                     &self.delete_file_loader,
                     self.scan_metrics.bytes_read_counter().clone(),
                     self.computed_projection,

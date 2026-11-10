@@ -230,23 +230,47 @@ impl ExecutionPlan for SourceExec {
         }
         Ok(self)
     }
+    fn fetch(&self) -> Option<usize> {
+        match &self.source {
+            Source::ReadPartition(read, _) | Source::ReadPartitionProjected(read, _, _) | Source::ReadPartitionNested(read, _, _, _) => read.partition_row_limit(),
+            _ => None,
+        }
+    }
+    fn with_fetch(&self, rows: Option<usize>) -> Option<PhysicalPlan> {
+        let source = match &self.source {
+            Source::ReadPartition(read, part) => Source::ReadPartition(Arc::new(read.with_partition_row_limit(rows)), *part),
+            Source::ReadPartitionProjected(read, part, fields) => Source::ReadPartitionProjected(Arc::new(read.with_partition_row_limit(rows)), *part, fields.clone()),
+            Source::ReadPartitionNested(read, part, fields, paths) => Source::ReadPartitionNested(Arc::new(read.with_partition_row_limit(rows)), *part, fields.clone(), paths.clone()),
+            _ => return None,
+        };
+        Some(Arc::new(Self { source, metrics: self.metrics.clone(), cache: self.cache.clone(), row_schema: self.row_schema.clone() }))
+    }
     fn execute(
         &self,
         partition: usize,
-        _context: Arc<TaskContext>,
+        context: Arc<TaskContext>,
     ) -> datafusion_common::Result<SendableRecordBatchStream> {
         if partition != 0 {
             return Err(DataFusionError::Execution(
                 "invalid source partition".into(),
             ));
         }
+        let prefix = context.session_config().get_extension::<crate::prefix_read::ReadPrefix>();
+        let reader = |source: &Arc<LocalRead>| {
+            let mut source = source.with_scan_metrics(register_read_metrics(&self.metrics, partition));
+            if let Some(prefix) = &prefix {
+                source = source.with_scan_batch_size(prefix.batch_rows);
+                if let Some(limit) = prefix.output_rows {
+                    let limit = source.partition_row_limit().map_or(limit, |old| old.min(limit));
+                    source = source.with_partition_row_limit(Some(limit));
+                }
+            }
+            Arc::new(source)
+        };
         let source = match &self.source {
-            Source::ReadPartition(source, part) => Source::ReadPartition(
-                Arc::new(source.with_scan_metrics(register_read_metrics(&self.metrics, partition))), *part),
-            Source::ReadPartitionProjected(source, part, fields) => Source::ReadPartitionProjected(
-                Arc::new(source.with_scan_metrics(register_read_metrics(&self.metrics, partition))), *part, fields.clone()),
-            Source::ReadPartitionNested(source, part, fields, paths) => Source::ReadPartitionNested(
-                Arc::new(source.with_scan_metrics(register_read_metrics(&self.metrics, partition))), *part, fields.clone(), paths.clone()),
+            Source::ReadPartition(source, part) => Source::ReadPartition(reader(source), *part),
+            Source::ReadPartitionProjected(source, part, fields) => Source::ReadPartitionProjected(reader(source), *part, fields.clone()),
+            Source::ReadPartitionNested(source, part, fields, paths) => Source::ReadPartitionNested(reader(source), *part, fields.clone(), paths.clone()),
             source => source.clone(),
         };
         let schema = self.schema();
@@ -286,8 +310,9 @@ impl ExecutionPlan for SourceExec {
                             let bounds=rows.partition_bounds(p,partitions);
                             let window=rows.slice(bounds.start,bounds.len());
                             for batch in window.batches() {
-                                for offset in (0..batch.num_rows()).step_by(65536) {
-                                    yield tag(batch.slice(offset,(batch.num_rows()-offset).min(65536)),p,schema.clone())?;
+                                let rows = prefix.as_ref().map_or(65536, |p| p.batch_rows.max(1).min(65536));
+                                for offset in (0..batch.num_rows()).step_by(rows) {
+                                    yield tag(batch.slice(offset,(batch.num_rows()-offset).min(rows)),p,schema.clone())?;
                                 }
                             }
                         }
@@ -664,8 +689,10 @@ impl ExecutionPlan for RangePartitionExec {
         if p != 0 {
             return Err(DataFusionError::Execution("invalid range partition".into()));
         }
-        let (start, end, schema, row_schema) =
+        let (start, mut end, schema, row_schema) =
             (self.start, self.end, self.schema(), self.row_schema.clone());
+        let prefix = context.session_config().get_extension::<crate::prefix_read::ReadPrefix>();
+        if let Some(limit) = prefix.as_ref().and_then(|p| p.output_rows) { end = end.min(start.saturating_add(limit)); }
         // Ordinary ranges retain their explicit IR batch size. Only actions
         // carrying the typed wide-list advice cap opt in to the session limit.
         let batch_size = context
@@ -675,6 +702,7 @@ impl ExecutionPlan for RangePartitionExec {
                 std::num::NonZeroUsize::new(self.batch_size.get().min(limit.rows.max(1)))
                     .expect("batch size stays positive")
             });
+        let batch_size = prefix.as_ref().map_or(batch_size, |prefix| std::num::NonZeroUsize::new(batch_size.get().min(prefix.batch_rows.max(1))).unwrap());
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
@@ -1504,4 +1532,10 @@ pub(crate) fn repeatable_node(plan: &PhysicalPlan) -> bool {
     plan.as_ref().is::<SourceExec>()
         || plan.as_ref().is::<RangePartitionExec>()
         || plan.as_ref().is::<UnaryExec>()
+}
+
+/// Leaf sources whose batching can be safely narrowed for one consumer.
+pub(crate) fn prefix_source(plan: &PhysicalPlan) -> bool {
+    plan.is::<RangePartitionExec>() || plan.downcast_ref::<SourceExec>().is_some_and(|source|
+        matches!(&source.source, Source::ReadPartition(..) | Source::ReadPartitionProjected(..) | Source::ReadPartitionNested(..) | Source::Parallelize { .. }))
 }
