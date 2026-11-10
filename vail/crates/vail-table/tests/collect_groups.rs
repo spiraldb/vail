@@ -26,6 +26,120 @@ fn grouped(rows: RecordBatch, value: &str) -> vail_table::TableRef {
 }
 
 #[tokio::test]
+async fn collect_keeps_nested_nulls_and_duplicate_keys_across_many_batches() {
+    use arrow_array::types::Int32Type;
+    use std::collections::BTreeMap;
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("key", DataType::Int32, true),
+        Field::new(
+            "value",
+            DataType::List(Arc::new(Field::new("item", DataType::Int32, true))),
+            true,
+        ),
+    ]));
+    let mut expected = BTreeMap::<Option<i32>, Vec<Option<Vec<Option<i32>>>>>::new();
+    let mut batches = Vec::new();
+    for batch in 0..12 {
+        let mut keys = Vec::new();
+        let mut values = Vec::new();
+        for row in 0..128 {
+            let i = batch * 128 + row;
+            let key = (i % 13 != 0).then_some(i % 5);
+            let value = if i % 7 == 0 {
+                None
+            } else if i % 11 == 0 {
+                Some(vec![])
+            } else {
+                Some(vec![Some(i), None])
+            };
+            keys.push(key);
+            values.push(value.clone());
+            expected.entry(key).or_default().push(value);
+        }
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(Int32Array::from(keys)),
+                Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>(values)),
+            ],
+        )
+        .unwrap();
+        batches.push(batch.slice(0, 0));
+        batches.push(batch);
+    }
+    for values in expected.values_mut() {
+        values.sort();
+    }
+    let input = TableIR::parallelize_batches(schema, batches, 4).unwrap();
+    let query = input
+        .grouped_aggregate_bound(
+            vec![("key".into(), ScalarIR::Column { name: "key".into() })],
+            vec![
+                ("values".into(), collect_expr("value")),
+                ("keys".into(), collect_expr("key")),
+            ],
+            GlobalBindings::new(),
+        )
+        .unwrap();
+    for _ in 0..2 {
+        let mut actual = BTreeMap::new();
+        for batch in query
+            .collect_partitions()
+            .await
+            .unwrap()
+            .into_iter()
+            .flatten()
+        {
+            let keys = batch
+                .column_by_name("key")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap();
+            let collected = batch
+                .column_by_name("values")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<ListArray>()
+                .unwrap();
+            let collected_keys = batch
+                .column_by_name("keys")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<ListArray>()
+                .unwrap();
+            for row in 0..batch.num_rows() {
+                let key = keys.is_valid(row).then(|| keys.value(row));
+                let values = collected.value(row);
+                let lists = values.as_any().downcast_ref::<ListArray>().unwrap();
+                let mut values = lists
+                    .iter()
+                    .map(|list| {
+                        list.map(|array| {
+                            array
+                                .as_any()
+                                .downcast_ref::<Int32Array>()
+                                .unwrap()
+                                .iter()
+                                .collect::<Vec<_>>()
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                values.sort();
+                let emitted_keys = collected_keys.value(row);
+                let emitted_keys = emitted_keys.as_any().downcast_ref::<Int32Array>().unwrap();
+                assert_eq!(
+                    emitted_keys.iter().collect::<Vec<_>>(),
+                    vec![key; values.len()]
+                );
+                assert!(actual.insert(key, values).is_none());
+            }
+        }
+        assert_eq!(actual, expected);
+    }
+}
+
+#[tokio::test]
 async fn collect_group_accumulator_preserves_nullable_nested_values_and_duplicates() {
     let nested = DataType::List(Arc::new(Field::new("item", DataType::Int32, true)));
     let schema = Arc::new(Schema::new(vec![

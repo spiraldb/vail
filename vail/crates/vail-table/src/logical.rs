@@ -1669,13 +1669,24 @@ fn with_metadata_optimizer(
 ) -> datafusion::execution::SessionState {
     let mut rules: Vec<
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
-    > = vec![Arc::new(MetadataCrossJoin), Arc::new(CountOrderingDemand)];
+    > = vec![Arc::new(MetadataCrossJoin), Arc::new(CountOrderingDemand), Arc::new(CollectStateEmission)];
     rules.extend(state.physical_optimizers().iter().cloned());
     rules.push(Arc::new(CountOrderingDemand));
     rules.push(Arc::new(EliminateIdentityRanges));
     datafusion::execution::session_state::SessionStateBuilder::new_from_existing(state)
         .with_physical_optimizer_rules(rules)
         .build()
+}
+
+#[derive(Debug)]
+struct CollectStateEmission;
+impl datafusion::physical_optimizer::PhysicalOptimizerRule for CollectStateEmission {
+    fn name(&self) -> &str { "vail_collect_state_emission" }
+    fn schema_check(&self) -> bool { true }
+    fn optimize(&self, plan: PhysicalPlan, _: &datafusion_common::config::ConfigOptions)
+        -> datafusion_common::Result<PhysicalPlan> {
+        rewrite_physical_dag(plan, &mut crate::collect_state::rewrite)
+    }
 }
 
 pub(crate) async fn physical_globals(globals: &crate::globals::GlobalsRef) -> Result<PhysicalPlan> {

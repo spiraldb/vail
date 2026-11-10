@@ -43,6 +43,7 @@ mod lookup;
 mod matrix_entries;
 mod nested_projection;
 mod computed_source;
+mod collect_state;
 mod nested_scan;
 mod ordered_merge;
 mod bounded_prefetch;
