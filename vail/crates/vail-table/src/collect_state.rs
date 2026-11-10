@@ -135,6 +135,11 @@ impl ExecutionPlan for CollectStateExec {
                 "collect state requires one input".into(),
             ));
         }
+        if children[0].schema() != self.input.schema() {
+            return Err(DataFusionError::Plan(
+                "collect state input schema changed after preparation".into(),
+            ));
+        }
         Ok(Arc::new(Self::new(
             children.remove(0),
             self.schema(),
@@ -173,11 +178,16 @@ impl ExecutionPlan for CollectStateExec {
                 let timer = metrics.elapsed_compute().timer();
                 let n = batch.num_rows();
                 let mut columns = groups.iter().map(|expr| expr.evaluate(&batch)?.into_array(n)).collect::<Result<Vec<_>>>()?;
-                for ((accumulator, args), filter) in accumulators.iter_mut().zip(&args).zip(&filters) {
+                // Match the admitted PartialHashAggregateStream: evaluate all
+                // argument/filter pairs before converting any aggregate state.
+                let evaluated = args.iter().zip(&filters).map(|(args, filter)| -> Result<_> {
                     let values = args.iter().map(|expr| expr.evaluate(&batch)?.into_array(n)).collect::<Result<Vec<_>>>()?;
                     let filter = filter.as_ref().map(|expr| expr.evaluate(&batch)?.into_array(n)).transpose()?;
+                    Ok((values, filter))
+                }).collect::<Result<Vec<_>>>()?;
+                for (accumulator, (values, filter)) in accumulators.iter_mut().zip(&evaluated) {
                     let filter = filter.as_ref().map(|array| array.as_any().downcast_ref::<BooleanArray>().ok_or_else(|| DataFusionError::Execution("aggregate filter must be Boolean".into()))).transpose()?;
-                    columns.extend(accumulator.convert_to_state(&values, filter)?);
+                    columns.extend(accumulator.convert_to_state(values, filter)?);
                 }
                 let result = RecordBatch::try_new(output_schema.clone(), columns)?;
                 timer.done();

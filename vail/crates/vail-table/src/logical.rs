@@ -1683,8 +1683,11 @@ struct CollectStateEmission;
 impl datafusion::physical_optimizer::PhysicalOptimizerRule for CollectStateEmission {
     fn name(&self) -> &str { "vail_collect_state_emission" }
     fn schema_check(&self) -> bool { true }
-    fn optimize(&self, plan: PhysicalPlan, _: &datafusion_common::config::ConfigOptions)
+    fn optimize(&self, plan: PhysicalPlan, config: &datafusion_common::config::ConfigOptions)
         -> datafusion_common::Result<PhysicalPlan> {
+        if !config.execution.enable_migration_aggregate {
+            return Ok(plan);
+        }
         rewrite_physical_dag(plan, &mut crate::collect_state::rewrite)
     }
 }
