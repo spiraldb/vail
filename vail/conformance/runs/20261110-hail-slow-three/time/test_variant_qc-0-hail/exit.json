@@ -1,0 +1,27 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+    "/private/tmp/vail-hail-slow-three-20261110/worker.py",
+    "hail",
+    "time",
+    "test_variant_qc",
+    "/private/tmp/vail-hail-slow-three-20261110/time/test_variant_qc-0-hail"
+  ],
+  "leader": 53385,
+  "owned_identities": {
+    "53385": 1794336602.814876,
+    "53388": 1794336604.130534,
+    "53398": 1794336604.153424,
+    "53399": 1794336604.15403
+  },
+  "seconds": 21.79256924998481,
+  "returncode": 0,
+  "failure": null,
+  "cleanup_error": null,
+  "peak_observed_combined_rss_bytes": 1874132992,
+  "group_absent": true,
+  "live_owned": 0
+}

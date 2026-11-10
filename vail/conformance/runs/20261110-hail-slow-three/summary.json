@@ -1,0 +1,50 @@
+[
+  {
+    "case": "test_group_by_collect_per_row",
+    "fixture": "gnomad",
+    "hail": {
+      "wall_seconds": 0.4848476250190288,
+      "cpu_seconds": 2.56409004
+    },
+    "vail": {
+      "wall_seconds": 0.3483947080094367,
+      "cpu_seconds": 3.870460999999999
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.7185653595720167,
+      "cpu_seconds": 1.5094871629390982
+    }
+  },
+  {
+    "case": "test_gnomad_coverage_stats_optimized",
+    "fixture": "gnomad",
+    "hail": {
+      "wall_seconds": 3.025222458061762,
+      "cpu_seconds": 13.083418216
+    },
+    "vail": {
+      "wall_seconds": 1.049206417053938,
+      "cpu_seconds": 11.853335999999999
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.346819591484243,
+      "cpu_seconds": 0.9059815870981097
+    }
+  },
+  {
+    "case": "test_variant_qc",
+    "fixture": "profile",
+    "hail": {
+      "wall_seconds": 1.3457515829941258,
+      "cpu_seconds": 5.886658720000001
+    },
+    "vail": {
+      "wall_seconds": 1.0094835420604795,
+      "cpu_seconds": 9.877826999999998
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.750126215578738,
+      "cpu_seconds": 1.6780023218332585
+    }
+  }
+]

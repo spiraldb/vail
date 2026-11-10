@@ -1,0 +1,41 @@
+{
+  "cases": {
+    "test_group_by_collect_per_row": {
+      "source": "benchmark_table.py",
+      "fixture": "gnomad",
+      "historical_cloud_vail_over_hail": 3.9290582155170206
+    },
+    "test_gnomad_coverage_stats_optimized": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "gnomad",
+      "historical_cloud_vail_over_hail": 3.31349897098044
+    },
+    "test_variant_qc": {
+      "source": "benchmark_methods.py",
+      "fixture": "profile",
+      "historical_cloud_vail_over_hail": 3.272
+    }
+  },
+  "warmups": 1,
+  "samples": 3,
+  "processes_per_engine_case": 3,
+  "schedule": [
+    "hail",
+    "vail",
+    "vail",
+    "hail",
+    "hail",
+    "vail"
+  ],
+  "pins_sha256": "062ffb8010f6e7292321e066da877c5d0afc877fda198c2368604a96cc2ab991",
+  "scripts": {
+    "worker.py": "172038b7abbb0fe45dafc3ce6ef9df1057968fc5a65e8eb3b9d62198b9f4cb77",
+    "run.py": "72827b5e0038bc2e230d17144b7c1239ec4421f0a0ca03576c6142ce3390d7af",
+    "owned.py": "2d9317768a39325c98185c2e05bf9e9deb355a004fa261fe23584401a587b04b",
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "benchmark_methods.py": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9"
+  },
+  "scope": "Full original dimensions250000x1000gnomad32partitions and24885x2535profile16partitions. BothenginesreadEXACTsameHailformatfiles; VailadapterpublicMatrixTable.read_legacy only. Gnomadnewexplicitseeddistributionnot historicalbyteidentity. Currentlaptopcomparisonnot isolatedcodebefore/aftervsoldcloud32CPU. NormalinstalledVail585 Hail.2.139same34bJAR; local4vsTokio32notglobalthreadparity. Onefullwarmup then3measuredcalls/process, read/query/actionincluded, engineinitoutside. nice10/Rayon4/BLAS1,360sworker3600sphase/sampled12GiBmemory/positiveownedgroupcleanup.",
+  "validation": "Public full dimensions+partition counts and exact3x3inputprefix match; originalforcedcountactions only, notnewfulloutputoracle."
+}

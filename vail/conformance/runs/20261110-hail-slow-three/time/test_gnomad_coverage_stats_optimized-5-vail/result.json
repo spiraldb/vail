@@ -1,0 +1,42 @@
+{
+  "mode": "vail",
+  "purpose": "time",
+  "case": "test_gnomad_coverage_stats_optimized",
+  "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "cpu_scope": "Python process CPU plus stable observed live child endpoint CPU; may miss unobserved short-lived children; snapshots not atomic with wall",
+  "threads": "Hail Spark local[4]; Vail Rayon4/existingTokio32, not total-thread parity",
+  "reader": "Vail MatrixTable.read_legacy",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "allocator": "mimalloc",
+  "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "original_function": "def test_gnomad_coverage_stats_optimized(gnomad_dp_sim):\n    mt = hl.read_matrix_table(str(gnomad_dp_sim))\n    mt = mt.annotate_rows(mean=hl.agg.mean(mt.x), count_array=hl.rbind(hl.agg.counter(hl.min(100, mt.x)), lambda c: hl.range(0, 100).map(lambda i: c.get(i, 0))))\n    mt = mt.annotate_rows(median=hl.rbind(hl.sum(mt.count_array) / 2, lambda s: hl.find(lambda x: x > s, hl.array_scan(lambda i, j: i + j, 0, mt.count_array))), **{f'above_{x}': hl.sum(mt.count_array[x:]) for x in [1, 5, 10, 15, 20, 25, 30, 50, 100]})\n    mt.rows()._force_count()",
+  "identity_verified": true,
+  "samples": [
+    {
+      "wall_seconds": 0.9841854999540374,
+      "cpu_seconds": 11.655024000000001,
+      "python_cpu_seconds": 11.655024000000001,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 1.049206417053938,
+      "cpu_seconds": 11.853335999999999,
+      "python_cpu_seconds": 11.853335999999999,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 1.0589916250901297,
+      "cpu_seconds": 11.981979000000003,
+      "python_cpu_seconds": 11.981979000000003,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    }
+  ],
+  "passed": true
+}

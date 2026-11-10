@@ -1,0 +1,10 @@
+{
+  "dimensions": [
+    250000,
+    1000
+  ],
+  "partitions": 32,
+  "seed": 20261110,
+  "fixture_body": "def gnomad_dp_sim(resource_dir):\n    path = resource_dir / 'gnomad_dp_simulation.mt'\n    mt = hl.utils.range_matrix_table(n_rows=250000, n_cols=1000, n_partitions=32)\n    mt = mt.annotate_entries(x=hl.int(hl.rand_unif(0, 4.5) ** 3))\n    mt.write(str(path), overwrite=True)\n    return path",
+  "note": "Exact original upstream generation shape and distribution with explicit seed; fresh random input, not historical cloud-byte identity."
+}

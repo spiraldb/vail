@@ -1,0 +1,42 @@
+{
+  "mode": "vail",
+  "purpose": "time",
+  "case": "test_variant_qc",
+  "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "cpu_scope": "Python process CPU plus stable observed live child endpoint CPU; may miss unobserved short-lived children; snapshots not atomic with wall",
+  "threads": "Hail Spark local[4]; Vail Rayon4/existingTokio32, not total-thread parity",
+  "reader": "Vail MatrixTable.read_legacy",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "allocator": "mimalloc",
+  "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+  "original_function": "def test_variant_qc(profile25_mt):\n    hl.variant_qc(hl.read_matrix_table(str(profile25_mt))).rows()._force_count()",
+  "identity_verified": true,
+  "samples": [
+    {
+      "wall_seconds": 1.0779086250113323,
+      "cpu_seconds": 9.961492,
+      "python_cpu_seconds": 9.961492,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 1.0251988749951124,
+      "cpu_seconds": 10.147447000000003,
+      "python_cpu_seconds": 10.147447000000003,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 1.0739094589371234,
+      "cpu_seconds": 10.291313000000002,
+      "python_cpu_seconds": 10.291313000000002,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    }
+  ],
+  "passed": true
+}
