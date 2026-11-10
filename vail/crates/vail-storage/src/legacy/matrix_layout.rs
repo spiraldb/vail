@@ -521,23 +521,30 @@ impl NativeFile {
             )
             .await?
         {
-            let reader = if let Some(mut reader) = cursor.reader.take() {
-                prepared.reset_reader(&mut reader)?;
-                reader
-            } else {
-                prepared
-                    .into_reader(&self.component, self.part, &self.projection)?
-                    .with_decode_paths(self.decode_paths.clone())
-            };
-            cursor.reader = Some(reader);
-            cursor.prepared = true;
-            // No await or file reads from this point through decoding/cache publication.
-            let result = self.decode_range(&mut cursor, range, session);
-            if result.is_err() {
-                cursor.reader = None;
-                cursor.prepared = false;
-            }
-            return result;
+            let file = self.clone();
+            let decode_session = session.clone();
+            return session
+                .handle()
+                .spawn_cpu(move || {
+                    let reader = if let Some(mut reader) = cursor.reader.take() {
+                        prepared.reset_reader(&mut reader)?;
+                        reader
+                    } else {
+                        prepared
+                            .into_reader(&file.component, file.part, &file.projection)?
+                            .with_decode_paths(file.decode_paths.clone())
+                    };
+                    cursor.reader = Some(reader);
+                    cursor.prepared = true;
+                    // No await or file reads from this point through decoding/cache publication.
+                    let result = file.decode_range(&mut cursor, range, &decode_session);
+                    if result.is_err() {
+                        cursor.reader = None;
+                        cursor.prepared = false;
+                    }
+                    result
+                })
+                .await;
         }
         let file = self.clone();
         let decode_session = session.clone();

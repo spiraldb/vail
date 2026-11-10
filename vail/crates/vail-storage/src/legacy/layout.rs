@@ -167,26 +167,32 @@ impl LegacyLayoutReader {
                 .await
                 .map_err(|e| vortex_err!("{e}"))?
             {
-                let reader = if let Some(mut reader) = c.reader.take() {
-                    prepared
-                        .reset_reader(&mut reader)
-                        .map_err(|e| vortex_err!("{e}"))?;
-                    reader
-                } else {
-                    prepared
-                        .into_reader(&component, part, &projection)
-                        .map_err(|e| vortex_err!("{e}"))?
-                        .with_decode_columns(decode_columns)
-                        .with_decode_paths(decode_paths)
-                };
-                c.reader = Some(reader);
-                c.prepared = true;
-                let batch = Self::read_batches(&mut c, range, rows, &schema);
-                if batch.is_err() {
-                    c.reader = None;
-                    c.prepared = false;
-                }
-                batch.map_err(|e| vortex_err!("{e}"))?
+                session
+                    .handle()
+                    .spawn_cpu(move || -> Result<RecordBatch> {
+                        let reader = if let Some(mut reader) = c.reader.take() {
+                            prepared
+                                .reset_reader(&mut reader)
+                                .map_err(|e| vortex_err!("{e}"))?;
+                            reader
+                        } else {
+                            prepared
+                                .into_reader(&component, part, &projection)
+                                .map_err(|e| vortex_err!("{e}"))?
+                                .with_decode_columns(decode_columns)
+                                .with_decode_paths(decode_paths)
+                        };
+                        c.reader = Some(reader);
+                        c.prepared = true;
+                        let batch = Self::read_batches(&mut c, range, rows, &schema);
+                        if batch.is_err() {
+                            c.reader = None;
+                            c.prepared = false;
+                        }
+                        batch
+                    })
+                    .await
+                    .map_err(|e| vortex_err!("{e}"))?
             } else {
                 session
                     .handle()
