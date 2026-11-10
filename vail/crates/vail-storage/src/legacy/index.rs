@@ -255,11 +255,24 @@ impl IndexReader {
         Ok(node)
     }
     pub fn row_offset(&mut self, index: u64) -> Result<u64> {
+        self.find_row_offset(index, true)?
+            .ok_or_else(|| "Hail index node not loaded".into())
+    }
+    /// Returns `None` on a cache miss without opening or reading any file.
+    pub(super) fn row_offset_if_cached(&mut self, index: u64) -> Result<Option<u64>> {
+        self.find_row_offset(index, false)
+    }
+    fn find_row_offset(&mut self, index: u64, allow_io: bool) -> Result<Option<u64>> {
         if index >= self.rows {
             return Err("Hail index row is out of bounds".into());
         }
         let mut offset = self.root;
         for level in (0..self.height).rev() {
+            // The exclusive index borrow keeps a cached node resident through
+            // `node`, whose cache-hit branch performs no I/O or decoding.
+            if !allow_io && !self.cache.iter().any(|(p, _)| *p == offset) {
+                return Ok(None);
+            }
             let node = self.node(offset, level == 0)?;
             if level == 0 {
                 let first = node.first;
@@ -271,7 +284,7 @@ impl IndexReader {
                 if row >= node.array.len() {
                     return Err("Hail leaf ordinal exceeds node size".into());
                 }
-                return self.offset(&node.array, row);
+                return self.offset(&node.array, row).map(Some);
             }
             let i = node
                 .ordinals

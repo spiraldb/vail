@@ -23,6 +23,12 @@ struct CompressedWindow {
     start: u64,
     bytes: ByteBuffer,
 }
+struct OpenedSource {
+    // Hail dataset parts are immutable during a scan. Pin the handle and its
+    // size together; a truncated file still fails the actual positional read.
+    reader: Arc<dyn VortexReadAt>,
+    size: u64,
+}
 impl CompressedWindow {
     fn contains(&self, start: u64, end: u64) -> bool {
         start >= self.start && end <= self.start + self.bytes.len() as u64
@@ -37,14 +43,14 @@ pub(super) struct IndexedRanges {
     component: Arc<Component>,
     part: usize,
     index: Arc<Mutex<Option<IndexReader>>>,
-    source: OnceCell<Arc<dyn VortexReadAt>>,
+    source: OnceCell<OpenedSource>,
     varint_frames: Option<bool>,
     window: Mutex<Option<CompressedWindow>>,
 }
 
-/// Complete compressed frames covering a requested row range. `within` is the
-/// decoded offset in the first frame. A range ending at the partition's row
-/// count includes the real file tail, so the decoder can validate its terminator.
+/// Newly required compressed frames and their row domain. Continuations retain
+/// the decoder's current frame; seeks use `within` in the acquired first frame.
+/// A range ending at the partition's row count includes the actual file tail.
 pub(super) struct PreparedRange {
     bytes: ByteBuffer,
     within: usize,
@@ -162,42 +168,62 @@ impl IndexedRanges {
         let domain = rows.clone();
         let end_row = rows.end;
         let handle = session.handle();
-        let (start, end) = handle
-            .spawn_blocking(move || -> Result<_> {
-                let mut state = state.lock().map_err(|_| "Hail index cursor poisoned")?;
-                if state.is_none() {
-                    *state = Some(IndexReader::open(spec, &path)?);
-                }
-                let index = state.as_mut().unwrap();
-                if index.rows != row_count {
-                    return Err("Hail index row count differs from partition metadata".into());
-                }
-                let start = index.row_offset(rows.start)?;
-                let end = if rows.end == row_count {
-                    None
-                } else {
-                    Some(index.row_offset(rows.end)?)
-                };
-                Ok((start, end))
-            })
-            .await?;
+        let cached = if let Ok(mut state) = self.index.try_lock()
+            && let Some(index) = state.as_mut()
+        {
+            let start = index.row_offset_if_cached(rows.start)?;
+            let end = if rows.end == row_count {
+                Some(None)
+            } else {
+                index.row_offset_if_cached(rows.end)?.map(Some)
+            };
+            start.zip(end)
+        } else {
+            None
+        };
+        let (start, end) = if let Some(cached) = cached {
+            cached
+        } else {
+            handle
+                .spawn_blocking(move || -> Result<_> {
+                    let mut state = state.lock().map_err(|_| "Hail index cursor poisoned")?;
+                    if state.is_none() {
+                        *state = Some(IndexReader::open(spec, &path)?);
+                    }
+                    let index = state.as_mut().unwrap();
+                    if index.rows != row_count {
+                        return Err("Hail index row count differs from partition metadata".into());
+                    }
+                    let start = index.row_offset(rows.start)?;
+                    let end = if rows.end == row_count {
+                        None
+                    } else {
+                        Some(index.row_offset(rows.end)?)
+                    };
+                    Ok((start, end))
+                })
+                .await?
+        };
         if end.is_some_and(|end| end < start) {
             return Err("Hail index row offsets are reversed".into());
         }
-        let source = self
+        let opened = self
             .source
             .get_or_try_init(|| async {
-                StdFileSystem::new(handle.clone())
+                let reader = StdFileSystem::new(handle.clone())
                     .open_read(
                         self.component.paths[self.part]
                             .to_str()
                             .ok_or("non-UTF8 Hail part path")?,
                     )
                     .await
-                    .map_err(Error::from)
+                    .map_err(Error::from)?;
+                let size = reader.size().await?;
+                Ok::<_, Error>(OpenedSource { reader, size })
             })
             .await?;
-        let size = source.size().await?;
+        let source = &opened.reader;
+        let size = opened.size;
         let begin = continuation.unwrap_or(start >> 16);
         let mut stop = end.map_or(size, |offset| offset >> 16);
         if (start >> 16) > stop || begin > size || stop > size {
