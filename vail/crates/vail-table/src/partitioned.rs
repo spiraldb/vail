@@ -34,7 +34,7 @@ use futures::{FutureExt, StreamExt, TryStreamExt, future::BoxFuture};
 use std::{
     collections::{HashSet, VecDeque},
     fmt,
-    sync::Arc,
+    sync::{Arc, OnceLock},
 };
 use tokio::sync::{OnceCell, Semaphore};
 
@@ -1108,6 +1108,12 @@ impl ExecutionPlan for PartitionSetExec {
 pub(crate) struct OrderedConcatExec {
     parts: Vec<PhysicalPlan>,
     fetch: Option<usize>,
+    prefix: OnceLock<
+        std::result::Result<
+            (Vec<PhysicalPlan>, Option<crate::prefix_read::ReadPrefix>),
+            Arc<DataFusionError>,
+        >,
+    >,
     cache: Arc<PlanProperties>,
     requirements: Vec<Option<OrderingRequirements>>,
     tag_index: Option<usize>,
@@ -1122,6 +1128,7 @@ impl OrderedConcatExec {
     fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
         Self {
             fetch: None,
+            prefix: OnceLock::new(),
             tag_index,
             requirements: parts.iter().map(required_ordering).collect(),
             parts,
@@ -1187,7 +1194,9 @@ impl ExecutionPlan for OrderedConcatExec {
             ));
         }
         let (parts, prefix) = match self.fetch {
-            Some(rows) => crate::prefix_read::prepare(self.parts.clone(), rows)?,
+            Some(rows) => self.prefix.get_or_init(|| {
+                crate::prefix_read::prepare(self.parts.clone(), rows).map_err(Arc::new)
+            }).as_ref().map_err(|error| DataFusionError::Shared(error.clone()))?.clone(),
             None => (self.parts.clone(), None),
         };
         let tag_index = self.tag_index;

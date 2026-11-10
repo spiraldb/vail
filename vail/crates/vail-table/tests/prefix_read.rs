@@ -83,6 +83,12 @@ async fn dropping_empty_and_null_owners_keeps_scanning_until_enough_entries() {
     assert_eq!(ints(&prefix, "owner"), vec![13, 13, 14]);
     let full = filtered.collect_partitions().await.unwrap().into_iter().flatten().collect::<Vec<_>>();
     assert_eq!(ints(&full, "items"), (26..48).collect::<Vec<_>>());
+    let action = plan::physical(&filtered.head(3)).await.unwrap();
+    let context = Arc::new(TaskContext::default());
+    assert_eq!(ints(&collect(action.clone(), context.clone()).await.unwrap(), "items"), vec![26, 27, 28]);
+    let error = collect(action, context).await.unwrap_err();
+    assert!(error.to_string().contains("explicit new action"));
+    assert_eq!(ints(&filtered.sample(3).await.unwrap(), "items"), vec![26, 27, 28]);
 }
 
 #[tokio::test]
@@ -103,5 +109,6 @@ async fn reader_limits_and_requested_bytes_use_actual_native_path() {
     let all = collect(full.clone(), Arc::new(TaskContext::default())).await.unwrap();
     assert_eq!(ints(&all, "idx"), (0..4000).collect::<Vec<_>>());
     let full_bytes = requested(&full);
+    eprintln!("requested native bytes: prefix={prefix_bytes}, full={full_bytes}");
     assert!(prefix_bytes > 0 && prefix_bytes < full_bytes, "requested {prefix_bytes} prefix vs {full_bytes} full bytes");
 }
