@@ -1,0 +1,23 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "/private/tmp/vail-hail-async-io-20261110/revision2/env/bin/python",
+    "/private/tmp/vail-hail-async-io-20261110/revision2/bench-worker.py",
+    "candidate",
+    "test_variant_qc",
+    "/private/tmp/vail-hail-async-io-20261110/revision2/timings/test_variant_qc-2-candidate"
+  ],
+  "leader": 3095,
+  "owned_identities": {
+    "3095": 1794345448.411646
+  },
+  "seconds": 5.607318375026807,
+  "returncode": 0,
+  "failure": null,
+  "cleanup_error": null,
+  "peak_observed_combined_rss_bytes": 1485062144,
+  "group_absent": true,
+  "live_owned": 0
+}

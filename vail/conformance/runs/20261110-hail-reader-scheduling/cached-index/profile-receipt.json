@@ -1,0 +1,30 @@
+{
+  "command": [
+    "/opt/homebrew/bin/samply",
+    "record",
+    "--save-only",
+    "--duration",
+    "8",
+    "--rate",
+    "1000",
+    "--unstable-presymbolicate",
+    "--profile-name",
+    "Vail group-by-collect: async I/O and worker decoding",
+    "--output",
+    "/Users/danielking/.codex/visualizations/2026/10/23/01a1666a-5c91-7043-b5a8-da5a82f930bd/hail-layout-async-io-20261110/group-by-collect.json.gz",
+    "/private/tmp/vail-hail-async-io-20261110/revision2/env/bin/python",
+    "/private/tmp/vail-hail-async-io-20261110/revision2/profile-worker.py"
+  ],
+  "leader": 4132,
+  "owned_identities": {
+    "4132": 1794345551.606614,
+    "4133": 1794345551.613702
+  },
+  "seconds": 8.399315583985299,
+  "returncode": 0,
+  "failure": null,
+  "cleanup_error": null,
+  "peak_observed_combined_rss_bytes": 7550418944,
+  "group_absent": true,
+  "live_owned": 0
+}

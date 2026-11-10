@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "test",
+    "--release",
+    "--locked",
+    "--offline",
+    "-p",
+    "vail-storage",
+    "--lib",
+    "--test",
+    "legacy_reader_public",
+    "--",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "returncode": 0,
+  "seconds": 39.35921311378479
+}

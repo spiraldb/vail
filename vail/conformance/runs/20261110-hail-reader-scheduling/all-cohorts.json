@@ -1,0 +1,146 @@
+[
+  {
+    "variant": "initial",
+    "case": "test_group_by_collect_per_row",
+    "wall_change_percent": 5.352403967565267,
+    "cpu_change_percent": -3.6688669865046264,
+    "baseline": {
+      "wall_seconds": 0.3527659374522045,
+      "cpu_seconds": 3.9952525000000003,
+      "max_threads_after_query": 289
+    },
+    "candidate": {
+      "wall_seconds": 0.3716473954846151,
+      "cpu_seconds": 3.8486719999999996,
+      "max_threads_after_query": 162
+    }
+  },
+  {
+    "variant": "initial",
+    "case": "test_gnomad_coverage_stats_optimized",
+    "wall_change_percent": 0.8583816866977623,
+    "cpu_change_percent": 1.9721684996857558,
+    "baseline": {
+      "wall_seconds": 1.0255223330459557,
+      "cpu_seconds": 12.5611985,
+      "max_threads_after_query": 123
+    },
+    "candidate": {
+      "wall_seconds": 1.0343252289458178,
+      "cpu_seconds": 12.808926499999998,
+      "max_threads_after_query": 151
+    }
+  },
+  {
+    "variant": "initial",
+    "case": "test_variant_qc",
+    "wall_change_percent": 2.1516558175971534,
+    "cpu_change_percent": 0.4008091471485731,
+    "baseline": {
+      "wall_seconds": 1.1073903545038775,
+      "cpu_seconds": 11.2367695,
+      "max_threads_after_query": 69
+    },
+    "candidate": {
+      "wall_seconds": 1.13121758349007,
+      "cpu_seconds": 11.2818075,
+      "max_threads_after_query": 99
+    }
+  },
+  {
+    "variant": "cached-index",
+    "case": "test_group_by_collect_per_row",
+    "wall_change_percent": 8.762828918516963,
+    "cpu_change_percent": -4.842397820486943,
+    "baseline": {
+      "wall_seconds": 0.338750479510054,
+      "cpu_seconds": 4.043472,
+      "max_threads_after_query": 267
+    },
+    "candidate": {
+      "wall_seconds": 0.36843460449017584,
+      "cpu_seconds": 3.8476710000000005,
+      "max_threads_after_query": 150
+    }
+  },
+  {
+    "variant": "cached-index",
+    "case": "test_gnomad_coverage_stats_optimized",
+    "wall_change_percent": 1.117054619987523,
+    "cpu_change_percent": 2.5192701013343477,
+    "baseline": {
+      "wall_seconds": 0.9813214369933121,
+      "cpu_seconds": 12.140699000000001,
+      "max_threads_after_query": 109
+    },
+    "candidate": {
+      "wall_seconds": 0.9922833334421739,
+      "cpu_seconds": 12.446556,
+      "max_threads_after_query": 141
+    }
+  },
+  {
+    "variant": "cached-index",
+    "case": "test_variant_qc",
+    "wall_change_percent": 2.7209698537474347,
+    "cpu_change_percent": 1.1070812977403088,
+    "baseline": {
+      "wall_seconds": 1.0821279375231825,
+      "cpu_seconds": 10.9606675,
+      "max_threads_after_query": 66
+    },
+    "candidate": {
+      "wall_seconds": 1.111572312482167,
+      "cpu_seconds": 11.082011,
+      "max_threads_after_query": 98
+    }
+  },
+  {
+    "variant": "cpu-task",
+    "case": "test_group_by_collect_per_row",
+    "wall_change_percent": 1.6993530097762388,
+    "cpu_change_percent": -2.981533028439687,
+    "baseline": {
+      "wall_seconds": 0.3591182920499705,
+      "cpu_seconds": 3.9399530000000005,
+      "max_threads_after_query": 280
+    },
+    "candidate": {
+      "wall_seconds": 0.36522097955457866,
+      "cpu_seconds": 3.8224820000000004,
+      "max_threads_after_query": 151
+    }
+  },
+  {
+    "variant": "cpu-task",
+    "case": "test_gnomad_coverage_stats_optimized",
+    "wall_change_percent": 2.0507536193042464,
+    "cpu_change_percent": 1.7005951991467816,
+    "baseline": {
+      "wall_seconds": 1.0294559164904058,
+      "cpu_seconds": 12.264382499999998,
+      "max_threads_after_query": 136
+    },
+    "candidate": {
+      "wall_seconds": 1.0505675209569745,
+      "cpu_seconds": 12.472949999999997,
+      "max_threads_after_query": 159
+    }
+  },
+  {
+    "variant": "cpu-task",
+    "case": "test_variant_qc",
+    "wall_change_percent": 1.7979485018432495,
+    "cpu_change_percent": -1.0072149896978244,
+    "baseline": {
+      "wall_seconds": 1.1014266249258071,
+      "cpu_seconds": 11.038408,
+      "max_threads_after_query": 66
+    },
+    "candidate": {
+      "wall_seconds": 1.1212297084275633,
+      "cpu_seconds": 10.927227499999997,
+      "max_threads_after_query": 96
+    }
+  }
+]

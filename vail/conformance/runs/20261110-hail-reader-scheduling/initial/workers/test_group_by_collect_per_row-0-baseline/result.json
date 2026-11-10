@@ -1,0 +1,26 @@
+{
+  "mode": "baseline",
+  "case": "test_group_by_collect_per_row",
+  "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+  "samples": [
+    {
+      "wall_seconds": 0.33196133305318654,
+      "cpu_seconds": 3.7980199999999993,
+      "threads_after_query": 289
+    },
+    {
+      "wall_seconds": 0.3323294579749927,
+      "cpu_seconds": 4.0359750000000005,
+      "threads_after_query": 289
+    },
+    {
+      "wall_seconds": 0.35035016597248614,
+      "cpu_seconds": 4.134053,
+      "threads_after_query": 289
+    }
+  ],
+  "passed": true,
+  "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+}

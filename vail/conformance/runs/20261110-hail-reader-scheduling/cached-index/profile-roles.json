@@ -1,0 +1,1715 @@
+{
+  "cpu_seconds_by_role": {
+    "other": 0.11878500000000002,
+    "async_scheduler": 62.293766999999974,
+    "blocking_pool": 3.259595000000002
+  },
+  "bulk_decode_threads_by_role": {
+    "other": 1,
+    "async_scheduler": 32
+  },
+  "total_profile_threads": 170,
+  "threads": [
+    {
+      "index": 0,
+      "tid": "20210236",
+      "name": "python",
+      "role_from_sampled_stacks": "other",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 157.676584,
+      "observed_end_ms": 7165.459542,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 1,
+      "tid": "20210259",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 2,
+      "tid": "20210260",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 3,
+      "tid": "20210261",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 4,
+      "tid": "20210262",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 5,
+      "tid": "20210263",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 6,
+      "tid": "20210264",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 7,
+      "tid": "20210265",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 8,
+      "tid": "20210266",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 9,
+      "tid": "20210267",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 10,
+      "tid": "20210268",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 11,
+      "tid": "20210269",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 12,
+      "tid": "20210270",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 13,
+      "tid": "20210271",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 14,
+      "tid": "20210272",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 15,
+      "tid": "20210273",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7115.457625,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 16,
+      "tid": "20210274",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 17,
+      "tid": "20210275",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 18,
+      "tid": "20210276",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 19,
+      "tid": "20210277",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 20,
+      "tid": "20210278",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 21,
+      "tid": "20210279",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 22,
+      "tid": "20210280",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 23,
+      "tid": "20210281",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 24,
+      "tid": "20210282",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 25,
+      "tid": "20210283",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 26,
+      "tid": "20210284",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 27,
+      "tid": "20210285",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 28,
+      "tid": "20210286",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 29,
+      "tid": "20210287",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 30,
+      "tid": "20210288",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 31,
+      "tid": "20210289",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 32,
+      "tid": "20210290",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "async_scheduler",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 336.603834,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": true
+    },
+    {
+      "index": 33,
+      "tid": "20210293",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 34,
+      "tid": "20210294",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 35,
+      "tid": "20210295",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 36,
+      "tid": "20210296",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 37,
+      "tid": "20210297",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 38,
+      "tid": "20210298",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 39,
+      "tid": "20210299",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 40,
+      "tid": "20210300",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 41,
+      "tid": "20210301",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 42,
+      "tid": "20210302",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 43,
+      "tid": "20210303",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 44,
+      "tid": "20210304",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 45,
+      "tid": "20210305",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 46,
+      "tid": "20210306",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 47,
+      "tid": "20210307",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 48,
+      "tid": "20210308",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 49,
+      "tid": "20210309",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 50,
+      "tid": "20210310",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 51,
+      "tid": "20210311",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 52,
+      "tid": "20210312",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 53,
+      "tid": "20210313",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 54,
+      "tid": "20210314",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 55,
+      "tid": "20210315",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 56,
+      "tid": "20210316",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 57,
+      "tid": "20210317",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 58,
+      "tid": "20210318",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 59,
+      "tid": "20210319",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 350.104209,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 60,
+      "tid": "20210320",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 61,
+      "tid": "20210321",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 62,
+      "tid": "20210322",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 63,
+      "tid": "20210323",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 64,
+      "tid": "20210324",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 65,
+      "tid": "20210325",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 66,
+      "tid": "20210326",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 67,
+      "tid": "20210327",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 68,
+      "tid": "20210328",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 69,
+      "tid": "20210329",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 70,
+      "tid": "20210330",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 71,
+      "tid": "20210331",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 72,
+      "tid": "20210332",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 73,
+      "tid": "20210333",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 74,
+      "tid": "20210334",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 75,
+      "tid": "20210335",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 76,
+      "tid": "20210336",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 77,
+      "tid": "20210337",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 78,
+      "tid": "20210338",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 79,
+      "tid": "20210339",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 80,
+      "tid": "20210340",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 81,
+      "tid": "20210341",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 82,
+      "tid": "20210342",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 83,
+      "tid": "20210343",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 84,
+      "tid": "20210344",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 85,
+      "tid": "20210345",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 86,
+      "tid": "20210346",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 87,
+      "tid": "20210347",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 88,
+      "tid": "20210348",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 89,
+      "tid": "20210349",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 90,
+      "tid": "20210350",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 91,
+      "tid": "20210351",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 92,
+      "tid": "20210352",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 93,
+      "tid": "20210353",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 94,
+      "tid": "20210354",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 95,
+      "tid": "20210355",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 96,
+      "tid": "20210356",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 97,
+      "tid": "20210357",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 98,
+      "tid": "20210358",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 99,
+      "tid": "20210359",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 100,
+      "tid": "20210361",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 101,
+      "tid": "20210362",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 102,
+      "tid": "20210363",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 103,
+      "tid": "20210364",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 104,
+      "tid": "20210365",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 105,
+      "tid": "20210366",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 106,
+      "tid": "20210367",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 107,
+      "tid": "20210368",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7109.255042,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 108,
+      "tid": "20210369",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 109,
+      "tid": "20210370",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 110,
+      "tid": "20210371",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 111,
+      "tid": "20210372",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 112,
+      "tid": "20210373",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 113,
+      "tid": "20210374",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 357.083709,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 114,
+      "tid": "20210375",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 115,
+      "tid": "20210377",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 116,
+      "tid": "20210378",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 117,
+      "tid": "20210379",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 118,
+      "tid": "20210380",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 119,
+      "tid": "20210381",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 120,
+      "tid": "20210382",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 121,
+      "tid": "20210383",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 122,
+      "tid": "20210384",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 123,
+      "tid": "20210385",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 124,
+      "tid": "20210386",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 125,
+      "tid": "20210387",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 126,
+      "tid": "20210388",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 127,
+      "tid": "20210389",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 128,
+      "tid": "20210390",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 129,
+      "tid": "20210391",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 130,
+      "tid": "20210392",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 131,
+      "tid": "20210393",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 132,
+      "tid": "20210394",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 133,
+      "tid": "20210395",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 134,
+      "tid": "20210396",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 135,
+      "tid": "20210397",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 136,
+      "tid": "20210398",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 137,
+      "tid": "20210399",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 138,
+      "tid": "20210400",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 139,
+      "tid": "20210401",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 374.487459,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 140,
+      "tid": "20210530",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 141,
+      "tid": "20210531",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 142,
+      "tid": "20210532",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 143,
+      "tid": "20210533",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 144,
+      "tid": "20210534",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 145,
+      "tid": "20210535",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 146,
+      "tid": "20210536",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 147,
+      "tid": "20210537",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 148,
+      "tid": "20210538",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 149,
+      "tid": "20210539",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 150,
+      "tid": "20210540",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 151,
+      "tid": "20210541",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 152,
+      "tid": "20210542",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 153,
+      "tid": "20210543",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 154,
+      "tid": "20210544",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 155,
+      "tid": "20210545",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 156,
+      "tid": "20210546",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 157,
+      "tid": "20210547",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 158,
+      "tid": "20210548",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 159,
+      "tid": "20210549",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 160,
+      "tid": "20210550",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 161,
+      "tid": "20210551",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 162,
+      "tid": "20210552",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 163,
+      "tid": "20210553",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 164,
+      "tid": "20210554",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 165,
+      "tid": "20210555",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 166,
+      "tid": "20210556",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 167,
+      "tid": "20210557",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": false,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 168,
+      "tid": "20210558",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    },
+    {
+      "index": 169,
+      "tid": "20210559",
+      "name": "tokio-rt-worker",
+      "role_from_sampled_stacks": "blocking_pool",
+      "has_legacy_decode_stacks": true,
+      "observed_start_ms": 2682.21125,
+      "observed_end_ms": 7108.4145,
+      "has_bulk_row_decode": false
+    }
+  ],
+  "scope": "Threadroles inferredfrom sampledstackroots; CPUtimeweights summedperthread overwarmwindow. Notperfunctionendpointcausality."
+}

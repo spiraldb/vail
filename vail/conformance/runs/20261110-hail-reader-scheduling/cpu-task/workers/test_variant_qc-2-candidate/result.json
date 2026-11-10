@@ -1,0 +1,26 @@
+{
+  "mode": "candidate",
+  "case": "test_variant_qc",
+  "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+  "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+  "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+  "samples": [
+    {
+      "wall_seconds": 1.099913249956444,
+      "cpu_seconds": 10.81911,
+      "threads_after_query": 86
+    },
+    {
+      "wall_seconds": 1.146629333961755,
+      "cpu_seconds": 10.856992000000002,
+      "threads_after_query": 86
+    },
+    {
+      "wall_seconds": 1.1410683329449967,
+      "cpu_seconds": 10.804882999999997,
+      "threads_after_query": 96
+    }
+  ],
+  "passed": true,
+  "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+}

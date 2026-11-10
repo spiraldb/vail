@@ -1,0 +1,640 @@
+{
+  "summary": {
+    "test_group_by_collect_per_row": {
+      "baseline": {
+        "wall_seconds": 0.3591182920499705,
+        "cpu_seconds": 3.9399530000000005,
+        "max_threads_after_query": 280
+      },
+      "candidate": {
+        "wall_seconds": 0.36522097955457866,
+        "cpu_seconds": 3.8224820000000004,
+        "max_threads_after_query": 151
+      },
+      "wall_speedup": 0.9832904245751408,
+      "cpu_change_percent": -2.981533028439687
+    },
+    "test_gnomad_coverage_stats_optimized": {
+      "baseline": {
+        "wall_seconds": 1.0294559164904058,
+        "cpu_seconds": 12.264382499999998,
+        "max_threads_after_query": 136
+      },
+      "candidate": {
+        "wall_seconds": 1.0505675209569745,
+        "cpu_seconds": 12.472949999999997,
+        "max_threads_after_query": 159
+      },
+      "wall_speedup": 0.979904571533548,
+      "cpu_change_percent": 1.7005951991467816
+    },
+    "test_variant_qc": {
+      "baseline": {
+        "wall_seconds": 1.1014266249258071,
+        "cpu_seconds": 11.038408,
+        "max_threads_after_query": 66
+      },
+      "candidate": {
+        "wall_seconds": 1.1212297084275633,
+        "cpu_seconds": 10.927227499999997,
+        "max_threads_after_query": 96
+      },
+      "wall_speedup": 0.9823380674335427,
+      "cpu_change_percent": -1.0072149896978244
+    }
+  },
+  "results": [
+    {
+      "mode": "baseline",
+      "case": "test_group_by_collect_per_row",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "samples": [
+        {
+          "wall_seconds": 0.3384171249344945,
+          "cpu_seconds": 3.96652,
+          "threads_after_query": 280
+        },
+        {
+          "wall_seconds": 0.3428676250623539,
+          "cpu_seconds": 3.8553490000000004,
+          "threads_after_query": 280
+        },
+        {
+          "wall_seconds": 0.34918829204980284,
+          "cpu_seconds": 4.0906389999999995,
+          "threads_after_query": 280
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "candidate",
+      "case": "test_group_by_collect_per_row",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "samples": [
+        {
+          "wall_seconds": 0.32666816702112556,
+          "cpu_seconds": 3.7123399999999993,
+          "threads_after_query": 151
+        },
+        {
+          "wall_seconds": 0.32604487508069724,
+          "cpu_seconds": 3.779394,
+          "threads_after_query": 151
+        },
+        {
+          "wall_seconds": 0.3837000420317054,
+          "cpu_seconds": 3.9799539999999993,
+          "threads_after_query": 151
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "candidate",
+      "case": "test_group_by_collect_per_row",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "samples": [
+        {
+          "wall_seconds": 0.32827345794066787,
+          "cpu_seconds": 3.865570000000001,
+          "threads_after_query": 144
+        },
+        {
+          "wall_seconds": 0.40377379208803177,
+          "cpu_seconds": 3.8807409999999987,
+          "threads_after_query": 144
+        },
+        {
+          "wall_seconds": 0.4155425000935793,
+          "cpu_seconds": 3.861624000000001,
+          "threads_after_query": 144
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "baseline",
+      "case": "test_group_by_collect_per_row",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "samples": [
+        {
+          "wall_seconds": 0.37536895903758705,
+          "cpu_seconds": 3.8835900000000008,
+          "threads_after_query": 256
+        },
+        {
+          "wall_seconds": 0.36707741604186594,
+          "cpu_seconds": 3.913386000000001,
+          "threads_after_query": 256
+        },
+        {
+          "wall_seconds": 0.41929879097733647,
+          "cpu_seconds": 4.231294999999999,
+          "threads_after_query": 256
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "baseline",
+      "case": "test_gnomad_coverage_stats_optimized",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "samples": [
+        {
+          "wall_seconds": 0.9718073330586776,
+          "cpu_seconds": 11.603205,
+          "threads_after_query": 136
+        },
+        {
+          "wall_seconds": 1.0045358330244198,
+          "cpu_seconds": 11.713783999999997,
+          "threads_after_query": 136
+        },
+        {
+          "wall_seconds": 0.9942444160114974,
+          "cpu_seconds": 11.909652999999999,
+          "threads_after_query": 136
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "candidate",
+      "case": "test_gnomad_coverage_stats_optimized",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "samples": [
+        {
+          "wall_seconds": 1.0468734999885783,
+          "cpu_seconds": 12.338454999999998,
+          "threads_after_query": 120
+        },
+        {
+          "wall_seconds": 1.0950419169384986,
+          "cpu_seconds": 11.933516999999998,
+          "threads_after_query": 120
+        },
+        {
+          "wall_seconds": 1.0120312499348074,
+          "cpu_seconds": 12.402701999999998,
+          "threads_after_query": 120
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "candidate",
+      "case": "test_gnomad_coverage_stats_optimized",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "samples": [
+        {
+          "wall_seconds": 1.0260744160041213,
+          "cpu_seconds": 12.513949999999998,
+          "threads_after_query": 159
+        },
+        {
+          "wall_seconds": 1.0542615419253707,
+          "cpu_seconds": 12.607444999999998,
+          "threads_after_query": 159
+        },
+        {
+          "wall_seconds": 1.0585178750334308,
+          "cpu_seconds": 12.758473000000002,
+          "threads_after_query": 159
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "baseline",
+      "case": "test_gnomad_coverage_stats_optimized",
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "samples": [
+        {
+          "wall_seconds": 1.03512620809488,
+          "cpu_seconds": 12.726923000000001,
+          "threads_after_query": 109
+        },
+        {
+          "wall_seconds": 1.0757167499978095,
+          "cpu_seconds": 12.814981,
+          "threads_after_query": 109
+        },
+        {
+          "wall_seconds": 1.0646674169693142,
+          "cpu_seconds": 12.878562000000002,
+          "threads_after_query": 109
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "baseline",
+      "case": "test_variant_qc",
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "samples": [
+        {
+          "wall_seconds": 1.0996725829318166,
+          "cpu_seconds": 10.996384,
+          "threads_after_query": 64
+        },
+        {
+          "wall_seconds": 1.0677912500686944,
+          "cpu_seconds": 10.996344,
+          "threads_after_query": 66
+        },
+        {
+          "wall_seconds": 1.1192254159832373,
+          "cpu_seconds": 10.953786999999998,
+          "threads_after_query": 66
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "candidate",
+      "case": "test_variant_qc",
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "samples": [
+        {
+          "wall_seconds": 1.10139108391013,
+          "cpu_seconds": 11.009799,
+          "threads_after_query": 90
+        },
+        {
+          "wall_seconds": 1.1013929579639807,
+          "cpu_seconds": 11.035344999999996,
+          "threads_after_query": 90
+        },
+        {
+          "wall_seconds": 1.0986517500132322,
+          "cpu_seconds": 11.127597999999999,
+          "threads_after_query": 90
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "candidate",
+      "case": "test_variant_qc",
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "native_sha256": "f5fbcd3f360979ee824b70699fff10ab609c0016dca32dadcbbc3329474be79e",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "samples": [
+        {
+          "wall_seconds": 1.099913249956444,
+          "cpu_seconds": 10.81911,
+          "threads_after_query": 86
+        },
+        {
+          "wall_seconds": 1.146629333961755,
+          "cpu_seconds": 10.856992000000002,
+          "threads_after_query": 86
+        },
+        {
+          "wall_seconds": 1.1410683329449967,
+          "cpu_seconds": 10.804882999999997,
+          "threads_after_query": 96
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    },
+    {
+      "mode": "baseline",
+      "case": "test_variant_qc",
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "samples": [
+        {
+          "wall_seconds": 1.0920992500614375,
+          "cpu_seconds": 10.977335,
+          "threads_after_query": 65
+        },
+        {
+          "wall_seconds": 1.1031806669197977,
+          "cpu_seconds": 11.170905999999995,
+          "threads_after_query": 65
+        },
+        {
+          "wall_seconds": 1.1212729999097064,
+          "cpu_seconds": 11.080472,
+          "threads_after_query": 66
+        }
+      ],
+      "passed": true,
+      "scope": "one full warmup plus3 original force-count calls, fixed full-sized input; process CPU; not cross-engine correctness comparison"
+    }
+  ],
+  "receipts": [
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "baseline",
+        "test_group_by_collect_per_row",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_group_by_collect_per_row-0-baseline"
+      ],
+      "leader": 7723,
+      "owned_identities": {
+        "7723": 1794346085.619962
+      },
+      "seconds": 2.0761161249829456,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 6873628672,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "candidate",
+        "test_group_by_collect_per_row",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_group_by_collect_per_row-1-candidate"
+      ],
+      "leader": 7741,
+      "owned_identities": {
+        "7741": 1794346087.696993
+      },
+      "seconds": 1.9582126670284197,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5458149376,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "candidate",
+        "test_group_by_collect_per_row",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_group_by_collect_per_row-2-candidate"
+      ],
+      "leader": 7785,
+      "owned_identities": {
+        "7785": 1794346089.655817
+      },
+      "seconds": 2.0610031250398606,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5727305728,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "baseline",
+        "test_group_by_collect_per_row",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_group_by_collect_per_row-3-baseline"
+      ],
+      "leader": 7786,
+      "owned_identities": {
+        "7786": 1794346091.717789
+      },
+      "seconds": 2.215885957935825,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 7058046976,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "baseline",
+        "test_gnomad_coverage_stats_optimized",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_gnomad_coverage_stats_optimized-0-baseline"
+      ],
+      "leader": 7807,
+      "owned_identities": {
+        "7807": 1794346093.934546
+      },
+      "seconds": 4.366695375065319,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1588428800,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "candidate",
+        "test_gnomad_coverage_stats_optimized",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_gnomad_coverage_stats_optimized-1-candidate"
+      ],
+      "leader": 7811,
+      "owned_identities": {
+        "7811": 1794346098.302091
+      },
+      "seconds": 4.5954690830549225,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1400422400,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "candidate",
+        "test_gnomad_coverage_stats_optimized",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_gnomad_coverage_stats_optimized-2-candidate"
+      ],
+      "leader": 7849,
+      "owned_identities": {
+        "7849": 1794346102.898301
+      },
+      "seconds": 4.572143167024478,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1525547008,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "baseline",
+        "test_gnomad_coverage_stats_optimized",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_gnomad_coverage_stats_optimized-3-baseline"
+      ],
+      "leader": 7864,
+      "owned_identities": {
+        "7864": 1794346107.471148
+      },
+      "seconds": 4.6702900000382215,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1351467008,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "baseline",
+        "test_variant_qc",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_variant_qc-0-baseline"
+      ],
+      "leader": 7885,
+      "owned_identities": {
+        "7885": 1794346112.142313
+      },
+      "seconds": 5.10875675000716,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1209958400,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "candidate",
+        "test_variant_qc",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_variant_qc-1-candidate"
+      ],
+      "leader": 7904,
+      "owned_identities": {
+        "7904": 1794346117.251982
+      },
+      "seconds": 5.114491416956298,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1534918656,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "candidate",
+        "test_variant_qc",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_variant_qc-2-candidate"
+      ],
+      "leader": 7918,
+      "owned_identities": {
+        "7918": 1794346122.367499
+      },
+      "seconds": 5.157010416965932,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1568948224,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/bench-worker.py",
+        "baseline",
+        "test_variant_qc",
+        "/private/tmp/vail-hail-async-io-20261110/revision3/timings/test_variant_qc-3-baseline"
+      ],
+      "leader": 7934,
+      "owned_identities": {
+        "7934": 1794346127.525316
+      },
+      "seconds": 5.076485333964229,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1258618880,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  ],
+  "all_inputs_verified_before_after": true,
+  "scope": "2independent processes/version/case balancedB,C,C,B;3callsafter1fullwarmup;wholequery read+compute+forcecount. Baseline/candidate comparison, no new Hail timing."
+}

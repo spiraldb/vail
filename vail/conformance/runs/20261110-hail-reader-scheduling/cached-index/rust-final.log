@@ -1,0 +1,288 @@
+nice: setpriority: Operation not permitted
+warning: unused import: `crate::builtins::ArrayBuiltins`
+  --> patches/vortex-array/src/aggregate_fn/fns/sum_v2/dict_grouped.rs:22:5
+   |
+22 | use crate::builtins::ArrayBuiltins;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `ListViewArrayExt`
+ --> patches/vortex-array/src/scalar_fn/fns/list_field.rs:6:31
+  |
+6 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+  |                               ^^^^^^^^^^^^^^^^
+
+warning: unused import: `ListViewArrayExt`
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:16:31
+   |
+16 | use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
+   |                               ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+  --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:19:49
+   |
+19 | use crate::expr::proto::{ExprSerializeProtoExt, deserialize_expr_proto};
+   |                                                 ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated function `expr::proto::deserialize_expr_proto`: Use Expression::from_proto instead
+   --> patches/vortex-array/src/scalar_fn/fns/list_element_validity.rs:137:44
+    |
+137 |         ElementValidityPath::from_selector(deserialize_expr_proto(
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vortex-array` (lib) generated 5 warnings (run `cargo fix --lib -p vortex-array` to apply 3 suggestions)
+warning: unused import: `vortex_array::expr::root`
+  --> patches/vortex-layout/src/layouts/struct_/reader.rs:22:5
+   |
+22 | use vortex_array::expr::root;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vortex-layout` (lib) generated 1 warning (run `cargo fix --lib -p vortex-layout` to apply 1 suggestion)
+warning: unused import: `ExprError`
+ --> crates/vail-execution/src/indexed_batch.rs:2:32
+  |
+2 | use crate::expressions::{Expr, ExprError, PrimitiveType, RebuiltExpr, Type};
+  |                                ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:55:24
+   |
+55 |                 output.extend(0, first, last);
+   |                        ^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/array_aggregate.rs:62:16
+   |
+62 |         output.extend(0, first, last);
+   |                ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+   --> crates/vail-execution/src/array_aggregate.rs:592:24
+    |
+592 |                 output.extend(0, start, end);
+    |                        ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:61:28
+   |
+61 |                     output.extend(0, first, last);
+   |                            ^^^^^^
+
+warning: use of deprecated method `arrow_data::transform::MutableArrayData::<'a>::extend`: Use `try_extend` which returns an error on overflow instead of panicking
+  --> crates/vail-execution/src/list_aggregate/compact.rs:68:20
+   |
+68 |             output.extend(0, first, last);
+   |                    ^^^^^^
+
+warning: unused variable: `bucket`
+    --> crates/vail-execution/src/advanced_numeric_aggregates.rs:4313:14
+     |
+4313 |         for (bucket, group) in self.batch_touched_groups.iter().copied().enumerate() {
+     |              ^^^^^^ help: if this is intentional, prefix it with an underscore: `_bucket`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `evaluate_selected_captures` is never used
+   --> crates/vail-execution/src/aligned_matrix_map.rs:726:19
+    |
+717 | impl AlignedMatrixMapExpr {
+    | ------------------------- method in this implementation
+...
+726 |     pub(crate) fn evaluate_selected_captures(&self, selection: &crate::logical_expr::AlignedSelection, captures: [ColumnarValue; 3]...
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `options` is never used
+   --> crates/vail-execution/src/logical_expr.rs:500:19
+    |
+482 | impl SelectedAlignedExprProof<'_> {
+    | --------------------------------- method in this implementation
+...
+500 |     pub(crate) fn options(&self) -> &crate::expressions::PreparationOptions { self.options }
+    |                   ^^^^^^^
+
+warning: `vail-execution` (lib) generated 9 warnings (run `cargo fix --lib -p vail-execution` to apply 2 suggestions)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-storage v0.1.0 (/private/tmp/vail-list-flatmap-20261106/vail/crates/vail-storage)
+warning: fields `operands`, `metadata_bytes`, and `domains` are never read
+  --> crates/vail-storage/src/computed_capability.rs:65:16
+   |
+62 | pub struct ComputedProjectionCertificate {
+   |            ----------------------------- fields in this struct
+...
+65 |     pub(crate) operands: Vec<ComputedOperand>,
+   |                ^^^^^^^^
+...
+68 |     pub(crate) metadata_bytes: usize,
+   |                ^^^^^^^^^^^^^^
+69 |     pub(crate) domains: Vec<FileDomain>,
+   |                ^^^^^^^
+   |
+   = note: `ComputedProjectionCertificate` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `path`, `bytes`, `rows`, and `operands` are never read
+  --> crates/vail-storage/src/computed_capability.rs:89:5
+   |
+88 | pub(crate) struct FileDomain {
+   |                   ---------- fields in this struct
+89 |     path: String,
+   |     ^^^^
+90 |     bytes: u64,
+   |     ^^^^^
+91 |     rows: u64,
+   |     ^^^^
+92 |     operands: Vec<(ComputedOperand, Vec<OperandDomain>)>,
+   |     ^^^^^^^^
+   |
+   = note: `FileDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `start`, and `width` are never read
+  --> crates/vail-storage/src/computed_capability.rs:97:9
+   |
+96 |     ListShape {
+   |     --------- fields in this variant
+97 |         rows: u64,
+   |         ^^^^
+98 |         start: u64,
+   |         ^^^^^
+99 |         width: u64,
+   |         ^^^^^
+   |
+   = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `rows`, `width`, and `elements` are never read
+   --> crates/vail-storage/src/computed_capability.rs:102:9
+    |
+101 |     DenseList {
+    |     --------- fields in this variant
+102 |         rows: u64,
+    |         ^^^^
+103 |         width: u64,
+    |         ^^^^^
+104 |         elements: u64,
+    |         ^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `codes`, `values`, and `preparation_bound` are never read
+   --> crates/vail-storage/src/computed_capability.rs:107:9
+    |
+106 |     SmallDictionary {
+    |     --------------- fields in this variant
+107 |         codes: u64,
+    |         ^^^^^
+108 |         values: u64,
+    |         ^^^^^^
+109 |         preparation_bound: usize,
+    |         ^^^^^^^^^^^^^^^^^
+    |
+    = note: `OperandDomain` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `vail-storage` (lib) generated 5 warnings
+warning: `vail-storage` (lib test) generated 5 warnings (5 duplicates)
+    Finished `release` profile [optimized] target(s) in 36.06s
+     Running unittests src/lib.rs (/private/tmp/vail-split-sort-target/release/deps/vail_storage-6650a32bf0c73048)
+
+running 31 tests
+test fragment_index::tests::certification_rejects_unordered_or_mismatched_logical_key_types ... ok
+test fragment_index::tests::compound_mixed_direction_missing_and_ascii_are_lexicographic ... ok
+test fragment_index::tests::empty_unbounded_and_reversed_queries ... ok
+test fragment_index::tests::hail_filtered_boundaries_are_candidate_only ... ok
+test fragment_index::tests::hail_indexed_read_boundary_shapes_retain_touching_duplicates ... ok
+test fragment_index::tests::missing_position_is_independent_of_descending_value_direction ... ok
+test fragment_index::tests::rejects_interior_overlap_duplicate_identity_and_invalid_keys ... ok
+test fragment_index::tests::retired_hail_comparator_is_not_a_total_order_certificate ... ok
+test fragment_index::tests::same_start_sorts_point_run_before_wider_run_regardless_of_name ... ok
+test fragment_index::tests::select_many_preserves_unbounded_and_exclusive_boundary_semantics ... ok
+test fragment_index::tests::select_many_unions_sorted_intervals_with_one_candidate_sweep ... ok
+test fragment_index::tests::typed_ipc_bounds_compare_as_arrow_values_and_validate_physical_type ... ok
+test globals::tests::globals_roundtrip_without_checksum_and_ignores_legacy_checksum ... ok
+test legacy::layout::tests::rejected_mask_does_not_open_file ... ok
+test legacy::matrix_layout::tests::bounded_sparse_scan_rebases_entries_across_splits ... ok
+test legacy::matrix_layout::tests::entry_partition_count_errors_keep_legacy_diagnostic ... ok
+test legacy::matrix_layout::tests::entry_projection_keeps_validity_and_never_opens_rows ... ok
+test legacy::matrix_layout::tests::list_length_uses_metadata_without_opening_either_file ... ok
+test legacy::matrix_layout::tests::value_projection_rejects_wrong_entry_array_length ... ok
+test legacy::tests::hail_compatibility_corpus_decodes_in_native_columns ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test legacy::tests::indexed_row_slices_match_full_reads ... ignored, requires the pinned Hail compatibility corpus; set VAIL_HAIL_RESOURCES
+test local_table::tests::candidate_partition_ranges_skip_empty_partitions_and_deduplicate ... ok
+test local_table::tests::certification_failure_preserves_published_snapshot_and_cleans_new_output ... ok
+test local_table::tests::empty_snapshot_has_one_empty_execution_partition ... ok
+test local_table::tests::file_partitions_discard_empty_writer_partitions ... ok
+test local_table::tests::file_partitions_split_one_writer_partition_and_prune_unrelated_files ... ok
+test local_table::tests::reference_definitions_are_collected_from_nested_rows_and_globals ... ok
+test storage_key_search_tests::certification_and_range_search_handle_duplicates_nulls_and_batch_edges ... ok
+test storage_key_search_tests::descending_ranges_and_unsorted_rejection ... ok
+test storage_key_search_tests::nested_list_key_uses_arrow_comparator ... ok
+test storage_key_search_tests::nested_struct_key_uses_arrow_comparator ... ok
+
+test result: ok. 29 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/legacy_reader_public.rs (/private/tmp/vail-split-sort-target/release/deps/legacy_reader_public-ed0474731fd24d34)
+
+running 13 tests
+test indexed_layout_keeps_cross_block_rows_and_repositions ... ok
+test indexed_layout_streams_a_row_larger_than_the_prefetch_budget ... ok
+test public_calls_cover_phase_ploidy_allele_width_nulls_and_invalid_words ... ok
+test public_compressed_reader_rejects_truncated_and_invalid_block_frames ... ok
+test public_mixed_entries_cover_chunk_caps_missingness_lengths_and_batches ... ok
+test public_mixed_errors_after_staged_prefix_and_second_outer_row ... ok
+test public_nested_struct_lists_reuse_builders_across_rows_and_batch_splits ... ok
+test public_required_array_and_string_boundaries_and_errors ... ok
+test public_scalar_widths_strings_calls_compression_and_reordered_projection ... ok
+test public_skipped_scalar_framing_is_independent_of_numeric_width ... ok
+test public_vortex_call_slice_memory_and_ipc_preserve_arrow_contract ... ok
+test public_vortex_nested_entry_validity_distinguishes_absent_from_all_null ... ok
+test public_wide_missingness_bitmap_and_invalid_boolean ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

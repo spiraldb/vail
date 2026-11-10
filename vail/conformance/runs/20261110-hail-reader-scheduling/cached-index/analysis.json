@@ -1,0 +1,1658 @@
+{
+  "profile": "/Users/danielking/.codex/visualizations/2026/10/23/01a1666a-5c91-7043-b5a8-da5a82f930bd/hail-layout-async-io-20261110/group-by-collect.json.gz",
+  "sha256": "312badc518c442311c0ceed1480bba862cf6c26687f32dd795ecce9699cc5ac6",
+  "symbol_sidecar_sha256": "6fc8da5c13e2f8752de398011c108eaf13a62883662970c85d191386370cce97",
+  "warm_cutoff_ms": 771.711181640625,
+  "end_ms": 7103.009033203125,
+  "window_observed_thread_cpu_seconds": 65.67214699999731,
+  "window_worker_loop_cpu_seconds": 65.675908,
+  "positive_cpu_samples": 68904,
+  "all_threads": 170,
+  "top_self": [
+    {
+      "function": "vail_storage::legacy::decode::prepared_scalar_row",
+      "cpu_seconds": 16.033094999999992,
+      "percent": 24.41384320814218
+    },
+    {
+      "function": "<vail_storage::legacy::decode::BufferedScalars>::probe",
+      "cpu_seconds": 16.030981000000004,
+      "percent": 24.410624187451432
+    },
+    {
+      "function": "__psynch_cvwait",
+      "cpu_seconds": 7.9549950000000615,
+      "percent": 12.113194654653803
+    },
+    {
+      "function": "_platform_memmove",
+      "cpu_seconds": 6.779732999999993,
+      "percent": 10.323604921886094
+    },
+    {
+      "function": "arrow_select::interleave::interleave_primitive::<arrow_array::types::Int32Type>",
+      "cpu_seconds": 3.7372480000000037,
+      "percent": 5.690765675744021
+    },
+    {
+      "function": "HUF_decompress4X2_usingDTable_internal",
+      "cpu_seconds": 2.3680820000000007,
+      "percent": 3.6059153053121555
+    },
+    {
+      "function": "<vail_storage::legacy::input::Input>::with_buffer::<usize, <vail_storage::legacy::decode::Node>::append_prepared_struct_elements<true>::{closure#3}>",
+      "cpu_seconds": 2.045118999999999,
+      "percent": 3.1141345203775392
+    },
+    {
+      "function": "arrow_select::interleave::interleave_list::<i32>",
+      "cpu_seconds": 2.030895999999999,
+      "percent": 3.0924769369883434
+    },
+    {
+      "function": "__psynch_mutexwait",
+      "cpu_seconds": 1.6322049999999986,
+      "percent": 2.485383948236176
+    },
+    {
+      "function": "madvise",
+      "cpu_seconds": 1.5488420000000016,
+      "percent": 2.3584458111291307
+    },
+    {
+      "function": "_native.abi3.so!0x730e574",
+      "cpu_seconds": 0.8969129999999995,
+      "percent": 1.3657433797619505
+    },
+    {
+      "function": "kevent",
+      "cpu_seconds": 0.5982890000000001,
+      "percent": 0.9110239688067828
+    },
+    {
+      "function": "__psynch_mutexdrop",
+      "cpu_seconds": 0.19671799999999998,
+      "percent": 0.2995455592460043
+    },
+    {
+      "function": "<arrow_data::data::ArrayDataBuilder>::nulls",
+      "cpu_seconds": 0.182777,
+      "percent": 0.2783173816443179
+    },
+    {
+      "function": "read",
+      "cpu_seconds": 0.14460099999999995,
+      "percent": 0.22018619248127502
+    },
+    {
+      "function": "<arrow_data::transform::MutableArrayData>::try_extend",
+      "cpu_seconds": 0.137493,
+      "percent": 0.20936273029113184
+    },
+    {
+      "function": "_native.abi3.so!0x730e570",
+      "cpu_seconds": 0.13242899999999996,
+      "percent": 0.2016516987026561
+    },
+    {
+      "function": "__psynch_cvsignal",
+      "cpu_seconds": 0.10114400000000001,
+      "percent": 0.15401354245355212
+    },
+    {
+      "function": "<arrow_data::data::ArrayDataBuilder>::build",
+      "cpu_seconds": 0.099694,
+      "percent": 0.15180560489366077
+    },
+    {
+      "function": "_platform_memset",
+      "cpu_seconds": 0.096189,
+      "percent": 0.14646848686095787
+    },
+    {
+      "function": "mach_absolute_time",
+      "cpu_seconds": 0.09310399999999999,
+      "percent": 0.1417709093628442
+    },
+    {
+      "function": "<vail_storage::legacy::input::Input>::varint_long",
+      "cpu_seconds": 0.08179600000000004,
+      "percent": 0.12455204182680885
+    },
+    {
+      "function": "HUF_readDTableX2_wksp",
+      "cpu_seconds": 0.08039299999999998,
+      "percent": 0.12241567189816904
+    },
+    {
+      "function": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+      "cpu_seconds": 0.079808,
+      "percent": 0.12152488329641982
+    },
+    {
+      "function": "<datafusion_physical_plan::aggregates::group_values::single_group_by::primitive::GroupValuesPrimitive<arrow_array::types::Int32Type> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern",
+      "cpu_seconds": 0.074276,
+      "percent": 0.11310122082654467
+    },
+    {
+      "function": "<futures_util::future::future::shared::Inner<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<vortex_array::array::erased::ArrayRef, alloc::sync::Arc<vortex_error::VortexError>>> + core::marker::Send>>>>::take_or_clone_output",
+      "cpu_seconds": 0.06334700000000001,
+      "percent": 0.09645946248719812
+    },
+    {
+      "function": "<arrow_data::data::ArrayDataBuilder>::child_data",
+      "cpu_seconds": 0.06109700000000001,
+      "percent": 0.09303335248047016
+    },
+    {
+      "function": "ZSTD_decompressSequences",
+      "cpu_seconds": 0.058398000000000005,
+      "percent": 0.08892354318795516
+    },
+    {
+      "function": "mi_page_thread_collect_to_local",
+      "cpu_seconds": 0.05357699999999998,
+      "percent": 0.08158253148020601
+    },
+    {
+      "function": "<arrow_array::builder::primitive_builder::PrimitiveBuilder<arrow_array::types::Int32Type>>::append_value",
+      "cpu_seconds": 0.051933,
+      "percent": 0.07907918710195683
+    },
+    {
+      "function": "mi_free",
+      "cpu_seconds": 0.051221,
+      "percent": 0.07799501362427226
+    },
+    {
+      "function": "mi_malloc_aligned",
+      "cpu_seconds": 0.04734300000000001,
+      "percent": 0.07208992268823182
+    },
+    {
+      "function": "arrow_data::transform::structure::build_extend::{closure#0}",
+      "cpu_seconds": 0.040115000000000005,
+      "percent": 0.06108373463106308
+    },
+    {
+      "function": "<arrow_data::data::ArrayData as core::convert::From<arrow_array::array::list_array::GenericListArray<i32>>>::from",
+      "cpu_seconds": 0.038224999999999995,
+      "percent": 0.05820580222541157
+    },
+    {
+      "function": "arrow_data::transform::utils::try_extend_offsets::<i32>",
+      "cpu_seconds": 0.038037,
+      "percent": 0.05791953170040498
+    },
+    {
+      "function": "<alloc::vec::Vec<u64> as alloc::vec::spec_from_iter::SpecFromIter<u64, core::iter::adapters::map::Map<core::iter::adapters::chain::Chain<core::iter::adapters::cloned::Cloned<core::slice::iter::Iter<u64>>, core::iter::sources::once::Once<u64>>, &mut arrow_buffer::buffer::ops::buffer_unary_not::{closure#0}>>>::from_iter",
+      "cpu_seconds": 0.036659,
+      "percent": 0.05582122966072892
+    },
+    {
+      "function": "<vail_storage::legacy::decode::PartReader>::read_columns",
+      "cpu_seconds": 0.035546,
+      "percent": 0.0541264472440675
+    },
+    {
+      "function": "<arrow_data::data::ArrayData as core::convert::From<arrow_array::array::struct_array::StructArray>>::from",
+      "cpu_seconds": 0.034724000000000005,
+      "percent": 0.05287477505494289
+    },
+    {
+      "function": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+      "cpu_seconds": 0.033455,
+      "percent": 0.05094244901114832
+    },
+    {
+      "function": "<hashbrown::raw::RawTable<(usize, u64)>>::reserve_rehash::<<datafusion_physical_plan::aggregates::group_values::single_group_by::primitive::GroupValuesPrimitive<arrow_array::types::Int64Type> as datafusion_physical_plan::aggregates::group_values::GroupValues>::intern::{closure#2}>",
+      "cpu_seconds": 0.031832000000000006,
+      "percent": 0.048471081659628566
+    },
+    {
+      "function": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+      "cpu_seconds": 0.028507000000000005,
+      "percent": 0.04340805242746392
+    },
+    {
+      "function": "<vail_storage::legacy::decode::Node>::append_struct_fields::<true>",
+      "cpu_seconds": 0.025508999999999997,
+      "percent": 0.03884295118294372
+    },
+    {
+      "function": "pthread_mutexattr_init",
+      "cpu_seconds": 0.025321,
+      "percent": 0.038556680657937124
+    },
+    {
+      "function": "HUF_readStats_wksp",
+      "cpu_seconds": 0.025303000000000003,
+      "percent": 0.03852927177788331
+    },
+    {
+      "function": "arrow_data::transform::list::build_extend::<i32>::{closure#0}",
+      "cpu_seconds": 0.025240000000000002,
+      "percent": 0.03843334069769492
+    }
+  ],
+  "top_inclusive": [
+    {
+      "function": "<std::sys::thread::unix::Thread>::new::thread_start",
+      "cpu_seconds": 65.55336199999672,
+      "percent": 99.81912423237725
+    },
+    {
+      "function": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+      "cpu_seconds": 65.55336199999672,
+      "percent": 99.81912423237725
+    },
+    {
+      "function": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+      "cpu_seconds": 65.55336199999672,
+      "percent": 99.81912423237725
+    },
+    {
+      "function": "_pthread_start",
+      "cpu_seconds": 65.55336199999672,
+      "percent": 99.81912423237725
+    },
+    {
+      "function": "<tokio::runtime::blocking::pool::Inner>::run",
+      "cpu_seconds": 65.55336199999672,
+      "percent": 99.81912423237725
+    },
+    {
+      "function": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "tokio::runtime::scheduler::multi_thread::worker::run",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      "cpu_seconds": 62.29376699999945,
+      "percent": 94.85568821132344
+    },
+    {
+      "function": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+      "cpu_seconds": 56.650990999999365,
+      "percent": 86.26334540273471
+    },
+    {
+      "function": "<tokio::runtime::task::harness::Harness<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<(), datafusion_common::error::DataFusionError>> + core::marker::Send>>, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+      "cpu_seconds": 56.63899399999937,
+      "percent": 86.24507738417886
+    },
+    {
+      "function": "<futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = alloc::boxed::Box<dyn core::any::Any + core::marker::Send>> + core::marker::Send>>, datafusion_common_runtime::trace_utils::trace_future<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::repartition::RepartitionExec>::pull_from_input::{closure#0}>::{closure#1}> as core::future::future::Future>::poll",
+      "cpu_seconds": 56.57400499999939,
+      "percent": 86.14611762274455
+    },
+    {
+      "function": "datafusion_common_runtime::trace_utils::trace_future::<core::result::Result<(), datafusion_common::error::DataFusionError>, <datafusion_physical_plan::repartition::RepartitionExec>::pull_from_input::{closure#0}>::{closure#0}",
+      "cpu_seconds": 56.57226399999938,
+      "percent": 86.1434665749571
+    },
+    {
+      "function": "<datafusion_physical_plan::aggregates::hash_stream::PartialHashAggregateStream as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 52.07715999999934,
+      "percent": 79.29870177687577
+    },
+    {
+      "function": "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.92317999999945,
+      "percent": 68.40522512535077
+    },
+    {
+      "function": "<datafusion_physical_plan::stream::BatchSplitStream as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.607433999999536,
+      "percent": 67.92443377860232
+    },
+    {
+      "function": "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.60725799999954,
+      "percent": 67.92416578066401
+    },
+    {
+      "function": "<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}> as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.60665499999954,
+      "percent": 67.92324758318222
+    },
+    {
+      "function": "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, vail_table::partitioned::limited_input::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.59745299999954,
+      "percent": 67.90923555461248
+    },
+    {
+      "function": "<datafusion_physical_plan::coop::CooperativeStream<datafusion_datasource::file_stream::FileStream> as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.53719199999955,
+      "percent": 67.81747519233896
+    },
+    {
+      "function": "<datafusion_datasource::file_stream::FileStream as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.53075599999954,
+      "percent": 67.80767499500415
+    },
+    {
+      "function": "<futures_util::stream::try_stream::and_then::AndThen<futures_util::stream::try_stream::MapErr<core::pin::Pin<alloc::boxed::Box<dyn futures_core::stream::Stream<Item = core::result::Result<vortex_array::array::erased::ArrayRef, vortex_error::VortexError>> + core::marker::Send>>, vail_table::legacy_source::external<vortex_error::VortexError>>, futures_util::future::ready::Ready<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>>, <vail_table::legacy_source::LegacyOpener as datafusion_datasource::file_stream::FileOpener>::open::{closure#0}::{closure#10}> as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.48347499999953,
+      "percent": 67.73567948068052
+    },
+    {
+      "function": "<futures_util::stream::stream::filter_map::FilterMap<futures_util::stream::stream::then::Then<futures_util::stream::iter::Iter<alloc::vec::into_iter::IntoIter<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<core::option::Option<vortex_array::array::erased::ArrayRef>, vortex_error::VortexError>> + core::marker::Send>>>>, core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<core::option::Option<vortex_array::array::erased::ArrayRef>, vortex_error::VortexError>> + core::marker::Send>>, vail_table::legacy_source::sequential_legacy_scan::{closure#0}>, futures_util::future::ready::Ready<core::option::Option<core::result::Result<vortex_array::array::erased::ArrayRef, vortex_error::VortexError>>>, vail_table::legacy_source::sequential_legacy_scan::{closure#1}> as futures_core::stream::Stream>::poll_next",
+      "cpu_seconds": 44.33825199999956,
+      "percent": 67.51454615912188
+    },
+    {
+      "function": "vortex_layout::scan::tasks::split_exec::<vortex_array::array::erased::ArrayRef>::{closure#2}",
+      "cpu_seconds": 44.327242999999555,
+      "percent": 67.49778258353784
+    },
+    {
+      "function": "<vortex_array::expr::transform::bound_partition::BoundPartitionedExpr<vortex_array::dtype::field_names::FieldName> as vortex_layout::layouts::partitioned::BoundPartitionedExprEval<vortex_array::dtype::field_names::FieldName>>::into_array_future::<<vortex_layout::layouts::struct_::reader::StructReader as vortex_layout::reader::LayoutReader>::projection_evaluation::{closure#1}>::{closure#1}",
+      "cpu_seconds": 44.28877399999956,
+      "percent": 67.43920523871617
+    },
+    {
+      "function": "<futures_util::future::poll_fn::PollFn<<vortex_array::expr::transform::bound_partition::BoundPartitionedExpr<vortex_layout::layouts::row_idx::Partition> as vortex_layout::layouts::partitioned::BoundPartitionedExprEval<vortex_layout::layouts::row_idx::Partition>>::into_array_future<<vortex_layout::layouts::row_idx::RowIdxLayoutReader as vortex_layout::reader::LayoutReader>::projection_evaluation::{closure#0}>::{closure#1}::{closure#0}> as core::future::future::Future>::poll",
+      "cpu_seconds": 44.169258999999556,
+      "percent": 67.25721788873655
+    },
+    {
+      "function": "<futures_util::future::maybe_done::MaybeDone<futures_util::future::try_join_all::TryJoinAll<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<vortex_array::array::erased::ArrayRef, vortex_error::VortexError>> + core::marker::Send>>>> as core::future::future::Future>::poll",
+      "cpu_seconds": 44.16724799999956,
+      "percent": 67.25415570774832
+    },
+    {
+      "function": "<futures_util::future::try_maybe_done::TryMaybeDone<futures_util::future::try_future::into_future::IntoFuture<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<vortex_array::array::erased::ArrayRef, vortex_error::VortexError>> + core::marker::Send>>>> as core::future::future::Future>::poll",
+      "cpu_seconds": 44.16304299999955,
+      "percent": 67.24775268882462
+    },
+    {
+      "function": "<vail_storage::legacy::matrix_layout::NativeReader as vortex_layout::reader::LayoutReader>::projection_evaluation::{closure#0}",
+      "cpu_seconds": 43.98997799999958,
+      "percent": 66.98422392068495
+    },
+    {
+      "function": "<vail_storage::legacy::matrix_layout::NativeReader>::array::{closure#2}",
+      "cpu_seconds": 43.93023999999959,
+      "percent": 66.89325993864857
+    },
+    {
+      "function": "<futures_util::future::future::shared::Shared<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<vortex_array::array::erased::ArrayRef, alloc::sync::Arc<vortex_error::VortexError>>> + core::marker::Send>>> as core::future::future::Future>::poll",
+      "cpu_seconds": 43.925471999999594,
+      "percent": 66.88599963086541
+    },
+    {
+      "function": "<vortex_layout::layouts::list::reader::ListReader>::project_all::{closure#0}",
+      "cpu_seconds": 43.84844599999956,
+      "percent": 66.76871094225281
+    },
+    {
+      "function": "<futures_util::future::future::map::Map<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<vortex_array::array::erased::ArrayRef, vortex_error::VortexError>> + core::marker::Send>>, <vail_storage::legacy::layout::LegacyLayoutReader>::array::{closure#1}> as core::future::future::Future>::poll",
+      "cpu_seconds": 43.82532899999957,
+      "percent": 66.73351032668594
+    },
+    {
+      "function": "<vail_storage::legacy::matrix_layout::NativeReader>::load_array::{closure#0}",
+      "cpu_seconds": 43.82042299999958,
+      "percent": 66.72603988415572
+    },
+    {
+      "function": "<vortex_layout::layouts::list::reader::ListReader>::project_all_bounded::{closure#1}",
+      "cpu_seconds": 43.807425999999566,
+      "percent": 66.70624915004129
+    },
+    {
+      "function": "<futures_util::future::poll_fn::PollFn<<vortex_layout::layouts::list::reader::ListReader>::project_all_bounded::{closure#1}::{closure#1}> as core::future::future::Future>::poll",
+      "cpu_seconds": 43.666140999999584,
+      "percent": 66.49111228235218
+    },
+    {
+      "function": "<vail_storage::legacy::matrix_layout::NativeFile>::decode_range",
+      "cpu_seconds": 41.71882799999972,
+      "percent": 63.525908479893964
+    },
+    {
+      "function": "<vail_storage::legacy::decode::PartReader>::next_vortex_batch",
+      "cpu_seconds": 41.671760999999705,
+      "percent": 63.45423882669987
+    },
+    {
+      "function": "<vail_storage::legacy::decode::PartReader>::read_columns",
+      "cpu_seconds": 41.489085999999745,
+      "percent": 63.17607676204258
+    },
+    {
+      "function": "<vail_storage::legacy::decode::BatchColumn>::append",
+      "cpu_seconds": 41.40671399999973,
+      "percent": 63.05064763605402
+    },
+    {
+      "function": "<vail_storage::legacy::input::Input>::with_buffer::<usize, <vail_storage::legacy::decode::Node>::append_prepared_struct_elements<true>::{closure#3}>",
+      "cpu_seconds": 41.27583699999973,
+      "percent": 62.85135919189823
+    },
+    {
+      "function": "<vail_storage::legacy::decode::BufferedScalars>::probe",
+      "cpu_seconds": 19.45931800000008,
+      "percent": 29.631006277289636
+    }
+  ],
+  "threads": [
+    {
+      "index": 5,
+      "name": "tokio-rt-worker",
+      "tid": "20210263",
+      "observed_cpu_seconds": 2.1934089999999977,
+      "samples": 1133
+    },
+    {
+      "index": 28,
+      "name": "tokio-rt-worker",
+      "tid": "20210286",
+      "observed_cpu_seconds": 2.1737939999999973,
+      "samples": 973
+    },
+    {
+      "index": 6,
+      "name": "tokio-rt-worker",
+      "tid": "20210264",
+      "observed_cpu_seconds": 2.1701259999999976,
+      "samples": 1028
+    },
+    {
+      "index": 15,
+      "name": "tokio-rt-worker",
+      "tid": "20210273",
+      "observed_cpu_seconds": 2.1039299999999987,
+      "samples": 1078
+    },
+    {
+      "index": 22,
+      "name": "tokio-rt-worker",
+      "tid": "20210280",
+      "observed_cpu_seconds": 2.1033480000000013,
+      "samples": 1050
+    },
+    {
+      "index": 31,
+      "name": "tokio-rt-worker",
+      "tid": "20210289",
+      "observed_cpu_seconds": 2.103318999999995,
+      "samples": 1144
+    },
+    {
+      "index": 25,
+      "name": "tokio-rt-worker",
+      "tid": "20210283",
+      "observed_cpu_seconds": 2.0834829999999998,
+      "samples": 1148
+    },
+    {
+      "index": 24,
+      "name": "tokio-rt-worker",
+      "tid": "20210282",
+      "observed_cpu_seconds": 2.0793819999999954,
+      "samples": 1211
+    },
+    {
+      "index": 7,
+      "name": "tokio-rt-worker",
+      "tid": "20210265",
+      "observed_cpu_seconds": 2.0642780000000007,
+      "samples": 1069
+    },
+    {
+      "index": 26,
+      "name": "tokio-rt-worker",
+      "tid": "20210284",
+      "observed_cpu_seconds": 2.0239739999999986,
+      "samples": 1220
+    },
+    {
+      "index": 18,
+      "name": "tokio-rt-worker",
+      "tid": "20210276",
+      "observed_cpu_seconds": 2.023370000000001,
+      "samples": 931
+    },
+    {
+      "index": 10,
+      "name": "tokio-rt-worker",
+      "tid": "20210268",
+      "observed_cpu_seconds": 1.9918000000000002,
+      "samples": 1043
+    },
+    {
+      "index": 20,
+      "name": "tokio-rt-worker",
+      "tid": "20210278",
+      "observed_cpu_seconds": 1.9874749999999994,
+      "samples": 1063
+    },
+    {
+      "index": 11,
+      "name": "tokio-rt-worker",
+      "tid": "20210269",
+      "observed_cpu_seconds": 1.9869829999999993,
+      "samples": 823
+    },
+    {
+      "index": 13,
+      "name": "tokio-rt-worker",
+      "tid": "20210271",
+      "observed_cpu_seconds": 1.9686189999999997,
+      "samples": 904
+    },
+    {
+      "index": 14,
+      "name": "tokio-rt-worker",
+      "tid": "20210272",
+      "observed_cpu_seconds": 1.939795999999999,
+      "samples": 992
+    },
+    {
+      "index": 29,
+      "name": "tokio-rt-worker",
+      "tid": "20210287",
+      "observed_cpu_seconds": 1.9214950000000008,
+      "samples": 1060
+    },
+    {
+      "index": 2,
+      "name": "tokio-rt-worker",
+      "tid": "20210260",
+      "observed_cpu_seconds": 1.9071889999999994,
+      "samples": 938
+    },
+    {
+      "index": 30,
+      "name": "tokio-rt-worker",
+      "tid": "20210288",
+      "observed_cpu_seconds": 1.9056950000000008,
+      "samples": 1087
+    },
+    {
+      "index": 32,
+      "name": "tokio-rt-worker",
+      "tid": "20210290",
+      "observed_cpu_seconds": 1.8887439999999984,
+      "samples": 1074
+    },
+    {
+      "index": 19,
+      "name": "tokio-rt-worker",
+      "tid": "20210277",
+      "observed_cpu_seconds": 1.8884099999999997,
+      "samples": 771
+    },
+    {
+      "index": 17,
+      "name": "tokio-rt-worker",
+      "tid": "20210275",
+      "observed_cpu_seconds": 1.8576599999999994,
+      "samples": 958
+    },
+    {
+      "index": 12,
+      "name": "tokio-rt-worker",
+      "tid": "20210270",
+      "observed_cpu_seconds": 1.857157000000002,
+      "samples": 939
+    },
+    {
+      "index": 1,
+      "name": "tokio-rt-worker",
+      "tid": "20210259",
+      "observed_cpu_seconds": 1.836134,
+      "samples": 903
+    },
+    {
+      "index": 16,
+      "name": "tokio-rt-worker",
+      "tid": "20210274",
+      "observed_cpu_seconds": 1.8242019999999979,
+      "samples": 1000
+    },
+    {
+      "index": 8,
+      "name": "tokio-rt-worker",
+      "tid": "20210266",
+      "observed_cpu_seconds": 1.8063819999999984,
+      "samples": 872
+    },
+    {
+      "index": 23,
+      "name": "tokio-rt-worker",
+      "tid": "20210281",
+      "observed_cpu_seconds": 1.7938999999999998,
+      "samples": 703
+    },
+    {
+      "index": 4,
+      "name": "tokio-rt-worker",
+      "tid": "20210262",
+      "observed_cpu_seconds": 1.7883929999999995,
+      "samples": 1135
+    },
+    {
+      "index": 9,
+      "name": "tokio-rt-worker",
+      "tid": "20210267",
+      "observed_cpu_seconds": 1.785493999999997,
+      "samples": 875
+    },
+    {
+      "index": 21,
+      "name": "tokio-rt-worker",
+      "tid": "20210279",
+      "observed_cpu_seconds": 1.7806189999999993,
+      "samples": 951
+    },
+    {
+      "index": 27,
+      "name": "tokio-rt-worker",
+      "tid": "20210285",
+      "observed_cpu_seconds": 1.7381770000000016,
+      "samples": 759
+    },
+    {
+      "index": 3,
+      "name": "tokio-rt-worker",
+      "tid": "20210261",
+      "observed_cpu_seconds": 1.7170300000000018,
+      "samples": 718
+    },
+    {
+      "index": 0,
+      "name": "python",
+      "tid": "20210236",
+      "observed_cpu_seconds": 0.11878500000000002,
+      "samples": 141
+    },
+    {
+      "index": 130,
+      "name": "tokio-rt-worker",
+      "tid": "20210392",
+      "observed_cpu_seconds": 0.050720000000000015,
+      "samples": 290
+    },
+    {
+      "index": 56,
+      "name": "tokio-rt-worker",
+      "tid": "20210316",
+      "observed_cpu_seconds": 0.044862999999999986,
+      "samples": 299
+    },
+    {
+      "index": 102,
+      "name": "tokio-rt-worker",
+      "tid": "20210363",
+      "observed_cpu_seconds": 0.04463900000000001,
+      "samples": 288
+    },
+    {
+      "index": 71,
+      "name": "tokio-rt-worker",
+      "tid": "20210331",
+      "observed_cpu_seconds": 0.04296199999999997,
+      "samples": 300
+    },
+    {
+      "index": 72,
+      "name": "tokio-rt-worker",
+      "tid": "20210332",
+      "observed_cpu_seconds": 0.03875900000000001,
+      "samples": 288
+    },
+    {
+      "index": 99,
+      "name": "tokio-rt-worker",
+      "tid": "20210359",
+      "observed_cpu_seconds": 0.03559200000000003,
+      "samples": 292
+    },
+    {
+      "index": 131,
+      "name": "tokio-rt-worker",
+      "tid": "20210393",
+      "observed_cpu_seconds": 0.03553999999999998,
+      "samples": 289
+    },
+    {
+      "index": 54,
+      "name": "tokio-rt-worker",
+      "tid": "20210314",
+      "observed_cpu_seconds": 0.03517400000000001,
+      "samples": 292
+    },
+    {
+      "index": 98,
+      "name": "tokio-rt-worker",
+      "tid": "20210358",
+      "observed_cpu_seconds": 0.035068999999999975,
+      "samples": 293
+    },
+    {
+      "index": 80,
+      "name": "tokio-rt-worker",
+      "tid": "20210340",
+      "observed_cpu_seconds": 0.03484400000000001,
+      "samples": 288
+    },
+    {
+      "index": 108,
+      "name": "tokio-rt-worker",
+      "tid": "20210369",
+      "observed_cpu_seconds": 0.03398900000000002,
+      "samples": 294
+    },
+    {
+      "index": 53,
+      "name": "tokio-rt-worker",
+      "tid": "20210313",
+      "observed_cpu_seconds": 0.03364700000000001,
+      "samples": 294
+    },
+    {
+      "index": 113,
+      "name": "tokio-rt-worker",
+      "tid": "20210374",
+      "observed_cpu_seconds": 0.033525000000000006,
+      "samples": 298
+    },
+    {
+      "index": 116,
+      "name": "tokio-rt-worker",
+      "tid": "20210378",
+      "observed_cpu_seconds": 0.033026000000000014,
+      "samples": 290
+    },
+    {
+      "index": 119,
+      "name": "tokio-rt-worker",
+      "tid": "20210381",
+      "observed_cpu_seconds": 0.032605000000000016,
+      "samples": 295
+    },
+    {
+      "index": 36,
+      "name": "tokio-rt-worker",
+      "tid": "20210296",
+      "observed_cpu_seconds": 0.032399,
+      "samples": 290
+    },
+    {
+      "index": 85,
+      "name": "tokio-rt-worker",
+      "tid": "20210345",
+      "observed_cpu_seconds": 0.03181299999999999,
+      "samples": 299
+    },
+    {
+      "index": 95,
+      "name": "tokio-rt-worker",
+      "tid": "20210355",
+      "observed_cpu_seconds": 0.03157700000000002,
+      "samples": 294
+    },
+    {
+      "index": 101,
+      "name": "tokio-rt-worker",
+      "tid": "20210362",
+      "observed_cpu_seconds": 0.031264,
+      "samples": 291
+    },
+    {
+      "index": 139,
+      "name": "tokio-rt-worker",
+      "tid": "20210401",
+      "observed_cpu_seconds": 0.03111700000000002,
+      "samples": 293
+    },
+    {
+      "index": 40,
+      "name": "tokio-rt-worker",
+      "tid": "20210300",
+      "observed_cpu_seconds": 0.030533000000000008,
+      "samples": 286
+    },
+    {
+      "index": 104,
+      "name": "tokio-rt-worker",
+      "tid": "20210365",
+      "observed_cpu_seconds": 0.030248000000000008,
+      "samples": 294
+    },
+    {
+      "index": 158,
+      "name": "tokio-rt-worker",
+      "tid": "20210548",
+      "observed_cpu_seconds": 0.030124,
+      "samples": 196
+    },
+    {
+      "index": 74,
+      "name": "tokio-rt-worker",
+      "tid": "20210334",
+      "observed_cpu_seconds": 0.030021000000000013,
+      "samples": 289
+    },
+    {
+      "index": 92,
+      "name": "tokio-rt-worker",
+      "tid": "20210352",
+      "observed_cpu_seconds": 0.030005000000000014,
+      "samples": 297
+    },
+    {
+      "index": 49,
+      "name": "tokio-rt-worker",
+      "tid": "20210309",
+      "observed_cpu_seconds": 0.029987000000000017,
+      "samples": 295
+    },
+    {
+      "index": 60,
+      "name": "tokio-rt-worker",
+      "tid": "20210320",
+      "observed_cpu_seconds": 0.029888000000000005,
+      "samples": 293
+    },
+    {
+      "index": 96,
+      "name": "tokio-rt-worker",
+      "tid": "20210356",
+      "observed_cpu_seconds": 0.029503,
+      "samples": 291
+    },
+    {
+      "index": 33,
+      "name": "tokio-rt-worker",
+      "tid": "20210293",
+      "observed_cpu_seconds": 0.02942200000000002,
+      "samples": 294
+    },
+    {
+      "index": 138,
+      "name": "tokio-rt-worker",
+      "tid": "20210400",
+      "observed_cpu_seconds": 0.02868200000000002,
+      "samples": 293
+    },
+    {
+      "index": 136,
+      "name": "tokio-rt-worker",
+      "tid": "20210398",
+      "observed_cpu_seconds": 0.028491000000000006,
+      "samples": 295
+    },
+    {
+      "index": 121,
+      "name": "tokio-rt-worker",
+      "tid": "20210383",
+      "observed_cpu_seconds": 0.028316999999999995,
+      "samples": 295
+    },
+    {
+      "index": 63,
+      "name": "tokio-rt-worker",
+      "tid": "20210323",
+      "observed_cpu_seconds": 0.02811500000000002,
+      "samples": 286
+    },
+    {
+      "index": 135,
+      "name": "tokio-rt-worker",
+      "tid": "20210397",
+      "observed_cpu_seconds": 0.027966000000000015,
+      "samples": 293
+    },
+    {
+      "index": 117,
+      "name": "tokio-rt-worker",
+      "tid": "20210379",
+      "observed_cpu_seconds": 0.027886000000000015,
+      "samples": 294
+    },
+    {
+      "index": 93,
+      "name": "tokio-rt-worker",
+      "tid": "20210353",
+      "observed_cpu_seconds": 0.027856000000000016,
+      "samples": 291
+    },
+    {
+      "index": 45,
+      "name": "tokio-rt-worker",
+      "tid": "20210305",
+      "observed_cpu_seconds": 0.027771000000000014,
+      "samples": 289
+    },
+    {
+      "index": 97,
+      "name": "tokio-rt-worker",
+      "tid": "20210357",
+      "observed_cpu_seconds": 0.027552000000000007,
+      "samples": 295
+    },
+    {
+      "index": 65,
+      "name": "tokio-rt-worker",
+      "tid": "20210325",
+      "observed_cpu_seconds": 0.02721700000000002,
+      "samples": 289
+    },
+    {
+      "index": 141,
+      "name": "tokio-rt-worker",
+      "tid": "20210531",
+      "observed_cpu_seconds": 0.027131999999999993,
+      "samples": 198
+    },
+    {
+      "index": 107,
+      "name": "tokio-rt-worker",
+      "tid": "20210368",
+      "observed_cpu_seconds": 0.02707400000000001,
+      "samples": 303
+    },
+    {
+      "index": 76,
+      "name": "tokio-rt-worker",
+      "tid": "20210336",
+      "observed_cpu_seconds": 0.026922000000000012,
+      "samples": 291
+    },
+    {
+      "index": 83,
+      "name": "tokio-rt-worker",
+      "tid": "20210343",
+      "observed_cpu_seconds": 0.026855000000000025,
+      "samples": 289
+    },
+    {
+      "index": 124,
+      "name": "tokio-rt-worker",
+      "tid": "20210386",
+      "observed_cpu_seconds": 0.026714999999999985,
+      "samples": 295
+    },
+    {
+      "index": 39,
+      "name": "tokio-rt-worker",
+      "tid": "20210299",
+      "observed_cpu_seconds": 0.02661900000000001,
+      "samples": 284
+    },
+    {
+      "index": 66,
+      "name": "tokio-rt-worker",
+      "tid": "20210326",
+      "observed_cpu_seconds": 0.026456000000000007,
+      "samples": 291
+    },
+    {
+      "index": 126,
+      "name": "tokio-rt-worker",
+      "tid": "20210388",
+      "observed_cpu_seconds": 0.026327000000000007,
+      "samples": 293
+    },
+    {
+      "index": 79,
+      "name": "tokio-rt-worker",
+      "tid": "20210339",
+      "observed_cpu_seconds": 0.026226000000000017,
+      "samples": 290
+    },
+    {
+      "index": 84,
+      "name": "tokio-rt-worker",
+      "tid": "20210344",
+      "observed_cpu_seconds": 0.026198999999999997,
+      "samples": 289
+    },
+    {
+      "index": 89,
+      "name": "tokio-rt-worker",
+      "tid": "20210349",
+      "observed_cpu_seconds": 0.026121000000000002,
+      "samples": 294
+    },
+    {
+      "index": 123,
+      "name": "tokio-rt-worker",
+      "tid": "20210385",
+      "observed_cpu_seconds": 0.025753000000000036,
+      "samples": 291
+    },
+    {
+      "index": 61,
+      "name": "tokio-rt-worker",
+      "tid": "20210321",
+      "observed_cpu_seconds": 0.02556700000000002,
+      "samples": 288
+    },
+    {
+      "index": 157,
+      "name": "tokio-rt-worker",
+      "tid": "20210547",
+      "observed_cpu_seconds": 0.025474000000000004,
+      "samples": 198
+    },
+    {
+      "index": 87,
+      "name": "tokio-rt-worker",
+      "tid": "20210347",
+      "observed_cpu_seconds": 0.02531800000000001,
+      "samples": 294
+    },
+    {
+      "index": 70,
+      "name": "tokio-rt-worker",
+      "tid": "20210330",
+      "observed_cpu_seconds": 0.025221000000000007,
+      "samples": 287
+    },
+    {
+      "index": 160,
+      "name": "tokio-rt-worker",
+      "tid": "20210550",
+      "observed_cpu_seconds": 0.025177000000000015,
+      "samples": 202
+    },
+    {
+      "index": 35,
+      "name": "tokio-rt-worker",
+      "tid": "20210295",
+      "observed_cpu_seconds": 0.02495100000000001,
+      "samples": 298
+    },
+    {
+      "index": 67,
+      "name": "tokio-rt-worker",
+      "tid": "20210327",
+      "observed_cpu_seconds": 0.024856000000000027,
+      "samples": 294
+    },
+    {
+      "index": 88,
+      "name": "tokio-rt-worker",
+      "tid": "20210348",
+      "observed_cpu_seconds": 0.024824000000000013,
+      "samples": 295
+    },
+    {
+      "index": 134,
+      "name": "tokio-rt-worker",
+      "tid": "20210396",
+      "observed_cpu_seconds": 0.024681999999999996,
+      "samples": 293
+    },
+    {
+      "index": 103,
+      "name": "tokio-rt-worker",
+      "tid": "20210364",
+      "observed_cpu_seconds": 0.024641000000000003,
+      "samples": 294
+    },
+    {
+      "index": 129,
+      "name": "tokio-rt-worker",
+      "tid": "20210391",
+      "observed_cpu_seconds": 0.02453400000000001,
+      "samples": 293
+    },
+    {
+      "index": 110,
+      "name": "tokio-rt-worker",
+      "tid": "20210371",
+      "observed_cpu_seconds": 0.024359000000000023,
+      "samples": 299
+    },
+    {
+      "index": 77,
+      "name": "tokio-rt-worker",
+      "tid": "20210337",
+      "observed_cpu_seconds": 0.024324,
+      "samples": 290
+    },
+    {
+      "index": 37,
+      "name": "tokio-rt-worker",
+      "tid": "20210297",
+      "observed_cpu_seconds": 0.024178000000000015,
+      "samples": 293
+    },
+    {
+      "index": 47,
+      "name": "tokio-rt-worker",
+      "tid": "20210307",
+      "observed_cpu_seconds": 0.024024000000000018,
+      "samples": 286
+    },
+    {
+      "index": 64,
+      "name": "tokio-rt-worker",
+      "tid": "20210324",
+      "observed_cpu_seconds": 0.024006000000000027,
+      "samples": 288
+    },
+    {
+      "index": 91,
+      "name": "tokio-rt-worker",
+      "tid": "20210351",
+      "observed_cpu_seconds": 0.023880000000000023,
+      "samples": 300
+    },
+    {
+      "index": 41,
+      "name": "tokio-rt-worker",
+      "tid": "20210301",
+      "observed_cpu_seconds": 0.023706000000000012,
+      "samples": 289
+    },
+    {
+      "index": 52,
+      "name": "tokio-rt-worker",
+      "tid": "20210312",
+      "observed_cpu_seconds": 0.023694999999999994,
+      "samples": 292
+    },
+    {
+      "index": 137,
+      "name": "tokio-rt-worker",
+      "tid": "20210399",
+      "observed_cpu_seconds": 0.02354000000000002,
+      "samples": 299
+    },
+    {
+      "index": 34,
+      "name": "tokio-rt-worker",
+      "tid": "20210294",
+      "observed_cpu_seconds": 0.023170999999999994,
+      "samples": 288
+    },
+    {
+      "index": 127,
+      "name": "tokio-rt-worker",
+      "tid": "20210389",
+      "observed_cpu_seconds": 0.02311800000000001,
+      "samples": 293
+    },
+    {
+      "index": 75,
+      "name": "tokio-rt-worker",
+      "tid": "20210335",
+      "observed_cpu_seconds": 0.022952,
+      "samples": 295
+    },
+    {
+      "index": 115,
+      "name": "tokio-rt-worker",
+      "tid": "20210377",
+      "observed_cpu_seconds": 0.022845000000000018,
+      "samples": 290
+    },
+    {
+      "index": 100,
+      "name": "tokio-rt-worker",
+      "tid": "20210361",
+      "observed_cpu_seconds": 0.022554,
+      "samples": 291
+    },
+    {
+      "index": 125,
+      "name": "tokio-rt-worker",
+      "tid": "20210387",
+      "observed_cpu_seconds": 0.022546999999999998,
+      "samples": 294
+    },
+    {
+      "index": 114,
+      "name": "tokio-rt-worker",
+      "tid": "20210375",
+      "observed_cpu_seconds": 0.022436000000000025,
+      "samples": 292
+    },
+    {
+      "index": 51,
+      "name": "tokio-rt-worker",
+      "tid": "20210311",
+      "observed_cpu_seconds": 0.022409000000000016,
+      "samples": 289
+    },
+    {
+      "index": 111,
+      "name": "tokio-rt-worker",
+      "tid": "20210372",
+      "observed_cpu_seconds": 0.02231199999999999,
+      "samples": 293
+    },
+    {
+      "index": 78,
+      "name": "tokio-rt-worker",
+      "tid": "20210338",
+      "observed_cpu_seconds": 0.022110000000000005,
+      "samples": 294
+    },
+    {
+      "index": 118,
+      "name": "tokio-rt-worker",
+      "tid": "20210380",
+      "observed_cpu_seconds": 0.021946999999999994,
+      "samples": 296
+    },
+    {
+      "index": 132,
+      "name": "tokio-rt-worker",
+      "tid": "20210394",
+      "observed_cpu_seconds": 0.021832000000000015,
+      "samples": 294
+    },
+    {
+      "index": 43,
+      "name": "tokio-rt-worker",
+      "tid": "20210303",
+      "observed_cpu_seconds": 0.021742000000000025,
+      "samples": 288
+    },
+    {
+      "index": 142,
+      "name": "tokio-rt-worker",
+      "tid": "20210532",
+      "observed_cpu_seconds": 0.021731,
+      "samples": 194
+    },
+    {
+      "index": 59,
+      "name": "tokio-rt-worker",
+      "tid": "20210319",
+      "observed_cpu_seconds": 0.021606000000000004,
+      "samples": 289
+    },
+    {
+      "index": 42,
+      "name": "tokio-rt-worker",
+      "tid": "20210302",
+      "observed_cpu_seconds": 0.021588000000000006,
+      "samples": 289
+    },
+    {
+      "index": 112,
+      "name": "tokio-rt-worker",
+      "tid": "20210373",
+      "observed_cpu_seconds": 0.02149500000000001,
+      "samples": 299
+    },
+    {
+      "index": 128,
+      "name": "tokio-rt-worker",
+      "tid": "20210390",
+      "observed_cpu_seconds": 0.020909,
+      "samples": 291
+    },
+    {
+      "index": 50,
+      "name": "tokio-rt-worker",
+      "tid": "20210310",
+      "observed_cpu_seconds": 0.020855000000000002,
+      "samples": 286
+    },
+    {
+      "index": 38,
+      "name": "tokio-rt-worker",
+      "tid": "20210298",
+      "observed_cpu_seconds": 0.020764000000000008,
+      "samples": 290
+    },
+    {
+      "index": 62,
+      "name": "tokio-rt-worker",
+      "tid": "20210322",
+      "observed_cpu_seconds": 0.02061800000000001,
+      "samples": 286
+    },
+    {
+      "index": 55,
+      "name": "tokio-rt-worker",
+      "tid": "20210315",
+      "observed_cpu_seconds": 0.02032200000000001,
+      "samples": 294
+    },
+    {
+      "index": 122,
+      "name": "tokio-rt-worker",
+      "tid": "20210384",
+      "observed_cpu_seconds": 0.020258,
+      "samples": 293
+    },
+    {
+      "index": 68,
+      "name": "tokio-rt-worker",
+      "tid": "20210328",
+      "observed_cpu_seconds": 0.0201,
+      "samples": 287
+    },
+    {
+      "index": 82,
+      "name": "tokio-rt-worker",
+      "tid": "20210342",
+      "observed_cpu_seconds": 0.020095000000000033,
+      "samples": 298
+    },
+    {
+      "index": 168,
+      "name": "tokio-rt-worker",
+      "tid": "20210558",
+      "observed_cpu_seconds": 0.019819999999999997,
+      "samples": 201
+    },
+    {
+      "index": 106,
+      "name": "tokio-rt-worker",
+      "tid": "20210367",
+      "observed_cpu_seconds": 0.019779999999999992,
+      "samples": 293
+    },
+    {
+      "index": 86,
+      "name": "tokio-rt-worker",
+      "tid": "20210346",
+      "observed_cpu_seconds": 0.01975500000000003,
+      "samples": 298
+    },
+    {
+      "index": 109,
+      "name": "tokio-rt-worker",
+      "tid": "20210370",
+      "observed_cpu_seconds": 0.019641999999999993,
+      "samples": 295
+    },
+    {
+      "index": 133,
+      "name": "tokio-rt-worker",
+      "tid": "20210395",
+      "observed_cpu_seconds": 0.019553,
+      "samples": 292
+    },
+    {
+      "index": 69,
+      "name": "tokio-rt-worker",
+      "tid": "20210329",
+      "observed_cpu_seconds": 0.019137000000000008,
+      "samples": 291
+    },
+    {
+      "index": 81,
+      "name": "tokio-rt-worker",
+      "tid": "20210341",
+      "observed_cpu_seconds": 0.018921999999999987,
+      "samples": 290
+    },
+    {
+      "index": 143,
+      "name": "tokio-rt-worker",
+      "tid": "20210533",
+      "observed_cpu_seconds": 0.018703,
+      "samples": 195
+    },
+    {
+      "index": 48,
+      "name": "tokio-rt-worker",
+      "tid": "20210308",
+      "observed_cpu_seconds": 0.018698000000000006,
+      "samples": 291
+    },
+    {
+      "index": 105,
+      "name": "tokio-rt-worker",
+      "tid": "20210366",
+      "observed_cpu_seconds": 0.018499000000000022,
+      "samples": 290
+    },
+    {
+      "index": 57,
+      "name": "tokio-rt-worker",
+      "tid": "20210317",
+      "observed_cpu_seconds": 0.018174000000000013,
+      "samples": 290
+    },
+    {
+      "index": 120,
+      "name": "tokio-rt-worker",
+      "tid": "20210382",
+      "observed_cpu_seconds": 0.01809299999999998,
+      "samples": 291
+    },
+    {
+      "index": 163,
+      "name": "tokio-rt-worker",
+      "tid": "20210553",
+      "observed_cpu_seconds": 0.017933999999999995,
+      "samples": 197
+    },
+    {
+      "index": 94,
+      "name": "tokio-rt-worker",
+      "tid": "20210354",
+      "observed_cpu_seconds": 0.017424000000000023,
+      "samples": 293
+    },
+    {
+      "index": 144,
+      "name": "tokio-rt-worker",
+      "tid": "20210534",
+      "observed_cpu_seconds": 0.017068000000000003,
+      "samples": 203
+    },
+    {
+      "index": 73,
+      "name": "tokio-rt-worker",
+      "tid": "20210333",
+      "observed_cpu_seconds": 0.017055000000000004,
+      "samples": 291
+    },
+    {
+      "index": 140,
+      "name": "tokio-rt-worker",
+      "tid": "20210530",
+      "observed_cpu_seconds": 0.016978,
+      "samples": 197
+    },
+    {
+      "index": 161,
+      "name": "tokio-rt-worker",
+      "tid": "20210551",
+      "observed_cpu_seconds": 0.016938000000000005,
+      "samples": 199
+    },
+    {
+      "index": 159,
+      "name": "tokio-rt-worker",
+      "tid": "20210549",
+      "observed_cpu_seconds": 0.016521000000000004,
+      "samples": 199
+    },
+    {
+      "index": 145,
+      "name": "tokio-rt-worker",
+      "tid": "20210535",
+      "observed_cpu_seconds": 0.016367999999999994,
+      "samples": 197
+    },
+    {
+      "index": 44,
+      "name": "tokio-rt-worker",
+      "tid": "20210304",
+      "observed_cpu_seconds": 0.016205000000000008,
+      "samples": 287
+    },
+    {
+      "index": 46,
+      "name": "tokio-rt-worker",
+      "tid": "20210306",
+      "observed_cpu_seconds": 0.015871,
+      "samples": 292
+    },
+    {
+      "index": 151,
+      "name": "tokio-rt-worker",
+      "tid": "20210541",
+      "observed_cpu_seconds": 0.015681000000000004,
+      "samples": 199
+    },
+    {
+      "index": 167,
+      "name": "tokio-rt-worker",
+      "tid": "20210557",
+      "observed_cpu_seconds": 0.015677999999999997,
+      "samples": 197
+    },
+    {
+      "index": 155,
+      "name": "tokio-rt-worker",
+      "tid": "20210545",
+      "observed_cpu_seconds": 0.015323000000000005,
+      "samples": 195
+    },
+    {
+      "index": 156,
+      "name": "tokio-rt-worker",
+      "tid": "20210546",
+      "observed_cpu_seconds": 0.014945000000000003,
+      "samples": 197
+    },
+    {
+      "index": 149,
+      "name": "tokio-rt-worker",
+      "tid": "20210539",
+      "observed_cpu_seconds": 0.014602000000000002,
+      "samples": 198
+    },
+    {
+      "index": 165,
+      "name": "tokio-rt-worker",
+      "tid": "20210555",
+      "observed_cpu_seconds": 0.014453000000000004,
+      "samples": 198
+    },
+    {
+      "index": 90,
+      "name": "tokio-rt-worker",
+      "tid": "20210350",
+      "observed_cpu_seconds": 0.014344000000000011,
+      "samples": 296
+    },
+    {
+      "index": 58,
+      "name": "tokio-rt-worker",
+      "tid": "20210318",
+      "observed_cpu_seconds": 0.014089,
+      "samples": 293
+    },
+    {
+      "index": 150,
+      "name": "tokio-rt-worker",
+      "tid": "20210540",
+      "observed_cpu_seconds": 0.013454000000000006,
+      "samples": 196
+    },
+    {
+      "index": 154,
+      "name": "tokio-rt-worker",
+      "tid": "20210544",
+      "observed_cpu_seconds": 0.011975000000000005,
+      "samples": 197
+    },
+    {
+      "index": 164,
+      "name": "tokio-rt-worker",
+      "tid": "20210554",
+      "observed_cpu_seconds": 0.011590000000000003,
+      "samples": 200
+    },
+    {
+      "index": 162,
+      "name": "tokio-rt-worker",
+      "tid": "20210552",
+      "observed_cpu_seconds": 0.011448000000000009,
+      "samples": 200
+    },
+    {
+      "index": 166,
+      "name": "tokio-rt-worker",
+      "tid": "20210556",
+      "observed_cpu_seconds": 0.011376000000000004,
+      "samples": 200
+    },
+    {
+      "index": 146,
+      "name": "tokio-rt-worker",
+      "tid": "20210536",
+      "observed_cpu_seconds": 0.010904999999999998,
+      "samples": 197
+    },
+    {
+      "index": 153,
+      "name": "tokio-rt-worker",
+      "tid": "20210543",
+      "observed_cpu_seconds": 0.010173999999999994,
+      "samples": 198
+    },
+    {
+      "index": 152,
+      "name": "tokio-rt-worker",
+      "tid": "20210542",
+      "observed_cpu_seconds": 0.009923000000000003,
+      "samples": 196
+    },
+    {
+      "index": 147,
+      "name": "tokio-rt-worker",
+      "tid": "20210537",
+      "observed_cpu_seconds": 0.009518000000000004,
+      "samples": 200
+    },
+    {
+      "index": 148,
+      "name": "tokio-rt-worker",
+      "tid": "20210538",
+      "observed_cpu_seconds": 0.009441000000000001,
+      "samples": 197
+    },
+    {
+      "index": 169,
+      "name": "tokio-rt-worker",
+      "tid": "20210559",
+      "observed_cpu_seconds": 0.009158000000000005,
+      "samples": 199
+    }
+  ],
+  "method": "Use profile-recorded threadCPUDelta microseconds, not raw sample counts. Exclude intervals crossing warm marker/end and each thread first sample. Attribute interval CPU approximately to sampled endpoint stack; inline attribution not reconstructed. Inclusive rows overlap and must not be added."
+}
