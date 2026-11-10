@@ -1,0 +1,14 @@
+{
+  "mode": "vail",
+  "purpose": "validate",
+  "case": "test_matrix_table_entries_show",
+  "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "cpu_scope": "Python process plus stable observed live child endpoints; lower bound if unobserved descendants exit",
+  "threads": "Hail Spark local[4]; Vail Rayon4 / existing Tokio32, not total-thread parity",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "allocator": "mimalloc",
+  "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "original_function": "def test_matrix_table_entries_show(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.entries().show()",
+  "identity_verified": true
+}

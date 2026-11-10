@@ -1,0 +1,79 @@
+{
+  "mode": "vail",
+  "purpose": "time",
+  "case": "test_matrix_table_show",
+  "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "cpu_scope": "Python process plus stable observed live child endpoints; lower bound if unobserved descendants exit",
+  "threads": "Hail Spark local[4]; Vail Rayon4 / existing Tokio32, not total-thread parity",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "allocator": "mimalloc",
+  "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "original_function": "def test_matrix_table_show(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.show(100)",
+  "identity_verified": true,
+  "samples": [
+    {
+      "wall_seconds": 0.1579206669703126,
+      "cpu_seconds": 0.158165,
+      "python_cpu_seconds": 0.158165,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.15787458303384483,
+      "cpu_seconds": 0.15822200000000008,
+      "python_cpu_seconds": 0.15822200000000008,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.15884120797272772,
+      "cpu_seconds": 0.159146,
+      "python_cpu_seconds": 0.159146,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.15890429099090397,
+      "cpu_seconds": 0.1592610000000001,
+      "python_cpu_seconds": 0.1592610000000001,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.15881570801138878,
+      "cpu_seconds": 0.15908199999999995,
+      "python_cpu_seconds": 0.15908199999999995,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    }
+  ],
+  "outputs": [
+    {
+      "characters": 148825,
+      "sha256": "bafce04effbfb092bcdab9cef4cb4727ca1808249eb9288b18b46feb8d76c6bd"
+    },
+    {
+      "characters": 148825,
+      "sha256": "bafce04effbfb092bcdab9cef4cb4727ca1808249eb9288b18b46feb8d76c6bd"
+    },
+    {
+      "characters": 148825,
+      "sha256": "bafce04effbfb092bcdab9cef4cb4727ca1808249eb9288b18b46feb8d76c6bd"
+    },
+    {
+      "characters": 148825,
+      "sha256": "bafce04effbfb092bcdab9cef4cb4727ca1808249eb9288b18b46feb8d76c6bd"
+    },
+    {
+      "characters": 148825,
+      "sha256": "bafce04effbfb092bcdab9cef4cb4727ca1808249eb9288b18b46feb8d76c6bd"
+    }
+  ],
+  "passed": true
+}

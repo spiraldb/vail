@@ -1,0 +1,134 @@
+{
+  "mode": "hail",
+  "purpose": "time",
+  "case": "test_matrix_table_rows_show",
+  "fixture": "/private/tmp/vail-hail-prefix-20261110/inputs/hail.mt",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "cpu_scope": "Python process plus stable observed live child endpoints; lower bound if unobserved descendants exit",
+  "threads": "Hail Spark local[4]; Vail Rayon4 / existing Tokio32, not total-thread parity",
+  "hail_version": "0.2.139-5e5eedb87ff8",
+  "hail_jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+  "spark_conf": {
+    "spark.hadoop.io.compression.codecs": "org.apache.hadoop.io.compress.DefaultCodec,is.hail.io.compress.BGzipCodec,is.hail.io.compress.BGzipCodecTbi,org.apache.hadoop.io.compress.GzipCodec",
+    "spark.sql.shuffle.partitions": "4",
+    "spark.master": "local[4]",
+    "spark.jars": "/private/tmp/vail-hail-prefix-20261110/hail-env/lib/python3.12/site-packages/hail/backend/hail-all-spark.jar",
+    "spark.kryo.registrator": "is.hail.kryo.HailKryoRegistrator",
+    "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+    "spark.app.initial.jar.urls": "spark://127.0.0.1:54206/jars/hail-all-spark.jar",
+    "spark.serializer.objectStreamReset": "100",
+    "spark.driver.maxResultSize": "0",
+    "spark.app.id": "local-1794331044145",
+    "spark.submit.deployMode": "client",
+    "spark.app.name": "Hail",
+    "spark.driver.port": "54206",
+    "spark.executor.memory": "2g",
+    "spark.driver.extraJavaOptions": "-Djava.net.preferIPv6Addresses=false -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false",
+    "spark.executor.extraClassPath": "/private/tmp/vail-hail-prefix-20261110/hail-env/lib/python3.12/site-packages/hail/backend/hail-all-spark.jar",
+    "spark.driver.host": "127.0.0.1",
+    "spark.executor.id": "driver",
+    "spark.driver.extraClassPath": "/private/tmp/vail-hail-prefix-20261110/hail-env/lib/python3.12/site-packages/hail/backend/hail-all-spark.jar",
+    "spark.logConf": "true",
+    "spark.driver.bindAddress": "127.0.0.1",
+    "spark.app.submitTime": "1794331043703",
+    "spark.local.dir": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/",
+    "spark.repl.local.jars": "file:///private/tmp/vail-hail-prefix-20261110/hail-env/lib/python3.12/site-packages/hail/backend/hail-all-spark.jar",
+    "spark.kryoserializer.buffer.max": "1g",
+    "spark.rdd.compress": "True",
+    "spark.executor.extraJavaOptions": "-Djava.net.preferIPv6Addresses=false -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false",
+    "spark.ui.enabled": "false",
+    "spark.driver.memory": "2g",
+    "spark.submit.pyFiles": "",
+    "spark.default.parallelism": "4",
+    "spark.app.startTime": "1794331043915",
+    "spark.ui.showConsoleProgress": "true"
+  },
+  "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "original_function": "def test_matrix_table_rows_show(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.rows().show(100)",
+  "identity_verified": true,
+  "samples": [
+    {
+      "wall_seconds": 0.37222224997822195,
+      "cpu_seconds": 1.3326158800000008,
+      "python_cpu_seconds": 0.0295129999999999,
+      "observed_child_cpu_seconds": 1.3031028800000009,
+      "descendants_before": {
+        "42843:1794331042.778338": 12.756658016
+      },
+      "descendants_after": {
+        "42843:1794331042.778338": 14.059760896
+      }
+    },
+    {
+      "wall_seconds": 0.18485220801085234,
+      "cpu_seconds": 0.8254693680000005,
+      "python_cpu_seconds": 0.027886999999999995,
+      "observed_child_cpu_seconds": 0.7975823680000005,
+      "descendants_before": {
+        "42843:1794331042.778338": 14.089794496
+      },
+      "descendants_after": {
+        "42843:1794331042.778338": 14.887376864
+      }
+    },
+    {
+      "wall_seconds": 0.17053950007539243,
+      "cpu_seconds": 0.7854541920000011,
+      "python_cpu_seconds": 0.02806200000000003,
+      "observed_child_cpu_seconds": 0.7573921920000011,
+      "descendants_before": {
+        "42843:1794331042.778338": 14.887396864
+      },
+      "descendants_after": {
+        "42843:1794331042.778338": 15.644789056
+      }
+    },
+    {
+      "wall_seconds": 0.18336391693446785,
+      "cpu_seconds": 0.8271613200000003,
+      "python_cpu_seconds": 0.028648999999999925,
+      "observed_child_cpu_seconds": 0.7985123200000004,
+      "descendants_before": {
+        "42843:1794331042.778338": 15.686524224
+      },
+      "descendants_after": {
+        "42843:1794331042.778338": 16.485036544
+      }
+    },
+    {
+      "wall_seconds": 0.17880287498701364,
+      "cpu_seconds": 0.7792209680000028,
+      "python_cpu_seconds": 0.02839299999999989,
+      "observed_child_cpu_seconds": 0.750827968000003,
+      "descendants_before": {
+        "42843:1794331042.778338": 16.512089984
+      },
+      "descendants_after": {
+        "42843:1794331042.778338": 17.262917952000002
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "characters": 43275,
+      "sha256": "0e8efd40402c81dcd74b60c659ad30a06d3771d8d2953b816e08910a540039a3"
+    },
+    {
+      "characters": 43275,
+      "sha256": "0e8efd40402c81dcd74b60c659ad30a06d3771d8d2953b816e08910a540039a3"
+    },
+    {
+      "characters": 43275,
+      "sha256": "0e8efd40402c81dcd74b60c659ad30a06d3771d8d2953b816e08910a540039a3"
+    },
+    {
+      "characters": 43275,
+      "sha256": "0e8efd40402c81dcd74b60c659ad30a06d3771d8d2953b816e08910a540039a3"
+    },
+    {
+      "characters": 43275,
+      "sha256": "0e8efd40402c81dcd74b60c659ad30a06d3771d8d2953b816e08910a540039a3"
+    }
+  ],
+  "passed": true
+}

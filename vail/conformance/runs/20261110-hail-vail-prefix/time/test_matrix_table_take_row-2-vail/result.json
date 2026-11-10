@@ -1,0 +1,79 @@
+{
+  "mode": "vail",
+  "purpose": "time",
+  "case": "test_matrix_table_take_row",
+  "fixture": "/private/tmp/vail-hail-four-20261109/inputs/native.mt",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "cpu_scope": "Python process plus stable observed live child endpoints; lower bound if unobserved descendants exit",
+  "threads": "Hail Spark local[4]; Vail Rayon4 / existing Tokio32, not total-thread parity",
+  "native_sha256": "585cc05089ed159e38f700e0494a9c6ada12f86de48fbf0f664671356e7a882b",
+  "allocator": "mimalloc",
+  "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "original_function": "def test_matrix_table_take_row(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt.info.AF.take(100)",
+  "identity_verified": true,
+  "samples": [
+    {
+      "wall_seconds": 0.007450167089700699,
+      "cpu_seconds": 0.007902999999999993,
+      "python_cpu_seconds": 0.007902999999999993,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.0075885000405833125,
+      "cpu_seconds": 0.007820999999999967,
+      "python_cpu_seconds": 0.007820999999999967,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.0073150829412043095,
+      "cpu_seconds": 0.007547999999999999,
+      "python_cpu_seconds": 0.007547999999999999,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.007579999975860119,
+      "cpu_seconds": 0.007973000000000008,
+      "python_cpu_seconds": 0.007973000000000008,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    },
+    {
+      "wall_seconds": 0.007957209018059075,
+      "cpu_seconds": 0.008208000000000104,
+      "python_cpu_seconds": 0.008208000000000104,
+      "observed_child_cpu_seconds": 0,
+      "descendants_before": {},
+      "descendants_after": {}
+    }
+  ],
+  "outputs": [
+    {
+      "characters": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "characters": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "characters": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "characters": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "characters": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "passed": true
+}

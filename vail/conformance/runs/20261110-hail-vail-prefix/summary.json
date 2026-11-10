@@ -1,0 +1,77 @@
+[
+  {
+    "case": "test_matrix_table_show",
+    "hail": {
+      "wall_seconds": 0.26450827094959095,
+      "cpu_seconds": 1.209446275999999
+    },
+    "vail": {
+      "wall_seconds": 0.15965231246082112,
+      "cpu_seconds": 0.16009799999999985
+    },
+    "hail_divided_by_vail": {
+      "wall_seconds": 1.6567769478096448,
+      "cpu_seconds": 7.5544121475596215
+    }
+  },
+  {
+    "case": "test_matrix_table_rows_show",
+    "hail": {
+      "wall_seconds": 0.18046566646080464,
+      "cpu_seconds": 0.8106781240000008
+    },
+    "vail": {
+      "wall_seconds": 0.011460083536803722,
+      "cpu_seconds": 0.011586500000000055
+    },
+    "hail_divided_by_vail": {
+      "wall_seconds": 15.747325565406609,
+      "cpu_seconds": 69.96747283476434
+    }
+  },
+  {
+    "case": "test_matrix_table_entries_show",
+    "hail": {
+      "wall_seconds": 0.4484678329899907,
+      "cpu_seconds": 2.076069935999999
+    },
+    "vail": {
+      "wall_seconds": 0.014696562546305358,
+      "cpu_seconds": 0.024446000000000023
+    },
+    "hail_divided_by_vail": {
+      "wall_seconds": 30.515151524513005,
+      "cpu_seconds": 84.92472944448977
+    }
+  },
+  {
+    "case": "test_matrix_table_take_entry",
+    "hail": {
+      "wall_seconds": 0.2355158540303819,
+      "cpu_seconds": 1.173386944000002
+    },
+    "vail": {
+      "wall_seconds": 0.007104979013092816,
+      "cpu_seconds": 0.008224499999999968
+    },
+    "hail_divided_by_vail": {
+      "wall_seconds": 33.14800136585642,
+      "cpu_seconds": 142.66969955620482
+    }
+  },
+  {
+    "case": "test_matrix_table_take_row",
+    "hail": {
+      "wall_seconds": 0.20837614545598626,
+      "cpu_seconds": 1.0360998159999983
+    },
+    "vail": {
+      "wall_seconds": 0.007455416489392519,
+      "cpu_seconds": 0.007826
+    },
+    "hail_divided_by_vail": {
+      "wall_seconds": 27.949631754639256,
+      "cpu_seconds": 132.39200306670054
+    }
+  }
+]

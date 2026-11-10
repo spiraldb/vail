@@ -1,0 +1,57 @@
+{
+  "rows": 100,
+  "columns": 10,
+  "entries": 1000,
+  "exact_logical_values_equal": true,
+  "values_sha256": "05bb982ac4138e4684bf6909339bda5728945d0bea4136d85a4153fed6b4af5f",
+  "workers": [
+    {
+      "mode": "vail",
+      "exit": {
+        "command": [
+          "/private/tmp/vail-prefix-demand-20261109/env/bin/python",
+          "/private/tmp/vail-hail-prefix-20261110/display-values.py",
+          "vail",
+          "/private/tmp/vail-hail-prefix-20261110/display-values-vail"
+        ],
+        "leader": 44004,
+        "owned_identities": {
+          "44004": 1794331392.163312
+        },
+        "seconds": 0.4586453749798238,
+        "returncode": 0,
+        "failure": null,
+        "cleanup_error": null,
+        "peak_observed_combined_rss_bytes": 395493376,
+        "group_absent": true,
+        "live_owned": 0
+      }
+    },
+    {
+      "mode": "hail",
+      "exit": {
+        "command": [
+          "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+          "/private/tmp/vail-hail-prefix-20261110/display-values.py",
+          "hail",
+          "/private/tmp/vail-hail-prefix-20261110/display-values-hail"
+        ],
+        "leader": 44005,
+        "owned_identities": {
+          "44005": 1794331392.622515,
+          "44021": 1794331393.783688,
+          "44031": 1794331393.81103,
+          "44032": 1794331393.811521
+        },
+        "seconds": 17.096965167089365,
+        "returncode": 0,
+        "failure": null,
+        "cleanup_error": null,
+        "peak_observed_combined_rss_bytes": 1034059776,
+        "group_absent": true,
+        "live_owned": 0
+      }
+    }
+  ],
+  "scope": "After all timing, separate public validation of the100x10matrix displayed cells. No renderer byte equality or full dataset claim."
+}

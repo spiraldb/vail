@@ -1,0 +1,31 @@
+{
+  "cases": [
+    "test_matrix_table_show",
+    "test_matrix_table_rows_show",
+    "test_matrix_table_entries_show",
+    "test_matrix_table_take_entry",
+    "test_matrix_table_take_row"
+  ],
+  "warmups": 3,
+  "samples": 5,
+  "processes_per_engine_per_case": 4,
+  "schedule": [
+    "hail",
+    "vail",
+    "vail",
+    "hail",
+    "hail",
+    "vail",
+    "vail",
+    "hail"
+  ],
+  "pins_sha256": "060ad6eca92540f99ed8c53435b338d9b0927fa6b0e0da8904aa00e9f3193845",
+  "scripts": {
+    "worker.py": "4a1f781fac47beb4a69ade3f6b655d07e13b305338260b2df00984cad7e1e8e6",
+    "run.py": "b28d18204b2a2a1f5084888c1bc82379021b4fe825458d69f03b6509c656acdb",
+    "owned.py": "e5855babb9888f1fb91a9c56d6b5e99d78e421919ac4605a299311b0b0f88dfc",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125"
+  },
+  "scope": "Frozen1000x2535data4partitions eachnativeformat; freshly regeneratedHailinput, existingVailnative input. Exact upstream read/construct/action. Init outside. Python+stable observed live child CPU endpoints lowerbound. HailSpark4, VailRayon4/Tokio32 not total thread parity. Fullcase deadline180s/phase1800s/combinedRSS6GiB/ownedgroupcleanup.",
+  "validation": "Exact public logical prefixes must match before timing; display formatting may differ; initial historical Hailinput absent and retainedVCF hash differs from historical subset VCF, so no historical physical-layout claim."
+}
