@@ -1,7 +1,7 @@
 //! Matrix files composed with Vortex's struct and list layouts. Rows and entry
 //! values have independent native cursors; list offsets come from the shared
 //! column dimension and never require opening an entry file.
-use super::{Component, Result, decode, index};
+use super::{Component, Result, decode, index, range_input::IndexedRanges};
 use arrow_array::UInt64Array;
 #[cfg(test)]
 use arrow_array::{Array, ListArray, StructArray};
@@ -31,6 +31,7 @@ use vortex::{
     dtype::{DType, FieldMask, Nullability, PType},
     error::{VortexResult, vortex_err},
     expr::BoundExpression,
+    io::session::RuntimeSessionExt,
     layout::{
         Layout, LayoutChildType, LayoutDeserializeArgs, LayoutId, LayoutParts, LayoutReader,
         LayoutReaderContext, LayoutReaderRef, LayoutRef, RowSplits, SplitRange, VTable,
@@ -274,9 +275,11 @@ struct NativeFile {
     shape: FileShape,
     projection: Vec<usize>,
     decode_paths: Option<Vec<Vec<String>>>,
-    cursor: Mutex<Cursor>,
+    cursor: Arc<tokio::sync::Mutex<Cursor>>,
+    inputs: IndexedRanges,
 }
 struct Cursor {
+    prepared: bool,
     reader: Option<decode::PartReader>,
     index: Option<index::IndexReader>,
     range: Range<u64>,
@@ -314,18 +317,20 @@ impl NativeReader {
         let dtype = session.arrow().from_arrow_field(&output_field)?;
         let projection = (0..component.schema.fields().len()).collect();
         let file = Arc::new(NativeFile {
+            inputs: IndexedRanges::new(component.clone(), part),
             component,
             part,
             row_count: file_rows,
             shape,
             projection,
             decode_paths,
-            cursor: Mutex::new(Cursor {
+            cursor: Arc::new(tokio::sync::Mutex::new(Cursor {
+                prepared: false,
                 reader: None,
                 index: None,
                 range: 0..0,
                 cached: None,
-            }),
+            })),
         });
         Ok(Self {
             name,
@@ -404,17 +409,20 @@ impl NativeReader {
                 }
                 Source::File { file, shape } => {
                     let decode_session = session.clone();
-                    tokio::task::spawn_blocking(move || -> Result<ArrayRef> {
-                        let row_range = match shape {
-                            FileShape::Rows => range.clone(),
-                            FileShape::Elements { ncols } => {
-                                if ncols == 0 {
-                                    return Err("nonempty range in zero-column matrix".into());
-                                }
-                                range.start / ncols..range.end.div_ceil(ncols)
+                    let row_range = match shape {
+                        FileShape::Rows => range.clone(),
+                        FileShape::Elements { ncols } => {
+                            if ncols == 0 {
+                                return Err(vortex_err!("nonempty range in zero-column matrix"));
                             }
-                        };
-                        let batches = file.read_range(row_range.clone(), &decode_session)?;
+                            range.start / ncols..range.end.div_ceil(ncols)
+                        }
+                    };
+                    let batches = file
+                        .read_range(row_range.clone(), &decode_session)
+                        .await
+                        .map_err(|e| vortex_err!("{e}"))?;
+                    (|| -> Result<ArrayRef> {
                         let mut ctx = decode_session.create_execution_ctx();
                         let mut chunks = Vec::with_capacity(batches.len());
                         let mut batch_start = row_range.start;
@@ -479,9 +487,7 @@ impl NativeReader {
                         } else {
                             Ok(ChunkedArray::try_new(chunks, dtype)?.into_array())
                         }
-                    })
-                    .await
-                    .map_err(|e| vortex_err!("Hail matrix decoder task failed: {e}"))?
+                    })()
                     .map_err(|e| vortex_err!("{e}"))
                 }
             }
@@ -490,16 +496,68 @@ impl NativeReader {
     }
 }
 impl NativeFile {
-    fn read_range(&self, range: Range<u64>, session: &VortexSession) -> Result<Vec<ArrayRef>> {
-        let mut cursor = self
-            .cursor
-            .lock()
-            .map_err(|_| "Hail matrix cursor poisoned")?;
+    async fn read_range(
+        self: &Arc<Self>,
+        range: Range<u64>,
+        session: &VortexSession,
+    ) -> Result<Vec<ArrayRef>> {
+        // Wait for the file cursor without occupying a blocking-pool thread.
+        let mut cursor = self.cursor.clone().lock_owned().await;
         if cursor.range == range
             && let Some(batch) = &cursor.cached
         {
             return Ok(batch.clone());
         }
+        if let Some(prepared) = self
+            .inputs
+            .prepare(
+                range.clone(),
+                self.row_count,
+                session,
+                cursor
+                    .reader
+                    .as_ref()
+                    .and_then(|r| r.compressed_position(range.start)),
+            )
+            .await?
+        {
+            let reader = if let Some(mut reader) = cursor.reader.take() {
+                prepared.reset_reader(&mut reader)?;
+                reader
+            } else {
+                prepared
+                    .into_reader(&self.component, self.part, &self.projection)?
+                    .with_decode_paths(self.decode_paths.clone())
+            };
+            cursor.reader = Some(reader);
+            cursor.prepared = true;
+            // No await or file reads from this point through decoding/cache publication.
+            let result = self.decode_range(&mut cursor, range, session);
+            if result.is_err() {
+                cursor.reader = None;
+                cursor.prepared = false;
+            }
+            return result;
+        }
+        let file = self.clone();
+        let decode_session = session.clone();
+        session
+            .handle()
+            .spawn_blocking(move || {
+                if cursor.prepared {
+                    cursor.reader = None;
+                    cursor.prepared = false;
+                }
+                file.read_stream(&mut cursor, range, &decode_session)
+            })
+            .await
+    }
+    fn read_stream(
+        &self,
+        cursor: &mut Cursor,
+        range: Range<u64>,
+        session: &VortexSession,
+    ) -> Result<Vec<ArrayRef>> {
         let reposition = cursor.reader.as_ref().is_none_or(|r| r.rows != range.start);
         if reposition
             && range.start > 0
@@ -529,6 +587,14 @@ impl NativeFile {
                     .with_decode_paths(self.decode_paths.clone()),
             );
         }
+        self.decode_range(cursor, range, session)
+    }
+    fn decode_range(
+        &self,
+        cursor: &mut Cursor,
+        range: Range<u64>,
+        session: &VortexSession,
+    ) -> Result<Vec<ArrayRef>> {
         let short_count = match self.shape {
             FileShape::Rows => "Hail matrix row count exceeds file rows",
             FileShape::Elements { .. } => "Hail row and entry partition counts differ",

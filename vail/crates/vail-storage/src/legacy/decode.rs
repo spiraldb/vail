@@ -4,6 +4,7 @@ use arrow_array::{builder::*, *};
 use arrow_buffer::{BooleanBufferBuilder, NullBufferBuilder, OffsetBuffer, ScalarBuffer};
 use arrow_schema::{DataType, FieldRef, Fields};
 use vail_execution::expressions::PrimitiveType as P;
+use vortex::buffer::ByteBuffer;
 
 // Keep Hail's packed Call until an Arrow consumer requests its public struct.
 struct CallColumn {
@@ -2679,7 +2680,24 @@ pub struct PartReader {
     columns: Option<Vec<Column>>,
 }
 impl PartReader {
+    pub(super) fn compressed_position(&self, row: u64) -> Option<u64> {
+        (self.rows == row)
+            .then(|| self.input.compressed_position())
+            .flatten()
+    }
     pub fn new(c: &Component, part: usize, projection: &[usize]) -> Result<Self> {
+        let input = Input::open(
+            c.paths.get(part).ok_or("Hail part index out of bounds")?,
+            &c.buffer,
+        )?;
+        Self::with_input(c, part, projection, input)
+    }
+    pub(super) fn with_input(
+        c: &Component,
+        part: usize,
+        projection: &[usize],
+        input: Input,
+    ) -> Result<Self> {
         let path = c
             .paths
             .get(part)
@@ -2691,7 +2709,7 @@ impl PartReader {
         }
         node.refresh_run_projection();
         Ok(Self {
-            input: Input::open(&path, &c.buffer)?,
+            input,
             node,
             schema: Arc::new(c.schema.project(projection)?),
             path,
@@ -2705,6 +2723,20 @@ impl PartReader {
     }
     pub fn seek(&mut self, component: &Component, row: u64, virtual_offset: u64) -> Result<()> {
         self.input = Input::open_virtual(&self.path, &component.buffer, virtual_offset)?;
+        self.rows = row;
+        self.ended = false;
+        Ok(())
+    }
+    pub(super) fn reset_compressed(
+        &mut self,
+        bytes: ByteBuffer,
+        within: usize,
+        physical_start: u64,
+        row: u64,
+    ) -> Result<()> {
+        self.input
+            .reset_compressed(bytes, within, physical_start, self.rows == row)
+            .map_err(|e| format!("cannot read Hail partition {}: {e}", self.path.display()))?;
         self.rows = row;
         self.ended = false;
         Ok(())

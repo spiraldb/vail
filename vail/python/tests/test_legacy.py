@@ -536,6 +536,28 @@ def test_native_index_keeps_duplicates_across_leaf_boundary(indexed_legacy_path,
 
 
 @pytest.mark.parametrize('layout', ['inline', 'directory'])
+def test_indexed_ranges_keep_values_across_many_batches(indexed_legacy_path, layout):
+    _index_layout(indexed_legacy_path, layout)
+    table = hl.Table.read_legacy(indexed_legacy_path)
+    # Start inside a block, cross several blocks and index leaves, and include
+    # the actual partition tail. Values come from the fixture's generator.
+    selected = table.filter((table.k >= 1364) & (table.k <= 16666))
+    assert selected.collect() == [
+        hl.Struct(k=i // 3, idx=i, x=3 * i, payload=str(i))
+        for i in range(4092, 50000)
+    ]
+
+
+def test_indexed_range_rejects_truncated_partition_tail(indexed_legacy_path):
+    part = next(p for p in (indexed_legacy_path / 'rows/parts').iterdir()
+                if not p.name.startswith('.'))
+    part.write_bytes(part.read_bytes()[:-1])
+    table = hl.Table.read_legacy(indexed_legacy_path)
+    with pytest.raises(hl.utils.FatalError, match='cannot read Hail partition'):
+        table.filter(table.k >= 16666).collect()
+
+
+@pytest.mark.parametrize('layout', ['inline', 'directory'])
 def test_native_index_seek_does_not_read_corrupt_prefix(indexed_legacy_path, layout):
     _index_layout(indexed_legacy_path, layout)
     part = next(p for p in (indexed_legacy_path / 'rows/parts').iterdir() if not p.name.startswith('.'))

@@ -1,5 +1,6 @@
 //! File-backed Vortex layout reader. Each execution owns its cursor and cache;
 //! independent files never share a lock or execution queue.
+use super::range_input::IndexedRanges;
 use super::*;
 use arrow_array::{Array, RecordBatch, StructArray};
 use futures::{
@@ -14,6 +15,7 @@ use vortex::{
     dtype::{DType, FieldMask},
     error::{VortexResult, vortex_err},
     expr::BoundExpression,
+    io::session::RuntimeSessionExt,
     layout::{LayoutReader, RowSplits, SplitRange},
     mask::Mask,
     session::VortexSession,
@@ -21,6 +23,7 @@ use vortex::{
 type SharedArray =
     Shared<BoxFuture<'static, std::result::Result<ArrayRef, Arc<vortex::error::VortexError>>>>;
 struct Cursor {
+    prepared: bool,
     reader: Option<super::decode::PartReader>,
     range: Range<u64>,
     cached: Option<RecordBatch>,
@@ -34,7 +37,8 @@ pub struct LegacyLayoutReader {
     dtype: DType,
     schema: SchemaRef,
     projection: Vec<usize>,
-    cursor: Arc<Mutex<Cursor>>,
+    cursor: Arc<tokio::sync::Mutex<Cursor>>,
+    inputs: Arc<IndexedRanges>,
     session: VortexSession,
     batch_size: u64,
     decode_columns: Option<Vec<usize>>,
@@ -80,6 +84,7 @@ impl LegacyLayoutReader {
         );
         let dtype = session.arrow().from_arrow_schema(&schema)?;
         Ok(Self {
+            inputs: Arc::new(IndexedRanges::new(component.clone(), part)),
             name: component.paths[part].to_string_lossy().into_owned().into(),
             component,
             part,
@@ -87,7 +92,8 @@ impl LegacyLayoutReader {
             dtype,
             schema,
             projection,
-            cursor: Arc::new(Mutex::new(Cursor {
+            cursor: Arc::new(tokio::sync::Mutex::new(Cursor {
+                prepared: false,
                 reader: None,
                 range: 0..0,
                 cached: None,
@@ -134,6 +140,7 @@ impl LegacyLayoutReader {
     }
     fn load_array(&self, range: Range<u64>) -> BoxFuture<'static, VortexResult<ArrayRef>> {
         let cursor = self.cursor.clone();
+        let inputs = self.inputs.clone();
         let component = self.component.clone();
         let part = self.part;
         let projection = self.projection.clone();
@@ -143,79 +150,131 @@ impl LegacyLayoutReader {
         let decode_columns = self.decode_columns.clone();
         let decode_paths = self.decode_paths.clone();
         async move {
-            let batch = tokio::task::spawn_blocking(move || -> Result<RecordBatch> {
-                let mut c = cursor.lock().map_err(|_| "Hail decoder mutex poisoned")?;
-                if c.range == range
-                    && let Some(batch) = &c.cached
-                {
-                    return Ok(batch.clone());
-                }
-                let reposition = c.reader.as_ref().is_none_or(|r| r.rows != range.start);
-                if reposition
-                    && range.start > 0
-                    && let Some(spec) = &component.index
-                {
-                    if c.index.is_none() {
-                        c.index = Some(super::index::IndexReader::open(
-                            spec.clone(),
-                            &component.paths[part],
-                        )?);
-                    }
-                    let index = c.index.as_mut().unwrap();
-                    if index.rows != rows {
-                        return Err("Hail index row count differs from partition metadata".into());
-                    }
-                    let offset = index.row_offset(range.start)?;
-                    let mut reader = component
-                        .reader(part, &projection)?
-                        .with_decode_columns(decode_columns)
-                        .with_decode_paths(decode_paths);
-                    reader.seek(&component, range.start, offset)?;
-                    c.reader = Some(reader);
-                } else if c.reader.is_none() || c.reader.as_ref().unwrap().rows > range.start {
-                    c.reader = Some(
-                        component
-                            .reader(part, &projection)?
-                            .with_decode_columns(decode_columns)
-                            .with_decode_paths(decode_paths),
-                    );
-                }
-                let reader = c.reader.as_mut().unwrap();
-                while reader.rows < range.start {
-                    let remaining = (range.start - reader.rows).min(8192) as usize;
-                    if reader.next_batch(remaining)?.is_none() {
-                        return Err("Hail partition count exceeds file rows".into());
-                    }
-                }
-                let mut batches = vec![];
-                while reader.rows < range.end {
-                    let remaining = (range.end - reader.rows).min(8192) as usize;
-                    batches.push(
-                        reader
-                            .next_batch(remaining)?
-                            .ok_or("Hail partition count exceeds file rows")?,
-                    );
-                }
-                if range.end == rows && reader.next_batch(1)?.is_some() {
-                    return Err("Hail partition contains more rows than partition counts".into());
-                }
-                let batch = if batches.len() == 1 {
-                    batches.pop().unwrap()
+            let mut c = cursor.lock_owned().await;
+            let batch = if c.range == range
+                && let Some(batch) = &c.cached
+            {
+                batch.clone()
+            } else if let Some(prepared) = inputs
+                .prepare(
+                    range.clone(),
+                    rows,
+                    &session,
+                    c.reader
+                        .as_ref()
+                        .and_then(|r| r.compressed_position(range.start)),
+                )
+                .await
+                .map_err(|e| vortex_err!("{e}"))?
+            {
+                let reader = if let Some(mut reader) = c.reader.take() {
+                    prepared
+                        .reset_reader(&mut reader)
+                        .map_err(|e| vortex_err!("{e}"))?;
+                    reader
                 } else {
-                    arrow_select::concat::concat_batches(&schema, batches.iter())?
+                    prepared
+                        .into_reader(&component, part, &projection)
+                        .map_err(|e| vortex_err!("{e}"))?
+                        .with_decode_columns(decode_columns)
+                        .with_decode_paths(decode_paths)
                 };
-                c.range = range;
-                c.cached = Some(batch.clone());
-                Ok(batch)
-            })
-            .await
-            .map_err(|e| vortex_err!("Hail decoder task failed: {e}"))?
-            .map_err(|e| vortex_err!("{e}"))?;
+                c.reader = Some(reader);
+                c.prepared = true;
+                let batch = Self::read_batches(&mut c, range, rows, &schema);
+                if batch.is_err() {
+                    c.reader = None;
+                    c.prepared = false;
+                }
+                batch.map_err(|e| vortex_err!("{e}"))?
+            } else {
+                session
+                    .handle()
+                    .spawn_blocking(move || -> Result<RecordBatch> {
+                        if c.prepared {
+                            c.reader = None;
+                            c.prepared = false;
+                        }
+                        let reposition = c.reader.as_ref().is_none_or(|r| r.rows != range.start);
+                        if reposition
+                            && range.start > 0
+                            && let Some(spec) = &component.index
+                        {
+                            if c.index.is_none() {
+                                c.index = Some(super::index::IndexReader::open(
+                                    spec.clone(),
+                                    &component.paths[part],
+                                )?);
+                            }
+                            let index = c.index.as_mut().unwrap();
+                            if index.rows != rows {
+                                return Err(
+                                    "Hail index row count differs from partition metadata".into()
+                                );
+                            }
+                            let offset = index.row_offset(range.start)?;
+                            let mut reader = component
+                                .reader(part, &projection)?
+                                .with_decode_columns(decode_columns)
+                                .with_decode_paths(decode_paths);
+                            reader.seek(&component, range.start, offset)?;
+                            c.reader = Some(reader);
+                        } else if c.reader.is_none()
+                            || c.reader.as_ref().unwrap().rows > range.start
+                        {
+                            c.reader = Some(
+                                component
+                                    .reader(part, &projection)?
+                                    .with_decode_columns(decode_columns)
+                                    .with_decode_paths(decode_paths),
+                            );
+                        }
+                        Self::read_batches(&mut c, range, rows, &schema)
+                    })
+                    .await
+                    .map_err(|e| vortex_err!("{e}"))?
+            };
             session
                 .arrow()
                 .from_arrow_record_batch(batch.clone(), batch.schema_ref())
         }
         .boxed()
+    }
+}
+impl LegacyLayoutReader {
+    fn read_batches(
+        c: &mut Cursor,
+        range: Range<u64>,
+        rows: u64,
+        schema: &SchemaRef,
+    ) -> Result<RecordBatch> {
+        let reader = c.reader.as_mut().unwrap();
+        while reader.rows < range.start {
+            let remaining = (range.start - reader.rows).min(8192) as usize;
+            if reader.next_batch(remaining)?.is_none() {
+                return Err("Hail partition count exceeds file rows".into());
+            }
+        }
+        let mut batches = vec![];
+        while reader.rows < range.end {
+            let remaining = (range.end - reader.rows).min(8192) as usize;
+            batches.push(
+                reader
+                    .next_batch(remaining)?
+                    .ok_or("Hail partition count exceeds file rows")?,
+            );
+        }
+        if range.end == rows && reader.next_batch(1)?.is_some() {
+            return Err("Hail partition contains more rows than partition counts".into());
+        }
+        let batch = if batches.len() == 1 {
+            batches.pop().unwrap()
+        } else {
+            arrow_select::concat::concat_batches(schema, batches.iter())?
+        };
+        c.range = range;
+        c.cached = Some(batch.clone());
+        Ok(batch)
     }
 }
 impl LayoutReader for LegacyLayoutReader {

@@ -11,6 +11,34 @@ use tempfile::TempDir;
 use vail_storage::legacy::{Component, Parser, Result, layout::arrow_batch};
 use vortex::VortexSessionDefault;
 
+// A one-leaf Hail index for literal row offsets. The reader sees only the
+// serialized index and data through its public layout API.
+fn add_index(f: &mut Fixture, offsets: &[u64]) -> Result<()> {
+    use vail_storage::legacy::index::IndexSpec;
+    let mut wire = vec![0]; // Leaf marker.
+    wire.extend_from_slice(&0i64.to_le_bytes());
+    wire.extend_from_slice(&(offsets.len() as i32).to_le_bytes());
+    for &offset in offsets {
+        wire.extend_from_slice(&(offset as i64).to_le_bytes());
+    }
+    let footer = wire.len() as i64;
+    wire.extend(serde_json::to_vec(&serde_json::json!({
+        "rootOffset":0,"height":1,"nKeys":offsets.len()
+    }))?);
+    wire.extend_from_slice(&footer.to_le_bytes());
+    std::fs::write(f._dir.path().join("part-0.idx"), wire)?;
+    let codec = serde_json::json!({
+        "name":"TypedCodecSpec",
+        "_vType":"Struct{first_idx:Int64,keys:Array[Struct{offset:Int64}]}",
+        "_eType":"+EBaseStruct{first_idx:+EInt64,keys:+EArray[+EBaseStruct{offset:+EInt64}]}",
+        "_bufferSpec":{"name":"StreamBufferSpec"}
+    });
+    f.component.index = IndexSpec::from_rvd(f._dir.path(), &serde_json::json!({
+        "_indexSpec":{"name":"IndexSpec2","_relPath":".","_leafCodec":codec,"_internalNodeCodec":codec}
+    }), &HashMap::new())?.map(Arc::new);
+    Ok(())
+}
+
 struct Fixture {
     _dir: TempDir,
     component: Component,
@@ -685,6 +713,136 @@ fn public_compressed_reader_rejects_truncated_and_invalid_block_frames() -> Resu
             std::fs::write(path, wire)?;
             assert!(batches(&f, 16, &[0, 1, 2, 3, 4, 5, 6], None).is_err());
         }
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn indexed_layout_keeps_cross_block_rows_and_repositions() -> Result<()> {
+    use vail_storage::legacy::layout::LegacyLayoutReader;
+    use vortex::{array::MaskFuture, expr::root, layout::LayoutReader, session::VortexSession};
+    for codec in ["LZ4BlockBufferSpec", "ZstdBlockBufferSpec"] {
+        let mut bytes = vec![];
+        let mut offsets = vec![];
+        for value in ["a", "b", "c"] {
+            // Each row crosses a 64KiB decoded block boundary.
+            offsets.push(bytes.len() as u64);
+            bytes.push(1);
+            bytes.extend_from_slice(&70000i32.to_le_bytes());
+            bytes.extend(std::iter::repeat_n(value.as_bytes()[0], 70000));
+        }
+        bytes.push(0);
+        let mut f = fixture(
+            "Struct{s:String}",
+            "+EBaseStruct{s:+EBinary}",
+            &bytes,
+            Some(codec),
+            false,
+        )?;
+        // Convert record byte offsets to the compressed file's virtual offsets.
+        let file = std::fs::read(&f.component.paths[0])?;
+        let mut frames = vec![];
+        let mut pos = 0;
+        while pos < file.len() {
+            frames.push(pos as u64);
+            pos += 4 + i32::from_le_bytes(file[pos..pos + 4].try_into()?) as usize;
+        }
+        let offsets = offsets
+            .into_iter()
+            .map(|v| (frames[v as usize / 65536] << 16) | (v % 65536))
+            .collect::<Vec<_>>();
+        add_index(&mut f, &offsets)?;
+        let session = VortexSession::default();
+        let reader = LegacyLayoutReader::new_with_session(
+            Arc::new(f.component.clone()),
+            0,
+            3,
+            vec![0],
+            1,
+            None,
+            session.clone(),
+        )?;
+        let projection = root().bind(reader.dtype())?;
+        for (range, expected) in [
+            (1..2, vec!["b"]),
+            (2..3, vec!["c"]),
+            (0..2, vec!["a", "b"]),
+            (0..3, vec!["a", "b", "c"]),
+        ] {
+            let array = reader
+                .projection_evaluation(
+                    &range,
+                    &projection,
+                    MaskFuture::new_true((range.end - range.start) as usize),
+                )?
+                .await?;
+            let batch = arrow_batch(array, f.component.schema.clone(), &session)?;
+            let values = batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<StringArray>()
+                .unwrap();
+            assert_eq!(values.len(), expected.len());
+            for (i, value) in expected.iter().enumerate() {
+                assert_eq!(values.value(i), value.repeat(70000));
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tokio::test]
+async fn indexed_layout_streams_a_row_larger_than_the_prefetch_budget() -> Result<()> {
+    use vail_storage::legacy::layout::LegacyLayoutReader;
+    use vortex::{array::MaskFuture, expr::root, layout::LayoutReader, session::VortexSession};
+    let n = 2_200_000;
+    let mut bytes = vec![1];
+    bytes.extend_from_slice(&(n as i32).to_le_bytes());
+    let mut state = 1u32;
+    for _ in 0..n {
+        state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+        bytes.extend_from_slice(&state.to_le_bytes());
+    }
+    bytes.push(0);
+    let mut f = fixture(
+        "Struct{xs:Array[Int32]}",
+        "+EBaseStruct{xs:+EArray[+EInt32]}",
+        &bytes,
+        Some("LZ4BlockBufferSpec"),
+        false,
+    )?;
+    assert!(std::fs::metadata(&f.component.paths[0])?.len() > 8 * 1024 * 1024);
+    add_index(&mut f, &[0])?;
+    let session = VortexSession::default();
+    let reader = LegacyLayoutReader::new_with_session(
+        Arc::new(f.component.clone()),
+        0,
+        1,
+        vec![0],
+        1,
+        None,
+        session.clone(),
+    )?;
+    let projection = root().bind(reader.dtype())?;
+    let array = reader
+        .projection_evaluation(&(0..1), &projection, MaskFuture::new_true(1))?
+        .await?;
+    let batch = arrow_batch(array, f.component.schema.clone(), &session)?;
+    let lists = batch
+        .column(0)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    let values = lists
+        .values()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(values.len(), n);
+    let mut state = 1u32;
+    for actual in values.values() {
+        state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+        assert_eq!(*actual, state as i32);
     }
     Ok(())
 }

@@ -1,5 +1,6 @@
 use super::*;
 use std::io::{self, BufRead, Cursor, Read, Seek, SeekFrom};
+use vortex::buffer::ByteBuffer;
 type Stream = Box<dyn Read + Send>;
 fn invalid(e: impl ToString) -> io::Error {
     io::Error::new(io::ErrorKind::InvalidData, e.to_string())
@@ -20,12 +21,22 @@ pub fn validate(spec: &Value) -> Result<()> {
 }
 trait BlockRead: Send {
     fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool>;
+    fn reset_source(&mut self, source: Stream);
+    fn source_position(&self) -> u64;
 }
 struct Blocks {
     source: Stream,
     spec: Value,
+    position: u64,
 }
 impl BlockRead for Blocks {
+    fn reset_source(&mut self, source: Stream) {
+        self.source = source;
+        self.position = 0;
+    }
+    fn source_position(&self) -> u64 {
+        self.position
+    }
     fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool> {
         let name = self.spec["name"].as_str().unwrap_or("");
         if name != "StreamBlockBufferSpec" && name != "StreamBlockBufferSpec2" {
@@ -35,6 +46,7 @@ impl BlockRead for Blocks {
         if self.source.read(&mut byte)? == 0 {
             return Ok(false);
         }
+        let mut prefix = 1;
         let size = if name.ends_with('2') {
             let mut value = u64::from(byte[0] & 127);
             let mut b = byte[0];
@@ -44,6 +56,7 @@ impl BlockRead for Blocks {
                     return Err(invalid("invalid Hail block varint"));
                 }
                 self.source.read_exact(&mut byte)?;
+                prefix += 1;
                 b = byte[0];
                 value |= u64::from(b & 127) << shift;
                 shift += 7;
@@ -56,6 +69,7 @@ impl BlockRead for Blocks {
             let mut rest = [0; 4];
             rest[0] = byte[0];
             self.source.read_exact(&mut rest[1..])?;
+            prefix = 4;
             usize::try_from(i32::from_le_bytes(rest)).map_err(invalid)?
         };
         if size > 256 * 1024 * 1024 {
@@ -63,6 +77,7 @@ impl BlockRead for Blocks {
         }
         out.resize(size, 0);
         self.source.read_exact(out)?;
+        self.position += prefix + size as u64;
         Ok(true)
     }
 }
@@ -73,6 +88,12 @@ struct Compressed {
     compressed: Vec<u8>,
 }
 impl BlockRead for Compressed {
+    fn reset_source(&mut self, source: Stream) {
+        self.child.reset_source(source);
+    }
+    fn source_position(&self) -> u64 {
+        self.child.source_position()
+    }
     fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool> {
         if !self.child.read_block(&mut self.compressed)? {
             return Ok(false);
@@ -131,11 +152,20 @@ impl BlockRead for Compressed {
 struct RawBlocks {
     source: Stream,
     capacity: usize,
+    position: u64,
 }
 impl BlockRead for RawBlocks {
+    fn reset_source(&mut self, source: Stream) {
+        self.source = source;
+        self.position = 0;
+    }
+    fn source_position(&self) -> u64 {
+        self.position
+    }
     fn read_block(&mut self, out: &mut Vec<u8>) -> io::Result<bool> {
         out.resize(self.capacity, 0);
         let n = self.source.read(out)?;
+        self.position += n as u64;
         out.truncate(n);
         Ok(n != 0)
     }
@@ -160,6 +190,7 @@ impl BlockStream {
         Self::new(Box::new(RawBlocks {
             source,
             capacity: capacity.max(1),
+            position: 0,
         }))
     }
     fn load_first(&mut self, within: usize) -> Result<()> {
@@ -217,6 +248,7 @@ fn blocks(source: Stream, spec: &Value) -> Result<Box<dyn BlockRead>> {
         Ok(Box::new(Blocks {
             source,
             spec: spec.clone(),
+            position: 0,
         }))
     } else {
         Ok(Box::new(Compressed {
@@ -235,8 +267,60 @@ pub struct Input {
     source: BlockStream,
     pub leb: bool,
     pub bytes: u64,
+    compressed_base: Option<u64>,
 }
 impl Input {
+    pub(super) fn compressed_position(&self) -> Option<u64> {
+        self.compressed_base
+            .map(|base| base + self.source.blocks.source_position())
+    }
+    pub(super) fn reset_compressed(
+        &mut self,
+        bytes: ByteBuffer,
+        within: usize,
+        physical_start: u64,
+        contiguous: bool,
+    ) -> Result<()> {
+        if contiguous && let Some(base) = self.compressed_base {
+            let position = base + self.source.blocks.source_position();
+            if position >= physical_start && position - physical_start <= bytes.len() as u64 {
+                // Keep the current decoded frame and replace only the unread
+                // compressed tail. No earlier frame is decoded again.
+                self.source.blocks.reset_source(Box::new(Cursor::new(
+                    bytes.slice((position - physical_start) as usize..),
+                )));
+                self.compressed_base = Some(position);
+                return Ok(());
+            }
+        }
+        self.source
+            .blocks
+            .reset_source(Box::new(Cursor::new(bytes)));
+        self.source.position = 0;
+        self.source.eof = false;
+        self.source.decoded.clear();
+        self.bytes = 0;
+        self.compressed_base = Some(physical_start);
+        self.source.load_first(within)
+    }
+    /// Decode complete, already acquired frames without accessing the filesystem.
+    pub(super) fn from_compressed(
+        bytes: ByteBuffer,
+        spec: &Value,
+        within: usize,
+        physical_start: u64,
+    ) -> Result<Self> {
+        let leb = spec["name"] == "LEB128BufferSpec";
+        let buffer = if leb { &spec["child"] } else { spec };
+        let mut source = BlockStream::new(blocks(Box::new(Cursor::new(bytes)), &buffer["child"])?);
+        source.load_first(within)?;
+        Ok(Self {
+            source,
+            leb,
+            bytes: 0,
+            compressed_base: Some(physical_start),
+        })
+    }
     // The callback accepts only complete logical records from this borrowed
     // buffer; no owned buffering and no speculative Input counter updates.
     pub(super) fn with_buffer<T>(&mut self, f: impl FnOnce(&[u8]) -> (T, usize)) -> Result<T> {
@@ -267,6 +351,7 @@ impl Input {
                 source,
                 leb: spec["name"] == "LEB128BufferSpec",
                 bytes: 0,
+                compressed_base: None,
             })
         } else {
             Self::open_raw(path, spec, offset)
@@ -289,6 +374,7 @@ impl Input {
             source,
             leb,
             bytes: 0,
+            compressed_base: None,
         })
     }
     #[inline]
