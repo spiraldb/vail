@@ -360,7 +360,7 @@ fn compact_reduction_region(
         }
     }
     for register in &mut registers {
-        register.op = match register.op {
+        register.op = match register.op.clone() {
             Op::Read(read) => Op::Read(read_map[read]),
             Op::MissingRead(read) => Op::MissingRead(read_map[read]),
             Op::Length(read) => Op::Length(read_map[read]),
