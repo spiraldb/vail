@@ -5412,6 +5412,28 @@ fn lower_scoped(
     let context = memo.context(schema, globals.schema(), scope);
     lower_cached(expr, schema, globals, scope, memo, context)
 }
+/// A frame column may retain logical metadata adapters, but no value-producing
+/// operation. Keep those adapters in the program; this only proves admission.
+pub(crate) fn is_frame_column(mut expression: &Arc<dyn PhysicalExpr>) -> bool {
+    let mut schema = None;
+    loop {
+        if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() {
+            if compiled.constant.is_some() { return false; }
+            schema = compiled.primary.get().map(|(schema, _)| schema.as_ref()).or(schema);
+            expression = &compiled.inner;
+        } else if let Some(hail) = expression.downcast_ref::<HailPhysicalExpr>()
+            && matches!(hail.kind, HailKind::RestoreArrowType) && hail.args.len() == 1
+        {
+            let Some(schema) = schema else { return false; };
+            let Ok(actual) = hail.args[0].data_type(schema) else { return false; };
+            if !vail_ordering::same_layout(&actual, &hail.dtype) { return false; }
+            expression = &hail.args[0];
+        } else {
+            return expression.is::<Column>();
+        }
+    }
+}
+
 pub(crate) fn indexed_aligned_map(mut expression: &Arc<dyn PhysicalExpr>) -> Option<&crate::aligned_matrix_map::AlignedMatrixMapExpr> {
     loop {
         if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() { expression = &compiled.inner; }

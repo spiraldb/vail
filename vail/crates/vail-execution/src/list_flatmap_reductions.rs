@@ -220,7 +220,7 @@ impl PhysicalExpr for MultiReduce {
             ));
         }
         let n = self.program.children.len();
-        if children[1..1 + n].iter().any(|child| !child.is::<Column>()) {
+        if children[1..1 + n].iter().any(|child| !crate::expressions::is_frame_column(child)) {
             return Ok(children[0].clone());
         }
         let mut result = self.as_ref().clone();
@@ -387,7 +387,7 @@ pub(crate) fn prepare_reductions(
         ..
     } = root
     else { decline!("owner_loop_shape"); };
-    if compiler.coordinates != 2 || compiler.children.iter().any(|child| !child.is::<Column>()) {
+    if compiler.coordinates != 2 || compiler.children.iter().any(|child| !crate::expressions::is_frame_column(child)) {
         if trace { eprintln!("MULTI_REDUCE_SOURCE coordinates={} children={:?}", compiler.coordinates, compiler.children); }
         decline!("source_coordinates_or_columns");
     }
