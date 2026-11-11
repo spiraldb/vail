@@ -84,8 +84,13 @@ pub(super) fn reduce(
             if !bundle.guards.is_empty() {
                 execution.compute(count, Some(1));
             }
-            let present_count = if bundle.guards.is_empty() {
-                selected[..count].fill(1);
+            if bundle.guards.iter().any(|&guard| {
+                let guard = &execution.workspace[guard];
+                guard.scalar && !guard.true_at(0)
+            }) {
+                continue;
+            }
+            let present_count = if bundle.guards.iter().all(|&guard| execution.workspace[guard].scalar) {
                 count
             } else {
                 for (lane, selected) in selected[..count].iter_mut().enumerate() {

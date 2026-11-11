@@ -1350,14 +1350,7 @@ impl Execution<'_> {
                     let span = self
                         .span
                         .filter(|span| span.coordinate == source.coordinate);
-                    out.all_valid = source.all_valid
-                        || (span.is_some()
-                            && source.values.null_count() == 0
-                            && source
-                                .ancestors
-                                .iter()
-                                .filter(|(_, slot)| *slot == source.coordinate)
-                                .all(|(mask, _)| mask.null_count() == 0));
+                    out.all_valid = source.all_valid_in_span(span.map(|span| span.coordinate));
                     if !out.all_valid {
                         for i in 0..n {
                             out.valid[i] = if active(i) {
@@ -1371,7 +1364,7 @@ impl Execution<'_> {
                                     self.coordinates[source.coordinate][i]
                                 };
                                 u8::from(
-                                    source.values.is_valid(at)
+                                    source.nulls.as_ref().is_none_or(|mask| mask.is_valid(at))
                                         && source.ancestors.iter().all(|(mask, slot)| {
                                             (span.is_some() && *slot != source.coordinate)
                                                 || mask.is_valid(if let Some(span) = span {
@@ -1402,6 +1395,14 @@ impl Execution<'_> {
                     let span = self
                         .span
                         .filter(|span| span.coordinate == source.coordinate);
+                    if matches!(register.op, Op::MissingRead(_))
+                        && source.all_valid_in_span(span.map(|span| span.coordinate))
+                    {
+                        out.scalar = true;
+                        let Values::Bool(values) = &mut out.values else { unreachable!() };
+                        values[0] = 0;
+                        continue;
+                    }
                     let valid_at = |i: usize| {
                         let at = if let Some(span) = span {
                             span.index(&self.coordinates, i)
@@ -1411,7 +1412,7 @@ impl Execution<'_> {
                             self.coordinates[source.coordinate][i]
                         };
                         let valid = source.all_valid
-                            || (source.values.is_valid(at)
+                            || (source.nulls.as_ref().is_none_or(|mask| mask.is_valid(at))
                                 && source.ancestors.iter().all(|(mask, slot)| {
                                     (span.is_some() && *slot != source.coordinate)
                                         || mask.is_valid(if let Some(span) = span {
@@ -1447,7 +1448,7 @@ impl Execution<'_> {
                 }
                 Op::Missing(a) => {
                     let a = &before[a];
-                    out.scalar = a.scalar;
+                    out.scalar = a.scalar || a.all_valid;
                     out.all_valid = true;
                     let n = if out.scalar { 1 } else { count };
                     let Values::Bool(values) = &mut out.values else {
@@ -1690,7 +1691,7 @@ fn bind_reads(program: &ListFlatMap, batch: &RecordBatch) -> Result<Vec<BoundRea
         let mut ancestors = Vec::new();
         let mut coordinate = 0;
         for step in &read.path {
-            if let Some(nulls) = values.nulls() {
+            if let Some(nulls) = values.nulls().filter(|mask| mask.null_count() != 0) {
                 ancestors.push((nulls.clone(), coordinate));
             }
             values = match step {
@@ -1712,10 +1713,11 @@ fn bind_reads(program: &ListFlatMap, batch: &RecordBatch) -> Result<Vec<BoundRea
                 }
             };
         }
-        let all_valid =
-            values.null_count() == 0 && ancestors.iter().all(|(mask, _)| mask.null_count() == 0);
+        let nulls = values.nulls().filter(|mask| mask.null_count() != 0).cloned();
+        let all_valid = nulls.is_none() && ancestors.is_empty();
         reads.push(BoundRead {
             values,
+            nulls,
             ancestors,
             coordinate: read.coordinate,
             scalar,

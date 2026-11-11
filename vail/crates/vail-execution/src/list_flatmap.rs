@@ -1272,6 +1272,8 @@ pub(crate) fn prepare(
 
 struct BoundRead {
     values: ArrayRef,
+    // Cache the same physical bitmap used by Array::is_valid, once per batch.
+    nulls: Option<NullBuffer>,
     ancestors: Vec<(NullBuffer, usize)>,
     coordinate: usize,
     scalar: bool,
@@ -1292,7 +1294,12 @@ impl BoundRead {
             } else {
                 positions[*slot]
             })
-        }) && self.values.is_valid(self.index(positions))
+        }) && self.nulls.as_ref().is_none_or(|mask| mask.is_valid(self.index(positions)))
+    }
+    fn all_valid_in_span(&self, coordinate: Option<usize>) -> bool {
+        self.all_valid || (coordinate == Some(self.coordinate)
+            && self.nulls.is_none()
+            && self.ancestors.iter().all(|(_, slot)| *slot != self.coordinate))
     }
 }
 
