@@ -878,9 +878,14 @@ fn lower(
         return logical_kernel(expr, schema, globals, bindings, scope);
     }
     if crate::list_flatmap::has_reduction_region(expr) {
-        // Preserve the shared producer region until physical preparation; a
-        // field-by-field logical lowering hides each list callback separately.
-        return logical_kernel(expr, schema, globals, bindings, scope);
+        // Only an admitted joint program needs this opaque boundary. Declined
+        // shapes keep the ordinary logical fields visible to DataFusion.
+        if let Ok(Some(kernel)) = logical_kernel_admitted(
+            expr, schema, globals, bindings, scope,
+            &crate::expressions::PreparationOptions::capture(), true,
+        ) {
+            return Ok(kernel);
+        }
     }
     let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope, shared);
     Ok(match expr {
@@ -1391,6 +1396,14 @@ fn logical_kernel_with_options(
     expr: &Expr, schema: &DFSchema, globals: &Schema, bindings: &BTreeMap<String, usize>,
     scope: &[String], options: &crate::expressions::PreparationOptions,
 ) -> Result<LogicalExpr, ExprError> {
+    Ok(logical_kernel_admitted(expr, schema, globals, bindings, scope, options, false)?
+        .expect("unconditional semantic kernel admission"))
+}
+fn logical_kernel_admitted(
+    expr: &Expr, schema: &DFSchema, globals: &Schema, bindings: &BTreeMap<String, usize>,
+    scope: &[String], options: &crate::expressions::PreparationOptions,
+    require_multi_reduce: bool,
+) -> Result<Option<LogicalExpr>, ExprError> {
     use std::collections::BTreeMap as Map;
     let options = options.clone();
     let arrow_schema = schema.as_arrow();
@@ -1574,6 +1587,9 @@ fn logical_kernel_with_options(
             )),
             other => other,
         })?;
+    if require_multi_reduce && !crate::expressions::is_multi_reduce(&kernel) {
+        return Ok(None);
+    }
     let captured_expression = Arc::new(rewritten.clone());
     let output_type = expr
         .dtype_with_globals(&arrow_schema, globals)?
@@ -1716,7 +1732,7 @@ fn logical_kernel_with_options(
         }),
         owner_options,
     );
-    Ok(udf.call(logical_args))
+    Ok(Some(udf.call(logical_args)))
 }
 
 pub(crate) fn kernel_label(expr: &Expr) -> &'static str {

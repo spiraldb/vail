@@ -5390,6 +5390,20 @@ fn lower_scoped(
     let context = memo.context(schema, globals.schema(), scope);
     lower_cached(expr, schema, globals, scope, memo, context)
 }
+pub(crate) fn is_multi_reduce(mut expression: &Arc<dyn PhysicalExpr>) -> bool {
+    loop {
+        if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() {
+            expression = &compiled.inner;
+        } else if let Some(hail) = expression.downcast_ref::<HailPhysicalExpr>()
+            && matches!(hail.kind, HailKind::RestoreArrowType) && hail.args.len() == 1
+        {
+            expression = &hail.args[0];
+        } else {
+            return expression.downcast_ref::<crate::list_flatmap::MultiReduce>().is_some();
+        }
+    }
+}
+
 pub(crate) fn indexed_aligned_map(mut expression: &Arc<dyn PhysicalExpr>) -> Option<&crate::aligned_matrix_map::AlignedMatrixMapExpr> {
     loop {
         if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() { expression = &compiled.inner; }
