@@ -23,7 +23,38 @@ fn constant_nonzero(register: &Register) -> bool {
             Kind::Bool => false,
         }
 }
+// Match the ordinary comparison contract: zeros compare equally and NaNs use
+// their normalized IEEE total-order keys. Shared producers normalize once.
+fn float32_order(value: f32) -> i32 {
+    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i32;
+    bits ^= (((bits >> 31) as u32) >> 1) as i32;
+    bits
+}
+fn float64_order(value: f64) -> i64 {
+    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i64;
+    bits ^= (((bits >> 63) as u64) >> 1) as i64;
+    bits
+}
+
 impl Compiler<'_> {
+    fn order_key(&mut self, source: usize) -> Option<usize> {
+        let kind = match self.registers[source].kind {
+            Kind::F32 => Kind::I32,
+            Kind::F64 => Kind::I64,
+            _ => return None,
+        };
+        let op = if let Op::Constant(mut value) = self.registers[source].op {
+            if value.valid {
+                value.bits = if kind == Kind::I32 {
+                    float32_order(f32::from_bits(value.bits as u32)) as u64
+                } else {
+                    float64_order(f64::from_bits(value.bits)) as u64
+                };
+            }
+            Op::Constant(value)
+        } else { Op::OrderKey(source) };
+        self.register(op, kind)
+    }
     fn numeric_cast(&mut self, source: usize, kind: Kind) -> Option<usize> {
         let old = self.registers[source].kind;
         if old == kind {
@@ -289,6 +320,7 @@ fn compact_reduction_region(
             Op::Unary(op, a) => Op::Unary(op, register_map[a]),
             Op::Missing(a) => Op::Missing(register_map[a]),
             Op::Cast(a) => Op::Cast(register_map[a]),
+            Op::OrderKey(a) => Op::OrderKey(register_map[a]),
             Op::Binary(op, a, b) => Op::Binary(op, register_map[a], register_map[b]),
             Op::Select(c, a, b) => Op::Select(register_map[c], register_map[a], register_map[b]),
             other => other,
@@ -485,7 +517,7 @@ pub(crate) fn prepare_reductions(
         }
         registers[index].leaves |= bit;
         match registers[index].op {
-            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) => mark(registers, a, bit),
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::OrderKey(a) => mark(registers, a, bit),
             Op::Binary(_, a, b) => {
                 mark(registers, a, bit);
                 mark(registers, b, bit);
@@ -507,7 +539,7 @@ pub(crate) fn prepare_reductions(
         }
         registers[index].guards = 1;
         match registers[index].op {
-            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) => mark_guard(registers, a),
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::OrderKey(a) => mark_guard(registers, a),
             Op::Binary(_, a, b) => {
                 mark_guard(registers, a);
                 mark_guard(registers, b);

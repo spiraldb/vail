@@ -1279,14 +1279,6 @@ impl Execution<'_> {
                         Kind::I32 => compare_values!(a.i32(&self.reads, count), b.i32(&self.reads, count)),
                         Kind::I64 => compare_values!(a.i64(&self.reads, count), b.i64(&self.reads, count)),
                         Kind::Bool => compare_values!(a.boolean(count), b.boolean(count)),
-                        Kind::F32 => {
-                            let av=a.f32(&self.reads,count);let bv=b.f32(&self.reads,count);
-                            for (i,out) in values.iter_mut().enumerate() { *out=u8::from(float32_order(av[if a.scalar{0}else{i}]) $op float32_order(bv[if b.scalar{0}else{i}])); }
-                        },
-                        Kind::F64 => {
-                            let av=a.f64(&self.reads,count);let bv=b.f64(&self.reads,count);
-                            for (i,out) in values.iter_mut().enumerate() { *out=u8::from(float64_order(av[if a.scalar{0}else{i}]) $op float64_order(bv[if b.scalar{0}else{i}])); }
-                        },
                         _ => unreachable!(),
                     }
                     out.all_valid = a.all_valid && b.all_valid;
@@ -1463,6 +1455,28 @@ impl Execution<'_> {
                     };
                     for i in 0..n {
                         values[i] = u8::from(!a.valid(i));
+                    }
+                }
+                Op::OrderKey(a) => {
+                    let a = &before[a];
+                    out.scalar = a.scalar;
+                    out.all_valid = a.all_valid;
+                    let n = if out.scalar { 1 } else { count };
+                    if !out.all_valid { out.valid[..n].copy_from_slice(&a.valid[..n]); }
+                    match register.kind {
+                        Kind::I32 => {
+                            let Values::I32(values) = &mut out.values else { unreachable!() };
+                            for (out, &value) in values[..n].iter_mut().zip(a.f32(&self.reads, count)) {
+                                *out = float32_order(value);
+                            }
+                        }
+                        Kind::I64 => {
+                            let Values::I64(values) = &mut out.values else { unreachable!() };
+                            for (out, &value) in values[..n].iter_mut().zip(a.f64(&self.reads, count)) {
+                                *out = float64_order(value);
+                            }
+                        }
+                        _ => unreachable!(),
                     }
                 }
                 Op::Cast(a) => {
@@ -1712,14 +1726,3 @@ fn bind_reads(program: &ListFlatMap, batch: &RecordBatch) -> Result<Vec<BoundRea
 }
 
 include!("list_flatmap_reductions_execute.rs");
-
-fn float32_order(value: f32) -> i32 {
-    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i32;
-    bits ^= (((bits >> 31) as u32) >> 1) as i32;
-    bits
-}
-fn float64_order(value: f64) -> i64 {
-    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i64;
-    bits ^= (((bits >> 63) as u64) >> 1) as i64;
-    bits
-}
