@@ -138,13 +138,14 @@ def test_joint_numeric_sinks_preserve_string_and_nested_siblings(tmp_path):
     m.write(path)
     m = hl.read_matrix_table(path)
     query = m.annotate_rows(
-        smallest=hl.agg.min(m.label),
+        labels=hl.agg.collect(m.label),
         yes=hl.agg.fraction(m.a % 3 == 0),
         no=hl.agg.fraction(m.a % 3 != 0),
-        largest=hl.agg.max(m.label),
+        nested=hl.agg.take(hl.struct(label=m.label, xs=hl.array([m.a])), 2),
         collected=hl.agg.take(m.label, 2),
     ).rows()
     for row in query.collect():
-        assert row.smallest == '' and row.largest == '🙂'
+        assert sorted(map(repr, row.labels)) == sorted(map(repr, [None, 'é', 'α', '猫', '🙂', '', 'abc', 'z']))
+        assert row.nested == [hl.Struct(label=None, xs=[-5]), hl.Struct(label='é', xs=[-4])]
         assert row.collected == [None, 'é']
         assert row.yes == 2 / 8 and row.no == 6 / 8
