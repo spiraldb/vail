@@ -1,4 +1,4 @@
-//! Multi-sink consumer for the same typed register block executor.
+// Multi-sink consumer for the same typed register block executor.
 pub(super) fn reduce(
     bundle: &MultiReduce,
     batch: &RecordBatch,

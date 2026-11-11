@@ -1,4 +1,4 @@
-//! Shared block producers feeding compatible, same-owner list reductions.
+// Shared block producers feeding compatible, same-owner list reductions.
 use crate::expression_identity::Identity;
 use arrow_schema::Fields;
 
@@ -82,7 +82,7 @@ fn candidate(field: usize, expr: &Expr) -> Option<Candidate<'_>> {
         value: owner,
         parameter,
         body,
-    } = value.as_ref()
+    } = value
     else {
         return None;
     };
