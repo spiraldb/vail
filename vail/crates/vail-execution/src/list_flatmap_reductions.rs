@@ -270,6 +270,88 @@ impl PhysicalExpr for MultiReduce {
     }
 }
 
+// Retain only sinks that benefit from shared work. Compact every descriptor
+// once at preparation; dropped outputs use their ordinary expression path.
+fn compact_reduction_region(
+    compiler: &mut Compiler<'_>, sinks: &mut Vec<ReductionSink>, selected: &mut Vec<usize>,
+    guards: &mut [usize], root_read: &mut usize, keep: u64,
+) {
+    let retained = (0..sinks.len()).filter(|&i| keep & (1 << i) != 0).collect::<Vec<_>>();
+    let mut registers = Vec::new();
+    let mut register_map = vec![usize::MAX; compiler.registers.len()];
+    for (old, register) in compiler.registers.iter().enumerate() {
+        if register.leaves & keep == 0 && register.guards == 0 { continue; }
+        let mut register = register.clone();
+        register.leaves = retained.iter().enumerate().fold(0, |mask, (new, &old)| {
+            mask | (u64::from(register.leaves & (1 << old) != 0) << new)
+        });
+        register.op = match register.op {
+            Op::Unary(op, a) => Op::Unary(op, register_map[a]),
+            Op::Missing(a) => Op::Missing(register_map[a]),
+            Op::Cast(a) => Op::Cast(register_map[a]),
+            Op::Binary(op, a, b) => Op::Binary(op, register_map[a], register_map[b]),
+            Op::Select(c, a, b) => Op::Select(register_map[c], register_map[a], register_map[b]),
+            other => other,
+        };
+        register_map[old] = registers.len();
+        registers.push(register);
+    }
+    let mut used_reads = vec![false; compiler.reads.len()];
+    used_reads[*root_read] = true;
+    for register in &registers {
+        if let Op::Read(read) | Op::MissingRead(read) | Op::Length(read) = register.op {
+            used_reads[read] = true;
+        }
+    }
+    let mut used_children = vec![false; compiler.children.len()];
+    for (read, used) in compiler.reads.iter().zip(&used_reads) {
+        if *used { used_children[read.child] = true; }
+    }
+    let mut child_map = vec![usize::MAX; compiler.children.len()];
+    let mut children = Vec::new();
+    let mut child_types = Vec::new();
+    for (old, &used) in used_children.iter().enumerate() {
+        if used {
+            child_map[old] = children.len();
+            children.push(compiler.children[old].clone());
+            child_types.push(compiler.child_types[old].clone());
+        }
+    }
+    let mut read_map = vec![usize::MAX; compiler.reads.len()];
+    let mut reads = Vec::new();
+    for (old, &used) in used_reads.iter().enumerate() {
+        if used {
+            let mut read = compiler.reads[old].clone();
+            read.child = child_map[read.child];
+            read_map[old] = reads.len();
+            reads.push(read);
+        }
+    }
+    for register in &mut registers {
+        register.op = match register.op {
+            Op::Read(read) => Op::Read(read_map[read]),
+            Op::MissingRead(read) => Op::MissingRead(read_map[read]),
+            Op::Length(read) => Op::Length(read_map[read]),
+            other => other,
+        };
+    }
+    *sinks = retained.iter().map(|&old| ReductionSink {
+        value: register_map[sinks[old].value], fraction: sinks[old].fraction,
+    }).collect();
+    *selected = retained.iter().map(|&old| selected[old]).collect();
+    compiler.leaves = retained.iter().map(|&old| {
+        let mut leaf = compiler.leaves[old].clone();
+        leaf.value = register_map[leaf.value];
+        leaf
+    }).collect();
+    for guard in guards { *guard = register_map[*guard]; }
+    *root_read = read_map[*root_read];
+    compiler.registers = registers;
+    compiler.reads = reads;
+    compiler.children = children;
+    compiler.child_types = child_types;
+}
+
 pub(crate) fn prepare_reductions(
     expression: &Expr,
     dtype: &DataType,
@@ -381,16 +463,13 @@ pub(crate) fn prepare_reductions(
     if trace { eprintln!("MULTI_REDUCE_COMPILED sinks={} registers={} reads={} children={}", sinks.len(), compiler.registers.len(), compiler.reads.len(), compiler.children.len()); }
     if sinks.len() < 2 { decline!("compiled_sink_count"); }
     let Node::Loop {
-        read: root_read,
+        read: mut root_read,
         coordinate: 1,
         body,
         ..
     } = root
     else { decline!("owner_loop_shape"); };
-    if compiler.coordinates != 2 || compiler.children.iter().any(|child| !crate::expressions::is_frame_column(child)) {
-        if trace { eprintln!("MULTI_REDUCE_SOURCE coordinates={} children={:?}", compiler.coordinates, compiler.children); }
-        decline!("source_coordinates_or_columns");
-    }
+    if compiler.coordinates != 2 { decline!("source_coordinates"); }
     let mut node = body.as_ref();
     let mut guards = vec![];
     while let Node::Filter { predicate, body } = node {
@@ -446,18 +525,17 @@ pub(crate) fn prepare_reductions(
     }
     // A second sink alone is not enough: ordinary cheap field reads/bitmap
     // reductions need not be turned into another block interpreter.
-    if compiler.registers.iter().any(|r| matches!(r.op, Op::Read(i) | Op::MissingRead(i) | Op::Length(i) if compiler.reads[i].coordinate == 0)) { decline!("frame_capture"); }
-    let shared = compiler.registers.iter().any(|r| {
+    let keep = compiler.registers.iter().filter(|r| {
         r.leaves.count_ones() > 1
-            && matches!(
-                r.op,
-                Op::Binary(Binary::Div | Binary::Mod, ..) | Op::Cast(_)
-            )
-    });
-    if !shared {
-        if trace { eprintln!("MULTI_REDUCE_REGISTERS {:?}", compiler.registers); }
-        decline!("no_shared_costly_producer");
+            && matches!(r.op, Op::Binary(Binary::Div | Binary::Mod, ..) | Op::Cast(_))
+    }).fold(0, |mask, register| mask | register.leaves);
+    if keep.count_ones() < 2 { decline!("no_shared_costly_producer"); }
+    compact_reduction_region(&mut compiler, &mut sinks, &mut selected, &mut guards, &mut root_read, keep);
+    if trace { eprintln!("MULTI_REDUCE_REGION sinks={} registers={} reads={} children={}", sinks.len(), compiler.registers.len(), compiler.reads.len(), compiler.children.len()); }
+    if compiler.children.iter().any(|child| !crate::expressions::is_frame_column(child)) {
+        decline!("source_columns");
     }
+    if compiler.registers.iter().any(|r| matches!(r.op, Op::Read(i) | Op::MissingRead(i) | Op::Length(i) if compiler.reads[i].coordinate == 0)) { decline!("frame_capture"); }
     let mut outputs = Vec::with_capacity(fields.len());
     let mut ordinary = vec![];
     for (field, (_, expr)) in fields.iter().enumerate() {
