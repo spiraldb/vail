@@ -162,3 +162,24 @@ def test_projected_joint_result_retains_baseline_eager_sibling_error():
     # The current shared annotation evaluates this sibling before projection.
     with pytest.raises(Exception, match='unused reducer'):
         result.collect()
+
+
+def test_shared_counts_keep_long_rows_and_sparse_entry_presence():
+    width = 16_451
+    m = hl.range_matrix_table(4, width, n_partitions=1)
+    m = m.annotate_entries(value=hl.or_missing(m.col_idx % 7 != 0, m.col_idx - 8_225))
+    m = m.filter_entries((m.row_idx == 0) | ((m.row_idx == 2) & (m.col_idx % 3 == 0)) |
+                         ((m.row_idx == 3) & ((m.col_idx == 63) | (m.col_idx == width - 1))))
+    rows = m.annotate_rows(
+        yes=hl.agg.count_where(m.value % 11 == 0),
+        no=hl.agg.count_where(m.value % 11 != 0),
+        fraction=hl.agg.fraction(m.value % 11 == 0),
+    ).rows().collect()
+    for row in rows:
+        columns = [c for c in range(width) if row.row_idx == 0 or
+                   (row.row_idx == 2 and c % 3 == 0) or
+                   (row.row_idx == 3 and c in (63, width - 1))]
+        values = [c - 8_225 for c in columns if c % 7 != 0]
+        assert row.yes == sum(v % 11 == 0 for v in values)
+        assert row.no == sum(v % 11 != 0 for v in values)
+        assert row.fraction == row.yes / len(columns) if columns else math.isnan(row.fraction)
