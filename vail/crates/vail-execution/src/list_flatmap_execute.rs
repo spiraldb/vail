@@ -6,7 +6,7 @@ use std::{
     sync::Mutex,
 };
 
-const MAX_SCRATCH: usize = 4 * 1024 * 1024;
+pub(super) const MAX_SCRATCH: usize = 4 * 1024 * 1024;
 const MAX_BLOCK: usize = 8192;
 
 enum Values {
@@ -338,63 +338,7 @@ struct Execution<'a> {
 }
 impl ListFlatMap {
     pub(super) fn execute(&self, batch: &RecordBatch) -> Result<ArrayRef> {
-        let children = self
-            .children
-            .iter()
-            .map(|child| child.evaluate(batch))
-            .collect::<Result<Vec<_>>>()?;
-        let children = children
-            .into_iter()
-            .map(|value| match value {
-                ColumnarValue::Array(array) => Ok((array, false)),
-                ColumnarValue::Scalar(value) => Ok((value.to_array()?, true)),
-            })
-            .collect::<Result<Vec<_>>>()?;
-        for ((child, scalar), expected) in children.iter().zip(&self.child_types) {
-            if child.data_type() != expected || (!scalar && child.len() != batch.num_rows()) {
-                return Err(DataFusionError::Execution(
-                    "flatmap source descriptor changed".into(),
-                ));
-            }
-        }
-        let mut reads = Vec::with_capacity(self.reads.len());
-        for read in &self.reads {
-            let (mut values, scalar) = children[read.child].clone();
-            let mut ancestors = Vec::new();
-            let mut coordinate = 0;
-            for step in &read.path {
-                if let Some(nulls) = values.nulls() {
-                    ancestors.push((nulls.clone(), coordinate));
-                }
-                values = match step {
-                    Path::Field(index) => values
-                        .as_any()
-                        .downcast_ref::<StructArray>()
-                        .unwrap()
-                        .column(*index)
-                        .clone(),
-                    Path::Values(parent, child) => {
-                        debug_assert_eq!(*parent, coordinate);
-                        coordinate = *child;
-                        values
-                            .as_any()
-                            .downcast_ref::<ListArray>()
-                            .unwrap()
-                            .values()
-                            .clone()
-                    }
-                };
-            }
-            let all_valid = values.null_count() == 0
-                && ancestors.iter().all(|(mask, _)| mask.null_count() == 0);
-            reads.push(BoundRead {
-                values,
-                ancestors,
-                coordinate: read.coordinate,
-                scalar,
-                all_valid,
-            });
-        }
+        let reads = bind_reads(self, batch)?;
         let route = self.pointwise_shape(&reads);
         if let Some((ordinary, schema)) = &self.ordinary {
             let prefer_ordinary = route.is_none();
@@ -1333,6 +1277,14 @@ impl Execution<'_> {
                         Kind::I32 => compare_values!(a.i32(&self.reads, count), b.i32(&self.reads, count)),
                         Kind::I64 => compare_values!(a.i64(&self.reads, count), b.i64(&self.reads, count)),
                         Kind::Bool => compare_values!(a.boolean(count), b.boolean(count)),
+                        Kind::F32 => {
+                            let av=a.f32(&self.reads,count);let bv=b.f32(&self.reads,count);
+                            for (i,out) in values.iter_mut().enumerate() { *out=u8::from(float32_order(av[if a.scalar{0}else{i}]) $op float32_order(bv[if b.scalar{0}else{i}])); }
+                        },
+                        Kind::F64 => {
+                            let av=a.f64(&self.reads,count);let bv=b.f64(&self.reads,count);
+                            for (i,out) in values.iter_mut().enumerate() { *out=u8::from(float64_order(av[if a.scalar{0}else{i}]) $op float64_order(bv[if b.scalar{0}else{i}])); }
+                        },
                         _ => unreachable!(),
                     }
                     out.all_valid = a.all_valid && b.all_valid;
@@ -1511,6 +1463,37 @@ impl Execution<'_> {
                         values[i] = u8::from(!a.valid(i));
                     }
                 }
+                Op::Cast(a) => {
+                    let source_kind = self.program.registers[a].kind;
+                    let a = &before[a];
+                    out.scalar = a.scalar;
+                    out.all_valid = a.all_valid;
+                    let n = if out.scalar { 1 } else { count };
+                    if !out.all_valid {
+                        out.valid[..n].copy_from_slice(&a.valid[..n]);
+                    }
+                    macro_rules! cast {
+                        ($variant:ident,$getter:ident,$ty:ty) => {{
+                            let Values::$variant(values) = &mut out.values else {
+                                unreachable!()
+                            };
+                            for (out, &value) in
+                                values[..n].iter_mut().zip(a.$getter(&self.reads, count))
+                            {
+                                *out = value as $ty;
+                            }
+                        }};
+                    }
+                    match (source_kind, register.kind) {
+                        (Kind::I32, Kind::I64) => cast!(I64, i32, i64),
+                        (Kind::I32, Kind::F32) => cast!(F32, i32, f32),
+                        (Kind::I32, Kind::F64) => cast!(F64, i32, f64),
+                        (Kind::I64, Kind::F32) => cast!(F32, i64, f32),
+                        (Kind::I64, Kind::F64) => cast!(F64, i64, f64),
+                        (Kind::F32, Kind::F64) => cast!(F64, f32, f64),
+                        _ => unreachable!(),
+                    }
+                }
                 Op::Unary(operator, a) => {
                     let a = &before[a];
                     out.scalar = a.scalar;
@@ -1561,6 +1544,34 @@ impl Execution<'_> {
                     Binary::Le => compare!(<=,a,b),
                     Binary::Gt => compare!(>,a,b),
                     Binary::Ge => compare!(>=,a,b),
+                    Binary::Mod => match register.kind {
+                        Kind::I32 => numeric!(
+                            I32,
+                            i32,
+                            |a: i32, b: i32| {
+                                let r = a.wrapping_rem(b);
+                                r.wrapping_add(if r != 0 && (a < 0) != (b < 0) { b } else { 0 })
+                            },
+                            a,
+                            b
+                        ),
+                        Kind::I64 => numeric!(
+                            I64,
+                            i64,
+                            |a: i64, b: i64| {
+                                let r = a.wrapping_rem(b);
+                                r.wrapping_add(if r != 0 && (a < 0) != (b < 0) { b } else { 0 })
+                            },
+                            a,
+                            b
+                        ),
+                        _ => unreachable!(),
+                    },
+                    Binary::Div => match register.kind {
+                        Kind::F32 => numeric!(F32, f32, |a: f32, b: f32| a / b, a, b),
+                        Kind::F64 => numeric!(F64, f64, |a: f64, b: f64| a / b, a, b),
+                        _ => unreachable!(),
+                    },
                     Binary::And | Binary::Or => {
                         let a = &before[a];
                         let b = &before[b];
@@ -1635,4 +1646,78 @@ impl Execution<'_> {
             }
         }
     }
+}
+
+fn bind_reads(program: &ListFlatMap, batch: &RecordBatch) -> Result<Vec<BoundRead>> {
+    let children = program
+        .children
+        .iter()
+        .map(|child| child.evaluate(batch))
+        .collect::<Result<Vec<_>>>()?;
+    let children = children
+        .into_iter()
+        .map(|value| match value {
+            ColumnarValue::Array(array) => Ok((array, false)),
+            ColumnarValue::Scalar(value) => Ok((value.to_array()?, true)),
+        })
+        .collect::<Result<Vec<_>>>()?;
+    for ((child, scalar), expected) in children.iter().zip(&program.child_types) {
+        if child.data_type() != expected || (!scalar && child.len() != batch.num_rows()) {
+            return Err(DataFusionError::Execution(
+                "flatmap source descriptor changed".into(),
+            ));
+        }
+    }
+    let mut reads = Vec::with_capacity(program.reads.len());
+    for read in &program.reads {
+        let (mut values, scalar) = children[read.child].clone();
+        let mut ancestors = Vec::new();
+        let mut coordinate = 0;
+        for step in &read.path {
+            if let Some(nulls) = values.nulls() {
+                ancestors.push((nulls.clone(), coordinate));
+            }
+            values = match step {
+                Path::Field(index) => values
+                    .as_any()
+                    .downcast_ref::<StructArray>()
+                    .unwrap()
+                    .column(*index)
+                    .clone(),
+                Path::Values(parent, child) => {
+                    debug_assert_eq!(*parent, coordinate);
+                    coordinate = *child;
+                    values
+                        .as_any()
+                        .downcast_ref::<ListArray>()
+                        .unwrap()
+                        .values()
+                        .clone()
+                }
+            };
+        }
+        let all_valid =
+            values.null_count() == 0 && ancestors.iter().all(|(mask, _)| mask.null_count() == 0);
+        reads.push(BoundRead {
+            values,
+            ancestors,
+            coordinate: read.coordinate,
+            scalar,
+            all_valid,
+        });
+    }
+    Ok(reads)
+}
+
+include!("list_flatmap_reductions_execute.rs");
+
+fn float32_order(value: f32) -> i32 {
+    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i32;
+    bits ^= (((bits >> 31) as u32) >> 1) as i32;
+    bits
+}
+fn float64_order(value: f64) -> i64 {
+    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i64;
+    bits ^= (((bits >> 63) as u64) >> 1) as i64;
+    bits
 }

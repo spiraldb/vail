@@ -877,6 +877,11 @@ fn lower(
     if shared.contains(&(expr as *const Expr as usize)) {
         return logical_kernel(expr, schema, globals, bindings, scope);
     }
+    if crate::list_flatmap::has_reduction_region(expr) {
+        // Preserve the shared producer region until physical preparation; a
+        // field-by-field logical lowering hides each list callback separately.
+        return logical_kernel(expr, schema, globals, bindings, scope);
+    }
     let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope, shared);
     Ok(match expr {
         Expr::MatrixScope { .. }

@@ -892,6 +892,7 @@ impl PreparationOptions {
 struct CompilationMemo {
     options: PreparationOptions,
     suppress_invariant_hoist: bool,
+    suppress_multi_reduce: bool,
     contexts: HashMap<CompilationBindings, usize>,
     types: HashMap<(usize, usize), Type>,
     physical: HashMap<(usize, usize), Arc<dyn PhysicalExpr>>,
@@ -6548,6 +6549,25 @@ fn lower_uncached(
         .dtype_scoped(schema, globals.schema(), scope, memo, context)?
         .to_arrow()?;
     let output_type = dtype.clone();
+    if !memo.suppress_multi_reduce && crate::list_flatmap::has_reduction_region(expr) {
+        let mut source = |value: &Expr| {
+            let expression = lower_cached(value, schema, globals, scope, memo, context).ok()?;
+            let dtype = expression.data_type(schema).ok()?;
+            Some((expression, dtype))
+        };
+        let prepared = crate::list_flatmap::prepare_reductions(expr, &dtype, &mut source);
+        drop(source);
+        if let Some(mut program) = prepared {
+            let mut ordinary = CompilationMemo {
+                options: memo.options.clone(), suppress_multi_reduce: true,
+                root_expression: expr as *const Expr as usize,
+                coalesce_budget: 65_536, ..CompilationMemo::default()
+            };
+            program.set_fallback(lower_scoped(expr, schema, globals, scope, &mut ordinary)?);
+            if std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some() { eprintln!("MULTI_REDUCE_PREP {program}"); }
+            return Ok(Arc::new(program));
+        }
+    }
     if !memo.options.disable_list_flatmap
         && matches!(expr, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. } | Expr::ArrayFold { .. })
     {

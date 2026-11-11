@@ -82,6 +82,7 @@ enum Op {
     Unary(Unary, usize),
     Binary(Binary, usize, usize),
     Missing(usize),
+    Cast(usize),
     Select(usize, usize, usize),
 }
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -276,6 +277,7 @@ struct Compiler<'a> {
     scalar_depth: usize,
     projections: HashMap<(usize, usize, String), Binding>,
     output_nodes: usize,
+    reduction_numeric: bool,
 }
 impl Compiler<'_> {
     fn environment(&mut self, env: Env) -> Env {
@@ -578,11 +580,29 @@ impl Compiler<'_> {
                 left,
                 right,
             } => {
-                let a = self.scalar(left, env)?;
-                let b = self.scalar(right, env)?;
-                let kind = self.registers[a].kind;
-                if kind != self.registers[b].kind {
+                let mut a = self.scalar(left, env)?;
+                let mut b = self.scalar(right, env)?;
+                let mut kind = self.registers[a].kind;
+                if self.reduction_numeric
+                    && kind != Kind::Bool
+                    && self.registers[b].kind != Kind::Bool
+                {
+                    kind = numeric_kind(kind, self.registers[b].kind);
+                    if *operator == Binary::Div && !matches!(kind, Kind::F32 | Kind::F64) {
+                        kind = Kind::F64;
+                    }
+                    a = self.numeric_cast(a, kind)?;
+                    b = self.numeric_cast(b, kind)?;
+                } else if kind != self.registers[b].kind {
                     return None;
+                }
+                if self.reduction_numeric
+                    && *operator == Binary::Div
+                    && !matches!(kind, Kind::F32 | Kind::F64)
+                {
+                    kind = Kind::F64;
+                    a = self.numeric_cast(a, kind)?;
+                    b = self.numeric_cast(b, kind)?;
                 }
                 let output = match operator {
                     Binary::Add | Binary::Sub | Binary::Mul if kind != Kind::Bool => kind,
@@ -592,9 +612,32 @@ impl Compiler<'_> {
                         Kind::Bool
                     }
                     Binary::And | Binary::Or if kind == Kind::Bool => Kind::Bool,
+                    Binary::Eq | Binary::Ne | Binary::Lt | Binary::Le | Binary::Gt | Binary::Ge
+                        if self.reduction_numeric && matches!(kind, Kind::F32 | Kind::F64) =>
+                    {
+                        Kind::Bool
+                    }
+                    Binary::Mod
+                        if self.reduction_numeric
+                            && matches!(kind, Kind::I32 | Kind::I64)
+                            && constant_nonzero(&self.registers[b]) =>
+                    {
+                        kind
+                    }
+                    Binary::Div
+                        if self.reduction_numeric
+                            && matches!(kind, Kind::F32 | Kind::F64)
+                            && constant_nonzero(&self.registers[b]) =>
+                    {
+                        kind
+                    }
                     _ => return None,
                 };
                 self.register(Op::Binary(*operator, a, b), output)?
+            }
+            Expr::Cast { value, dtype } if self.reduction_numeric => {
+                let value = self.scalar(value, env)?;
+                self.numeric_cast(value, Kind::of(&dtype.to_arrow().ok()?)?)?
             }
             Expr::Unary { operator, value } => {
                 let value = self.scalar(value, env)?;
@@ -1043,6 +1086,7 @@ pub(crate) fn prepare(
         scalar_depth: 0,
         projections: HashMap::new(),
         output_nodes: 0,
+        reduction_numeric: false,
     };
     let Binding::Read(root_read) = compiler.resolve(base, &None)? else {
         return None;
@@ -1082,7 +1126,7 @@ pub(crate) fn prepare(
         }
         *uses |= bit;
         match registers[index].op {
-            Op::Unary(_, a) | Op::Missing(a) => mark(registers, a, bit, guard),
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) => mark(registers, a, bit, guard),
             Op::Binary(_, a, b) => {
                 mark(registers, a, bit, guard);
                 mark(registers, b, bit, guard);
@@ -1250,3 +1294,5 @@ impl BoundRead {
 
 #[path = "list_flatmap_execute.rs"]
 mod execution;
+
+include!("list_flatmap_reductions.rs");
