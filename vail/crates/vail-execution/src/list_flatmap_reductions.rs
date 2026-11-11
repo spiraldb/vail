@@ -490,7 +490,9 @@ pub(crate) fn prepare_reductions(
             Kind::Bool => 2,
         })
         .sum::<usize>()
-        + 17;
+        // Selected child coordinates (8), shared owner/end segments (16),
+        // guard mask (1), and one reusable packed bitmap (at most 1).
+        + 26;
     Some(MultiReduce {
         workspace_bytes_per_lane,
         program,

@@ -141,14 +141,15 @@ integer_kernel!(int64, Int64Array, Int64Builder, i64);
 // Boolean reductions borrow packed Arrow bitmaps. BitChunks describes only
 // the actual segment's bit alignment/length; no array header or validity count
 // is constructed. Null presence and operation are selected outside these loops.
-fn bitmap_reduce<const OP: u8, const NULLS: bool>(
-    values: &arrow_buffer::BooleanBuffer,
+pub(crate) fn bitmap_reduce<const OP: u8, const NULLS: bool>(
+    values: &[u8],
+    offset: usize,
     nulls: Option<&arrow_buffer::NullBuffer>,
     start: usize,
     len: usize,
 ) -> usize {
     use arrow_buffer::bit_chunk_iterator::BitChunks;
-    let bits = BitChunks::new(values.values(), values.offset() + start, len);
+    let bits = BitChunks::new(values, offset + start, len);
     if NULLS {
         let nulls = nulls.unwrap();
         let valid = BitChunks::new(nulls.validity(), nulls.offset() + start, len);
@@ -205,7 +206,7 @@ macro_rules! boolean_kernel {
                     }
                     let start = offsets[row] as usize;
                     let len = (offsets[row + 1] - offsets[row]) as usize;
-                    let result = bitmap_reduce::<OP, NULLS>(values.values(), nulls, start, len);
+                    let result = bitmap_reduce::<OP, NULLS>(values.values().values(), values.values().offset(), nulls, start, len);
                     output.append_option(($finish)(result, len));
                 }
                 Arc::new(output.finish())

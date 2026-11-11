@@ -25,6 +25,7 @@ mod direct;
 mod compact;
 
 pub(crate) use compact::udf as compact_defined_lists_udf;
+pub(crate) use direct::bitmap_reduce;
 
 const PREFIX: &str = "__vail_list_reduce_";
 const GROUP_INDEX_CHUNK: usize = 64 * 1024;
