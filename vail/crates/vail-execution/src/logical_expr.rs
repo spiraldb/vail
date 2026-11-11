@@ -1579,17 +1579,17 @@ fn logical_kernel_admitted(
         &mut std::collections::HashMap::new(),
     )?.into_owned();
     let kernel_schema = Schema::new(fields);
-    let kernel =
-        crate::expressions::lower_with_options(&rewritten, &kernel_schema, &options).map_err(|error| match error {
-            ExprError::Invalid(message) => ExprError::Invalid(format!(
-                "{} kernel compilation: {message}",
-                kernel_label(expr)
-            )),
-            other => other,
-        })?;
-    if require_multi_reduce && !crate::expressions::is_multi_reduce(&kernel) {
-        return Ok(None);
-    }
+    let prepared = if require_multi_reduce {
+        crate::expressions::lower_multi_reduce_with_options(&rewritten, &kernel_schema, &options)
+    } else {
+        crate::expressions::lower_with_options(&rewritten, &kernel_schema, &options).map(Some)
+    };
+    let Some(kernel) = prepared.map_err(|error| match error {
+        ExprError::Invalid(message) => ExprError::Invalid(format!(
+            "{} kernel compilation: {message}", kernel_label(expr)
+        )),
+        other => other,
+    })? else { return Ok(None); };
     let captured_expression = Arc::new(rewritten.clone());
     let output_type = expr
         .dtype_with_globals(&arrow_schema, globals)?

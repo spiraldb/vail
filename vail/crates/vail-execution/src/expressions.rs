@@ -5155,6 +5155,28 @@ pub fn lower_with_options(expr: &Expr, schema: &Schema, options: &PreparationOpt
     lower_bound_options(expr, schema, GlobalBinding::Values(&globals), false, options)
 }
 fn lower_bound_options(expr: &Expr, schema: &Schema, globals: GlobalBinding<'_>, indexed_selection: bool, options: &PreparationOptions) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let mut memo = root_compilation_memo(expr, indexed_selection, options);
+    lower_scoped(expr, schema, globals, &[], &mut memo)
+}
+
+/// Prepare only an admitted joint root; a decline never compiles the ordinary
+/// Struct whose fields must remain visible to logical optimization.
+pub(crate) fn lower_multi_reduce_with_options(
+    expr: &Expr, schema: &Schema, options: &PreparationOptions,
+) -> Result<Option<Arc<dyn PhysicalExpr>>, ExprError> {
+    let globals = RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
+        &RecordBatchOptions::new().with_row_count(Some(1)))?;
+    let globals = GlobalBinding::Values(&globals);
+    let mut memo = root_compilation_memo(expr, false, options);
+    let context = memo.context(schema, globals.schema(), &[]);
+    let dtype = expr.dtype_scoped(schema, globals.schema(), &[], &mut memo, context)?.to_arrow()?;
+    let Some(program) = try_multi_reduce(expr, &dtype, schema, globals, &[], &mut memo, context)? else {
+        return Ok(None);
+    };
+    Ok(Some(CompiledPhysical::bind(program, Arc::new(schema.clone()), false)?))
+}
+
+fn root_compilation_memo(expr: &Expr, indexed_selection: bool, options: &PreparationOptions) -> CompilationMemo {
     let mut memo = CompilationMemo {
         options: options.clone(),
         coalesce_budget:65_536,
@@ -5174,7 +5196,7 @@ fn lower_bound_options(expr: &Expr, schema: &Schema, globals: GlobalBinding<'_>,
             position += 1;
         });
     });
-    lower_scoped(expr, schema, globals, &[], &mut memo)
+    memo
 }
 
 pub(crate) fn string_function(
@@ -5390,20 +5412,6 @@ fn lower_scoped(
     let context = memo.context(schema, globals.schema(), scope);
     lower_cached(expr, schema, globals, scope, memo, context)
 }
-pub(crate) fn is_multi_reduce(mut expression: &Arc<dyn PhysicalExpr>) -> bool {
-    loop {
-        if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() {
-            expression = &compiled.inner;
-        } else if let Some(hail) = expression.downcast_ref::<HailPhysicalExpr>()
-            && matches!(hail.kind, HailKind::RestoreArrowType) && hail.args.len() == 1
-        {
-            expression = &hail.args[0];
-        } else {
-            return expression.downcast_ref::<crate::list_flatmap::MultiReduce>().is_some();
-        }
-    }
-}
-
 pub(crate) fn indexed_aligned_map(mut expression: &Arc<dyn PhysicalExpr>) -> Option<&crate::aligned_matrix_map::AlignedMatrixMapExpr> {
     loop {
         if let Some(compiled) = expression.downcast_ref::<CompiledPhysical>() { expression = &compiled.inner; }
@@ -6551,6 +6559,34 @@ fn borrowed_read_layout<'a>(
     Some(dtype)
 }
 
+fn try_multi_reduce(
+    expr: &Expr, dtype: &DataType, schema: &Schema, globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)], memo: &mut CompilationMemo, context: usize,
+) -> Result<Option<Arc<dyn PhysicalExpr>>, ExprError> {
+    if memo.suppress_multi_reduce || !crate::list_flatmap::has_reduction_region(expr) {
+        return Ok(None);
+    }
+    let mut source = |value: &Expr| {
+        let expression = lower_cached(value, schema, globals, scope, memo, context).ok()?;
+        let dtype = expression.data_type(schema).ok()?;
+        Some((expression, dtype))
+    };
+    let prepared = crate::list_flatmap::prepare_reductions(expr, dtype, &mut source);
+    drop(source);
+    let Some(mut program) = prepared else { return Ok(None); };
+    if program.normalize_ordinary(|child, dtype| lower_cast(child, schema, dtype)).is_err() {
+        return Ok(None);
+    }
+    let mut ordinary = CompilationMemo {
+        options: memo.options.clone(), suppress_multi_reduce: true,
+        root_expression: expr as *const Expr as usize,
+        coalesce_budget: 65_536, ..CompilationMemo::default()
+    };
+    program.set_fallback(lower_scoped(expr, schema, globals, scope, &mut ordinary)?);
+    if std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some() { eprintln!("MULTI_REDUCE_PREP {program}"); }
+    Ok(Some(Arc::new(program)))
+}
+
 fn lower_uncached(
     expr: &Expr,
     schema: &Schema,
@@ -6563,28 +6599,8 @@ fn lower_uncached(
         .dtype_scoped(schema, globals.schema(), scope, memo, context)?
         .to_arrow()?;
     let output_type = dtype.clone();
-    if !memo.suppress_multi_reduce && crate::list_flatmap::has_reduction_region(expr) {
-        let mut source = |value: &Expr| {
-            let expression = lower_cached(value, schema, globals, scope, memo, context).ok()?;
-            let dtype = expression.data_type(schema).ok()?;
-            Some((expression, dtype))
-        };
-        let prepared = crate::list_flatmap::prepare_reductions(expr, &dtype, &mut source);
-        drop(source);
-        if let Some(mut program) = prepared {
-            let mut ordinary = CompilationMemo {
-                options: memo.options.clone(), suppress_multi_reduce: true,
-                root_expression: expr as *const Expr as usize,
-                coalesce_budget: 65_536, ..CompilationMemo::default()
-            };
-            let fallback = lower_scoped(expr, schema, globals, scope, &mut ordinary)?;
-            if program.normalize_ordinary(|child, dtype| lower_cast(child, schema, dtype)).is_err() {
-                return Ok(fallback);
-            }
-            program.set_fallback(fallback);
-            if std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some() { eprintln!("MULTI_REDUCE_PREP {program}"); }
-            return Ok(Arc::new(program));
-        }
+    if let Some(program) = try_multi_reduce(expr, &dtype, schema, globals, scope, memo, context)? {
+        return Ok(program);
     }
     if !memo.options.disable_list_flatmap
         && matches!(expr, Expr::ArrayMap { .. } | Expr::ArrayFilter { .. } | Expr::ArrayFlatten { .. } | Expr::ArrayFold { .. })
