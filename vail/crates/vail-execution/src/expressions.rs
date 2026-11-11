@@ -6566,15 +6566,23 @@ fn try_multi_reduce(
     if memo.suppress_multi_reduce || !crate::list_flatmap::has_reduction_region(expr) {
         return Ok(None);
     }
+    let trace = std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some();
     let mut source = |value: &Expr| {
-        let expression = lower_cached(value, schema, globals, scope, memo, context).ok()?;
+        let expression = match lower_cached(value, schema, globals, scope, memo, context) {
+            Ok(expression) => expression,
+            Err(error) => {
+                if trace { eprintln!("MULTI_REDUCE_SOURCE_DECLINE {error}"); }
+                return None;
+            }
+        };
         let dtype = expression.data_type(schema).ok()?;
         Some((expression, dtype))
     };
     let prepared = crate::list_flatmap::prepare_reductions(expr, dtype, &mut source);
     drop(source);
     let Some(mut program) = prepared else { return Ok(None); };
-    if program.normalize_ordinary(|child, dtype| lower_cast(child, schema, dtype)).is_err() {
+    if let Err(error) = program.normalize_ordinary(|child, dtype| lower_cast(child, schema, dtype)) {
+        if trace { eprintln!("MULTI_REDUCE_NORMALIZE_DECLINE {error}"); }
         return Ok(None);
     }
     let mut ordinary = CompilationMemo {

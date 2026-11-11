@@ -278,9 +278,14 @@ pub(crate) fn prepare_reductions(
     if !has_reduction_region(expression) {
         return None;
     }
-    let Expr::Struct { fields } = expression else {
-        return None;
-    };
+    let trace = std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some();
+    macro_rules! decline {
+        ($reason:expr) => {{
+            if trace { eprintln!("MULTI_REDUCE_DECLINE {}", $reason); }
+            return None;
+        }};
+    }
+    let Expr::Struct { fields } = expression else { decline!("root_shape"); };
     let DataType::Struct(output_fields) = dtype else {
         return None;
     };
@@ -292,9 +297,8 @@ pub(crate) fn prepare_reductions(
     // Only one same-owner region in this initial prototype. Different owner,
     // filter, or lexical contexts stay on their unchanged ordinary route.
     let owner = candidates.first()?.owner;
-    if !owner.is_pure() {
-        return None;
-    }
+    if trace { eprintln!("MULTI_REDUCE_CANDIDATES count={} fields={}", candidates.len(), fields.len()); }
+    if !owner.is_pure() { decline!("owner_effects"); }
     // Candidates retain every owner Arc while this query-local identity cache
     // is used. Addresses avoid rehashing the same DAG; equality still compares
     // the existing collision-safe structural identity for distinct owners.
@@ -310,9 +314,7 @@ pub(crate) fn prepare_reductions(
                 == &identity
         })
         .collect::<Vec<_>>();
-    if candidates.len() < 2 {
-        return None;
-    }
+    if candidates.len() < 2 { decline!("same_owner_count"); }
     let mut compiler = Compiler {
         lower,
         children: vec![],
@@ -349,6 +351,7 @@ pub(crate) fn prepare_reductions(
                 .scalar(candidate.body, &env)
                 .filter(|&value| c.registers[value].kind == Kind::Bool);
             let Some(value) = compiled else {
+                if trace { eprintln!("MULTI_REDUCE_FIELD_DECLINE field={}", candidate.field); }
                 c.children.truncate(checkpoint.0);
                 c.child_types.truncate(checkpoint.0);
                 c.reads.truncate(checkpoint.1);
@@ -372,22 +375,21 @@ pub(crate) fn prepare_reductions(
         }
         Some(Node::Concat((0..sinks.len()).map(Node::Emit).collect()))
     };
-    let root = compiler.list(owner, &None, vec![], &mut emit)?;
+    let root = compiler.list(owner, &None, vec![], &mut emit);
     drop(emit);
-    if sinks.len() < 2 {
-        return None;
-    }
+    let Some(root) = root else { decline!("owner_list_compilation"); };
+    if trace { eprintln!("MULTI_REDUCE_COMPILED sinks={} registers={} reads={} children={}", sinks.len(), compiler.registers.len(), compiler.reads.len(), compiler.children.len()); }
+    if sinks.len() < 2 { decline!("compiled_sink_count"); }
     let Node::Loop {
         read: root_read,
         coordinate: 1,
         body,
         ..
     } = root
-    else {
-        return None;
-    };
+    else { decline!("owner_loop_shape"); };
     if compiler.coordinates != 2 || compiler.children.iter().any(|child| !child.is::<Column>()) {
-        return None;
+        if trace { eprintln!("MULTI_REDUCE_SOURCE coordinates={} children={:?}", compiler.coordinates, compiler.children); }
+        decline!("source_coordinates_or_columns");
     }
     let mut node = body.as_ref();
     let mut guards = vec![];
@@ -396,7 +398,7 @@ pub(crate) fn prepare_reductions(
         node = body;
     }
     if !matches!(node, Node::Concat(nodes) if nodes.iter().all(|n| matches!(n, Node::Emit(_)))) {
-        return None;
+        decline!("guard_body_shape");
     }
     fn mark(registers: &mut [Register], index: usize, bit: u64) {
         if registers[index].leaves & bit != 0 {
@@ -444,7 +446,7 @@ pub(crate) fn prepare_reductions(
     }
     // A second sink alone is not enough: ordinary cheap field reads/bitmap
     // reductions need not be turned into another block interpreter.
-    if compiler.registers.iter().any(|r| matches!(r.op, Op::Read(i) | Op::MissingRead(i) | Op::Length(i) if compiler.reads[i].coordinate == 0)) { return None; }
+    if compiler.registers.iter().any(|r| matches!(r.op, Op::Read(i) | Op::MissingRead(i) | Op::Length(i) if compiler.reads[i].coordinate == 0)) { decline!("frame_capture"); }
     let shared = compiler.registers.iter().any(|r| {
         r.leaves.count_ones() > 1
             && matches!(
@@ -453,7 +455,8 @@ pub(crate) fn prepare_reductions(
             )
     });
     if !shared {
-        return None;
+        if trace { eprintln!("MULTI_REDUCE_REGISTERS {:?}", compiler.registers); }
+        decline!("no_shared_costly_producer");
     }
     let mut outputs = Vec::with_capacity(fields.len());
     let mut ordinary = vec![];

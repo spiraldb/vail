@@ -880,11 +880,17 @@ fn lower(
     if crate::list_flatmap::has_reduction_region(expr) {
         // Only an admitted joint program needs this opaque boundary. Declined
         // shapes keep the ordinary logical fields visible to DataFusion.
-        if let Ok(Some(kernel)) = logical_kernel_admitted(
+        match logical_kernel_admitted(
             expr, schema, globals, bindings, scope,
             &crate::expressions::PreparationOptions::capture(), true,
         ) {
-            return Ok(kernel);
+            Ok(Some(kernel)) => return Ok(kernel),
+            Ok(None) => {},
+            Err(error) => {
+                if std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some() {
+                    eprintln!("MULTI_REDUCE_LOGICAL_DECLINE {error}");
+                }
+            }
         }
     }
     let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope, shared);
