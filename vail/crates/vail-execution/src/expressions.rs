@@ -6563,7 +6563,11 @@ fn lower_uncached(
                 root_expression: expr as *const Expr as usize,
                 coalesce_budget: 65_536, ..CompilationMemo::default()
             };
-            program.set_fallback(lower_scoped(expr, schema, globals, scope, &mut ordinary)?);
+            let fallback = lower_scoped(expr, schema, globals, scope, &mut ordinary)?;
+            if program.normalize_ordinary(|child, dtype| lower_cast(child, schema, dtype)).is_err() {
+                return Ok(fallback);
+            }
+            program.set_fallback(fallback);
             if std::env::var_os("VAIL_TRACE_SEMANTIC_PREP").is_some() { eprintln!("MULTI_REDUCE_PREP {program}"); }
             return Ok(Arc::new(program));
         }

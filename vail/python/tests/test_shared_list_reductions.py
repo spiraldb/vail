@@ -128,3 +128,23 @@ def test_joint_float_comparisons_match_independent_single_sink_actions():
     rows = m.annotate_rows(**{name: hl.agg.count_where(p) for name, p in predicates.items()}).rows().collect()
     for name in predicates:
         assert [r[name] for r in rows] == expected[name]
+
+
+def test_joint_numeric_sinks_preserve_string_and_nested_siblings(tmp_path):
+    m = hl.range_matrix_table(2, 8, n_partitions=2)
+    labels = hl.literal([None, 'é', 'α', '猫', '🙂', '', 'abc', 'z'], hl.tarray(hl.tstr))
+    m = m.annotate_entries(a=hl.int32(m.col_idx - 5), label=labels[m.col_idx])
+    path = str(tmp_path / 'text.mt')
+    m.write(path)
+    m = hl.read_matrix_table(path)
+    query = m.annotate_rows(
+        smallest=hl.agg.min(m.label),
+        yes=hl.agg.fraction(m.a % 3 == 0),
+        no=hl.agg.fraction(m.a % 3 != 0),
+        largest=hl.agg.max(m.label),
+        collected=hl.agg.take(m.label, 2),
+    ).rows()
+    for row in query.collect():
+        assert row.smallest == '' and row.largest == '🙂'
+        assert row.collected == [None, 'é']
+        assert row.yes == 2 / 8 and row.no == 6 / 8

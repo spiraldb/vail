@@ -172,6 +172,23 @@ impl fmt::Display for MultiReduce {
     }
 }
 impl MultiReduce {
+    pub(crate) fn normalize_ordinary<E>(
+        &mut self,
+        mut normalize: impl FnMut(
+            Arc<dyn PhysicalExpr>,
+            &DataType,
+        ) -> std::result::Result<Arc<dyn PhysicalExpr>, E>,
+    ) -> std::result::Result<(), E> {
+        // Match ordinary Struct construction: prepare each field's physical
+        // normalization once, including Utf8View and nested logical metadata.
+        for (field, output) in self.fields.iter().zip(&self.outputs) {
+            if let Err(index) = output {
+                self.ordinary[*index] =
+                    normalize(self.ordinary[*index].clone(), field.data_type())?;
+            }
+        }
+        Ok(())
+    }
     pub(crate) fn set_fallback(&mut self, fallback: Arc<dyn PhysicalExpr>) {
         self.fallback = Some(fallback);
     }
