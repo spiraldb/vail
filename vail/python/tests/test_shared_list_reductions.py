@@ -98,15 +98,17 @@ def test_fallible_sibling_reductions_keep_first_error():
         query.collect()
 
 
-def test_float_reductions_keep_nan_infinity_and_signed_zero():
+@pytest.mark.parametrize('dtype', [hl.tfloat32, hl.tfloat64])
+def test_float_reductions_keep_nan_infinity_and_signed_zero(dtype):
     m = hl.range_matrix_table(1, 8)
-    values = hl.literal([float('nan'), float('inf'), float('-inf'), -0.0, 0.0, -7.0, 7.0, None], hl.tarray(hl.tfloat64))
+    values = hl.literal([float('nan'), float('inf'), float('-inf'), -0.0, 0.0, -7.0, 7.0, None], hl.tarray(dtype))
     m = m.annotate_entries(x=values[m.col_idx])
+    q = m.x / hl.literal(7.0, dtype)
     row = m.annotate_rows(
-        low=hl.agg.count_where(m.x / 7 < 0),
-        high=hl.agg.count_where(m.x / 7 >= 0),
-        equal=hl.agg.fraction(m.x / 7 == 0),
-        unequal=hl.agg.fraction(m.x / 7 != 0),
+        low=hl.agg.count_where(q < 0),
+        high=hl.agg.count_where(q >= 0),
+        equal=hl.agg.fraction(q == 0),
+        unequal=hl.agg.fraction(q != 0),
     ).rows().collect()[0]
     # Scalar comparisons retain the engine's ordering of NaN above finite values.
     assert (row.low, row.high) == (2, 5)
