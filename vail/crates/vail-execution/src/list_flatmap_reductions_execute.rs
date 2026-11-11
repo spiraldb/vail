@@ -18,7 +18,7 @@ pub(super) fn reduce(
         program,
         reads,
         positions: vec![0; 2],
-        coordinates: vec![vec![], vec![]],
+        coordinates: vec![vec![], Vec::with_capacity(capacity)],
         leaves: vec![],
         workspace: program.workspace.lease(&program.registers, capacity),
         output: Output::Bool(BooleanBuilder::new()),
@@ -31,6 +31,7 @@ pub(super) fn reduce(
         emissions: vec![],
         fold_entries: vec![],
         output_validity: vec![],
+        reuse_guards: false,
     };
     let lists = execution.reads[program.root_read]
         .values
@@ -73,12 +74,16 @@ pub(super) fn reduce(
         let mut owner = first_row;
         for start in (offsets[first_row] as usize..end).step_by(capacity) {
             let count = (end - start).min(capacity);
+            execution.reuse_guards = false;
             execution.span = Some(SpanInput {
                 coordinate: 1,
-                leaves: mask,
+                leaves: 0,
                 lanes: InputLanes::Contiguous(start),
             });
-            execution.compute(count, None);
+            if !bundle.guards.is_empty() {
+                execution.compute(count, Some(1));
+            }
+            let mut present_count = 0;
             for lane in 0..count {
                 while start + lane >= offsets[owner + 1] as usize {
                     owner += 1;
@@ -90,11 +95,44 @@ pub(super) fn reduce(
                     .all(|&guard| execution.workspace[guard].true_at(lane));
                 selected[lane] = u8::from(present);
                 denominator[owner] += u64::from(present);
+                present_count += usize::from(present);
             }
+            // The filter owns the value domain. Never evaluate an expensive
+            // body on eliminated entries, including hidden null-owner spans.
+            if present_count == 0 {
+                continue;
+            }
+            let active_count = if present_count == count {
+                execution.reuse_guards = !bundle.guards.is_empty();
+                execution.span = Some(SpanInput {
+                    coordinate: 1,
+                    leaves: mask,
+                    lanes: InputLanes::Contiguous(start),
+                });
+                count
+            } else {
+                execution.coordinates[1].clear();
+                for lane in 0..count {
+                    if selected[lane] != 0 {
+                        let next = execution.coordinates[1].len();
+                        execution.coordinates[1].push(start + lane);
+                        owners[next] = owners[lane];
+                    }
+                }
+                // Selection changes the domain; recompute cheap guard/leaf
+                // reads when also demanded by a sink, not their old vectors.
+                execution.span = Some(SpanInput {
+                    coordinate: 1,
+                    leaves: mask,
+                    lanes: InputLanes::Selected,
+                });
+                present_count
+            };
+            execution.compute(active_count, None);
             for (sink, output) in bundle.sinks.iter().zip(&mut numerators) {
                 let values = &execution.workspace[sink.value];
-                for lane in 0..count {
-                    output[owners[lane]] += i64::from(selected[lane] != 0 && values.true_at(lane));
+                for lane in 0..active_count {
+                    output[owners[lane]] += i64::from(values.true_at(lane));
                 }
             }
         }

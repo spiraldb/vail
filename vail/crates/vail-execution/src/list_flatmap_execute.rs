@@ -335,6 +335,7 @@ struct Execution<'a> {
     emissions: Vec<(usize, usize)>,
     fold_entries: Vec<(usize, usize, usize)>,
     output_validity: Vec<u8>,
+    reuse_guards: bool,
 }
 impl ListFlatMap {
     pub(super) fn execute(&self, batch: &RecordBatch) -> Result<ArrayRef> {
@@ -417,6 +418,7 @@ impl ListFlatMap {
             } else {
                 vec![]
             },
+            reuse_guards: false,
             output_validity: self.output.as_ref().map_or_else(Vec::new, |output| {
                 vec![0; capacity * self.leaves.len() * output.depth()]
             }),
@@ -1184,7 +1186,7 @@ impl Execution<'_> {
                         |mask| register.guards & mask != 0,
                     )
             };
-            if !needed {
+            if !needed || (guard.is_none() && self.reuse_guards && register.guards != 0) {
                 continue;
             }
             let (before, after) = self.workspace.split_at_mut(index);

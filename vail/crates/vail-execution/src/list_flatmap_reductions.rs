@@ -213,7 +213,9 @@ impl PhysicalExpr for MultiReduce {
         Ok(Arc::new(result))
     }
     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
-        // Working counters and scalar workspace share the same bound. The
+        // Variable working payload (counters, masks, selected coordinates and
+        // scalar buffers) shares the bound. Fixed Vec/Read descriptors, input
+        // owners and final/ordinary outputs are separate. The
         // ordinary route is chosen before reading a source or running a body.
         let state_bytes = batch
             .num_rows()
@@ -276,10 +278,20 @@ pub(crate) fn prepare_reductions(
     if !owner.is_pure() {
         return None;
     }
+    // Candidates retain every owner Arc while this query-local identity cache
+    // is used. Addresses avoid rehashing the same DAG; equality still compares
+    // the existing collision-safe structural identity for distinct owners.
+    let mut identities = HashMap::new();
     let identity = Identity::with_bound_names(owner.as_ref().clone());
+    identities.insert(Arc::as_ptr(owner) as usize, identity.clone());
     let candidates = candidates
         .into_iter()
-        .filter(|c| Identity::with_bound_names(c.owner.as_ref().clone()) == identity)
+        .filter(|candidate| {
+            identities
+                .entry(Arc::as_ptr(candidate.owner) as usize)
+                .or_insert_with(|| Identity::with_bound_names(candidate.owner.as_ref().clone()))
+                == &identity
+        })
         .collect::<Vec<_>>();
     if candidates.len() < 2 {
         return None;
@@ -390,9 +402,28 @@ pub(crate) fn prepare_reductions(
     }
     for (index, sink) in sinks.iter().enumerate() {
         mark(&mut compiler.registers, sink.value, 1 << index);
-        for &guard in &guards {
-            mark(&mut compiler.registers, guard, 1 << index);
+    }
+    fn mark_guard(registers: &mut [Register], index: usize) {
+        if registers[index].guards != 0 {
+            return;
         }
+        registers[index].guards = 1;
+        match registers[index].op {
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) => mark_guard(registers, a),
+            Op::Binary(_, a, b) => {
+                mark_guard(registers, a);
+                mark_guard(registers, b);
+            }
+            Op::Select(c, a, b) => {
+                mark_guard(registers, c);
+                mark_guard(registers, a);
+                mark_guard(registers, b);
+            }
+            _ => {}
+        }
+    }
+    for &guard in &guards {
+        mark_guard(&mut compiler.registers, guard);
     }
     // A second sink alone is not enough: ordinary cheap field reads/bitmap
     // reductions need not be turned into another block interpreter.
@@ -442,7 +473,7 @@ pub(crate) fn prepare_reductions(
             Kind::Bool => 2,
         })
         .sum::<usize>()
-        + 9;
+        + 17;
     Some(MultiReduce {
         workspace_bytes_per_lane,
         program,
