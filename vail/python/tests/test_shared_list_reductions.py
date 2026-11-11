@@ -149,3 +149,16 @@ def test_joint_numeric_sinks_preserve_string_and_nested_siblings(tmp_path):
         assert row.nested == [hl.Struct(label=None, xs=[-5]), hl.Struct(label='é', xs=[-4])]
         assert row.collected == [None, 'é']
         assert row.yes == 2 / 8 and row.no == 6 / 8
+
+
+def test_projected_joint_result_retains_baseline_eager_sibling_error():
+    m = hl.range_matrix_table(2, 7)
+    m = m.annotate_entries(a=hl.int32(m.col_idx))
+    result = m.annotate_rows(
+        yes=hl.agg.fraction(m.a % 3 == 0),
+        no=hl.agg.fraction(m.a % 3 != 0),
+        unused=hl.agg.count_where(hl.case().when(m.col_idx < 0, True).or_error('unused reducer')),
+    ).rows().select('yes')
+    # The current shared annotation evaluates this sibling before projection.
+    with pytest.raises(Exception, match='unused reducer'):
+        result.collect()
