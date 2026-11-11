@@ -1,0 +1,1136 @@
+[
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-0-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-0-hail"
+      ],
+      "leader": 29035,
+      "owned_identities": {
+        "29035": 1794425277.012222,
+        "29038": 1794425278.160711,
+        "29048": 1794425278.181215,
+        "29049": 1794425278.181946
+      },
+      "seconds": 22.94565612496808,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1895579648,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-1-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-1-vail"
+      ],
+      "leader": 29120,
+      "owned_identities": {
+        "29120": 1794425299.95958
+      },
+      "seconds": 4.052655166015029,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2247983104,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 2,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-2-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-2-vail"
+      ],
+      "leader": 29142,
+      "owned_identities": {
+        "29142": 1794425304.012713
+      },
+      "seconds": 4.01662337500602,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2244296704,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 3,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-3-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-3-hail"
+      ],
+      "leader": 29146,
+      "owned_identities": {
+        "29146": 1794425308.030379,
+        "29151": 1794425309.254686,
+        "29161": 1794425309.276291,
+        "29162": 1794425309.276961
+      },
+      "seconds": 23.045738040935248,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1898774528,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 4,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-4-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-4-hail"
+      ],
+      "leader": 29195,
+      "owned_identities": {
+        "29195": 1794425331.077286,
+        "29198": 1794425332.29525,
+        "29208": 1794425332.318636,
+        "29209": 1794425332.319344
+      },
+      "seconds": 23.05001083400566,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1882292224,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 5,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-5-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-5-vail"
+      ],
+      "leader": 29238,
+      "owned_identities": {
+        "29238": 1794425354.128097
+      },
+      "seconds": 4.011670874897391,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2265497600,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "mode": "hail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-0-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-0-hail"
+      ],
+      "leader": 29239,
+      "owned_identities": {
+        "29239": 1794425358.141687,
+        "29242": 1794425359.364629,
+        "29252": 1794425359.386871,
+        "29253": 1794425359.387598
+      },
+      "seconds": 51.63866066606715,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1918042112,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "mode": "vail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-1-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-1-vail"
+      ],
+      "leader": 29502,
+      "owned_identities": {
+        "29502": 1794425409.781348
+      },
+      "seconds": 14.087980084004812,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2669887488,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "mode": "vail",
+    "index": 2,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-2-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-2-vail"
+      ],
+      "leader": 29503,
+      "owned_identities": {
+        "29503": 1794425423.870436
+      },
+      "seconds": 14.051848917035386,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2901819392,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "mode": "hail",
+    "index": 3,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-3-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-3-hail"
+      ],
+      "leader": 29506,
+      "owned_identities": {
+        "29506": 1794425437.923414,
+        "29509": 1794425439.151195,
+        "29519": 1794425439.174394,
+        "29520": 1794425439.175093
+      },
+      "seconds": 51.171313083032146,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1924087808,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "mode": "hail",
+    "index": 4,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-4-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-4-hail"
+      ],
+      "leader": 29811,
+      "owned_identities": {
+        "29811": 1794425489.096056,
+        "29816": 1794425490.322254,
+        "29826": 1794425490.344106,
+        "29827": 1794425490.344797
+      },
+      "seconds": 51.68786412500776,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1909915648,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "mode": "vail",
+    "index": 5,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-5-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-5-vail"
+      ],
+      "leader": 30190,
+      "owned_identities": {
+        "30190": 1794425540.784825
+      },
+      "seconds": 14.701061708037741,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2661908480,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "mode": "hail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-0-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-0-hail"
+      ],
+      "leader": 30193,
+      "owned_identities": {
+        "30193": 1794425555.490002,
+        "30196": 1794425557.004672,
+        "30206": 1794425557.03407,
+        "30207": 1794425557.034832
+      },
+      "seconds": 20.35013983398676,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2134114304,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "mode": "vail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-1-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-1-vail"
+      ],
+      "leader": 30238,
+      "owned_identities": {
+        "30238": 1794425575.841095
+      },
+      "seconds": 10.278950584004633,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1535934464,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "mode": "vail",
+    "index": 2,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-2-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-2-vail"
+      ],
+      "leader": 30299,
+      "owned_identities": {
+        "30299": 1794425586.121453
+      },
+      "seconds": 10.189475000021048,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1632944128,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "mode": "hail",
+    "index": 3,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-3-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-3-hail"
+      ],
+      "leader": 30338,
+      "owned_identities": {
+        "30338": 1794425596.311839,
+        "30341": 1794425597.539618,
+        "30351": 1794425597.562177,
+        "30352": 1794425597.562811
+      },
+      "seconds": 19.995063832961023,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2132312064,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "mode": "hail",
+    "index": 4,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-4-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-4-hail"
+      ],
+      "leader": 30387,
+      "owned_identities": {
+        "30387": 1794425616.30794,
+        "30390": 1794425617.533966,
+        "30400": 1794425617.556997,
+        "30401": 1794425617.55772
+      },
+      "seconds": 20.068014374934137,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2120122368,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "mode": "vail",
+    "index": 5,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-5-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-5-vail"
+      ],
+      "leader": 30419,
+      "owned_identities": {
+        "30419": 1794425636.377104
+      },
+      "seconds": 10.109318666975014,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1453342720,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "hail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-0-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-0-hail"
+      ],
+      "leader": 30443,
+      "owned_identities": {
+        "30443": 1794425646.488886,
+        "30446": 1794425647.717024,
+        "30456": 1794425647.739822,
+        "30457": 1794425647.740522
+      },
+      "seconds": 21.082299207919277,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1512734720,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "vail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-1-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-1-vail"
+      ],
+      "leader": 30472,
+      "owned_identities": {
+        "30472": 1794425667.572642
+      },
+      "seconds": 2.4675050830701366,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1784610816,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "vail",
+    "index": 2,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-2-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-2-vail"
+      ],
+      "leader": 30473,
+      "owned_identities": {
+        "30473": 1794425670.041285
+      },
+      "seconds": 2.487741833087057,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1727938560,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "hail",
+    "index": 3,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-3-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-3-hail"
+      ],
+      "leader": 30478,
+      "owned_identities": {
+        "30478": 1794425672.530388,
+        "30481": 1794425673.759504,
+        "30491": 1794425673.782093,
+        "30492": 1794425673.782848
+      },
+      "seconds": 21.118693458032794,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1435664384,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "hail",
+    "index": 4,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-4-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-4-hail"
+      ],
+      "leader": 30512,
+      "owned_identities": {
+        "30512": 1794425693.650568,
+        "30515": 1794425694.879245,
+        "30525": 1794425694.901342,
+        "30526": 1794425694.902041
+      },
+      "seconds": 21.059116124990396,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1404600320,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "vail",
+    "index": 5,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-5-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-5-vail"
+      ],
+      "leader": 30541,
+      "owned_identities": {
+        "30541": 1794425714.71088
+      },
+      "seconds": 2.487051042029634,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1671380992,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "mode": "hail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-0-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-0-hail"
+      ],
+      "leader": 30542,
+      "owned_identities": {
+        "30542": 1794425717.201167,
+        "30545": 1794425718.435694,
+        "30555": 1794425718.460451,
+        "30556": 1794425718.461152
+      },
+      "seconds": 28.603377084014937,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2267676672,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "mode": "vail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-1-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-1-vail"
+      ],
+      "leader": 30571,
+      "owned_identities": {
+        "30571": 1794425745.805667
+      },
+      "seconds": 11.118765000021085,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 929071104,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "mode": "vail",
+    "index": 2,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-2-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-2-vail"
+      ],
+      "leader": 30577,
+      "owned_identities": {
+        "30577": 1794425756.925907
+      },
+      "seconds": 11.137591040926054,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 920371200,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "mode": "hail",
+    "index": 3,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-3-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-3-hail"
+      ],
+      "leader": 30613,
+      "owned_identities": {
+        "30613": 1794425768.064871,
+        "30622": 1794425769.292322,
+        "30633": 1794425769.315468,
+        "30634": 1794425769.316159
+      },
+      "seconds": 28.596332540968433,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2295873536,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "mode": "hail",
+    "index": 4,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-4-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-4-hail"
+      ],
+      "leader": 30742,
+      "owned_identities": {
+        "30742": 1794425796.662588,
+        "30747": 1794425797.90391,
+        "30757": 1794425797.927423,
+        "30758": 1794425797.928103
+      },
+      "seconds": 28.564247208996676,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1968701440,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "mode": "vail",
+    "index": 5,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-5-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-5-vail"
+      ],
+      "leader": 30812,
+      "owned_identities": {
+        "30812": 1794425825.2284
+      },
+      "seconds": 11.198663208051585,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 920338432,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "mode": "hail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-0-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-0-hail"
+      ],
+      "leader": 31011,
+      "owned_identities": {
+        "31011": 1794425836.430572,
+        "31034": 1794425837.73186,
+        "31045": 1794425837.755241,
+        "31046": 1794425837.755934
+      },
+      "seconds": 24.331446000025608,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1462583296,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "mode": "vail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-1-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-1-vail"
+      ],
+      "leader": 31770,
+      "owned_identities": {
+        "31770": 1794425860.763621
+      },
+      "seconds": 5.817790833069012,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5877366784,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "mode": "vail",
+    "index": 2,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-2-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-2-vail"
+      ],
+      "leader": 31776,
+      "owned_identities": {
+        "31776": 1794425866.582565
+      },
+      "seconds": 7.0901488329982385,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5873303552,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "mode": "hail",
+    "index": 3,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-3-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-3-hail"
+      ],
+      "leader": 31777,
+      "owned_identities": {
+        "31777": 1794425873.674372,
+        "31780": 1794425874.947324,
+        "31790": 1794425874.969844,
+        "31791": 1794425874.970603
+      },
+      "seconds": 24.079611083026975,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1541242880,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "mode": "hail",
+    "index": 4,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-4-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-4-hail"
+      ],
+      "leader": 32440,
+      "owned_identities": {
+        "32440": 1794425897.755542,
+        "32447": 1794425898.989851,
+        "32457": 1794425899.013376,
+        "32458": 1794425899.014022
+      },
+      "seconds": 24.07754158298485,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1452277760,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "mode": "vail",
+    "index": 5,
+    "out": "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-5-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-5-vail"
+      ],
+      "leader": 33115,
+      "owned_identities": {
+        "33115": 1794425921.834665
+      },
+      "seconds": 5.567946583032608,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 6037372928,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  }
+]

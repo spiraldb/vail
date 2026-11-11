@@ -1,0 +1,65 @@
+[
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 0,
+    "out": "/private/tmp/vail-six-slower-20261111/validate/test_matrix_table_many_aggs_row_wise-0-vail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "validate",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/validate/test_matrix_table_many_aggs_row_wise-0-vail"
+      ],
+      "leader": 28863,
+      "owned_identities": {
+        "28863": 1794425215.940303
+      },
+      "seconds": 1.5409207500051707,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 387579904,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 1,
+    "out": "/private/tmp/vail-six-slower-20261111/validate/test_matrix_table_many_aggs_row_wise-1-hail",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "validate",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/validate/test_matrix_table_many_aggs_row_wise-1-hail"
+      ],
+      "leader": 28864,
+      "owned_identities": {
+        "28864": 1794425217.482196,
+        "28905": 1794425220.769023,
+        "28915": 1794425220.805689,
+        "28916": 1794425220.80646
+      },
+      "seconds": 18.454100292059593,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1073823744,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  }
+]

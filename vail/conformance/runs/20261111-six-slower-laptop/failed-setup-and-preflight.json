@@ -1,0 +1,29 @@
+{
+  "setup_assertion": {
+    "stderr": "Traceback (most recent call last):\n  File \"/private/tmp/vail-six-slower-20261111/setup-worker.py\", line 6, in <module>\n    mt=hl.read_matrix_table(target);assert list(mt.count())==[24885,2535];assert mt.n_partitions()==16\n                                                                                 ^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/setup-worker.py"
+      ],
+      "leader": 28784,
+      "owned_identities": {
+        "28784": 1794425088.976145
+      },
+      "seconds": 3.386650542030111,
+      "returncode": 1,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 4709597184,
+      "group_absent": true,
+      "live_owned": 0
+    }
+  },
+  "preflight_controller": {
+    "log": "RUN validate test_matrix_table_many_aggs_row_wise 0 vail\nPASS validate test_matrix_table_many_aggs_row_wise 0 vail 1.54\nRUN validate test_matrix_table_many_aggs_row_wise 1 hail\nPASS validate test_matrix_table_many_aggs_row_wise 1 hail 18.45\nTraceback (most recent call last):\n  File \"/private/tmp/vail-six-slower-20261111/run.py\", line 35, in <module>\n    data={x['mode']:Path(x['out'])for x in receipts};v=json.loads((data['vail']/'values.json').read_text());h=json.loads((data['hail']/'values.json').read_text());assert {k:v[k]for k in ['profile','gnomad']}==h;assert v['native_profile']==v['profile']\n                                                                                                                                                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+    "superseded_protocol_sha256": "1fa3bb47cd74a1e81cd4951b49d57b7da6fde844e2ea281a1745fa0188d7770c"
+  }
+}

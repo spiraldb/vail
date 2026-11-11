@@ -1,0 +1,114 @@
+[
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "hail": {
+      "wall_seconds": 1.6845079159829766,
+      "cpu_seconds": 7.3300981039999975
+    },
+    "vail": {
+      "wall_seconds": 0.8775850840611383,
+      "cpu_seconds": 8.593542
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.5209741525904513,
+      "cpu_seconds": 1.172363845350248
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "hail": {
+      "wall_seconds": 8.957430874928832,
+      "cpu_seconds": 36.697291736
+    },
+    "vail": {
+      "wall_seconds": 3.3316207909956574,
+      "cpu_seconds": 27.625704999999996
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.37193932473658387,
+      "cpu_seconds": 0.7527995580365734
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "hail": {
+      "wall_seconds": 1.0001199169782922,
+      "cpu_seconds": 4.8386910479999985
+    },
+    "vail": {
+      "wall_seconds": 2.41741762496531,
+      "cpu_seconds": 2.9407710000000002
+    },
+    "vail_over_hail": {
+      "wall_seconds": 2.4171277703069487,
+      "cpu_seconds": 0.6077616799310889
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "hail": {
+      "wall_seconds": 1.2525310419732705,
+      "cpu_seconds": 5.392104776000001
+    },
+    "vail": {
+      "wall_seconds": 0.4499242919264361,
+      "cpu_seconds": 4.3359239999999994
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.35921208884181705,
+      "cpu_seconds": 0.8041245821666873
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "hail": {
+      "wall_seconds": 3.239456290961243,
+      "cpu_seconds": 4.190121328000001
+    },
+    "vail": {
+      "wall_seconds": 2.6891225419240072,
+      "cpu_seconds": 2.6904579999999996
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.8301153960395201,
+      "cpu_seconds": 0.6420954882669686
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "hail": {
+      "wall_seconds": 2.06999949994497,
+      "cpu_seconds": 8.093900839999998,
+      "output_bytes": [
+        206126602,
+        206126610,
+        206126617,
+        206126608,
+        206126612,
+        206126607,
+        206126613,
+        206126613,
+        206126611
+      ]
+    },
+    "vail": {
+      "wall_seconds": 1.1890600839396939,
+      "cpu_seconds": 13.352803999999999,
+      "output_bytes": [
+        784324297,
+        784324297,
+        784324297,
+        784324297,
+        784324297,
+        784324085,
+        784324297,
+        784324297,
+        784324085
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.5744253000888669,
+      "cpu_seconds": 1.6497365440913905
+    }
+  }
+]

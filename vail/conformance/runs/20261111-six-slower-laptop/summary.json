@@ -1,0 +1,302 @@
+[
+  {
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "spec": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "helpers": [
+        "many_aggs"
+      ],
+      "historical_wall_ratio": 2.458
+    },
+    "hail": {
+      "wall_seconds": 1.6845079159829766,
+      "cpu_seconds": 7.3300981039999975,
+      "process_medians": [
+        {
+          "wall_seconds": 1.6845079159829766,
+          "cpu_seconds": 7.496453416000007
+        },
+        {
+          "wall_seconds": 1.6853799580130726,
+          "cpu_seconds": 7.3300981039999975
+        },
+        {
+          "wall_seconds": 1.6793142079841346,
+          "cpu_seconds": 7.208857623999998
+        }
+      ]
+    },
+    "vail": {
+      "wall_seconds": 0.8775850840611383,
+      "cpu_seconds": 8.593542,
+      "process_medians": [
+        {
+          "wall_seconds": 0.8775850840611383,
+          "cpu_seconds": 8.523539
+        },
+        {
+          "wall_seconds": 0.8857680829241872,
+          "cpu_seconds": 8.62838
+        },
+        {
+          "wall_seconds": 0.8707229170249775,
+          "cpu_seconds": 8.593542
+        }
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.5209741525904513,
+      "cpu_seconds": 1.172363845350248
+    }
+  },
+  {
+    "case": "test_export_vcf",
+    "spec": {
+      "source": "benchmark_methods.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "temporary_output": true,
+      "historical_wall_ratio": 1.912
+    },
+    "hail": {
+      "wall_seconds": 8.957430874928832,
+      "cpu_seconds": 36.697291736,
+      "process_medians": [
+        {
+          "wall_seconds": 9.04451058304403,
+          "cpu_seconds": 36.621729832000014
+        },
+        {
+          "wall_seconds": 8.907273707911372,
+          "cpu_seconds": 36.697291736
+        },
+        {
+          "wall_seconds": 8.957430874928832,
+          "cpu_seconds": 37.042932672
+        }
+      ]
+    },
+    "vail": {
+      "wall_seconds": 3.3316207909956574,
+      "cpu_seconds": 27.625704999999996,
+      "process_medians": [
+        {
+          "wall_seconds": 3.3345100830774754,
+          "cpu_seconds": 27.619660999999994
+        },
+        {
+          "wall_seconds": 3.3316207909956574,
+          "cpu_seconds": 27.625704999999996
+        },
+        {
+          "wall_seconds": 3.315568167017773,
+          "cpu_seconds": 27.627150000000004
+        }
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.37193932473658387,
+      "cpu_seconds": 0.7527995580365734
+    }
+  },
+  {
+    "case": "test_group_by_take_rekey",
+    "spec": {
+      "source": "benchmark_table.py",
+      "fixture": "gnomad",
+      "vail_reader": "legacy",
+      "historical_wall_ratio": 1.882
+    },
+    "hail": {
+      "wall_seconds": 1.0001199169782922,
+      "cpu_seconds": 4.8386910479999985,
+      "process_medians": [
+        {
+          "wall_seconds": 0.923494084039703,
+          "cpu_seconds": 4.677437512000001
+        },
+        {
+          "wall_seconds": 1.0001199169782922,
+          "cpu_seconds": 4.8386910479999985
+        },
+        {
+          "wall_seconds": 1.0059130829758942,
+          "cpu_seconds": 4.880663071999999
+        }
+      ]
+    },
+    "vail": {
+      "wall_seconds": 2.41741762496531,
+      "cpu_seconds": 2.9407710000000002,
+      "process_medians": [
+        {
+          "wall_seconds": 2.4258542079478502,
+          "cpu_seconds": 2.9431700000000003
+        },
+        {
+          "wall_seconds": 2.41741762496531,
+          "cpu_seconds": 2.9407710000000002
+        },
+        {
+          "wall_seconds": 2.402916750055738,
+          "cpu_seconds": 2.928082999999999
+        }
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 2.4171277703069487,
+      "cpu_seconds": 0.6077616799310889
+    }
+  },
+  {
+    "case": "test_kyle_sex_specific_qc",
+    "spec": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "historical_wall_ratio": 1.384
+    },
+    "hail": {
+      "wall_seconds": 1.2525310419732705,
+      "cpu_seconds": 5.392104776000001,
+      "process_medians": [
+        {
+          "wall_seconds": 1.22157941700425,
+          "cpu_seconds": 5.262270136
+        },
+        {
+          "wall_seconds": 1.2525310419732705,
+          "cpu_seconds": 5.392104776000001
+        },
+        {
+          "wall_seconds": 1.2612756250891834,
+          "cpu_seconds": 5.435773912000001
+        }
+      ]
+    },
+    "vail": {
+      "wall_seconds": 0.4499242919264361,
+      "cpu_seconds": 4.3359239999999994,
+      "process_medians": [
+        {
+          "wall_seconds": 0.44050229201093316,
+          "cpu_seconds": 4.344862000000001
+        },
+        {
+          "wall_seconds": 0.4499242919264361,
+          "cpu_seconds": 4.3359239999999994
+        },
+        {
+          "wall_seconds": 0.460871750023216,
+          "cpu_seconds": 4.335176999999999
+        }
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.35921208884181705,
+      "cpu_seconds": 0.8041245821666873
+    }
+  },
+  {
+    "case": "test_mt_localize_and_collect",
+    "spec": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "historical_wall_ratio": 1.254
+    },
+    "hail": {
+      "wall_seconds": 3.239456290961243,
+      "cpu_seconds": 4.190121328000001,
+      "process_medians": [
+        {
+          "wall_seconds": 3.239456290961243,
+          "cpu_seconds": 4.265858151999998
+        },
+        {
+          "wall_seconds": 3.2570159999886528,
+          "cpu_seconds": 4.190121328000001
+        },
+        {
+          "wall_seconds": 3.2177261660108343,
+          "cpu_seconds": 4.054810951999999
+        }
+      ]
+    },
+    "vail": {
+      "wall_seconds": 2.6891225419240072,
+      "cpu_seconds": 2.6904579999999996,
+      "process_medians": [
+        {
+          "wall_seconds": 2.6891225419240072,
+          "cpu_seconds": 2.6904579999999996
+        },
+        {
+          "wall_seconds": 2.7015391249442473,
+          "cpu_seconds": 2.702934
+        },
+        {
+          "wall_seconds": 2.6772092499304563,
+          "cpu_seconds": 2.678605000000001
+        }
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.8301153960395201,
+      "cpu_seconds": 0.6420954882669686
+    }
+  },
+  {
+    "case": "test_write_profile_mt",
+    "spec": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_fixture": "native_profile",
+      "vail_reader": "native",
+      "temporary_output": true,
+      "historical_wall_ratio": 1.152
+    },
+    "hail": {
+      "wall_seconds": 2.06999949994497,
+      "cpu_seconds": 8.093900839999998,
+      "process_medians": [
+        {
+          "wall_seconds": 2.0460520420456305,
+          "cpu_seconds": 7.938892960000003
+        },
+        {
+          "wall_seconds": 2.06999949994497,
+          "cpu_seconds": 8.093900839999998
+        },
+        {
+          "wall_seconds": 2.1275417909491807,
+          "cpu_seconds": 8.438042616
+        }
+      ]
+    },
+    "vail": {
+      "wall_seconds": 1.1890600839396939,
+      "cpu_seconds": 13.352803999999999,
+      "process_medians": [
+        {
+          "wall_seconds": 1.1890600839396939,
+          "cpu_seconds": 13.345361000000004
+        },
+        {
+          "wall_seconds": 1.7328396670054644,
+          "cpu_seconds": 13.460090000000001
+        },
+        {
+          "wall_seconds": 1.1562702920055017,
+          "cpu_seconds": 13.352803999999999
+        }
+      ]
+    },
+    "vail_over_hail": {
+      "wall_seconds": 0.5744253000888669,
+      "cpu_seconds": 1.6497365440913905
+    }
+  }
+]

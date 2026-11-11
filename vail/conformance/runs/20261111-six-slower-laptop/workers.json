@@ -1,0 +1,4540 @@
+[
+  {
+    "phase": "validate",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 0,
+    "result": {
+      "mode": "vail",
+      "purpose": "validate",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "values_sha256": "f9d80066dd73e8c7fc2e7a0ecca34dc1ee8ab44275f9abb719b141b12217b342",
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "validate",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/validate/test_matrix_table_many_aggs_row_wise-0-vail"
+      ],
+      "leader": 28863,
+      "owned_identities": {
+        "28863": 1794425215.940303
+      },
+      "seconds": 1.5409207500051707,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 387579904,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "90937dd097766936e670349fa7471b0c526d1a6978b15992cb9f40de64a0d915",
+      "exit.json": "b02049c2185a53cd7eafddf865aef1f974f95b94b25d0c72424a3d30890b47cb",
+      "identity.json": "8dd109a49e1b8812a62b8e097edf46517894bd29e03924c97c724e400e44c52c"
+    },
+    "values": {
+      "gnomad": {
+        "dimensions": [
+          250000,
+          1000
+        ],
+        "partitions": 32,
+        "prefix": [
+          {
+            "e": [
+              {
+                "x": 1
+              },
+              {
+                "x": 73
+              },
+              {
+                "x": 51
+              }
+            ],
+            "row_idx": 0
+          },
+          {
+            "e": [
+              {
+                "x": 47
+              },
+              {
+                "x": 22
+              },
+              {
+                "x": 12
+              }
+            ],
+            "row_idx": 1
+          },
+          {
+            "e": [
+              {
+                "x": 15
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 10
+              }
+            ],
+            "row_idx": 2
+          }
+        ]
+      },
+      "native_profile": {
+        "dimensions": [
+          24885,
+          2535
+        ],
+        "partitions": 67,
+        "prefix": [
+          {
+            "alleles": [
+              "A",
+              "C"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                1124
+              ],
+              "AF": [
+                {
+                  "float": "0x1.31a9fbe76c8b4p-1"
+                }
+              ],
+              "AN": 1882,
+              "BaseQRankSum": {
+                "float": "0x1.7000000000000p+1"
+              },
+              "ClippingRankSum": {
+                "float": "-0x1.9fbe76c8b4396p-3"
+              },
+              "DP": 1485,
+              "DS": false,
+              "FS": {
+                "float": "0x1.5d20c49ba5e35p+7"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "0x1.46dc5d6388659p-2"
+              },
+              "MLEAC": [
+                1119
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.30a3d70a3d70ap-1"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.0c00000000000p+5"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.a083126e978d5p+1"
+              },
+              "QD": {
+                "float": "0x1.4eb851eb851ecp+4"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.245a1cac08312p+1"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050036,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.37e4851eb851fp+14"
+            },
+            "rsid": null
+          },
+          {
+            "alleles": [
+              "G",
+              "A"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": [
+                  1,
+                  0
+                ],
+                "DP": 1,
+                "GQ": 3,
+                "GT": {
+                  "call": [
+                    0,
+                    0
+                  ],
+                  "phased": false
+                },
+                "PL": [
+                  0,
+                  3,
+                  22
+                ]
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                20
+              ],
+              "AF": [
+                {
+                  "float": "0x1.db445ed4a1ad6p-8"
+                }
+              ],
+              "AN": 2758,
+              "BaseQRankSum": {
+                "float": "0x1.42c083126e979p+2"
+              },
+              "ClippingRankSum": {
+                "float": "0x1.89374bc6a7efap-4"
+              },
+              "DP": 3067,
+              "DS": false,
+              "FS": {
+                "float": "0x0.0p+0"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "-0x1.3b645a1cac083p-4"
+              },
+              "MLEAC": [
+                14
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.4ca925fe974a3p-8"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.dee147ae147aep+4"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.45a1cac083127p-2"
+              },
+              "QD": {
+                "float": "0x1.2851eb851eb85p+2"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.322d0e5604189p-2"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050115,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.0c428f5c28f5cp+7"
+            },
+            "rsid": null
+          },
+          {
+            "alleles": [
+              "C",
+              "T"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": [
+                  1,
+                  0
+                ],
+                "DP": 1,
+                "GQ": 3,
+                "GT": {
+                  "call": [
+                    0,
+                    0
+                  ],
+                  "phased": false
+                },
+                "PL": [
+                  0,
+                  3,
+                  36
+                ]
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                689
+              ],
+              "AF": [
+                {
+                  "float": "0x1.10624dd2f1aa0p-2"
+                }
+              ],
+              "AN": 2592,
+              "BaseQRankSum": {
+                "float": "-0x1.bee978d4fdf3bp+2"
+              },
+              "ClippingRankSum": {
+                "float": "-0x1.27ef9db22d0e5p-2"
+              },
+              "DP": 2739,
+              "DS": false,
+              "FS": {
+                "float": "0x1.eff3b645a1cacp+5"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "0x1.1d14e3bcd35a8p-3"
+              },
+              "MLEAC": [
+                688
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.0f5c28f5c28f6p-2"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.c63d70a3d70a4p+4"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.c9db22d0e5604p+1"
+              },
+              "QD": {
+                "float": "0x1.7051eb851eb85p+3"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.4083126e978d5p+0"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050159,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.869fae147ae14p+13"
+            },
+            "rsid": null
+          }
+        ]
+      },
+      "profile": {
+        "dimensions": [
+          24885,
+          2535
+        ],
+        "partitions": 16,
+        "prefix": [
+          {
+            "alleles": [
+              "A",
+              "C"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                1124
+              ],
+              "AF": [
+                {
+                  "float": "0x1.31a9fbe76c8b4p-1"
+                }
+              ],
+              "AN": 1882,
+              "BaseQRankSum": {
+                "float": "0x1.7000000000000p+1"
+              },
+              "ClippingRankSum": {
+                "float": "-0x1.9fbe76c8b4396p-3"
+              },
+              "DP": 1485,
+              "DS": false,
+              "FS": {
+                "float": "0x1.5d20c49ba5e35p+7"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "0x1.46dc5d6388659p-2"
+              },
+              "MLEAC": [
+                1119
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.30a3d70a3d70ap-1"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.0c00000000000p+5"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.a083126e978d5p+1"
+              },
+              "QD": {
+                "float": "0x1.4eb851eb851ecp+4"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.245a1cac08312p+1"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050036,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.37e4851eb851fp+14"
+            },
+            "rsid": null
+          },
+          {
+            "alleles": [
+              "G",
+              "A"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": [
+                  1,
+                  0
+                ],
+                "DP": 1,
+                "GQ": 3,
+                "GT": {
+                  "call": [
+                    0,
+                    0
+                  ],
+                  "phased": false
+                },
+                "PL": [
+                  0,
+                  3,
+                  22
+                ]
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                20
+              ],
+              "AF": [
+                {
+                  "float": "0x1.db445ed4a1ad6p-8"
+                }
+              ],
+              "AN": 2758,
+              "BaseQRankSum": {
+                "float": "0x1.42c083126e979p+2"
+              },
+              "ClippingRankSum": {
+                "float": "0x1.89374bc6a7efap-4"
+              },
+              "DP": 3067,
+              "DS": false,
+              "FS": {
+                "float": "0x0.0p+0"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "-0x1.3b645a1cac083p-4"
+              },
+              "MLEAC": [
+                14
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.4ca925fe974a3p-8"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.dee147ae147aep+4"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.45a1cac083127p-2"
+              },
+              "QD": {
+                "float": "0x1.2851eb851eb85p+2"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.322d0e5604189p-2"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050115,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.0c428f5c28f5cp+7"
+            },
+            "rsid": null
+          },
+          {
+            "alleles": [
+              "C",
+              "T"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": [
+                  1,
+                  0
+                ],
+                "DP": 1,
+                "GQ": 3,
+                "GT": {
+                  "call": [
+                    0,
+                    0
+                  ],
+                  "phased": false
+                },
+                "PL": [
+                  0,
+                  3,
+                  36
+                ]
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                689
+              ],
+              "AF": [
+                {
+                  "float": "0x1.10624dd2f1aa0p-2"
+                }
+              ],
+              "AN": 2592,
+              "BaseQRankSum": {
+                "float": "-0x1.bee978d4fdf3bp+2"
+              },
+              "ClippingRankSum": {
+                "float": "-0x1.27ef9db22d0e5p-2"
+              },
+              "DP": 2739,
+              "DS": false,
+              "FS": {
+                "float": "0x1.eff3b645a1cacp+5"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "0x1.1d14e3bcd35a8p-3"
+              },
+              "MLEAC": [
+                688
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.0f5c28f5c28f6p-2"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.c63d70a3d70a4p+4"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.c9db22d0e5604p+1"
+              },
+              "QD": {
+                "float": "0x1.7051eb851eb85p+3"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.4083126e978d5p+0"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050159,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.869fae147ae14p+13"
+            },
+            "rsid": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "phase": "validate",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 1,
+    "result": {
+      "mode": "hail",
+      "purpose": "validate",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "values_sha256": "d5a40bca91e507f83b9fe72cec44303f7c05c833370e6f61556827ed731a1230",
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "validate",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/validate/test_matrix_table_many_aggs_row_wise-1-hail"
+      ],
+      "leader": 28864,
+      "owned_identities": {
+        "28864": 1794425217.482196,
+        "28905": 1794425220.769023,
+        "28915": 1794425220.805689,
+        "28916": 1794425220.80646
+      },
+      "seconds": 18.454100292059593,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1073823744,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "e71a5541e02c91db06a20e4a065ea36554e3f921b45ff95b82866960935bba58",
+      "exit.json": "51fe6a5406541b6abb800e8fafb28ecbe2780b80dd8a5960af8adbae9dd745ed",
+      "identity.json": "a6da5af6a617051e87d34828a8b0e5d31e1ea81d2a841017212fb2c1ce8a629c"
+    },
+    "values": {
+      "gnomad": {
+        "dimensions": [
+          250000,
+          1000
+        ],
+        "partitions": 32,
+        "prefix": [
+          {
+            "e": [
+              {
+                "x": 1
+              },
+              {
+                "x": 73
+              },
+              {
+                "x": 51
+              }
+            ],
+            "row_idx": 0
+          },
+          {
+            "e": [
+              {
+                "x": 47
+              },
+              {
+                "x": 22
+              },
+              {
+                "x": 12
+              }
+            ],
+            "row_idx": 1
+          },
+          {
+            "e": [
+              {
+                "x": 15
+              },
+              {
+                "x": 0
+              },
+              {
+                "x": 10
+              }
+            ],
+            "row_idx": 2
+          }
+        ]
+      },
+      "profile": {
+        "dimensions": [
+          24885,
+          2535
+        ],
+        "partitions": 16,
+        "prefix": [
+          {
+            "alleles": [
+              "A",
+              "C"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                1124
+              ],
+              "AF": [
+                {
+                  "float": "0x1.31a9fbe76c8b4p-1"
+                }
+              ],
+              "AN": 1882,
+              "BaseQRankSum": {
+                "float": "0x1.7000000000000p+1"
+              },
+              "ClippingRankSum": {
+                "float": "-0x1.9fbe76c8b4396p-3"
+              },
+              "DP": 1485,
+              "DS": false,
+              "FS": {
+                "float": "0x1.5d20c49ba5e35p+7"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "0x1.46dc5d6388659p-2"
+              },
+              "MLEAC": [
+                1119
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.30a3d70a3d70ap-1"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.0c00000000000p+5"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.a083126e978d5p+1"
+              },
+              "QD": {
+                "float": "0x1.4eb851eb851ecp+4"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.245a1cac08312p+1"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050036,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.37e4851eb851fp+14"
+            },
+            "rsid": null
+          },
+          {
+            "alleles": [
+              "G",
+              "A"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": [
+                  1,
+                  0
+                ],
+                "DP": 1,
+                "GQ": 3,
+                "GT": {
+                  "call": [
+                    0,
+                    0
+                  ],
+                  "phased": false
+                },
+                "PL": [
+                  0,
+                  3,
+                  22
+                ]
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                20
+              ],
+              "AF": [
+                {
+                  "float": "0x1.db445ed4a1ad6p-8"
+                }
+              ],
+              "AN": 2758,
+              "BaseQRankSum": {
+                "float": "0x1.42c083126e979p+2"
+              },
+              "ClippingRankSum": {
+                "float": "0x1.89374bc6a7efap-4"
+              },
+              "DP": 3067,
+              "DS": false,
+              "FS": {
+                "float": "0x0.0p+0"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "-0x1.3b645a1cac083p-4"
+              },
+              "MLEAC": [
+                14
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.4ca925fe974a3p-8"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.dee147ae147aep+4"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.45a1cac083127p-2"
+              },
+              "QD": {
+                "float": "0x1.2851eb851eb85p+2"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.322d0e5604189p-2"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050115,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.0c428f5c28f5cp+7"
+            },
+            "rsid": null
+          },
+          {
+            "alleles": [
+              "C",
+              "T"
+            ],
+            "e": [
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              },
+              {
+                "AD": [
+                  1,
+                  0
+                ],
+                "DP": 1,
+                "GQ": 3,
+                "GT": {
+                  "call": [
+                    0,
+                    0
+                  ],
+                  "phased": false
+                },
+                "PL": [
+                  0,
+                  3,
+                  36
+                ]
+              },
+              {
+                "AD": null,
+                "DP": null,
+                "GQ": null,
+                "GT": null,
+                "PL": null
+              }
+            ],
+            "filters": null,
+            "info": {
+              "AC": [
+                689
+              ],
+              "AF": [
+                {
+                  "float": "0x1.10624dd2f1aa0p-2"
+                }
+              ],
+              "AN": 2592,
+              "BaseQRankSum": {
+                "float": "-0x1.bee978d4fdf3bp+2"
+              },
+              "ClippingRankSum": {
+                "float": "-0x1.27ef9db22d0e5p-2"
+              },
+              "DP": 2739,
+              "DS": false,
+              "FS": {
+                "float": "0x1.eff3b645a1cacp+5"
+              },
+              "HaplotypeScore": null,
+              "InbreedingCoeff": {
+                "float": "0x1.1d14e3bcd35a8p-3"
+              },
+              "MLEAC": [
+                688
+              ],
+              "MLEAF": [
+                {
+                  "float": "0x1.0f5c28f5c28f6p-2"
+                }
+              ],
+              "MQ": {
+                "float": "0x1.c63d70a3d70a4p+4"
+              },
+              "MQ0": 0,
+              "MQRankSum": {
+                "float": "0x1.c9db22d0e5604p+1"
+              },
+              "QD": {
+                "float": "0x1.7051eb851eb85p+3"
+              },
+              "ReadPosRankSum": {
+                "float": "0x1.4083126e978d5p+0"
+              },
+              "set": null
+            },
+            "locus": {
+              "locus": [
+                "22",
+                16050159,
+                "GRCh37"
+              ]
+            },
+            "qual": {
+              "float": "0x1.869fae147ae14p+13"
+            },
+            "rsid": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 0,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.7811711250105873,
+          "cpu_seconds": 8.340127856000002,
+          "python_cpu_seconds": 0.04598600000000008,
+          "observed_child_cpu_seconds": 8.294141856000003,
+          "descendants_before": {
+            "29038:1794425278.160711": 18.714383776
+          },
+          "descendants_after": {
+            "29038:1794425278.160711": 27.008525632
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.6845079159829766,
+          "cpu_seconds": 7.496453416000007,
+          "python_cpu_seconds": 0.04479300000000008,
+          "observed_child_cpu_seconds": 7.451660416000006,
+          "descendants_before": {
+            "29038:1794425278.160711": 27.024772799999997
+          },
+          "descendants_after": {
+            "29038:1794425278.160711": 34.476433216000004
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.6167509170481935,
+          "cpu_seconds": 7.160668407999994,
+          "python_cpu_seconds": 0.044114999999999904,
+          "observed_child_cpu_seconds": 7.116553407999994,
+          "descendants_before": {
+            "29038:1794425278.160711": 34.476467072000005
+          },
+          "descendants_after": {
+            "29038:1794425278.160711": 41.59302048
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-0-hail"
+      ],
+      "leader": 29035,
+      "owned_identities": {
+        "29035": 1794425277.012222,
+        "29038": 1794425278.160711,
+        "29048": 1794425278.181215,
+        "29049": 1794425278.181946
+      },
+      "seconds": 22.94565612496808,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1895579648,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "65f63fdf69d28b8768065b0a58385ad5ddc97b53129ef63d1276928cb40a8431",
+      "exit.json": "118a35834e1ee8126b5c421d96ecaeae793cf700654d1403793523217e51fce4",
+      "identity.json": "f56769ac3a37e9f4b213cc7017228bf7e6a07c45c646d518751f28afaba3ce16"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 1,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 0.8772671250626445,
+          "cpu_seconds": 8.692591,
+          "python_cpu_seconds": 8.692591,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 99
+        },
+        {
+          "wall_seconds": 0.9247740829596296,
+          "cpu_seconds": 8.523539,
+          "python_cpu_seconds": 8.523539,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 99
+        },
+        {
+          "wall_seconds": 0.8775850840611383,
+          "cpu_seconds": 8.503374999999998,
+          "python_cpu_seconds": 8.503374999999998,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 99
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-1-vail"
+      ],
+      "leader": 29120,
+      "owned_identities": {
+        "29120": 1794425299.95958
+      },
+      "seconds": 4.052655166015029,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2247983104,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "ccc69fa92c6071cd57f12db1ae1c66265626150f107fbced97c0590322eb1b9f",
+      "exit.json": "580a247fe363da8e3d46717c8138a25b32791a570a96ac8cfc68e371f61e2e76",
+      "identity.json": "771afbda163a32e43de5362963b378087d92b3230d605d31902f57745130b90b"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 2,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 0.8857680829241872,
+          "cpu_seconds": 8.615038,
+          "python_cpu_seconds": 8.615038,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 89
+        },
+        {
+          "wall_seconds": 0.8541404160205275,
+          "cpu_seconds": 8.672941999999999,
+          "python_cpu_seconds": 8.672941999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 93
+        },
+        {
+          "wall_seconds": 0.8916527499677613,
+          "cpu_seconds": 8.62838,
+          "python_cpu_seconds": 8.62838,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 95
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-2-vail"
+      ],
+      "leader": 29142,
+      "owned_identities": {
+        "29142": 1794425304.012713
+      },
+      "seconds": 4.01662337500602,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2244296704,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "294b22e64e02dffc065c41e55ba617e9e97989b00ee16070024eae7b850beef6",
+      "exit.json": "a8e5f282b849e98a8b8aad104fd40eed6777d27a21b30e73fbf986e1f3477dd6",
+      "identity.json": "771afbda163a32e43de5362963b378087d92b3230d605d31902f57745130b90b"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 3,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.7785707090515643,
+          "cpu_seconds": 8.257091384000002,
+          "python_cpu_seconds": 0.04608699999999999,
+          "observed_child_cpu_seconds": 8.211004384000002,
+          "descendants_before": {
+            "29151:1794425309.254686": 18.67275376
+          },
+          "descendants_after": {
+            "29151:1794425309.254686": 26.883758144
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.6853799580130726,
+          "cpu_seconds": 7.3300981039999975,
+          "python_cpu_seconds": 0.04209900000000011,
+          "observed_child_cpu_seconds": 7.287999103999997,
+          "descendants_before": {
+            "29151:1794425309.254686": 26.883758144
+          },
+          "descendants_after": {
+            "29151:1794425309.254686": 34.171757248
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.6534939999692142,
+          "cpu_seconds": 7.162320128000003,
+          "python_cpu_seconds": 0.04342400000000013,
+          "observed_child_cpu_seconds": 7.118896128000003,
+          "descendants_before": {
+            "29151:1794425309.254686": 34.171774336
+          },
+          "descendants_after": {
+            "29151:1794425309.254686": 41.290670464
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-3-hail"
+      ],
+      "leader": 29146,
+      "owned_identities": {
+        "29146": 1794425308.030379,
+        "29151": 1794425309.254686,
+        "29161": 1794425309.276291,
+        "29162": 1794425309.276961
+      },
+      "seconds": 23.045738040935248,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1898774528,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "1bd0814220cbae16c3332228b7d77a461418b8efe50e3b577ab9dcc017a8bb72",
+      "exit.json": "566a6f76c81e98e5219167fb5bc16ae8556f03c7fea93ec7e1bb868342ecc62b",
+      "identity.json": "f56769ac3a37e9f4b213cc7017228bf7e6a07c45c646d518751f28afaba3ce16"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "hail",
+    "index": 4,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.7958880830556154,
+          "cpu_seconds": 8.171854856000001,
+          "python_cpu_seconds": 0.04639700000000002,
+          "observed_child_cpu_seconds": 8.125457856,
+          "descendants_before": {
+            "29198:1794425332.29525": 18.764386048
+          },
+          "descendants_after": {
+            "29198:1794425332.29525": 26.889843904
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.664593750028871,
+          "cpu_seconds": 7.208857623999998,
+          "python_cpu_seconds": 0.04269500000000015,
+          "observed_child_cpu_seconds": 7.166162623999998,
+          "descendants_before": {
+            "29198:1794425332.29525": 26.889843904
+          },
+          "descendants_after": {
+            "29198:1794425332.29525": 34.056006528
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.6793142079841346,
+          "cpu_seconds": 7.054614200000002,
+          "python_cpu_seconds": 0.04271500000000006,
+          "observed_child_cpu_seconds": 7.011899200000002,
+          "descendants_before": {
+            "29198:1794425332.29525": 34.05601696
+          },
+          "descendants_after": {
+            "29198:1794425332.29525": 41.06791616
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-4-hail"
+      ],
+      "leader": 29195,
+      "owned_identities": {
+        "29195": 1794425331.077286,
+        "29198": 1794425332.29525,
+        "29208": 1794425332.318636,
+        "29209": 1794425332.319344
+      },
+      "seconds": 23.05001083400566,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1882292224,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "5b6fea6f2b23d61407726ae7a30b21f9ff8fe9e2fc2aa1c675467c5b65b0e9dd",
+      "exit.json": "4c33bbac692e1734e1a8ac4b33cca7ac86c99f5d50930ffb73054e69ad25ea7d",
+      "identity.json": "f56769ac3a37e9f4b213cc7017228bf7e6a07c45c646d518751f28afaba3ce16"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_matrix_table_many_aggs_row_wise",
+    "mode": "vail",
+    "index": 5,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_matrix_table_many_aggs_row_wise",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_matrix_table_many_aggs_row_wise(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_rows(**many_aggs(mt))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 0.8585477919550613,
+          "cpu_seconds": 8.589718999999999,
+          "python_cpu_seconds": 8.589718999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 99
+        },
+        {
+          "wall_seconds": 0.8707229170249775,
+          "cpu_seconds": 8.611183,
+          "python_cpu_seconds": 8.611183,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 99
+        },
+        {
+          "wall_seconds": 0.8859343340154737,
+          "cpu_seconds": 8.593542,
+          "python_cpu_seconds": 8.593542,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 99
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_matrix_table_many_aggs_row_wise",
+        "/private/tmp/vail-six-slower-20261111/time/test_matrix_table_many_aggs_row_wise-5-vail"
+      ],
+      "leader": 29238,
+      "owned_identities": {
+        "29238": 1794425354.128097
+      },
+      "seconds": 4.011670874897391,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2265497600,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "37ec809a380a788f22986684c09acd2a4c2ed4e9dd4fff2a0243f0397f62a816",
+      "exit.json": "767a6d3a8c3f402df18f16d7623d9b26b31a069b742ce641772c59ef90f08706",
+      "identity.json": "771afbda163a32e43de5362963b378087d92b3230d605d31902f57745130b90b"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_export_vcf",
+    "mode": "hail",
+    "index": 0,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_export_vcf",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_export_vcf(profile25_mt, tmp_path):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    out = str(tmp_path / 'out.vcf.bgz')\n    hl.export_vcf(mt, out)",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 9.053710625041276,
+          "cpu_seconds": 37.77520148799999,
+          "python_cpu_seconds": 0.008481999999999879,
+          "observed_child_cpu_seconds": 37.76671948799999,
+          "descendants_before": {
+            "29242:1794425359.364629": 44.582832511999996
+          },
+          "descendants_after": {
+            "29242:1794425359.364629": 82.34955199999999
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 8.850767750060186,
+          "cpu_seconds": 36.34643239200001,
+          "python_cpu_seconds": 0.007940999999999976,
+          "observed_child_cpu_seconds": 36.33849139200001,
+          "descendants_before": {
+            "29242:1794425359.364629": 82.34956198399999
+          },
+          "descendants_after": {
+            "29242:1794425359.364629": 118.688053376
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 9.04451058304403,
+          "cpu_seconds": 36.621729832000014,
+          "python_cpu_seconds": 0.008121000000000045,
+          "observed_child_cpu_seconds": 36.61360883200001,
+          "descendants_before": {
+            "29242:1794425359.364629": 118.688071168
+          },
+          "descendants_after": {
+            "29242:1794425359.364629": 155.30168
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": false
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-0-hail"
+      ],
+      "leader": 29239,
+      "owned_identities": {
+        "29239": 1794425358.141687,
+        "29242": 1794425359.364629,
+        "29252": 1794425359.386871,
+        "29253": 1794425359.387598
+      },
+      "seconds": 51.63866066606715,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1918042112,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "23f7f98c817b4f6c45b9fab6d4b3f7868917c78ab5ecc6993033112f9b4d7f8e",
+      "exit.json": "6957e7544bf5541c8d1cf67ea68e3b37400cabeb1a6d9698e33e371c393cebd6",
+      "identity.json": "0e37c25561873913f8188457f991a760b1c8571912ce6ec17a2a6b44e986fa79"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_export_vcf",
+    "mode": "vail",
+    "index": 1,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_export_vcf",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_export_vcf(profile25_mt, tmp_path):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    out = str(tmp_path / 'out.vcf.bgz')\n    hl.export_vcf(mt, out)",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 3.3345100830774754,
+          "cpu_seconds": 27.671276000000002,
+          "python_cpu_seconds": 27.671276000000002,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 98
+        },
+        {
+          "wall_seconds": 3.3396952080074698,
+          "cpu_seconds": 27.593355000000003,
+          "python_cpu_seconds": 27.593355000000003,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 98
+        },
+        {
+          "wall_seconds": 3.3039041250012815,
+          "cpu_seconds": 27.619660999999994,
+          "python_cpu_seconds": 27.619660999999994,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 98
+        }
+      ],
+      "outputs": [
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": false
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-1-vail"
+      ],
+      "leader": 29502,
+      "owned_identities": {
+        "29502": 1794425409.781348
+      },
+      "seconds": 14.087980084004812,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2669887488,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "2cd13ae1bd252a2d81651294738d41472c73d6640130b8e36dc13d272a549749",
+      "exit.json": "a9ef60277eefc4b2539bbdc05574fad044518e3096ee85758c9d2bc3d742a03b",
+      "identity.json": "82cad362047c0f15da7f0e876fcf21456277f29eadc7ac41d7f604cd4111e21a"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_export_vcf",
+    "mode": "vail",
+    "index": 2,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_export_vcf",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_export_vcf(profile25_mt, tmp_path):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    out = str(tmp_path / 'out.vcf.bgz')\n    hl.export_vcf(mt, out)",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 3.348065625061281,
+          "cpu_seconds": 27.762942000000002,
+          "python_cpu_seconds": 27.762942000000002,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 107
+        },
+        {
+          "wall_seconds": 3.3316207909956574,
+          "cpu_seconds": 27.600088,
+          "python_cpu_seconds": 27.600088,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 107
+        },
+        {
+          "wall_seconds": 3.291765666101128,
+          "cpu_seconds": 27.625704999999996,
+          "python_cpu_seconds": 27.625704999999996,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 107
+        }
+      ],
+      "outputs": [
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": false
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-2-vail"
+      ],
+      "leader": 29503,
+      "owned_identities": {
+        "29503": 1794425423.870436
+      },
+      "seconds": 14.051848917035386,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2901819392,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "e212f46f665705c2c04d201fd68274f81c82b25313b8a55208a4d5c556094433",
+      "exit.json": "429cb2cac5f9aa2e48f0df132f4e3272a2297283836a6a4c2f7c6eaa3a73ab1e",
+      "identity.json": "82cad362047c0f15da7f0e876fcf21456277f29eadc7ac41d7f604cd4111e21a"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_export_vcf",
+    "mode": "hail",
+    "index": 3,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_export_vcf",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_export_vcf(profile25_mt, tmp_path):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    out = str(tmp_path / 'out.vcf.bgz')\n    hl.export_vcf(mt, out)",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 8.95225983299315,
+          "cpu_seconds": 37.81560395200001,
+          "python_cpu_seconds": 0.008718000000000004,
+          "observed_child_cpu_seconds": 37.80688595200001,
+          "descendants_before": {
+            "29509:1794425439.151195": 44.584031935999995
+          },
+          "descendants_after": {
+            "29509:1794425439.151195": 82.390917888
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 8.907273707911372,
+          "cpu_seconds": 36.11221875200001,
+          "python_cpu_seconds": 0.008064000000000071,
+          "observed_child_cpu_seconds": 36.104154752000014,
+          "descendants_before": {
+            "29509:1794425439.151195": 82.39099737599999
+          },
+          "descendants_after": {
+            "29509:1794425439.151195": 118.495152128
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 8.898630040930584,
+          "cpu_seconds": 36.697291736,
+          "python_cpu_seconds": 0.00826299999999991,
+          "observed_child_cpu_seconds": 36.689028736,
+          "descendants_before": {
+            "29509:1794425439.151195": 118.49517747200001
+          },
+          "descendants_after": {
+            "29509:1794425439.151195": 155.184206208
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": false
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-3-hail"
+      ],
+      "leader": 29506,
+      "owned_identities": {
+        "29506": 1794425437.923414,
+        "29509": 1794425439.151195,
+        "29519": 1794425439.174394,
+        "29520": 1794425439.175093
+      },
+      "seconds": 51.171313083032146,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1924087808,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "5550272bdafc3e70f1bbde3ffdaf3cbddf8e264305caff17920320fcda83b77a",
+      "exit.json": "91a3447e2119657abef3c626e318ecddb3657a6d688df021fef1496d28c1f927",
+      "identity.json": "0e37c25561873913f8188457f991a760b1c8571912ce6ec17a2a6b44e986fa79"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_export_vcf",
+    "mode": "hail",
+    "index": 4,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_export_vcf",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_export_vcf(profile25_mt, tmp_path):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    out = str(tmp_path / 'out.vcf.bgz')\n    hl.export_vcf(mt, out)",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 8.957430874928832,
+          "cpu_seconds": 36.951753056,
+          "python_cpu_seconds": 0.008060000000000178,
+          "observed_child_cpu_seconds": 36.943693056,
+          "descendants_before": {
+            "29816:1794425490.322254": 44.509577728
+          },
+          "descendants_after": {
+            "29816:1794425490.322254": 81.453270784
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 8.935976499924436,
+          "cpu_seconds": 37.042932672,
+          "python_cpu_seconds": 0.008343999999999907,
+          "observed_child_cpu_seconds": 37.034588672,
+          "descendants_before": {
+            "29816:1794425490.322254": 81.453283328
+          },
+          "descendants_after": {
+            "29816:1794425490.322254": 118.487872
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 9.071204875013791,
+          "cpu_seconds": 37.27875652000001,
+          "python_cpu_seconds": 0.008072999999999997,
+          "observed_child_cpu_seconds": 37.270683520000006,
+          "descendants_before": {
+            "29816:1794425490.322254": 118.48789696
+          },
+          "descendants_after": {
+            "29816:1794425490.322254": 155.75858048
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": false
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        },
+        {
+          "files": 2,
+          "bytes": 239970378,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-4-hail"
+      ],
+      "leader": 29811,
+      "owned_identities": {
+        "29811": 1794425489.096056,
+        "29816": 1794425490.322254,
+        "29826": 1794425490.344106,
+        "29827": 1794425490.344797
+      },
+      "seconds": 51.68786412500776,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1909915648,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "44fa972d3a562ede2bb36c156922270e296ee3e0f9958b39ef6e386480428d16",
+      "exit.json": "96a7b9edd730c4cfa25f1404860a78e9a8a0ffc2e6b256289b04e8c831d68add",
+      "identity.json": "0e37c25561873913f8188457f991a760b1c8571912ce6ec17a2a6b44e986fa79"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_export_vcf",
+    "mode": "vail",
+    "index": 5,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_export_vcf",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_export_vcf(profile25_mt, tmp_path):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    out = str(tmp_path / 'out.vcf.bgz')\n    hl.export_vcf(mt, out)",
+      "source_sha256": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 3.315568167017773,
+          "cpu_seconds": 27.627150000000004,
+          "python_cpu_seconds": 27.627150000000004,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 101
+        },
+        {
+          "wall_seconds": 3.3044425830012187,
+          "cpu_seconds": 27.618243,
+          "python_cpu_seconds": 27.618243,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 101
+        },
+        {
+          "wall_seconds": 3.3266635419568047,
+          "cpu_seconds": 27.629222,
+          "python_cpu_seconds": 27.629222,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 101
+        }
+      ],
+      "outputs": [
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": false
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        },
+        {
+          "files": 1,
+          "bytes": 225285171,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_export_vcf",
+        "/private/tmp/vail-six-slower-20261111/time/test_export_vcf-5-vail"
+      ],
+      "leader": 30190,
+      "owned_identities": {
+        "30190": 1794425540.784825
+      },
+      "seconds": 14.701061708037741,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2661908480,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "42431354cec37229ea37fa781ebcc42591c0d62c02e279d51f8b83a31bfc9c95",
+      "exit.json": "9b1097f87e5f63cee1fea53bff2083faea0f8283282136134b2c1ca141ced854",
+      "identity.json": "82cad362047c0f15da7f0e876fcf21456277f29eadc7ac41d7f604cd4111e21a"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_group_by_take_rekey",
+    "mode": "hail",
+    "index": 0,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_group_by_take_rekey",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.0359069590922445,
+          "cpu_seconds": 5.481744904000005,
+          "python_cpu_seconds": 0.006413000000000002,
+          "observed_child_cpu_seconds": 5.475331904000004,
+          "descendants_before": {
+            "30196:1794425557.004672": 16.671890175999998
+          },
+          "descendants_after": {
+            "30196:1794425557.004672": 22.147222080000002
+          },
+          "threads_after_query": 5
+        },
+        {
+          "wall_seconds": 0.923494084039703,
+          "cpu_seconds": 4.420087335999997,
+          "python_cpu_seconds": 0.006048999999999971,
+          "observed_child_cpu_seconds": 4.414038335999997,
+          "descendants_before": {
+            "30196:1794425557.004672": 22.147222080000002
+          },
+          "descendants_after": {
+            "30196:1794425557.004672": 26.561260416
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 0.8783216249430552,
+          "cpu_seconds": 4.677437512000001,
+          "python_cpu_seconds": 0.006172999999999984,
+          "observed_child_cpu_seconds": 4.6712645120000005,
+          "descendants_before": {
+            "30196:1794425557.004672": 26.561260416
+          },
+          "descendants_after": {
+            "30196:1794425557.004672": 31.232524928
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-0-hail"
+      ],
+      "leader": 30193,
+      "owned_identities": {
+        "30193": 1794425555.490002,
+        "30196": 1794425557.004672,
+        "30206": 1794425557.03407,
+        "30207": 1794425557.034832
+      },
+      "seconds": 20.35013983398676,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2134114304,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "6122a4c4a878da996985ecc61c817c6c18a33364345c608fcd4e07d11b90f74b",
+      "exit.json": "c8be4de4fc06078589fcd5258c078815d784671f266ebec452e6131985a4b067",
+      "identity.json": "f57ca533185299454c397f7d9deb208688ac2811296f30f10d971356f4b5289d"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_group_by_take_rekey",
+    "mode": "vail",
+    "index": 1,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_group_by_take_rekey",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.4258542079478502,
+          "cpu_seconds": 2.9431700000000003,
+          "python_cpu_seconds": 2.9431700000000003,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 127
+        },
+        {
+          "wall_seconds": 2.420304499915801,
+          "cpu_seconds": 2.942493,
+          "python_cpu_seconds": 2.942493,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 127
+        },
+        {
+          "wall_seconds": 2.429038416943513,
+          "cpu_seconds": 2.952077000000001,
+          "python_cpu_seconds": 2.952077000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 127
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-1-vail"
+      ],
+      "leader": 30238,
+      "owned_identities": {
+        "30238": 1794425575.841095
+      },
+      "seconds": 10.278950584004633,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1535934464,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "858495f1d6e61ded01a82a7d9c89b3fa2bf26504ece1651cb8f3734dbc80937b",
+      "exit.json": "fe49214f00a329ec2fb67de0032b0996beb0d9b63907c81acc78f77ae37788ec",
+      "identity.json": "872aea14081e254e7cf72d4ace87d2f5e3701b8acd0b3340f85b19329f6b025c"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_group_by_take_rekey",
+    "mode": "vail",
+    "index": 2,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_group_by_take_rekey",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.41741762496531,
+          "cpu_seconds": 2.9407710000000002,
+          "python_cpu_seconds": 2.9407710000000002,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 158
+        },
+        {
+          "wall_seconds": 2.4209652920253575,
+          "cpu_seconds": 2.9444049999999997,
+          "python_cpu_seconds": 2.9444049999999997,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 158
+        },
+        {
+          "wall_seconds": 2.4162880840012804,
+          "cpu_seconds": 2.932958000000001,
+          "python_cpu_seconds": 2.932958000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 158
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-2-vail"
+      ],
+      "leader": 30299,
+      "owned_identities": {
+        "30299": 1794425586.121453
+      },
+      "seconds": 10.189475000021048,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1632944128,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "2293be515f8e811c0dcbdf609bd4977938b108d6408c2e8b725b2b62d7859e72",
+      "exit.json": "a8a4e3b5d0bc5d4c37b6d39752d0e309ad24e4f35d1498d99b7dc8630e28f4b8",
+      "identity.json": "872aea14081e254e7cf72d4ace87d2f5e3701b8acd0b3340f85b19329f6b025c"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_group_by_take_rekey",
+    "mode": "hail",
+    "index": 3,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_group_by_take_rekey",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.0001199169782922,
+          "cpu_seconds": 5.316118783999999,
+          "python_cpu_seconds": 0.006235999999999908,
+          "observed_child_cpu_seconds": 5.309882783999999,
+          "descendants_before": {
+            "30341:1794425597.539618": 15.266468192000001
+          },
+          "descendants_after": {
+            "30341:1794425597.539618": 20.576350976
+          },
+          "threads_after_query": 5
+        },
+        {
+          "wall_seconds": 1.0250519999535754,
+          "cpu_seconds": 4.8386910479999985,
+          "python_cpu_seconds": 0.005984999999999907,
+          "observed_child_cpu_seconds": 4.832706047999999,
+          "descendants_before": {
+            "30341:1794425597.539618": 20.576350976
+          },
+          "descendants_after": {
+            "30341:1794425597.539618": 25.409057024
+          },
+          "threads_after_query": 5
+        },
+        {
+          "wall_seconds": 0.8571490419562906,
+          "cpu_seconds": 4.159838847999998,
+          "python_cpu_seconds": 0.006064000000000069,
+          "observed_child_cpu_seconds": 4.153774847999998,
+          "descendants_before": {
+            "30341:1794425597.539618": 25.409066368
+          },
+          "descendants_after": {
+            "30341:1794425597.539618": 29.562841216
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-3-hail"
+      ],
+      "leader": 30338,
+      "owned_identities": {
+        "30338": 1794425596.311839,
+        "30341": 1794425597.539618,
+        "30351": 1794425597.562177,
+        "30352": 1794425597.562811
+      },
+      "seconds": 19.995063832961023,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2132312064,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "e4ef4a9616e62f4fc64a13438dba3c5f18150ff663056f77d62a46a26221cb13",
+      "exit.json": "22e8a17d1854aa4311c9b024e06f5c166b580e35170599db9a8a9711c3f55760",
+      "identity.json": "f57ca533185299454c397f7d9deb208688ac2811296f30f10d971356f4b5289d"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_group_by_take_rekey",
+    "mode": "hail",
+    "index": 4,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_group_by_take_rekey",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.0451307910261676,
+          "cpu_seconds": 6.068575503999999,
+          "python_cpu_seconds": 0.006718000000000002,
+          "observed_child_cpu_seconds": 6.061857503999999,
+          "descendants_before": {
+            "30390:1794425617.533966": 15.407774944
+          },
+          "descendants_after": {
+            "30390:1794425617.533966": 21.469632448
+          },
+          "threads_after_query": 5
+        },
+        {
+          "wall_seconds": 1.0059130829758942,
+          "cpu_seconds": 4.880663071999999,
+          "python_cpu_seconds": 0.005836000000000174,
+          "observed_child_cpu_seconds": 4.874827071999999,
+          "descendants_before": {
+            "30390:1794425617.533966": 21.469632448
+          },
+          "descendants_after": {
+            "30390:1794425617.533966": 26.344459519999997
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 0.8586844999808818,
+          "cpu_seconds": 4.354749472000001,
+          "python_cpu_seconds": 0.005851999999999968,
+          "observed_child_cpu_seconds": 4.348897472000001,
+          "descendants_before": {
+            "30390:1794425617.533966": 26.344465344
+          },
+          "descendants_after": {
+            "30390:1794425617.533966": 30.693362816
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-4-hail"
+      ],
+      "leader": 30387,
+      "owned_identities": {
+        "30387": 1794425616.30794,
+        "30390": 1794425617.533966,
+        "30400": 1794425617.556997,
+        "30401": 1794425617.55772
+      },
+      "seconds": 20.068014374934137,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2120122368,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "8333bf4e70bc7ab33d4ebeacfd2ef8118f21235cb385c8a66f60a0c470e30070",
+      "exit.json": "156e8d1a4a292bce5b9f9b2a5263782571644091892a1293a5fb3a5c5e71eca0",
+      "identity.json": "f57ca533185299454c397f7d9deb208688ac2811296f30f10d971356f4b5289d"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_group_by_take_rekey",
+    "mode": "vail",
+    "index": 5,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_group_by_take_rekey",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_group_by_take_rekey(gnomad_dp_sim):\n    ht = hl.read_matrix_table(str(gnomad_dp_sim)).localize_entries('e', 'c')\n    ht.group_by(k=hl.int(ht.row_idx / 50)).aggregate(value=hl.agg.take(ht.row_value, 1))._force_count()",
+      "source_sha256": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-hail-slow-three-20261110/inputs/gnomad_dp_simulation.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.3989827079931274,
+          "cpu_seconds": 2.9055239999999998,
+          "python_cpu_seconds": 2.9055239999999998,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 116
+        },
+        {
+          "wall_seconds": 2.402916750055738,
+          "cpu_seconds": 2.9412409999999998,
+          "python_cpu_seconds": 2.9412409999999998,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 116
+        },
+        {
+          "wall_seconds": 2.4081151250284165,
+          "cpu_seconds": 2.928082999999999,
+          "python_cpu_seconds": 2.928082999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 116
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_group_by_take_rekey",
+        "/private/tmp/vail-six-slower-20261111/time/test_group_by_take_rekey-5-vail"
+      ],
+      "leader": 30419,
+      "owned_identities": {
+        "30419": 1794425636.377104
+      },
+      "seconds": 10.109318666975014,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1453342720,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "7644bfc2d64be883f74831418ef0d2418bfbfeb9c6147cd0e9277044438a9232",
+      "exit.json": "4d55656a5d3346b5d51ba35c56330d18eaf3efc5b357f84e429268a3746b320c",
+      "identity.json": "872aea14081e254e7cf72d4ace87d2f5e3701b8acd0b3340f85b19329f6b025c"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "hail",
+    "index": 0,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_kyle_sex_specific_qc",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_kyle_sex_specific_qc(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_cols(sex=hl.if_else(hl.rand_bool(0.5), 'Male', 'Female'))\n    num_males, num_females = mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))\n    mt = mt.annotate_rows(male_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Male')), male_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Male')), male_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Male')), female_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Female')), female_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Female')), female_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Female')))\n    mt = mt.annotate_rows(call_rate=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls / num_males).when(mt.locus.in_x_nonpar(), (mt.male_calls + 2 * mt.female_calls) / (num_males + 2 * num_females)).default((mt.male_calls + mt.female_calls) / (num_males + num_females)), AC=hl.case().when(mt.locus.in_y_nonpar(), mt.male_homvars).when(mt.locus.in_x_nonpar(), mt.male_homvars + mt.female_hets + 2 * mt.female_homvars).default(mt.male_hets + 2 * mt.male_homvars + mt.female_hets + 2 * mt.female_homvars), AN=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls).when(mt.locus.in_x_nonpar(), mt.male_calls + 2 * mt.female_calls).default(2 * mt.male_calls + 2 * mt.female_calls))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.3797981250099838,
+          "cpu_seconds": 5.262270136,
+          "python_cpu_seconds": 0.0370149999999998,
+          "observed_child_cpu_seconds": 5.2252551359999995,
+          "descendants_before": {
+            "30446:1794425647.717024": 13.483842976
+          },
+          "descendants_after": {
+            "30446:1794425647.717024": 18.709098112
+          },
+          "threads_after_query": 5
+        },
+        {
+          "wall_seconds": 1.22157941700425,
+          "cpu_seconds": 5.383872927999999,
+          "python_cpu_seconds": 0.037031999999999954,
+          "observed_child_cpu_seconds": 5.346840927999999,
+          "descendants_before": {
+            "30446:1794425647.717024": 18.709106368
+          },
+          "descendants_after": {
+            "30446:1794425647.717024": 24.055947296
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.2146792089333758,
+          "cpu_seconds": 5.184403768000003,
+          "python_cpu_seconds": 0.03747100000000003,
+          "observed_child_cpu_seconds": 5.146932768000003,
+          "descendants_before": {
+            "30446:1794425647.717024": 24.055947296
+          },
+          "descendants_after": {
+            "30446:1794425647.717024": 29.202880064000002
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-0-hail"
+      ],
+      "leader": 30443,
+      "owned_identities": {
+        "30443": 1794425646.488886,
+        "30446": 1794425647.717024,
+        "30456": 1794425647.739822,
+        "30457": 1794425647.740522
+      },
+      "seconds": 21.082299207919277,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1512734720,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "2094df10531e98486a5e5bf6e74563e1ed4f82ba61e3db72c6dcdc74511a2119",
+      "exit.json": "2a3796905236f196052deb7773d2c24d92b01a1ba5fc44f3f2cc664f710d77ea",
+      "identity.json": "e42f2fe560dc6d7ab0c56b9190b3f80bf31895e13ab6f1c4bdcce9b15d735043"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "vail",
+    "index": 1,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_kyle_sex_specific_qc",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_kyle_sex_specific_qc(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_cols(sex=hl.if_else(hl.rand_bool(0.5), 'Male', 'Female'))\n    num_males, num_females = mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))\n    mt = mt.annotate_rows(male_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Male')), male_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Male')), male_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Male')), female_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Female')), female_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Female')), female_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Female')))\n    mt = mt.annotate_rows(call_rate=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls / num_males).when(mt.locus.in_x_nonpar(), (mt.male_calls + 2 * mt.female_calls) / (num_males + 2 * num_females)).default((mt.male_calls + mt.female_calls) / (num_males + num_females)), AC=hl.case().when(mt.locus.in_y_nonpar(), mt.male_homvars).when(mt.locus.in_x_nonpar(), mt.male_homvars + mt.female_hets + 2 * mt.female_homvars).default(mt.male_hets + 2 * mt.male_homvars + mt.female_hets + 2 * mt.female_homvars), AN=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls).when(mt.locus.in_x_nonpar(), mt.male_calls + 2 * mt.female_calls).default(2 * mt.male_calls + 2 * mt.female_calls))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 0.44050229201093316,
+          "cpu_seconds": 4.344862000000001,
+          "python_cpu_seconds": 4.344862000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 104
+        },
+        {
+          "wall_seconds": 0.43663695896975696,
+          "cpu_seconds": 4.3265139999999995,
+          "python_cpu_seconds": 4.3265139999999995,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 104
+        },
+        {
+          "wall_seconds": 0.4773614159785211,
+          "cpu_seconds": 4.3745319999999985,
+          "python_cpu_seconds": 4.3745319999999985,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 104
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-1-vail"
+      ],
+      "leader": 30472,
+      "owned_identities": {
+        "30472": 1794425667.572642
+      },
+      "seconds": 2.4675050830701366,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1784610816,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "9ecb8eaa9fbe0455cb77419a0225ac5d5145839e0336f4d3887aaaf67e8db50a",
+      "exit.json": "2de154e6ef106ade8c0ecb44d1950357a4b702a2715d4a14210739671ef5578f",
+      "identity.json": "dbf39abf061eb26b74d6392b66fc2b663927cbd6aa22b8f690ebe3895573ea99"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "vail",
+    "index": 2,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_kyle_sex_specific_qc",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_kyle_sex_specific_qc(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_cols(sex=hl.if_else(hl.rand_bool(0.5), 'Male', 'Female'))\n    num_males, num_females = mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))\n    mt = mt.annotate_rows(male_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Male')), male_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Male')), male_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Male')), female_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Female')), female_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Female')), female_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Female')))\n    mt = mt.annotate_rows(call_rate=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls / num_males).when(mt.locus.in_x_nonpar(), (mt.male_calls + 2 * mt.female_calls) / (num_males + 2 * num_females)).default((mt.male_calls + mt.female_calls) / (num_males + num_females)), AC=hl.case().when(mt.locus.in_y_nonpar(), mt.male_homvars).when(mt.locus.in_x_nonpar(), mt.male_homvars + mt.female_hets + 2 * mt.female_homvars).default(mt.male_hets + 2 * mt.male_homvars + mt.female_hets + 2 * mt.female_homvars), AN=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls).when(mt.locus.in_x_nonpar(), mt.male_calls + 2 * mt.female_calls).default(2 * mt.male_calls + 2 * mt.female_calls))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 0.442036124994047,
+          "cpu_seconds": 4.3359239999999994,
+          "python_cpu_seconds": 4.3359239999999994,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 89
+        },
+        {
+          "wall_seconds": 0.45491729106288403,
+          "cpu_seconds": 4.327432,
+          "python_cpu_seconds": 4.327432,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 89
+        },
+        {
+          "wall_seconds": 0.4499242919264361,
+          "cpu_seconds": 4.368688000000001,
+          "python_cpu_seconds": 4.368688000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 93
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-2-vail"
+      ],
+      "leader": 30473,
+      "owned_identities": {
+        "30473": 1794425670.041285
+      },
+      "seconds": 2.487741833087057,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1727938560,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "9d020a44e3a6bd0aeeb425ca8783c68853c60917124e1db179b2439245f7e469",
+      "exit.json": "0a9e6dfb1f326d55914f4814f044222945d42dab2c76a320c1c3a7822eb86f98",
+      "identity.json": "dbf39abf061eb26b74d6392b66fc2b663927cbd6aa22b8f690ebe3895573ea99"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "hail",
+    "index": 3,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_kyle_sex_specific_qc",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_kyle_sex_specific_qc(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_cols(sex=hl.if_else(hl.rand_bool(0.5), 'Male', 'Female'))\n    num_males, num_females = mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))\n    mt = mt.annotate_rows(male_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Male')), male_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Male')), male_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Male')), female_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Female')), female_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Female')), female_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Female')))\n    mt = mt.annotate_rows(call_rate=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls / num_males).when(mt.locus.in_x_nonpar(), (mt.male_calls + 2 * mt.female_calls) / (num_males + 2 * num_females)).default((mt.male_calls + mt.female_calls) / (num_males + num_females)), AC=hl.case().when(mt.locus.in_y_nonpar(), mt.male_homvars).when(mt.locus.in_x_nonpar(), mt.male_homvars + mt.female_hets + 2 * mt.female_homvars).default(mt.male_hets + 2 * mt.male_homvars + mt.female_hets + 2 * mt.female_homvars), AN=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls).when(mt.locus.in_x_nonpar(), mt.male_calls + 2 * mt.female_calls).default(2 * mt.male_calls + 2 * mt.female_calls))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.4887087079696357,
+          "cpu_seconds": 5.845411151999999,
+          "python_cpu_seconds": 0.03777799999999987,
+          "observed_child_cpu_seconds": 5.807633151999999,
+          "descendants_before": {
+            "30481:1794425673.759504": 14.77932576
+          },
+          "descendants_after": {
+            "30481:1794425673.759504": 20.586958912
+          },
+          "threads_after_query": 6
+        },
+        {
+          "wall_seconds": 1.2525310419732705,
+          "cpu_seconds": 5.392104776000001,
+          "python_cpu_seconds": 0.03760500000000011,
+          "observed_child_cpu_seconds": 5.354499776000001,
+          "descendants_before": {
+            "30481:1794425673.759504": 20.586958912
+          },
+          "descendants_after": {
+            "30481:1794425673.759504": 25.941458688
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.2323657920351252,
+          "cpu_seconds": 5.346974048,
+          "python_cpu_seconds": 0.03738799999999998,
+          "observed_child_cpu_seconds": 5.309586048,
+          "descendants_before": {
+            "30481:1794425673.759504": 25.941458688
+          },
+          "descendants_after": {
+            "30481:1794425673.759504": 31.251044736
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-3-hail"
+      ],
+      "leader": 30478,
+      "owned_identities": {
+        "30478": 1794425672.530388,
+        "30481": 1794425673.759504,
+        "30491": 1794425673.782093,
+        "30492": 1794425673.782848
+      },
+      "seconds": 21.118693458032794,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1435664384,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "66f847e281df4a158d3010c7592ffccd5db4221e8dc19451fa767312740f7d3e",
+      "exit.json": "3ed3a3bca042b125bc5a25c5040f923dabee109df571fbe826f291a3625e7cc3",
+      "identity.json": "e42f2fe560dc6d7ab0c56b9190b3f80bf31895e13ab6f1c4bdcce9b15d735043"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "hail",
+    "index": 4,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_kyle_sex_specific_qc",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_kyle_sex_specific_qc(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_cols(sex=hl.if_else(hl.rand_bool(0.5), 'Male', 'Female'))\n    num_males, num_females = mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))\n    mt = mt.annotate_rows(male_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Male')), male_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Male')), male_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Male')), female_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Female')), female_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Female')), female_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Female')))\n    mt = mt.annotate_rows(call_rate=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls / num_males).when(mt.locus.in_x_nonpar(), (mt.male_calls + 2 * mt.female_calls) / (num_males + 2 * num_females)).default((mt.male_calls + mt.female_calls) / (num_males + num_females)), AC=hl.case().when(mt.locus.in_y_nonpar(), mt.male_homvars).when(mt.locus.in_x_nonpar(), mt.male_homvars + mt.female_hets + 2 * mt.female_homvars).default(mt.male_hets + 2 * mt.male_homvars + mt.female_hets + 2 * mt.female_homvars), AN=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls).when(mt.locus.in_x_nonpar(), mt.male_calls + 2 * mt.female_calls).default(2 * mt.male_calls + 2 * mt.female_calls))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.3512229999760166,
+          "cpu_seconds": 5.634092624000002,
+          "python_cpu_seconds": 0.037422000000000066,
+          "observed_child_cpu_seconds": 5.5966706240000015,
+          "descendants_before": {
+            "30515:1794425694.879245": 13.87053104
+          },
+          "descendants_after": {
+            "30515:1794425694.879245": 19.467201664
+          },
+          "threads_after_query": 5
+        },
+        {
+          "wall_seconds": 1.2240810829680413,
+          "cpu_seconds": 5.392349720000002,
+          "python_cpu_seconds": 0.038383000000000056,
+          "observed_child_cpu_seconds": 5.3539667200000025,
+          "descendants_before": {
+            "30515:1794425694.879245": 19.467201664
+          },
+          "descendants_after": {
+            "30515:1794425694.879245": 24.821168384000003
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.2612756250891834,
+          "cpu_seconds": 5.435773912000001,
+          "python_cpu_seconds": 0.03791100000000003,
+          "observed_child_cpu_seconds": 5.397862912000001,
+          "descendants_before": {
+            "30515:1794425694.879245": 24.821174144
+          },
+          "descendants_after": {
+            "30515:1794425694.879245": 30.219037056
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-4-hail"
+      ],
+      "leader": 30512,
+      "owned_identities": {
+        "30512": 1794425693.650568,
+        "30515": 1794425694.879245,
+        "30525": 1794425694.901342,
+        "30526": 1794425694.902041
+      },
+      "seconds": 21.059116124990396,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1404600320,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "70831d6dcdf91e872ded5912ae5e6731fe925f2151e6ba6998a7b263e12c7d51",
+      "exit.json": "87c7e91cf19eedc11bff9143eea86dfb9bbd7389c1ba8208b0cc5fbeb4748d71",
+      "identity.json": "e42f2fe560dc6d7ab0c56b9190b3f80bf31895e13ab6f1c4bdcce9b15d735043"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_kyle_sex_specific_qc",
+    "mode": "vail",
+    "index": 5,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_kyle_sex_specific_qc",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_kyle_sex_specific_qc(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    mt = mt.annotate_cols(sex=hl.if_else(hl.rand_bool(0.5), 'Male', 'Female'))\n    num_males, num_females = mt.aggregate_cols((hl.agg.count_where(mt.sex == 'Male'), hl.agg.count_where(mt.sex == 'Female')))\n    mt = mt.annotate_rows(male_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Male')), male_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Male')), male_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Male')), female_hets=hl.agg.count_where(mt.GT.is_het() & (mt.sex == 'Female')), female_homvars=hl.agg.count_where(mt.GT.is_hom_var() & (mt.sex == 'Female')), female_calls=hl.agg.count_where(hl.is_defined(mt.GT) & (mt.sex == 'Female')))\n    mt = mt.annotate_rows(call_rate=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls / num_males).when(mt.locus.in_x_nonpar(), (mt.male_calls + 2 * mt.female_calls) / (num_males + 2 * num_females)).default((mt.male_calls + mt.female_calls) / (num_males + num_females)), AC=hl.case().when(mt.locus.in_y_nonpar(), mt.male_homvars).when(mt.locus.in_x_nonpar(), mt.male_homvars + mt.female_hets + 2 * mt.female_homvars).default(mt.male_hets + 2 * mt.male_homvars + mt.female_hets + 2 * mt.female_homvars), AN=hl.case().when(mt.locus.in_y_nonpar(), mt.male_calls).when(mt.locus.in_x_nonpar(), mt.male_calls + 2 * mt.female_calls).default(2 * mt.male_calls + 2 * mt.female_calls))\n    mt.rows()._force_count()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 0.438592541962862,
+          "cpu_seconds": 4.335176999999999,
+          "python_cpu_seconds": 4.335176999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 95
+        },
+        {
+          "wall_seconds": 0.4626439999556169,
+          "cpu_seconds": 4.334861999999999,
+          "python_cpu_seconds": 4.334861999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 95
+        },
+        {
+          "wall_seconds": 0.460871750023216,
+          "cpu_seconds": 4.359932000000001,
+          "python_cpu_seconds": 4.359932000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 95
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_kyle_sex_specific_qc",
+        "/private/tmp/vail-six-slower-20261111/time/test_kyle_sex_specific_qc-5-vail"
+      ],
+      "leader": 30541,
+      "owned_identities": {
+        "30541": 1794425714.71088
+      },
+      "seconds": 2.487051042029634,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1671380992,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "c5c060845514f8b734202d4cc11652ef74dd3b12281b1f68b484aee210f05e07",
+      "exit.json": "b8bc440022c0ceea7faa5311a960e01b408451bed1e64d923896f11d3a8d3da8",
+      "identity.json": "dbf39abf061eb26b74d6392b66fc2b663927cbd6aa22b8f690ebe3895573ea99"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_mt_localize_and_collect",
+    "mode": "hail",
+    "index": 0,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_mt_localize_and_collect",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_mt_localize_and_collect(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    ht = mt.localize_entries('ent')\n    ht.head(150).collect()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 3.239456290961243,
+          "cpu_seconds": 4.290364880000001,
+          "python_cpu_seconds": 2.674194000000001,
+          "observed_child_cpu_seconds": 1.6161708800000003,
+          "descendants_before": {
+            "30545:1794425718.435694": 9.472257472
+          },
+          "descendants_after": {
+            "30545:1794425718.435694": 11.088428352000001
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 3.2748156669549644,
+          "cpu_seconds": 4.260162992,
+          "python_cpu_seconds": 2.8141739999999995,
+          "observed_child_cpu_seconds": 1.4459889920000002,
+          "descendants_before": {
+            "30545:1794425718.435694": 11.088450496
+          },
+          "descendants_after": {
+            "30545:1794425718.435694": 12.534439488
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 3.1895892499014735,
+          "cpu_seconds": 4.265858151999998,
+          "python_cpu_seconds": 2.683045,
+          "observed_child_cpu_seconds": 1.5828131519999982,
+          "descendants_before": {
+            "30545:1794425718.435694": 12.534444416000001
+          },
+          "descendants_after": {
+            "30545:1794425718.435694": 14.117257568
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-0-hail"
+      ],
+      "leader": 30542,
+      "owned_identities": {
+        "30542": 1794425717.201167,
+        "30545": 1794425718.435694,
+        "30555": 1794425718.460451,
+        "30556": 1794425718.461152
+      },
+      "seconds": 28.603377084014937,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2267676672,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "203834626b87677063d1f39d1d637a61005fa7539846f9356c6de0b032ecd487",
+      "exit.json": "655090648ea99d3e95a039724726c7e2173b55e81af46f1eec52141acf0ba917",
+      "identity.json": "37ec6b58b90ef98bddbb9413b17c7a94b667a0097a56970e9f28ee750cdbf642"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_mt_localize_and_collect",
+    "mode": "vail",
+    "index": 1,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_mt_localize_and_collect",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_mt_localize_and_collect(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    ht = mt.localize_entries('ent')\n    ht.head(150).collect()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.3363688339013606,
+          "cpu_seconds": 2.3377710000000005,
+          "python_cpu_seconds": 2.3377710000000005,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        },
+        {
+          "wall_seconds": 2.6900782079901546,
+          "cpu_seconds": 2.6914739999999995,
+          "python_cpu_seconds": 2.6914739999999995,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        },
+        {
+          "wall_seconds": 2.6891225419240072,
+          "cpu_seconds": 2.6904579999999996,
+          "python_cpu_seconds": 2.6904579999999996,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-1-vail"
+      ],
+      "leader": 30571,
+      "owned_identities": {
+        "30571": 1794425745.805667
+      },
+      "seconds": 11.118765000021085,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 929071104,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "22456f676493637b5ab73c38950850e4c23202611111b93b6f0e3fcb6fe2343e",
+      "exit.json": "1bd326536a019b72e890787530c8ab6f6b65631823d067180e97f5208dd0843e",
+      "identity.json": "ec76bd99d0ac42e7347715e354bae7ed1f052873ccc529b2ed88f674cd781bef"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_mt_localize_and_collect",
+    "mode": "vail",
+    "index": 2,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_mt_localize_and_collect",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_mt_localize_and_collect(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    ht = mt.localize_entries('ent')\n    ht.head(150).collect()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.3350584160070866,
+          "cpu_seconds": 2.3364300000000005,
+          "python_cpu_seconds": 2.3364300000000005,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        },
+        {
+          "wall_seconds": 2.7015391249442473,
+          "cpu_seconds": 2.702934,
+          "python_cpu_seconds": 2.702934,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        },
+        {
+          "wall_seconds": 2.703259458998218,
+          "cpu_seconds": 2.704573999999999,
+          "python_cpu_seconds": 2.704573999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-2-vail"
+      ],
+      "leader": 30577,
+      "owned_identities": {
+        "30577": 1794425756.925907
+      },
+      "seconds": 11.137591040926054,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 920371200,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "62fd38f31a2422ddde04c62dcccfd4f81a02be27ecdbf8bb979df77c9442d139",
+      "exit.json": "0bf0109c3b6e0630e0092b31c44a677255464513435fac484e661e8b0b7c5d21",
+      "identity.json": "ec76bd99d0ac42e7347715e354bae7ed1f052873ccc529b2ed88f674cd781bef"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_mt_localize_and_collect",
+    "mode": "hail",
+    "index": 3,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_mt_localize_and_collect",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_mt_localize_and_collect(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    ht = mt.localize_entries('ent')\n    ht.head(150).collect()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 3.2570159999886528,
+          "cpu_seconds": 4.523970024,
+          "python_cpu_seconds": 2.6864809999999997,
+          "observed_child_cpu_seconds": 1.837489024,
+          "descendants_before": {
+            "30622:1794425769.292322": 8.490728576
+          },
+          "descendants_after": {
+            "30622:1794425769.292322": 10.3282176
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 3.2576158749870956,
+          "cpu_seconds": 4.190121328000001,
+          "python_cpu_seconds": 2.79943,
+          "observed_child_cpu_seconds": 1.3906913280000008,
+          "descendants_before": {
+            "30622:1794425769.292322": 10.328239744
+          },
+          "descendants_after": {
+            "30622:1794425769.292322": 11.718931072
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 3.1542545839911327,
+          "cpu_seconds": 3.839470800000001,
+          "python_cpu_seconds": 2.69215,
+          "observed_child_cpu_seconds": 1.147320800000001,
+          "descendants_before": {
+            "30622:1794425769.292322": 11.718931072
+          },
+          "descendants_after": {
+            "30622:1794425769.292322": 12.866251872000001
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-3-hail"
+      ],
+      "leader": 30613,
+      "owned_identities": {
+        "30613": 1794425768.064871,
+        "30622": 1794425769.292322,
+        "30633": 1794425769.315468,
+        "30634": 1794425769.316159
+      },
+      "seconds": 28.596332540968433,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 2295873536,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "92a11b9614af327a4db45b87f7423cc00089c6c1af0265c107bfdaa1caaa5d79",
+      "exit.json": "8268f859e647544b6b52da17b9c1b527f968dbd8fb66c3ce57ff6896c3741bb5",
+      "identity.json": "37ec6b58b90ef98bddbb9413b17c7a94b667a0097a56970e9f28ee750cdbf642"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_mt_localize_and_collect",
+    "mode": "hail",
+    "index": 4,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_mt_localize_and_collect",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_mt_localize_and_collect(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    ht = mt.localize_entries('ent')\n    ht.head(150).collect()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 3.2177261660108343,
+          "cpu_seconds": 4.379227856000002,
+          "python_cpu_seconds": 2.6826659999999993,
+          "observed_child_cpu_seconds": 1.6965618560000024,
+          "descendants_before": {
+            "30747:1794425797.90391": 9.371264863999999
+          },
+          "descendants_after": {
+            "30747:1794425797.90391": 11.067826720000001
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 3.2728786250809208,
+          "cpu_seconds": 4.054810951999999,
+          "python_cpu_seconds": 2.7930729999999997,
+          "observed_child_cpu_seconds": 1.261737951999999,
+          "descendants_before": {
+            "30747:1794425797.90391": 11.067826720000001
+          },
+          "descendants_after": {
+            "30747:1794425797.90391": 12.329564672
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 3.1345632919110358,
+          "cpu_seconds": 3.8324785519999995,
+          "python_cpu_seconds": 2.6787989999999997,
+          "observed_child_cpu_seconds": 1.1536795519999998,
+          "descendants_before": {
+            "30747:1794425797.90391": 12.329585536
+          },
+          "descendants_after": {
+            "30747:1794425797.90391": 13.483265088
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-4-hail"
+      ],
+      "leader": 30742,
+      "owned_identities": {
+        "30742": 1794425796.662588,
+        "30747": 1794425797.90391,
+        "30757": 1794425797.927423,
+        "30758": 1794425797.928103
+      },
+      "seconds": 28.564247208996676,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1968701440,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "b9991aef1bbf7a804d6d1a34983c9321be70fb2d2a08e14111cedd3b0251bfea",
+      "exit.json": "8c923579897670abff415bee408c27907cd26e46e5767ceef909c3aa9d327c1e",
+      "identity.json": "37ec6b58b90ef98bddbb9413b17c7a94b667a0097a56970e9f28ee750cdbf642"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_mt_localize_and_collect",
+    "mode": "vail",
+    "index": 5,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_mt_localize_and_collect",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_mt_localize_and_collect(profile25_mt):\n    mt = hl.read_matrix_table(str(profile25_mt))\n    ht = mt.localize_entries('ent')\n    ht.head(150).collect()",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.339952874928713,
+          "cpu_seconds": 2.341457,
+          "python_cpu_seconds": 2.341457,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 36
+        },
+        {
+          "wall_seconds": 2.7126018329290673,
+          "cpu_seconds": 2.7139760000000006,
+          "python_cpu_seconds": 2.7139760000000006,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 37
+        },
+        {
+          "wall_seconds": 2.6772092499304563,
+          "cpu_seconds": 2.678605000000001,
+          "python_cpu_seconds": 2.678605000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 37
+        }
+      ],
+      "outputs": [],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_mt_localize_and_collect",
+        "/private/tmp/vail-six-slower-20261111/time/test_mt_localize_and_collect-5-vail"
+      ],
+      "leader": 30812,
+      "owned_identities": {
+        "30812": 1794425825.2284
+      },
+      "seconds": 11.198663208051585,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 920338432,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "cd09947df5a47a276d1011af1d2dd18c23abdce7541d70317874abd447859411",
+      "exit.json": "3938e8682c334963ec34763f2f709d4b985dee9700a0643ecf5ef57533dceaba",
+      "identity.json": "ec76bd99d0ac42e7347715e354bae7ed1f052873ccc529b2ed88f674cd781bef"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_write_profile_mt",
+    "mode": "hail",
+    "index": 0,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_write_profile_mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_write_profile_mt(profile25_mt, tmp_path):\n    hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.3722773750778288,
+          "cpu_seconds": 9.319743664,
+          "python_cpu_seconds": 0.006549999999999834,
+          "observed_child_cpu_seconds": 9.313193664,
+          "descendants_before": {
+            "31034:1794425837.73186": 16.676607616
+          },
+          "descendants_after": {
+            "31034:1794425837.73186": 25.98980128
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 2.0460520420456305,
+          "cpu_seconds": 7.938892960000003,
+          "python_cpu_seconds": 0.005980000000000096,
+          "observed_child_cpu_seconds": 7.932912960000003,
+          "descendants_before": {
+            "31034:1794425837.73186": 25.989853632
+          },
+          "descendants_after": {
+            "31034:1794425837.73186": 33.922766592
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 1.969486791989766,
+          "cpu_seconds": 7.355446504,
+          "python_cpu_seconds": 0.005968999999999891,
+          "observed_child_cpu_seconds": 7.349477503999999,
+          "descendants_before": {
+            "31034:1794425837.73186": 33.922817024000004
+          },
+          "descendants_after": {
+            "31034:1794425837.73186": 41.272294528
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [
+        {
+          "files": 142,
+          "bytes": 206126608,
+          "timed": false
+        },
+        {
+          "files": 142,
+          "bytes": 206126602,
+          "timed": true
+        },
+        {
+          "files": 142,
+          "bytes": 206126610,
+          "timed": true
+        },
+        {
+          "files": 142,
+          "bytes": 206126617,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-0-hail"
+      ],
+      "leader": 31011,
+      "owned_identities": {
+        "31011": 1794425836.430572,
+        "31034": 1794425837.73186,
+        "31045": 1794425837.755241,
+        "31046": 1794425837.755934
+      },
+      "seconds": 24.331446000025608,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1462583296,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "69193055824b771afb7c93b67fff76caecde9048b9a11b88a8a7dea0e08de9bb",
+      "exit.json": "60c3e4022b509104b8f5916bed81b144f5019a51c9ecbdff45f20b6e75521097",
+      "identity.json": "a9f0aaaf29f1fc562d72bf80d54e58e724f55071c94e34ccaeee14b9b7137d03"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_write_profile_mt",
+    "mode": "vail",
+    "index": 1,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_write_profile_mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_write_profile_mt(profile25_mt, tmp_path):\n    hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-six-slower-20261111/inputs/native-profile.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.1667638330254704,
+          "cpu_seconds": 13.399575,
+          "python_cpu_seconds": 13.399575,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        },
+        {
+          "wall_seconds": 1.2006475829984993,
+          "cpu_seconds": 13.341677,
+          "python_cpu_seconds": 13.341677,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        },
+        {
+          "wall_seconds": 1.1890600839396939,
+          "cpu_seconds": 13.345361000000004,
+          "python_cpu_seconds": 13.345361000000004,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        }
+      ],
+      "outputs": [
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": false
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-1-vail"
+      ],
+      "leader": 31770,
+      "owned_identities": {
+        "31770": 1794425860.763621
+      },
+      "seconds": 5.817790833069012,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5877366784,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "dc57c30daed541fb5c02607c65dc3886336d73fee6f5cdda3efdfd1ca4179a79",
+      "exit.json": "6d025bdc3807949fde01174110a9008cb8bb70591b4fb13b65dc21bae97b8909",
+      "identity.json": "621f749401e3033b07f247a25cf727c6ac5bae3fb8c93dd86384f4c457db50e9"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_write_profile_mt",
+    "mode": "vail",
+    "index": 2,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_write_profile_mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_write_profile_mt(profile25_mt, tmp_path):\n    hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-six-slower-20261111/inputs/native-profile.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.777271708007902,
+          "cpu_seconds": 14.019833,
+          "python_cpu_seconds": 14.019833,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        },
+        {
+          "wall_seconds": 1.7328396670054644,
+          "cpu_seconds": 13.460090000000001,
+          "python_cpu_seconds": 13.460090000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        },
+        {
+          "wall_seconds": 1.3266077500302345,
+          "cpu_seconds": 13.306290000000004,
+          "python_cpu_seconds": 13.306290000000004,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        }
+      ],
+      "outputs": [
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": false
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        },
+        {
+          "files": 76,
+          "bytes": 784324085,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-2-vail"
+      ],
+      "leader": 31776,
+      "owned_identities": {
+        "31776": 1794425866.582565
+      },
+      "seconds": 7.0901488329982385,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 5873303552,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "ac060950fe58dc4c9511280ed7552dc16dc7a0c4d6854d7cd2545e967cfbbc98",
+      "exit.json": "12ee06bb7d9e62cb4bfcb469b4b95c8484fa5646fb9c0ec9e12c131d94e7bc6b",
+      "identity.json": "621f749401e3033b07f247a25cf727c6ac5bae3fb8c93dd86384f4c457db50e9"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_write_profile_mt",
+    "mode": "hail",
+    "index": 3,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_write_profile_mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_write_profile_mt(profile25_mt, tmp_path):\n    hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.3002228749683127,
+          "cpu_seconds": 8.688088304,
+          "python_cpu_seconds": 0.006294000000000022,
+          "observed_child_cpu_seconds": 8.681794304,
+          "descendants_before": {
+            "31780:1794425874.947324": 17.11440576
+          },
+          "descendants_after": {
+            "31780:1794425874.947324": 25.796200064
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 2.06999949994497,
+          "cpu_seconds": 8.093900839999998,
+          "python_cpu_seconds": 0.006361000000000061,
+          "observed_child_cpu_seconds": 8.087539839999998,
+          "descendants_before": {
+            "31780:1794425874.947324": 25.79625856
+          },
+          "descendants_after": {
+            "31780:1794425874.947324": 33.883798399999996
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 2.018376874970272,
+          "cpu_seconds": 7.821264279999996,
+          "python_cpu_seconds": 0.0063189999999999635,
+          "observed_child_cpu_seconds": 7.814945279999996,
+          "descendants_before": {
+            "31780:1794425874.947324": 33.883807104
+          },
+          "descendants_after": {
+            "31780:1794425874.947324": 41.698752383999995
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [
+        {
+          "files": 142,
+          "bytes": 206126606,
+          "timed": false
+        },
+        {
+          "files": 142,
+          "bytes": 206126608,
+          "timed": true
+        },
+        {
+          "files": 142,
+          "bytes": 206126612,
+          "timed": true
+        },
+        {
+          "files": 142,
+          "bytes": 206126607,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-3-hail"
+      ],
+      "leader": 31777,
+      "owned_identities": {
+        "31777": 1794425873.674372,
+        "31780": 1794425874.947324,
+        "31790": 1794425874.969844,
+        "31791": 1794425874.970603
+      },
+      "seconds": 24.079611083026975,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1541242880,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "6dd5b2b2302397e9e547309b308f686f714854aba95aae5b9abec32e6246ec33",
+      "exit.json": "66b6e37c437a78913bedfcff39f4eef62f122e76def92f540b887e046e0cdbf0",
+      "identity.json": "a9f0aaaf29f1fc562d72bf80d54e58e724f55071c94e34ccaeee14b9b7137d03"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_write_profile_mt",
+    "mode": "hail",
+    "index": 4,
+    "result": {
+      "mode": "hail",
+      "purpose": "time",
+      "case": "test_write_profile_mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "hail_version": "0.2.139-5e5eedb87ff8",
+      "pyspark": "3.5.9",
+      "jar_sha256": "34b643346b31f1644be8155a6c91ce25ec62a98be3174b57d2fe78d857663152",
+      "original_function": "def test_write_profile_mt(profile25_mt, tmp_path):\n    hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-hail-paired/data/profile25.mt",
+      "samples": [
+        {
+          "wall_seconds": 2.3189207499381155,
+          "cpu_seconds": 9.067191743999999,
+          "python_cpu_seconds": 0.006616000000000177,
+          "observed_child_cpu_seconds": 9.060575743999998,
+          "descendants_before": {
+            "32447:1794425898.989851": 16.640050624
+          },
+          "descendants_after": {
+            "32447:1794425898.989851": 25.700626367999998
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 2.1275417909491807,
+          "cpu_seconds": 8.438042616,
+          "python_cpu_seconds": 0.0062269999999999825,
+          "observed_child_cpu_seconds": 8.431815616000002,
+          "descendants_before": {
+            "32447:1794425898.989851": 25.700670912
+          },
+          "descendants_after": {
+            "32447:1794425898.989851": 34.132486528
+          },
+          "threads_after_query": 4
+        },
+        {
+          "wall_seconds": 2.0233030000235885,
+          "cpu_seconds": 7.440367831999997,
+          "python_cpu_seconds": 0.0061510000000000176,
+          "observed_child_cpu_seconds": 7.434216831999997,
+          "descendants_before": {
+            "32447:1794425898.989851": 34.132547456
+          },
+          "descendants_after": {
+            "32447:1794425898.989851": 41.566764287999995
+          },
+          "threads_after_query": 4
+        }
+      ],
+      "outputs": [
+        {
+          "files": 142,
+          "bytes": 206126614,
+          "timed": false
+        },
+        {
+          "files": 142,
+          "bytes": 206126613,
+          "timed": true
+        },
+        {
+          "files": 142,
+          "bytes": 206126613,
+          "timed": true
+        },
+        {
+          "files": 142,
+          "bytes": 206126611,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-hail-prefix-20261110/hail-env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "hail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-4-hail"
+      ],
+      "leader": 32440,
+      "owned_identities": {
+        "32440": 1794425897.755542,
+        "32447": 1794425898.989851,
+        "32457": 1794425899.013376,
+        "32458": 1794425899.014022
+      },
+      "seconds": 24.07754158298485,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 1452277760,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "2e199f98407b48e0178053d31c13816cf621d407bd2a124cc0987cc5e7d03847",
+      "exit.json": "f65c909b351a3ecb9cb4bc9aafab70bcd633e7bb08db7bdde2c70af3140a21bb",
+      "identity.json": "a9f0aaaf29f1fc562d72bf80d54e58e724f55071c94e34ccaeee14b9b7137d03"
+    }
+  },
+  {
+    "phase": "time",
+    "case": "test_write_profile_mt",
+    "mode": "vail",
+    "index": 5,
+    "result": {
+      "mode": "vail",
+      "purpose": "time",
+      "case": "test_write_profile_mt",
+      "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+      "cpu_scope": "Worker process CPU plus stable observed live-child endpoint CPU; may omit unobserved short-lived children, snapshots not atomic with wall",
+      "threads": "Hail Spark local4, Vail Rayon4 with existingTokio32, not enforced total-core parity",
+      "native_sha256": "6bee98348941c946cc4d8f7504557807781d5f57cc6d59e05d60e8be286ab193",
+      "allocator": "mimalloc",
+      "original_function": "def test_write_profile_mt(profile25_mt, tmp_path):\n    hl.read_matrix_table(str(profile25_mt)).write(str(tmp_path / 'tmp.mt'))",
+      "source_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+      "identity_verified": true,
+      "fixture": "/private/tmp/vail-six-slower-20261111/inputs/native-profile.mt",
+      "samples": [
+        {
+          "wall_seconds": 1.1562702920055017,
+          "cpu_seconds": 13.501268000000001,
+          "python_cpu_seconds": 13.501268000000001,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        },
+        {
+          "wall_seconds": 1.1612090839771554,
+          "cpu_seconds": 13.013405000000002,
+          "python_cpu_seconds": 13.013405000000002,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        },
+        {
+          "wall_seconds": 1.1499794580740854,
+          "cpu_seconds": 13.352803999999999,
+          "python_cpu_seconds": 13.352803999999999,
+          "observed_child_cpu_seconds": 0,
+          "descendants_before": {},
+          "descendants_after": {},
+          "threads_after_query": 33
+        }
+      ],
+      "outputs": [
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": false
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        },
+        {
+          "files": 76,
+          "bytes": 784324297,
+          "timed": true
+        },
+        {
+          "files": 76,
+          "bytes": 784324085,
+          "timed": true
+        }
+      ],
+      "passed": true
+    },
+    "exit": {
+      "command": [
+        "nice",
+        "-n",
+        "10",
+        "/private/tmp/vail-collect-state-20261110/final/env/bin/python",
+        "/private/tmp/vail-six-slower-20261111/worker.py",
+        "vail",
+        "time",
+        "test_write_profile_mt",
+        "/private/tmp/vail-six-slower-20261111/time/test_write_profile_mt-5-vail"
+      ],
+      "leader": 33115,
+      "owned_identities": {
+        "33115": 1794425921.834665
+      },
+      "seconds": 5.567946583032608,
+      "returncode": 0,
+      "failure": null,
+      "cleanup_error": null,
+      "peak_observed_combined_rss_bytes": 6037372928,
+      "group_absent": true,
+      "live_owned": 0
+    },
+    "source_files": {
+      "result.json": "29a341dbfef2b78eeb7f4e175c73a16dc92fde89e269858cd814dae135cfcf06",
+      "exit.json": "781cd2ebd0c4200adae006322d73ad188611cb340e086a302821a48511c3108e",
+      "identity.json": "621f749401e3033b07f247a25cf727c6ac5bae3fb8c93dd86384f4c457db50e9"
+    }
+  }
+]

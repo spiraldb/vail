@@ -1,0 +1,71 @@
+{
+  "cases": {
+    "test_matrix_table_many_aggs_row_wise": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "helpers": [
+        "many_aggs"
+      ],
+      "historical_wall_ratio": 2.458
+    },
+    "test_export_vcf": {
+      "source": "benchmark_methods.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "temporary_output": true,
+      "historical_wall_ratio": 1.912
+    },
+    "test_group_by_take_rekey": {
+      "source": "benchmark_table.py",
+      "fixture": "gnomad",
+      "vail_reader": "legacy",
+      "historical_wall_ratio": 1.882
+    },
+    "test_kyle_sex_specific_qc": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "historical_wall_ratio": 1.384
+    },
+    "test_mt_localize_and_collect": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_reader": "legacy",
+      "historical_wall_ratio": 1.254
+    },
+    "test_write_profile_mt": {
+      "source": "benchmark_matrix_table.py",
+      "fixture": "profile",
+      "vail_fixture": "native_profile",
+      "vail_reader": "native",
+      "temporary_output": true,
+      "historical_wall_ratio": 1.152
+    }
+  },
+  "schedule": [
+    "hail",
+    "vail",
+    "vail",
+    "hail",
+    "hail",
+    "vail"
+  ],
+  "warmups": 1,
+  "samples": 3,
+  "worker_seconds": 360,
+  "phase_seconds": 3600,
+  "sampled_combined_rss_bytes": 12884901888,
+  "minimum_free_bytes": 5368709120,
+  "output_scope": "Temporaryoutputparentcreated/deletedoutsidecalltimer; freshparentperwarmup/sample; originalread+query+action/writeinside; no delete/fsyncpolicychange",
+  "scope": "Sixrequestedcasesonly, samefullprofile24885x2535/16parts andgnomad250000x1000/32parts. First5exactsharedHailfiles MatrixTable.read_legacy; sixthVailnativeconvertedfromsamefullprofile Hailownformat. No gzip/cloud/build/newfeaturework. OriginalASTbodies/helperswithoutdecorators. Onefullwarmup3timedcalls/process3fresh/engine balanced. ObservedstablechildendpointCPU includesJVM lowerbound; Rayon4 existingTokio32 versusHailSpark4 nottotalcoreparity. Nativewritefreshmatchinglogicalinput notsamephysicalformat. Kyleoriginalrandomsexexpression retained no crossengineassignmentclaim. Native conversion publicwriter chooses its own partitioning: see pinnednative_profile.partitions; no native16partitionparity claim.",
+  "pins_sha256": "d7f4bdaa43ff28697c4cfc97b1b8570df754d9da0eba38ead8927fdb68244c26",
+  "scripts": {
+    "worker.py": "cb08997e10cd7538f5c5be75b6fc916e241be026dac9712eed3e59bb00180e32",
+    "run.py": "d62e75fecad949db5b728255c0d65d05ac1534ab6e3a2487df038f0d6a7b1e79",
+    "owned.py": "2d9317768a39325c98185c2e05bf9e9deb355a004fa261fe23584401a587b04b",
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "benchmark_methods.py": "5ff0585b6ef2a15ef05ed2a571b472e1c18b4da08e83dfc24cac5b0ad04765a9"
+  }
+}
