@@ -209,7 +209,7 @@ impl ArrayKernels {
         let fixed_bytes = 4096
             + constant_bytes
             + read_headers
-            + program.registers.len() * (std::mem::size_of::<Option<DatumSlot>>() + 128)
+            + program.registers.len() * (std::mem::size_of::<Option<DatumSlot>>() + 512)
             + program.children.len() * 128;
         Some(Self {
             signature: program
