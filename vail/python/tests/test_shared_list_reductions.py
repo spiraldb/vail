@@ -185,3 +185,23 @@ def test_shared_counts_keep_long_rows_and_sparse_entry_presence():
         assert row.yes == sum(v % 11 == 0 for v in values)
         assert row.no == sum(v % 11 != 0 for v in values)
         assert row.fraction == row.yes / len(columns) if columns else math.isnan(row.fraction)
+
+
+def test_shared_reductions_distinguish_missing_structs_from_filtered_entries():
+    m = hl.range_matrix_table(3, 257, n_partitions=1)
+    m = m.annotate_entries(payload=hl.or_missing(
+        m.col_idx % 3 != 0,
+        hl.struct(value=hl.or_missing(m.col_idx % 5 != 0, m.col_idx - 130)),
+    ))
+    m = m.filter_entries((m.row_idx == 0) | ((m.row_idx == 1) & (m.col_idx % 2 == 0)))
+    rows = m.annotate_rows(
+        yes=hl.agg.count_where(m.payload.value % 7 == 0),
+        no=hl.agg.count_where(m.payload.value % 7 != 0),
+        fraction=hl.agg.fraction(m.payload.value % 7 == 0),
+    ).rows().collect()
+    for row in rows:
+        columns = [c for c in range(257) if row.row_idx == 0 or (row.row_idx == 1 and c % 2 == 0)]
+        values = [c - 130 for c in columns if c % 3 != 0 and c % 5 != 0]
+        assert row.yes == sum(v % 7 == 0 for v in values)
+        assert row.no == sum(v % 7 != 0 for v in values)
+        assert row.fraction == row.yes / len(columns) if columns else math.isnan(row.fraction)
