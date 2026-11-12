@@ -3389,7 +3389,7 @@ pub fn validate_projection_with_globals(
 // Floor division and modulo require Hail-specific sign/overflow behavior.
 // Arrow owns the typed array iteration, output buffers, and validity handling;
 // no operand is extracted as a ScalarValue.
-fn columnar_numeric(
+pub(crate) fn columnar_numeric(
     op: BinaryOperator,
     left: &ArrayRef,
     right: &ArrayRef,

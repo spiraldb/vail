@@ -56,7 +56,7 @@ pub fn udf() -> Arc<ScalarUDF> {
     .clone()
 }
 
-fn lengths(input: &ArrayRef) -> Result<ArrayRef> {
+pub(crate) fn lengths(input: &ArrayRef) -> Result<ArrayRef> {
     let values: Vec<i32> = match input.data_type() {
         DataType::List(_) => {
             let lists = input.as_any().downcast_ref::<ListArray>().unwrap();

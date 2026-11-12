@@ -83,7 +83,7 @@ enum Op {
     Binary(Binary, usize, usize),
     Missing(usize),
     Cast(usize),
-    OrderKey(usize),
+    NormalizeFloatZero(usize),
     Select(usize, usize, usize),
 }
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -609,8 +609,8 @@ impl Compiler<'_> {
                     && matches!(kind, Kind::F32 | Kind::F64)
                     && matches!(operator, Binary::Eq | Binary::Ne | Binary::Lt | Binary::Le | Binary::Gt | Binary::Ge)
                 {
-                    a = self.order_key(a)?;
-                    b = self.order_key(b)?;
+                    a = self.normalized_float(a)?;
+                    b = self.normalized_float(b)?;
                     kind = self.registers[a].kind;
                 }
                 let output = match operator {
@@ -621,6 +621,8 @@ impl Compiler<'_> {
                         Kind::Bool
                     }
                     Binary::And | Binary::Or if kind == Kind::Bool => Kind::Bool,
+                    Binary::Eq | Binary::Ne | Binary::Lt | Binary::Le | Binary::Gt | Binary::Ge
+                        if self.reduction_numeric && matches!(kind, Kind::F32 | Kind::F64) => Kind::Bool,
                     Binary::Mod
                         if self.reduction_numeric
                             && matches!(kind, Kind::I32 | Kind::I64)
@@ -1130,7 +1132,7 @@ pub(crate) fn prepare(
         }
         *uses |= bit;
         match registers[index].op {
-            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::OrderKey(a) => mark(registers, a, bit, guard),
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::NormalizeFloatZero(a) => mark(registers, a, bit, guard),
             Op::Binary(_, a, b) => {
                 mark(registers, a, bit, guard);
                 mark(registers, b, bit, guard);

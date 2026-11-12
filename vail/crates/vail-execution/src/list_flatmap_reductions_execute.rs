@@ -1,50 +1,24 @@
-// Multi-sink consumer for the same typed register block executor.
+// Shared array-DAG execution and the ordinary packed Boolean reduction sink.
 pub(super) fn reduce(
     bundle: &MultiReduce,
     batch: &RecordBatch,
     state_bytes: usize,
 ) -> Result<Vec<ArrayRef>> {
     let program = &bundle.program;
+    let available = MAX_SCRATCH - state_bytes - bundle.kernels.fixed_bytes;
+    let capacity = (available / bundle.workspace_bytes_per_lane).min(MAX_BLOCK);
+    debug_assert!(capacity != 0);
     let reads = bind_reads(program, batch)?;
-    let bytes_per_lane = bundle.workspace_bytes_per_lane;
-    let available = MAX_SCRATCH - state_bytes - 4096;
-    if available < bytes_per_lane {
-        return Err(DataFusionError::Internal(
-            "multi reduction workspace estimate changed".into(),
-        ));
-    }
-    let capacity = (available / bytes_per_lane).clamp(1, MAX_BLOCK);
-    let mut execution = Execution {
-        program,
-        reads,
-        positions: vec![0; 2],
-        coordinates: vec![vec![], Vec::with_capacity(capacity)],
-        leaves: vec![],
-        workspace: program.workspace.lease(&program.registers, capacity),
-        output: Output::Bool(BooleanBuilder::new()),
-        output_len: 0,
-        output_counts: vec![],
-        guard_results: vec![],
-        capacity,
-        domains: vec![(false, false, 0); 2],
-        span: None,
-        emissions: vec![],
-        fold_entries: vec![],
-        output_validity: vec![],
-        reuse_guards: false,
-    };
-    let lists = execution.reads[program.root_read]
+    let broadcasts = Broadcasts::new(&bundle.kernels.mod_constants, capacity)?;
+    let mut slots = bundle.kernels.constants.clone();
+    let lists = reads[program.root_read]
         .values
         .as_any()
         .downcast_ref::<ListArray>()
-        .unwrap()
-        .clone();
+        .unwrap();
     let offsets = lists.value_offsets();
     let validity = (0..batch.num_rows())
-        .map(|row| {
-            execution.positions[0] = row;
-            execution.reads[program.root_read].valid(&execution.positions)
-        })
+        .map(|row| reads[program.root_read].valid(&[row, 0]))
         .collect::<Vec<_>>();
     let mut denominator = vec![0_u64; batch.num_rows()];
     let mut numerators = bundle
@@ -53,13 +27,6 @@ pub(super) fn reduce(
         .map(|_| vec![0_i64; batch.num_rows()])
         .collect::<Vec<_>>();
     let mut segments = Vec::with_capacity(capacity.min(batch.num_rows()));
-    let mut selected = vec![0_u8; capacity];
-    let mut packed = vec![0_u8; capacity.div_ceil(8)];
-    let mask = if bundle.sinks.len() == 64 {
-        u64::MAX
-    } else {
-        (1_u64 << bundle.sinks.len()) - 1
-    };
     let mut row = 0;
     while row < validity.len() {
         if !validity[row] {
@@ -70,42 +37,50 @@ pub(super) fn reduce(
         while row < validity.len() && validity[row] {
             row += 1;
         }
-        let end_row = row;
-        let end = offsets[end_row] as usize;
+        let end = offsets[row] as usize;
         let mut owner = first_row;
         for start in (offsets[first_row] as usize..end).step_by(capacity) {
             let count = (end - start).min(capacity);
-            execution.reuse_guards = false;
-            execution.span = Some(SpanInput {
-                coordinate: 1,
-                leaves: 0,
-                lanes: InputLanes::Contiguous(start),
-            });
-            if !bundle.guards.is_empty() {
-                execution.compute(count, Some(1));
+            for (slot, constant) in slots.iter_mut().zip(&bundle.kernels.constants) {
+                *slot = constant.clone();
             }
-            if bundle.guards.iter().any(|&guard| {
-                let guard = &execution.workspace[guard];
-                guard.scalar && !guard.true_at(0)
-            }) {
-                continue;
-            }
-            let present_count = if bundle.guards.iter().all(|&guard| execution.workspace[guard].scalar) {
-                count
-            } else {
-                for (lane, selected) in selected[..count].iter_mut().enumerate() {
-                    *selected = u8::from(bundle.guards.iter()
-                        .all(|&guard| execution.workspace[guard].true_at(lane)));
-                }
-                selected[..count].iter().map(|&v| usize::from(v)).sum()
+            let domain = ArrayDomain {
+                start,
+                len: count,
+                selected: None,
             };
-            // The filter owns the value domain. Never evaluate an expensive
-            // body on eliminated entries, including hidden null-owner spans.
-            if present_count == 0 {
+            evaluate_arrays(bundle, &reads, &mut slots, &broadcasts, domain, true, false)?;
+            let mut selection: Option<BooleanBuffer> = None;
+            let mut rejected = false;
+            for &guard in &bundle.guards {
+                let guard = slots[guard].as_ref().expect("guard was evaluated");
+                let values = guard.array.as_any().downcast_ref::<BooleanArray>().unwrap();
+                if guard.scalar {
+                    if values.is_null(0) || !values.value(0) {
+                        rejected = true;
+                        break;
+                    }
+                    continue;
+                }
+                let bits = if let Some(nulls) = values.nulls() {
+                    values.values() & nulls.inner()
+                } else {
+                    values.values().clone()
+                };
+                selection = Some(match selection {
+                    None => bits,
+                    Some(old) => &old & &bits,
+                });
+            }
+            if rejected {
                 continue;
             }
-            // All sinks share this segmented compacted domain. Derive it once
-            // from owner offsets, rather than scattering a counter per lane.
+            let present = selection
+                .as_ref()
+                .map_or(count, BooleanBuffer::count_set_bits);
+            if present == 0 {
+                continue;
+            }
             segments.clear();
             let mut position = start;
             let mut compacted_end = 0;
@@ -114,11 +89,17 @@ pub(super) fn reduce(
                     owner += 1;
                 }
                 let stop = (offsets[owner + 1] as usize).min(start + count);
-                let len = if present_count == count {
+                let len = if present == count {
                     stop - position
                 } else {
-                    selected[position - start..stop - start].iter()
-                        .map(|&v| usize::from(v)).sum()
+                    let bits = selection.as_ref().unwrap();
+                    crate::list_aggregate::bitmap_reduce::<2, false>(
+                        bits.values(),
+                        bits.offset(),
+                        None,
+                        position - start,
+                        stop - position,
+                    )
                 };
                 if len != 0 {
                     compacted_end += len;
@@ -127,47 +108,58 @@ pub(super) fn reduce(
                 }
                 position = stop;
             }
-            let active_count = if present_count == count {
-                execution.reuse_guards = !bundle.guards.is_empty();
-                execution.span = Some(SpanInput {
-                    coordinate: 1,
-                    leaves: mask,
-                    lanes: InputLanes::Contiguous(start),
-                });
-                count
-            } else {
-                execution.coordinates[1].clear();
-                for lane in 0..count {
-                    if selected[lane] != 0 {
-                        execution.coordinates[1].push(start + lane);
-                    }
+            let indices = (present != count).then(|| {
+                UInt32Array::from_iter_values(selection.as_ref().unwrap().set_indices_u32())
+            });
+            if indices.is_some() {
+                // Filtered coordinates define a new domain; only pure demanded
+                // dependencies are evaluated again on those selected entries.
+                for (slot, constant) in slots.iter_mut().zip(&bundle.kernels.constants) {
+                    *slot = constant.clone();
                 }
-                // Selection changes the domain; recompute cheap guard/leaf
-                // reads when also demanded by a sink, not their old vectors.
-                execution.span = Some(SpanInput {
-                    coordinate: 1,
-                    leaves: mask,
-                    lanes: InputLanes::Selected,
-                });
-                present_count
-            };
-            execution.compute(active_count, None);
+            }
+            evaluate_arrays(
+                bundle,
+                &reads,
+                &mut slots,
+                &broadcasts,
+                ArrayDomain {
+                    selected: indices.as_ref(),
+                    ..domain
+                },
+                false,
+                indices.is_none(),
+            )?;
             for (sink, output) in bundle.sinks.iter().zip(&mut numerators) {
-                let values = &execution.workspace[sink.value];
-                if !values.scalar {
-                    pack_boolean(values, active_count, &mut packed);
-                }
+                let result = slots[sink.value].as_ref().expect("sink was evaluated");
+                let values = result
+                    .array
+                    .as_any()
+                    .downcast_ref::<BooleanArray>()
+                    .unwrap();
                 let mut first = 0;
-                for &(owner, end) in &segments {
-                    let count = if values.scalar {
-                        usize::from(values.true_at(0)) * (end - first)
+                for &(owner, stop) in &segments {
+                    let count = if result.scalar {
+                        usize::from(!values.is_null(0) && values.value(0)) * (stop - first)
+                    } else if let Some(nulls) = values.nulls() {
+                        crate::list_aggregate::bitmap_reduce::<2, true>(
+                            values.values().values(),
+                            values.values().offset(),
+                            Some(nulls),
+                            first,
+                            stop - first,
+                        )
                     } else {
                         crate::list_aggregate::bitmap_reduce::<2, false>(
-                            &packed, 0, None, first, end - first,
+                            values.values().values(),
+                            values.values().offset(),
+                            None,
+                            first,
+                            stop - first,
                         )
                     };
                     output[owner] += count as i64;
-                    first = end;
+                    first = stop;
                 }
             }
         }
@@ -195,26 +187,4 @@ pub(super) fn reduce(
             }
         })
         .collect()
-}
-
-// Convert one bounded predicate block to the packed view used by ordinary
-// Boolean list reducers. Scratch is reused across sinks and blocks; null
-// predicates contribute false without changing the shared denominator.
-fn pack_boolean(buffer: &Buffer, len: usize, packed: &mut [u8]) {
-    let values = buffer.boolean(len);
-    if buffer.all_valid {
-        for (byte, values) in packed.iter_mut().zip(values.chunks(8)) {
-            *byte = values.iter().enumerate()
-                .fold(0, |word, (bit, &value)| word | (u8::from(value != 0) << bit));
-        }
-    } else {
-        for ((byte, values), valid) in packed.iter_mut().zip(values.chunks(8))
-            .zip(buffer.valid[..len].chunks(8))
-        {
-            *byte = values.iter().zip(valid).enumerate()
-                .fold(0, |word, (bit, (&value, &valid))| {
-                    word | (u8::from(value != 0 && valid != 0) << bit)
-                });
-        }
-    }
 }

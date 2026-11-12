@@ -23,37 +23,11 @@ fn constant_nonzero(register: &Register) -> bool {
             Kind::Bool => false,
         }
 }
-// Match the ordinary comparison contract: zeros compare equally and NaNs use
-// their normalized IEEE total-order keys. Shared producers normalize once.
-fn float32_order(value: f32) -> i32 {
-    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i32;
-    bits ^= (((bits >> 31) as u32) >> 1) as i32;
-    bits
-}
-fn float64_order(value: f64) -> i64 {
-    let mut bits = (if value == 0.0 { 0.0 } else { value }).to_bits() as i64;
-    bits ^= (((bits >> 63) as u64) >> 1) as i64;
-    bits
-}
-
 impl Compiler<'_> {
-    fn order_key(&mut self, source: usize) -> Option<usize> {
-        let kind = match self.registers[source].kind {
-            Kind::F32 => Kind::I32,
-            Kind::F64 => Kind::I64,
-            _ => return None,
-        };
-        let op = if let Op::Constant(mut value) = self.registers[source].op {
-            if value.valid {
-                value.bits = if kind == Kind::I32 {
-                    float32_order(f32::from_bits(value.bits as u32)) as u64
-                } else {
-                    float64_order(f64::from_bits(value.bits)) as u64
-                };
-            }
-            Op::Constant(value)
-        } else { Op::OrderKey(source) };
-        self.register(op, kind)
+    fn normalized_float(&mut self, source: usize) -> Option<usize> {
+        let kind = self.registers[source].kind;
+        matches!(kind, Kind::F32 | Kind::F64).then_some(())?;
+        self.register(Op::NormalizeFloatZero(source), kind)
     }
     fn numeric_cast(&mut self, source: usize, kind: Kind) -> Option<usize> {
         let old = self.registers[source].kind;
@@ -145,15 +119,6 @@ fn candidate(field: usize, expr: &Expr) -> Option<Candidate<'_>> {
             } if !matches!(operator, Binary::Pow | Binary::Floordiv) => {
                 supported(left, nodes) && supported(right, nodes)
             }
-            Expr::IfElse {
-                condition,
-                consequent,
-                alternate,
-            } => {
-                supported(condition, nodes)
-                    && supported(consequent, nodes)
-                    && supported(alternate, nodes)
-            }
             _ => false,
         }
     }
@@ -191,6 +156,7 @@ pub(crate) struct MultiReduce {
     ordinary: Vec<Arc<dyn PhysicalExpr>>,
     fallback: Option<Arc<dyn PhysicalExpr>>,
     workspace_bytes_per_lane: usize,
+    kernels: Arc<execution::ArrayKernels>,
 }
 impl fmt::Display for MultiReduce {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -271,7 +237,7 @@ impl PhysicalExpr for MultiReduce {
             .and_then(|n| n.checked_mul(8))
             .and_then(|n| n.checked_add(batch.num_rows()));
         if state_bytes
-            .and_then(|n| n.checked_add(4096 + self.workspace_bytes_per_lane))
+            .and_then(|n| n.checked_add(self.kernels.fixed_bytes + self.workspace_bytes_per_lane))
             .is_none_or(|n| n > execution::MAX_SCRATCH)
         {
             return self.fallback.as_ref().unwrap().evaluate(batch);
@@ -320,7 +286,7 @@ fn compact_reduction_region(
             Op::Unary(op, a) => Op::Unary(op, register_map[a]),
             Op::Missing(a) => Op::Missing(register_map[a]),
             Op::Cast(a) => Op::Cast(register_map[a]),
-            Op::OrderKey(a) => Op::OrderKey(register_map[a]),
+            Op::NormalizeFloatZero(a) => Op::NormalizeFloatZero(register_map[a]),
             Op::Binary(op, a, b) => Op::Binary(op, register_map[a], register_map[b]),
             Op::Select(c, a, b) => Op::Select(register_map[c], register_map[a], register_map[b]),
             other => other,
@@ -517,7 +483,7 @@ pub(crate) fn prepare_reductions(
         }
         registers[index].leaves |= bit;
         match registers[index].op {
-            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::OrderKey(a) => mark(registers, a, bit),
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::NormalizeFloatZero(a) => mark(registers, a, bit),
             Op::Binary(_, a, b) => {
                 mark(registers, a, bit);
                 mark(registers, b, bit);
@@ -539,7 +505,7 @@ pub(crate) fn prepare_reductions(
         }
         registers[index].guards = 1;
         match registers[index].op {
-            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::OrderKey(a) => mark_guard(registers, a),
+            Op::Unary(_, a) | Op::Missing(a) | Op::Cast(a) | Op::NormalizeFloatZero(a) => mark_guard(registers, a),
             Op::Binary(_, a, b) => {
                 mark_guard(registers, a);
                 mark_guard(registers, b);
@@ -594,20 +560,11 @@ pub(crate) fn prepare_reductions(
         workspace: Arc::new(execution::WorkspacePool::default()),
         ordinary: None,
     };
-    let workspace_bytes_per_lane = program
-        .registers
-        .iter()
-        .map(|r| match r.kind {
-            Kind::I32 | Kind::F32 => 5,
-            Kind::I64 | Kind::F64 => 9,
-            Kind::Bool => 2,
-        })
-        .sum::<usize>()
-        // Selected child coordinates (8), shared owner/end segments (16),
-        // guard mask (1), and one reusable packed bitmap (at most 1).
-        + 26;
+    let kernels = Arc::new(execution::ArrayKernels::prepare(&program)?);
+    let workspace_bytes_per_lane = kernels.bytes_per_lane;
     Some(MultiReduce {
         workspace_bytes_per_lane,
+        kernels,
         program,
         sinks,
         guards,

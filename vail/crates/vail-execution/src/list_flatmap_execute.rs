@@ -1458,59 +1458,7 @@ impl Execution<'_> {
                         values[i] = u8::from(!a.valid(i));
                     }
                 }
-                Op::OrderKey(a) => {
-                    let a = &before[a];
-                    out.scalar = a.scalar;
-                    out.all_valid = a.all_valid;
-                    let n = if out.scalar { 1 } else { count };
-                    if !out.all_valid { out.valid[..n].copy_from_slice(&a.valid[..n]); }
-                    match register.kind {
-                        Kind::I32 => {
-                            let Values::I32(values) = &mut out.values else { unreachable!() };
-                            for (out, &value) in values[..n].iter_mut().zip(a.f32(&self.reads, count)) {
-                                *out = float32_order(value);
-                            }
-                        }
-                        Kind::I64 => {
-                            let Values::I64(values) = &mut out.values else { unreachable!() };
-                            for (out, &value) in values[..n].iter_mut().zip(a.f64(&self.reads, count)) {
-                                *out = float64_order(value);
-                            }
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-                Op::Cast(a) => {
-                    let source_kind = self.program.registers[a].kind;
-                    let a = &before[a];
-                    out.scalar = a.scalar;
-                    out.all_valid = a.all_valid;
-                    let n = if out.scalar { 1 } else { count };
-                    if !out.all_valid {
-                        out.valid[..n].copy_from_slice(&a.valid[..n]);
-                    }
-                    macro_rules! cast {
-                        ($variant:ident,$getter:ident,$ty:ty) => {{
-                            let Values::$variant(values) = &mut out.values else {
-                                unreachable!()
-                            };
-                            for (out, &value) in
-                                values[..n].iter_mut().zip(a.$getter(&self.reads, count))
-                            {
-                                *out = value as $ty;
-                            }
-                        }};
-                    }
-                    match (source_kind, register.kind) {
-                        (Kind::I32, Kind::I64) => cast!(I64, i32, i64),
-                        (Kind::I32, Kind::F32) => cast!(F32, i32, f32),
-                        (Kind::I32, Kind::F64) => cast!(F64, i32, f64),
-                        (Kind::I64, Kind::F32) => cast!(F32, i64, f32),
-                        (Kind::I64, Kind::F64) => cast!(F64, i64, f64),
-                        (Kind::F32, Kind::F64) => cast!(F64, f32, f64),
-                        _ => unreachable!(),
-                    }
-                }
+                Op::Cast(_) | Op::NormalizeFloatZero(_) => unreachable!("array-only reduction instruction"),
                 Op::Unary(operator, a) => {
                     let a = &before[a];
                     out.scalar = a.scalar;
@@ -1561,34 +1509,6 @@ impl Execution<'_> {
                     Binary::Le => compare!(<=,a,b),
                     Binary::Gt => compare!(>,a,b),
                     Binary::Ge => compare!(>=,a,b),
-                    Binary::Mod => match register.kind {
-                        Kind::I32 => numeric!(
-                            I32,
-                            i32,
-                            |a: i32, b: i32| {
-                                let r = a.wrapping_rem(b);
-                                r.wrapping_add(if r != 0 && (a < 0) != (b < 0) { b } else { 0 })
-                            },
-                            a,
-                            b
-                        ),
-                        Kind::I64 => numeric!(
-                            I64,
-                            i64,
-                            |a: i64, b: i64| {
-                                let r = a.wrapping_rem(b);
-                                r.wrapping_add(if r != 0 && (a < 0) != (b < 0) { b } else { 0 })
-                            },
-                            a,
-                            b
-                        ),
-                        _ => unreachable!(),
-                    },
-                    Binary::Div => match register.kind {
-                        Kind::F32 => numeric!(F32, f32, |a: f32, b: f32| a / b, a, b),
-                        Kind::F64 => numeric!(F64, f64, |a: f64, b: f64| a / b, a, b),
-                        _ => unreachable!(),
-                    },
                     Binary::And | Binary::Or => {
                         let a = &before[a];
                         let b = &before[b];
@@ -1727,4 +1647,5 @@ fn bind_reads(program: &ListFlatMap, batch: &RecordBatch) -> Result<Vec<BoundRea
     Ok(reads)
 }
 
+include!("list_flatmap_reductions_arrow.rs");
 include!("list_flatmap_reductions_execute.rs");
