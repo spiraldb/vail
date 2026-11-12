@@ -1,8 +1,11 @@
 // Prepared array kernels for the shared reduction DAG. Inputs stay borrowed;
 // only bounded primitive/bitmap outputs are allocated by the ordinary kernels.
 use crate::expressions::{PrimitiveType, Type};
-use arrow_array::{Datum, UInt32Array};
+use arrow_array::{Datum, StringArray, StringViewArray, UInt32Array};
 use arrow_buffer::BooleanBuffer;
+use arrow_schema::Field;
+use datafusion_common::config::ConfigOptions;
+use datafusion_expr::{ScalarFunctionArgs, ScalarUDF};
 
 type ArrowResult<T> = std::result::Result<T, arrow_schema::ArrowError>;
 type NumericKernel = fn(&dyn Datum, &dyn Datum) -> ArrowResult<ArrayRef>;
@@ -25,6 +28,7 @@ enum ArrayStep {
     Read(usize),
     MissingRead(usize),
     Length(usize),
+    CharacterLength(usize, Arc<CharacterLengthKernel>),
     Missing(usize),
     Numeric(NumericKernel, usize, usize),
     Compare(CompareKernel, usize, usize),
@@ -40,7 +44,9 @@ impl ArrayStep {
     fn constant_inputs(&self, constants: &[Option<DatumSlot>]) -> bool {
         match self {
             Self::Constant(_) => true,
-            Self::Read(_) | Self::MissingRead(_) | Self::Length(_) => false,
+            Self::Read(_) | Self::MissingRead(_) | Self::Length(_) | Self::CharacterLength(..) => {
+                false
+            }
             Self::Numeric(_, a, b)
             | Self::Compare(_, a, b)
             | Self::Boolean(_, a, b)
@@ -52,6 +58,65 @@ impl ArrayStep {
             | Self::Not(a)
             | Self::Alias(a) => constants[*a].is_some(),
         }
+    }
+}
+
+#[derive(Debug)]
+struct CharacterLengthKernel {
+    function: Arc<ScalarUDF>,
+    fields: Vec<Arc<Field>>,
+    output: Arc<Field>,
+    options: Arc<ConfigOptions>,
+}
+impl CharacterLengthKernel {
+    fn prepare() -> Option<Self> {
+        let (function, _, _) = crate::expressions::string_function("character_length").ok()?;
+        if function.return_type(&[DataType::Utf8View]).ok()? != DataType::Int32 {
+            return None;
+        }
+        Some(Self {
+            function,
+            fields: vec![Arc::new(Field::new("value", DataType::Utf8View, true))],
+            output: Arc::new(Field::new("length", DataType::Int32, true)),
+            options: Arc::new(ConfigOptions::default()),
+        })
+    }
+    fn evaluate(&self, source: &BoundRead, domain: ArrayDomain<'_>) -> Result<DatumSlot> {
+        let values = source
+            .values
+            .as_any()
+            .downcast_ref::<StringArray>()
+            .unwrap();
+        let window = values.slice(domain.start, domain.len);
+        // i32 Utf8 offsets guarantee Arrow's view conversion reuses one payload
+        // buffer. Only bounded descriptors (and short inline bytes) are copied.
+        let mut views: ArrayRef = Arc::new(StringViewArray::from(&window));
+        if let Some(nulls) = read_nulls(
+            source,
+            ArrayDomain {
+                selected: None,
+                ..domain
+            },
+        )? {
+            let invalid = BooleanArray::new(!nulls.inner(), None);
+            views = arrow_select::nullif::nullif(views.as_ref(), &invalid)?;
+        }
+        if let Some(indices) = domain.selected {
+            views = arrow_select::take::take(views.as_ref(), indices, None)?;
+        }
+        // StringView's ASCII check visits nonnull selected values, unlike a
+        // Utf8 envelope scan that can inspect null-hidden payload bytes.
+        let output = self.function.invoke_with_args(ScalarFunctionArgs {
+            args: vec![ColumnarValue::Array(views)],
+            arg_fields: self.fields.clone(),
+            number_rows: domain.output_len(),
+            return_field: self.output.clone(),
+            config_options: self.options.clone(),
+        })?;
+        Ok(DatumSlot {
+            array: output.into_array(domain.output_len())?,
+            scalar: false,
+        })
     }
 }
 
@@ -107,12 +172,24 @@ impl ArrayKernels {
         let mut constants = Vec::<Option<DatumSlot>>::with_capacity(program.registers.len());
         let empty = Broadcasts::new(&[], 1).ok()?;
         let false_value = constant_slot(Kind::Bool, Cell::boolean(false)).ok()?;
+        let character_length = if program
+            .registers
+            .iter()
+            .any(|r| matches!(r.op, Op::CharacterLength(_)))
+        {
+            Some(Arc::new(CharacterLengthKernel::prepare()?))
+        } else {
+            None
+        };
         for register in &program.registers {
             let mut step = match register.op {
                 Op::Constant(cell) => ArrayStep::Constant(constant_slot(register.kind, cell).ok()?),
                 Op::Read(r) => ArrayStep::Read(r),
                 Op::MissingRead(r) => ArrayStep::MissingRead(r),
                 Op::Length(r) => ArrayStep::Length(r),
+                Op::CharacterLength(r) => {
+                    ArrayStep::CharacterLength(r, character_length.as_ref()?.clone())
+                }
                 Op::Missing(a) => ArrayStep::Missing(a),
                 Op::NormalizeFloatZero(a) => ArrayStep::Normalize(a),
                 Op::Cast(a) => ArrayStep::Cast(a, kind_type(register.kind)),
@@ -222,7 +299,20 @@ impl ArrayKernels {
             mod_constants,
             false_value,
             fixed_bytes,
-            bytes_per_lane: slot_bytes + broadcast_bytes + 42,
+            // A Unicode step may hold both input and selected 16-byte views;
+            // additionally reserve its mask operations. Payload owners stay borrowed.
+            bytes_per_lane: slot_bytes
+                + broadcast_bytes
+                + 42
+                + if program
+                    .registers
+                    .iter()
+                    .any(|r| matches!(r.op, Op::CharacterLength(_)))
+                {
+                    34
+                } else {
+                    0
+                },
         })
     }
 }
@@ -351,7 +441,10 @@ fn execute_array_step(
             )
         }
         ArrayStep::Alias(a) => return Ok(get(*a).clone()),
-        ArrayStep::Read(_) | ArrayStep::MissingRead(_) | ArrayStep::Length(_) => unreachable!(),
+        ArrayStep::Read(_)
+        | ArrayStep::MissingRead(_)
+        | ArrayStep::Length(_)
+        | ArrayStep::CharacterLength(..) => unreachable!(),
     };
     Ok(DatumSlot { array, scalar })
 }
@@ -461,6 +554,7 @@ fn evaluate_arrays(
             continue;
         }
         let value = match step {
+            ArrayStep::CharacterLength(read, kernel) => kernel.evaluate(&reads[*read], domain)?,
             ArrayStep::Read(_) | ArrayStep::MissingRead(_) | ArrayStep::Length(_) => {
                 read_array(step, reads, &bundle.kernels.false_value, domain)?
             }

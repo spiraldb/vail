@@ -1458,7 +1458,7 @@ impl Execution<'_> {
                         values[i] = u8::from(!a.valid(i));
                     }
                 }
-                Op::Cast(_) | Op::NormalizeFloatZero(_) => unreachable!("array-only reduction instruction"),
+                Op::Cast(_) | Op::NormalizeFloatZero(_) | Op::CharacterLength(_) => unreachable!("array-only reduction instruction"),
                 Op::Unary(operator, a) => {
                     let a = &before[a];
                     out.scalar = a.scalar;

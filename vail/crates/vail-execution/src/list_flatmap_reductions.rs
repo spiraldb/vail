@@ -106,6 +106,9 @@ fn candidate(field: usize, expr: &Expr) -> Option<Candidate<'_>> {
             | Expr::IsMissing { value }
             | Expr::Cast { value, .. }
             | Expr::Unary { value, .. } => supported(value, nodes),
+            Expr::StringFunction { function, args } if function == "character_length" && args.len() == 1 => {
+                supported(&args[0], nodes)
+            }
             Expr::Binary {
                 left,
                 right,
@@ -297,7 +300,7 @@ fn compact_reduction_region(
     let mut used_reads = vec![false; compiler.reads.len()];
     used_reads[*root_read] = true;
     for register in &registers {
-        if let Op::Read(read) | Op::MissingRead(read) | Op::Length(read) = register.op {
+        if let Op::Read(read) | Op::MissingRead(read) | Op::Length(read) | Op::CharacterLength(read) = register.op {
             used_reads[read] = true;
         }
     }
@@ -330,6 +333,7 @@ fn compact_reduction_region(
             Op::Read(read) => Op::Read(read_map[read]),
             Op::MissingRead(read) => Op::MissingRead(read_map[read]),
             Op::Length(read) => Op::Length(read_map[read]),
+            Op::CharacterLength(read) => Op::CharacterLength(read_map[read]),
             other => other,
         };
     }
@@ -525,7 +529,7 @@ pub(crate) fn prepare_reductions(
     // reductions need not be turned into another block interpreter.
     let keep = compiler.registers.iter().filter(|r| {
         r.leaves.count_ones() > 1
-            && matches!(r.op, Op::Binary(Binary::Div | Binary::Mod, ..) | Op::Cast(_))
+            && matches!(r.op, Op::Binary(Binary::Div | Binary::Mod, ..) | Op::Cast(_) | Op::CharacterLength(_))
     }).fold(0, |mask, register| mask | register.leaves);
     if keep.count_ones() < 2 { decline!("no_shared_costly_producer"); }
     compact_reduction_region(&mut compiler, &mut sinks, &mut selected, &mut guards, &mut root_read, keep);
@@ -533,7 +537,7 @@ pub(crate) fn prepare_reductions(
     if compiler.children.iter().any(|child| !crate::expressions::is_frame_column(child)) {
         decline!("source_columns");
     }
-    if compiler.registers.iter().any(|r| matches!(r.op, Op::Read(i) | Op::MissingRead(i) | Op::Length(i) if compiler.reads[i].coordinate == 0)) { decline!("frame_capture"); }
+    if compiler.registers.iter().any(|r| matches!(r.op, Op::Read(i) | Op::MissingRead(i) | Op::Length(i) | Op::CharacterLength(i) if compiler.reads[i].coordinate == 0)) { decline!("frame_capture"); }
     let mut outputs = Vec::with_capacity(fields.len());
     let mut ordinary = vec![];
     for (field, (_, expr)) in fields.iter().enumerate() {
@@ -560,6 +564,10 @@ pub(crate) fn prepare_reductions(
         workspace: Arc::new(execution::WorkspacePool::default()),
         ordinary: None,
     };
+    if trace {
+        let count = program.registers.iter().filter(|r| matches!(r.op, Op::CharacterLength(_))).count();
+        if count != 0 { eprintln!("MULTI_REDUCE_CHARACTER_LENGTH producers={count}"); }
+    }
     let kernels = Arc::new(execution::ArrayKernels::prepare(&program)?);
     let workspace_bytes_per_lane = kernels.bytes_per_lane;
     Some(MultiReduce {

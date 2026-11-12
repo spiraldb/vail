@@ -78,6 +78,7 @@ enum Op {
     Read(usize),
     MissingRead(usize),
     Length(usize),
+    CharacterLength(usize),
     Constant(Cell),
     Unary(Unary, usize),
     Binary(Binary, usize, usize),
@@ -664,6 +665,15 @@ impl Compiler<'_> {
                     let value = self.scalar(value, env)?;
                     self.register(Op::Missing(value), Kind::Bool)?
                 }
+            }
+            Expr::StringFunction { function, args }
+                if self.reduction_numeric && function == "character_length" && args.len() == 1 =>
+            {
+                let Binding::Read(read) = self.resolve(&args[0], env).and_then(|v| self.force(v))? else {
+                    return None;
+                };
+                if self.reads[read].dtype != DataType::Utf8 { return None; }
+                self.register(Op::CharacterLength(read), Kind::I32)?
             }
             Expr::ArrayLength { value } => {
                 let Binding::Read(read) = self
