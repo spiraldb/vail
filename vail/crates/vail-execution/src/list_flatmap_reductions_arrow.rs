@@ -1,7 +1,7 @@
 // Prepared array kernels for the shared reduction DAG. Inputs stay borrowed;
 // only bounded primitive/bitmap outputs are allocated by the ordinary kernels.
 use crate::expressions::{PrimitiveType, Type};
-use arrow_array::{Datum, StringArray, StringViewArray, UInt32Array};
+use arrow_array::{Datum, StringViewArray, UInt32Array};
 use arrow_buffer::BooleanBuffer;
 use arrow_schema::Field;
 use datafusion_common::config::ConfigOptions;
