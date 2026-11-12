@@ -1,0 +1,195 @@
+{
+  "many_row_hail": {
+    "wall_seconds": 0.7310480000451207,
+    "cpu_seconds": 7.00372,
+    "average_busy_cores": 9.580383230058391,
+    "ipc": 4.120906465675386,
+    "ri_instructions": [
+      95815509105,
+      95797089404,
+      95804215599
+    ],
+    "ri_cycles": [
+      23251075923,
+      23241025855,
+      23300228689
+    ],
+    "ri_diskio_bytesread": [
+      0,
+      0,
+      0
+    ],
+    "ri_diskio_byteswritten": [
+      0,
+      0,
+      0
+    ],
+    "ri_pageins": [
+      0,
+      0,
+      0
+    ],
+    "ru_minflt": [
+      19631,
+      14487,
+      17769
+    ],
+    "ru_majflt": [
+      0,
+      0,
+      0
+    ],
+    "ru_stime": [
+      0.22826900000000006,
+      0.22329899999999991,
+      0.24248399999999992
+    ]
+  },
+  "many_row_native": {
+    "wall_seconds": 0.42648837494198233,
+    "cpu_seconds": 4.969703000000001,
+    "average_busy_cores": 11.652610697011514,
+    "ipc": 3.2525421988154215,
+    "ri_instructions": [
+      53163085827,
+      53171146126,
+      53097866993
+    ],
+    "ri_cycles": [
+      16191010027,
+      16347565343,
+      16328141443
+    ],
+    "ri_diskio_bytesread": [
+      0,
+      0,
+      0
+    ],
+    "ri_diskio_byteswritten": [
+      0,
+      0,
+      0
+    ],
+    "ri_pageins": [
+      0,
+      0,
+      0
+    ],
+    "ru_minflt": [
+      18297,
+      5566,
+      2228
+    ],
+    "ru_majflt": [
+      0,
+      0,
+      0
+    ],
+    "ru_stime": [
+      0.165319,
+      0.196052,
+      0.18395000000000006
+    ]
+  },
+  "sex_qc_hail": {
+    "wall_seconds": 0.4569562500109896,
+    "cpu_seconds": 4.424266,
+    "average_busy_cores": 9.682034111347855,
+    "ipc": 3.9512259093467845,
+    "ri_instructions": [
+      57904830615,
+      57905066593,
+      57903042276
+    ],
+    "ri_cycles": [
+      14654902540,
+      14589714746,
+      14740885693
+    ],
+    "ri_diskio_bytesread": [
+      0,
+      0,
+      0
+    ],
+    "ri_diskio_byteswritten": [
+      0,
+      0,
+      0
+    ],
+    "ri_pageins": [
+      0,
+      0,
+      0
+    ],
+    "ru_minflt": [
+      13816,
+      12475,
+      10936
+    ],
+    "ru_majflt": [
+      0,
+      0,
+      0
+    ],
+    "ru_stime": [
+      0.18354700000000002,
+      0.18713899999999994,
+      0.18991499999999994
+    ]
+  },
+  "hardware": {
+    "model": "Apple M3 Max",
+    "physical_cores": 14,
+    "performance_cores": 10,
+    "efficiency_cores": 4,
+    "memory_bytes": 103079215104,
+    "page_size": 16384
+  },
+  "scope": "3 fresh diagnostic workers, 1warm+3originalactions each; not pairedbenchmark timing; processonly counters. ri_user/system_time remain rawMach ticks; CPU usesPOSIXseconds.",
+  "instruction_bottlenecks": {
+    "scope": "Entiretarget CPUcounter trace includesimport,onewarmup,threeoriginalactions. Not a warm-only/action-phase sample.",
+    "definitions": {
+      "delivery": "Instruction Delivery Bottleneck The fraction of instruction bandwidth lost because the Instruction Delivery component did not deliver instructions at an adequate rate for the Instruction Processing component.\n\nMore specifically, the Instruction Delivery component reads bytes from memory, decodes them into instructions, and delivers them as \u00b5ops into the Instruction Processing component's instruction window. This fraction represents lost bandwidth when the processing component has room in the instruction window, but new \u00b5ops are not available from the predicted instruction stream. A high fraction indicates a higher Instruction Processing bandwidth might be possible if the Instruction Delivery component delivers new instructions faster.\n\nTo improve performance, reduce instruction memory delays by improving the locality of hot functions, and inline, unroll, and straighten common code sequences to create longer streams of sequentially fetched instructions. For less common code, optimize for smaller code size to improve cache performance using `-Os` with C-based languages or `-Osize` for Swift.",
+      "discarded": "Discarded Bottleneck The fraction of sustainable instruction bandwidth wasted due to the effects of a branch misprediction or a pipeline restart.\n\nMore specifically, this fraction represents \u00b5op bandwidth wasted while processing down the wrong predicted path, as well as lost bandwidth required to recover from the misprediction. A high fraction indicates that the control flow or memory dependencies or both are difficult to predict and the CPU is throwing away a significant amount of predicted work.\n\nBecause the instruction window and overall speculative execution capability of the CPU tends to increase from family to family, the amount of discarded work due to similar misprediction rates may also increase.\n\nTo improve performance, focus on removing branches through conditional moves or altering data structures and decision trees for a more stable path through the code.",
+      "processing": "Instruction Processing Bottleneck The fraction of instruction bandwidth lost because the Instruction Processing component is executing instructions at a rate lower than the sustainable bandwidth.\n\nMore specifically, this component maintains a forward-looking set of \u00b5ops, called the instruction window, that the CPU collects from along a predicted instruction path and executes those \u00b5ops as they become ready. This fraction represents \u00b5op bandwidth lost when the instruction window becomes full due to slow processing. A high fraction indicates insufficient instruction-level parallelism in the code, and that the Instruction Delivery component is inserting instructions into the instruction window faster than they are completed.\n\nTo improve performance, reduce memory delays and improve available instruction-level parallelism. For example, make data structure locality improvements, prefetch data from other cache lines, and unroll loops to create additional parallel computational sequences.",
+      "useful": "Useful The fraction of sustainable instruction bandwidth that retired, meaning it was on the correct path through the code, and therefore contributed to forward progress of the application.\n\nMore specifically, this fraction directly relates to \u00b5ops per cycle (\u00b5PC) and largely to instructions per cycle (IPC). Rather than presenting the measured \u00b5PC directly, this category shows the measured \u00b5PC divided by the maximum \u00b5PC for the particular core in order to provide a fraction of achievable \u00b5PC. A high fraction indicates that the code is executing in the CPU at a high rate.\n\nTo improve performance, improve the efficiency of the algorithm or the instruction sequences you use to implement the algorithm."
+    },
+    "groups": {
+      "all": {
+        "intervals": 47992,
+        "observed_interval_nanoseconds": 29157006529,
+        "cycles": 92021778798.0,
+        "cycle_weighted_percent": {
+          "delivery": 19.639242136258254,
+          "discarded": 14.096883911212725,
+          "processing": 14.290019694959343,
+          "useful": 51.973854057661136
+        }
+      },
+      "P": {
+        "intervals": 28670,
+        "observed_interval_nanoseconds": 21626890731,
+        "cycles": 74731719314.0,
+        "cycle_weighted_percent": {
+          "delivery": 21.135921275005824,
+          "discarded": 14.723116236885437,
+          "processing": 14.627881030775375,
+          "useful": 49.51308125719307
+        }
+      },
+      "E": {
+        "intervals": 19322,
+        "observed_interval_nanoseconds": 7530115798,
+        "cycles": 17290059484.0,
+        "cycle_weighted_percent": {
+          "delivery": 13.170241529087942,
+          "discarded": 11.390159944713526,
+          "processing": 12.82970323169723,
+          "useful": 62.609895095592684
+        }
+      }
+    },
+    "method": "MetricTable per-thread/core nonoverlapping recorded hardware-counter intervals; resolveXMLrefIDs, paireachfractionwithitsowncyclecount, verifyfourfractions sum1, weightbycycles. P/E splitfromtrace CPU0\u20133E,4\u201313P. NativeApple topdown categories do not measureDRAMGB/s orfloatingpointFLOPS; mixedcore global weighting not a peakperformancepercentage.",
+    "source_sha256": "83551b3207bc7d2b85d56625b3c8e55b50748eabc67a576d8e9bc1b38f31a727"
+  }
+}
