@@ -26,3 +26,18 @@ git submodule update --init
 Vail's tests need these upstream source checkouts; their own nested submodules are not required for the current Vail checks. Build commands run from `vail/`. Build outputs and local environments are ignored; written documentation and conformance run records are committed.
 
 Vail's original code is licensed under [MIT](LICENSE). Upstream submodules and the vendored Iceberg patch retain their own licenses and notices.
+
+## Benchmark results
+
+A comparison started on **2026-11-12** measured Vail `8ed78f4f` and Hail `0.2.139-5e5eedb87ff8` on one 32-vCPU AMD EPYC VM. Each engine read its own native format; format-independent operations used common inputs. Across **111 paired execution cases**, the median per-case Hail/Vail ratio was **8.12× for wall time** and **8.21× for observed core-seconds**. Each case has equal weight in those medians.
+
+The total of per-case medians for this fixed case bundle is:
+
+| Sum of per-case medians | Vail | Hail |
+|---|---:|---:|
+| Wall-seconds | 195.5 | 762.8 |
+| Observed core-seconds | 1416.6 | 5382.2 |
+
+These sums describe that case bundle, rather than elapsed suite duration. Vail took longer in **2** cases: gzip reading (+4.2%) and the CPU-hash sentinel (+0.1%). It used more CPU in **8** cases, including the billion-row range join, integer import with imputation, and entry filtering/unfiltering. All losses remain in the report; three repetitions do not establish statistical significance.
+
+Results are medians of three fresh-process first actions, with query planning/compilation included and engine initialization excluded. They describe this supported pool, rather than warmed steady-state throughput or full Hail compatibility. There are 39 policy exclusions and one separately reported planning-only case. Native layouts/compression differ, caches were not forced cold, and the Linux wheel required the documented loader setting. See [the complete results and method](BENCHMARKS.md), including all 112 scheduled cases and raw samples.

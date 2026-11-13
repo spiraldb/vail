@@ -1,5 +1,7 @@
 # Vail
 
+Fresh native-format comparisons with Hail, including all scheduled cases, CPU costs and limitations, are recorded in [the benchmark report](../BENCHMARKS.md).
+
 Vail is an early embedded Rust implementation of the Hail Table API, using **DataFusion, Arrow, Vortex, and Embedded execution (DAVE)**, with a Python frontend.
 
 Vail's original code is licensed under [MIT](LICENSE). Upstream dependencies and vendored third-party code retain their own licenses and notices.

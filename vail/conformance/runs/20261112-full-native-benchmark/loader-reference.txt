@@ -1,0 +1,2 @@
+GNU libc runtime-loader tunable documentation: https://sourceware.org/glibc/manual/latest/html_node/Dynamic-Linking-Tunables.html
+Optional static TLS is allocated per thread at startup. Trial: 65536 bytes (default512 bytes); same setting frozen for both engines if successful. Loader fix, not assumed performance-neutral.

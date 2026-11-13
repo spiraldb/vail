@@ -1,0 +1,27 @@
+{
+  "name": "vail-native-bench-20261112",
+  "status": "RUNNING",
+  "machineType": "https://www.googleapis.com/compute/v1/projects/pyspiral-dev/zones/us-east1-b/machineTypes/n2d-standard-32",
+  "zone": "https://www.googleapis.com/compute/v1/projects/pyspiral-dev/zones/us-east1-b",
+  "creationTimestamp": "2026-11-12T14:34:07.182-08:00",
+  "lastStartTimestamp": "2026-11-12T14:59:02.128-08:00",
+  "lastStopTimestamp": "2026-11-12T14:58:13.609-08:00",
+  "scheduling": {
+    "automaticRestart": true,
+    "instanceTerminationAction": "STOP",
+    "maxRunDuration": {
+      "nanos": 0,
+      "seconds": "21600"
+    },
+    "onHostMaintenance": "MIGRATE",
+    "preemptible": false,
+    "provisioningModel": "STANDARD"
+  },
+  "resourceStatus": {
+    "scheduling": {
+      "terminationTimestamp": "2026-11-13T04:58:56.048643Z"
+    }
+  },
+  "full_local_receipt_sha256": "fa0f671fe82333c24a1349717a8035a87d96f02c54c344644c2709d766c565e9",
+  "scope": "Selected provider status/hardware/guard fields; full receipt retained locally. Network and SSH metadata omitted."
+}
