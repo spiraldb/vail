@@ -990,6 +990,9 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                 layout: PartitionLayout::Observed,
             }
         }
+        TableNode::OrderedUnion { .. } => {
+            return Err(TableError::Invalid("ordered union requires partition-aware planning".into()));
+        }
         TableNode::Union { children } => {
             let mut offset = 0u64;
             let mut plans = Vec::with_capacity(children.len());

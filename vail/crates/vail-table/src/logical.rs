@@ -289,6 +289,7 @@ fn node_name(node: &TableNode) -> &'static str {
         TableNode::Head { .. } => "Head",
         TableNode::Tail { .. } => "Tail",
         TableNode::Union { .. } => "Union",
+        TableNode::OrderedUnion { .. } => "OrderedUnion",
         TableNode::Distinct { .. } => "Distinct",
         TableNode::Aggregate { .. } => "Aggregate",
     }
@@ -307,7 +308,7 @@ fn children(table: &TableRef) -> Vec<TableRef> {
             vec![left.clone(), right.clone()]
         }
         TableNode::MultiWayZipJoin { tables, .. } => tables.clone(),
-        TableNode::Union { children } => children.clone(),
+        TableNode::Union { children } | TableNode::OrderedUnion { children } => children.clone(),
         TableNode::Repartition { child, .. }
         | TableNode::FilterPartitions { child, .. }
         | TableNode::GroupWithinPartitions { child, .. }
@@ -804,7 +805,7 @@ fn lower_inner(table: &TableRef) -> Result<LogicalPlan> {
         // Vail union concatenates observable execution partitions. Native SQL
         // Union permits branch interleaving and repartitioning; the extension
         // keeps each optimized child partition as an independent output.
-        TableNode::Union { .. } => extension(table),
+        TableNode::Union { .. } | TableNode::OrderedUnion { .. } => extension(table),
         TableNode::Explode { child, path } if path.len() == 1 => {
             let input = lower_inner(child)?;
             Ok(LogicalPlanBuilder::from(input)
@@ -1411,7 +1412,7 @@ fn replace_children(table: &TableRef, mut children: Vec<TableRef>) -> Result<Tab
             *right = children.remove(0);
         }
         TableNode::MultiWayZipJoin { tables, .. } => *tables = children,
-        TableNode::Union { children: slots } => *slots = children,
+        TableNode::Union { children: slots } | TableNode::OrderedUnion { children: slots } => *slots = children,
         TableNode::IntervalRead { child, .. }
         | TableNode::Repartition { child, .. }
         | TableNode::FilterPartitions { child, .. }

@@ -1021,6 +1021,14 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
                 }
             },
             TableNode::OrderBy {child,keys} if keys.is_empty()=>prepare_legacy(child.clone()).await,
+            TableNode::OrderedUnion { children } => {
+                let mut inputs = Vec::new();
+                for child in children {
+                    inputs.push(prepare_legacy(child.clone()).await?.parts);
+                }
+                let merged = crate::ordered_merge::merge(inputs, table.keys(), schema.clone())?;
+                Ok(PreparedTable { parts: vec![merged], counts: vec![None], schema })
+            }
             TableNode::Union {children} if table.keys().is_empty()=> {
                 let mut parts = Vec::new();
                 let mut counts = Vec::new();
